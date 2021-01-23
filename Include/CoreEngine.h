@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Platform/Platform.h"
+#include "Export.h"
 
 #include <utility>
 

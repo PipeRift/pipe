@@ -24,7 +24,7 @@ namespace Rift
 
 		struct Ptr;
 
-		struct PtrOwner
+		struct CORE_API PtrOwner
 		{
 			friend Ptr;
 
@@ -69,7 +69,7 @@ namespace Rift
 		};
 
 
-		struct Ptr
+		struct CORE_API Ptr
 		{
 		protected:
 			void* value = nullptr;

@@ -99,7 +99,7 @@ namespace Rift
 	 * Searching, comparing and other operations are way cheaper, but creating (indexing) is more
 	 * expensive.
 	 */
-	struct Name
+	struct CORE_API Name
 	{
 		friend NameTable;
 		using Id = size_t;

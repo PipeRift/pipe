@@ -17,7 +17,6 @@ namespace Rift
 	template <typename Type>
 	struct Ptr;
 
-
 	class CORE_API BaseObject : public BaseStruct
 	{
 	protected:

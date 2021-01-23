@@ -83,13 +83,13 @@ namespace Rift
 	using ObjectPtr = PtrOwner<T, ObjectBuilder>;
 
 	template <class T>
-	static CORE_API ObjectPtr<T> Create(Refl::Class* objectClass, const Ptr<Object> owner = {})
+	static ObjectPtr<T> Create(Refl::Class* objectClass, const Ptr<Object> owner = {})
 	{
 		return MakeOwned<T, ObjectBuilder>(objectClass, owner);
 	}
 
 	template <class T>
-	static CORE_API ObjectPtr<T> Create(const Ptr<Object> owner = {})
+	static ObjectPtr<T> Create(const Ptr<Object> owner = {})
 	{
 		return MakeOwned<T, ObjectBuilder>(owner);
 	}
