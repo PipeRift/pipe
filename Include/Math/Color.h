@@ -505,10 +505,6 @@ namespace Rift
 			return (b << 24) | (g << 16) | (r << 8) | (a << 0);
 		}
 
-#if WITH_EDITOR
-		static class Class* GetDetailsWidgetClass();
-#endif
-
 		/** Some pre-initialized colors, useful for debug code */
 		static const Color White;
 		static const Color Black;

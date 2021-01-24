@@ -36,7 +36,7 @@ namespace Rift
 		i32 currentWorker = 0;
 
 		TaskFlow flow;
-		flow.parallel_for(0, i32(workerPool->num_workers()), 1,
+		flow.for_each_index(0, i32(workerPool->num_workers()), 1,
 			[&mtx, &cv, &currentWorker, workerPoolSize](i32 i) {
 				ZoneScopedNC("Setup thread", 0x459bd1);
 

@@ -1,45 +1,87 @@
 # CMake version
-cmake_minimum_required (VERSION 3.12)
-MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
+cmake_minimum_required (VERSION 3.16)
 
-project(rift-core VERSION 0.1 LANGUAGES CXX)
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    set(RIFT_IS_PROJECT ON)
+
+################################################################################
+# Vcpkg setup
+
+if (DEFINED $ENV{VCPKG_ROOT})
+    set(VCPKG_ROOT $ENV{VCPKG_ROOT})
 else()
-    set(RIFT_IS_PROJECT OFF)
+    set(VCPKG_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg")
+endif()
+message("Using vcpkg located at '${VCPKG_ROOT}'")
+
+if (NOT DEFINED $ENV{CMAKE_TOOLCHAIN_FILE})
+    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
 endif()
 
+if(NOT DEFINED ENV{VCPKG_FEATURE_FLAGS})
+    set(ENV{VCPKG_FEATURE_FLAGS} "manifests, binarycaching")
+endif()
+
+
+################################################################################
+# Project
+
+project(rift-core VERSION 0.1 LANGUAGES CXX)
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+set(RIFT_IS_PROJECT ON)
+else()
+set(RIFT_IS_PROJECT OFF)
+endif()
 option(RIFT_BUILD_SHARED "Build shared libraries" ON)
 option(RIFT_BUILD_TESTS "Build rift-core tests" ${RIFT_IS_PROJECT})
 option(RIFT_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
 option(RIFT_BUILD_WARNINGS "Enable compiler warnings" OFF)
 
-
 set(CMAKE_VERBOSE_MAKEFILE OFF)
-# Export commands for Clangd
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Export commands for Clangd
 
 include(CMake/DownloadProject.cmake)
 include(CMake/Util.cmake)
 include(GenerateExportHeader)
 
 
+# ##############################################################################
+# Dependencies
+
+if(EXISTS CACHE{VCPKG_MANIFEST_FILE})
+    vcpkg_acquire_dependencies()
+endif()
+
+set(BUILD_SHARED_LIBS OFF)
+find_package(date CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+find_package(mimalloc 1.6.4 CONFIG REQUIRED)
+find_package(nlohmann_json 3.9.1 CONFIG REQUIRED)
+find_path(ROBIN_MAP_INCLUDE_DIRS "tsl/robin_growth_policy.h")
+add_library(robin_map INTERFACE)
+target_include_directories(robin_map INTERFACE ${ROBIN_MAP_INCLUDE_DIRS})
+find_path(ROBIN_HOOD_INCLUDE_DIRS "robin_hood.h")
+add_library(robin_hood INTERFACE)
+target_include_directories(robin_hood INTERFACE ${ROBIN_HOOD_INCLUDE_DIRS})
+find_package(spdlog 1.8.0 CONFIG REQUIRED)
+find_package(Taskflow CONFIG REQUIRED)
+find_package(tsl-sparse-map CONFIG REQUIRED)
 add_subdirectory(Extern)
 
-#[===================================================================[
-   Rift Core (compiled) library
-#]===================================================================]
+
+################################################################################
+#   Rift Core (compiled) library
+
 if (RIFT_BUILD_SHARED)
-    add_library(core SHARED)
+add_library(core SHARED)
 else()
-    add_library(core STATIC)
+add_library(core STATIC)
 endif()
 add_library(rift::core ALIAS core)
 generate_export_header(core
-    BASE_NAME CORE
-    EXPORT_MACRO_NAME CORE_API
-    EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Export.h)
+BASE_NAME CORE
+EXPORT_MACRO_NAME CORE_API
+EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Export.h)
 set_property(TARGET core PROPERTY CXX_STANDARD 17)
 target_define_platform(core)
 
@@ -49,25 +91,25 @@ target_sources(core PRIVATE ${CORE_SOURCE_FILES})
 
 target_link_libraries(core PUBLIC
     date::date
-    nlohmann_json
-    glm::glm
+    nlohmann_json::nlohmann_json
+    glm
     Tracy
-    tsl::robin_map
     tsl::sparse_map
-    Taskflow
-    fmt
+    robin_map
+    Taskflow::Taskflow
+    fmt::fmt
     robin_hood
     mimalloc-static
 )
 target_link_libraries(core PRIVATE
-    spdlog
+    spdlog::spdlog
 )
 target_shared_output_directory(core)
 
 
-#[===================================================================[
-   Core Tests (compiled) executable
-#]===================================================================]
+################################################################################
+#   Core Tests (compiled) executable
+
 if(RIFT_BUILD_TESTS)
     add_subdirectory(Tests)
 endif()

@@ -1,0 +1,21 @@
+{
+    "name": "rift-core",
+    "version-string": "0.0.1",
+    "license": "MIT",
+    "maintainers": [
+        "muit <muit@piperift.com>"
+    ],
+    "dependencies": [
+        "date",
+        "fmt",
+        "glm",
+        "mimalloc",
+        "nlohmann-json",
+        "robin-map",
+        "robin-hood-hashing",
+        "spdlog",
+        "taskflow",
+        "tsl-sparse-map",
+        "imgui"
+    ]
+}

@@ -52,7 +52,7 @@ namespace Rift
 		TaskFlow loadTask;
 		TArray<FAssetLoadingData> loadedDatas(infos.Size());
 
-		loadTask.parallel_for(0, infos.Size(), 1, [&loadedDatas, &infos](i32 i) {
+		loadTask.for_each_index(0, infos.Size(), 1, [&loadedDatas, &infos](i32 i) {
 			ZoneScopedNC("Load Asset File", 0xD19D45);
 			auto& info = infos[i];
 			auto& data = loadedDatas[i];

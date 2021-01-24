@@ -8,13 +8,6 @@
 #include "Math/Vector.h"
 #include "Serialization/Archive.h"
 
-#if WITH_EDITOR
-#	include "Reflection/Class.h"
-#	include "Reflection/Runtime/TPropertyHandle.h"
-#	include "UI/Widgets/PropertyWidget.h"
-#	include <imgui/imgui.h>
-#endif
-
 
 namespace Rift
 {
@@ -372,45 +365,6 @@ namespace Rift
 		OutColor = (InLinearColor / MaxComponent).ToColor(true);
 		OutIntensity = MaxComponent;
 	}
-
-
-#if WITH_EDITOR
-	class ColorPropertyWidget : public PropertyWidget
-	{
-		CLASS(ColorPropertyWidget, PropertyWidget)
-
-	protected:
-		virtual void Tick(float) override
-		{
-			ImGuiInputTextFlags flags = 0;
-			if (!prop->HasTag(DetailsEdit))
-				flags |= ImGuiInputTextFlags_ReadOnly;
-
-			ImGui::PushID(GetName().ToString().c_str());
-			{
-				Color& color = *GetHandle()->GetValuePtr();
-
-				LinearColor linear = color;
-				if (ImGui::ColorEdit4(displayName.c_str(), &linear.r))
-				{
-					color = linear.ToColor(true);
-				}
-			}
-			ImGui::PopID();
-		}
-
-		TPropertyHandle<Color>* GetHandle() const
-		{
-			return dynamic_cast<TPropertyHandle<Color>*>(prop.get());
-		}
-	};
-
-	Class* Color::GetDetailsWidgetClass()
-	{
-		return ColorPropertyWidget::Type();
-	}
-#endif	  // WITH_EDITOR
-
 
 	/**
 	 * Pow table for fast FColor -> FLinearColor conversion.
