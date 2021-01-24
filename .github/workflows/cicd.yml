@@ -57,7 +57,7 @@ jobs:
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
           # Since the cache must be invalidated when content of the vcpkg.json file changes, let's
           # compute its hash and append this to the computed cache's key.
-          appendedCacheKey: ${{ hashFiles( '**/vcpkg_manifest/vcpkg.json' ) }}
+          appendedCacheKey: ${{ hashFiles( '**/vcpkg_manifest/vcpkg.json' ) }}-${{ secrets.VCACHE}}
 
       - name: Cache LLVM and Clang
         if: matrix.compiler == 'clang'
@@ -78,7 +78,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: Build
-          key: ${{ matrix.name }}-${{ matrix.build-type }}-build
+          key: ${{ matrix.name }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
 
       - name: Configure and Build
         uses: lukka/run-cmake@v3.3
