@@ -27,9 +27,9 @@ endif()
 project(rift-core VERSION 0.1 LANGUAGES CXX)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-set(RIFT_IS_PROJECT ON)
+    set(RIFT_IS_PROJECT ON)
 else()
-set(RIFT_IS_PROJECT OFF)
+    set(RIFT_IS_PROJECT OFF)
 endif()
 option(RIFT_BUILD_SHARED "Build shared libraries" ON)
 option(RIFT_BUILD_TESTS "Build rift-core tests" ${RIFT_IS_PROJECT})
@@ -73,9 +73,9 @@ add_subdirectory(Extern)
 #   Rift Core (compiled) library
 
 if (RIFT_BUILD_SHARED)
-add_library(core SHARED)
+    add_library(core SHARED)
 else()
-add_library(core STATIC)
+    add_library(core STATIC)
 endif()
 add_library(rift::core ALIAS core)
 generate_export_header(core
@@ -93,7 +93,7 @@ target_link_libraries(core PUBLIC
     date::date
     nlohmann_json::nlohmann_json
     glm
-    Tracy
+    tracy-client
     tsl::sparse_map
     robin_map
     Taskflow::Taskflow

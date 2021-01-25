@@ -1,23 +1,32 @@
 
-if(RIFT_ENABLE_PROFILER)
-    set(ENABLE_STATISTICS On)
 
-    # TRACY
-    add_library(Tracy STATIC)
-    target_include_directories(Tracy PUBLIC Tracy)
-    file(GLOB_RECURSE TRACY_SOURCES CONFIGURE_DEPENDS Tracy/TracyClient.cpp)
-    target_sources(Tracy PRIVATE ${TRACY_SOURCES})
+################################################################################
+# Tracy
 
-    set(TRACY_ENABLE ${RIFT_ENABLE_PROFILER})
-    target_compile_definitions(Tracy PUBLIC TRACY_ENABLE)
-    target_compile_definitions(Tracy PRIVATE _CRT_SECURE_NO_WARNINGS)
-    if(LINUX)
+option(TRACY_ENABLE "Profiling is enabled" ${RIFT_ENABLE_PROFILER})
+option(TRACY_ON_DEMAND "Profiling enabled on demand" OFF)
+option(TRACY_NO_EXIT "Client executable does not exit until all profile data is sent to server" OFF)
+option(TRACY_NO_BROADCAST "Disable client discovery by broadcast to local network" OFF)
+
+add_library(tracy-client STATIC Tracy/TracyClient.cpp)
+target_include_directories(tracy-client PUBLIC Tracy)
+
+target_compile_definitions(tracy-client PUBLIC
+    TRACY_ENABLE=${TRACY_ENABLE}
+    TRACY_ON_DEMAND=${TRACY_ON_DEMAND}
+    TRACY_NO_EXIT=${TRACY_NO_EXIT}
+    TRACY_NO_BROADCAST=${TRACY_NO_BROADCAST})
+target_compile_definitions(tracy-client PRIVATE _CRT_SECURE_NO_WARNINGS)
+if(LINUX)
     find_library(DLPATH dl)
-    target_link_libraries(Tracy PRIVATE ${DLPATH})
-    # target_compile_definitions(Tracy PRIVATE TRACY_TIMER_QPC=1)
-    endif()
+    target_link_libraries(tracy-client PRIVATE ${DLPATH})
+    target_compile_definitions(tracy-client PRIVATE TRACY_TIMER_QPC=1)
+    set_target_properties(tracy-client PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
+
+################################################################################
 # Bandit (Tests)
+
 add_library(Bandit INTERFACE)
 target_include_directories(Bandit INTERFACE Bandit)

@@ -5,8 +5,8 @@
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "banditTestExplorer.testsuites": [
         {
-            "name": "RiftCore-Debug",
-            "cwd": "${workspaceFolder}/Build/Bin/Debug",
+            "name": "RiftCore",
+            "cwd": "${workspaceFolder}/Build/Bin",
             "windows": {
                 "cmd": "core-tests.exe",
                 "watches": [
@@ -17,31 +17,7 @@
             "linux": {
                 "cmd": "core-tests",
                 "watches": [
-                    "core.so"
-                ]
-            },
-            "osx": {
-                "cmd": "core-tests",
-                "watches": [
-                    "core.dylib"
-                ]
-            },
-            "parallelProcessLimit": 10
-        },
-        {
-            "name": "RiftCore-Release",
-            "cwd": "${workspaceFolder}/Build/Bin/Release",
-            "windows": {
-                "cmd": "core-tests.exe",
-                "watches": [
-                    "core.lib",
-                    "core.dll"
-                ]
-            },
-            "linux": {
-                "cmd": "core-tests",
-                "watches": [
-                    "core.so"
+                    "libcore.so"
                 ]
             },
             "osx": {
