@@ -1,4 +1,4 @@
-// Copyright 2015-2020 Piperift - All rights reserved
+// Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Reflection/Class.h"
 #include "Reflection/Property.h"

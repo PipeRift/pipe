@@ -1,4 +1,4 @@
-// Copyright 2015-2020 Piperift - All rights reserved
+// Copyright 2015-2021 Piperift - All rights reserved
 
 #include <Pointers/PtrOwner.h>
 #include <bandit/bandit.h>
