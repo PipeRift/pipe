@@ -18,7 +18,7 @@ namespace Rift::Refl
 		}
 	}
 
-	Type* Type::__FindChild(Name className) const
+	Type* Type::__FindChild(const Name& className) const
 	{
 		if (className.IsNone())
 			return nullptr;
@@ -53,7 +53,7 @@ namespace Rift::Refl
 		return false;
 	}
 
-	const Property* Type::FindProperty(Name propertyName) const
+	const Property* Type::FindProperty(const Name& propertyName) const
 	{
 		const auto* prop = properties.Find(propertyName);
 		return prop ? *prop : nullptr;

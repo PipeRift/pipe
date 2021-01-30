@@ -1,9 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "Reflection/TProperty.h"
 #include "Type.h"
+
 
 
 namespace Rift::Refl
@@ -30,7 +32,7 @@ namespace Rift::Refl
 			__GetAllChildren(reinterpret_cast<TArray<Type*>&>(outChildren));
 		}
 
-		Struct* FindChild(Name Name) const
+		Struct* FindChild(const Name& Name) const
 		{
 			return static_cast<Struct*>(__FindChild(Name));
 		}

@@ -1,11 +1,14 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "CoreTypes.h"
 #include "Files/FileSystem.h"
 #include "Strings/Name.h"
 #include "TypeTraits.h"
+
+
 
 namespace Rift
 {
@@ -17,8 +20,8 @@ namespace Rift
 
 	public:
 		AssetInfo() : id(Name::None()) {}
-		AssetInfo(Name id) : id(id) {}
-		AssetInfo(Path path) : id(FileSystem::ToString(path)) {}
+		AssetInfo(Name id) : id(MoveTemp(id)) {}
+		AssetInfo(const Path& path) : id(FileSystem::ToString(path)) {}
 
 		/**
 		 * @returns true if this can never be pointed towards an asset

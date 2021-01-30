@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "Platform/Platform.h"
 
 #include <assert.h>
@@ -10,6 +11,7 @@
 #include <algorithm>
 #include <functional>
 #include <vector>
+
 
 
 namespace Rift

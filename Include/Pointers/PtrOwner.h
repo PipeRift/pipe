@@ -2,12 +2,14 @@
 
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "Pointers/PtrBuilder.h"
 #include "TypeTraits.h"
 
 #include <atomic>
 #include <memory>
+
 
 
 namespace Rift
@@ -105,7 +107,7 @@ namespace Rift
 			Ptr() = default;
 			Ptr(const PtrOwner& owner);
 			Ptr(const Ptr& other);
-			Ptr(Ptr&& other);
+			Ptr(Ptr&& other) noexcept;
 
 			void MoveFrom(Ptr&& other);
 			void CopyFrom(const Ptr& other);
@@ -142,7 +144,7 @@ namespace Rift
 			MoveFrom(MoveTemp(other));
 		}
 
-		PtrOwner& operator=(PtrOwner&& other)
+		PtrOwner& operator=(PtrOwner&& other) noexcept
 		{
 			MoveFrom(MoveTemp(other));
 			return *this;
@@ -277,7 +279,7 @@ namespace Rift
 
 		Ptr() = default;
 		Ptr(const Ptr& other) : Super(other) {}
-		Ptr(Ptr&& other) : Super(MoveTemp(other)) {}
+		Ptr(Ptr&& other) noexcept : Super(MoveTemp(other)) {}
 
 		Ptr& operator=(const Ptr& other)
 		{
@@ -285,7 +287,7 @@ namespace Rift
 			return *this;
 		}
 
-		Ptr& operator=(Ptr&& other)
+		Ptr& operator=(Ptr&& other) noexcept
 		{
 			MoveFrom(MoveTemp(other));
 			return *this;

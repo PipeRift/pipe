@@ -1,7 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Assets/AssetManager.h"
-
 #include "Context.h"
 #include "Files/FileSystem.h"
 #include "Profiler.h"
@@ -19,7 +18,7 @@ namespace Rift
 
 	Ptr<AssetData> AssetManager::Load(AssetInfo info)
 	{
-		const auto loaded = Load(TArray<AssetInfo>{info});
+		const auto loaded = Load(TArray<AssetInfo>{MoveTemp(info)});
 		if (loaded.Size() > 0)
 		{
 			return loaded.First();
@@ -56,7 +55,6 @@ namespace Rift
 			ZoneScopedNC("Load Asset File", 0xD19D45);
 			auto& info = infos[i];
 			auto& data = loadedDatas[i];
-
 
 			if (!FileSystem::LoadJsonFile(info.GetStrPath(), data.json))
 			{
@@ -108,7 +106,7 @@ namespace Rift
 		return finalAssets;
 	}
 
-	Ptr<AssetData> AssetManager::LoadOrCreate(AssetInfo info, Refl::Class* assetType)
+	Ptr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Refl::Class* assetType)
 	{
 		if (info.IsNull() || !FileSystem::IsFolder(info.GetStrPath()))
 		{

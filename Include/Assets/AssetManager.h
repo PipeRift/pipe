@@ -27,9 +27,9 @@ namespace Rift
 		Ptr<AssetData> Load(AssetInfo info);
 		TArray<Ptr<AssetData>> Load(TArray<AssetInfo> infos);
 
-		Ptr<AssetData> LoadOrCreate(AssetInfo info, Refl::Class* assetType);
+		Ptr<AssetData> LoadOrCreate(const AssetInfo& info, Refl::Class* assetType);
 
-		Ptr<AssetData> GetLoadedAsset(AssetInfo id) const
+		Ptr<AssetData> GetLoadedAsset(const AssetInfo& id) const
 		{
 			if (const auto* asset = loadedAssets.Find(id))
 			{
@@ -38,7 +38,7 @@ namespace Rift
 			return {};
 		}
 
-		bool IsLoaded(AssetInfo id) const
+		bool IsLoaded(const AssetInfo& id) const
 		{
 			return loadedAssets.Contains(id);
 		}

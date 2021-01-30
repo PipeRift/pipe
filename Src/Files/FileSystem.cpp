@@ -8,7 +8,7 @@
 
 namespace Rift
 {
-	bool FileSystem::LoadJsonFile(Path path, Json& result)
+	bool FileSystem::LoadJsonFile(const Path& path, Json& result)
 	{
 		ZoneScopedNC("LoadJsonFile", 0xBB45D1);
 
@@ -31,7 +31,7 @@ namespace Rift
 		return true;
 	}
 
-	bool FileSystem::SaveJsonFile(Path path, const Json& data, i32 indent)
+	bool FileSystem::SaveJsonFile(const Path& path, const Json& data, i32 indent)
 	{
 		ZoneScopedNC("SaveJsonFile", 0xBB45D1);
 
@@ -50,7 +50,7 @@ namespace Rift
 	}
 
 
-	bool FileSystem::LoadStringFile(Path path, String& result)
+	bool FileSystem::LoadStringFile(const Path& path, String& result)
 	{
 		ZoneScopedNC("LoadStringFile", 0xBB45D1);
 
@@ -74,7 +74,7 @@ namespace Rift
 		return !result.empty();
 	}
 
-	bool FileSystem::SaveStringFile(Path path, const String& data)
+	bool FileSystem::SaveStringFile(const Path& path, const String& data)
 	{
 		ZoneScopedNC("SaveStringFile", 0xBB45D1);
 

@@ -1,12 +1,14 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "CoreEngine.h"
-#include "Macros.h"
+#include "PCH.h"
+
+#include "Platform/Macros.h"
 #include "Platform/Platform.h"
 #include "Reflection/TClass.h"
 #include "Reflection/TStruct.h"
 #include "ReflectionTags.h"
+
 
 
 namespace Rift::Refl
@@ -186,8 +188,8 @@ public:                                                                         
 #define __PROPERTY_TAGS(type, name, tags) __PROPERTY_IMPL(type, name, CAT(__refl_id_, name), tags)
 #define __PROPERTY_IMPL(type, name, id_name, inTags)                                            \
 	static constexpr u32 id_name = decltype(__refl_Counter(Refl::MetaCounter<255>{}))::value;   \
-	static constexpr Refl::MetaCounter<id_name + 1> __refl_Counter(                             \
-		Refl::MetaCounter<id_name + 1>);                                                        \
+	static constexpr Refl::MetaCounter<(id_name) + 1> __refl_Counter(                             \
+		Refl::MetaCounter<(id_name) + 1>);                                                        \
                                                                                                 \
 	static void __refl_RegistryProperty(Refl::MetaCounter<id_name>)                             \
 	{                                                                                           \
@@ -204,7 +206,7 @@ public:                                                                         
 			tags);                                                                              \
                                                                                                 \
 		/* Registry next property if any */                                                     \
-		__refl_RegistryProperty(Refl::MetaCounter<id_name + 1>{});                              \
+		__refl_RegistryProperty(Refl::MetaCounter<(id_name) + 1>{});                              \
 	};                                                                                          \
                                                                                                 \
 	void __refl_SerializeProperty(Archive& ar, Refl::MetaCounter<id_name>)                      \
@@ -216,7 +218,7 @@ public:                                                                         
 			ar(#name, name);                                                                    \
 		}                                                                                       \
 		/* Serialize next property if any */                                                    \
-		__refl_SerializeProperty(ar, Refl::MetaCounter<id_name + 1>{});                         \
+		__refl_SerializeProperty(ar, Refl::MetaCounter<(id_name) + 1>{});                         \
 	};
 
 

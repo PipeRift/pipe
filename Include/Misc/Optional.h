@@ -3,7 +3,7 @@
 #pragma once
 
 
-namespace Rift
+namespace Rift;
 {
 	/**
 	 * When we have an optional value IsSet() returns true, and GetValue() is meaningful.
@@ -32,7 +32,7 @@ namespace Rift
 				value = other.value;
 			}
 		}
-		TOptional(TOptional&& other) : bIsSet(other.bIsSet)
+		TOptional(TOptional&& other) noexcept : bIsSet(other.bIsSet)
 		{
 			if (bIsSet)
 			{
@@ -52,7 +52,7 @@ namespace Rift
 			}
 			return *this;
 		}
-		TOptional& operator=(TOptional&& other)
+		TOptional& operator=(TOptional&& other) noexcept
 		{
 			if (&other != this)
 			{
@@ -146,4 +146,4 @@ namespace Rift
 			return IsSet() ? value : defaultValue;
 		}
 	};
-}	 // namespace Rift
+}	 // namespace ;

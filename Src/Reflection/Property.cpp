@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Reflection/Class.h"
 #include "Reflection/Property.h"
+
+#include "Reflection/Class.h"
 #include "Reflection/Runtime/PropertyHandle.h"
 #include "Reflection/Struct.h"
 

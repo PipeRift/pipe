@@ -1,9 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "PCH.h"
+
 #include "BaseStruct.h"
-#include "CoreEngine.h"
 #include "TypeTraits.h"
+
 
 
 namespace Rift

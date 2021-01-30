@@ -29,7 +29,7 @@ namespace Rift
 		NameKey(StringView inStr) : str{inStr}, hash{hasher(str)} {}
 
 		NameKey(const NameKey& other) : hash{other.hash} {}
-		NameKey(NameKey&& other) : str{MoveTemp(other.str)}, hash{other.hash} {}
+		NameKey(NameKey&& other) noexcept : str{MoveTemp(other.str)}, hash{other.hash} {}
 		NameKey& operator=(const NameKey& other)
 		{
 			hash = other.hash;
@@ -128,7 +128,7 @@ namespace Rift
 			id = other.id;
 			return *this;
 		}
-		Name& operator=(Name&& other)
+		Name& operator=(Name&& other) noexcept
 		{
 			std::swap(id, other.id);
 			return *this;

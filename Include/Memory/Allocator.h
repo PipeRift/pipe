@@ -1,13 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "CoreEngine.h"
-
-#include <mimalloc.h>
-
-#include <Tracy.hpp>
-#include <client/tracy_rpmalloc.hpp>
-#include <new>
+#include "PCH.h"
 
 
 namespace Rift

@@ -2,11 +2,13 @@
 
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "Misc/Crc.h"
 #include "Reflection/ClassTraits.h"
 #include "Reflection/ReflectionTypeTraits.h"
 #include "Strings/Name.h"
+
 
 
 namespace Rift

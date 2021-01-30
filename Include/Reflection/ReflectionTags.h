@@ -1,8 +1,10 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "CoreTypes.h"
+
 
 
 namespace Rift

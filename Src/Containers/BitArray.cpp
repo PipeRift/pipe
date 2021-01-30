@@ -12,7 +12,7 @@ namespace Rift
 		bits = new u32[bitLongs];
 	}
 
-	BitArray::BitArray(BitArray&& other)
+	BitArray::BitArray(BitArray&& other) noexcept
 	{
 		arraySize = other.arraySize;
 		bitLongs = other.bitLongs;
@@ -58,7 +58,7 @@ namespace Rift
 		delete[] bits;
 	}
 
-	BitArray& BitArray::operator=(BitArray&& other)
+	BitArray& BitArray::operator=(BitArray&& other) noexcept
 	{
 		// Clear previous bits
 		delete[] bits;

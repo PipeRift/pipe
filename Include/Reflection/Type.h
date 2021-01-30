@@ -1,12 +1,14 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "PCH.h"
+
 #include "Containers/Array.h"
 #include "Containers/Map.h"
-#include "CoreEngine.h"
 #include "CoreTypes.h"
 #include "Reflection/Property.h"
 #include "Reflection/ReflectionTags.h"
+
 
 
 namespace Rift::Refl
@@ -53,7 +55,7 @@ namespace Rift::Refl
 
 	protected:
 		void __GetAllChildren(TArray<Type*>& outChildren);
-		Type* __FindChild(Name className) const;
+		Type* __FindChild(const Name& className) const;
 
 	public:
 		bool IsChildOf(const Type* other) const;
@@ -72,7 +74,7 @@ namespace Rift::Refl
 
 		/** Properties */
 
-		const Property* FindProperty(Name propertyName) const;
+		const Property* FindProperty(const Name& propertyName) const;
 		void GetOwnProperties(PropertyMap& outProperties) const;
 		void GetAllProperties(PropertyMap& outProperties) const;
 
@@ -82,7 +84,7 @@ namespace Rift::Refl
 		/** Registry a class */
 		void __Registry(Name inName)
 		{
-			name = inName;
+			name = MoveTemp(inName);
 		}
 
 		/** Registry a class with a parent */

@@ -35,6 +35,7 @@ option(RIFT_BUILD_SHARED "Build shared libraries" ON)
 option(RIFT_BUILD_TESTS "Build rift-core tests" ${RIFT_IS_PROJECT})
 option(RIFT_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
 option(RIFT_BUILD_WARNINGS "Enable compiler warnings" OFF)
+option(RIFT_ENABLE_CLANG_TOOLS "Enable clang-tidy and clang-format" ${RIFT_IS_PROJECT})
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Export commands for Clangd
@@ -55,7 +56,7 @@ set(BUILD_SHARED_LIBS OFF)
 find_package(date CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
-find_package(mimalloc 1.6.4 CONFIG REQUIRED)
+find_package(mimalloc 1.6.7 CONFIG REQUIRED)
 find_package(nlohmann_json 3.9.1 CONFIG REQUIRED)
 find_path(ROBIN_MAP_INCLUDE_DIRS "tsl/robin_growth_policy.h")
 add_library(robin_map INTERFACE)
@@ -115,16 +116,21 @@ if(RIFT_BUILD_TESTS)
 endif()
 
 
-# clang-format
-include(CMake/CheckClangTools.cmake)
+if(RIFT_ENABLE_CLANG_TOOLS)
+    include(CMake/CheckClangTools.cmake)
 
-# Additional targets to perform clang-format/clang-tidy
-file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS Include/**/*.h Src/**/*.cpp Tests/**/*.h Tests/**/*.cpp)
+    # Additional targets to perform clang-format/clang-tidy
+    file(GLOB_RECURSE ALL_SOURCE_FILES CONFIGURE_DEPENDS Include/**/*.h Src/**/*.cpp Tests/**/*.h Tests/**/*.cpp)
 
-if(CLANG_FORMAT_EXE)
-    add_custom_target(ClangFormat COMMAND ${CLANG_FORMAT_EXE} -i ${ALL_SOURCE_FILES})
-endif()
+    if(CLANG_FORMAT_EXE)
+        add_custom_target(ClangFormat COMMAND ${CLANG_FORMAT_EXE} -i ${ALL_SOURCE_FILES})
+    endif()
 
-if(CLANG_TIDY_EXE)
-    add_custom_target(ClangTidy COMMAND ${CLANG_TIDY_EXE} -p ./ ${ALL_SOURCE_FILES} -checks=* -fix)
+    if(CLANG_TIDY_EXE)
+        add_custom_target(ClangTidy COMMAND ${CLANG_TIDY_EXE} -p=./Build ${ALL_SOURCE_FILES}
+            -checks='-*,clang-analyzer-*,clang-analyzer-cplusplus*,performance-*,bugprone-*,misc-unused-*,-bugprone-macro-parentheses'
+            -header-filter='Include/'
+            -fix -fix-errors
+        )
+    endif()
 endif()

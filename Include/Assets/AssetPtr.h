@@ -1,12 +1,14 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "PCH.h"
+
 #include "AssetData.h"
 #include "AssetInfo.h"
 #include "AssetManager.h"
-#include "CoreEngine.h"
 #include "Files/FileSystem.h"
 #include "TypeTraits.h"
+
 
 
 namespace Rift
@@ -21,7 +23,7 @@ namespace Rift
 
 	public:
 		BaseAssetPtr() = default;
-		BaseAssetPtr(AssetInfo info) : info{info} {}
+		BaseAssetPtr(AssetInfo info) : info{MoveTemp(info)} {}
 
 		AssetInfo GetInfo() const
 		{
@@ -29,7 +31,7 @@ namespace Rift
 		}
 		void SetInfo(AssetInfo newInfo)
 		{
-			info = newInfo;
+			info = MoveTemp(newInfo);
 			cachedAsset.Reset();
 		}
 
@@ -51,9 +53,9 @@ namespace Rift
 
 		TAssetPtr() : BaseAssetPtr() {}
 
-		TAssetPtr(TAssetPtr&& other)
+		TAssetPtr(TAssetPtr&& other) noexcept
 		{
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 		}
 		TAssetPtr(const TAssetPtr& other)
 		{
@@ -73,7 +75,7 @@ namespace Rift
 			}
 		}
 
-		TAssetPtr& operator=(TAssetPtr&& other)
+		TAssetPtr& operator=(TAssetPtr&& other) noexcept
 		{
 			MoveFrom(MoveTemp(other));
 			return *this;

@@ -2,12 +2,14 @@
 
 #pragma once
 
+#include "PCH.h"
+
 #include "Containers/Array.h"
-#include "CoreEngine.h"
 #include "Serialization/Json.h"
 #include "Strings/String.h"
 
 #include <filesystem>
+
 
 
 namespace Rift
@@ -48,11 +50,11 @@ namespace Rift
 
 		/** Path API */
 
-		static bool LoadJsonFile(Path path, Json& result);
-		static bool SaveJsonFile(Path path, const Json& data, i32 indent = -1);
+		static bool LoadJsonFile(const Path& path, Json& result);
+		static bool SaveJsonFile(const Path& path, const Json& data, i32 indent = -1);
 
-		static bool LoadStringFile(Path path, String& result);
-		static bool SaveStringFile(Path path, const String& data);
+		static bool LoadStringFile(const Path& path, String& result);
+		static bool SaveStringFile(const Path& path, const String& data);
 
 		static void CreateFolder(const Path& path, bool bRecursive = false)
 		{
@@ -110,7 +112,7 @@ namespace Rift
 			return IsFile(FromString(path));
 		}
 
-		static bool IsFile(const Path& path, bool bCheckOnDisk = true)
+		static bool IsFile(const Path& path, bool  /*bCheckOnDisk*/ = true)
 		{
 			return !path.empty() && path.has_extension();
 		}
@@ -119,7 +121,7 @@ namespace Rift
 		{
 			return fs::is_regular_file(path);
 		}
-		
+
 		static bool ExistsAsFolder(const Path& path)
 		{
 			return fs::is_directory(path);
@@ -162,7 +164,7 @@ namespace Rift
 		}
 
 	private:
-		SpaceInfo Space(Path target)
+		SpaceInfo Space(const Path& target)
 		{
 			return fs::space(target);
 		}

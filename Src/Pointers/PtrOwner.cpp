@@ -44,7 +44,7 @@ namespace Rift::Impl
 			++counter->weaks;
 		}
 	}
-	Ptr::Ptr(Ptr&& other)
+	Ptr::Ptr(Ptr&& other) noexcept
 	{
 		value = other.value;
 		counter = other.counter;

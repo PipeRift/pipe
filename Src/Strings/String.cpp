@@ -24,12 +24,6 @@ namespace Rift
 		}
 	}
 
-	i32 CString::ParseIntoArray(const String& str, TArray<String>& OutArray, const TCHAR* pchDelim,
-		bool InCullEmpty /*= true*/)
-	{
-		return 0;
-	}
-
 	String CString::BackSubstr(const String& str, i32 size)
 	{
 		return str.substr(Math::Max(sizet(0u), sizet(str.size() - size)), size);
@@ -68,15 +62,15 @@ namespace Rift
 	{
 		if (size <= 0)
 		{
-			return "0 B";
+			return "0B";
 		}
 
 		static const char* sizes[]{"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 
 		const double scaleD = Math::Log(double(size), 1024.l);
 		const u32 scale = u32(Math::FloorToI64(scaleD));
-		const size_t finalSize = size / Math::Pow(size_t(1024), scale);
+		const size_t finalSize = size / Math::Pow(1024, scale) * (1 / size);
 
-		return CString::Format("{} {}", finalSize, sizes[scale]);
+		return CString::Format("{}{}", finalSize, sizes[scale]);
 	}
 }	 // namespace Rift

@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "Math.h"
 #include "Matrix.h"
 #include "Quaternion.h"
@@ -16,6 +17,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtx/matrix_transform_2d.hpp>
 #include <glm/gtx/transform.hpp>
+
 
 
 namespace Rift

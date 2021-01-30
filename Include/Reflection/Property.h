@@ -41,8 +41,8 @@ namespace Rift
 		protected:
 			Property(Type* typePtr, Name typeName, Name name, ReflectionTags tags)
 				: typePtr(typePtr)
-				, typeName(typeName)
-				, name(name)
+				, typeName(MoveTemp(typeName))
+				, name(MoveTemp(name))
 				, tags(tags)
 			{
 				SetDisplayName(name.ToString());

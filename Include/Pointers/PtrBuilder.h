@@ -2,9 +2,11 @@
 
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "Object/BaseObject.h"
 #include "TypeTraits.h"
+
 
 
 namespace Rift

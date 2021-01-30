@@ -1,10 +1,12 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "Object/BaseObject.h"
 #include "Reflection/TProperty.h"
 #include "Type.h"
+
 
 
 namespace Rift
@@ -36,7 +38,7 @@ namespace Rift::Refl
 			__GetAllChildren(reinterpret_cast<TArray<Type*>&>(outChildren));
 		}
 
-		Class* FindChild(Name className) const
+		Class* FindChild(const Name& className) const
 		{
 			return static_cast<Class*>(__FindChild(className));
 		}

@@ -196,10 +196,22 @@ namespace Rift
 		float Brightness = V * 1.4f / 255.f;
 		Brightness *= 0.7f / (0.01f + Math::Sqrt(Brightness));
 		Brightness = Math::Clamp(Brightness, 0.f, 1.f);
-		const v3 Hue = (H < 86) ? v3((85 - H) / 85.f, (H - 0) / 85.f, 0)
-								: (H < 171) ? v3(0, (170 - H) / 85.f, (H - 85) / 85.f)
-											: v3((H - 170) / 85.f, 0, (255 - H) / 84.f);
-		const v3 colorVector = (Hue + S / 255.f * (v3(1, 1, 1) - Hue)) * Brightness;
+
+		v3 hue;
+		if (H < 86)
+		{
+			hue = v3((85.f - H) / 85.f, float(H) / 85.f, 0.f);
+		}
+		else if (H < 171)
+		{
+			hue = v3(0.f, (170.f - H) / 85.f, (float(H) - 85.f) / 85.f);
+		}
+		else
+		{
+			hue = v3((float(H) - 170.f) / 85.f, 0.f, (255.f - H) / 84.f);
+		}
+
+		const v3 colorVector = (hue + S / 255.f * (v3::One() - hue)) * Brightness;
 		return LinearColor(colorVector.x, colorVector.y, colorVector.z, 1);
 	}
 

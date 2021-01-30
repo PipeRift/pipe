@@ -2,12 +2,14 @@
 
 #pragma once
 
+#include "PCH.h"
+
 #include "Containers/Array.h"
-#include "CoreEngine.h"
 #include "Math.h"
 #include "Reflection/ClassTraits.h"
 #include "Strings/String.h"
 #include "Vector.h"
+
 
 
 namespace Rift

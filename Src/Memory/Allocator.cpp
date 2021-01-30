@@ -1,7 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Memory/Allocator.h"
-#include "Memory/NewDelete.h"
 #include "Strings/Name.h"
 
 #include <Tracy.hpp>
@@ -12,13 +11,13 @@ namespace Rift
 	void* Alloc(size_t n)
 	{
 		void* const p = mi_malloc(n);
-		TracyAllocS(p, n, 8);
+		TracyAlloc(p, n);
 		return p;
 	}
 
 	void Free(void* p)
 	{
-		TracyFreeS(p, 8);
+		TracyFree(p);
 		mi_free(p);
 	}
 

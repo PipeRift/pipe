@@ -1,13 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
 
 #include <memory>
-#include <taskflow/taskflow.hpp>
-
-
-// EA_DISABLE_VC_WARNING(4267);
 
 
 namespace Rift

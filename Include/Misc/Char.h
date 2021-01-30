@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
 
 #include <ctype.h>
 #include <wctype.h>
@@ -47,7 +47,8 @@ namespace Rift
 		}
 	};
 
-#define LITERAL(CharType, StringLiteral) TLiteral<CharType>::Select(StringLiteral, L##StringLiteral)
+#define LITERAL(CharType, StringLiteral) \
+	TLiteral<(CharType)>::Select(StringLiteral, L##StringLiteral)
 
 	/**
 	 * TChar

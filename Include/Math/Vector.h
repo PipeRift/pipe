@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "Math.h"
 #include "Reflection/ReflectionTypeTraits.h"
 #include "Strings/Name.h"
@@ -12,6 +13,7 @@
 #include <glm/geometric.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtx/norm.hpp>
+
 
 
 namespace Rift
@@ -90,12 +92,8 @@ namespace Rift
 		using Vec<3, float>::Vec;
 
 	public:
-		v3(const Vec<3, float>& other) : v3(*static_cast<const v3*>(&other)) {}
+		constexpr v3(const Vec<3, float>& other) : Vec(other) {}
 
-		constexpr v3 operator+(const v3& other)
-		{
-			return {x + other.x, y + other.y, z + other.z};
-		}
 		constexpr void operator+=(const v3& other)
 		{
 			x += other.x;
@@ -112,7 +110,6 @@ namespace Rift
 			y -= other.y;
 			z -= other.z;
 		}
-
 
 		constexpr v3 operator*(float other)
 		{
@@ -131,6 +128,15 @@ namespace Rift
 		v2 xz() const
 		{
 			return v2{x, z};
+		}
+
+		static constexpr v3 Zero()
+		{
+			return Vec::Zero();
+		}
+		static constexpr v3 One()
+		{
+			return Vec::One();
 		}
 
 		static const v3 Forward;

@@ -2,8 +2,9 @@
 
 #pragma once
 
+#include "PCH.h"
+
 #include "Containers/Tuples.h"
-#include "CoreEngine.h"
 #include "Misc/Hash.h"
 #include "Platform/Platform.h"
 
@@ -11,6 +12,7 @@
 #include <tsl/sparse_map.h>
 
 #include <type_traits>
+
 
 
 namespace Rift
@@ -50,9 +52,9 @@ namespace Rift
 			: map{initList.begin(), initList.end()}
 		{}
 
-		TMap(TMap&& other) = default;
+		TMap(TMap&& other) noexcept = default;
 		TMap(const TMap& other) = default;
-		TMap& operator=(TMap&& other) = default;
+		TMap& operator=(TMap&& other) noexcept = default;
 		TMap& operator=(const TMap& other) = default;
 
 		void Insert(KeyType&& key, ValueType&& value)

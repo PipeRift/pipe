@@ -10,3 +10,6 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg.git
+[submodule "Extern/mimalloc"]
+	path = Extern/mimalloc
+	url = https://github.com/microsoft/mimalloc

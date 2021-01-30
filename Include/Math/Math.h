@@ -2,13 +2,15 @@
 
 #pragma once
 
-#include "CoreEngine.h"
+#include "PCH.h"
+
 #include "TypeTraits.h"
 
 #include <cmath>
 #include <glm/exponential.hpp>
 #include <glm/gtx/integer.hpp>
 #include <glm/integer.hpp>
+
 
 
 namespace Rift

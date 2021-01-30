@@ -21,7 +21,7 @@ namespace Rift
 	public:
 		/** Constructors */
 		BitArray(u32 newSize);
-		BitArray(BitArray&& other);
+		BitArray(BitArray&& other) noexcept;
 		BitArray(const BitArray& other);
 
 		BitArray(u32 newSize, bool setClear);
@@ -30,7 +30,7 @@ namespace Rift
 		/** Destructor */
 		~BitArray();
 
-		BitArray& operator=(BitArray&& other);
+		BitArray& operator=(BitArray&& other) noexcept;
 		BitArray& operator=(const BitArray& other);
 		BitArray operator~();
 		BitArray& operator^=(const BitArray& other);
