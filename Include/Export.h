@@ -22,7 +22,7 @@
 #endif
 
 #ifndef CORE_DEPRECATED
-#  define CORE_DEPRECATED __declspec(deprecated)
+#  define CORE_DEPRECATED __attribute__ ((__deprecated__))
 #endif
 
 #ifndef CORE_DEPRECATED_EXPORT

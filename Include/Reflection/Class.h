@@ -20,7 +20,8 @@ namespace Rift::Refl
 	class Class : public Type
 	{
 	public:
-		virtual OwnPtr<BaseObject, ObjectBuilder> CreateInstance(const Ptr<BaseObject>& owner) = 0;
+		virtual OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(
+			const Ptr<BaseObject>& owner) = 0;
 
 		// NOTE: Most of the class comparison functions do actually
 		// call Type to reduce complexity and code duplication.

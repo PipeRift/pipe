@@ -105,6 +105,7 @@ target_link_libraries(core PRIVATE
     spdlog::spdlog
 )
 target_shared_output_directory(core)
+set_target_properties(core PROPERTIES COMPILE_FLAGS "-Wno-deprecated-volatile")
 
 
 ################################################################################

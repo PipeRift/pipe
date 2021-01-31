@@ -29,14 +29,14 @@ namespace Rift::Refl
 		}
 
 	public:
-		virtual OwnPtr<BaseObject, ObjectBuilder> CreateInstance(
+		virtual OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(
 			const Ptr<BaseObject>& owner) override
 		{
 			if constexpr (std::is_same_v<T, BaseObject>)
 			{
 				return {};
 			}
-			auto instance = MakeOwned<T, ObjectBuilder>(owner);
+			auto instance = MakeOwned<T, ObjectBuilder<T>>(owner);
 			return MoveTemp(instance);
 		}
 

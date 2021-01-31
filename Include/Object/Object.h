@@ -80,18 +80,18 @@ namespace Rift
 
 	// BEGIN - Pointer helpers
 	template <typename T>
-	using ObjectPtr = OwnPtr<T, ObjectBuilder>;
+	using ObjectPtr = OwnPtr<T, ObjectBuilder<T>>;
 
 	template <class T>
 	static ObjectPtr<T> Create(Refl::Class* objectClass, const Ptr<Object> owner = {})
 	{
-		return MakeOwned<T, ObjectBuilder>(objectClass, owner);
+		return MakeOwned<T, ObjectBuilder<T>>(objectClass, owner);
 	}
 
 	template <class T>
 	static ObjectPtr<T> Create(const Ptr<Object> owner = {})
 	{
-		return MakeOwned<T, ObjectBuilder>(owner);
+		return MakeOwned<T, ObjectBuilder<T>>(owner);
 	}
 	// END - Pointer helpers
 }	 // namespace Rift

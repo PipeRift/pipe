@@ -71,13 +71,13 @@ go_bandit([]() {
 
 			describe("Ptr Builder", []() {
 				it("Calls custom new", [&]() {
-					auto owner = MakeOwned<MockStruct, TestPtrBuilder>();
+					auto owner = MakeOwned<MockStruct, TestPtrBuilder<MockStruct>>();
 					AssertThat(owner->bCalledNew, Equals(true));
 				});
 
 				it("Calls custom delete", [&]() {
 					MockStruct::bCalledDelete = false;
-					auto owner = MakeOwned<MockStruct, TestPtrBuilder>();
+					auto owner = MakeOwned<MockStruct, TestPtrBuilder<MockStruct>>();
 					AssertThat(MockStruct::bCalledDelete, Equals(false));
 					owner.Release();
 					AssertThat(MockStruct::bCalledDelete, Equals(true));
