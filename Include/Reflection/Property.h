@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "Pointers/PtrOwner.h"
+#include "Memory/OwnPtr.h"
 #include "ReflectionTags.h"
 #include "Strings/Name.h"
 #include "Strings/String.h"

@@ -4,12 +4,11 @@
 
 #include "PCH.h"
 
-#include "Pointers/PtrBuilder.h"
+#include "Memory/PtrBuilder.h"
 #include "TypeTraits.h"
 
 #include <atomic>
 #include <memory>
-
 
 
 namespace Rift
@@ -26,7 +25,7 @@ namespace Rift
 
 		struct Ptr;
 
-		struct CORE_API PtrOwner
+		struct CORE_API OwnPtr
 		{
 			friend Ptr;
 
@@ -52,8 +51,8 @@ namespace Rift
 			}
 
 		protected:
-			PtrOwner() = default;
-			PtrOwner(void* value) : value{value}
+			OwnPtr() = default;
+			OwnPtr(void* value) : value{value}
 			{
 				if (value)
 				{
@@ -61,7 +60,7 @@ namespace Rift
 				}
 			}
 
-			void MoveFrom(PtrOwner&& other)
+			void MoveFrom(OwnPtr&& other)
 			{
 				value = other.value;
 				counter = other.counter;
@@ -105,7 +104,7 @@ namespace Rift
 
 		protected:
 			Ptr() = default;
-			Ptr(const PtrOwner& owner);
+			Ptr(const OwnPtr& owner);
 			Ptr(const Ptr& other);
 			Ptr(Ptr&& other) noexcept;
 
@@ -127,24 +126,24 @@ namespace Rift
 	 * Contains an unique instance of T that is kept automatically removed on owner destruction.
 	 */
 	template <typename T, template <typename BT> typename Builder = PtrBuilder>
-	struct PtrOwner : public Impl::PtrOwner
+	struct OwnPtr : public Impl::OwnPtr
 	{
-		using Super = Impl::PtrOwner;
+		using Super = Impl::OwnPtr;
 		using TBuilder = Builder<T>;
 
 		template <typename T2, template <typename BT2> typename Builder2>
-		friend struct PtrOwner;
+		friend struct OwnPtr;
 
 	public:
-		PtrOwner() = default;
-		explicit PtrOwner(T* value) : Super(value) {}
+		OwnPtr() = default;
+		explicit OwnPtr(T* value) : Super(value) {}
 
-		PtrOwner(PtrOwner&& other) noexcept
+		OwnPtr(OwnPtr&& other) noexcept
 		{
 			MoveFrom(MoveTemp(other));
 		}
 
-		PtrOwner& operator=(PtrOwner&& other) noexcept
+		OwnPtr& operator=(OwnPtr&& other) noexcept
 		{
 			MoveFrom(MoveTemp(other));
 			return *this;
@@ -152,22 +151,22 @@ namespace Rift
 
 		/** Templates for down-casting */
 		template <typename T2>
-		PtrOwner(PtrOwner<T2, Builder>&& other)
+		OwnPtr(OwnPtr<T2, Builder>&& other) requires Derived<T2, T>
 		{
-			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
-				"Type is not down-castable!");
+			// static_assert(
+			//	std::is_same_v<T2, T> || std::is_base_of_v<T2, T>, "Type is not down-castable!");
 			MoveFrom(MoveTemp(other));
 		}
 		template <typename T2>
-		PtrOwner& operator=(PtrOwner<T2, Builder>&& other)
+		OwnPtr& operator=(OwnPtr<T2, Builder>&& other) requires Derived<T2, T>
 		{
-			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
-				"Type is not down-castable!");
+			// static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
+			//	"Type is not down-castable!");
 			MoveFrom(MoveTemp(other));
 			return *this;
 		}
 
-		~PtrOwner()
+		~OwnPtr()
 		{
 			Release();
 		}
@@ -179,12 +178,12 @@ namespace Rift
 
 		/** Cast a global pointer into another type. Will invalidate previous owner on success */
 		template <typename T2>
-		PtrOwner<T2, Builder> Cast()
+		OwnPtr<T2, Builder> Cast()
 		{
 			// If can be casted statically or dynamically
 			if (IsValid() && (std::is_convertible_v<T2, T> || dynamic_cast<T2*>(**this) != nullptr))
 			{
-				PtrOwner<T2, Builder> newPtr{};
+				OwnPtr<T2, Builder> newPtr{};
 				newPtr.MoveFrom(MoveTemp(*this));
 				return newPtr;
 			}
@@ -237,7 +236,7 @@ namespace Rift
 			return **this == other;
 		}
 		template <typename T2>
-		bool operator==(const PtrOwner<T2, Builder>& other) const
+		bool operator==(const OwnPtr<T2, Builder>& other) const
 		{
 			return operator==(*other);
 		}
@@ -252,7 +251,7 @@ namespace Rift
 			return **this != other;
 		}
 		template <typename T2>
-		bool operator!=(const PtrOwner<T2, Builder>& other) const
+		bool operator!=(const OwnPtr<T2, Builder>& other) const
 		{
 			return operator!=(*other);
 		}
@@ -297,7 +296,7 @@ namespace Rift
 		/** Templates for down-casting */
 
 		template <typename T2, template <typename BT> typename Builder>
-		Ptr(const PtrOwner<T2, Builder>& owner) : Super(owner)
+		Ptr(const OwnPtr<T2, Builder>& owner) : Super(owner)
 		{
 			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
 				"Type is not down-castable!");
@@ -368,7 +367,7 @@ namespace Rift
 			return **this == other;
 		}
 		template <typename T2, template <typename BT> typename Builder>
-		bool operator==(const PtrOwner<T2, Builder>& other) const
+		bool operator==(const OwnPtr<T2, Builder>& other) const
 		{
 			return operator==(*other);
 		}
@@ -383,7 +382,7 @@ namespace Rift
 			return **this != other;
 		}
 		template <typename T2, template <typename BT> typename Builder>
-		bool operator!=(const PtrOwner<T2, Builder>& other) const
+		bool operator!=(const OwnPtr<T2, Builder>& other) const
 		{
 			return operator!=(*other);
 		}
@@ -397,14 +396,14 @@ namespace Rift
 
 	template <typename T, template <typename BT> typename Builder = PtrBuilder, typename... Args,
 		EnableIfT<!std::is_array_v<T>, i32> = 0>
-	PtrOwner<T, Builder> MakeOwned(Args&&... args)
+	OwnPtr<T, Builder> MakeOwned(Args&&... args)
 	{
-		return PtrOwner<T, Builder>(Builder<T>::New(std::forward<Args>(args)...));
+		return OwnPtr<T, Builder>(Builder<T>::New(std::forward<Args>(args)...));
 	}
 
 	template <typename T, template <typename BT> typename Builder = PtrBuilder,
 		EnableIfT<std::is_array_v<T> && std::extent_v<T> == 0, i32> = 0>
-	PtrOwner<T, Builder> MakeOwned(size_t size)
+	OwnPtr<T, Builder> MakeOwned(size_t size)
 	{
 		using Elem = std::remove_extent_t<T>;
 		return {Builder<T>::NewArray(size)};

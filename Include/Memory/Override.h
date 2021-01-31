@@ -1,13 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#ifndef RIFT_OVERRIDE_H
-#	define RIFT_OVERRIDE_H
 
 /**
  * Override all memory allocation
  */
-#	include <mimalloc.h>
+/*#	include <mimalloc.h>
 
 // Standard C allocation
 #	define malloc(n) mi_malloc(n)
@@ -54,4 +52,4 @@
 #	define _aligned_offset_malloc(n, a, o) mi_malloc_aligned_at(n, a, o)
 #	define _aligned_offset_realloc(p, n, a, o) mi_realloc_aligned_at(p, n, a, o)
 #	define _aligned_offset_recalloc(p, s, n, a, o) mi_recalloc_aligned_at(p, s, n, a, o)
-#endif	  // RIFT_OVERRIDE_H
+*/

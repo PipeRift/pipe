@@ -1,6 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Pointers/PtrOwner.h>
+#include <Memory/OwnPtr.h>
 #include <bandit/bandit.h>
 
 
@@ -37,22 +37,22 @@ struct TestPtrBuilder : Rift::PtrBuilder<T>
 
 
 go_bandit([]() {
-	describe("PtrOwner", []() {
+	describe("OwnPtr", []() {
 		describe("Owner pointer", []() {
 			it("Can initialize to empty", [&]() {
-				PtrOwner<EmptyStruct> ptr;
+				OwnPtr<EmptyStruct> ptr;
 				AssertThat(ptr.IsValid(), Equals(false));
 				AssertThat(ptr.Get(), Equals(nullptr));
 			});
 
 			it("Can instantiate", [&]() {
-				PtrOwner<EmptyStruct> ptr = MakeOwned<EmptyStruct>();
+				OwnPtr<EmptyStruct> ptr = MakeOwned<EmptyStruct>();
 				AssertThat(ptr.IsValid(), Equals(true));
 				AssertThat(ptr.Get(), Is().Not().EqualTo(nullptr));
 			});
 
 			it("Owner can release", [&]() {
-				PtrOwner<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				AssertThat(owner.IsValid(), Equals(true));
 
 				owner.Release();
@@ -62,7 +62,7 @@ go_bandit([]() {
 			it("Owner is released when destroyed", [&]() {
 				Ptr<EmptyStruct> ptr;
 				{
-					PtrOwner<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+					OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 					ptr = owner;
 					AssertThat(ptr.IsValid(), Equals(true));
 				}
@@ -93,7 +93,7 @@ go_bandit([]() {
 			});
 
 			it("Can initialize from owner", [&]() {
-				PtrOwner<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				Ptr<EmptyStruct> ptr = owner;
 
 				AssertThat(ptr.IsValid(), Equals(true));
@@ -101,7 +101,7 @@ go_bandit([]() {
 			});
 
 			it("Can copy from other weak", [&]() {
-				PtrOwner<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				auto* raw = *owner;
 				Ptr<EmptyStruct> ptr = owner;
 				Ptr<EmptyStruct> ptr2 = ptr;
@@ -112,7 +112,7 @@ go_bandit([]() {
 			});
 
 			it("Can move from other weak", [&]() {
-				PtrOwner<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				auto* raw = *owner;
 				Ptr<EmptyStruct> ptr = owner;
 				Ptr<EmptyStruct> ptr2 = MoveTemp(ptr);
@@ -125,7 +125,7 @@ go_bandit([]() {
 			});
 
 			it("Ptr is null after IsValid() == false", [&]() {
-				PtrOwner<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				Ptr<EmptyStruct> ptr = owner;
 				owner.Release();
 
@@ -140,7 +140,7 @@ go_bandit([]() {
 			it("Owner can equal Owner", [&]() {
 				auto owner = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
-				PtrOwner<EmptyStruct> ownerEmpty;
+				OwnPtr<EmptyStruct> ownerEmpty;
 
 				AssertThat(owner == owner, Equals(true));
 				AssertThat(owner == owner2, Equals(false));
@@ -157,7 +157,7 @@ go_bandit([]() {
 				auto owner = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
 				auto weak = owner.AsPtr();
-				PtrOwner<EmptyStruct> ownerEmpty;
+				OwnPtr<EmptyStruct> ownerEmpty;
 				Ptr<EmptyStruct> weakEmpty;
 
 				AssertThat(owner == weak, Equals(true));
@@ -194,7 +194,7 @@ go_bandit([]() {
 				auto owner2 = MakeOwned<EmptyStruct>();
 				auto weak = owner.AsPtr();
 				auto weak2 = owner2.AsPtr();
-				PtrOwner<EmptyStruct> ownerEmpty;
+				OwnPtr<EmptyStruct> ownerEmpty;
 				Ptr<EmptyStruct> weakEmpty;
 
 				AssertThat(weak == owner, Equals(true));

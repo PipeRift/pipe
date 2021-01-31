@@ -56,7 +56,6 @@ set(BUILD_SHARED_LIBS OFF)
 find_package(date CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
-find_package(mimalloc 1.6.7 CONFIG REQUIRED)
 find_package(nlohmann_json 3.9.1 CONFIG REQUIRED)
 find_path(ROBIN_MAP_INCLUDE_DIRS "tsl/robin_growth_policy.h")
 add_library(robin_map INTERFACE)
@@ -67,6 +66,7 @@ target_include_directories(robin_hood INTERFACE ${ROBIN_HOOD_INCLUDE_DIRS})
 find_package(spdlog 1.8.0 CONFIG REQUIRED)
 find_package(Taskflow CONFIG REQUIRED)
 find_package(tsl-sparse-map CONFIG REQUIRED)
+
 add_subdirectory(Extern)
 
 
@@ -83,7 +83,7 @@ generate_export_header(core
 BASE_NAME CORE
 EXPORT_MACRO_NAME CORE_API
 EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Export.h)
-set_property(TARGET core PROPERTY CXX_STANDARD 17)
+set_property(TARGET core PROPERTY CXX_STANDARD 20)
 target_define_platform(core)
 
 target_include_directories(core PUBLIC Include)
@@ -100,7 +100,6 @@ target_link_libraries(core PUBLIC
     Taskflow::Taskflow
     fmt::fmt
     robin_hood
-    mimalloc-static
 )
 target_link_libraries(core PRIVATE
     spdlog::spdlog

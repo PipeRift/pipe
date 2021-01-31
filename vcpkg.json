@@ -9,7 +9,6 @@
         "date",
         "fmt",
         "glm",
-        "mimalloc",
         "nlohmann-json",
         "robin-map",
         "robin-hood-hashing",

@@ -3,14 +3,16 @@
 #include "Memory/Allocator.h"
 #include "Strings/Name.h"
 
+//#include <rpmalloc/rpmalloc.h>
+
 #include <Tracy.hpp>
 
 
 namespace Rift
 {
-	void* Alloc(size_t n)
+	/*void* Alloc(size_t n)
 	{
-		void* const p = mi_malloc(n);
+		void* const p = rpmalloc(n);
 		TracyAlloc(p, n);
 		return p;
 	}
@@ -18,8 +20,8 @@ namespace Rift
 	void Free(void* p)
 	{
 		TracyFree(p);
-		mi_free(p);
-	}
+		rpfree(p);
+	}*/
 
 	namespace Memory
 	{

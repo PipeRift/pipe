@@ -2,8 +2,8 @@
 #pragma once
 
 #include "Class.h"
+#include "Memory/OwnPtr.h"
 #include "Object/ObjectBuilder.h"
-#include "Pointers/PtrOwner.h"
 #include "TProperty.h"
 #include "TypeTraits.h"
 
@@ -29,7 +29,7 @@ namespace Rift::Refl
 		}
 
 	public:
-		virtual PtrOwner<BaseObject, ObjectBuilder> CreateInstance(
+		virtual OwnPtr<BaseObject, ObjectBuilder> CreateInstance(
 			const Ptr<BaseObject>& owner) override
 		{
 			if constexpr (std::is_same_v<T, BaseObject>)

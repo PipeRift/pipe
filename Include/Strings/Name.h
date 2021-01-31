@@ -79,12 +79,7 @@ namespace Rift
 		NameTable() : table{} {}
 
 		size_t Register(StringView string);
-		const String& Find(size_t hash) const
-		{
-			// Ensure no other thread is editing the table
-			std::shared_lock lock{editTableMutex};
-			return table.find({hash})->GetString();
-		}
+		const String& Find(size_t hash) const;
 
 		static NameTable& Get()
 		{
@@ -155,11 +150,17 @@ namespace Rift
 		}
 
 
-		static const Name None()
+		static const Name& None()
 		{
 			static Name none{noneId};
 			return none;
 		};
+
+		static const String& NoneStr()
+		{
+			return noneStr;
+		}
+
 		static const Id noneId;
 
 		bool Serialize(class Archive& ar, const char* name);

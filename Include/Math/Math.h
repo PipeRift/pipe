@@ -7,10 +7,12 @@
 #include "TypeTraits.h"
 
 #include <cmath>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-volatile"
 #include <glm/exponential.hpp>
 #include <glm/gtx/integer.hpp>
 #include <glm/integer.hpp>
-
+#pragma clang diagnostic pop
 
 
 namespace Rift

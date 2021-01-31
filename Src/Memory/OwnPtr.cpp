@@ -1,6 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Pointers/PtrOwner.h"
+#include "Memory/OwnPtr.h"
 
 
 namespace Rift::Impl
@@ -26,7 +26,7 @@ namespace Rift::Impl
 		return false;
 	}
 
-	Ptr::Ptr(const PtrOwner& owner)
+	Ptr::Ptr(const OwnPtr& owner)
 	{
 		value = owner.value;
 		counter = owner.counter;

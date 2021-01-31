@@ -2,10 +2,11 @@
 #pragma once
 
 #include "CoreTypes.h"
+#include "Memory/OwnPtr.h"
 #include "Object/BaseObject.h"
 #include "Object/BaseStruct.h"
-#include "Pointers/PtrOwner.h"
 #include "Reflection/Property.h"
+
 
 
 namespace Rift

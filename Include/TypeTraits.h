@@ -10,6 +10,15 @@
 
 namespace Rift
 {
+	template <class T, class U>
+	concept Derived = std::is_base_of<U, T>::value;
+
+	template <bool B, class T = void>
+	using EnableIf = std::enable_if<B, T>;
+
+	template <bool B, class T = void>
+	using EnableIfT = std::enable_if_t<B, T>;
+
 	template <class T, size_t size>
 	struct IsSmallerType : std::integral_constant<bool, (sizeof(T) <= size)>
 	{};
@@ -19,27 +28,20 @@ namespace Rift
 	{};
 
 
-#define EnableIfSmallerType(size) typename = std::enable_if<IsSmallerType<T, size>::value>
-#define EnableIfNotSmallerType(size) typename = std::enable_if<!IsSmallerType<T, size>::value>
+#define EnableIfSmallerType(size) typename = EnableIf<IsSmallerType<T, size>::value>
+#define EnableIfNotSmallerType(size) typename = EnableIf<!IsSmallerType<T, size>::value>
 
-#define EnableIfBiggerType(size) typename = std::enable_if<IsBiggerType<T, size>::value>
-#define EnableIfNotBiggerType(size) typename = std::enable_if<!IsBiggerType<T, size>::value>
+#define EnableIfBiggerType(size) typename = EnableIf<IsBiggerType<T, size>::value>
+#define EnableIfNotBiggerType(size) typename = EnableIf<!IsBiggerType<T, size>::value>
 
-#define EnableIfPassByValue(T)                                             \
-	typename = std::enable_if < IsSmallerType<T, sizeof(size_t)>::value && \
+#define EnableIfPassByValue(T)                                       \
+	typename = EnableIf < IsSmallerType<T, sizeof(size_t)>::value && \
 			   std::is_copy_constructible<T>::type >
 #define EnableIfNotPassByValue(T) \
-	typename = std::enable_if<!(  \
+	typename = EnableIf<!(        \
 		IsSmallerType<T, sizeof(size_t)>::value && std::is_copy_constructible<T>::type)>
 
 #define EnableIfAll typename = void
-
-
-	template <bool B, class T = void>
-	using EnableIf = std::enable_if<B, T>;
-
-	template <bool B, class T = void>
-	using EnableIfT = std::enable_if_t<B, T>;
 
 
 	template <typename T>

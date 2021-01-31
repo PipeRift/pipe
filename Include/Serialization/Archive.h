@@ -62,7 +62,7 @@ namespace Rift
 		void Serialize(const char* name, Quat& val);
 
 		template <typename T>
-		void Serialize(const char* name, PtrOwner<T>& val)
+		void Serialize(const char* name, OwnPtr<T>& val)
 		{
 			BeginObject(name);
 			// Not yet supported. Hard and soft references need to take care of each

@@ -34,6 +34,19 @@ namespace Rift
 		}
 	}
 
+	const String& NameTable::Find(size_t hash) const
+	{
+		// Ensure no other thread is editing the table
+		std::shared_lock lock{ editTableMutex };
+		ConstIterator foundIt = table.find({ hash });
+		if (foundIt != table.end())
+		{
+			return foundIt->GetString();
+		}
+		// Should never reach
+		return Name::NoneStr();
+	}
+
 	bool Name::Serialize(Archive& ar, const char* name)
 	{
 		if (ar.IsSaving())
