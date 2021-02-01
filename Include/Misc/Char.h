@@ -47,8 +47,7 @@ namespace Rift
 		}
 	};
 
-#define LITERAL(CharType, StringLiteral) \
-	TLiteral<(CharType)>::Select(StringLiteral, L##StringLiteral)
+#define LITERAL(CharType, StringLiteral) TLiteral<CharType>::Select(StringLiteral, L##StringLiteral)
 
 	/**
 	 * TChar
