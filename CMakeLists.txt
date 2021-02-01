@@ -107,6 +107,8 @@ target_link_libraries(core PRIVATE
 target_shared_output_directory(core)
 if(COMPILER_CLANG)
     set_target_properties(core PROPERTIES COMPILE_FLAGS "-Wno-deprecated-volatile")
+elseif(COMPILER_GCC)
+    set_target_properties(core PROPERTIES COMPILE_FLAGS "-fconcepts")
 endif()
 
 

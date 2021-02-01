@@ -8,3 +8,6 @@ target_link_libraries(core-tests PUBLIC rift::core Bandit)
 target_define_platform(core-tests)
 
 target_shared_output_directory(core-tests)
+if(COMPILER_GCC)
+    set_target_properties(core-tests PROPERTIES COMPILE_FLAGS -fconcepts)
+endif()

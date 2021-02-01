@@ -17,7 +17,7 @@ target_compile_definitions(tracy-client PUBLIC
     TRACY_NO_EXIT=${TRACY_NO_EXIT}
     TRACY_NO_BROADCAST=${TRACY_NO_BROADCAST})
 target_compile_definitions(tracy-client PRIVATE _CRT_SECURE_NO_WARNINGS)
-if(LINUX)
+if(PLATFORM_LINUX)
     find_library(DLPATH dl)
     target_link_libraries(tracy-client PRIVATE ${DLPATH})
     target_compile_definitions(tracy-client PRIVATE TRACY_TIMER_QPC=1)
