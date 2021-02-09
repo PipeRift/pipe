@@ -5,9 +5,10 @@
 #include "Strings/Name.h"
 #include "Strings/String.h"
 
+#include <json.hpp>
 #include <map>
-#include <nlohmann/json.hpp>
 #include <vector>
+
 
 
 namespace Rift

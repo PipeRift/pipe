@@ -46,10 +46,6 @@ namespace Rift
 		}
 
 		bool Serialize(class Archive& ar, const char* name);
-
-#if WITH_EDITOR
-		static class Class* GetDetailsWidgetClass();
-#endif
 	};
 
 

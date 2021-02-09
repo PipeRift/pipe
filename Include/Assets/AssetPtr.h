@@ -34,10 +34,6 @@ namespace Rift
 			info = MoveTemp(newInfo);
 			cachedAsset.Reset();
 		}
-
-#if WITH_EDITOR
-		static class Class* GetDetailsWidgetClass();
-#endif
 	};
 
 

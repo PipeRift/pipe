@@ -113,10 +113,6 @@ namespace Rift
 			t.SetFromMatrix(ToMatrix() * other.ToMatrix());
 			return t;
 		}
-
-#if WITH_EDITOR
-		static class Class* GetDetailsWidgetClass();
-#endif
 	};
 
 	DEFINE_CLASS_TRAITS(Transform, HasCustomSerialize = true, HasDetailsWidget = true);

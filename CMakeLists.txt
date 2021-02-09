@@ -53,16 +53,9 @@ if(EXISTS CACHE{VCPKG_MANIFEST_FILE})
 endif()
 
 set(BUILD_SHARED_LIBS OFF)
-find_package(date CONFIG REQUIRED)
-find_package(fmt CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
-find_package(nlohmann_json 3.9.1 CONFIG REQUIRED)
 find_path(ROBIN_MAP_INCLUDE_DIRS "tsl/robin_growth_policy.h")
 add_library(robin_map INTERFACE)
 target_include_directories(robin_map INTERFACE ${ROBIN_MAP_INCLUDE_DIRS})
-find_path(ROBIN_HOOD_INCLUDE_DIRS "robin_hood.h")
-add_library(robin_hood INTERFACE)
-target_include_directories(robin_hood INTERFACE ${ROBIN_HOOD_INCLUDE_DIRS})
 find_package(spdlog 1.8.0 CONFIG REQUIRED)
 find_package(Taskflow CONFIG REQUIRED)
 find_package(tsl-sparse-map CONFIG REQUIRED)
@@ -92,7 +85,7 @@ target_sources(core PRIVATE ${CORE_SOURCE_FILES})
 
 target_link_libraries(core PUBLIC
     date::date
-    nlohmann_json::nlohmann_json
+    nlohmann_json
     glm
     tracy-client
     tsl::sparse_map

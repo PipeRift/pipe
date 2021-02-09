@@ -8,79 +8,71 @@
 #include "Reflection/Property.h"
 
 
-
-namespace Rift
+namespace Rift::Refl
 {
-#if WITH_EDITOR
-	class PropertyWidget;
-#endif
-
-	namespace Refl
+	struct PropertyHandle
 	{
-		struct PropertyHandle
+	protected:
+		BaseStruct* const structInstance = nullptr;
+		Ptr<BaseObject> objInstance;
+		const Property* const prop;
+
+
+	protected:
+		PropertyHandle(const Ptr<BaseObject>& objInstance, const Property* prop)
+			: structInstance{nullptr}
+			, objInstance{objInstance}
+			, prop{prop}
+		{}
+		PropertyHandle(BaseStruct* instance, const Property* prop)
+			: structInstance{instance}
+			, prop{prop}
+		{}
+
+	public:
+		virtual ~PropertyHandle() {}
+
+		String GetName() const
 		{
-		protected:
-			BaseStruct* const structInstance = nullptr;
-			Ptr<BaseObject> objInstance;
-			const Property* const prop;
+			if (prop)
+				return prop->GetDisplayName();
+			return "Invalid";
+		}
 
+		bool HasTag(ReflectionTags tag) const
+		{
+			return prop ? prop->HasTag(tag) : false;
+		}
 
-		protected:
-			PropertyHandle(const Ptr<BaseObject>& objInstance, const Property* prop)
-				: structInstance{nullptr}
-				, objInstance{objInstance}
-				, prop{prop}
-			{}
-			PropertyHandle(BaseStruct* instance, const Property* prop)
-				: structInstance{instance}
-				, prop{prop}
-			{}
-
-		public:
-			virtual ~PropertyHandle() {}
-
-			String GetName() const
+		void* GetInstance() const
+		{
+			if (UsesObjectPtr())
 			{
-				if (prop)
-					return prop->GetDisplayName();
-				return "Invalid";
+				return *objInstance;
 			}
+			return structInstance;
+		}
 
-			bool HasTag(ReflectionTags tag) const
-			{
-				return prop ? prop->HasTag(tag) : false;
-			}
+		bool IsValid() const
+		{
+			return prop != nullptr && (UsesObjectPtr() || structInstance);
+		}
 
-			void* GetInstance() const
-			{
-				if (UsesObjectPtr())
-				{
-					return *objInstance;
-				}
-				return structInstance;
-			}
+		bool UsesObjectPtr() const
+		{
+			return objInstance.IsValid();
+		}
 
-			bool IsValid() const
-			{
-				return prop != nullptr && (UsesObjectPtr() || structInstance);
-			}
+		virtual Class* GetTypeDefinedWidgetClass()
+		{
+			return nullptr;
+		}
 
-			bool UsesObjectPtr() const
-			{
-				return objInstance.IsValid();
-			}
+		virtual void* GetRawValuePtr() const = 0;
 
-			virtual Class* GetTypeDefinedWidgetClass()
-			{
-				return nullptr;
-			}
-
-			virtual void* GetRawValuePtr() const = 0;
-
-			operator bool() const
-			{
-				return IsValid();
-			}
-		};
-	}	 // namespace Refl
-}	 // namespace Rift
+		operator bool() const
+		{
+			return IsValid();
+		}
+	};
+}	 // namespace Rift::Refl

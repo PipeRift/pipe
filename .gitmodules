@@ -10,3 +10,12 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg.git
+[submodule "Extern/fmt"]
+	path = Extern/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "Extern/date"]
+	path = Extern/date
+	url = https://github.com/HowardHinnant/date.git
+[submodule "Extern/glm"]
+	path = Extern/glm
+	url = https://github.com/g-truc/glm.git

@@ -6,15 +6,9 @@
         "muit <muit@piperift.com>"
     ],
     "dependencies": [
-        "date",
-        "fmt",
-        "glm",
-        "nlohmann-json",
         "robin-map",
-        "robin-hood-hashing",
         "spdlog",
         "taskflow",
-        "tsl-sparse-map",
-        "imgui"
+        "tsl-sparse-map"
     ]
 }

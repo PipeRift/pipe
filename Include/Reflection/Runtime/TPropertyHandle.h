@@ -62,15 +62,5 @@ namespace Rift::Refl
 
 			return valuePtr;
 		}
-
-#if WITH_EDITOR
-		virtual Class* GetTypeDefinedWidgetClass() override
-		{
-			if constexpr (ClassTraits<VariableT>::HasDetailsWidget)
-				return VariableT::GetDetailsWidgetClass();
-			else
-				return nullptr;
-		}
-#endif
 	};
 }	 // namespace Rift::Refl

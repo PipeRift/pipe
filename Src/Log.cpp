@@ -69,11 +69,6 @@ namespace Rift::Log
 				FileSystem::ToString(logFile).c_str(), 1048576 * 5, 3));
 		}
 
-#if WITH_EDITOR
-		// Log window
-		sinks.push_back(std::make_shared<LogWindowSink_mt>());
-#endif
-
 #if TRACY_ENABLE
 		// Profiler
 		sinks.push_back(std::make_shared<ProfilerSink_mt>());

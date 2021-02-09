@@ -26,7 +26,19 @@ endif()
 
 
 ################################################################################
+# nlohmann json
+
+add_library(nlohmann_json INTERFACE)
+target_include_directories(nlohmann_json INTERFACE json)
+
+################################################################################
 # Bandit (Tests)
 
 add_library(Bandit INTERFACE)
 target_include_directories(Bandit INTERFACE Bandit)
+
+
+add_subdirectory(date)
+add_subdirectory(fmt)
+add_subdirectory(robin_hood)
+add_subdirectory(glm)
