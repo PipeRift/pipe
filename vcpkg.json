@@ -7,7 +7,6 @@
     ],
     "dependencies": [
         "robin-map",
-        "spdlog",
         "taskflow",
         "tsl-sparse-map"
     ]

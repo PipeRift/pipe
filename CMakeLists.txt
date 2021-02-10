@@ -56,7 +56,6 @@ set(BUILD_SHARED_LIBS OFF)
 find_path(ROBIN_MAP_INCLUDE_DIRS "tsl/robin_growth_policy.h")
 add_library(robin_map INTERFACE)
 target_include_directories(robin_map INTERFACE ${ROBIN_MAP_INCLUDE_DIRS})
-find_package(spdlog 1.8.0 CONFIG REQUIRED)
 find_package(Taskflow CONFIG REQUIRED)
 find_package(tsl-sparse-map CONFIG REQUIRED)
 
