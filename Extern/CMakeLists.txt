@@ -21,9 +21,11 @@ target_compile_definitions(tracy-client PRIVATE _CRT_SECURE_NO_WARNINGS)
 if(PLATFORM_LINUX)
     find_library(DLPATH dl)
     target_link_libraries(tracy-client PRIVATE ${DLPATH})
-    target_compile_definitions(tracy-client PRIVATE TRACY_TIMER_QPC=1)
     set_target_properties(tracy-client PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
+
+# TODO: Find a way to detect which platforms support TSC
+target_compile_definitions(tracy-client PRIVATE TRACY_TIMER_QPC=1)
 rift_target_disable_all_warnings(tracy-client PRIVATE)
 
 
