@@ -97,5 +97,5 @@ jobs:
           name: windows-clang-build
           path: ${{ runner.workspace }}
 
-      - name: Run tests
-        run: 'gci'
+      - name: Run Tests
+        run: '${{ runner.workspace }}/Debug/core-tests.exe --report-timing --reporter=spec'
