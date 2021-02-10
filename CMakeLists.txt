@@ -65,7 +65,7 @@ target_link_libraries(rift-core PUBLIC
     robin_hood
 )
 target_link_libraries(rift-core PRIVATE
-    spdlog::spdlog
+    spdlog
 )
 rift_target_shared_output_directory(rift-core)
 if(COMPILER_GCC)
