@@ -36,23 +36,24 @@ add_subdirectory(Extern)
 #   Rift Core (compiled) library
 
 if (RIFT_BUILD_SHARED)
-    add_library(core SHARED)
+    add_library(rift-core SHARED)
 else()
-    add_library(core STATIC)
+    add_library(rift-core STATIC)
 endif()
-add_library(rift::core ALIAS core)
-generate_export_header(core
-BASE_NAME CORE
-EXPORT_MACRO_NAME CORE_API
-EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Export.h)
-set_property(TARGET core PROPERTY CXX_STANDARD 20)
-target_define_platform(core)
+add_library(rift::core ALIAS rift-core)
 
-target_include_directories(core PUBLIC Include)
+generate_export_header(rift-core
+    BASE_NAME CORE
+    EXPORT_MACRO_NAME CORE_API
+    EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Export.h)
+set_property(TARGET rift-core PROPERTY CXX_STANDARD 20)
+rift_target_define_platform(rift-core)
+
+target_include_directories(rift-core PUBLIC Include)
 file(GLOB_RECURSE CORE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
-target_sources(core PRIVATE ${CORE_SOURCE_FILES})
+target_sources(rift-core PRIVATE ${CORE_SOURCE_FILES})
 
-target_link_libraries(core PUBLIC
+target_link_libraries(rift-core PUBLIC
     date::date
     nlohmann_json
     glm
@@ -63,14 +64,12 @@ target_link_libraries(core PUBLIC
     fmt::fmt
     robin_hood
 )
-target_link_libraries(core PRIVATE
-    spdlog::spdlog
+target_link_libraries(rift-core PRIVATE
+    spdlog
 )
-target_shared_output_directory(core)
-if(COMPILER_CLANG)
-    set_target_properties(core PROPERTIES COMPILE_FLAGS "-Wno-deprecated-volatile")
-elseif(COMPILER_GCC)
-    set_target_properties(core PROPERTIES COMPILE_FLAGS "-fconcepts")
+rift_target_shared_output_directory(rift-core)
+if(COMPILER_GCC)
+    set_target_properties(rift-core PROPERTIES COMPILE_FLAGS "-fconcepts")
 endif()
 
 

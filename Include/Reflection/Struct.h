@@ -10,7 +10,7 @@
 
 namespace Rift::Refl
 {
-	class Struct : public Type
+	class CORE_API Struct : public Type
 	{
 	public:
 		/** Equivalent to "new Type()" */

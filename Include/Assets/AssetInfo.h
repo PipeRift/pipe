@@ -12,7 +12,7 @@
 
 namespace Rift
 {
-	class AssetInfo
+	class CORE_API AssetInfo
 	{
 	protected:
 		Name id;

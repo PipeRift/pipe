@@ -50,6 +50,10 @@ add_subdirectory(glm)
 add_subdirectory(spdlog)
 add_subdirectory(sparse-map)
 
+if(PLATFORM_LINUX)
+    set_target_properties(fmt PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
 
 set(TF_BUILD_TESTS OFF CACHE BOOL "Enables builds of tests")
 set(TF_BUILD_EXAMPLES OFF CACHE BOOL "Enables builds of examples")

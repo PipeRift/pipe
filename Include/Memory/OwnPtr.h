@@ -139,12 +139,12 @@ namespace Rift
 
 		OwnPtr(OwnPtr&& other) noexcept
 		{
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 		}
 
 		OwnPtr& operator=(OwnPtr&& other) noexcept
 		{
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 			return *this;
 		}
 

@@ -11,7 +11,7 @@
 
 namespace Rift
 {
-	struct Struct : public BaseStruct
+	struct CORE_API Struct : public BaseStruct
 	{
 		ORPHAN_STRUCT(Struct, ReflectionTags::None)
 

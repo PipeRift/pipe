@@ -26,9 +26,9 @@ namespace Rift::Log
 	void Init(Path logPath = {});
 	void Shutdown();
 
-	void Info(const String& msg);
-	void Warning(const String& msg);
-	void Error(const String& msg);
+	void CORE_API Info(const String& msg);
+	void CORE_API Warning(const String& msg);
+	void CORE_API Error(const String& msg);
 
 	template <typename... Args>
 	void Info(StringView format, Args... args)

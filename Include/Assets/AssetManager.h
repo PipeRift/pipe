@@ -24,12 +24,12 @@ namespace Rift
 
 
 	public:
-		Ptr<AssetData> Load(AssetInfo info);
-		TArray<Ptr<AssetData>> Load(TArray<AssetInfo> infos);
+		CORE_API Ptr<AssetData> Load(AssetInfo info);
+		CORE_API TArray<Ptr<AssetData>> Load(TArray<AssetInfo> infos);
 
-		Ptr<AssetData> LoadOrCreate(const AssetInfo& info, Refl::Class* assetType);
+		CORE_API Ptr<AssetData> LoadOrCreate(const AssetInfo& info, Refl::Class* assetType);
 
-		Ptr<AssetData> GetLoadedAsset(const AssetInfo& id) const
+		CORE_API Ptr<AssetData> GetLoadedAsset(const AssetInfo& id) const
 		{
 			if (const auto* asset = loadedAssets.Find(id))
 			{
@@ -38,11 +38,11 @@ namespace Rift
 			return {};
 		}
 
-		bool IsLoaded(const AssetInfo& id) const
+		CORE_API bool IsLoaded(const AssetInfo& id) const
 		{
 			return loadedAssets.Contains(id);
 		}
 
-		static Ptr<AssetManager> Get();
+		static CORE_API Ptr<AssetManager> Get();
 	};
 }	 // namespace Rift
