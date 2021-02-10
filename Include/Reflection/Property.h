@@ -23,7 +23,7 @@ namespace Rift
 		/**
 		 * Static information about a property
 		 */
-		class Property
+		class CORE_API Property
 		{
 		private:
 			Type* typePtr;

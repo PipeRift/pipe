@@ -11,7 +11,7 @@ namespace Rift
 		class Struct;
 	}
 
-	struct BaseStruct
+	struct CORE_API BaseStruct
 	{
 		BaseStruct() = default;
 		virtual ~BaseStruct() {}

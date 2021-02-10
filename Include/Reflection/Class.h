@@ -17,7 +17,7 @@ namespace Rift
 
 namespace Rift::Refl
 {
-	class Class : public Type
+	class CORE_API Class : public Type
 	{
 	public:
 		virtual OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(

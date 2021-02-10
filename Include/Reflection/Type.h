@@ -16,7 +16,7 @@ namespace Rift::Refl
 	using PropertyMap = TMap<Name, Property*>;
 
 	/** Smallest reflection type that contains all basic class or struct data */
-	class Type
+	class CORE_API Type
 	{
 	protected:
 		Name name;

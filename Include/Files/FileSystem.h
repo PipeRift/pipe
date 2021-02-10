@@ -20,7 +20,7 @@ namespace Rift
 
 	class Archive;
 
-	class FileSystem
+	class CORE_API FileSystem
 	{
 	public:
 		using Iterator = fs::directory_iterator;

@@ -14,7 +14,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(COMPILER_MSVC TRUE)
 endif()
 
-function(target_define_platform target)
+function(rift_target_define_platform target)
     if (PLATFORM_WINDOWS)
         target_compile_definitions(${target} PRIVATE PLATFORM_WINDOWS=1)
     elseif (PLATFORM_LINUX)
@@ -29,7 +29,7 @@ function(target_define_platform target)
     )
 endfunction()
 
-function(target_shared_output_directory target)
+function(rift_target_shared_output_directory target)
     set_target_properties(${target}
         PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
