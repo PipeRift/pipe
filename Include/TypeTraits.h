@@ -15,7 +15,7 @@ namespace Rift
 		(bIncludeSame && std::is_same_v<Child, Base>) || std::is_base_of_v<Base, Child>;
 
 	template <class From, class To>
-	concept Convertible = std::is_convertible_v<From, To>;
+	concept Convertible = std::is_same_v<From, To> || std::is_convertible_v<From, To>;
 
 	template <bool B, class T = void>
 	using EnableIf = std::enable_if<B, T>;

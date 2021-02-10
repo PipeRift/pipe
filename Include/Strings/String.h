@@ -26,7 +26,7 @@ namespace Rift
 	using String = std::basic_string<TCHAR>;
 	using StringView = std::basic_string_view<TCHAR>;
 
-	struct CString
+	struct CORE_API CString
 	{
 		template <typename... Args>
 		static String Format(StringView format, Args... args)

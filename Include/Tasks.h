@@ -16,7 +16,7 @@ namespace Rift
 	using SubTaskLambda = std::function<void(Flow&)>;
 
 
-	struct TaskSystem
+	struct CORE_API TaskSystem
 	{
 		using ThreadPool = tf::Executor;
 

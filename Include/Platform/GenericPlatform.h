@@ -1,6 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "PCH.h"
+
 
 namespace Rift
 {
@@ -30,7 +32,7 @@ namespace Rift
 	/**
 	 * Generic types for almost all compilers and platforms
 	 */
-	struct GenericPlatformTypes
+	struct CORE_API GenericPlatformTypes
 	{
 		// Unsigned base types.
 		using uint8 = unsigned char;		  // 8-bit  unsigned.
