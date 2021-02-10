@@ -12,7 +12,7 @@ namespace Rift
 	void FrameTime::Tick()
 	{
 		previousTime = currentTime;
-		currentTime = DateTime::UtcNow();
+		currentTime = DateTime::Now();
 
 		// Avoid too big delta times
 		realDeltaTime = Math::Min(0.15f, (currentTime - previousTime).GetTotalSeconds());
@@ -23,8 +23,7 @@ namespace Rift
 
 	void FrameTime::PostTick()
 	{
-		float extraTimeForFPSCAP =
-			minFrameTime - (DateTime::UtcNow() - currentTime).GetTotalSeconds();
+		float extraTimeForFPSCAP = minFrameTime - (DateTime::Now() - currentTime).GetTotalSeconds();
 		if (extraTimeForFPSCAP > 0.0f)
 		{
 			// Cap FPS with a delay

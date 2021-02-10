@@ -79,6 +79,8 @@ namespace Rift
 	{
 		using SysClock = Chrono::system_clock;
 		using SysTime = Chrono::time_point<SysClock, decmicroseconds>;
+		using UTCClock = date::utc_clock;
+		using UTCTime = Chrono::time_point<UTCClock, decmicroseconds>;
 
 	protected:
 		/** Holds the days per month in a non-leap year. */
@@ -87,10 +89,7 @@ namespace Rift
 		/** Holds the cumulative days per month in a non-leap year. */
 		static const i32 DaysToMonth[];
 
-		static SysTime::duration utcToLocal;
-
-		/** Holds the ticks in 100 nanoseconds resolution since January 1, 0001 A.D.
-		 */
+		/** Holds the ticks in 100 nanoseconds resolution since January 1, 0001 A.D. */
 		SysTime value;
 
 
@@ -495,6 +494,7 @@ namespace Rift
 		}
 
 		DateTime ToLocal() const;
+		DateTime ToUTC() const;
 
 	public:
 		/**
@@ -667,8 +667,6 @@ namespace Rift
 		 */
 		static bool Validate(
 			i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond);
-
-		static void InitializeTime();
 
 		template <typename Clock, typename Precision>
 		static DateTime CastClock(Chrono::time_point<Clock, Precision> time)

@@ -27,31 +27,37 @@ endif()
 rift_target_disable_all_warnings(tracy-client PRIVATE)
 
 
-################################################################################
-# nlohmann json
-
 add_library(nlohmann_json INTERFACE)
 target_include_directories(nlohmann_json INTERFACE json)
 
-################################################################################
-# Bandit (Tests)
 
 add_library(Bandit INTERFACE)
 target_include_directories(Bandit INTERFACE Bandit)
 
 
+set(BUILD_TZ_LIB ON CACHE BOOL "build/install of TZ library")
+set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database")
 add_subdirectory(date)
+rift_target_disable_all_warnings(date INTERFACE)
+
+
 add_subdirectory(fmt)
+
 add_subdirectory(robin_hood)
+
 add_subdirectory(robin-map)
+
 add_subdirectory(glm)
+
 add_subdirectory(spdlog)
+
 add_subdirectory(sparse-map)
 
 if(PLATFORM_LINUX)
     set_target_properties(fmt PROPERTIES POSITION_INDEPENDENT_CODE ON)
     set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
+
 
 set(TF_BUILD_TESTS OFF CACHE BOOL "Enables builds of tests")
 set(TF_BUILD_EXAMPLES OFF CACHE BOOL "Enables builds of examples")

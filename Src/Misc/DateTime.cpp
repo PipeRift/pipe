@@ -1,14 +1,13 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Misc/DateTime.h"
-
 #include "Log.h"
 #include "Misc/Char.h"
+#include "Misc/DateTime.h"
 
 
 namespace Rift
 {
-	/* FDateTime constants
+	/* DateTime constants
 	 *****************************************************************************/
 
 	const i32 DateTime::DaysPerMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -16,10 +15,7 @@ namespace Rift
 		0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 
 
-	DateTime::SysTime::duration DateTime::utcToLocal{};
-
-
-	/* FDateTime Constructors
+	/* DateTime Constructors
 	 *****************************************************************************/
 
 	DateTime::DateTime(
@@ -36,7 +32,7 @@ namespace Rift
 	}
 
 
-	/* FDateTime interface
+	/* DateTime interface
 	 *****************************************************************************/
 
 
@@ -238,7 +234,7 @@ namespace Rift
 				}
 
 				// move to the next one
-				format++;
+				++format;
 			}
 		}
 		return result;
@@ -246,12 +242,18 @@ namespace Rift
 
 	DateTime DateTime::ToLocal() const
 	{
-		// #TODO: Fix utcToLocal and apply it
-		return *this + Timespan::FromHours(2);
+		const UTCTime valueAsUTC{value.time_since_epoch()};
+		return {UTCClock::to_sys(valueAsUTC)};
+	}
+
+	DateTime DateTime::ToUTC() const
+	{
+		SysTime valueAsSys{UTCClock::from_sys(value).time_since_epoch()};
+		return {valueAsSys};
 	}
 
 
-	/* FDateTime static interface
+	/* DateTime static interface
 	 *****************************************************************************/
 
 	i32 DateTime::DaysInMonth(i32 Year, i32 Month)
@@ -268,12 +270,7 @@ namespace Rift
 
 	i32 DateTime::DaysInYear(i32 Year)
 	{
-		if (IsLeapYear(Year))
-		{
-			return 366;
-		}
-
-		return 365;
+		return IsLeapYear(Year) ? 366 : 365;
 	}
 
 	bool DateTime::IsLeapYear(i32 Year)
@@ -288,13 +285,13 @@ namespace Rift
 
 	DateTime DateTime::Now()
 	{
-		// Return real local times
-		return UtcNow() + Timespan::FromHours(2);
+		return {Chrono::floor<SysTime::duration>(SysClock::now())};
 	}
 
 	DateTime DateTime::UtcNow()
 	{
-		return {Chrono::floor<SysTime::duration>(SysClock::now())};
+		const auto sys_now = date::to_sys_time(UTCClock::now());
+		return {Chrono::floor<SysTime::duration>(sys_now)};
 	}
 
 	bool DateTime::Parse(const String& DateTimeString, DateTime& OutDateTime)
@@ -470,16 +467,5 @@ namespace Rift
 			   (Day <= DaysInMonth(Year, Month)) && (Hour >= 0) && (Hour <= 23) && (Minute >= 0) &&
 			   (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0) &&
 			   (Millisecond <= 999);
-	}
-
-	void DateTime::InitializeTime()
-	{
-		/* Crashes while failing to obtain database
-		utcToLocal = {
-			Chrono::floor<SysTime::duration>(
-				date::make_zoned(date::current_zone(), SysClock::now())
-				.get_info().offset
-			)
-		};*/
 	}
 }	 // namespace Rift

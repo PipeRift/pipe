@@ -55,6 +55,7 @@ target_sources(rift-core PRIVATE ${CORE_SOURCE_FILES})
 
 target_link_libraries(rift-core PUBLIC
     date::date
+    date::tz
     nlohmann_json
     glm
     tracy-client
