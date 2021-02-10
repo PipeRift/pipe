@@ -41,7 +41,7 @@ endfunction()
 
 function(rift_target_enable_warnings target_name)
     if(RIFT_BUILD_WARNINGS)
-        if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        if(COMPILER_MSVC)
             list(APPEND MSVC_OPTIONS "/W3")
             if(MSVC_VERSION GREATER 1900) # Allow non fatal security warnings for msvc 2015
                 list(APPEND MSVC_OPTIONS "/WX")
@@ -58,4 +58,11 @@ function(rift_target_enable_warnings target_name)
                     -Wfatal-errors>
                     $<$<CXX_COMPILER_ID:MSVC>:${MSVC_OPTIONS}>)
     endif()
+endfunction()
+
+function(rift_target_disable_all_warnings target_name exposure)
+    if(COMPILER_CLANG OR COMPILER_GNU)
+        target_compile_options(${target_name} ${exposure} -Wno-everything)
+    endif()
+    # TODO: Support disabling MSVC warnings too
 endfunction()

@@ -11,10 +11,9 @@ namespace Rift
 	using TaskFlow = tf::Taskflow;
 	using Task = tf::Task;
 	using Flow = tf::FlowBuilder;
-	using SubFlow = tf::SubflowBuilder;
 
 	using TaskLambda = std::function<void()>;
-	using SubTaskLambda = std::function<void(tf::SubflowBuilder&)>;
+	using SubTaskLambda = std::function<void(Flow&)>;
 
 
 	struct TaskSystem

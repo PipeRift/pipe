@@ -48,17 +48,6 @@ jobs:
       - name: Get CMake
         uses: lukka/get-cmake@latest
 
-      # Restore from cache the previously built ports. If a "cache miss" occurs, then vcpkg is bootstrapped. Since a the vcpkg.json is being used later on to install the packages when run-cmake runs, no packages are installed at this time and the input 'setupOnly:true' is mandatory.
-      - name: Restore artifacts, or setup vcpkg (do not install any package)
-        uses: lukka/run-vcpkg@v6
-        with:
-          # Just install vcpkg for now, do not install any ports in this step yet.
-          setupOnly: true
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-          # Since the cache must be invalidated when content of the vcpkg.json file changes, let's
-          # compute its hash and append this to the computed cache's key.
-          appendedCacheKey: ${{ hashFiles( '**/vcpkg_manifest/vcpkg.json' ) }}-${{ secrets.VCACHE}}
-
       - name: Cache LLVM and Clang
         if: matrix.compiler == 'clang'
         id: cache-llvm
@@ -109,4 +98,4 @@ jobs:
           path: ${{ runner.workspace }}
 
       - name: Run tests
-        run: './Debug/core-tests.exe --report-timing --reporter=spec'
+        run: 'gci'

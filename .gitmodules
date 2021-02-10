@@ -7,9 +7,6 @@
 [submodule "Extern/Bandit"]
 	path = Extern/Bandit
 	url = https://github.com/banditcpp/bandit
-[submodule "vcpkg"]
-	path = vcpkg
-	url = https://github.com/microsoft/vcpkg.git
 [submodule "Extern/fmt"]
 	path = Extern/fmt
 	url = https://github.com/fmtlib/fmt.git
@@ -22,3 +19,12 @@
 [submodule "Extern/spdlog"]
 	path = Extern/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "Extern/taskflow"]
+	path = Extern/taskflow
+	url = https://github.com/taskflow/taskflow.git
+[submodule "Extern/robin-map"]
+	path = Extern/robin-map
+	url = https://github.com/Tessil/robin-map.git
+[submodule "Extern/sparse-map"]
+	path = Extern/sparse-map
+	url = https://github.com/Tessil/sparse-map.git

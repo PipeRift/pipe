@@ -3,25 +3,6 @@ cmake_minimum_required (VERSION 3.16)
 
 
 ################################################################################
-# Vcpkg setup
-
-if (DEFINED $ENV{VCPKG_ROOT})
-    set(VCPKG_ROOT $ENV{VCPKG_ROOT})
-else()
-    set(VCPKG_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg")
-endif()
-message("Using vcpkg located at '${VCPKG_ROOT}'")
-
-if (NOT DEFINED $ENV{CMAKE_TOOLCHAIN_FILE})
-    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
-endif()
-
-if(NOT DEFINED ENV{VCPKG_FEATURE_FLAGS})
-    set(ENV{VCPKG_FEATURE_FLAGS} "manifests, binarycaching")
-endif()
-
-
-################################################################################
 # Project
 
 project(rift-core VERSION 0.1 LANGUAGES CXX)
@@ -47,17 +28,6 @@ include(GenerateExportHeader)
 
 # ##############################################################################
 # Dependencies
-
-if(EXISTS CACHE{VCPKG_MANIFEST_FILE})
-    vcpkg_acquire_dependencies()
-endif()
-
-set(BUILD_SHARED_LIBS OFF)
-find_path(ROBIN_MAP_INCLUDE_DIRS "tsl/robin_growth_policy.h")
-add_library(robin_map INTERFACE)
-target_include_directories(robin_map INTERFACE ${ROBIN_MAP_INCLUDE_DIRS})
-find_package(Taskflow CONFIG REQUIRED)
-find_package(tsl-sparse-map CONFIG REQUIRED)
 
 add_subdirectory(Extern)
 
@@ -88,8 +58,8 @@ target_link_libraries(core PUBLIC
     glm
     tracy-client
     tsl::sparse_map
-    robin_map
-    Taskflow::Taskflow
+    tsl::robin_map
+    Taskflow
     fmt::fmt
     robin_hood
 )
