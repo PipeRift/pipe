@@ -2,6 +2,16 @@
 set(BUILD_SHARED_LIBS OFF)
 
 ################################################################################
+# Curl (for windows)
+
+if (PLATFORM_WINDOWS)
+    set(CURL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/curl-win/include)
+    set(CURL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/curl-win/lib/libcurl.lib )
+    add_definitions(-DCURL_STATICLIB)
+endif()
+
+
+################################################################################
 # Tracy
 
 option(TRACY_ENABLE "Profiling is enabled" ${RIFT_ENABLE_PROFILER})
@@ -38,7 +48,7 @@ target_include_directories(Bandit INTERFACE Bandit)
 
 
 set(BUILD_TZ_LIB ON CACHE BOOL "build/install of TZ library")
-set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database")
+#set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database")
 add_subdirectory(date)
 rift_target_disable_all_warnings(date INTERFACE)
 
