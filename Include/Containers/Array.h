@@ -156,12 +156,14 @@ namespace Rift
 
 		Iterator FindIt(const Type& item) const
 		{
-			return const_cast<Iterator>(std::find(vector.begin(), vector.end(), item));
+			auto& nonConstVector = const_cast<VectorType&>(vector);
+			return std::find(nonConstVector.begin(), nonConstVector.end(), item);
 		}
 
 		Iterator FindIt(std::function<bool(const Type&)> cb) const
 		{
-			return const_cast<Iterator>(std::find_if(vector.begin(), vector.end(), cb));
+			auto& nonConstVector = const_cast<VectorType&>(vector);
+			return std::find_if(nonConstVector.begin(), nonConstVector.end(), cb);
 		}
 
 		i32 FindIndex(const Type& item) const

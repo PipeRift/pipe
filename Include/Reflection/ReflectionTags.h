@@ -6,7 +6,6 @@
 #include "CoreTypes.h"
 
 
-
 namespace Rift
 {
 	enum class ReflectionTags : u16
@@ -25,11 +24,11 @@ namespace Rift
 		DetailsView = 1 << 13
 	};
 
-#define Abstract ReflectionTags::Abstract
-#define Transient ReflectionTags::Transient
-#define SaveGame ReflectionTags::SaveGame
-#define DetailsEdit ReflectionTags::DetailsEdit
-#define DetailsView ReflectionTags::DetailsView
+#define Abstract Rift::ReflectionTags::Abstract
+#define Transient Rift::ReflectionTags::Transient
+#define SaveGame Rift::ReflectionTags::SaveGame
+#define DetailsEdit Rift::ReflectionTags::DetailsEdit
+#define DetailsView Rift::ReflectionTags::DetailsView
 
 
 	constexpr u16 operator*(ReflectionTags f)
