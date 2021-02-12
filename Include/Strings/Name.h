@@ -102,6 +102,9 @@ namespace Rift
 	private:
 		static const String noneStr;
 		Id id;
+#if BUILD_DEBUG
+		StringView value;	 // Only used for debugging purposes
+#endif
 
 
 	public:
@@ -111,21 +114,38 @@ namespace Rift
 		{
 			// Index this name
 			id = NameTable::Get().Register(key);
+#if BUILD_DEBUG
+			value = key;
+#endif
 		}
 		Name(const String& str) : Name(StringView(str)) {}
-		Name(const Name& other) : id(other.id) {}
+		Name(const Name& other)
+			: id(other.id)
+#if BUILD_DEBUG
+			, value(other.value)
+#endif
+		{}
 		Name(Name&& other) noexcept
 		{
 			std::swap(id, other.id);
+#if BUILD_DEBUG
+			std::swap(value, other.value);
+#endif
 		}
 		Name& operator=(const Name& other)
 		{
 			id = other.id;
+#if BUILD_DEBUG
+			value = other.value;
+#endif
 			return *this;
 		}
 		Name& operator=(Name&& other) noexcept
 		{
 			std::swap(id, other.id);
+#if BUILD_DEBUG
+			std::swap(value, other.value);
+#endif
 			return *this;
 		}
 

@@ -18,7 +18,7 @@ namespace Rift
 
 	Ptr<AssetData> AssetManager::Load(AssetInfo info)
 	{
-		const auto loaded = Load(TArray<AssetInfo>{MoveTemp(info)});
+		const auto loaded = Load(TArray<AssetInfo>{Move(info)});
 		if (loaded.Size() > 0)
 		{
 			return loaded.First();
