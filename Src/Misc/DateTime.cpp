@@ -240,18 +240,6 @@ namespace Rift
 		return result;
 	}
 
-	DateTime DateTime::ToLocal() const
-	{
-		const UTCTime valueAsUTC{value.time_since_epoch()};
-		return {UTCClock::to_sys(valueAsUTC)};
-	}
-
-	DateTime DateTime::ToUTC() const
-	{
-		SysTime valueAsSys{UTCClock::from_sys(value).time_since_epoch()};
-		return {valueAsSys};
-	}
-
 
 	/* DateTime static interface
 	 *****************************************************************************/
@@ -286,12 +274,6 @@ namespace Rift
 	DateTime DateTime::Now()
 	{
 		return {Chrono::floor<SysTime::duration>(SysClock::now())};
-	}
-
-	DateTime DateTime::UtcNow()
-	{
-		const auto sys_now = date::to_sys_time(UTCClock::now());
-		return {Chrono::floor<SysTime::duration>(sys_now)};
 	}
 
 	bool DateTime::Parse(const String& DateTimeString, DateTime& OutDateTime)

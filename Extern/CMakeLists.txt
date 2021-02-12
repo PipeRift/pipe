@@ -1,15 +1,6 @@
 
 set(BUILD_SHARED_LIBS OFF)
 
-################################################################################
-# Curl (for windows)
-
-if (PLATFORM_WINDOWS)
-    set(CURL_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/curl-win/include)
-    set(CURL_LIBRARY ${CMAKE_CURRENT_SOURCE_DIR}/curl-win/lib/libcurl.lib )
-    add_definitions(-DCURL_STATICLIB)
-endif()
-
 
 ################################################################################
 # Tracy
@@ -37,7 +28,7 @@ endif()
 # TODO: Find a way to detect which platforms support TSC
 target_compile_definitions(tracy-client PRIVATE TRACY_TIMER_QPC=1)
 rift_target_disable_all_warnings(tracy-client PRIVATE)
-
+set_target_properties (tracy-client PROPERTIES FOLDER Extern)
 
 add_library(nlohmann_json INTERFACE)
 target_include_directories(nlohmann_json INTERFACE json)
@@ -46,22 +37,21 @@ target_include_directories(nlohmann_json INTERFACE json)
 add_library(Bandit INTERFACE)
 target_include_directories(Bandit INTERFACE Bandit)
 
-
-set(BUILD_TZ_LIB ON CACHE BOOL "build/install of TZ library")
-#set(USE_SYSTEM_TZ_DB ON CACHE BOOL "Use the operating system's timezone database")
 add_subdirectory(date)
 rift_target_disable_all_warnings(date INTERFACE)
 
-
 add_subdirectory(fmt)
+set_target_properties (fmt PROPERTIES FOLDER Extern)
 
 add_subdirectory(robin_hood)
 
 add_subdirectory(robin-map)
 
 add_subdirectory(glm)
+set_target_properties (glm_static PROPERTIES FOLDER Extern)
 
 add_subdirectory(spdlog)
+set_target_properties (spdlog PROPERTIES FOLDER Extern)
 
 add_subdirectory(sparse-map)
 

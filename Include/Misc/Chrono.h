@@ -1,7 +1,6 @@
 #pragma once
 
 #include <date/date.h>
-#include <date/tz.h>
 
 #include <chrono>
 
@@ -16,8 +15,6 @@ namespace Rift
 	using SysClock = Chrono::system_clock;
 	using SysTime = Chrono::time_point<SysClock, DecMicroseconds>;
 	using SysDuration = Chrono::duration<SysClock, DecMicroseconds>;
-	using UTCClock = date::utc_clock;
-	using UTCTime = Chrono::time_point<UTCClock, DecMicroseconds>;
 
 
 	using Milliseconds = Chrono::milliseconds;
