@@ -10,7 +10,6 @@
 #include "Platform/PlatformTime.h"
 
 
-
 namespace Rift
 {
 	class Archive;
@@ -77,11 +76,6 @@ namespace Rift
 	 */
 	struct CORE_API DateTime
 	{
-		using SysClock = Chrono::system_clock;
-		using SysTime = Chrono::time_point<SysClock, decmicroseconds>;
-		using UTCClock = date::utc_clock;
-		using UTCTime = Chrono::time_point<UTCClock, decmicroseconds>;
-
 	protected:
 		/** Holds the days per month in a non-leap year. */
 		static const i32 DaysPerMonth[];
@@ -107,7 +101,7 @@ namespace Rift
 
 		template <typename Precision>
 		DateTime(Chrono::time_point<SysClock, Precision> value)
-			: value{Chrono::time_point_cast<decmicroseconds, SysClock, Precision>(value)}
+			: value{Chrono::time_point_cast<DecMicroseconds, SysClock, Precision>(value)}
 		{}
 
 		/**
@@ -182,7 +176,7 @@ namespace Rift
 		 */
 		DateTime& operator-=(const Timespan& other)
 		{
-			value -= decmicroseconds{other.GetTime()};
+			value -= DecMicroseconds{other.GetTime()};
 
 			return *this;
 		}
@@ -671,7 +665,7 @@ namespace Rift
 		template <typename Clock, typename Precision>
 		static DateTime CastClock(Chrono::time_point<Clock, Precision> time)
 		{
-			return {clock_cast<decmicroseconds, Precision, SysClock, Clock>(time)};
+			return {clock_cast<DecMicroseconds, Precision, SysClock, Clock>(time)};
 		}
 
 	protected:
@@ -683,7 +677,7 @@ namespace Rift
 			typename DstTime = Chrono::time_point<DstClock, DstDuration>,
 			typename SrcTime = Chrono::time_point<SrcClock, SrcDuration> >
 		static DstTime clock_cast(const SrcTime tp,
-			const SrcDuration tolerance = decmicroseconds{1}, const i32 limit = 10)
+			const SrcDuration tolerance = DecMicroseconds{1}, const i32 limit = 10)
 		{
 			assert(limit > 0);
 			auto itercnt = 0;
