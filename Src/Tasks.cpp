@@ -38,8 +38,6 @@ namespace Rift
 		TaskFlow flow;
 		flow.for_each_index(0, i32(workerPool->num_workers()), 1,
 			[&mtx, &cv, &currentWorker, workerPoolSize](i32 i) {
-				ZoneScopedNC("Setup thread", 0x459bd1);
-
 				std::unique_lock<std::mutex> lck(mtx);
 				++currentWorker;
 				cv.notify_all();
@@ -48,7 +46,6 @@ namespace Rift
 					cv.wait(lck);
 				}
 				{
-					ZoneScopedNC("Naming thread", 0x459bd1);
 					// Name each worker thread in the debugger
 					tracy::SetThreadName(CString::Format("Worker {}", i + 1).c_str());
 				}

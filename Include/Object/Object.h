@@ -20,18 +20,15 @@ namespace Rift
 		PROP(Name, name);
 		Name name;
 
-		Refl::Class* ownClass;
 		Ptr<BaseObject> self;
 		Ptr<BaseObject> owner;
 
 
 	public:
-		Object() : BaseObject(), ownClass{nullptr}, self{}, owner{} {};
+		Object() : BaseObject(), self{}, owner{} {};
 
-		void PreConstruct(
-			Ptr<BaseObject>&& inSelf, Refl::Class* inClass, const Ptr<BaseObject>& inOwner)
+		void PreConstruct(Ptr<BaseObject>&& inSelf, const Ptr<BaseObject>& inOwner)
 		{
-			ownClass = inClass;
 			self = inSelf;
 			owner = inOwner;
 		}
@@ -58,12 +55,6 @@ namespace Rift
 		{
 			return self.Cast<T>();
 		}
-
-		Refl::Class* GetType() const
-		{
-			return ownClass;
-		}
-
 
 		void SetName(Name newName)
 		{

@@ -98,4 +98,4 @@ jobs:
           path: ${{ runner.workspace }}
 
       - name: Run Tests
-        run: '${{ runner.workspace }}/Debug/core-tests.exe --report-timing --reporter=spec'
+        run: '${{ runner.workspace }}/Debug/RiftCoreTests.exe --report-timing --reporter=spec'

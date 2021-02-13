@@ -6,8 +6,8 @@ set(BUILD_SHARED_LIBS OFF)
 # Tracy
 
 option(TRACY_ENABLE "Profiling is enabled" ${RIFT_ENABLE_PROFILER})
-option(TRACY_ON_DEMAND "Profiling enabled on demand" OFF)
-option(TRACY_NO_EXIT "Client executable does not exit until all profile data is sent to server" OFF)
+option(TRACY_ON_DEMAND "Profiling enabled on demand" ON)
+option(TRACY_NO_EXIT "Client executable does not exit until all profile data is sent to server" ON)
 option(TRACY_NO_BROADCAST "Disable client discovery by broadcast to local network" OFF)
 
 add_library(tracy-client STATIC Tracy/TracyClient.cpp)
@@ -48,7 +48,6 @@ add_subdirectory(robin_hood)
 add_subdirectory(robin-map)
 
 add_subdirectory(glm)
-set_target_properties (glm_static PROPERTIES FOLDER Extern)
 
 add_subdirectory(spdlog)
 set_target_properties (spdlog PROPERTIES FOLDER Extern)

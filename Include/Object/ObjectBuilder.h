@@ -34,7 +34,7 @@ namespace Rift
 			else
 			{
 				OwnPtr<T, ObjectBuilder> ptr{new T()};
-				ptr->PreConstruct(ptr.AsPtr(), T::StaticType(), owner);
+				ptr->PreConstruct(ptr.AsPtr(), owner);
 				ptr->Construct();
 				return ptr;
 			}

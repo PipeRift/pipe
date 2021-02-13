@@ -3,7 +3,10 @@
 
 #include "PCH.h"
 
+#include "Containers/Array.h"
+#include "Math/Math.h"
 #include "Memory/Alloc.h"
+
 
 
 namespace Rift::Memory
@@ -19,8 +22,8 @@ namespace Rift::Memory
 	protected:
 		size_t usedBlockSize = 0;
 		size_t maxBlockSize = 0;
-		void* lastBlock = nullptr;
-		TArray<void*> blocks;
+		u8* activeBlock = nullptr;
+		TArray<u8*> fullBlocks;
 
 
 	public:
@@ -38,31 +41,48 @@ namespace Rift::Memory
 			if (size > 0)	 // Dont reserve an empty block
 			{
 				// Push last block for destructor deletion
-				blocks.Add(lastBlock);
+				fullBlocks.Add(activeBlock);
 				__Grow(size);
 			}
 		}
 
-		void* Allocate(const size_t size, const size_t alignment = 0);
+		void* Allocate(const size_t size);
+		void* Allocate(const size_t size, const size_t alignment);
 
 		void Free(void* ptr) = delete;
 
 		void Reset();
+
+		size_t GetUsedBlockSize() const
+		{
+			return usedBlockSize;
+		}
+		size_t GetMaxBlockSize() const
+		{
+			return maxBlockSize;
+		}
+		const void* GetActiveBlock() const
+		{
+			return activeBlock;
+		}
+		const TArray<u8*>& GetFullBlocks() const
+		{
+			return fullBlocks;
+		}
 
 	private:
 		void __Grow(const size_t size)
 		{
 			usedBlockSize = 0;
 			maxBlockSize = size;
-			lastBlock = Rift::Alloc(maxBlockSize);
+			activeBlock = reinterpret_cast<u8*>(Rift::Alloc(maxBlockSize));
 		}
 	};
 
-
 	template <bool allowGrowing>
-	inline void* LinearAllocator<allowGrowing>::Allocate(const size_t size, const size_t alignment)
+	inline void* LinearAllocator<allowGrowing>::Allocate(const size_t size)
 	{
-		if (size + alignment < maxBlockSize - usedBlockSize)
+		if (usedBlockSize + size > maxBlockSize)
 		{
 			if constexpr (!allowGrowing)
 			{
@@ -73,22 +93,42 @@ namespace Rift::Memory
 			Grow(Math::Max(maxBlockSize, size));
 		}
 
-		void* ptr = lastBlock + usedBlockSize;
+		u8* const ptr = activeBlock + usedBlockSize;
+		usedBlockSize += size;
+		return ptr;
+	}
+	template <bool allowGrowing>
+	inline void* LinearAllocator<allowGrowing>::Allocate(const size_t size, const size_t alignment)
+	{
+		if (usedBlockSize + size + alignment > maxBlockSize)
+		{
+			if constexpr (!allowGrowing)
+			{
+				// TODO: Throw exception?
+				return nullptr;
+			}
+			// Grow same size as previous block, but make sure its enough space
+			Grow(Math::Max(maxBlockSize, size));
+		}
+
+		void* ptr = activeBlock + usedBlockSize;
 		size_t sizeLeft = maxBlockSize - usedBlockSize;
 		std::align(alignment, size, ptr, sizeLeft);
-
-		usedBlockSize = ptr - lastBlock;
+		usedBlockSize = size_t(ptr) + size - size_t(activeBlock);
 		return ptr;
 	}
 
 	template <bool allowGrowing>
 	inline void LinearAllocator<allowGrowing>::Reset()
 	{
-		for (void* block : blocks)
+		Rift::Free(activeBlock);
+		for (void* block : fullBlocks)
 		{
 			Rift::Free(block);
 		}
-		Rift::Free(lastBlock);
+		fullBlocks.Empty();
+
+		activeBlock = nullptr;
 		usedBlockSize = 0;
 		maxBlockSize = 0;
 	}

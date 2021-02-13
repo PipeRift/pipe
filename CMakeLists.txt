@@ -40,7 +40,7 @@ if (RIFT_BUILD_SHARED)
 else()
     add_library(RiftCore STATIC)
 endif()
-add_library(rift::core ALIAS RiftCore)
+add_library(Rift::Core ALIAS RiftCore)
 
 generate_export_header(RiftCore
     BASE_NAME CORE
@@ -59,7 +59,7 @@ target_sources(RiftCore PRIVATE ${CORE_SOURCE_FILES})
 target_link_libraries(RiftCore PUBLIC
     date::date
     nlohmann_json
-    glm
+    glm::glm
     tracy-client
     tsl::sparse_map
     tsl::robin_map
