@@ -40,6 +40,11 @@ namespace Rift::Refl
 			return nullptr;
 		}
 
+		void* Allocate(size_t size)
+		{
+			return allocator.Allocate(size);
+		}
+
 		static ReflectionRegistry& Get();
 	};
 
@@ -79,7 +84,9 @@ namespace Rift::Refl
 				"PropertyType is not a valid reflected type.");
 			static_assert(!(propertyTags & Abstract), "Properties can't be Abstract");
 
-			auto* const property = new TProperty<PropertyType>(
+
+			void* ptr = ReflectionRegistry::Get().Allocate(sizeof(TProperty<PropertyType>));
+			auto* const property = new (ptr) TProperty<PropertyType>(
 				newType, GetReflectableName<PropertyType>(), name, MoveTemp(access), propertyTags);
 			newType->properties.Insert(name, property);
 		}
