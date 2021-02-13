@@ -8,7 +8,7 @@
             "name": "Test",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/Build/Bin/core-tests.exe",
+            "program": "${workspaceFolder}/Build/Bin/RiftCoreTests.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
