@@ -4,6 +4,7 @@
 
 #include "PCH.h"
 
+#include "Memory/Allocator.h"
 #include "Platform/Platform.h"
 
 #include <assert.h>
@@ -13,12 +14,11 @@
 #include <vector>
 
 
-
 namespace Rift
 {
 	constexpr i32 NO_INDEX = -1;
 
-	template <typename Type, typename Allocator = std::allocator<Type>>
+	template <typename Type, typename Allocator = STLAllocator<Type>>
 	class TArray
 	{
 	public:

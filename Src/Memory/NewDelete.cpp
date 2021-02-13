@@ -1,48 +1,37 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-/*
+
 #if defined(__cplusplus)
-#	include <rpmalloc/rpmalloc.h>
-#	include <Tracy.hpp>
+#	include "Memory/Alloc.h"
 #	include <new>
 
 void operator delete(void* p) noexcept
 {
-	TracyFree(p);
-	rpfree(p);
+	Rift::Free(p);
 };
 void operator delete[](void* p) noexcept
 {
-	TracyFree(p);
-	rpfree(p);
+	Rift::Free(p);
 };
 
 void* operator new(std::size_t n) noexcept(false)
 {
-	void* const p = rpmalloc(n);
-	TracyAlloc(p, n);
-	return p;
+	return Rift::Alloc(n);
 }
 void* operator new[](std::size_t n) noexcept(false)
 {
-	void* const p = rpmalloc(n);
-	TracyAlloc(p, n);
-	return p;
+	return Rift::Alloc(n);
 }
 
 void* operator new(std::size_t n, const std::nothrow_t& tag) noexcept
 {
 	(void) (tag);
-	void* const p = rpmalloc(n);
-	TracyAlloc(p, n);
-	return p;
+	return Rift::Alloc(n);
 }
 void* operator new[](std::size_t n, const std::nothrow_t& tag) noexcept
 {
 	(void) (tag);
-	void* const p = rpmalloc(n);
-	TracyAlloc(p, n);
-	return p;
+	return Rift::Alloc(n);
 }
 
 #	if (__cplusplus >= 201402L || _MSC_VER >= 1916)
@@ -50,14 +39,12 @@ void* operator new[](std::size_t n, const std::nothrow_t& tag) noexcept
 void operator delete(void* p, std::size_t n) noexcept
 {
 	(void) (n);
-	TracyFree(p);
-	rpfree(p);
+	Rift::Free(p);
 };
 void operator delete[](void* p, std::size_t n) noexcept
 {
 	(void) (n);
-	TracyFree(p);
-	rpfree(p);
+	Rift::Free(p);
 };
 
 #	endif
@@ -67,54 +54,41 @@ void operator delete[](void* p, std::size_t n) noexcept
 void operator delete(void* p, std::align_val_t align) noexcept
 {
 	(void) (align);
-	TracyFree(p);
-	rpfree(p);
+	Rift::Free(p);
 }
 void operator delete[](void* p, std::align_val_t align) noexcept
 {
 	(void) (align);
-	TracyFree(p);
-	rpfree(p);
+	Rift::Free(p);
 }
 void operator delete(void* p, std::size_t n, std::align_val_t align) noexcept
 {
 	(void) (n);
 	(void) (align);
-	TracyFree(p);
-	rpfree(p);
+	Rift::Free(p);
 };
 void operator delete[](void* p, std::size_t n, std::align_val_t align) noexcept
 {
 	(void) (n);
 	(void) (align);
-	TracyFree(p);
-	rpfree(p);
+	Rift::Free(p);
 };
 
 void* operator new(std::size_t n, std::align_val_t align) noexcept(false)
 {
-	void* const p = rpaligned_alloc(size_t(align), n);
-	TracyAlloc(p, n);
-	return p;
+	return Rift::Alloc(n, size_t(align));
 }
 void* operator new[](std::size_t n, std::align_val_t align) noexcept(false)
 {
-	void* const p = rpaligned_alloc(size_t(align), n);
-	TracyAlloc(p, n);
-	return p;
+	return Rift::Alloc(n, size_t(align));
 }
 void* operator new(std::size_t n, std::align_val_t align, const std::nothrow_t&) noexcept
 {
-	void* const p = rpaligned_alloc(size_t(align), n);
-	TracyAlloc(p, n);
-	return p;
+	return Rift::Alloc(n, size_t(align));
 }
 void* operator new[](std::size_t n, std::align_val_t align, const std::nothrow_t&) noexcept
 {
-	void* const p = rpaligned_alloc(size_t(align), n);
-	TracyAlloc(p, n);
-	return p;
+	return Rift::Alloc(n, size_t(align));
 }
 #	endif
 #endif
-*/
