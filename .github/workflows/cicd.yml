@@ -63,11 +63,11 @@ jobs:
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
-      - name: Cache Build
-        uses: actions/cache@v2
-        with:
-          path: Build
-          key: ${{ matrix.name }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
+#      - name: Cache Build
+#        uses: actions/cache@v2
+#        with:
+#          path: Build
+#          key: ${{ matrix.name }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
 
       - name: Configure and Build
         uses: lukka/run-cmake@v3.3
