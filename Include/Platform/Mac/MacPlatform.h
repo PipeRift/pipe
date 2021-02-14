@@ -6,7 +6,7 @@
 #include <cstddef>
 
 
-#define PLATFORM_MAC_USE_CHAR16 0
+#define PLATFORM_MACOS_USE_CHAR16 0
 
 
 namespace Rift
@@ -19,7 +19,7 @@ namespace Rift
 		using DWORD = unsigned int;
 		using sizet = std::size_t;
 		using TYPE_OF_NULL = decltype(nullptr);
-#if PLATFORM_MAC_USE_CHAR16
+#if PLATFORM_MACOS_USE_CHAR16
 		using WIDECHAR = char16_t;
 		using TCHAR = WIDECHAR;
 #else
@@ -37,7 +37,7 @@ namespace Rift
 #endif
 #define NOINLINE __attribute__((noinline))
 
-#if PLATFORM_MAC_USE_CHAR16
+#if PLATFORM_MACOS_USE_CHAR16
 #	undef PLATFORM_TCHAR_IS_CHAR16
 #	define PLATFORM_TCHAR_IS_CHAR16 1
 #endif

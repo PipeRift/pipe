@@ -19,8 +19,8 @@ function(rift_target_define_platform target)
         target_compile_definitions(${target} PRIVATE PLATFORM_WINDOWS=1)
     elseif (PLATFORM_LINUX)
         target_compile_definitions(${target} PRIVATE PLATFORM_LINUX=1)
-    elseif (PLATFORM_MACOSX)
-        target_compile_definitions(${target} PRIVATE PLATFORM_MAC=1)
+    elseif (PLATFORM_MACOS)
+        target_compile_definitions(${target} PRIVATE PLATFORM_MACOS=1)
     endif()
 
     target_compile_definitions(${target} PRIVATE

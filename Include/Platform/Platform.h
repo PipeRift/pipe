@@ -6,7 +6,7 @@
 #	include "Platform/Windows/WindowsPlatform.h"
 #elif PLATFORM_LINUX
 #	include "Platform/Linux/LinuxPlatform.h"
-#elif PLATFORM_MAC
+#elif PLATFORM_MACOS
 #	include "Platform/Mac/MacPlatform.h"
 #else
 #	error Unknown platform
