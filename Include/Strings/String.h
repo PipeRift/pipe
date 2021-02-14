@@ -23,15 +23,20 @@
 
 namespace Rift
 {
-	using String = std::basic_string<TCHAR>;
+	using String     = std::basic_string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>;
 	using StringView = std::basic_string_view<TCHAR>;
+	using StringBuffer =
+	    fmt::basic_memory_buffer<TCHAR, fmt::inline_buffer_size, STLAllocator<TCHAR>>;
 
 	struct CORE_API CString
 	{
 		template <typename... Args>
 		static String Format(StringView format, Args... args)
 		{
-			return fmt::format(format, std::forward<Args>(args)...);
+			StringBuffer buffer;
+			String str;
+			fmt::format_to(std::back_inserter(str), format, std::forward<Args>(args)...);
+			return Move(str);
 		}
 
 		template <typename... Args>

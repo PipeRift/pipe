@@ -60,7 +60,7 @@ namespace Rift::Memory
 		{
 			return maxBlockSize;
 		}
-		const void* GetActiveBlock() const
+		void* GetActiveBlock() const
 		{
 			return activeBlock;
 		}

@@ -152,7 +152,7 @@ namespace Rift
 
 		static String ToString(const Path& path)
 		{
-			return path.string();
+			return path.string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>();
 		}
 
 		static Path FromString(StringView pathStr)

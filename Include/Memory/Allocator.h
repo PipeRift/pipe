@@ -90,4 +90,15 @@ namespace Rift
 			return (PTRDIFF_MAX / sizeof(T));
 		}
 	};
+
+	template <class T1, class T2>
+	bool operator==(const STLAllocator<T1>&, const STLAllocator<T2>&) noexcept
+	{
+		return true;
+	}
+	template <class T1, class T2>
+	bool operator!=(const STLAllocator<T1>&, const STLAllocator<T2>&) noexcept
+	{
+		return false;
+	}
 }	 // namespace Rift
