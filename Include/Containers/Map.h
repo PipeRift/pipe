@@ -14,7 +14,6 @@
 #include <type_traits>
 
 
-
 namespace Rift
 {
 	template <typename Key, typename Value>

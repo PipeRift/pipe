@@ -9,7 +9,6 @@
 #include "TypeTraits.h"
 
 
-
 namespace Rift
 {
 	class CORE_API AssetInfo

@@ -10,7 +10,6 @@
 #include "TypeTraits.h"
 
 
-
 namespace Rift
 {
 	class BaseAssetPtr

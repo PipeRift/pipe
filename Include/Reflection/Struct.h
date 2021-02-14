@@ -7,7 +7,6 @@
 #include "Type.h"
 
 
-
 namespace Rift::Refl
 {
 	class CORE_API Struct : public Type

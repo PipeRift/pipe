@@ -12,7 +12,6 @@
 #include <memory>
 
 
-
 namespace Rift::Refl
 {
 	/**

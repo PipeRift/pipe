@@ -33,7 +33,7 @@ namespace Rift
 				return arena;
 			}
 		};
-	}
+	}	 // namespace Memory
 
 
 	template <class T>
@@ -90,4 +90,4 @@ namespace Rift
 			return (PTRDIFF_MAX / sizeof(T));
 		}
 	};
-}	 // namespace Rift::Memory
+}	 // namespace Rift

@@ -10,7 +10,6 @@
 #include "Reflection/ReflectionTags.h"
 
 
-
 namespace Rift::Refl
 {
 	using PropertyMap = TMap<Name, Property*>;

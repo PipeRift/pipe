@@ -8,7 +8,6 @@
 #include "Memory/Alloc.h"
 
 
-
 namespace Rift::Memory
 {
 	/**

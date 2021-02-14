@@ -19,7 +19,6 @@
 #include <glm/gtx/transform.hpp>
 
 
-
 namespace Rift
 {
 	struct Transform

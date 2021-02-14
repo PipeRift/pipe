@@ -10,7 +10,6 @@
 #include <vector>
 
 
-
 namespace Rift
 {
 	using Json =

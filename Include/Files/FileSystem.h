@@ -11,7 +11,6 @@
 #include <filesystem>
 
 
-
 namespace Rift
 {
 	namespace fs = std::filesystem;
@@ -112,7 +111,7 @@ namespace Rift
 			return IsFile(FromString(path));
 		}
 
-		static bool IsFile(const Path& path, bool  /*bCheckOnDisk*/ = true)
+		static bool IsFile(const Path& path, bool /*bCheckOnDisk*/ = true)
 		{
 			return !path.empty() && path.has_extension();
 		}
