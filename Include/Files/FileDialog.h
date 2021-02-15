@@ -4,12 +4,15 @@
 
 #include "PCH.h"
 
+#include "Containers/Tuples.h"
 #include "Files/FileSystem.h"
 #include "Strings/String.h"
 
 
 namespace Rift::Dialogs
 {
+	using FileFilter = TPair<StringView, StringView>;
+
 	/**
 	 * Selects a file using a system dialog.
 	 * @param title of the dialog
@@ -18,8 +21,9 @@ namespace Rift::Dialogs
 	 * can decide to, for example, display last user folder (windows).
 	 * @return selected file path
 	 */
-	CORE_API Path SelectFile(
-	    StringView title, const Path& defaultPath, bool bAlwaysShowDefaultPath = false);
+	CORE_API Path SelectFile(StringView title, const Path& defaultPath,
+	    const TArray<FileFilter>& filters = {{"All Files", "*"}},
+	    bool bAlwaysShowDefaultPath       = false);
 
 	/**
 	 * Selects multiple files using a system dialog.
@@ -30,7 +34,8 @@ namespace Rift::Dialogs
 	 * can decide to, for example, display last user folder (windows).
 	 */
 	CORE_API void SelectFiles(StringView title, const Path& defaultPath, TArray<Path>& outFiles,
-	    bool bAlwaysShowDefaultPath = false);
+	    const TArray<FileFilter>& filters = {{"All Files", "*"}},
+	    bool bAlwaysShowDefaultPath       = false);
 
 	/**
 	 * Selects a folder using a system dialog.

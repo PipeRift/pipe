@@ -8,16 +8,30 @@
 
 namespace Rift::Dialogs
 {
-	Path SelectFile(StringView title, const Path& defaultPath, bool bAlwaysShowDefaultPath)
+	std::vector<std::string> ParseFilters(const TArray<FileFilter>& filters)
+	{
+		std::vector<std::string> rawFilters;
+		rawFilters.reserve(filters.Size() * 2);
+		for (const FileFilter& filter : filters)
+		{
+			rawFilters.push_back(std::string(filter.first));
+			rawFilters.push_back(std::string(filter.second));
+		}
+		return Move(rawFilters);
+	}
+
+	Path SelectFile(StringView title, const Path& defaultPath, const TArray<FileFilter>& filters,
+	    bool bAlwaysShowDefaultPath)
 	{
 		pfd::opt options{};
 		if (bAlwaysShowDefaultPath)
 		{
 			options = options | pfd::opt::force_path;
 		}
-		pfd::open_file dialog(std::string{title}, defaultPath.string(), {}, options);
+		pfd::open_file dialog(
+		    std::string{title}, defaultPath.string(), ParseFilters(filters), options);
 
-        std::vector<std::string> files = dialog.result();
+		std::vector<std::string> files = dialog.result();
         if (files.size() > 0)
         {
             return Path{files[0]};
@@ -26,16 +40,17 @@ namespace Rift::Dialogs
 	}
 
 	void SelectFiles(StringView title, const Path& defaultPath, TArray<Path>& outFiles,
-	    bool bAlwaysShowDefaultPath)
+	    const TArray<FileFilter>& filters, bool bAlwaysShowDefaultPath)
 	{
 		pfd::opt options = pfd::opt::multiselect;
 		if (bAlwaysShowDefaultPath)
 		{
 			options = options | pfd::opt::force_path;
 		}
-		pfd::open_file dialog(std::string{title}, defaultPath.string(), {}, options);
+		pfd::open_file dialog(
+		    std::string{title}, defaultPath.string(), ParseFilters(filters), options);
 
-        std::vector<std::string> files = dialog.result();
+		std::vector<std::string> files = dialog.result();
         outFiles.Resize(files.size());
         for(u32 i = 0; i < files.size(); ++i)
         {
@@ -53,13 +68,4 @@ namespace Rift::Dialogs
 		pfd::select_folder dialog(std::string{title}, defaultPath.string(), options);
 		return Path{dialog.result()};
 	}
-
-	// Async version of SelectFile
-	// void SelectFile(StringView title, TFunction<String()> callback)
-	//{
-	// auto& tasks = Context::Get().GetTasks();
-
-	// TaskFlow flow;
-	// flow.tasks.RunFlow() auto opener = pfd::open_file(title, )
-	//}
 }    // namespace Rift
