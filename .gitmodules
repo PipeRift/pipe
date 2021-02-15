@@ -28,3 +28,6 @@
 [submodule "Extern/sparse-map"]
 	path = Extern/sparse-map
 	url = https://github.com/Tessil/sparse-map.git
+[submodule "Extern/portable-file-dialogs"]
+	path = Extern/portable-file-dialogs
+	url = https://github.com/samhocevar/portable-file-dialogs.git

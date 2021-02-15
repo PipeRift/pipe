@@ -31,6 +31,7 @@ set_target_properties (tracy-client PROPERTIES FOLDER Extern)
 add_library(nlohmann_json INTERFACE)
 target_include_directories(nlohmann_json INTERFACE json)
 
+add_subdirectory(portable-file-dialogs)
 
 add_library(Bandit INTERFACE)
 target_include_directories(Bandit INTERFACE Bandit)

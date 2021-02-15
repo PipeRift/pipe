@@ -58,16 +58,17 @@ target_sources(RiftCore PRIVATE ${CORE_SOURCE_FILES})
 
 target_link_libraries(RiftCore PUBLIC
     date::date
-    nlohmann_json
-    glm::glm
-    tracy-client
-    tsl::sparse_map
-    tsl::robin_map
-    Taskflow
     fmt::fmt
+    glm::glm
+    nlohmann_json
     robin_hood
+    Taskflow
+    tracy-client
+    tsl::robin_map
+    tsl::sparse_map
 )
 target_link_libraries(RiftCore PRIVATE
+    portable_file_dialogs
     spdlog
 )
 rift_target_shared_output_directory(RiftCore)

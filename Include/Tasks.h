@@ -21,8 +21,8 @@ namespace Rift
 		using ThreadPool = tf::Executor;
 
 	private:
-		// Render & Game thread
-		std::shared_ptr<ThreadPool> gamePool;
+		// Main thread
+		std::shared_ptr<ThreadPool> mainPool;
 		// Worker threads
 		std::shared_ptr<ThreadPool> workerPool;
 
@@ -37,9 +37,9 @@ namespace Rift
 		}
 
 		// Creates a flow in Game thread pool
-		std::future<void> RunGameFlow(TaskFlow& flow) const
+		std::future<void> RunMainFlow(TaskFlow& flow) const
 		{
-			return gamePool->run(flow);
+			return mainPool->run(flow);
 		}
 
 		u32 GetNumWorkerThreads() const
