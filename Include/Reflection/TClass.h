@@ -30,7 +30,7 @@ namespace Rift::Refl
 		{
 			if constexpr (std::is_same_v<T, BaseObject>)
 			{
-				return {};
+				return {};    // Can't create instances of BaseObject
 			}
 			auto instance = MakeOwned<T, ObjectBuilder<T>>(owner);
 			return Move(instance);

@@ -150,11 +150,19 @@ namespace Rift
 
 		OwnPtr(OwnPtr&& other) noexcept
 		{
+#if BUILD_DEBUG
+			instance       = reinterpret_cast<T*>(other.instance);
+			other.instance = nullptr;
+#endif
 			MoveFrom(Move(other));
 		}
 
 		OwnPtr& operator=(OwnPtr&& other) noexcept
 		{
+#if BUILD_DEBUG
+			instance       = other.instance;
+			other.instance = nullptr;
+#endif
 			MoveFrom(Move(other));
 			return *this;
 		}
@@ -163,20 +171,20 @@ namespace Rift
 		template <typename T2, typename Builder2>
 		OwnPtr(OwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
 		{
-			MoveFrom(Move(other));
 #if BUILD_DEBUG
-			instance       = other.instance;
+			instance       = reinterpret_cast<T*>(other.instance);
 			other.instance = nullptr;
 #endif
+			MoveFrom(Move(other));
 		}
 		template <typename T2, typename Builder2>
 		OwnPtr& operator=(OwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
 		{
-			MoveFrom(Move(other));
 #if BUILD_DEBUG
 			instance       = other.instance;
 			other.instance = nullptr;
 #endif
+			MoveFrom(Move(other));
 			return *this;
 		}
 
@@ -230,10 +238,13 @@ namespace Rift
 				Builder::Delete(value);
 				value = nullptr;
 
-				counter->bIsSet = false;
 				if (counter->weaks <= 0)
 				{
 					delete counter;
+				}
+				else
+				{
+					counter->bIsSet = false;
 				}
 				counter = nullptr;
 			}
