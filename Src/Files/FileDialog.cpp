@@ -6,10 +6,9 @@
 #include <portable-file-dialogs.h>
 
 
-
-namespace Rift
+namespace Rift::Dialogs
 {
-	Path SelectFile(StringView title, Path defaultPath, bool bAlwaysShowDefaultPath)
+	Path SelectFile(StringView title, const Path& defaultPath, bool bAlwaysShowDefaultPath)
 	{
 		pfd::opt options{};
 		if (bAlwaysShowDefaultPath)
@@ -26,8 +25,8 @@ namespace Rift
         return {};
 	}
 
-	void SelectFiles(
-	    StringView title, Path defaultPath, TArray<Path>& outFiles, bool bAlwaysShowDefaultPath)
+	void SelectFiles(StringView title, const Path& defaultPath, TArray<Path>& outFiles,
+	    bool bAlwaysShowDefaultPath)
 	{
 		pfd::opt options = pfd::opt::multiselect;
 		if (bAlwaysShowDefaultPath)
@@ -44,7 +43,7 @@ namespace Rift
         }
 	}
 
-	Path SelectFolder(StringView title, Path defaultPath, bool bAlwaysShowDefaultPath)
+	Path SelectFolder(StringView title, const Path& defaultPath, bool bAlwaysShowDefaultPath)
 	{
 		pfd::opt options{};
 		if (bAlwaysShowDefaultPath)
