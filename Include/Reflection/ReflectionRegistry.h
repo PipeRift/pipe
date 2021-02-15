@@ -87,7 +87,7 @@ namespace Rift::Refl
 
 			void* ptr = ReflectionRegistry::Get().Allocate(sizeof(TProperty<PropertyType>));
 			auto* const property = new (ptr) TProperty<PropertyType>(
-				newType, GetReflectableName<PropertyType>(), name, MoveTemp(access), propertyTags);
+			    newType, GetReflectableName<PropertyType>(), name, Move(access), propertyTags);
 			newType->properties.Insert(name, property);
 		}
 

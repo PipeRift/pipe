@@ -40,10 +40,10 @@ namespace Rift
 
 		protected:
 			Property(Type* typePtr, Name typeName, Name name, ReflectionTags tags)
-				: typePtr(typePtr)
-				, typeName(MoveTemp(typeName))
-				, name(MoveTemp(name))
-				, tags(tags)
+			    : typePtr(typePtr)
+			    , typeName(Move(typeName))
+			    , name(Move(name))
+			    , tags(tags)
 			{
 				SetDisplayName(name.ToString());
 			}

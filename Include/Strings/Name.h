@@ -29,7 +29,7 @@ namespace Rift
 		NameKey(StringView inStr) : str{inStr}, hash{hasher(str)} {}
 
 		NameKey(const NameKey& other) : hash{other.hash} {}
-		NameKey(NameKey&& other) noexcept : str{MoveTemp(other.str)}, hash{other.hash} {}
+		NameKey(NameKey&& other) noexcept : str{Move(other.str)}, hash{other.hash} {}
 		NameKey& operator=(const NameKey& other)
 		{
 			hash = other.hash;

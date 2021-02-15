@@ -163,7 +163,7 @@ namespace Rift
 		template <typename T2, typename Builder2>
 		OwnPtr(OwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
 		{
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 #if BUILD_DEBUG
 			instance       = other.instance;
 			other.instance = nullptr;
@@ -172,7 +172,7 @@ namespace Rift
 		template <typename T2, typename Builder2>
 		OwnPtr& operator=(OwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
 		{
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 #if BUILD_DEBUG
 			instance       = other.instance;
 			other.instance = nullptr;
@@ -198,7 +198,7 @@ namespace Rift
 			if (IsValid() && (std::is_convertible_v<T2, T> || dynamic_cast<T2*>(**this) != nullptr))
 			{
 				OwnPtr<T2, Builder> newPtr{};
-				newPtr.MoveFrom(MoveTemp(*this));
+				newPtr.MoveFrom(Move(*this));
 #if BUILD_DEBUG
 				newPtr.instance = reinterpret_cast<T2*>(instance);
 				instance        = nullptr;
@@ -296,7 +296,7 @@ namespace Rift
 
 		Ptr() = default;
 		Ptr(const Ptr& other) : Super(other) {}
-		Ptr(Ptr&& other) noexcept : Super(MoveTemp(other)) {}
+		Ptr(Ptr&& other) noexcept : Super(Move(other)) {}
 
 		Ptr& operator=(const Ptr& other)
 		{
@@ -306,7 +306,7 @@ namespace Rift
 
 		Ptr& operator=(Ptr&& other) noexcept
 		{
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 			return *this;
 		}
 
@@ -322,7 +322,7 @@ namespace Rift
 		{}
 
 		template <typename T2>
-		Ptr(Ptr<T2>&& other) requires Convertible<T2, T> : Super(MoveTemp(other))
+		Ptr(Ptr<T2>&& other) requires Convertible<T2, T> : Super(Move(other))
 		{}
 
 		template <typename T2>
@@ -339,7 +339,7 @@ namespace Rift
 		{
 			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
 				"Type is not down-castable!");
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 			return *this;
 		}
 

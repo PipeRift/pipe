@@ -46,11 +46,11 @@ namespace Rift
 
 		TArray(TArray<Type>&& other)
 		{
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 		}
 		TArray<Type>& operator=(TArray<Type>&& other)
 		{
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 			return *this;
 		}
 
@@ -66,7 +66,7 @@ namespace Rift
 
 		i32 Add(Type&& item)
 		{
-			vector.push_back(MoveTemp(item));
+			vector.push_back(Move(item));
 			return Size() - 1;
 		}
 
@@ -80,7 +80,7 @@ namespace Rift
 		{
 			const i32 foundIndex = FindIndex(item);
 			if (foundIndex == NO_INDEX)
-				return Add(MoveTemp(item));
+				return Add(Move(item));
 			return foundIndex;
 		}
 
@@ -106,7 +106,7 @@ namespace Rift
 			if (other.Size() > 0)
 			{
 				if (Size() <= 0)
-					MoveFrom(MoveTemp(other));
+					MoveFrom(Move(other));
 				else
 					vector.insert(vector.end(), other.begin(), other.end());
 			}
@@ -134,7 +134,7 @@ namespace Rift
 
 		void Insert(i32 index, Type&& item)
 		{
-			vector.insert(vector.begin() + index, MoveTemp(item));
+			vector.insert(vector.begin() + index, Move(item));
 		}
 
 		void Insert(i32 index, const Type& item, i32 count = 1)
@@ -178,7 +178,7 @@ namespace Rift
 
 		i32 FindIndex(std::function<bool(const Type&)> cb) const
 		{
-			ConstIterator it = FindIt(MoveTemp(cb));
+			ConstIterator it = FindIt(Move(cb));
 			if (it != vector.end())
 			{
 				return i32(std::distance(vector.begin(), it));
@@ -194,7 +194,7 @@ namespace Rift
 
 		Type* Find(std::function<bool(const Type&)> cb) const
 		{
-			Iterator it = FindIt(MoveTemp(cb));
+			Iterator it = FindIt(Move(cb));
 			return it != end() ? it : nullptr;
 		}
 
@@ -205,7 +205,7 @@ namespace Rift
 
 		bool Contains(std::function<bool(const Type&)> cb) const
 		{
-			return FindIt(MoveTemp(cb)) != vector.end();
+			return FindIt(Move(cb)) != vector.end();
 		}
 
 		/**
@@ -426,7 +426,7 @@ namespace Rift
 		}
 		void MoveFrom(TArray&& other)
 		{
-			vector = MoveTemp(other.vector);
+			vector = Move(other.vector);
 		}
 	};
 

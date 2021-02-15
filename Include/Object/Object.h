@@ -58,7 +58,7 @@ namespace Rift
 
 		void SetName(Name newName)
 		{
-			name = MoveTemp(newName);
+			name = Move(newName);
 		}
 		Name GetName() const
 		{

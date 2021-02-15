@@ -98,7 +98,7 @@ namespace Rift
 			{
 				// Loading succeeded, registry the asset
 				finalAssets.Add(newAsset);
-				loadedAssets[info] = MoveTemp(newAsset);
+				loadedAssets[info] = Move(newAsset);
 
 				Log::Info("Loaded asset '{}'", info.GetStrPath());
 			}
@@ -129,7 +129,7 @@ namespace Rift
 			{
 				const Ptr<AssetData> newAssetPtr = newAsset;
 
-				loadedAssets[info.GetPath()] = MoveTemp(newAsset);
+				loadedAssets[info.GetPath()] = Move(newAsset);
 
 				return newAssetPtr;
 			}

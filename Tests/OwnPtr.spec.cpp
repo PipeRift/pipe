@@ -115,7 +115,7 @@ go_bandit([]() {
 				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				auto* raw = *owner;
 				Ptr<EmptyStruct> ptr = owner;
-				Ptr<EmptyStruct> ptr2 = MoveTemp(ptr);
+				Ptr<EmptyStruct> ptr2     = Move(ptr);
 
 				AssertThat(ptr.IsValid(), Equals(false));
 				AssertThat(ptr2.IsValid(), Equals(true));

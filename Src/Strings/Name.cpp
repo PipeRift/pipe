@@ -30,7 +30,7 @@ namespace Rift
 		else
 		{
 			std::unique_lock lock{editTableMutex};
-			return table.insert(MoveTemp(key)).first->GetHash();
+			return table.insert(Move(key)).first->GetHash();
 		}
 	}
 
