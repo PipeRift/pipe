@@ -66,3 +66,12 @@ function(rift_target_disable_all_warnings target_name exposure)
     endif()
     # TODO: Support disabling MSVC warnings too
 endfunction()
+
+function(set_option target exposure option)
+    if(${option})
+        message(STATUS "${option}: ON")
+        target_compile_definitions(${target} ${exposure} ${option})
+    else()
+        message(STATUS "${option}: OFF")
+    endif()
+endfunction()

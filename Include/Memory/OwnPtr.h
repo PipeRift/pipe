@@ -62,9 +62,9 @@ namespace Rift
 
 			void MoveFrom(OwnPtr&& other)
 			{
-				value = other.value;
-				counter = other.counter;
-				other.value = nullptr;
+				value         = other.value;
+				counter       = other.counter;
+				other.value   = nullptr;
 				other.counter = nullptr;
 			}
 		};
@@ -133,9 +133,20 @@ namespace Rift
 		template <typename T2, typename Builder2>
 		friend struct OwnPtr;
 
+#if BUILD_DEBUG
+		// Pointer to value for debugging
+		T* instance = nullptr;
+#endif
+
+
 	public:
 		OwnPtr() = default;
-		explicit OwnPtr(T* value) : Super(value) {}
+		explicit OwnPtr(T* value)
+		    : Super(value)
+#if BUILD_DEBUG
+		    , instance(value)
+#endif
+		{}
 
 		OwnPtr(OwnPtr&& other) noexcept
 		{
@@ -153,11 +164,19 @@ namespace Rift
 		OwnPtr(OwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
 		{
 			MoveFrom(MoveTemp(other));
+#if BUILD_DEBUG
+			instance       = other.instance;
+			other.instance = nullptr;
+#endif
 		}
 		template <typename T2, typename Builder2>
 		OwnPtr& operator=(OwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
 		{
 			MoveFrom(MoveTemp(other));
+#if BUILD_DEBUG
+			instance       = other.instance;
+			other.instance = nullptr;
+#endif
 			return *this;
 		}
 
@@ -180,6 +199,10 @@ namespace Rift
 			{
 				OwnPtr<T2, Builder> newPtr{};
 				newPtr.MoveFrom(MoveTemp(*this));
+#if BUILD_DEBUG
+				newPtr.instance = reinterpret_cast<T2*>(instance);
+				instance        = nullptr;
+#endif
 				return newPtr;
 			}
 			return {};
