@@ -40,20 +40,16 @@ namespace Rift
 			return true;
 		}
 
-		Ptr<Object> GetOwner() const
-		{
-			return owner.Cast<Object>();
-		}
-
-		Ptr<Object> Self() const
-		{
-			return self.Cast<Object>();
-		}
-
-		template <typename T>
+		template <typename T = Object>
 		Ptr<T> Self() const
 		{
 			return self.Cast<T>();
+		}
+
+		template <typename T = Object>
+		Ptr<T> GetOwner() const
+		{
+			return owner.Cast<T>();
 		}
 
 		void SetName(Name newName)
