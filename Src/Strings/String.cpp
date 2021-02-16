@@ -73,4 +73,21 @@ namespace Rift
 
 		return CString::Format("{}{}", finalSize, sizes[scale]);
 	}
+
+	size_t CString::GetStringHash(const TCHAR* str)
+	{
+		// FNV String hash
+		// Use offset and prime based on the architecture (64bit or 32bit)
+		// http://www.isthe.com/chongo/tech/comp/fnv/index.html
+		static constexpr bool bIs32Bit      = sizeof(size_t) < 64;
+		static constexpr size_t offsetBasis = bIs32Bit ? 2166136261U : 14695981039346656037U;
+		static constexpr size_t fnvPrime    = bIs32Bit ? 16777619 : 1099511628211;
+
+		size_t c, result = offsetBasis;
+		while ((c = *str++) != 0)
+		{
+			result = (result * fnvPrime) ^ c;
+		}
+		return result;
+	}
 }	 // namespace Rift

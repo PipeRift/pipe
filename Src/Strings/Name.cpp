@@ -7,8 +7,6 @@
 
 namespace Rift
 {
-	const Hash<String> NameKey::hasher{};
-
 	const String Name::noneStr{"none"};
 	const Name::Id Name::noneId{0};
 
@@ -70,4 +68,4 @@ namespace Rift
 		}
 		return true;
 	}
-}	 // namespace Rift
+}    // namespace Rift

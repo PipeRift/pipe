@@ -19,7 +19,7 @@ namespace Rift
 	struct NameKey
 	{
 	private:
-		static const Hash<String> hasher;
+		static constexpr Hash<String> hasher{};
 
 		String str;
 		size_t hash;
