@@ -46,10 +46,7 @@ generate_export_header(RiftCore
     BASE_NAME CORE
     EXPORT_MACRO_NAME CORE_API
     EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Export.h)
-set_target_properties (RiftCore PROPERTIES
-    CXX_STANDARD 20
-    FOLDER Rift
-)
+set_target_properties (RiftCore PROPERTIES FOLDER Rift)
 rift_target_define_platform(RiftCore)
 
 target_include_directories(RiftCore PUBLIC Include)
@@ -72,9 +69,7 @@ target_link_libraries(RiftCore PRIVATE
     spdlog
 )
 rift_target_shared_output_directory(RiftCore)
-if(COMPILER_GCC)
-    set_target_properties(RiftCore PROPERTIES COMPILE_FLAGS "-fconcepts")
-endif()
+rift_target_enable_CPP20(RiftCore)
 
 
 ################################################################################

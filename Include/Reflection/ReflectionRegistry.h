@@ -9,7 +9,9 @@
 #include "Reflection/TClass.h"
 #include "Reflection/TStruct.h"
 #include "Strings/Name.h"
-#include "Tracy.hpp"
+#include "TypeTraits.h"
+
+#include <Tracy.hpp>
 
 
 namespace Rift::Refl

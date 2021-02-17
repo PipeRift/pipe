@@ -14,6 +14,13 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(COMPILER_MSVC TRUE)
 endif()
 
+function(rift_target_enable_CPP20 target)
+    set_target_properties (${target} PROPERTIES CXX_STANDARD 20)
+    if(COMPILER_GCC)
+        set_target_properties(${target} PROPERTIES COMPILE_FLAGS "-fconcepts")
+    endif()
+endfunction()
+
 function(rift_target_define_platform target)
     if (PLATFORM_WINDOWS)
         target_compile_definitions(${target} PRIVATE PLATFORM_WINDOWS=1)
@@ -33,7 +40,7 @@ function(rift_target_shared_output_directory target)
     set_target_properties(${target}
         PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
         INCLUDES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Include"
     )
