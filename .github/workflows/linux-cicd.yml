@@ -82,5 +82,8 @@ jobs:
           name: linux-clang-build
           path: ${{ runner.workspace }}
 
+      - name: Make tests executable
+        run: 'chmod +x ${{ runner.workspace }}/RiftCoreTests'
+
       - name: Run Tests
         run: '${{ runner.workspace }}/RiftCoreTests --report-timing --reporter=spec'

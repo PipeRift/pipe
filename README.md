@@ -6,7 +6,7 @@ Rift is a **compiled**, **typed** and **visual** programming language.
 
 ## Software Quality
 
-[![Build](https://github.com/PipeRift/rift/workflows/CI/CD/badge.svg)](https://github.com/PipeRift/rift/actions) [![Windows](https://github.com/PipeRift/rift/workflows/windows-cicd/badge.svg)](https://github.com/PipeRift/rift/actions) [![Linux](https://github.com/PipeRift/rift/workflows/linux-cicd/badge.svg)](https://github.com/PipeRift/rift/actions) [![MacOS](https://github.com/PipeRift/rift/workflows/macos-cicd/badge.svg)](https://github.com/PipeRift/rift/actions)
+[![Windows](https://github.com/PipeRift/rift-core/workflows/windows-cicd/badge.svg)](https://github.com/PipeRift/rift-core/actions) [![Linux](https://github.com/PipeRift/rift-core/workflows/linux-cicd/badge.svg)](https://github.com/PipeRift/rift-core/actions) [![MacOS](https://github.com/PipeRift/rift-core/workflows/macos-cicd/badge.svg)](https://github.com/PipeRift/rift-core/actions)
 
 The code is validated on the following platforms/compilers:
 
