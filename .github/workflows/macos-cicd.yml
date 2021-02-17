@@ -43,11 +43,11 @@ jobs:
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
-#      - name: Cache Build
-#        uses: actions/cache@v2
-#        with:
-#          path: Build
-#          key: ${{ matrix.name }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
+      - name: Cache Build
+        uses: actions/cache@v2
+        with:
+          path: Build
+          key: macos-${{ matrix.compiler }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
 
       - name: Configure and Build
         uses: lukka/run-cmake@v3.3
@@ -66,19 +66,7 @@ jobs:
           name: macos-${{ matrix.compiler }}-build
           path: Build/Bin
 
-  Test:
-    needs: Build
-    name: Test
-    runs-on: macos-latest
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: macos-clang-build
-          path: ${{ runner.workspace }}
-
-      - name: Make tests executable
-        run: 'chmod +x ${{ runner.workspace }}/RiftCoreTests'
-
       - name: Run Tests
-        run: '${{ runner.workspace }}/RiftCoreTests --report-timing --reporter=spec'
+        run: |
+          cd Build
+          ctest --output-on-failure -j2
