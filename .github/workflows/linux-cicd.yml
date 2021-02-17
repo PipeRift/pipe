@@ -71,19 +71,7 @@ jobs:
           name: linux-${{ matrix.compiler }}-build
           path: Build/Bin
 
-  Test:
-    needs: Build
-    name: Test
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: linux-clang-build
-          path: ${{ runner.workspace }}
-
-      - name: Make tests executable
-        run: 'chmod +x ${{ runner.workspace }}/RiftCoreTests'
-
       - name: Run Tests
-        run: '${{ runner.workspace }}/RiftCoreTests --report-timing --reporter=spec'
+        run: |
+          cd Build
+          ctest --output-on-failure -j2

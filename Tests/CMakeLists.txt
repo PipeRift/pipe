@@ -8,6 +8,5 @@ rift_target_enable_CPP20(RiftCoreTests)
 rift_target_define_platform(RiftCoreTests)
 rift_target_shared_output_directory(RiftCoreTests)
 target_link_libraries(RiftCoreTests PUBLIC Rift::Core Bandit)
-if(COMPILER_GCC)
-    set_target_properties(RiftCoreTests PROPERTIES COMPILE_FLAGS -fconcepts)
-endif()
+
+add_test(NAME RiftCoreTests COMMAND $<TARGET_FILE:RiftCoreTests>)
