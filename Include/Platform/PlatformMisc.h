@@ -9,7 +9,7 @@
 
 namespace Rift
 {
-	struct PlatformMisc
+	struct CORE_API PlatformMisc
 	{
 		static void CreateGuid(struct Guid& guid);
 	};
@@ -24,7 +24,7 @@ namespace Rift
 	 * @return The value aligned up to the specified alignment.
 	 */
 	template <typename T>
-	constexpr T Align(T Val, u64 Alignment)
+	CORE_API constexpr T Align(T Val, u64 Alignment)
 	{
 		static_assert(std::is_integral<T>::value || std::is_pointer<T>::value,
 			"Align expects an integer or pointer type");

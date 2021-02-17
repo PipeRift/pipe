@@ -9,7 +9,6 @@
 #include "TypeTraits.h"
 
 
-
 namespace Rift
 {
 	class CORE_API AssetInfo
@@ -20,7 +19,7 @@ namespace Rift
 
 	public:
 		AssetInfo() : id(Name::None()) {}
-		AssetInfo(Name id) : id(MoveTemp(id)) {}
+		AssetInfo(Name id) : id(Move(id)) {}
 		AssetInfo(const Path& path) : id(FileSystem::ToString(path)) {}
 
 		/**

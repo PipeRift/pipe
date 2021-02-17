@@ -8,7 +8,6 @@
 #include "TypeTraits.h"
 
 
-
 namespace Rift
 {
 	template <typename T>

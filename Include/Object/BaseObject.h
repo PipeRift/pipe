@@ -7,7 +7,6 @@
 #include "TypeTraits.h"
 
 
-
 namespace Rift
 {
 	namespace Refl

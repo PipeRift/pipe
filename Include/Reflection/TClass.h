@@ -18,15 +18,11 @@ namespace Rift::Refl
 		static_assert(IsObject<T>::value, "Type is not an Object!");
 
 	private:
-		static TClass _class;
+		static TClass* _instance;
 
 
 	public:
-		TClass() : Class()
-		{
-			T::__refl_Registry();
-			T::__refl_RegistryProperties();
-		}
+		TClass() : Class() {}
 
 	public:
 		virtual OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(
@@ -34,18 +30,18 @@ namespace Rift::Refl
 		{
 			if constexpr (std::is_same_v<T, BaseObject>)
 			{
-				return {};
+				return {};    // Can't create instances of BaseObject
 			}
 			auto instance = MakeOwned<T, ObjectBuilder<T>>(owner);
-			return MoveTemp(instance);
+			return Move(instance);
 		}
 
 		static TClass* GetStatic()
 		{
-			return &_class;
+			return _instance;
 		}
 	};
 
 	template <typename T>
-	TClass<T> TClass<T>::_class{};
+	TClass<T>* TClass<T>::_instance = T::InitType();
 }	 // namespace Rift::Refl

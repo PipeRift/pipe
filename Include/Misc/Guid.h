@@ -10,7 +10,6 @@
 #include "Strings/Name.h"
 
 
-
 namespace Rift
 {
 	/**

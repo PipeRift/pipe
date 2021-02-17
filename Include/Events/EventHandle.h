@@ -1,7 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "CoreObject.h"
 #include "CoreTypes.h"
 
 

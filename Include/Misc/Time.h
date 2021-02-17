@@ -25,7 +25,7 @@ namespace Rift
 	public:
 		FrameTime()
 			: previousTime{}
-			, currentTime{DateTime::UtcNow()}
+			, currentTime{DateTime::Now()}
 			, realDeltaTime(0.f)
 			, deltaTime(0.f)
 			, timeDilation(1.f)

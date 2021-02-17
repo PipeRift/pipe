@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "Events/Function.h"
 #include "Property.h"
 #include "ReflectionTags.h"
 #include "Runtime/TPropertyHandle.h"
@@ -20,7 +21,7 @@ namespace Rift::Refl
 	class TProperty : public Property
 	{
 	public:
-		using Access = std::function<VariableT*(void*)>;
+		using Access = TFunction<VariableT*(void*)>;
 
 	private:
 		Access access;

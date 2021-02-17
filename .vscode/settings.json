@@ -8,22 +8,22 @@
             "name": "RiftCore",
             "cwd": "${workspaceFolder}/Build/Bin",
             "windows": {
-                "cmd": "core-tests.exe",
+                "cmd": "RiftCoreTests.exe",
                 "watches": [
-                    "core.lib",
-                    "core.dll"
+                    "RiftCore.lib",
+                    "RiftCore.dll"
                 ]
             },
             "linux": {
-                "cmd": "core-tests",
+                "cmd": "RiftCoreTests",
                 "watches": [
-                    "libcore.so"
+                    "RiftCore.so"
                 ]
             },
             "osx": {
-                "cmd": "core-tests",
+                "cmd": "RiftCoreTests",
                 "watches": [
-                    "core.dylib"
+                    "RiftCore.dylib"
                 ]
             },
             "parallelProcessLimit": 10

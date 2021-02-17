@@ -5,10 +5,10 @@
 
 #include "Platform/Macros.h"
 #include "Platform/Platform.h"
+#include "Reflection/ReflectionRegistry.h"
 #include "Reflection/TClass.h"
 #include "Reflection/TStruct.h"
 #include "ReflectionTags.h"
-
 
 
 namespace Rift::Refl
@@ -35,190 +35,167 @@ namespace Rift::Refl
 	{
 		static constexpr u32 value = 0;
 	};
-
-	/* template <typename T>
-	auto* GetType()
-	{
-		return T::Type();
-	}
-
-	template <typename T>
-	auto* GetType(T* instance)
-	{
-		return instance->GetType();
-	}*/
 }	 // namespace Rift::Refl
 
 /** Defines a Class */
-#define __CLASS_NO_TAGS(type, parent) __CLASS_TAGS(type, parent, ReflectionTags::None)
-#define __CLASS_TAGS(type, parent, tags)                      \
-public:                                                       \
-	using Super = parent;                                     \
-                                                              \
-	virtual void SerializeReflection(Archive& ar) override    \
-	{                                                         \
-		Super::SerializeReflection(ar);                       \
-		__refl_SerializeProperty(ar, Refl::MetaCounter<0>{}); \
-	}                                                         \
-	static void __refl_Registry()                             \
-	{                                                         \
-		StaticType()->__Registry<Super>(Name{TX(#type)});     \
-		TYPETAGS(type, tags)                                  \
-	}                                                         \
-	BASECLASS(type)
+#define __CLASS_NO_TAGS(type, parent) __CLASS_TAGS(type, parent, Rift::ReflectionTags::None)
+#define __CLASS_TAGS(type, parent, tags)                                               \
+public:                                                                                \
+	using ThisType = type;                                                             \
+	using Super = parent;                                                              \
+	using TypeBuilder =                                                                \
+		Rift::Refl::TTypeBuilder<ThisType, Super, Rift::Refl::TClass<ThisType>, tags>; \
+                                                                                       \
+	Rift::Refl::Class* GetType() const override                                        \
+	{                                                                                  \
+		return StaticType();                                                           \
+	}                                                                                  \
+	void SerializeReflection(Rift::Archive& ar) override                               \
+	{                                                                                  \
+		Super::SerializeReflection(ar);                                                \
+		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});                     \
+	}                                                                                  \
+	BASECLASS(type, __FILE__, __LINE__)
 
 
 /** Defines a class with no parent */
-#define ORPHAN_CLASS(type, tags)                                                                   \
-public:                                                                                            \
-	virtual void SerializeReflection(Archive& ar)                                                  \
-	{                                                                                              \
-		__refl_SerializeProperty(ar, Refl::MetaCounter<0>{});                                      \
-	}                                                                                              \
-	static void __refl_Registry()                                                                  \
-	{                                                                                              \
-		static_assert(                                                                             \
-			std::is_convertible<__refl_type, BaseObject>::value, "Type does not inherit Object!"); \
-		StaticType()->__Registry(Name{TX(#type)});                                                 \
-		TYPETAGS(type, tags)                                                                       \
-	}                                                                                              \
-	BASECLASS(type)
+#define ORPHAN_CLASS(type, tags)                                                      \
+public:                                                                               \
+	using ThisType = type;                                                            \
+	using TypeBuilder =                                                               \
+		Rift::Refl::TTypeBuilder<ThisType, void, Rift::Refl::TClass<ThisType>, tags>; \
+                                                                                      \
+	virtual Rift::Refl::Class* GetType() const                                        \
+	{                                                                                 \
+		return StaticType();                                                          \
+	}                                                                                 \
+	virtual void SerializeReflection(Rift::Archive& ar)                               \
+	{                                                                                 \
+		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});                    \
+	}                                                                                 \
+	BASECLASS(type, __FILE__, __LINE__)
 
-#define BASECLASS(type)                                                         \
-private:                                                                        \
-	using __refl_type = type;                                                   \
-	friend Refl::Type;                                                          \
-	friend Refl::TClass<__refl_type>;                                           \
-                                                                                \
-public:                                                                         \
-	static Refl::TClass<__refl_type>* StaticType()                              \
-	{                                                                           \
-		return Refl::TClass<__refl_type>::GetStatic();                          \
-	}                                                                           \
-                                                                                \
-	static inline void __refl_RegistryProperties()                              \
-	{                                                                           \
-		__refl_RegistryProperty(Refl::MetaCounter<0>{});                        \
-	}                                                                           \
-                                                                                \
-private:                                                                        \
-	static constexpr Refl::MetaCounter<0> __refl_Counter(Refl::MetaCounter<0>); \
-	template <u32 N>                                                            \
-	static void __refl_RegistryProperty(Refl::MetaCounter<N>)                   \
-	{}                                                                          \
-	template <u32 N>                                                            \
-	void __refl_SerializeProperty(Archive&, Refl::MetaCounter<N>)               \
+
+#define BASECLASS(type, file, line)                                                               \
+public:                                                                                           \
+	static Rift::Refl::TClass<ThisType>* StaticType()                                             \
+	{                                                                                             \
+		return Rift::Refl::TClass<ThisType>::GetStatic();                                         \
+	}                                                                                             \
+	static Rift::Refl::TClass<ThisType>* InitType()                                               \
+	{                                                                                             \
+		static TypeBuilder builder{                                                               \
+			Rift::Name{TX(#type ":" #file ":" #line)}, Rift::Name{TX(#type)}, [](auto& builder) { \
+				__ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                       \
+			}};                                                                                   \
+		return builder.GetType();                                                                 \
+	}                                                                                             \
+                                                                                                  \
+private:                                                                                          \
+	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>);       \
+	template <Rift::u32 N>                                                                        \
+	static void __ReflBuildProperty(TypeBuilder&, Rift::Refl::MetaCounter<N>)                     \
+	{}                                                                                            \
+	template <Rift::u32 N>                                                                        \
+	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                      \
 	{}
 
 
 /** Defines an struct */
-#define __STRUCT_NO_TAGS(type, parent) __STRUCT_TAGS(type, parent, ReflectionTags::None)
-#define __STRUCT_TAGS(type, parent, tags)                                                      \
-public:                                                                                        \
-	using Super = parent;                                                                      \
-                                                                                               \
-	virtual Refl::Struct* GetType() const override                                             \
-	{                                                                                          \
-		return StaticType();                                                                   \
-	}                                                                                          \
-	virtual inline void SerializeReflection(Archive& ar) override                              \
-	{                                                                                          \
-		Super::SerializeReflection(ar);                                                        \
-		__refl_SerializeProperty(ar, Refl::MetaCounter<0>{});                                  \
-	}                                                                                          \
-	static void __refl_Registry()                                                              \
-	{                                                                                          \
-		static_assert(                                                                         \
-			std::is_convertible<__refl_type, Struct>::value, "Type does not inherit Struct!"); \
-		StaticType()->__Registry<Super>(Name{TX(#type)});                                      \
-		TYPETAGS(type, tags)                                                                   \
-	}                                                                                          \
-	BASESTRUCT(type)
+#define __STRUCT_NO_TAGS(type, parent) __STRUCT_TAGS(type, parent, Rift::ReflectionTags::None)
+#define __STRUCT_TAGS(type, parent, tags)                                               \
+public:                                                                                 \
+	using ThisType = type;                                                              \
+	using Super = parent;                                                               \
+	using TypeBuilder =                                                                 \
+		Rift::Refl::TTypeBuilder<ThisType, Super, Rift::Refl::TStruct<ThisType>, tags>; \
+                                                                                        \
+	Rift::Refl::Struct* GetType() const override                                        \
+	{                                                                                   \
+		return StaticType();                                                            \
+	}                                                                                   \
+	void SerializeReflection(Rift::Archive& ar) override                                \
+	{                                                                                   \
+		Super::SerializeReflection(ar);                                                 \
+		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});                      \
+	}                                                                                   \
+	BASESTRUCT(type, __FILE__, __LINE__)
 
 
 /** Defines an struct with no parent */
-#define ORPHAN_STRUCT(type, tags)                             \
-public:                                                       \
-	virtual inline void SerializeReflection(Archive& ar)      \
-	{                                                         \
-		__refl_SerializeProperty(ar, Refl::MetaCounter<0>{}); \
-	}                                                         \
-	static void __refl_Registry()                             \
-	{                                                         \
-		StaticType()->__Registry(Name{TX(#type)});            \
-		TYPETAGS(type, tags)                                  \
-	}                                                         \
-	BASESTRUCT(type)
+#define ORPHAN_STRUCT(type, tags)                                                      \
+public:                                                                                \
+	using ThisType = type;                                                             \
+	using TypeBuilder =                                                                \
+		Rift::Refl::TTypeBuilder<ThisType, void, Rift::Refl::TStruct<ThisType>, tags>; \
+                                                                                       \
+	virtual Rift::Refl::Struct* GetType() const                                        \
+	{                                                                                  \
+		return StaticType();                                                           \
+	}                                                                                  \
+	virtual void SerializeReflection(Rift::Archive& ar)                                \
+	{                                                                                  \
+		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});                     \
+	}                                                                                  \
+	BASESTRUCT(type, __FILE__, __LINE__)
 
 
-#define BASESTRUCT(type)                                                        \
-private:                                                                        \
-	using __refl_type = type;                                                   \
-	friend Refl::Type;                                                          \
-	friend Refl::TStruct<__refl_type>;                                          \
-                                                                                \
-	static constexpr Refl::MetaCounter<0> __refl_Counter(Refl::MetaCounter<0>); \
-	template <u32 N>                                                            \
-	static void __refl_RegistryProperty(Refl::MetaCounter<N>)                   \
-	{}                                                                          \
-	template <u32 N>                                                            \
-	void __refl_SerializeProperty(Archive&, Refl::MetaCounter<N>)               \
-	{}                                                                          \
-                                                                                \
-public:                                                                         \
-	static Refl::TStruct<__refl_type>* StaticType()                             \
-	{                                                                           \
-		return Refl::TStruct<__refl_type>::GetStatic();                         \
-	}                                                                           \
-                                                                                \
-	static inline void __refl_RegistryProperties()                              \
-	{                                                                           \
-		__refl_RegistryProperty(Refl::MetaCounter<0>{});                        \
-	}
+#define BASESTRUCT(type, file, line)                                                              \
+public:                                                                                           \
+	static Rift::Refl::TStruct<ThisType>* StaticType()                                            \
+	{                                                                                             \
+		return Rift::Refl::TStruct<ThisType>::GetStatic();                                        \
+	}                                                                                             \
+	static Rift::Refl::TStruct<ThisType>* InitType()                                              \
+	{                                                                                             \
+		static TypeBuilder builder{                                                               \
+			Rift::Name{TX(#type ":" #file ":" #line)}, Rift::Name{TX(#type)}, [](auto& builder) { \
+				__ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                       \
+			}};                                                                                   \
+		return builder.GetType();                                                                 \
+	}                                                                                             \
+                                                                                                  \
+private:                                                                                          \
+	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>);       \
+	template <Rift::u32 N>                                                                        \
+	static void __ReflBuildProperty(TypeBuilder&, Rift::Refl::MetaCounter<N>)                     \
+	{}                                                                                            \
+	template <Rift::u32 N>                                                                        \
+	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                      \
+	{}                                                                                            \
+                                                                                                  \
+public:
 
 
-#define TYPETAGS(type, inTags)                                                   \
-	constexpr ReflectionTags tags = ReflectionTagsInitializer<inTags>::value;    \
-	static_assert(!(tags & DetailsEdit), "Only properties can use DetailsEdit"); \
-	static_assert(!(tags & DetailsView), "Only properties can use DetailsView"); \
-	StaticType()->__RegistryTags(tags);
-
-
-#define __PROPERTY_NO_TAGS(type, name) __PROPERTY_TAGS(type, name, ReflectionTags::None)
+#define __PROPERTY_NO_TAGS(type, name) __PROPERTY_TAGS(type, name, Rift::ReflectionTags::None)
 #define __PROPERTY_TAGS(type, name, tags) __PROPERTY_IMPL(type, name, CAT(__refl_id_, name), tags)
-#define __PROPERTY_IMPL(type, name, id_name, inTags)                                            \
-	static constexpr u32 id_name = decltype(__refl_Counter(Refl::MetaCounter<255>{}))::value;   \
-	static constexpr Refl::MetaCounter<(id_name) + 1> __refl_Counter(                             \
-		Refl::MetaCounter<(id_name) + 1>);                                                        \
-                                                                                                \
-	static void __refl_RegistryProperty(Refl::MetaCounter<id_name>)                             \
-	{                                                                                           \
-		static_assert(IsReflectableType<type>(), "" #type " is not a valid reflectable type."); \
-                                                                                                \
-		constexpr ReflectionTags tags = ReflectionTagsInitializer<inTags>::value;               \
-		static_assert(!(tags & Abstract), "Properties can't be Abstract");                      \
-                                                                                                \
-		StaticType()->__RegistryProperty<type>(                                                 \
-			TX(#name),                                                                          \
-			[](void* instance) {                                                                \
-				return &static_cast<__refl_type*>(instance)->name;                              \
-			},                                                                                  \
-			tags);                                                                              \
-                                                                                                \
-		/* Registry next property if any */                                                     \
-		__refl_RegistryProperty(Refl::MetaCounter<(id_name) + 1>{});                              \
-	};                                                                                          \
-                                                                                                \
-	void __refl_SerializeProperty(Archive& ar, Refl::MetaCounter<id_name>)                      \
-	{                                                                                           \
-		constexpr ReflectionTags tags = ReflectionTagsInitializer<inTags>::value;               \
-                                                                                                \
-		if constexpr (!(tags & Transient))                                                      \
-		{ /* Don't serialize property if Transient */                                           \
-			ar(#name, name);                                                                    \
-		}                                                                                       \
-		/* Serialize next property if any */                                                    \
-		__refl_SerializeProperty(ar, Refl::MetaCounter<(id_name) + 1>{});                         \
+#define __PROPERTY_IMPL(type, name, id_name, inTags)                                          \
+	static constexpr Rift::u32 id_name =                                                      \
+		decltype(__refl_Counter(Rift::Refl::MetaCounter<255>{}))::value;                      \
+	static constexpr Rift::Refl::MetaCounter<(id_name) + 1> __refl_Counter(                   \
+		Rift::Refl::MetaCounter<(id_name) + 1>);                                              \
+                                                                                              \
+	static void __ReflBuildProperty(TypeBuilder& builder, Rift::Refl::MetaCounter<id_name>)   \
+	{                                                                                         \
+		constexpr Rift::ReflectionTags tags = Rift::ReflectionTagsInitializer<inTags>::value; \
+		builder.AddProperty<type, tags>(TX(#name), [](void* instance) {                       \
+			return &static_cast<ThisType*>(instance)->name;                                   \
+		});                                                                                   \
+                                                                                              \
+		/* Registry next property if any */                                                   \
+		__ReflBuildProperty(builder, Rift::Refl::MetaCounter<(id_name) + 1>{});               \
+	};                                                                                        \
+                                                                                              \
+	void __ReflSerializeProperty(Rift::Archive& ar, Rift::Refl::MetaCounter<id_name>)         \
+	{                                                                                         \
+		constexpr Rift::ReflectionTags tags = Rift::ReflectionTagsInitializer<inTags>::value; \
+                                                                                              \
+		if constexpr (!(tags & Transient))                                                    \
+		{ /* Don't serialize property if Transient */                                         \
+			ar(#name, name);                                                                  \
+		}                                                                                     \
+		/* Serialize next property if any */                                                  \
+		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<(id_name) + 1>{});                \
 	};
 
 

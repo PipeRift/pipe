@@ -3,7 +3,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(PLATFORM_LINUX TRUE)
 elseif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(PLATFORM_MACOSX TRUE)
+    set(PLATFORM_MACOS TRUE)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -14,13 +14,20 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(COMPILER_MSVC TRUE)
 endif()
 
+function(rift_target_enable_CPP20 target)
+    set_target_properties (${target} PROPERTIES CXX_STANDARD 20)
+    if(COMPILER_GCC)
+        set_target_properties(${target} PROPERTIES COMPILE_FLAGS "-fconcepts")
+    endif()
+endfunction()
+
 function(rift_target_define_platform target)
     if (PLATFORM_WINDOWS)
         target_compile_definitions(${target} PRIVATE PLATFORM_WINDOWS=1)
     elseif (PLATFORM_LINUX)
         target_compile_definitions(${target} PRIVATE PLATFORM_LINUX=1)
-    elseif (PLATFORM_MACOSX)
-        target_compile_definitions(${target} PRIVATE PLATFORM_MAC=1)
+    elseif (PLATFORM_MACOS)
+        target_compile_definitions(${target} PRIVATE PLATFORM_MACOS=1)
     endif()
 
     target_compile_definitions(${target} PRIVATE
@@ -33,7 +40,7 @@ function(rift_target_shared_output_directory target)
     set_target_properties(${target}
         PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Lib"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
         INCLUDES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Include"
     )
@@ -65,4 +72,13 @@ function(rift_target_disable_all_warnings target_name exposure)
         target_compile_options(${target_name} ${exposure} -Wno-everything)
     endif()
     # TODO: Support disabling MSVC warnings too
+endfunction()
+
+function(set_option target exposure option)
+    if(${option})
+        message(STATUS "${option}: ON")
+        target_compile_definitions(${target} ${exposure} ${option})
+    else()
+        message(STATUS "${option}: OFF")
+    endif()
 endfunction()

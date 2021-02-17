@@ -11,13 +11,8 @@
 #include <ratio>
 
 
-
 namespace Rift
 {
-	// decimals of microseconds
-	using decmicroseconds = Chrono::duration<i64, std::ratio<1, 10'000'000>>;
-
-
 	/**
 	 * Implements a time span.
 	 *
@@ -38,12 +33,9 @@ namespace Rift
 	 */
 	struct Timespan
 	{
-		using SysClock = Chrono::system_clock;
-		using SysDuration = Chrono::duration<SysClock, decmicroseconds>;
-
 	private:
 		/** The time span value in 100 nanoseconds resolution. */
-		decmicroseconds duration;
+		DecMicroseconds duration;
 
 
 	public:
@@ -58,7 +50,7 @@ namespace Rift
 		 * @param duration The number of decimals of microseconds.
 		 * @see MaxValue, MinValue, Zero
 		 */
-		Timespan(decmicroseconds duration) : duration(duration) {}
+		Timespan(DecMicroseconds duration) : duration(duration) {}
 
 		/**
 		 * Create and initialize a new time interval with the specified number of hours, minutes and
@@ -175,7 +167,7 @@ namespace Rift
 		 */
 		Timespan operator*(double scalar) const
 		{
-			return Timespan(decmicroseconds{(i64)(duration.count() * scalar)});
+			return Timespan(DecMicroseconds{(i64)(duration.count() * scalar)});
 		}
 
 		/**
@@ -186,7 +178,7 @@ namespace Rift
 		 */
 		Timespan& operator*=(double scalar)
 		{
-			duration = decmicroseconds{(i64)(duration.count() * scalar)};
+			duration = DecMicroseconds{(i64)(duration.count() * scalar)};
 			return *this;
 		}
 
@@ -198,7 +190,7 @@ namespace Rift
 		 */
 		Timespan operator/(double scalar) const
 		{
-			return Timespan(decmicroseconds{(i64)(duration.count() / scalar)});
+			return Timespan(DecMicroseconds{(i64)(duration.count() / scalar)});
 		}
 
 		/**
@@ -209,7 +201,7 @@ namespace Rift
 		 */
 		Timespan& operator/=(double scalar)
 		{
-			duration = decmicroseconds{(i64)(duration.count() / scalar)};
+			duration = DecMicroseconds{(i64)(duration.count() / scalar)};
 			return *this;
 		}
 
@@ -417,7 +409,7 @@ namespace Rift
 		 *
 		 * @return Number of ticks.
 		 */
-		const decmicroseconds& GetTime() const
+		const DecMicroseconds& GetTime() const
 		{
 			return duration;
 		}
@@ -503,7 +495,7 @@ namespace Rift
 		 */
 		bool IsZero() const
 		{
-			return duration == decmicroseconds::zero();
+			return duration == DecMicroseconds::zero();
 		}
 
 		/**
@@ -560,7 +552,7 @@ namespace Rift
 		 */
 		static Timespan MaxValue()
 		{
-			return Timespan(decmicroseconds::max());
+			return Timespan(DecMicroseconds::max());
 		}
 
 		/**
@@ -573,7 +565,7 @@ namespace Rift
 		 */
 		static Timespan MinValue()
 		{
-			return Timespan(decmicroseconds::min());
+			return Timespan(DecMicroseconds::min());
 		}
 
 		/**
@@ -604,7 +596,7 @@ namespace Rift
 		 */
 		static Timespan Zero()
 		{
-			return Timespan(decmicroseconds::zero());
+			return Timespan(DecMicroseconds::zero());
 		}
 
 	public:

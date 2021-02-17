@@ -10,7 +10,6 @@
 #include "Reflection/ReflectionTags.h"
 
 
-
 namespace Rift::Refl
 {
 	using PropertyMap = TMap<Name, Property*>;
@@ -18,11 +17,14 @@ namespace Rift::Refl
 	/** Smallest reflection type that contains all basic class or struct data */
 	class CORE_API Type
 	{
+		template <typename T, typename Parent, typename TType, ReflectionTags tags>
+		friend struct TTypeBuilder;
+
 	protected:
 		Name name;
 		ReflectionTags tags;
 
-		Type* parent;
+		Type* parent = nullptr;
 		TArray<Type*> children;
 
 		PropertyMap properties{};
@@ -34,9 +36,11 @@ namespace Rift::Refl
 		Type& operator=(const Type&) = delete;
 		virtual ~Type()
 		{
-			// TODO: Destroy properties
+			for (auto& it : properties)
+			{
+				delete it.second;
+			}
 		}
-
 
 		/** Type */
 		const Name& GetName() const
@@ -53,11 +57,6 @@ namespace Rift::Refl
 			return (tags & tag) > 0;
 		}
 
-	protected:
-		void __GetAllChildren(TArray<Type*>& outChildren);
-		Type* __FindChild(const Name& className) const;
-
-	public:
 		bool IsChildOf(const Type* other) const;
 
 		template <typename T>
@@ -68,44 +67,18 @@ namespace Rift::Refl
 
 		bool IsParentOf(const Type* other) const
 		{
-			return other->IsChildOf(this);
+			return other && other->IsChildOf(this);
 		}
 
 
 		/** Properties */
-
 		const Property* FindProperty(const Name& propertyName) const;
 		void GetOwnProperties(PropertyMap& outProperties) const;
 		void GetAllProperties(PropertyMap& outProperties) const;
 
 
-		/** REGISTRY */
-
-		/** Registry a class */
-		void __Registry(Name inName)
-		{
-			name = MoveTemp(inName);
-		}
-
-		/** Registry a class with a parent */
-		template <typename Super>
-		void __Registry(Name inName)
-		{
-			parent = Super::StaticType();
-			parent->__RegistryChild(this);
-			__Registry(inName);
-		}
-
-		/** Called internally to registry class tags */
-		void __RegistryTags(ReflectionTags inTags)
-		{
-			tags = inTags;
-		}
-
-	private:
-		void __RegistryChild(Type* child)
-		{
-			children.Add(child);
-		}
+	protected:
+		void __GetAllChildren(TArray<Type*>& outChildren);
+		Type* __FindChild(const Name& className) const;
 	};
 }	 // namespace Rift::Refl

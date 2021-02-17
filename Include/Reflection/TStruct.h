@@ -18,15 +18,11 @@ namespace Rift::Refl
 		static_assert(std::is_convertible<T, Rift::Struct>::value, "Type does not inherit Struct!");
 
 	private:
-		static TStruct _struct;
+		static TStruct* _instance;
 
 
 	public:
-		TStruct() : Struct()
-		{
-			T::__refl_Registry();
-			T::__refl_RegistryProperties();
-		}
+		TStruct() : Struct() {}
 
 		virtual BaseStruct* New() const override
 		{
@@ -35,10 +31,10 @@ namespace Rift::Refl
 
 		static TStruct* GetStatic()
 		{
-			return &_struct;
+			return _instance;
 		}
 	};
 
 	template <typename T>
-	TStruct<T> TStruct<T>::_struct{};
+	TStruct<T>* TStruct<T>::_instance = T::InitType();
 }	 // namespace Rift::Refl

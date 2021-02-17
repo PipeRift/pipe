@@ -67,7 +67,7 @@ namespace Rift
 			if (method)
 			{
 				EventHandle handle{};
-				rawListeners.Add({handle.Id(), MoveTemp(method), nullptr});
+				rawListeners.Add({handle.Id(), Move(method), nullptr});
 				return handle;
 			}
 
@@ -84,7 +84,7 @@ namespace Rift
 			{
 				if constexpr (IsObject<Type>::value)
 				{
-					return Bind<Type>(instance->Self(), MoveTemp(method));
+					return Bind<Type>(instance->Self(), Move(method));
 				}
 				else
 				{
@@ -111,7 +111,7 @@ namespace Rift
 				};
 
 				EventHandle handle{};
-				objListeners.Add({handle.Id(), MoveTemp(func), object});
+				objListeners.Add({handle.Id(), Move(func), object});
 				return handle;
 			}
 

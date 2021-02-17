@@ -22,7 +22,7 @@ namespace Rift;
 
 		/** Construct an Type with a valid value. */
 		TOptional(const Type& value) : bIsSet{true}, value{value} {}
-		TOptional(Type&& value) : bIsSet{true}, value{MoveTemp(value)} {}
+		TOptional(Type&& value) : bIsSet{true}, value{Move(value)} {}
 
 		/** Copy/Move construction */
 		TOptional(const TOptional& other) : bIsSet(other.bIsSet)
@@ -36,7 +36,7 @@ namespace Rift;
 		{
 			if (bIsSet)
 			{
-				value = MoveTemp(other.value);
+				value = Move(other.value);
 			}
 		}
 
@@ -59,7 +59,7 @@ namespace Rift;
 				bIsSet = other.bIsSet;
 				if (bIsSet)
 				{
-					value = MoveTemp(other.value);
+					value = Move(other.value);
 				}
 			}
 			return *this;
@@ -79,7 +79,7 @@ namespace Rift;
 			if (&value != &otherValue)
 			{
 				bIsSet = true;
-				value = MoveTemp(otherValue);
+				value  = Move(otherValue);
 			}
 			return *this;
 		}

@@ -6,8 +6,8 @@
 
 #pragma warning(disable : 4003)
 
-#define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
 #define PRIMITIVE_CAT(a, ...) a##__VA_ARGS__
+#define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
 
 #define IIF(c) PRIMITIVE_CAT(IIF_, c)
 #define IIF_0(t, ...) __VA_ARGS__

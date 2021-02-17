@@ -15,7 +15,7 @@ namespace Rift
 		CLASS(AssetManager, Object)
 
 	public:
-		static constexpr StringView assetFormat{".vc"};
+		static CORE_API constexpr StringView assetFormat{".vc"};
 
 	private:
 		TArray<AssetInfo> assetInfos;

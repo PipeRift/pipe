@@ -62,9 +62,9 @@ namespace Rift
 
 			void MoveFrom(OwnPtr&& other)
 			{
-				value = other.value;
-				counter = other.counter;
-				other.value = nullptr;
+				value         = other.value;
+				counter       = other.counter;
+				other.value   = nullptr;
 				other.counter = nullptr;
 			}
 		};
@@ -133,17 +133,36 @@ namespace Rift
 		template <typename T2, typename Builder2>
 		friend struct OwnPtr;
 
+#if BUILD_DEBUG
+		// Pointer to value for debugging
+		T* instance = nullptr;
+#endif
+
+
 	public:
 		OwnPtr() = default;
-		explicit OwnPtr(T* value) : Super(value) {}
+		explicit OwnPtr(T* value)
+		    : Super(value)
+#if BUILD_DEBUG
+		    , instance(value)
+#endif
+		{}
 
 		OwnPtr(OwnPtr&& other) noexcept
 		{
+#if BUILD_DEBUG
+			instance       = reinterpret_cast<T*>(other.instance);
+			other.instance = nullptr;
+#endif
 			MoveFrom(Move(other));
 		}
 
 		OwnPtr& operator=(OwnPtr&& other) noexcept
 		{
+#if BUILD_DEBUG
+			instance       = other.instance;
+			other.instance = nullptr;
+#endif
 			MoveFrom(Move(other));
 			return *this;
 		}
@@ -152,12 +171,20 @@ namespace Rift
 		template <typename T2, typename Builder2>
 		OwnPtr(OwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
 		{
-			MoveFrom(MoveTemp(other));
+#if BUILD_DEBUG
+			instance       = reinterpret_cast<T*>(other.instance);
+			other.instance = nullptr;
+#endif
+			MoveFrom(Move(other));
 		}
 		template <typename T2, typename Builder2>
 		OwnPtr& operator=(OwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
 		{
-			MoveFrom(MoveTemp(other));
+#if BUILD_DEBUG
+			instance       = other.instance;
+			other.instance = nullptr;
+#endif
+			MoveFrom(Move(other));
 			return *this;
 		}
 
@@ -179,7 +206,11 @@ namespace Rift
 			if (IsValid() && (std::is_convertible_v<T2, T> || dynamic_cast<T2*>(**this) != nullptr))
 			{
 				OwnPtr<T2, Builder> newPtr{};
-				newPtr.MoveFrom(MoveTemp(*this));
+				newPtr.MoveFrom(Move(*this));
+#if BUILD_DEBUG
+				newPtr.instance = reinterpret_cast<T2*>(instance);
+				instance        = nullptr;
+#endif
 				return newPtr;
 			}
 			return {};
@@ -207,10 +238,13 @@ namespace Rift
 				Builder::Delete(value);
 				value = nullptr;
 
-				counter->bIsSet = false;
 				if (counter->weaks <= 0)
 				{
 					delete counter;
+				}
+				else
+				{
+					counter->bIsSet = false;
 				}
 				counter = nullptr;
 			}
@@ -273,7 +307,7 @@ namespace Rift
 
 		Ptr() = default;
 		Ptr(const Ptr& other) : Super(other) {}
-		Ptr(Ptr&& other) noexcept : Super(MoveTemp(other)) {}
+		Ptr(Ptr&& other) noexcept : Super(Move(other)) {}
 
 		Ptr& operator=(const Ptr& other)
 		{
@@ -283,7 +317,7 @@ namespace Rift
 
 		Ptr& operator=(Ptr&& other) noexcept
 		{
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 			return *this;
 		}
 
@@ -299,7 +333,7 @@ namespace Rift
 		{}
 
 		template <typename T2>
-		Ptr(Ptr<T2>&& other) requires Convertible<T2, T> : Super(MoveTemp(other))
+		Ptr(Ptr<T2>&& other) requires Convertible<T2, T> : Super(Move(other))
 		{}
 
 		template <typename T2>
@@ -316,7 +350,7 @@ namespace Rift
 		{
 			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
 				"Type is not down-castable!");
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 			return *this;
 		}
 

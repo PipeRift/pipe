@@ -12,7 +12,7 @@
 
 namespace Rift
 {
-	struct PlatformTime
+	struct CORE_API PlatformTime
 	{
 		static u32 Cycles()
 		{

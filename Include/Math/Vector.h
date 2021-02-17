@@ -15,7 +15,6 @@
 #include <glm/gtx/norm.hpp>
 
 
-
 namespace Rift
 {
 	template <glm::length_t L, typename T>

@@ -7,7 +7,6 @@
 #include "Platform/Platform.h"
 
 
-
 namespace Rift
 {
 	template <typename T>

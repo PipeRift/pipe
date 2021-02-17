@@ -23,15 +23,20 @@
 
 namespace Rift
 {
-	using String = std::basic_string<TCHAR>;
+	using String     = std::basic_string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>;
 	using StringView = std::basic_string_view<TCHAR>;
+	using StringBuffer =
+	    fmt::basic_memory_buffer<TCHAR, fmt::inline_buffer_size, STLAllocator<TCHAR>>;
 
-	struct CString
+	struct CORE_API CString
 	{
 		template <typename... Args>
 		static String Format(StringView format, Args... args)
 		{
-			return fmt::format(format, std::forward<Args>(args)...);
+			StringBuffer buffer;
+			String str;
+			fmt::format_to(std::back_inserter(str), format, std::forward<Args>(args)...);
+			return Move(str);
 		}
 
 		template <typename... Args>
@@ -191,6 +196,8 @@ namespace Rift
 		static bool IsNumeric(const TCHAR* Str);
 
 		static String ParseMemorySize(size_t size);
+
+		static size_t GetStringHash(const TCHAR* str);
 	};
 
 	using Regex = std::basic_regex<TCHAR>;
@@ -201,15 +208,7 @@ namespace Rift
 	{
 		size_t operator()(const String& str) const
 		{
-			return HashBytes(str.data(), str.size());
-			// To consider: limit p to at most 256 chars.
-			/*const TCHAR* p = (const TCHAR*) x.c_str();
-			unsigned int c, result = 2166136261U;	 // We implement an FNV-like String hash.
-			while ((c = *p++) != 0)					 // Using '!=' disables compiler warnings.
-			{
-				result = (result * 16777619) ^ c;
-			}
-			return (size_t) result;*/
+			return CString::GetStringHash(str.data());
 		}
 	};
 
@@ -218,15 +217,16 @@ namespace Rift
 	{
 		size_t operator()(const StringView& str) const
 		{
-			return HashBytes(str.data(), str.size());
-			// To consider: limit p to at most 256 chars.
-			/*const TCHAR* p = (const TCHAR*) x.data();
-			unsigned int c, result = 2166136261U;	 // We implement an FNV-like String hash.
-			while ((c = *p++) != 0)					 // Using '!=' disables compiler warnings.
-			{
-				result = (result * 16777619) ^ c;
-			}
-			return size_t(result);*/
+			return CString::GetStringHash(str.data());
+		}
+	};
+
+	template <>
+	struct Hash<const TCHAR*>
+	{
+		size_t operator()(const TCHAR* str) const
+		{
+			return CString::GetStringHash(str);
 		}
 	};
 }	 // namespace Rift

@@ -9,7 +9,7 @@ namespace Rift
 	/**
 	 * Windows specific types
 	 **/
-	struct WindowsPlatformTypes : public GenericPlatformTypes
+	struct CORE_API WindowsPlatformTypes : public GenericPlatformTypes
 	{
 #ifdef _WIN64
 		using sizet = __int64;

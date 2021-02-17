@@ -7,7 +7,6 @@
 #include "Type.h"
 
 
-
 namespace Rift::Refl
 {
 	class CORE_API Struct : public Type
@@ -48,7 +47,7 @@ namespace Rift::Refl
 			Name name, std::function<VariableT*(void*)>&& access, ReflectionTags tags)
 		{
 			properties.Insert(name, new TProperty<VariableT>(this, GetReflectableName<VariableT>(),
-										name, MoveTemp(access), tags));
+			                            name, Move(access), tags));
 		}
 	};
 }	 // namespace Rift::Refl

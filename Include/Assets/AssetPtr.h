@@ -10,7 +10,6 @@
 #include "TypeTraits.h"
 
 
-
 namespace Rift
 {
 	class BaseAssetPtr
@@ -23,7 +22,7 @@ namespace Rift
 
 	public:
 		BaseAssetPtr() = default;
-		BaseAssetPtr(AssetInfo info) : info{MoveTemp(info)} {}
+		BaseAssetPtr(AssetInfo info) : info{Move(info)} {}
 
 		AssetInfo GetInfo() const
 		{
@@ -31,7 +30,7 @@ namespace Rift
 		}
 		void SetInfo(AssetInfo newInfo)
 		{
-			info = MoveTemp(newInfo);
+			info = Move(newInfo);
 			cachedAsset.Reset();
 		}
 	};
@@ -73,7 +72,7 @@ namespace Rift
 
 		TAssetPtr& operator=(TAssetPtr&& other) noexcept
 		{
-			MoveFrom(MoveTemp(other));
+			MoveFrom(Move(other));
 			return *this;
 		}
 		TAssetPtr& operator=(const TAssetPtr& other)

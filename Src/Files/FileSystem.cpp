@@ -1,9 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Files/FileSystem.h"
-
 #include "Profiler.h"
-#include "Serialization/Archive.h"
+
 
 
 namespace Rift
@@ -74,6 +73,18 @@ namespace Rift
 		return !result.empty();
 	}
 
+	void FileSystem::CreateFolder(const Path& path, bool bRecursive)
+	{
+		if (IsFolder(path) && !Exists(path))
+		{
+			if (bRecursive)
+			{
+				CreateFolder(path.parent_path(), bRecursive);
+			}
+			fs::create_directory(path);
+		}
+	}
+
 	bool FileSystem::SaveStringFile(const Path& path, const String& data)
 	{
 		ZoneScopedNC("SaveStringFile", 0xBB45D1);
@@ -86,5 +97,23 @@ namespace Rift
 		std::ofstream file(path);
 		file.write(data.data(), data.size());
 		return true;
+	}
+
+	bool FileSystem::Delete(const Path& path, bool bRemoveIfNotEmpty, bool bLogErrors)
+	{
+		std::error_code err;
+		if (bRemoveIfNotEmpty)
+		{
+			fs::remove_all(path, err);
+		}
+		else
+		{
+			fs::remove(path, err);
+		}
+		if (err && bLogErrors)
+		{
+			Log::Warning(err.message());
+		}
+		return bool(err);
 	}
 }	 // namespace Rift

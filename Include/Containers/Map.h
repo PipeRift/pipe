@@ -14,7 +14,6 @@
 #include <type_traits>
 
 
-
 namespace Rift
 {
 	template <typename Key, typename Value>
@@ -59,17 +58,17 @@ namespace Rift
 
 		void Insert(KeyType&& key, ValueType&& value)
 		{
-			map.insert({MoveTemp(key), MoveTemp(value)});
+			map.insert({Move(key), Move(value)});
 		}
 
 		void Insert(const KeyType& key, ValueType&& value)
 		{
-			map.insert({key, MoveTemp(value)});
+			map.insert({key, Move(value)});
 		}
 
 		void Insert(KeyType&& key, const ValueType& value)
 		{
-			map.insert({MoveTemp(key), value});
+			map.insert({Move(key), value});
 		}
 
 		void Insert(const KeyType& key, const ValueType& value)
@@ -103,7 +102,7 @@ namespace Rift
 			{
 				if (Size() <= 0)
 				{
-					MoveFrom(MoveTemp(other));
+					MoveFrom(Move(other));
 				}
 				else
 				{
@@ -221,11 +220,11 @@ namespace Rift
 		}
 		ValueType& operator[](KeyType&& key)
 		{
-			return map[MoveTemp(key)];
+			return map[Move(key)];
 		}
 		const ValueType& operator[](KeyType&& key) const
 		{
-			return map[MoveTemp(key)];
+			return map[Move(key)];
 		}
 
 		// Iterator functions
@@ -265,7 +264,7 @@ namespace Rift
 
 		void MoveFrom(TMap<KeyType, ValueType>&& other)
 		{
-			map = MoveTemp(other.map);
+			map = Move(other.map);
 		}
 	};
 }	 // namespace Rift

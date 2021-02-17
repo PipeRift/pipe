@@ -11,7 +11,6 @@
 #include <filesystem>
 
 
-
 namespace Rift
 {
 	namespace fs = std::filesystem;
@@ -56,17 +55,9 @@ namespace Rift
 		static bool LoadStringFile(const Path& path, String& result);
 		static bool SaveStringFile(const Path& path, const String& data);
 
-		static void CreateFolder(const Path& path, bool bRecursive = false)
-		{
-			if (IsFolder(path) && !Exists(path))
-			{
-				if (bRecursive)
-				{
-					CreateFolder(path.parent_path(), bRecursive);
-				}
-				fs::create_directory(path);
-			}
-		}
+		static void CreateFolder(const Path& path, bool bRecursive = false);
+
+		static bool Delete(const Path& path, bool bRemoveIfNotEmpty = true, bool bLogErrors = true);
 
 		static Iterator CreateIterator(const Path& path)
 		{
@@ -76,6 +67,7 @@ namespace Rift
 			}
 			return Iterator(path);
 		}
+
 		static RecursiveIterator CreateRecursiveIterator(const Path& path)
 		{
 			if (!Exists(path) || !IsFolder(path))
@@ -112,7 +104,7 @@ namespace Rift
 			return IsFile(FromString(path));
 		}
 
-		static bool IsFile(const Path& path, bool  /*bCheckOnDisk*/ = true)
+		static bool IsFile(const Path& path, bool /*bCheckOnDisk*/ = true)
 		{
 			return !path.empty() && path.has_extension();
 		}
@@ -136,7 +128,7 @@ namespace Rift
 		{
 			if (path.is_absolute())
 			{
-				return {};
+				return path;
 			}
 			return parent / path;
 		}
@@ -153,7 +145,7 @@ namespace Rift
 
 		static String ToString(const Path& path)
 		{
-			return path.string();
+			return path.string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>();
 		}
 
 		static Path FromString(StringView pathStr)
