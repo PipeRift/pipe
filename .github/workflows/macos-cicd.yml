@@ -56,7 +56,8 @@ jobs:
           cmakeGenerator: 'Ninja'
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeListsTxtPath: 'CMakeLists.txt'
-          cmakeAppendedArgs: -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          cmakeBuildType: ${{ matrix.build-type }}
+          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
           buildDirectory: 'Build'
 
       - uses: actions/upload-artifact@v2
