@@ -7,9 +7,7 @@
 #include "Files/FileSystem.h"
 #include "Strings/String.h"
 
-#include <Tracy.hpp>
 #include <mutex>
-
 
 
 namespace spdlog

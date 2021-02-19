@@ -6,6 +6,15 @@
 
 #pragma warning(disable : 4003)
 
+
+#define Ensure(condition, ...)   \
+	if (!(condition))            \
+	{                            \
+		Log::Error(__VA_ARGS__); \
+	}
+#define EnsureIf(condition, ...) Ensure(condition, __VA_ARGS__) else
+
+
 #define PRIMITIVE_CAT(a, ...) a##__VA_ARGS__
 #define CAT(a, ...) PRIMITIVE_CAT(a, __VA_ARGS__)
 

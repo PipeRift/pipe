@@ -23,7 +23,8 @@ namespace Rift
 
 	void FrameTime::PostTick()
 	{
-		float extraTimeForFPSCAP = minFrameTime - (DateTime::Now() - currentTime).GetTotalSeconds();
+		const float secondsPassed      = (DateTime::Now() - currentTime).GetTotalSeconds();
+		const float extraTimeForFPSCAP = minFrameTime - secondsPassed;
 		if (extraTimeForFPSCAP > 0.0f)
 		{
 			// Cap FPS with a delay

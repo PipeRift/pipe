@@ -6,12 +6,11 @@
 #include "Containers/Map.h"
 #include "Events/Function.h"
 #include "Memory/LinearAllocator.h"
+#include "Profiler.h"
 #include "Reflection/TClass.h"
 #include "Reflection/TStruct.h"
 #include "Strings/Name.h"
 #include "TypeTraits.h"
-
-#include <Tracy.hpp>
 
 
 namespace Rift::Refl
@@ -21,7 +20,7 @@ namespace Rift::Refl
 		// Contains all reflection types linearly in memory
 		Memory::LinearAllocator<true> allocator{256 * 1024};	// First block is 256KB
 		// We map all classes by name in case we need to find them
-		TMap<Name, void*> typeNameToInstance{};
+		TMap<Name, void*> typeIdToInstance{};
 
 	public:
 		template <typename T>
@@ -29,13 +28,13 @@ namespace Rift::Refl
 		{
 			void* ptr = allocator.Allocate(sizeof(T));
 			new (ptr) T();
-			typeNameToInstance.Insert(uniqueId, ptr);
+			typeIdToInstance.Insert(uniqueId, ptr);
 			return *static_cast<T*>(ptr);
 		}
 
 		Type* FindTypePtr(Name uniqueId) const
 		{
-			if (void* const* foundTypePtr = typeNameToInstance.Find(uniqueId))
+			if (void* const* foundTypePtr = typeIdToInstance.Find(uniqueId))
 			{
 				return static_cast<Type*>(*foundTypePtr);
 			}
@@ -81,7 +80,7 @@ namespace Rift::Refl
 		template <typename PropertyType, ReflectionTags propertyTags>
 		void AddProperty(Name name, TFunction<PropertyType*(void*)>&& access)
 		{
-			ZoneScoped;
+			ZoneScopedN("AddProperty");
 			static_assert(Rift::IsReflectableType<PropertyType>(),
 				"PropertyType is not a valid reflected type.");
 			static_assert(!(propertyTags & Abstract), "Properties can't be Abstract");
@@ -101,7 +100,7 @@ namespace Rift::Refl
 	protected:
 		void Build(Name uniqueId, Name name)
 		{
-			ZoneScoped;
+			ZoneScopedN("BuildType");
 			if constexpr (hasParent)
 			{
 				// Parent gets initialized before anything else
