@@ -14,7 +14,7 @@ namespace Rift
 	/* Guid interface
 	 *****************************************************************************/
 
-	bool Guid::Serialize(Archive& ar, const char* name)
+	bool Guid::Serialize(Archive& ar, StringView name)
 	{
 		ar.BeginObject(name);
 		{

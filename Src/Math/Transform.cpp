@@ -8,7 +8,7 @@
 
 namespace Rift
 {
-	bool Transform::Serialize(Archive& ar, const char* name)
+	bool Transform::Serialize(Archive& ar, StringView name)
 	{
 		ar.BeginObject(name);
 		{

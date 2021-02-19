@@ -5,7 +5,7 @@
 
 namespace Rift
 {
-	void Archive::Serialize(const char* name, v2& val)
+	void Archive::Serialize(StringView name, v2& val)
 	{
 		BeginObject(name);
 		{
@@ -15,7 +15,7 @@ namespace Rift
 		EndObject();
 	}
 
-	void Archive::Serialize(const char* name, v2_u32& val)
+	void Archive::Serialize(StringView name, v2_u32& val)
 	{
 		BeginObject(name);
 		{
@@ -25,7 +25,7 @@ namespace Rift
 		EndObject();
 	}
 
-	void Archive::Serialize(const char* name, v3& val)
+	void Archive::Serialize(StringView name, v3& val)
 	{
 		BeginObject(name);
 		{
@@ -36,7 +36,7 @@ namespace Rift
 		EndObject();
 	}
 
-	void Archive::Serialize(const char* name, Quat& val)
+	void Archive::Serialize(StringView name, Quat& val)
 	{
 		BeginObject(name);
 		{
@@ -48,11 +48,11 @@ namespace Rift
 		EndObject();
 	}
 
-	void JsonArchive::Serialize(const char* name, bool& val)
+	void JsonArchive::Serialize(StringView name, bool& val)
 	{
 		if (IsLoading())
 		{
-			const Json& field = Data()[name];
+			const Json& field = Data()[name.data()];
 			if (field.is_boolean())
 			{
 				val = field.get<bool>();
@@ -60,15 +60,15 @@ namespace Rift
 		}
 		else
 		{
-			Data()[name] = val;
+			Data()[name.data()] = val;
 		}
 	}
 
-	void JsonArchive::Serialize(const char* name, u8& val)
+	void JsonArchive::Serialize(StringView name, u8& val)
 	{
 		if (IsLoading())
 		{
-			const Json& field = Data()[name];
+			const Json& field = Data()[name.data()];
 			if (field.is_number_unsigned())
 			{
 				val = field.get<u8>();
@@ -76,15 +76,15 @@ namespace Rift
 		}
 		else
 		{
-			Data()[name] = val;
+			Data()[name.data()] = val;
 		}
 	}
 
-	void JsonArchive::Serialize(const char* name, i32& val)
+	void JsonArchive::Serialize(StringView name, i32& val)
 	{
 		if (IsLoading())
 		{
-			const Json& field = Data()[name];
+			const Json& field = Data()[name.data()];
 			if (field.is_number_unsigned())
 			{
 				val = field.get<i32>();
@@ -92,15 +92,15 @@ namespace Rift
 		}
 		else
 		{
-			Data()[name] = val;
+			Data()[name.data()] = val;
 		}
 	}
 
-	void JsonArchive::Serialize(const char* name, u32& val)
+	void JsonArchive::Serialize(StringView name, u32& val)
 	{
 		if (IsLoading())
 		{
-			const Json& field = Data()[name];
+			const Json& field = Data()[name.data()];
 			if (field.is_number_unsigned())
 			{
 				val = field.get<u32>();
@@ -108,15 +108,15 @@ namespace Rift
 		}
 		else
 		{
-			Data()[name] = val;
+			Data()[name.data()] = val;
 		}
 	}
 
-	void JsonArchive::Serialize(const char* name, float& val)
+	void JsonArchive::Serialize(StringView name, float& val)
 	{
 		if (IsLoading())
 		{
-			const Json& field = Data()[name];
+			const Json& field = Data()[name.data()];
 			if (field.is_number())
 			{
 				val = field.get<float>();
@@ -124,15 +124,15 @@ namespace Rift
 		}
 		else
 		{
-			Data()[name] = val;
+			Data()[name.data()] = val;
 		}
 	}
 
-	void JsonArchive::Serialize(const char* name, String& val)
+	void JsonArchive::Serialize(StringView name, String& val)
 	{
 		if (IsLoading())
 		{
-			const Json& field = Data()[name];
+			const Json& field = Data()[name.data()];
 			if (field.is_string())
 			{
 				val = field.get<String>();
@@ -140,19 +140,19 @@ namespace Rift
 		}
 		else
 		{
-			Data()[name] = val;
+			Data()[name.data()] = val;
 		}
 	}
 
-	void JsonArchive::Serialize(const char* name, Json& val)
+	void JsonArchive::Serialize(StringView name, Json& val)
 	{
 		if (IsLoading())
 		{
-			val = Data()[name];
+			val = Data()[name.data()];
 		}
 		else
 		{
-			Data()[name] = val;
+			Data()[name.data()] = val;
 		}
 	}
 }	 // namespace Rift

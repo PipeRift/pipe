@@ -183,7 +183,7 @@ namespace Rift
 
 		static const Id noneId;
 
-		bool Serialize(class Archive& ar, const char* name);
+		bool Serialize(class Archive& ar, StringView name);
 
 	private:
 		Name(const Id& id) : id(id) {}

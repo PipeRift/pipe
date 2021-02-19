@@ -162,7 +162,7 @@ namespace Rift
 		return Math::Lerp(*this, LinearColor(Lum, Lum, Lum, 0), desaturation);
 	}
 
-	bool Color::Serialize(Archive& ar, const char* name)
+	bool Color::Serialize(Archive& ar, StringView name)
 	{
 		ar.BeginObject(name);
 		{

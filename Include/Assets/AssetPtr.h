@@ -7,6 +7,7 @@
 #include "AssetInfo.h"
 #include "AssetManager.h"
 #include "Files/FileSystem.h"
+#include "Strings/StringView.h"
 #include "TypeTraits.h"
 
 
@@ -173,7 +174,7 @@ namespace Rift
 			return Get();
 		}
 
-		bool Serialize(class Archive& ar, const char* inName)
+		bool Serialize(class Archive& ar, StringView inName)
 		{
 			return info.Serialize(ar, inName);
 		}

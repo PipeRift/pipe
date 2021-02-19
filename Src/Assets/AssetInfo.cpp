@@ -6,7 +6,7 @@
 
 namespace Rift
 {
-	bool AssetInfo::Serialize(class Archive& ar, const char* name)
+	bool AssetInfo::Serialize(class Archive& ar, StringView name)
 	{
 		ar(name, id);
 		return true;
