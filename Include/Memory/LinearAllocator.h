@@ -87,7 +87,7 @@ namespace Rift::Memory
 			Grow(Math::Max(activeBlock.GetSize(), size));
 		}
 
-		u8* const ptr = reinterpret_cast<u8*>(activeBlock.GetData()) + usedBlockSize;
+		void* const ptr = reinterpret_cast<u8*>(activeBlock.GetData()) + usedBlockSize;
 		usedBlockSize += size;
 		return ptr;
 	}
@@ -105,7 +105,7 @@ namespace Rift::Memory
 			Grow(Math::Max(activeBlock.GetSize(), size));
 		}
 
-		void* ptr = activeBlock.GetData() + usedBlockSize;
+		void* ptr = reinterpret_cast<u8*>(activeBlock.GetData()) + usedBlockSize;
 
 		size_t sizeLeft = activeBlock.GetSize() - usedBlockSize;
 		std::align(alignment, size, ptr, sizeLeft);
