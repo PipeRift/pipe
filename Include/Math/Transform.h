@@ -10,6 +10,7 @@
 #include "Reflection/ClassTraits.h"
 #include "Reflection/ReflectionTypeTraits.h"
 #include "Rotator.h"
+#include "Strings/StringView.h"
 #include "Vector.h"
 
 #include <glm/glm.hpp>
@@ -41,7 +42,7 @@ namespace Rift
 			rotation = Quat::FromRotator(angles);
 		}
 
-		bool Serialize(class Archive& ar, const char* name);
+		bool Serialize(class Archive& ar, StringView name);
 
 
 		Matrix4f ToMatrix() const

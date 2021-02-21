@@ -19,7 +19,7 @@ namespace Rift
 
 // Placeholder for global serializers to avoid compiler errors
 template <typename T>
-void Serialize(Rift::Archive&, const char* name, T)
+void Serialize(Rift::Archive&, Rift::StringView name, T)
 {}
 
 namespace Rift
@@ -36,51 +36,51 @@ namespace Rift
 		virtual ~Archive() = default;
 
 		template <typename T>
-		Archive& operator()(const char* name, T& val)
+		Archive& operator()(StringView name, T& val)
 		{
 			CustomSerializeOrNot(name, val);
 			return *this;
 		}
 
-		virtual void Serialize(const char* name, bool& val) = 0;
+		virtual void Serialize(StringView name, bool& val) = 0;
 
-		virtual void Serialize(const char* name, u8& val) = 0;
+		virtual void Serialize(StringView name, u8& val) = 0;
 
-		virtual void Serialize(const char* name, i32& val) = 0;
+		virtual void Serialize(StringView name, i32& val) = 0;
 
-		virtual void Serialize(const char* name, u32& val) = 0;
+		virtual void Serialize(StringView name, u32& val) = 0;
 
-		virtual void Serialize(const char* name, float& val) = 0;
+		virtual void Serialize(StringView name, float& val) = 0;
 
-		virtual void Serialize(const char* name, String& val) = 0;
+		virtual void Serialize(StringView name, String& val) = 0;
 
-		virtual void Serialize(const char* name, Json& val) = 0;
+		virtual void Serialize(StringView name, Json& val) = 0;
 
-		void Serialize(const char* name, v2& val);
-		void Serialize(const char* name, v2_u32& val);
-		void Serialize(const char* name, v3& val);
-		void Serialize(const char* name, Quat& val);
+		void Serialize(StringView name, v2& val);
+		void Serialize(StringView name, v2_u32& val);
+		void Serialize(StringView name, v3& val);
+		void Serialize(StringView name, Quat& val);
 
 		template <typename T>
-		void Serialize(const char* name, OwnPtr<T>& val)
+		void Serialize(StringView name, OwnPtr<T>& val)
 		{
 			BeginObject(name);
 			// Not yet supported. Hard and soft references need to take care of each
 			// other while serializing
 			/*if (IsLoading())
 			{
-				val->Serialize(*this);
+			    val->Serialize(*this);
 			}
 
 			if (val)
 			{
-				val->Serialize(*this);
+			    val->Serialize(*this);
 			}*/
 			EndObject();
 		}
 
 		template <typename T>
-		void Serialize(const char* name, Ptr<T>& val)
+		void Serialize(StringView name, Ptr<T>& val)
 		{
 			Name ptrName;
 			if (IsSaving())
@@ -89,14 +89,14 @@ namespace Rift
 			// CustomSerializeOrNot(name, ptrName);
 
 			/*if(IsLoading())
-				Find and Assign object */
+			    Find and Assign object */
 		}
 
 		template <typename T>
-		void Serialize(const char* name, TArray<T>& val);
+		void Serialize(StringView name, TArray<T>& val);
 
 		template <typename T>
-		void SerializeStruct(const char* name, T& val)
+		void SerializeStruct(StringView name, T& val)
 		{
 			BeginObject(name);
 			val.SerializeReflection(*this);
@@ -104,17 +104,13 @@ namespace Rift
 		}
 
 		// Starts an object by name
-		virtual void BeginObject(const String& name)
-		{
-			BeginObject(name.c_str());
-		};
-		virtual void BeginObject(const char* name) = 0;
-		virtual bool HasObject(const char* name) = 0;
-		virtual bool IsObjectValid() = 0;
+		virtual void BeginObject(StringView name) = 0;
+		virtual bool HasObject(StringView name)   = 0;
+		virtual bool IsObjectValid()              = 0;
 
 		// Starts an object by index (Array)
 		virtual void BeginObject(u32 index) = 0;
-		virtual void EndObject() = 0;
+		virtual void EndObject()            = 0;
 
 		bool IsLoading()
 		{
@@ -130,7 +126,7 @@ namespace Rift
 	private:
 		// Selection of 'Serialize' call
 		template <typename T>
-		bool CustomSerializeOrNot(const char* name, T& val);
+		bool CustomSerializeOrNot(StringView name, T& val);
 	};
 
 
@@ -166,31 +162,31 @@ namespace Rift
 		}
 
 	private:
-		void Serialize(const char* name, bool& val) override;
+		void Serialize(StringView name, bool& val) override;
 
-		void Serialize(const char* name, u8& val) override;
+		void Serialize(StringView name, u8& val) override;
 
-		void Serialize(const char* name, i32& val) override;
+		void Serialize(StringView name, i32& val) override;
 
-		void Serialize(const char* name, u32& val) override;
+		void Serialize(StringView name, u32& val) override;
 
-		void Serialize(const char* name, float& val) override;
+		void Serialize(StringView name, float& val) override;
 
-		void Serialize(const char* name, String& val) override;
+		void Serialize(StringView name, String& val) override;
 
-		void Serialize(const char* name, Json& val) override;
+		void Serialize(StringView name, Json& val) override;
 
 		Json& Data()
 		{
 			return !depthData.IsEmpty() ? *depthData.Last() : baseData;
 		}
 
-		void BeginObject(const char* name) override
+		void BeginObject(StringView name) override
 		{
-			depthData.Add(&Data()[name]);
+			depthData.Add(&Data()[name.data()]);
 		}
 
-		bool HasObject(const char* name) override
+		bool HasObject(StringView name) override
 		{
 			return Data().find(name) != Data().end();
 		}
@@ -229,7 +225,7 @@ namespace Rift
 
 
 	template <typename T>
-	inline void Archive::Serialize(const char* name, TArray<T>& val)
+	inline void Archive::Serialize(StringView name, TArray<T>& val)
 	{
 		BeginObject(name);
 		if (IsLoading())
@@ -269,7 +265,7 @@ namespace Rift
 	}
 
 	template <typename T>
-	inline bool Archive::CustomSerializeOrNot(const char* name, T& val)
+	inline bool Archive::CustomSerializeOrNot(StringView name, T& val)
 	{
 		if constexpr (ClassTraits<T>::HasCustomSerialize)
 		{
@@ -290,4 +286,4 @@ namespace Rift
 			return true;
 		}
 	}
-}	 // namespace Rift
+}    // namespace Rift

@@ -6,6 +6,7 @@
 #include "CoreTypes.h"
 #include "Files/FileSystem.h"
 #include "Strings/Name.h"
+#include "Strings/StringView.h"
 #include "TypeTraits.h"
 
 
@@ -44,7 +45,7 @@ namespace Rift
 			return id == other.id;
 		}
 
-		bool Serialize(class Archive& ar, const char* name);
+		bool Serialize(class Archive& ar, StringView name);
 	};
 
 

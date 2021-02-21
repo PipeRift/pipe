@@ -6,7 +6,7 @@ Rift Core is the foundation library for [Rift](https://github.com/piperift/rift)
 
 ## Software Quality
 
-[![Windows](https://img.shields.io/github/workflow/status/piperift/rift-core/windows-cicd?label=Windows)](https://github.com/PipeRift/rift-core/actions?query=workflow%3Awindows-cicd) [![Linux](https://img.shields.io/github/workflow/status/piperift/rift-core/linux-cicd?label=Linux)](https://github.com/PipeRift/rift-core/actions?query=workflow%3Alinux-cicd) [![MacOS](https://img.shields.io/github/workflow/status/piperift/rift-core/macos-cicd?label=MacOS)](https://github.com/PipeRift/rift-core/actions?query=workflow%3Amacos-cicd)
+[![Windows](https://img.shields.io/github/workflow/status/piperift/rift-core/windows-cicd?label=Windows)](https://github.com/PipeRift/rift-core/actions/workflows/windows-cicd.yml) [![Linux](https://img.shields.io/github/workflow/status/piperift/rift-core/linux-cicd?label=Linux)](https://github.com/PipeRift/rift-core/actions/workflows/linux-cicd.yml) [![MacOS](https://img.shields.io/github/workflow/status/piperift/rift-core/macos-cicd?label=MacOS)](https://github.com/PipeRift/rift-core/actions/workflows/macos-cicd.yml)
 
 The project's code is validated for the following platforms and compilers:
 

@@ -393,7 +393,7 @@ namespace Rift
 			DWColor() = InColor;
 		}
 
-		bool Serialize(class Archive& ar, const char* name);
+		bool Serialize(class Archive& ar, StringView name);
 
 		// Operators.
 		bool operator==(const Color& other) const

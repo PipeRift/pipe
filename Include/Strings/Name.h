@@ -68,8 +68,8 @@ namespace Rift
 		friend Name;
 
 		// #TODO: Move to TSet
-		using Container = tsl::robin_set<NameKey, Hash<NameKey>, std::equal_to<NameKey>>;
-		using Iterator = Container::iterator;
+		using Container     = tsl::robin_set<NameKey, Hash<NameKey>, std::equal_to<NameKey>>;
+		using Iterator      = Container::iterator;
 		using ConstIterator = Container::const_iterator;
 
 		Container table{};
@@ -105,7 +105,7 @@ namespace Rift
 		static const String noneStr;
 		Id id = noneId;
 #if BUILD_DEBUG
-		StringView value;	 // Only used for debugging purposes
+		StringView value;    // Only used for debugging purposes
 #endif
 
 
@@ -135,7 +135,7 @@ namespace Rift
 #endif
 		}
 		Name& operator=(const Name& other) = default;
-		Name& operator=(Name&& other) noexcept
+		Name& operator                     =(Name&& other) noexcept
 		{
 			std::swap(id, other.id);
 #if BUILD_DEBUG
@@ -176,7 +176,7 @@ namespace Rift
 			return noneStr;
 		}
 
-		bool Serialize(class Archive& ar, const char* name);
+		bool Serialize(class Archive& ar, StringView name);
 
 	private:
 		Name(const Id& id) : id(id) {}
@@ -193,4 +193,4 @@ namespace Rift
 		}
 	};
 
-}	 // namespace Rift
+}    // namespace Rift

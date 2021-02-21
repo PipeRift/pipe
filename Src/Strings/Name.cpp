@@ -45,7 +45,7 @@ namespace Rift
 		return Name::NoneStr();
 	}
 
-	bool Name::Serialize(Archive& ar, const char* name)
+	bool Name::Serialize(Archive& ar, StringView name)
 	{
 		if (ar.IsSaving())
 		{

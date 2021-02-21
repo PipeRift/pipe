@@ -8,6 +8,7 @@
 #include "Math/Math.h"
 #include "Misc/Hash.h"
 #include "Platform/Platform.h"
+#include "Strings/StringView.h"
 
 #include <fmt/chrono.h>
 #include <fmt/format.h>
@@ -15,7 +16,6 @@
 #include <charconv>
 #include <regex>
 #include <string>
-#include <string_view>
 
 
 #pragma warning(disable : 4996)
@@ -23,8 +23,7 @@
 
 namespace Rift
 {
-	using String     = std::basic_string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>;
-	using StringView = std::basic_string_view<TCHAR>;
+	using String = std::basic_string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>;
 	using StringBuffer =
 	    fmt::basic_memory_buffer<TCHAR, fmt::inline_buffer_size, STLAllocator<TCHAR>>;
 

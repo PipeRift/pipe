@@ -197,7 +197,7 @@ namespace Rift
 			return a;
 		}
 
-		bool Serialize(class Archive& Ar, const char* name);
+		bool Serialize(class Archive& Ar, StringView name);
 
 		/**
 		 * Guid default string conversion.
