@@ -3,6 +3,8 @@
 
 #include "Platform/GenericPlatform.h"
 
+#include <cstddef>
+
 
 namespace Rift
 {
