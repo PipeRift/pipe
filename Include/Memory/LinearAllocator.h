@@ -5,31 +5,28 @@
 
 #include "Containers/Array.h"
 #include "Math/Math.h"
-#include "Memory/Alloc.h"
+#include "Memory/Blocks/MallocBlock.h"
 
 
 namespace Rift::Memory
 {
 	/**
 	 * LinearAllocator holds memory linearly in a block of memory.
-	 * Individual allocations can't be freed.
-	 * It can be resized, but never smaller than its used size.
+	 * (Sometimes called ZoneAllocator if it resizes)
+	 * Individual allocations can't be freed. It can
+	 * be resized, but never smaller than its used size.
 	 */
 	template <bool allowGrowing = true>
 	class LinearAllocator
 	{
 	protected:
+		MallocBlock activeBlock{};
 		size_t usedBlockSize = 0;
-		size_t maxBlockSize = 0;
-		u8* activeBlock = nullptr;
-		TArray<u8*> fullBlocks;
+		TArray<MallocBlock> discardedBlocks;
 
 
 	public:
-		LinearAllocator(const size_t initialSize)
-		{
-			__Grow(initialSize > 0 ? initialSize : 1024);
-		}
+		LinearAllocator(const size_t initialSize = 0) : activeBlock{initialSize} {}
 		~LinearAllocator()
 		{
 			Reset();
@@ -37,11 +34,13 @@ namespace Rift::Memory
 
 		void Grow(const size_t size)
 		{
-			if (size > 0)	 // Dont reserve an empty block
+			if (size > 0)    // Don't reserve an empty block
 			{
 				// Push last block for destructor deletion
-				fullBlocks.Add(activeBlock);
-				__Grow(size);
+				discardedBlocks.Add(Move(activeBlock));
+
+				usedBlockSize = 0;
+				activeBlock.Allocate(size);
 			}
 		}
 
@@ -56,32 +55,28 @@ namespace Rift::Memory
 		{
 			return usedBlockSize;
 		}
-		size_t GetMaxBlockSize() const
+		size_t GetBlockSize() const
 		{
-			return maxBlockSize;
+			return activeBlock.GetSize();
 		}
-		void* GetActiveBlock() const
+		MallocBlock& GetBlock()
 		{
 			return activeBlock;
 		}
-		const TArray<u8*>& GetFullBlocks() const
+		const MallocBlock& GetBlock() const
 		{
-			return fullBlocks;
+			return activeBlock;
 		}
-
-	private:
-		void __Grow(const size_t size)
+		const TArray<MallocBlock>& GetDiscardedBlocks() const
 		{
-			usedBlockSize = 0;
-			maxBlockSize = size;
-			activeBlock = reinterpret_cast<u8*>(Rift::Alloc(maxBlockSize));
+			return discardedBlocks;
 		}
 	};
 
 	template <bool allowGrowing>
 	inline void* LinearAllocator<allowGrowing>::Allocate(const size_t size)
 	{
-		if (usedBlockSize + size > maxBlockSize)
+		if (usedBlockSize + size > activeBlock.GetSize())
 		{
 			if constexpr (!allowGrowing)
 			{
@@ -89,10 +84,10 @@ namespace Rift::Memory
 				return nullptr;
 			}
 			// Grow same size as previous block, but make sure its enough space
-			Grow(Math::Max(maxBlockSize, size));
+			Grow(Math::Max(activeBlock.GetSize(), size));
 		}
 
-		u8* const ptr = activeBlock + usedBlockSize;
+		u8* const ptr = reinterpret_cast<u8*>(activeBlock.GetData()) + usedBlockSize;
 		usedBlockSize += size;
 		return ptr;
 	}
@@ -110,25 +105,23 @@ namespace Rift::Memory
 			Grow(Math::Max(maxBlockSize, size));
 		}
 
-		void* ptr = activeBlock + usedBlockSize;
-		size_t sizeLeft = maxBlockSize - usedBlockSize;
+		void* ptr = activeBlock.GetData() + usedBlockSize;
+
+		size_t sizeLeft = activeBlock.GetSize() - usedBlockSize;
 		std::align(alignment, size, ptr, sizeLeft);
-		usedBlockSize = size_t(ptr) + size - size_t(activeBlock);
+		usedBlockSize = activeBlock.GetSize() - sizeLeft;
 		return ptr;
 	}
 
 	template <bool allowGrowing>
 	inline void LinearAllocator<allowGrowing>::Reset()
 	{
-		Rift::Free(activeBlock);
-		for (void* block : fullBlocks)
-		{
-			Rift::Free(block);
-		}
-		fullBlocks.Empty();
-
-		activeBlock = nullptr;
 		usedBlockSize = 0;
-		maxBlockSize = 0;
+		activeBlock.Free();
+		for (MallocBlock& block : discardedBlocks)
+		{
+			block.Free();
+		}
+		discardedBlocks.Empty();
 	}
-}	 // namespace Rift::Memory
+}    // namespace Rift::Memory
