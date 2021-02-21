@@ -33,24 +33,24 @@ namespace Rift
 				return arena;
 			}
 		};
-	}	 // namespace Memory
+	}    // namespace Memory
 
 
 	template <class T>
 	struct STLAllocator
 	{
-		using value_type = T;
-		using size_type = std::size_t;
+		using value_type      = T;
+		using size_type       = sizet;
 		using difference_type = std::ptrdiff_t;
-		using reference = value_type&;
+		using reference       = value_type&;
 		using const_reference = const value_type&;
-		using pointer = value_type*;
-		using const_pointer = const value_type*;
+		using pointer         = value_type*;
+		using const_pointer   = const value_type*;
 
 		// STD types
 
 
-		STLAllocator() noexcept = default;
+		STLAllocator() noexcept                    = default;
 		STLAllocator(const STLAllocator&) noexcept = default;
 		template <class U>
 		STLAllocator(const STLAllocator<U>&) noexcept
@@ -71,8 +71,8 @@ namespace Rift
 
 		using propagate_on_container_copy_assignment = std::true_type;
 		using propagate_on_container_move_assignment = std::true_type;
-		using propagate_on_container_swap = std::true_type;
-		using is_always_equal = std::true_type;
+		using propagate_on_container_swap            = std::true_type;
+		using is_always_equal                        = std::true_type;
 
 		template <class U, class... Args>
 		void construct(U* p, Args&&... args)
@@ -101,4 +101,4 @@ namespace Rift
 	{
 		return false;
 	}
-}	 // namespace Rift
+}    // namespace Rift

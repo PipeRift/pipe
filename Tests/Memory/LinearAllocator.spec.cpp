@@ -1,6 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Memory/LinearAllocator.h>
+#include <Memory/Allocators/LinearAllocator.h>
 #include <bandit/bandit.h>
 
 
@@ -77,7 +77,7 @@ go_bandit([]() {
 				LinearAllocator allocator{1024};
 
 				void* blockPtr = *allocator.GetBlock();
-				void* p     = allocator.Allocate(sizeof(float));
+				void* p        = allocator.Allocate(sizeof(float));
 				AssertThat(p, Is().EqualTo(blockPtr));
 
 				void* p2 = allocator.Allocate(sizeof(float));
@@ -99,6 +99,36 @@ go_bandit([]() {
 				AssertThat(p3, Is().EqualTo(newBlock));
 				AssertThat(allocator.GetUsedBlockSize(), Is().EqualTo(8));
 				AssertThat(allocator.GetBlockSize(), Is().EqualTo(16));
+			});
+
+			it("Allocates with alignment", [&]() {
+				LinearAllocator allocator{1024};
+
+				allocator.Allocate(sizeof(bool));
+
+				// When padding is not 0 (last ptr is not aligned)
+				void* p = allocator.Allocate(sizeof(float), 8);
+				AssertThat(Rift::GetAlignmentPadding(p, 8), Is().EqualTo(0));
+
+				// When padding is 0 (last ptr is aligned)
+				void* p2 = allocator.Allocate(sizeof(float), 16);
+				AssertThat(Rift::GetAlignmentPadding(p2, 16), Is().EqualTo(0));
+			});
+
+			it("Grow and allocate with alignment", [&]() {
+				LinearAllocator allocator{1024};
+
+				void* firstBlock = *allocator.GetBlock();
+
+				allocator.Allocate(1019);    // 5 bytes available
+
+				// Enough memory available, but not if we align it.
+				// Must grow a new block
+				void* p = allocator.Allocate(sizeof(float), 8);
+				AssertThat(Rift::GetAlignmentPadding(p, 8), Is().EqualTo(0));
+
+				void* secondBlock = *allocator.GetBlock();
+				AssertThat(firstBlock, Is().Not().EqualTo(secondBlock));
 			});
 		});
 	});

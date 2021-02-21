@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "Memory/Allocator.h"
+#include "Memory/STLAllocator.h"
 #include "Reflection/ReflectionTypeTraits.h"
 #include "Strings/Name.h"
 #include "Strings/String.h"

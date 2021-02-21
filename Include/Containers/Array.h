@@ -4,7 +4,7 @@
 
 #include "PCH.h"
 
-#include "Memory/Allocator.h"
+#include "Memory/STLAllocator.h"
 #include "Platform/Platform.h"
 
 #include <algorithm>

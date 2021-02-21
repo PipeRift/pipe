@@ -12,12 +12,12 @@ namespace Rift::Memory
 	{
 	protected:
 		void* data  = nullptr;
-		size_t size = 0;
+		sizet size  = 0;
 
 
 	public:
 		HeapBlock() = default;
-		HeapBlock(size_t initialSize);
+		HeapBlock(sizet initialSize);
 		~HeapBlock();
 		HeapBlock(const HeapBlock& other);
 		HeapBlock(HeapBlock&& other);
@@ -28,12 +28,12 @@ namespace Rift::Memory
 			return data;
 		}
 
-		void Allocate(size_t size);
+		void Allocate(sizet size);
 		void Free();
 
 		const void* GetData() const;
 		void* GetData();
-		size_t GetSize() const;
+		sizet GetSize() const;
 
 		bool IsAllocated() const
 		{
@@ -42,7 +42,7 @@ namespace Rift::Memory
 	};
 
 
-	inline HeapBlock::HeapBlock(size_t initialSize)
+	inline HeapBlock::HeapBlock(sizet initialSize)
 	{
 		Allocate(initialSize);
 	}
@@ -95,7 +95,7 @@ namespace Rift::Memory
 		return *this;
 	}
 
-	inline void HeapBlock::Allocate(size_t newSize)
+	inline void HeapBlock::Allocate(sizet newSize)
 	{
 		size = newSize;
 		data = Rift::Alloc(newSize);
@@ -115,7 +115,7 @@ namespace Rift::Memory
 	{
 		return data;
 	}
-	inline size_t HeapBlock::GetSize() const
+	inline sizet HeapBlock::GetSize() const
 	{
 		return size;
 	}

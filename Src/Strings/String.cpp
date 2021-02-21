@@ -58,7 +58,7 @@ namespace Rift
 		return true;
 	}
 
-	String CString::ParseMemorySize(size_t size)
+	String CString::ParseMemorySize(sizet size)
 	{
 		if (size <= 0)
 		{
@@ -69,21 +69,21 @@ namespace Rift
 
 		const double scaleD = Math::Log(double(size), 1024.l);
 		const u32 scale = u32(Math::FloorToI64(scaleD));
-		const size_t finalSize = size / Math::Pow(1024, scale) * (1 / size);
+		const sizet finalSize = size / Math::Pow(1024, scale) * (1 / size);
 
 		return CString::Format("{}{}", finalSize, sizes[scale]);
 	}
 
-	size_t CString::GetStringHash(const TCHAR* str)
+	sizet CString::GetStringHash(const TCHAR* str)
 	{
 		// FNV String hash
 		// Use offset and prime based on the architecture (64bit or 32bit)
 		// http://www.isthe.com/chongo/tech/comp/fnv/index.html
-		static constexpr bool bIs32Bit      = sizeof(size_t) < 64;
-		static constexpr size_t offsetBasis = bIs32Bit ? 2166136261U : 14695981039346656037U;
-		static constexpr size_t fnvPrime    = bIs32Bit ? 16777619 : 1099511628211;
+		static constexpr bool bIs32Bit     = sizeof(sizet) < 64;
+		static constexpr sizet offsetBasis = bIs32Bit ? 2166136261U : 14695981039346656037U;
+		static constexpr sizet fnvPrime    = bIs32Bit ? 16777619 : 1099511628211;
 
-		size_t c, result = offsetBasis;
+		sizet c, result = offsetBasis;
 		while ((c = *str++) != 0)
 		{
 			result = (result * fnvPrime) ^ c;

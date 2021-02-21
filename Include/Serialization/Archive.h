@@ -218,7 +218,7 @@ namespace Rift
 				if (!data.is_array())
 					data = Json::array();
 				Json::array_t* ptr = data.get_ptr<Json::array_t*>();
-				ptr->reserve((size_t) size);
+				ptr->reserve(sizet(size));
 			}
 		};
 	};

@@ -12,7 +12,7 @@ namespace Rift
 	template <typename T>
 	struct Hash : robin_hood::hash<T>
 	{
-		size_t operator()(T const& obj)
+		sizet operator()(T const& obj)
 		{
 			return robin_hood::hash<T>::operator()(obj);
 		}

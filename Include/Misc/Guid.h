@@ -304,7 +304,7 @@ namespace Rift
 	template <>
 	struct Hash<Guid>
 	{
-		size_t operator()(const Guid& k) const
+		sizet operator()(const Guid& k) const
 		{
 			return Crc::MemCrc32(&k, sizeof(Guid));
 		}

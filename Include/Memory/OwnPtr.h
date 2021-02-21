@@ -422,8 +422,8 @@ namespace Rift
 	}
 
 	template <typename T, typename Builder = PtrBuilder<T>,
-		EnableIfT<std::is_array_v<T> && std::extent_v<T> == 0, i32> = 0>
-	OwnPtr<T, Builder> MakeOwned(size_t size)
+	    EnableIfT<std::is_array_v<T> && std::extent_v<T> == 0, i32> = 0>
+	OwnPtr<T, Builder> MakeOwned(sizet size)
 	{
 		using Elem = std::remove_extent_t<T>;
 		return {Builder::NewArray(size)};

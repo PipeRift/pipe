@@ -108,18 +108,18 @@ namespace Rift
 			return str.size() >= 1 && str.back() == c;
 		}
 
-		static void RemoveFromStart(String& str, size_t size)
+		static void RemoveFromStart(String& str, sizet size)
 		{
 			str.erase(0, size);
 		}
-		static void RemoveFromEnd(String& str, size_t size)
+		static void RemoveFromEnd(String& str, sizet size)
 		{
 			str.erase(str.size() - 1 - size, size);
 		}
 
 		static i32 Split(const String& str, TArray<String>& tokens, const TCHAR delim)
 		{
-			std::size_t current, previous = 0;
+			sizet current, previous = 0;
 			current = str.find(delim);
 			while (current != std::string::npos)
 			{
@@ -133,7 +133,7 @@ namespace Rift
 
 		static bool Split(const String& str, String& a, String& b, const TCHAR* delim)
 		{
-			const size_t pos = str.find(delim);
+			const sizet pos = str.find(delim);
 			if (pos != String::npos)
 			{
 				a = str.substr(0, pos);
@@ -194,9 +194,9 @@ namespace Rift
 		}
 		static bool IsNumeric(const TCHAR* Str);
 
-		static String ParseMemorySize(size_t size);
+		static String ParseMemorySize(sizet size);
 
-		static size_t GetStringHash(const TCHAR* str);
+		static sizet GetStringHash(const TCHAR* str);
 	};
 
 	using Regex = std::basic_regex<TCHAR>;
@@ -205,7 +205,7 @@ namespace Rift
 	template <>
 	struct Hash<String>
 	{
-		size_t operator()(const String& str) const
+		sizet operator()(const String& str) const
 		{
 			return CString::GetStringHash(str.data());
 		}
@@ -214,7 +214,7 @@ namespace Rift
 	template <>
 	struct Hash<StringView>
 	{
-		size_t operator()(const StringView& str) const
+		sizet operator()(const StringView& str) const
 		{
 			return CString::GetStringHash(str.data());
 		}
@@ -223,7 +223,7 @@ namespace Rift
 	template <>
 	struct Hash<const TCHAR*>
 	{
-		size_t operator()(const TCHAR* str) const
+		sizet operator()(const TCHAR* str) const
 		{
 			return CString::GetStringHash(str);
 		}

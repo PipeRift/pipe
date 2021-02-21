@@ -52,7 +52,7 @@ namespace Rift
 	template <>
 	struct Hash<AssetInfo>
 	{
-		size_t operator()(const AssetInfo& k) const
+		sizet operator()(const AssetInfo& k) const
 		{
 			static const Hash<Name> nameHash{};
 			return nameHash(k.GetPath());

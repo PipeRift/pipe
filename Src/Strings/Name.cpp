@@ -10,7 +10,7 @@ namespace Rift
 	const String Name::noneStr{"none"};
 	const Name::Id Name::noneId{0};
 
-	size_t NameTable::Register(StringView str)
+	sizet NameTable::Register(StringView str)
 	{
 		if (str.empty())
 		{
@@ -32,7 +32,7 @@ namespace Rift
 		}
 	}
 
-	const String& NameTable::Find(size_t hash) const
+	const String& NameTable::Find(sizet hash) const
 	{
 		// Ensure no other thread is editing the table
 		std::shared_lock lock{ editTableMutex };

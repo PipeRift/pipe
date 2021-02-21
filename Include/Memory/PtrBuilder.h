@@ -19,7 +19,7 @@ namespace Rift
 			return new T(std::forward<Args>(args)...);
 		}
 
-		static T* NewArray(size_t size)
+		static T* NewArray(sizet size)
 		{
 			using Elem = std::remove_extent_t<T>;
 			return new Elem[size]();

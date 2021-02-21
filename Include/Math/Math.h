@@ -17,7 +17,7 @@ namespace Rift
 {
 	class v3;
 
-	struct Math
+	struct CORE_API Math
 	{
 		static constexpr float PI{3.14159265358979323846f};
 		static constexpr float HALF_PI = PI * 0.5f;
@@ -237,7 +237,7 @@ namespace Rift
 			return glm::pow(value, power);
 		}
 
-		static constexpr u32 Pow(size_t value, u32 power)
+		static constexpr u32 Pow(sizet value, u32 power)
 		{
 			return Pow<u32, u32>(u32(value), power);
 		}
@@ -412,6 +412,12 @@ namespace Rift
 		static const double Log(const double k, double base)
 		{
 			return log(k) / log(base);
+		}
+
+		template <typename T>
+		static bool IsPowerOfTwo(T value)
+		{
+			return (value & (value - 1)) == T(0);
 		}
 	};
 }	 // namespace Rift

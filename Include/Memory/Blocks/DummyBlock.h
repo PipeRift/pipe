@@ -20,7 +20,7 @@ namespace Rift::Memory
 		// Implement copy or move as desired
 
 		// Allocate the block of memory with an optional size
-		void Allocate(size_t) {}
+		void Allocate(sizet) {}
 		// Free the block of memory
 		void Free() {}
 
@@ -33,7 +33,7 @@ namespace Rift::Memory
 		{
 			return nullptr;
 		}
-		size_t GetSize() const
+		sizet GetSize() const
 		{
 			return 0;
 		}

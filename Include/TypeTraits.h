@@ -1,6 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "PCH.h"
+
 #include <stddef.h>
 
 #include <type_traits>
@@ -12,7 +14,7 @@ namespace Rift
 {
 	template <class Child, class Base, bool bIncludeSame = true>
 	concept Derived =
-		(bIncludeSame && std::is_same_v<Child, Base>) || std::is_base_of_v<Base, Child>;
+	    (bIncludeSame && std::is_same_v<Child, Base>) || std::is_base_of_v<Base, Child>;
 
 	template <class From, class To>
 	concept Convertible = std::is_same_v<From, To> || std::is_convertible_v<From, To>;
@@ -23,11 +25,11 @@ namespace Rift
 	template <bool B, class T = void>
 	using EnableIfT = std::enable_if_t<B, T>;
 
-	template <class T, size_t size>
+	template <class T, sizet size>
 	struct IsSmallerType : std::integral_constant<bool, (sizeof(T) <= size)>
 	{};
 
-	template <class T, size_t size>
+	template <class T, sizet size>
 	struct IsBiggerType : std::integral_constant<bool, (sizeof(T) > size)>
 	{};
 
@@ -38,12 +40,12 @@ namespace Rift
 #define EnableIfBiggerType(size) typename = EnableIf<IsBiggerType<T, size>::value>
 #define EnableIfNotBiggerType(size) typename = EnableIf<!IsBiggerType<T, size>::value>
 
-#define EnableIfPassByValue(T)                                       \
-	typename = EnableIf < IsSmallerType<T, sizeof(size_t)>::value && \
-			   std::is_copy_constructible<T>::type >
+#define EnableIfPassByValue(T) \
+	typename =                 \
+	    EnableIf < IsSmallerType<T, sizeof(sizet)>::value && std::is_copy_constructible<T>::type >
 #define EnableIfNotPassByValue(T) \
-	typename = EnableIf<!(        \
-		IsSmallerType<T, sizeof(size_t)>::value && std::is_copy_constructible<T>::type)>
+	typename =                    \
+	    EnableIf<!(IsSmallerType<T, sizeof(sizet)>::value && std::is_copy_constructible<T>::type)>
 
 #define EnableIfAll typename = void
 
@@ -61,7 +63,7 @@ namespace Rift
 		static const bool value = std::is_void<decltype(impl<T>(0))>::value;
 	};
 
-}	 // namespace Rift
+}    // namespace Rift
 
 #define RIFT_DECLARE_IS_POD(T, isPod)                                                \
 	namespace std                                                                    \

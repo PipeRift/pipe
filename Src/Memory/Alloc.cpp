@@ -2,6 +2,7 @@
 
 #include "Memory/Alloc.h"
 
+#include "Math/Math.h"
 #include "Profiler.h"
 
 #include <cstdlib>
@@ -10,14 +11,14 @@
 
 namespace Rift
 {
-	void* Alloc(size_t n)
+	void* Alloc(sizet n)
 	{
 		void* const p = std::malloc(n);
 		TracyAllocS(p, n, 8);
 		return p;
 	}
 
-	void* Alloc(size_t n, size_t align)
+	void* Alloc(sizet n, sizet align)
 	{
 #if PLATFORM_WINDOWS
 		// TODO: Windows needs _aligned_free in order to use _aligned_alloc()
@@ -36,5 +37,11 @@ namespace Rift
 	{
 		TracyFreeS(p, 8);
 		std::free(p);
+	}
+
+	sizet GetAlignmentPadding(void* ptr, sizet align)
+	{
+		assert(Math::IsPowerOfTwo(align));
+		return -reinterpret_cast<sizet>(ptr) & (align - 1);
 	}
 }    // namespace Rift

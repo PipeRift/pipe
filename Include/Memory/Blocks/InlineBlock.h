@@ -8,11 +8,11 @@
 
 namespace Rift::Memory
 {
-	template <size_t Size>
+	template <sizet Size>
 	class CORE_API InlineBlock : BaseBlock
 	{
 	public:
-		static constexpr size_t size = Size;
+		static constexpr sizet size = Size;
 
 	protected:
 		u8 data[size]{};
@@ -27,7 +27,7 @@ namespace Rift::Memory
 		InlineBlock& operator=(InlineBlock&&) = delete;    // Can't move
 
 		// Allocate and Free don't do anything
-		void Allocate(size_t) {}
+		void Allocate(sizet) {}
 		void Free() {}
 
 		const void* GetData() const
@@ -38,7 +38,7 @@ namespace Rift::Memory
 		{
 			return &data;
 		}
-		static constexpr size_t GetSize()
+		static constexpr sizet GetSize()
 		{
 			return size;
 		}

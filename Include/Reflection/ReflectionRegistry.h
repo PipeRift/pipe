@@ -5,7 +5,7 @@
 
 #include "Containers/Map.h"
 #include "Events/Function.h"
-#include "Memory/LinearAllocator.h"
+#include "Memory/Allocators/LinearAllocator.h"
 #include "Profiler.h"
 #include "Reflection/TClass.h"
 #include "Reflection/TStruct.h"
@@ -18,7 +18,7 @@ namespace Rift::Refl
 	class CORE_API ReflectionRegistry
 	{
 		// Contains all reflection types linearly in memory
-		Memory::LinearAllocator<true> allocator{256 * 1024};	// First block is 256KB
+		CORE_API Memory::LinearAllocator allocator{256 * 1024};    // First block is 256KB
 		// We map all classes by name in case we need to find them
 		TMap<Name, void*> typeIdToInstance{};
 
@@ -41,7 +41,7 @@ namespace Rift::Refl
 			return nullptr;
 		}
 
-		void* Allocate(size_t size)
+		void* Allocate(sizet size)
 		{
 			return allocator.Allocate(size);
 		}

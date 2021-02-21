@@ -1,6 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "PCH.h"
+
 #include "Misc/Hash.h"
 #include "Reflection/ClassTraits.h"
 #include "String.h"
@@ -22,11 +24,11 @@ namespace Rift
 		static constexpr Hash<String> hasher{};
 
 		String str;
-		size_t hash = 0;
+		sizet hash = 0;
 
 	public:
 		NameKey() = default;
-		NameKey(size_t hash) : hash{hash} {}
+		NameKey(sizet hash) : hash{hash} {}
 		NameKey(StringView inStr) : str{inStr}, hash{hasher(str)} {}
 
 		NameKey(const NameKey& other) : hash{other.hash} {}
@@ -41,7 +43,7 @@ namespace Rift
 		{
 			return str;
 		}
-		const size_t GetHash() const
+		const sizet GetHash() const
 		{
 			return hash;
 		}
@@ -55,7 +57,7 @@ namespace Rift
 	template <>
 	struct Hash<NameKey>
 	{
-		size_t operator()(const NameKey& x) const
+		sizet operator()(const NameKey& x) const
 		{
 			return x.GetHash();
 		}
@@ -79,8 +81,8 @@ namespace Rift
 
 		NameTable() = default;
 
-		size_t Register(StringView string);
-		const String& Find(size_t hash) const;
+		sizet Register(StringView string);
+		const String& Find(sizet hash) const;
 
 		static NameTable& Get()
 		{
@@ -98,7 +100,7 @@ namespace Rift
 	struct CORE_API Name
 	{
 		friend NameTable;
-		using Id = size_t;
+		using Id = sizet;
 
 	private:
 		static const Id noneId;
@@ -187,7 +189,7 @@ namespace Rift
 	template <>
 	struct Hash<Name>
 	{
-		size_t operator()(const Name& k) const
+		sizet operator()(const Name& k) const
 		{
 			return k.GetId();
 		}
