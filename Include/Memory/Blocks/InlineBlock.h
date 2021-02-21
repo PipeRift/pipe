@@ -42,5 +42,10 @@ namespace Rift::Memory
 		{
 			return size;
 		}
+
+		bool IsAllocated() const
+		{
+			return true;
+		}
 	};
 }    // namespace Rift::Memory

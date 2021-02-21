@@ -5,7 +5,7 @@
 
 #include "Containers/Array.h"
 #include "Math/Math.h"
-#include "Memory/Blocks/MallocBlock.h"
+#include "Memory/Blocks/HeapBlock.h"
 
 
 namespace Rift::Memory
@@ -20,9 +20,9 @@ namespace Rift::Memory
 	class LinearAllocator
 	{
 	protected:
-		MallocBlock activeBlock{};
+		HeapBlock activeBlock{};
 		size_t usedBlockSize = 0;
-		TArray<MallocBlock> discardedBlocks;
+		TArray<HeapBlock> discardedBlocks;
 
 
 	public:
@@ -59,15 +59,15 @@ namespace Rift::Memory
 		{
 			return activeBlock.GetSize();
 		}
-		MallocBlock& GetBlock()
+		HeapBlock& GetBlock()
 		{
 			return activeBlock;
 		}
-		const MallocBlock& GetBlock() const
+		const HeapBlock& GetBlock() const
 		{
 			return activeBlock;
 		}
-		const TArray<MallocBlock>& GetDiscardedBlocks() const
+		const TArray<HeapBlock>& GetDiscardedBlocks() const
 		{
 			return discardedBlocks;
 		}
@@ -118,7 +118,7 @@ namespace Rift::Memory
 	{
 		usedBlockSize = 0;
 		activeBlock.Free();
-		for (MallocBlock& block : discardedBlocks)
+		for (HeapBlock& block : discardedBlocks)
 		{
 			block.Free();
 		}

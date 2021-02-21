@@ -8,6 +8,10 @@
 
 namespace Rift::Memory
 {
+	/** This serves as a memory Block interface.
+	 * It serves the single purpose of documenting a Block's interface.
+	 * Not intended to be used.
+	 */
 	class CORE_API DummyBlock : BaseBlock
 	{
 	public:
@@ -32,6 +36,12 @@ namespace Rift::Memory
 		size_t GetSize() const
 		{
 			return 0;
+		}
+
+		bool IsAllocated() const
+		{
+			// return !!data;
+			return false;
 		}
 	};
 }    // namespace Rift::Memory
