@@ -11,13 +11,7 @@ namespace Rift
 	 **/
 	struct CORE_API WindowsPlatformTypes : public GenericPlatformTypes
 	{
-#ifdef _WIN64
-		using sizet = __int64;
-		using ssizet = __int64;
-#else
-		using sizet = unsigned long;
-		using ssizet = long;
-#endif
+		using sizet = std::size_t;
 	};
 
 	using PlatformTypes = WindowsPlatformTypes;
