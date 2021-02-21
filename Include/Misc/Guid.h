@@ -68,7 +68,7 @@ namespace Rift
 	{
 	public:
 		/** Default constructor. */
-		Guid() : a(0), b(0), c(0), d(0) {}
+		Guid() = default;
 
 		/**
 		 * Creates and initializes a new GUID from the specified components.
@@ -283,19 +283,19 @@ namespace Rift
 		 */
 		static bool ParseExact(const String& GuidString, EGuidFormats Format, Guid& OutGuid);
 
-		// private:
-	public:
+
+	private:
 		/** Holds the first component. */
-		u32 a;
+		u32 a = 0;
 
 		/** Holds the second component. */
-		u32 b;
+		u32 b = 0;
 
 		/** Holds the third component. */
-		u32 c;
+		u32 c = 0;
 
 		/** Holds the fourth component. */
-		u32 d;
+		u32 d = 0;
 	};
 
 	DEFINE_CLASS_TRAITS(Guid, HasCustomSerialize = true);

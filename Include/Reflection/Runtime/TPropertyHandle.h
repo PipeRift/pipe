@@ -40,7 +40,7 @@ namespace Rift::Refl
 			}
 			return nullptr;
 		}
-		virtual void* GetRawValuePtr() const override
+		void* GetRawValuePtr() const override
 		{
 			return GetValuePtr();
 		}

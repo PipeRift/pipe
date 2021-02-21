@@ -8,6 +8,7 @@
 #include "CoreTypes.h"
 #include "Reflection/Property.h"
 #include "Reflection/ReflectionTags.h"
+#include "Strings/String.h"
 
 
 namespace Rift::Refl
@@ -22,7 +23,7 @@ namespace Rift::Refl
 
 	protected:
 		Name name;
-		ReflectionTags tags;
+		ReflectionTags tags = ReflectionTags::None;
 
 		Type* parent = nullptr;
 		TArray<Type*> children;
@@ -31,7 +32,7 @@ namespace Rift::Refl
 
 
 	public:
-		Type() : tags{}, parent{nullptr} {}
+		Type() = default;
 		Type(const Type&) = delete;
 		Type& operator=(const Type&) = delete;
 		virtual ~Type()

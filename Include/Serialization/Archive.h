@@ -29,9 +29,9 @@ namespace Rift
 		const bool bLoads = false;
 
 	public:
-		class Context* context;
+		class Context* context = nullptr;
 
-		Archive() : bLoads(false), context{nullptr} {}
+		Archive() = default;
 		Archive(bool bLoads) : bLoads(bLoads), context{nullptr} {}
 		virtual ~Archive() = default;
 
@@ -139,22 +139,17 @@ namespace Rift
 		Json baseData;
 		TArray<Json*> depthData;
 
-		const bool bBeautify;
+		const bool bBeautify = false;
 
 	public:
 		// Save Constructor
-		JsonArchive(const bool bBeautify = true)
-			: Archive(false)
-			, baseData()
-			, depthData{}
-			, bBeautify{bBeautify}
-		{}
+		JsonArchive(const bool bBeautify = true) : Archive(false), bBeautify{bBeautify} {}
 
 		// Load constructor
 		JsonArchive(const Json& data) : Archive(true), baseData(data), depthData{}, bBeautify{false}
 		{}
 
-		virtual ~JsonArchive() = default;
+		~JsonArchive() override = default;
 
 		String GetDataString() const
 		{
@@ -171,51 +166,51 @@ namespace Rift
 		}
 
 	private:
-		virtual void Serialize(const char* name, bool& val) override;
+		void Serialize(const char* name, bool& val) override;
 
-		virtual void Serialize(const char* name, u8& val) override;
+		void Serialize(const char* name, u8& val) override;
 
-		virtual void Serialize(const char* name, i32& val) override;
+		void Serialize(const char* name, i32& val) override;
 
-		virtual void Serialize(const char* name, u32& val) override;
+		void Serialize(const char* name, u32& val) override;
 
-		virtual void Serialize(const char* name, float& val) override;
+		void Serialize(const char* name, float& val) override;
 
-		virtual void Serialize(const char* name, String& val) override;
+		void Serialize(const char* name, String& val) override;
 
-		virtual void Serialize(const char* name, Json& val) override;
+		void Serialize(const char* name, Json& val) override;
 
 		Json& Data()
 		{
 			return !depthData.IsEmpty() ? *depthData.Last() : baseData;
 		}
 
-		virtual void BeginObject(const char* name) override
+		void BeginObject(const char* name) override
 		{
 			depthData.Add(&Data()[name]);
 		}
 
-		virtual bool HasObject(const char* name) override
+		bool HasObject(const char* name) override
 		{
 			return Data().find(name) != Data().end();
 		}
 
-		virtual void BeginObject(u32 index) override
+		void BeginObject(u32 index) override
 		{
 			depthData.Add(&Data()[index]);
 		}
 
-		virtual bool IsObjectValid() override
+		bool IsObjectValid() override
 		{
 			return !Data().is_null();
 		}
 
-		virtual void EndObject() override
+		void EndObject() override
 		{
 			depthData.RemoveAt(depthData.Size() - 1, false);
 		}
 
-		virtual void SerializeArraySize(u32& size) override
+		void SerializeArraySize(u32& size) override
 		{
 			Json& data = Data();
 			if (IsLoading())

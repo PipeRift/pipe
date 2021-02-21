@@ -25,8 +25,8 @@ namespace Rift::Refl
 		TClass() : Class() {}
 
 	public:
-		virtual OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(
-			const Ptr<BaseObject>& owner) override
+		OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(
+		    const Ptr<BaseObject>& owner) override
 		{
 			if constexpr (std::is_same_v<T, BaseObject>)
 			{

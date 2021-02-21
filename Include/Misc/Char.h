@@ -4,10 +4,8 @@
 
 #include "PCH.h"
 
-#include <ctype.h>
-#include <wctype.h>
-
 #include <cctype>
+#include <cwctype>
 #include <locale>
 
 
@@ -73,7 +71,7 @@ namespace Rift
 	template <typename T>
 	struct TCharBase<T, 1>
 	{
-		typedef T CharType;
+		using CharType = T;
 
 		static const CharType LineFeed = '\x000A';
 		static const CharType VerticalTab = '\x000B';
@@ -85,7 +83,7 @@ namespace Rift
 	template <typename T, const unsigned int Size>
 	struct LineBreakImplementation
 	{
-		typedef T CharType;
+		using CharType = T;
 		static inline bool IsLinebreak(CharType c)
 		{
 			return c == TCharBase<CharType, Size>::LineFeed ||
@@ -101,7 +99,7 @@ namespace Rift
 	template <typename T>
 	struct LineBreakImplementation<T, 1>
 	{
-		typedef T CharType;
+		using CharType = T;
 		static inline bool IsLinebreak(CharType c)
 		{
 			return c == TCharBase<CharType, 1>::LineFeed ||
@@ -115,7 +113,7 @@ namespace Rift
 	template <typename T>
 	struct TChar : public TCharBase<T, sizeof(T)>
 	{
-		typedef T CharType;
+		using CharType = T;
 
 	public:
 		static inline CharType ToUpper(CharType c)
@@ -165,9 +163,9 @@ namespace Rift
 		static inline i32 StrtoI32(const CharType* str, CharType** end, i32 radix);
 	};
 
-	typedef TChar<TCHAR> FChar;
-	typedef TChar<WIDECHAR> FCharWide;
-	typedef TChar<ANSICHAR> FCharAnsi;
+	using FChar     = TChar<TCHAR>;
+	using FCharWide = TChar<WIDECHAR>;
+	using FCharAnsi = TChar<ANSICHAR>;
 
 	/*-----------------------------------------------------------------------------
 		WIDECHAR specialized functions

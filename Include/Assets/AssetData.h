@@ -34,7 +34,7 @@ namespace Rift
 		{
 			return true;
 		}
-		virtual void BeforeDestroy() override
+		void BeforeDestroy() override
 		{
 			OnUnload();
 		}

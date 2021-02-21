@@ -24,7 +24,7 @@ namespace Rift::Refl
 	public:
 		TStruct() : Struct() {}
 
-		virtual BaseStruct* New() const override
+		BaseStruct* New() const override
 		{
 			return new T();
 		}

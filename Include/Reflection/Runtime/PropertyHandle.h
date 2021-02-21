@@ -6,6 +6,7 @@
 #include "Object/BaseObject.h"
 #include "Object/BaseStruct.h"
 #include "Reflection/Property.h"
+#include "Strings/String.h"
 
 
 namespace Rift::Refl
@@ -15,14 +16,13 @@ namespace Rift::Refl
 	protected:
 		BaseStruct* const structInstance = nullptr;
 		Ptr<BaseObject> objInstance;
-		const Property* const prop;
+		const Property* const prop = nullptr;
 
 
 	protected:
 		PropertyHandle(const Ptr<BaseObject>& objInstance, const Property* prop)
-			: structInstance{nullptr}
-			, objInstance{objInstance}
-			, prop{prop}
+		    : objInstance{objInstance}
+		    , prop{prop}
 		{}
 		PropertyHandle(BaseStruct* instance, const Property* prop)
 			: structInstance{instance}
@@ -30,7 +30,7 @@ namespace Rift::Refl
 		{}
 
 	public:
-		virtual ~PropertyHandle() {}
+		virtual ~PropertyHandle() = default;
 
 		String GetName() const
 		{

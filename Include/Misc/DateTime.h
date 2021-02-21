@@ -84,12 +84,12 @@ namespace Rift
 		static const i32 DaysToMonth[];
 
 		/** Holds the ticks in 100 nanoseconds resolution since January 1, 0001 A.D. */
-		SysTime value;
+		SysTime value{};
 
 
 	public:
 		/** Default constructor (no initialization). */
-		DateTime() : value{} {}
+		DateTime() = default;
 
 		/**
 		 * Creates and initializes a new instance with the specified number of

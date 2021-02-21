@@ -25,7 +25,7 @@ namespace Rift
 	template <typename T32BITS, typename T64BITS>
 	struct SelectIntPointerType<T32BITS, T64BITS, 4>
 	{
-		typedef T32BITS TIntPointer;	// select the 32 bit type
+		using TIntPointer = T32BITS;    // select the 32 bit type
 	};
 
 
@@ -86,8 +86,8 @@ namespace Rift
 		// signed int the same size as a pointer
 		using ssizet = iPtr;
 
-		typedef int32 TYPE_OF_NULL;
-		typedef decltype(nullptr) TYPE_OF_NULLPTR;
+		using TYPE_OF_NULL    = int32;
+		using TYPE_OF_NULLPTR = decltype(nullptr);
 	};
 }	 // namespace Rift
 

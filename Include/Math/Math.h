@@ -53,7 +53,7 @@ namespace Rift
 		static float ClampAngle(float a)
 		{
 			const float cAngle = Mod(a, 360.f);		   //(-360,360)
-			return cAngle + (cAngle < 0.f) * 360.f;	   //[0, 360)
+			return cAngle + float(cAngle < 0.f) * 360.f;    //[0, 360)
 		}
 
 		static float NormalizeAngle(float a)
@@ -295,7 +295,7 @@ namespace Rift
 			float quotient = (INV_PI * 0.5f) * Value;
 			if (Value >= 0.0f)
 			{
-				quotient = (float) ((int) (quotient + 0.5f));
+				quotient = float(int(quotient + 0.5f));
 			}
 			else
 			{

@@ -35,12 +35,12 @@ namespace Rift
 			Ptr<Object> object;
 		};
 
-		mutable TArray<RawListener> rawListeners;
-		mutable TArray<ObjListener> objListeners;
+		mutable TArray<RawListener> rawListeners{};
+		mutable TArray<ObjListener> objListeners{};
 
 
 	public:
-		Broadcast() : rawListeners{}, objListeners{} {}
+		Broadcast() = default;
 
 		/** Broadcast to all binded functions */
 		void DoBroadcast(const Params&... params)

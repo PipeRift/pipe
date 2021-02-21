@@ -14,7 +14,7 @@ private:
 	std::unique_ptr<T> ptr;
 
 public:
-	constexpr TUniquePtr() noexcept : ptr() {}
+	constexpr TUniquePtr() noexcept : ptr{} = default;
 	constexpr TUniquePtr(nullptr_t) noexcept : ptr(nullptr) {}
 	TUniquePtr& operator=(nullptr_t) noexcept
 	{

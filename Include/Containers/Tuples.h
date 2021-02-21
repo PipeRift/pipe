@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include <assert.h>
-
+#include <cassert>
 #include <optional>
 #include <utility>
 

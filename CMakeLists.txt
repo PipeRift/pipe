@@ -98,10 +98,6 @@ if(RIFT_ENABLE_CLANG_TOOLS)
     endif()
 
     if(CLANG_TIDY_EXE)
-        add_custom_target(ClangTidy COMMAND ${CLANG_TIDY_EXE} -p=./Build ${ALL_SOURCE_FILES}
-            -checks='-*,clang-analyzer-*,clang-analyzer-cplusplus*,performance-*,bugprone-*,misc-unused-*,-bugprone-macro-parentheses'
-            -header-filter='Include/'
-            -fix -fix-errors
-        )
+        add_custom_target(ClangTidy COMMAND ${CLANG_TIDY_EXE} -p=./Build ${ALL_SOURCE_FILES} --fix)
     endif()
 endif()

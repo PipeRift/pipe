@@ -23,42 +23,42 @@ namespace Rift
 	/// An 8-bit unsigned integer.
 	typedef PlatformTypes::uint8 u8;
 	/// A 16-bit unsigned integer.
-	typedef PlatformTypes::uint16 u16;
+	using u16 = PlatformTypes::uint16;
 	/// A 32-bit unsigned integer.
-	typedef PlatformTypes::uint32 u32;
+	using u32 = PlatformTypes::uint32;
 	/// A 64-bit unsigned integer.
-	typedef PlatformTypes::uint64 u64;
+	using u64 = PlatformTypes::uint64;
 
 	//~ Signed base types.
 	/// An 8-bit signed integer.
-	typedef PlatformTypes::int8 i8;
+	using i8 = PlatformTypes::int8;
 	/// A 16-bit signed integer.
-	typedef PlatformTypes::int16 i16;
+	using i16 = PlatformTypes::int16;
 	/// A 32-bit signed integer.
-	typedef PlatformTypes::int32 i32;
+	using i32 = PlatformTypes::int32;
 	/// A 64-bit signed integer.
-	typedef PlatformTypes::int64 i64;
+	using i64 = PlatformTypes::int64;
 
 	//~ Character types.
 	/// An ANSI character. Normally a signed type.
-	typedef PlatformTypes::ANSICHAR ANSICHAR;
+	using ANSICHAR = PlatformTypes::ANSICHAR;
 	/// A wide character. Normally a signed type.
-	typedef PlatformTypes::WIDECHAR WIDECHAR;
+	using WIDECHAR = PlatformTypes::WIDECHAR;
 	/// Either ANSICHAR or WIDECHAR, depending on whether the platform supports wide
 	/// characters or the requirements of the licensee.
-	typedef PlatformTypes::TCHAR TCHAR;
+	using TCHAR = PlatformTypes::TCHAR;
 	/// An 8-bit character containing a UTF8 (Unicode, 8-bit, variable-width) code
 	/// unit.
-	typedef PlatformTypes::CHAR8 UTF8CHAR;
+	using UTF8CHAR = PlatformTypes::CHAR8;
 	/// A 16-bit character containing a UCS2 (Unicode, 16-bit, fixed-width) code
 	/// unit, used for compatibility with 'Windows TCHAR' across multiple platforms.
-	typedef PlatformTypes::CHAR16 UCS2CHAR;
+	using UCS2CHAR = PlatformTypes::CHAR16;
 	/// A 16-bit character containing a UTF16 (Unicode, 16-bit, variable-width) code
 	/// unit.
-	typedef PlatformTypes::CHAR16 UTF16CHAR;
+	using UTF16CHAR = PlatformTypes::CHAR16;
 	/// A 32-bit character containing a UTF32 (Unicode, 32-bit, fixed-width) code
 	/// unit.
-	typedef PlatformTypes::CHAR32 UTF32CHAR;
+	using UTF32CHAR = PlatformTypes::CHAR32;
 
 	/// An unsigned integer the same size as a pointer
 	using uPtr = PlatformTypes::uPtr;
@@ -70,9 +70,9 @@ namespace Rift
 	using ssizet = PlatformTypes::ssizet;
 
 	/// The type of the NULL constant.
-	typedef PlatformTypes::TYPE_OF_NULL TYPE_OF_NULL;
+	using TYPE_OF_NULL = PlatformTypes::TYPE_OF_NULL;
 	/// The type of the C++ nullptr keyword.
-	typedef PlatformTypes::TYPE_OF_NULLPTR TYPE_OF_NULLPTR;
+	using TYPE_OF_NULLPTR = PlatformTypes::TYPE_OF_NULLPTR;
 }	 // namespace Rift
 
 #if !defined(TX)

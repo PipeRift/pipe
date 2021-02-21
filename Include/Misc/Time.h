@@ -12,24 +12,18 @@ namespace Rift
 	{
 	protected:
 		DateTime previousTime;
-		DateTime currentTime;
+		DateTime currentTime = DateTime::Now();
 
-		float realDeltaTime;
-		float deltaTime;
-
-		float timeDilation;
+		float realDeltaTime = 0.f;
+		float deltaTime     = 0.f;
+		float timeDilation  = 1.f;
 
 		// Value of 1/FPS_CAP
-		float minFrameTime;
+		float minFrameTime = 0.f;
+
 
 	public:
-		FrameTime()
-			: previousTime{}
-			, currentTime{DateTime::Now()}
-			, realDeltaTime(0.f)
-			, deltaTime(0.f)
-			, timeDilation(1.f)
-		{}
+		FrameTime() = default;
 
 		void Tick();
 

@@ -3,7 +3,7 @@
 #pragma once
 
 
-namespace Rift;
+namespace Rift
 {
 	/**
 	 * When we have an optional value IsSet() returns true, and GetValue() is meaningful.

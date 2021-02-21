@@ -35,12 +35,12 @@ namespace Rift
 	{
 	private:
 		/** The time span value in 100 nanoseconds resolution. */
-		DecMicroseconds duration;
+		DecMicroseconds duration{};
 
 
 	public:
 		/** Default constructor (no initialization). */
-		Timespan() : duration{} {}
+		Timespan() = default;
 
 		/**
 		 * Create and initialize a new time interval with the specified number of ticks.

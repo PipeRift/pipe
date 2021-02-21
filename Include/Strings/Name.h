@@ -22,10 +22,11 @@ namespace Rift
 		static constexpr Hash<String> hasher{};
 
 		String str;
-		size_t hash;
+		size_t hash = 0;
 
 	public:
-		NameKey(size_t hash = 0) : hash{hash} {}
+		NameKey() = default;
+		NameKey(size_t hash) : hash{hash} {}
 		NameKey(StringView inStr) : str{inStr}, hash{hasher(str)} {}
 
 		NameKey(const NameKey& other) : hash{other.hash} {}
@@ -71,12 +72,12 @@ namespace Rift
 		using Iterator = Container::iterator;
 		using ConstIterator = Container::const_iterator;
 
-		Container table;
+		Container table{};
 		// Mutex that allows sync reads but waits for registries
 		mutable std::shared_mutex editTableMutex;
 
 
-		NameTable() : table{} {}
+		NameTable() = default;
 
 		size_t Register(StringView string);
 		const String& Find(size_t hash) const;
@@ -100,15 +101,16 @@ namespace Rift
 		using Id = size_t;
 
 	private:
+		static const Id noneId;
 		static const String noneStr;
-		Id id;
+		Id id = noneId;
 #if BUILD_DEBUG
 		StringView value;	 // Only used for debugging purposes
 #endif
 
 
 	public:
-		Name() : id{noneId} {}
+		Name() = default;
 		Name(const TCHAR* key) : Name(StringView{key}) {}
 		Name(StringView key)
 		{
@@ -120,9 +122,9 @@ namespace Rift
 		}
 		Name(const String& str) : Name(StringView(str)) {}
 		Name(const Name& other)
-			: id(other.id)
+		    : id(other.id)
 #if BUILD_DEBUG
-			, value(other.value)
+		    , value(other.value)
 #endif
 		{}
 		Name(Name&& other) noexcept
@@ -132,14 +134,7 @@ namespace Rift
 			std::swap(value, other.value);
 #endif
 		}
-		Name& operator=(const Name& other)
-		{
-			id = other.id;
-#if BUILD_DEBUG
-			value = other.value;
-#endif
-			return *this;
-		}
+		Name& operator=(const Name& other) = default;
 		Name& operator=(Name&& other) noexcept
 		{
 			std::swap(id, other.id);
@@ -180,8 +175,6 @@ namespace Rift
 		{
 			return noneStr;
 		}
-
-		static const Id noneId;
 
 		bool Serialize(class Archive& ar, const char* name);
 

@@ -35,16 +35,16 @@ namespace Rift
 	 */
 	struct LinearColor
 	{
-		float r, g, b, a;
+		float r = 0.f, g = 0.f, b = 0.f, a = 0.f;
 
-		/** Static lookup table used for FColor -> FLinearColor conversion. Pow(2.2) */
+	    /** Static lookup table used for FColor -> FLinearColor conversion. Pow(2.2) */
 		static double Pow22OneOver255Table[256];
 
 		/** Static lookup table used for FColor -> FLinearColor conversion. sRGB */
 		static double sRGBToLinearTable[256];
 
-		explicit LinearColor() : r(0.f), g(0.f), b(0.f), a(0.f) {}
-		constexpr LinearColor(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
+	    explicit LinearColor() = default;
+	    constexpr LinearColor(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
 
 		/**
 		 * Converts an FColor which is assumed to be in sRGB space, into linear color space.
@@ -370,12 +370,12 @@ namespace Rift
 		};
 #pragma warning(default : 4201)
 
-		u32& DWColor(void)
-		{
+	    u32& DWColor()
+	    {
 			return *((u32*) this);
 		}
-		const u32& DWColor(void) const
-		{
+	    const u32& DWColor() const
+	    {
 			return *((u32*) this);
 		}
 

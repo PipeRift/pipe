@@ -7,9 +7,8 @@
 #include "Memory/Allocator.h"
 #include "Platform/Platform.h"
 
-#include <assert.h>
-
 #include <algorithm>
+#include <cassert>
 #include <functional>
 #include <vector>
 
@@ -35,10 +34,11 @@ namespace Rift
 
 
 	private:
-		VectorType vector;
+		VectorType vector{};
+
 
 	public:
-		TArray() : vector{} {}
+		TArray() = default;
 
 		TArray(u32 defaultSize) : vector(defaultSize) {}
 		TArray(u32 defaultSize, const Type& defaultValue) : vector(defaultSize, defaultValue) {}

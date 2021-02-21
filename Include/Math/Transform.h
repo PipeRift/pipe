@@ -23,13 +23,13 @@ namespace Rift
 {
 	struct Transform
 	{
-		v3 location;
-		Quat rotation;
-		v3 scale;
+		v3 location   = v3::Zero();
+		Quat rotation = Quat::Identity();
+		v3 scale      = v3::One();
 
 
-		Transform() : location(v3::Zero()), rotation(Quat::Identity()), scale(v3::One()){};
-		Transform(v3 location) : location(location), rotation(Quat::Identity()), scale(v3::One()){};
+		Transform() = default;
+		Transform(v3 location) : location(location) {};
 
 
 		Rotator GetRotation()

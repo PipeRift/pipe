@@ -8,9 +8,9 @@
 #include "Misc/Hash.h"
 #include "Platform/Platform.h"
 
-#include <assert.h>
 #include <tsl/sparse_map.h>
 
+#include <cassert>
 #include <type_traits>
 
 
