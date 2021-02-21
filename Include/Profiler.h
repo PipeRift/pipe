@@ -6,7 +6,7 @@
 #include "Platform/Platform.h"
 
 #ifdef RIFT_ENABLE_PROFILER
-#	include <tracy.hpp>
+#	include <Tracy.hpp>
 #else
 // Define empty macros in case profiler is disabled. From tracy.hpp
 #	define ZoneNamed(x, y)
