@@ -94,7 +94,7 @@ namespace Rift::Memory
 	template <bool allowGrowing>
 	inline void* LinearAllocator<allowGrowing>::Allocate(const size_t size, const size_t alignment)
 	{
-		if (usedBlockSize + size + alignment > maxBlockSize)
+		if (usedBlockSize + size + alignment > activeBlock.GetSize())
 		{
 			if constexpr (!allowGrowing)
 			{
@@ -102,7 +102,7 @@ namespace Rift::Memory
 				return nullptr;
 			}
 			// Grow same size as previous block, but make sure its enough space
-			Grow(Math::Max(maxBlockSize, size));
+			Grow(Math::Max(activeBlock.GetSize(), size));
 		}
 
 		void* ptr = activeBlock.GetData() + usedBlockSize;

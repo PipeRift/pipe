@@ -68,11 +68,10 @@ target_link_libraries(RiftCore PRIVATE
     portable_file_dialogs
     spdlog
 )
+
+set_option(RiftCore PUBLIC RIFT_ENABLE_PROFILER)
 if(RIFT_ENABLE_PROFILER)
-    target_link_libraries(RiftCore PUBLIC
-        Tracy
-    )
-    target_compile_definitions(RiftCore PUBLIC RIFT_ENABLE_PROFILER)
+    target_link_libraries(RiftCore PUBLIC Tracy)
 endif()
 rift_target_shared_output_directory(RiftCore)
 rift_target_enable_CPP20(RiftCore)

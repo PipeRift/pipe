@@ -68,7 +68,7 @@ namespace Rift::Memory
 		if (!other.data)
 		{
 			Free();
-			return;
+			return *this;
 		}
 		else if (size != other.size)
 		{
@@ -79,6 +79,7 @@ namespace Rift::Memory
 			Allocate(other.size);
 		}
 		memcpy(other.data, data, size);
+		return *this;
 	}
 	inline MallocBlock& MallocBlock::operator=(MallocBlock&& other)
 	{
