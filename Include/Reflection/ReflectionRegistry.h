@@ -18,7 +18,7 @@ namespace Rift::Refl
 	class CORE_API ReflectionRegistry
 	{
 		// Contains all reflection types linearly in memory
-		CORE_API Memory::LinearAllocator allocator{256 * 1024};    // First block is 256KB
+		Memory::LinearAllocator allocator{256 * 1024};    // First block is 256KB
 		// We map all classes by name in case we need to find them
 		TMap<Name, void*> typeIdToInstance{};
 
