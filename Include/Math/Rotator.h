@@ -54,4 +54,4 @@ namespace Rift
 		 */
 		static float NormalizeAxis(float Angle);
 	};
-}	 // namespace Rift
+}    // namespace Rift

@@ -29,18 +29,18 @@ namespace Rift::Refl
 
 	public:
 		TProperty(Type* type, Name typeName, Name name, Access&& access, ReflectionTags tags)
-			: Property(type, typeName, name, tags)
-			, access(access)
+		    : Property(type, typeName, name, tags)
+		    , access(access)
 		{}
 
 		virtual std::shared_ptr<PropertyHandle> CreateHandle(
-			const Ptr<BaseObject>& instance) const override
+		    const Ptr<BaseObject>& instance) const override
 		{
 			const Type* type = GetInstanceType(instance);
 			if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
 			{
 				return std::shared_ptr<PropertyHandle>(
-					new TPropertyHandle<VariableT>(instance, this, access));
+				    new TPropertyHandle<VariableT>(instance, this, access));
 			}
 			return {};
 		}
@@ -51,9 +51,9 @@ namespace Rift::Refl
 			if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
 			{
 				return std::shared_ptr<PropertyHandle>(
-					new TPropertyHandle<VariableT>(instance, this, access));
+				    new TPropertyHandle<VariableT>(instance, this, access));
 			}
 			return {};
 		}
 	};
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

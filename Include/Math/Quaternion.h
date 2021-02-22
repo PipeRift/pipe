@@ -72,4 +72,4 @@ namespace Rift
 		const auto result = glm::inverse<float, glm::highp>(*this);
 		return *static_cast<const Quat*>(&result);
 	}
-}	 // namespace Rift
+}    // namespace Rift

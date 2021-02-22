@@ -28,7 +28,7 @@ namespace Rift
 			if constexpr (std::is_abstract_v<T>)
 			{
 				Log::Error("Tried to create an instance of '{}' which is abstract.",
-					GetReflectableName<T>().ToString());
+				    GetReflectableName<T>().ToString());
 				return {};
 			}
 			else
@@ -47,4 +47,4 @@ namespace Rift
 			delete ptr;
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

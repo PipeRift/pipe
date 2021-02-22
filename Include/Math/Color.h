@@ -37,14 +37,14 @@ namespace Rift
 	{
 		float r = 0.f, g = 0.f, b = 0.f, a = 0.f;
 
-	    /** Static lookup table used for FColor -> FLinearColor conversion. Pow(2.2) */
+		/** Static lookup table used for FColor -> FLinearColor conversion. Pow(2.2) */
 		static double Pow22OneOver255Table[256];
 
 		/** Static lookup table used for FColor -> FLinearColor conversion. sRGB */
 		static double sRGBToLinearTable[256];
 
-	    explicit LinearColor() = default;
-	    constexpr LinearColor(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
+		explicit LinearColor() = default;
+		constexpr LinearColor(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
 
 		/**
 		 * Converts an FColor which is assumed to be in sRGB space, into linear color space.
@@ -191,13 +191,13 @@ namespace Rift
 		bool Equals(const LinearColor& other, float Tolerance = Math::SMALL_NUMBER) const
 		{
 			return Math::Abs(r - other.r) < Tolerance && Math::Abs(g - other.g) < Tolerance &&
-				   Math::Abs(b - other.b) < Tolerance && Math::Abs(a - other.a) < Tolerance;
+			       Math::Abs(b - other.b) < Tolerance && Math::Abs(a - other.a) < Tolerance;
 		}
 
 		LinearColor CopyWithNewOpacity(float NewOpacity) const
 		{
 			LinearColor NewCopy = *this;
-			NewCopy.a = NewOpacity;
+			NewCopy.a           = NewOpacity;
 			return NewCopy;
 		}
 
@@ -231,7 +231,7 @@ namespace Rift
 		static inline float Dist(const LinearColor& one, const LinearColor& other)
 		{
 			return Math::Sqrt(Math::Square(other.r - one.r) + Math::Square(other.g - one.g) +
-							  Math::Square(other.b - one.b) + Math::Square(other.a - one.a));
+			                  Math::Square(other.b - one.b) + Math::Square(other.a - one.a));
 		}
 
 		/**
@@ -244,7 +244,7 @@ namespace Rift
 		 * @return					Path length.
 		 */
 		static float EvaluateBezier(
-			const LinearColor* ControlPoints, i32 NumPoints, TArray<LinearColor>& OutPoints);
+		    const LinearColor* ControlPoints, i32 NumPoints, TArray<LinearColor>& OutPoints);
 
 		/** Converts a linear space RGB color to an HSV color */
 		LinearColor LinearRGBToHSV() const;
@@ -266,7 +266,7 @@ namespace Rift
 		 * value
 		 */
 		static LinearColor LerpUsingHSV(
-			const LinearColor& From, const LinearColor& To, const float Progress);
+		    const LinearColor& From, const LinearColor& To, const float Progress);
 
 		/** Quantizes the linear color and returns the result as a FColor.  This bypasses the SRGB
 		 * conversion. */
@@ -308,7 +308,7 @@ namespace Rift
 		bool IsAlmostBlack() const
 		{
 			return Math::Square(r) < Math::SMALLER_NUMBER &&
-				   Math::Square(g) < Math::SMALLER_NUMBER && Math::Square(b) < Math::SMALLER_NUMBER;
+			       Math::Square(g) < Math::SMALLER_NUMBER && Math::Square(b) < Math::SMALLER_NUMBER;
 		}
 
 		/**
@@ -359,7 +359,7 @@ namespace Rift
 	struct Color
 	{
 	public:
-#pragma warning(disable : 4201)	   // Avoid warning about nameless struct
+#pragma warning(disable : 4201)    // Avoid warning about nameless struct
 		union
 		{
 			struct
@@ -370,12 +370,12 @@ namespace Rift
 		};
 #pragma warning(default : 4201)
 
-	    u32& DWColor()
-	    {
+		u32& DWColor()
+		{
 			return *((u32*) this);
 		}
-	    const u32& DWColor() const
-	    {
+		const u32& DWColor() const
+		{
 			return *((u32*) this);
 		}
 
@@ -542,14 +542,14 @@ namespace Rift
 
 	/*uint32 GetTypeHash( const LinearColor& LinearColor )
 	{
-		// Note: this assumes there's no padding in FLinearColor that could contain uncompared data.
-		return FCrc::MemCrc_DEPRECATED(&LinearColor, sizeof(LinearColor));
+	    // Note: this assumes there's no padding in FLinearColor that could contain uncompared data.
+	    return FCrc::MemCrc_DEPRECATED(&LinearColor, sizeof(LinearColor));
 	}*/
 
 
 	/** Computes a brightness and a fixed point color from a floating point color. */
 	extern void ComputeAndFixedColorAndIntensity(
-		const LinearColor& InLinearColor, Color& OutColor, float& OutIntensity);
+	    const LinearColor& InLinearColor, Color& OutColor, float& OutIntensity);
 
 
 	DEFINE_CLASS_TRAITS(Color, HasCustomSerialize = true, HasDetailsWidget = true);
@@ -614,7 +614,7 @@ namespace Rift
 		FDXT1 DXT1;
 	};
 
-}	 // namespace Rift
+}    // namespace Rift
 
 // These types act like a POD
 RIFT_DECLARE_IS_POD(Rift::Color, true);

@@ -19,7 +19,7 @@ namespace Rift
 	template <typename T32BITS, typename T64BITS>
 	struct SelectIntPointerType<T32BITS, T64BITS, 8>
 	{
-		typedef T64BITS TIntPointer;	// select the 64 bit type
+		typedef T64BITS TIntPointer;    // select the 64 bit type
 	};
 
 	template <typename T32BITS, typename T64BITS>
@@ -35,16 +35,16 @@ namespace Rift
 	struct CORE_API GenericPlatformTypes
 	{
 		// Unsigned base types.
-		using uint8 = unsigned char;		  // 8-bit  unsigned.
-		using uint16 = unsigned short int;	  // 16-bit unsigned.
-		using uint32 = unsigned int;		  // 32-bit unsigned.
-		using uint64 = unsigned long long;	  // 64-bit unsigned.
+		using uint8  = unsigned char;         // 8-bit  unsigned.
+		using uint16 = unsigned short int;    // 16-bit unsigned.
+		using uint32 = unsigned int;          // 32-bit unsigned.
+		using uint64 = unsigned long long;    // 64-bit unsigned.
 
 		// Signed base types.
-		using int8 = signed char;		   // 8-bit  signed.
-		using int16 = signed short int;	   // 16-bit signed.
-		using int32 = signed int;		   // 32-bit signed.
-		using int64 = signed long long;	   // 64-bit signed.
+		using int8  = signed char;         // 8-bit  signed.
+		using int16 = signed short int;    // 16-bit signed.
+		using int32 = signed int;          // 32-bit signed.
+		using int64 = signed long long;    // 64-bit signed.
 
 		// Character types.
 		// An ANSI character - 8-bit fixed-width representation of 7-bit characters.
@@ -89,7 +89,7 @@ namespace Rift
 		using TYPE_OF_NULL    = int32;
 		using TYPE_OF_NULLPTR = decltype(nullptr);
 	};
-}	 // namespace Rift
+}    // namespace Rift
 
 
 #ifndef PLATFORM_TCHAR_IS_1_BYTE

@@ -13,13 +13,13 @@ namespace Rift::Refl
 		const Ptr<BaseObject> instance;
 
 	public:
-		ClassHandle() = delete;
-		ClassHandle(ClassHandle&&) = default;
+		ClassHandle()                   = delete;
+		ClassHandle(ClassHandle&&)      = default;
 		ClassHandle(const ClassHandle&) = default;
 		ClassHandle& operator=(ClassHandle&&) = default;
 		ClassHandle& operator=(const ClassHandle&) = default;
-		virtual ~ClassHandle() = default;
+		virtual ~ClassHandle()                     = default;
 
 		ClassHandle(const Ptr<BaseObject>& instance) : instance(instance) {}
 	};
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

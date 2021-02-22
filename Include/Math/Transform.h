@@ -30,7 +30,7 @@ namespace Rift
 
 
 		Transform() = default;
-		Transform(v3 location) : location(location) {};
+		Transform(v3 location) : location(location){};
 
 
 		Rotator GetRotation()
@@ -118,4 +118,4 @@ namespace Rift
 	DEFINE_CLASS_TRAITS(Transform, HasCustomSerialize = true, HasDetailsWidget = true);
 
 	DECLARE_REFLECTION_TYPE(Transform);
-}	 // namespace Rift
+}    // namespace Rift

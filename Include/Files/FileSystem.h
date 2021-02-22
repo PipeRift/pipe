@@ -22,9 +22,9 @@ namespace Rift
 	class CORE_API FileSystem
 	{
 	public:
-		using Iterator = fs::directory_iterator;
+		using Iterator          = fs::directory_iterator;
 		using RecursiveIterator = fs::recursive_directory_iterator;
-		using SpaceInfo = fs::space_info;
+		using SpaceInfo         = fs::space_info;
 
 
 		/** String API */
@@ -161,4 +161,4 @@ namespace Rift
 			return fs::space(target);
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

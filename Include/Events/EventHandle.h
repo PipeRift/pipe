@@ -45,4 +45,4 @@ namespace Rift
 			return IsValid();
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

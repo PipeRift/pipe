@@ -19,4 +19,4 @@ namespace Rift
 		/** generates CRC hash of the memory area */
 		static u32 MemCrc32(const void* Data, i32 Length, u32 CRC = 0);
 	};
-}	 // namespace Rift
+}    // namespace Rift

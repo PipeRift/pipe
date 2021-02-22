@@ -20,7 +20,7 @@ namespace Rift
 		{
 			// Owner and weak references
 			std::atomic<bool> bIsSet = true;
-			std::atomic<u32> weaks = 0;
+			std::atomic<u32> weaks   = 0;
 		};
 
 		struct Ptr;
@@ -30,7 +30,7 @@ namespace Rift
 			friend Ptr;
 
 		protected:
-			void* value = nullptr;
+			void* value             = nullptr;
 			PtrWeakCounter* counter = nullptr;
 
 
@@ -73,7 +73,7 @@ namespace Rift
 		struct CORE_API Ptr
 		{
 		protected:
-			void* value = nullptr;
+			void* value             = nullptr;
 			PtrWeakCounter* counter = nullptr;
 
 
@@ -114,7 +114,7 @@ namespace Rift
 		private:
 			void __ResetNoCheck(const bool bIsSet);
 		};
-	}	 // namespace Impl
+	}    // namespace Impl
 
 
 	template <typename T>
@@ -340,7 +340,7 @@ namespace Rift
 		Ptr& operator=(const Ptr<T2>& other)
 		{
 			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
-				"Type is not down-castable!");
+			    "Type is not down-castable!");
 			CopyFrom(other);
 			return *this;
 		}
@@ -349,7 +349,7 @@ namespace Rift
 		Ptr& operator=(Ptr<T2>&& other)
 		{
 			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
-				"Type is not down-castable!");
+			    "Type is not down-castable!");
 			MoveFrom(Move(other));
 			return *this;
 		}
@@ -415,7 +415,7 @@ namespace Rift
 
 
 	template <typename T, typename Builder = PtrBuilder<T>, typename... Args,
-		EnableIfT<!std::is_array_v<T>, i32> = 0>
+	    EnableIfT<!std::is_array_v<T>, i32> = 0>
 	OwnPtr<T, Builder> MakeOwned(Args&&... args)
 	{
 		return OwnPtr<T, Builder>(Builder::New(std::forward<Args>(args)...));
@@ -430,6 +430,6 @@ namespace Rift
 	}
 
 	template <typename T, typename Builder = PtrBuilder<T>, typename... Args,
-		EnableIfT<std::extent_v<T> != 0, i32> = 0>
+	    EnableIfT<std::extent_v<T> != 0, i32> = 0>
 	void MakeOwned(Args&&...) = delete;
-}	 // namespace Rift
+}    // namespace Rift

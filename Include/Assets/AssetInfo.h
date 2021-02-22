@@ -62,4 +62,4 @@ namespace Rift
 	DEFINE_CLASS_TRAITS(AssetInfo, HasCustomSerialize = true, HasDetailsWidget = true);
 
 	DECLARE_REFLECTION_TYPE(AssetInfo);
-}	 // namespace Rift
+}    // namespace Rift

@@ -53,7 +53,7 @@ namespace Rift
 		Allocator allocator{};
 
 
-		STLAllocator() noexcept                    = default;
+		STLAllocator()                             = default;
 		STLAllocator(const STLAllocator&) noexcept = default;
 		template <class U>
 		STLAllocator(const STLAllocator<U>&) noexcept

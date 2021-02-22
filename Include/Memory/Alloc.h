@@ -16,4 +16,4 @@ namespace Rift
 	 * @return the number of bytes needed for p to be aligned in 'alignment'
 	 */
 	CORE_API sizet GetAlignmentPadding(void* p, sizet align);
-}	 // namespace Rift
+}    // namespace Rift

@@ -22,4 +22,4 @@ namespace Rift
 	{
 		return robin_hood::hash_bytes(ptr, len);
 	}
-}	 // namespace Rift
+}    // namespace Rift

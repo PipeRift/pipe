@@ -36,9 +36,9 @@ public:
 	}
 
 	template <class T2, class D2,
-		EnableIfT<std::conjunction_v<std::negation<std::is_array<T2>>, std::is_assignable<D&, D2>,
-					  std::is_convertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>>,
-			int> = 0>
+	    EnableIfT<std::conjunction_v<std::negation<std::is_array<T2>>, std::is_assignable<D&, D2>,
+	                  std::is_convertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>>,
+	        int> = 0>
 	TUniquePtr& operator=(TUniquePtr<T2, D2>&& other) noexcept
 	{
 		ptr = Move(other.ptr);

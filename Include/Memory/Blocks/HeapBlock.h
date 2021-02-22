@@ -11,8 +11,8 @@ namespace Rift::Memory
 	class CORE_API HeapBlock
 	{
 	protected:
-		void* data  = nullptr;
-		sizet size  = 0;
+		void* data = nullptr;
+		sizet size = 0;
 
 
 	public:

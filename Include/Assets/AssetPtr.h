@@ -41,7 +41,7 @@ namespace Rift
 	class TAssetPtr : public BaseAssetPtr
 	{
 		static_assert(
-			std::is_base_of<AssetData, T>::value, "AssetPtr type must inherit from AssetData");
+		    std::is_base_of<AssetData, T>::value, "AssetPtr type must inherit from AssetData");
 
 
 	public:
@@ -66,7 +66,7 @@ namespace Rift
 		{
 			if (asset)
 			{
-				info = asset->GetInfo();
+				info        = asset->GetInfo();
 				cachedAsset = asset;
 			}
 		}
@@ -202,10 +202,10 @@ namespace Rift
 
 		void CopyFrom(const TAssetPtr& other)
 		{
-			info = other.info;
+			info        = other.info;
 			cachedAsset = other.cachedAsset;
 		}
 	};
 
 	DEFINE_TEMPLATE_CLASS_TRAITS(TAssetPtr, HasCustomSerialize = true, HasDetailsWidget = true);
-}	 // namespace Rift
+}    // namespace Rift

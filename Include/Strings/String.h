@@ -47,7 +47,7 @@ namespace Rift
 		static void ToSentenceCase(const String& str, String& result);
 
 		static String ReplaceCopy(
-			const String& original, const TCHAR searchChar, const TCHAR replacementChar)
+		    const String& original, const TCHAR searchChar, const TCHAR replacementChar)
 		{
 			String result = original;
 			Replace(result, searchChar, replacementChar);
@@ -89,18 +89,18 @@ namespace Rift
 		 * @return	The number of elements in InArray
 		 */
 		static i32 ParseIntoArray(const String& str, TArray<String>& OutArray,
-			const TCHAR* pchDelim, bool InCullEmpty = true);
+		    const TCHAR* pchDelim, bool InCullEmpty = true);
 
 		static constexpr bool StartsWith(StringView str, StringView subStr)
 		{
 			return str.size() >= subStr.size() &&
-				   std::equal(subStr.begin(), subStr.end(), str.begin()) == 0;
+			       std::equal(subStr.begin(), subStr.end(), str.begin()) == 0;
 		}
 
 		static constexpr bool EndsWith(StringView str, StringView subStr)
 		{
 			return str.size() >= subStr.size() &&
-				   std::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
+			       std::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
 		}
 
 		static constexpr bool EndsWith(StringView str, const TCHAR c)
@@ -125,7 +125,7 @@ namespace Rift
 			{
 				tokens.Add(str.substr(previous, current - previous));
 				previous = current + 1;
-				current = str.find(delim, previous);
+				current  = str.find(delim, previous);
 			}
 			tokens.Add(str.substr(previous, current - previous));
 			return tokens.Size();
@@ -228,4 +228,4 @@ namespace Rift
 			return CString::GetStringHash(str);
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

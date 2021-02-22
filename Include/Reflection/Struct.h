@@ -44,10 +44,10 @@ namespace Rift::Refl
 		/** Called internally to registry a property of a class */
 		template <typename VariableT>
 		void __RegistryProperty(
-			Name name, std::function<VariableT*(void*)>&& access, ReflectionTags tags)
+		    Name name, std::function<VariableT*(void*)>&& access, ReflectionTags tags)
 		{
 			properties.Insert(name, new TProperty<VariableT>(this, GetReflectableName<VariableT>(),
 			                            name, Move(access), tags));
 		}
 	};
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

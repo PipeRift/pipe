@@ -20,7 +20,7 @@ namespace Rift::Refl
 	{
 	public:
 		virtual OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(
-			const Ptr<BaseObject>& owner) = 0;
+		    const Ptr<BaseObject>& owner) = 0;
 
 		// NOTE: Most of the class comparison functions do actually
 		// call Type to reduce complexity and code duplication.
@@ -50,10 +50,10 @@ namespace Rift::Refl
 		/** Called internally to registry a property of a class */
 		template <typename VariableT>
 		void __RegistryProperty(
-			Name name, std::function<VariableT*(void*)>&& access, ReflectionTags tags)
+		    Name name, std::function<VariableT*(void*)>&& access, ReflectionTags tags)
 		{
 			properties.Insert(name, new TProperty<VariableT>(this, GetReflectableName<VariableT>(),
 			                            name, Move(access), tags));
 		}
 	};
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

@@ -19,8 +19,8 @@ namespace Rift
 		explicit FormatFileIterator(StringView format, const Path& path);
 
 		FormatFileIterator(const FormatFileIterator&) noexcept = default;
-		FormatFileIterator(FormatFileIterator&&) noexcept = default;
-		~FormatFileIterator() noexcept = default;
+		FormatFileIterator(FormatFileIterator&&) noexcept      = default;
+		~FormatFileIterator() noexcept                         = default;
 
 		FormatFileIterator& operator=(const FormatFileIterator&) noexcept = default;
 		FormatFileIterator& operator=(FormatFileIterator&&) noexcept = default;
@@ -69,7 +69,7 @@ namespace Rift
 
 	template <typename FileIterator>
 	inline FormatFileIterator<FileIterator>::FormatFileIterator(StringView format, const Path& path)
-		: format{format}
+	    : format{format}
 	{
 		if (!FileSystem::Exists(path) || !FileSystem::IsFolder(path))
 		{
@@ -99,4 +99,4 @@ namespace Rift
 			}
 		}
 	}
-}	 // namespace Rift
+}    // namespace Rift

@@ -37,4 +37,4 @@ namespace Rift::Refl
 
 	template <typename T>
 	TStruct<T>* TStruct<T>::_instance = T::InitType();
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

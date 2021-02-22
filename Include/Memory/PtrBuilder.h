@@ -35,4 +35,4 @@ namespace Rift
 			delete ptr;
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

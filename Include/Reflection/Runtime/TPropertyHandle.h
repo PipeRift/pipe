@@ -22,14 +22,14 @@ namespace Rift::Refl
 		// TPropertyHandle() : PropertyHandle({}, nullptr) {}
 		// Objects constructor
 		TPropertyHandle(const Ptr<BaseObject>& instance, const Property* prop, const Access& access)
-			: PropertyHandle(instance, prop)
-			, access{access}
+		    : PropertyHandle(instance, prop)
+		    , access{access}
 		{}
 
 		// Structs constructor
 		TPropertyHandle(BaseStruct* instance, const Property* prop, const Access& access)
-			: PropertyHandle(instance, prop)
-			, access{access}
+		    : PropertyHandle(instance, prop)
+		    , access{access}
 		{}
 
 		VariableT* GetValuePtr() const
@@ -63,4 +63,4 @@ namespace Rift::Refl
 			return valuePtr;
 		}
 	};
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

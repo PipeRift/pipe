@@ -18,7 +18,7 @@ namespace Rift
 		// Conversion from glm matrix
 		template <glm::qualifier Q>
 		Matrix(const glm::mat<X, Y, T, Q>& other)
-			: Matrix(*static_cast<const Matrix<X, Y, T>*>(&other))
+		    : Matrix(*static_cast<const Matrix<X, Y, T>*>(&other))
 		{}
 
 		Matrix Inverse() const
@@ -50,4 +50,4 @@ namespace Rift
 	};
 
 	using Matrix4f = Matrix<4, 4, float>;
-}	 // namespace Rift
+}    // namespace Rift

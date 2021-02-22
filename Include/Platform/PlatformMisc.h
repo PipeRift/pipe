@@ -27,8 +27,8 @@ namespace Rift
 	CORE_API constexpr T Align(T Val, u64 Alignment)
 	{
 		static_assert(std::is_integral<T>::value || std::is_pointer<T>::value,
-			"Align expects an integer or pointer type");
+		    "Align expects an integer or pointer type");
 
 		return (T)(((u64) Val + Alignment - 1) & ~(Alignment - 1));
 	}
-}	 // namespace Rift
+}    // namespace Rift

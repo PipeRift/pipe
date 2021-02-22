@@ -21,19 +21,19 @@ namespace Rift
 	class TMap
 	{
 		static_assert(std::is_nothrow_move_constructible<Value>::value ||
-						  std::is_copy_constructible<Value>::value,
-			"Value type must be nothrow move constructible and/or copy constructible.");
+		                  std::is_copy_constructible<Value>::value,
+		    "Value type must be nothrow move constructible and/or copy constructible.");
 
 	public:
 		template <typename OtherKey, typename OtherValue, typename OtherAllocator>
 		friend class TMap;
 
-		using KeyType = Key;
-		using ValueType = Value;
+		using KeyType     = Key;
+		using ValueType   = Value;
 		using HashMapType = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>,
 		    std::equal_to<KeyType>, STLAllocator<std::pair<Key, Value>, Allocator>>;
 
-		using Iterator = typename HashMapType::iterator;
+		using Iterator      = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;
 
 
@@ -49,11 +49,11 @@ namespace Rift
 			Insert(item);
 		}
 		TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList)
-			: map{initList.begin(), initList.end()}
+		    : map{initList.begin(), initList.end()}
 		{}
 
 		TMap(TMap&& other) noexcept = default;
-		TMap(const TMap& other) = default;
+		TMap(const TMap& other)     = default;
 		TMap& operator=(TMap&& other) noexcept = default;
 		TMap& operator=(const TMap& other) = default;
 
@@ -268,4 +268,4 @@ namespace Rift
 			map = Move(other.map);
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

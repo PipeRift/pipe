@@ -44,4 +44,4 @@ namespace Rift
 			return deltaTime;
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

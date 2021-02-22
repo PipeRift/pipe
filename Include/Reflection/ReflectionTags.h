@@ -12,7 +12,7 @@ namespace Rift
 	{
 		enum class PropertyTags : u16
 		{
-			None = 0,
+			None        = 0,
 			DetailsEdit = 1 << 0,
 			DetailsView = 1 << 1
 		};
@@ -26,7 +26,7 @@ namespace Rift
 
 		// Class & Property Tags
 		Transient = 1 << 8,
-		SaveGame = 1 << 9,
+		SaveGame  = 1 << 9,
 
 		// Property only Tags
 		DetailsEdit = 1 << 12,
@@ -87,4 +87,4 @@ namespace Rift
 	{
 		static constexpr ReflectionTags value = tags;
 	};
-}	 // namespace Rift
+}    // namespace Rift

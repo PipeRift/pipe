@@ -18,7 +18,7 @@ namespace Rift
 		using FormatFileIterator<FileSystem::Iterator>::FormatFileIterator;
 
 		explicit AssetIterator(const Path& path)
-			: FormatFileIterator(AssetManager::assetFormat, path)
+		    : FormatFileIterator(AssetManager::assetFormat, path)
 		{}
 
 		const AssetInfo& operator*() const noexcept
@@ -43,7 +43,7 @@ namespace Rift
 		using FormatFileIterator<FileSystem::RecursiveIterator>::FormatFileIterator;
 
 		explicit AssetIterator(const Path& path)
-			: FormatFileIterator(AssetManager::assetFormat, path)
+		    : FormatFileIterator(AssetManager::assetFormat, path)
 		{}
 
 		const AssetInfo& operator*() const noexcept
@@ -70,4 +70,4 @@ namespace Rift
 	{
 		return {};
 	}
-}	 // namespace Rift
+}    // namespace Rift

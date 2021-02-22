@@ -29,7 +29,7 @@ namespace Rift
 
 		void PreConstruct(Ptr<BaseObject>&& inSelf, const Ptr<BaseObject>& inOwner)
 		{
-			self = inSelf;
+			self  = inSelf;
 			owner = inOwner;
 		}
 		virtual void Construct() {}
@@ -81,4 +81,4 @@ namespace Rift
 		return MakeOwned<T, ObjectBuilder<T>>(owner);
 	}
 	// END - Pointer helpers
-}	 // namespace Rift
+}    // namespace Rift

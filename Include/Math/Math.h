@@ -20,8 +20,8 @@ namespace Rift
 	struct CORE_API Math
 	{
 		static constexpr float PI{3.14159265358979323846f};
-		static constexpr float HALF_PI = PI * 0.5f;
-		static constexpr float INV_PI = 1 / PI;
+		static constexpr float HALF_PI  = PI * 0.5f;
+		static constexpr float INV_PI   = 1 / PI;
 		static constexpr float RADTODEG = 180.f / PI;
 		static constexpr float DEGTORAD = PI / 180.f;
 
@@ -52,24 +52,24 @@ namespace Rift
 
 		static float ClampAngle(float a)
 		{
-			const float cAngle = Mod(a, 360.f);		   //(-360,360)
+			const float cAngle = Mod(a, 360.f);             //(-360,360)
 			return cAngle + float(cAngle < 0.f) * 360.f;    //[0, 360)
 		}
 
 		static float NormalizeAngle(float a)
 		{
-			a = ClampAngle(a);	  //[0,360)
+			a = ClampAngle(a);    //[0,360)
 
 			if (a > 180.f)
 				a -= 360.f;
-			return a;	 //(-180, 180]
+			return a;    //(-180, 180]
 		}
 
 		static float ClampAngle(float a, float min, float max)
 		{
-			const float maxDelta = ClampAngle(max - min) * 0.5f;			  // 0..180
-			const float rangeCenter = ClampAngle(min + maxDelta);			  // 0..360
-			const float deltaFromCenter = NormalizeAngle(a - rangeCenter);	  // -180..180
+			const float maxDelta        = ClampAngle(max - min) * 0.5f;       // 0..180
+			const float rangeCenter     = ClampAngle(min + maxDelta);         // 0..360
+			const float deltaFromCenter = NormalizeAngle(a - rangeCenter);    // -180..180
 
 			// maybe clamp to nearest edge
 			if (deltaFromCenter > maxDelta)
@@ -80,7 +80,7 @@ namespace Rift
 			{
 				return NormalizeAngle(rangeCenter - maxDelta);
 			}
-			return NormalizeAngle(a);	 // Already in range
+			return NormalizeAngle(a);    // Already in range
 		}
 
 		/** Computes absolute value in a generic way */
@@ -260,7 +260,7 @@ namespace Rift
 		/*template< class T, class U, EnableIfPassByValue(T)>
 		static constexpr T Lerp(const T A, const T B, const U Alpha)
 		{
-			return (T)(A + Alpha * (B - A));
+		    return (T)(A + Alpha * (B - A));
 		}*/
 
 		template <class T, class U /*, EnableIfNotPassByValue(T)*/>
@@ -277,7 +277,7 @@ namespace Rift
 		// Module for integer types only
 		template <typename Type>
 		static constexpr auto Mod(Type a, Type b)
-			-> decltype(EnableIf<std::is_integral_v<Type>, Type>::type)
+		    -> decltype(EnableIf<std::is_integral_v<Type>, Type>::type)
 		{
 			return a % b;
 		}
@@ -307,12 +307,12 @@ namespace Rift
 			float sign;
 			if (y > HALF_PI)
 			{
-				y = PI - y;
+				y    = PI - y;
 				sign = -1.0f;
 			}
 			else if (y < -HALF_PI)
 			{
-				y = -PI - y;
+				y    = -PI - y;
 				sign = -1.0f;
 			}
 			else
@@ -324,20 +324,20 @@ namespace Rift
 
 			// 11-degree minimax approximation
 			*ScalarSin = (((((-2.3889859e-08f * y2 + 2.7525562e-06f) * y2 - 0.00019840874f) * y2 +
-							   0.0083333310f) *
-								  y2 -
-							  0.16666667f) *
-								 y2 +
-							 1.0f) *
-						 y;
+			                   0.0083333310f) *
+			                      y2 -
+			                  0.16666667f) *
+			                     y2 +
+			                 1.0f) *
+			             y;
 
 			// 10-degree minimax approximation
 			float p = ((((-2.6051615e-07f * y2 + 2.4760495e-05f) * y2 - 0.0013888378f) * y2 +
-						   0.041666638f) *
-							  y2 -
-						  0.5f) *
-						  y2 +
-					  1.0f;
+			               0.041666638f) *
+			                  y2 -
+			              0.5f) *
+			              y2 +
+			          1.0f;
 			*ScalarCos = sign * p;
 		}
 
@@ -360,8 +360,8 @@ namespace Rift
 		{
 			// Clamp input to [-1,1].
 			bool nonnegative = (Value >= 0.0f);
-			float x = Math::Abs(Value);
-			float omx = 1.0f - x;
+			float x          = Math::Abs(Value);
+			float omx        = 1.0f - x;
 			if (omx < 0.0f)
 			{
 				omx = 0.0f;
@@ -369,16 +369,16 @@ namespace Rift
 			float root = Math::Sqrt(omx);
 			// 7-degree minimax approximation
 			float result = ((((((-0.0012624911f * x + 0.0066700901f) * x - 0.0170881256f) * x +
-								  0.0308918810f) *
-									 x -
-								 0.0501743046f) *
-									x +
-								0.0889789874f) *
-								   x -
-							   0.2145988016f) *
-							   x +
-						   FASTASIN_HALF_PI;
-			result *= root;	   // acos(|x|)
+			                      0.0308918810f) *
+			                         x -
+			                     0.0501743046f) *
+			                        x +
+			                    0.0889789874f) *
+			                       x -
+			                   0.2145988016f) *
+			                   x +
+			               FASTASIN_HALF_PI;
+			result *= root;    // acos(|x|)
 			// acos(x) = pi - acos(-x) when x < 0, asin(x) = pi/2 - acos(x)
 			return (nonnegative ? FASTASIN_HALF_PI - result : result - FASTASIN_HALF_PI);
 		}
@@ -420,4 +420,4 @@ namespace Rift
 			return (value & (value - 1)) == T(0);
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

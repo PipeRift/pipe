@@ -17,4 +17,4 @@ namespace Rift
 
 	template <typename T>
 	using TOptional = std::optional<T>;
-}	 // namespace Rift
+}    // namespace Rift

@@ -86,8 +86,8 @@ namespace Rift
 		{
 			delete[] bits;
 			arraySize = 0;
-			bitLongs = 0;
-			bits = nullptr;
+			bitLongs  = 0;
+			bits      = nullptr;
 		}
 
 		/** Returns index of next set bit in array (wraps around)
@@ -103,4 +103,4 @@ namespace Rift
 			return arraySize;
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

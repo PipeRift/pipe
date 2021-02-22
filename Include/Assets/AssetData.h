@@ -56,4 +56,4 @@ namespace Rift
 			return info.GetPath();
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

@@ -13,7 +13,7 @@ namespace Rift
 	class Broadcast
 	{
 	protected:
-		using Method = void(Params...);
+		using Method   = void(Params...);
 		using Function = std::function<void(Params...)>;
 
 		using MethodPtr = void (*)(Params...);
@@ -106,8 +106,8 @@ namespace Rift
 			if (object && method)
 			{
 				Type* const instance = *object;
-				Function func = [instance, method](Params... params) {
-					(instance->*method)(params...);
+				Function func        = [instance, method](Params... params) {
+                    (instance->*method)(params...);
 				};
 
 				EventHandle handle{};
@@ -159,4 +159,4 @@ namespace Rift
 			return false;
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

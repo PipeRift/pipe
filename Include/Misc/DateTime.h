@@ -101,7 +101,7 @@ namespace Rift
 
 		template <typename Precision>
 		DateTime(Chrono::time_point<SysClock, Precision> value)
-			: value{Chrono::time_point_cast<DecMicroseconds, SysClock, Precision>(value)}
+		    : value{Chrono::time_point_cast<DecMicroseconds, SysClock, Precision>(value)}
 		{}
 
 		/**
@@ -117,7 +117,7 @@ namespace Rift
 		 * @param Millisecond The millisecond (optional).
 		 */
 		DateTime(i32 Year, i32 Month, i32 Day, i32 Hour = 0, i32 Minute = 0, i32 Second = 0,
-			i32 Millisecond = 0);
+		    i32 Millisecond = 0);
 
 	public:
 		/**
@@ -334,8 +334,8 @@ namespace Rift
 		i32 GetMillisecond() const
 		{
 			return (i32)(
-				Chrono::floor<Chrono::milliseconds>(value) - Chrono::floor<Chrono::seconds>(value))
-				.count();
+			    Chrono::floor<Chrono::milliseconds>(value) - Chrono::floor<Chrono::seconds>(value))
+			    .count();
 		}
 
 		/**
@@ -348,7 +348,7 @@ namespace Rift
 		i32 GetMinute() const
 		{
 			return (Chrono::floor<Chrono::minutes>(value) - Chrono::floor<Chrono::hours>(value))
-				.count();
+			    .count();
 		}
 
 		/**
@@ -381,8 +381,8 @@ namespace Rift
 		i32 GetSecond() const
 		{
 			return (i32)(
-				Chrono::floor<Chrono::seconds>(value) - Chrono::floor<Chrono::minutes>(value))
-				.count();
+			    Chrono::floor<Chrono::seconds>(value) - Chrono::floor<Chrono::minutes>(value))
+			    .count();
 		}
 
 		/**
@@ -660,7 +660,7 @@ namespace Rift
 		 * @return true if the components are valid, false otherwise.
 		 */
 		static bool Validate(
-			i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond);
+		    i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond);
 
 		template <typename Clock, typename Precision>
 		static DateTime CastClock(Chrono::time_point<Clock, Precision> time)
@@ -674,10 +674,10 @@ namespace Rift
 		 * This operation may contains small precision errors.
 		 */
 		template <typename DstDuration, typename SrcDuration, typename DstClock, typename SrcClock,
-			typename DstTime = Chrono::time_point<DstClock, DstDuration>,
-			typename SrcTime = Chrono::time_point<SrcClock, SrcDuration> >
+		    typename DstTime = Chrono::time_point<DstClock, DstDuration>,
+		    typename SrcTime = Chrono::time_point<SrcClock, SrcDuration> >
 		static DstTime clock_cast(const SrcTime tp,
-			const SrcDuration tolerance = DecMicroseconds{1}, const i32 limit = 10)
+		    const SrcDuration tolerance = DecMicroseconds{1}, const i32 limit = 10)
 		{
 			assert(limit > 0);
 			auto itercnt = 0;
@@ -687,11 +687,11 @@ namespace Rift
 			SrcDuration epsilon = SrcDuration::max();
 			do
 			{
-				const auto src_before = SrcClock::now();
+				const auto src_before  = SrcClock::now();
 				const auto dst_between = DstClock::now();
-				const auto src_after = SrcClock::now();
-				const auto src_diff = src_after - src_before;
-				const auto delta = Chrono::abs(src_diff);
+				const auto src_after   = SrcClock::now();
+				const auto src_diff    = src_after - src_before;
+				const auto delta       = Chrono::abs(src_diff);
 				if (delta < epsilon)
 				{
 					src_now = src_before + src_diff / 2;
@@ -708,4 +708,4 @@ namespace Rift
 	private:
 		friend struct Z_Construct_UScriptStruct_FDateTime_Statics;
 	};
-}	 // namespace Rift
+}    // namespace Rift

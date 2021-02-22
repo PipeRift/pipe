@@ -44,4 +44,4 @@ namespace Rift::Refl
 
 	template <typename T>
 	TClass<T>* TClass<T>::_instance = T::InitType();
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

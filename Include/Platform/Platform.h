@@ -73,7 +73,7 @@ namespace Rift
 	using TYPE_OF_NULL = PlatformTypes::TYPE_OF_NULL;
 	/// The type of the C++ nullptr keyword.
 	using TYPE_OF_NULLPTR = PlatformTypes::TYPE_OF_NULLPTR;
-}	 // namespace Rift
+}    // namespace Rift
 
 #if !defined(TX)
 #	if PLATFORM_TCHAR_IS_1_BYTE

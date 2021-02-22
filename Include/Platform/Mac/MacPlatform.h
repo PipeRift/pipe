@@ -16,19 +16,19 @@ namespace Rift
 	 **/
 	struct MacPlatformTypes : public GenericPlatformTypes
 	{
-		using DWORD = unsigned int;
-		using sizet = std::size_t;
+		using DWORD        = unsigned int;
+		using sizet        = std::size_t;
 		using TYPE_OF_NULL = decltype(nullptr);
 #if PLATFORM_MACOS_USE_CHAR16
 		using WIDECHAR = char16_t;
-		using TCHAR = WIDECHAR;
+		using TCHAR    = WIDECHAR;
 #else
 		using CHAR16 = char16_t;
 #endif
 	};
 
 	using PlatformTypes = MacPlatformTypes;
-}	 // namespace Rift
+}    // namespace Rift
 
 #if BUILD_DEBUG
 #	define FORCEINLINE inline /* Don't force code to be inline */

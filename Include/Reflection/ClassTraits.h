@@ -14,8 +14,8 @@ namespace Rift
 		{
 			HasCustomSerialize = false,
 			HasGlobalSerialize = false,
-			HasDetailsWidget = false,
-			HasPostSerialize = false
+			HasDetailsWidget   = false,
+			HasPostSerialize   = false
 		};
 	};
 
@@ -42,4 +42,4 @@ namespace Rift
 	template <typename T>
 	struct ClassTraits : public BaseClassTraits<T>
 	{};
-}	 // namespace Rift
+}    // namespace Rift

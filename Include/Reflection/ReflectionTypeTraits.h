@@ -68,7 +68,7 @@ namespace Rift
 			{
 				// TArray<Itemtype> name
 				return {CString::Format(
-					TX("TArray<{}>"), GetReflectableName<typename T::ItemType>().ToString())};
+				    TX("TArray<{}>"), GetReflectableName<typename T::ItemType>().ToString())};
 			}
 			return TX("TArray<Invalid>");
 		}
@@ -76,7 +76,7 @@ namespace Rift
 		{
 			// TAssetPtr<Itemtype> name
 			return {CString::Format(
-				TX("TAssetPtr<{}>"), GetReflectableName<typename T::ItemType>().ToString())};
+			    TX("TAssetPtr<{}>"), GetReflectableName<typename T::ItemType>().ToString())};
 		}
 		else if constexpr (IsStructType<T>() || IsObjectType<T>())
 		{
@@ -84,7 +84,7 @@ namespace Rift
 		}
 		return TX("Invalid");
 	}
-}	 // namespace Rift
+}    // namespace Rift
 
 
 #define DECLARE_REFLECTION_TYPE(Type)               \

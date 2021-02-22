@@ -24,12 +24,12 @@ namespace Rift
 		template <typename OtherType, typename OtherAllocator>
 		friend class TArray;
 
-		using ItemType = Type;
+		using ItemType   = Type;
 		using VectorType = std::vector<Type, STLAllocator<Type, Allocator>>;
 
-		using Iterator = typename VectorType::iterator;
-		using ConstIterator = typename VectorType::const_iterator;
-		using ReverseIterator = typename VectorType::reverse_iterator;
+		using Iterator             = typename VectorType::iterator;
+		using ConstIterator        = typename VectorType::const_iterator;
+		using ReverseIterator      = typename VectorType::reverse_iterator;
 		using ConstReverseIterator = typename VectorType::const_reverse_iterator;
 
 
@@ -435,9 +435,9 @@ namespace Rift
 	void TArray<Type, Allocator>::Swap(i32 firstIndex, i32 secondIndex)
 	{
 		if (Size() > 1 && firstIndex != secondIndex && IsValidIndex(firstIndex) &&
-			IsValidIndex(secondIndex))
+		    IsValidIndex(secondIndex))
 		{
 			std::iter_swap(vector.begin() + firstIndex, vector.begin() + secondIndex);
 		}
 	}
-}	 // namespace Rift
+}    // namespace Rift

@@ -70,7 +70,7 @@ namespace Rift
 			if (&value != &otherValue)
 			{
 				bIsSet = true;
-				value = otherValue;
+				value  = otherValue;
 			}
 			return *this;
 		}
@@ -93,7 +93,7 @@ namespace Rift
 		void Emplace(ArgsType&&... Args)
 		{
 			bIsSet = true;
-			value = Type(Forward<ArgsType>(Args)...);
+			value  = Type(Forward<ArgsType>(Args)...);
 		}
 
 		friend bool operator==(const TOptional& lhs, const TOptional& rhs)
@@ -119,15 +119,15 @@ namespace Rift
 		const Type& GetValue() const
 		{
 			check(IsSet(),
-				TX("Called GetValue() on an unset TOptional. Please either check IsSet() or "
-				   "use Get(DefaultValue) instead."));
+			    TX("Called GetValue() on an unset TOptional. Please either check IsSet() or "
+			       "use Get(DefaultValue) instead."));
 			return value;
 		}
 		Type& GetValue()
 		{
 			check(IsSet(),
-				TX("Called GetValue() on an unset TOptional. Please either check IsSet() or "
-				   "use Get(DefaultValue) instead."));
+			    TX("Called GetValue() on an unset TOptional. Please either check IsSet() or "
+			       "use Get(DefaultValue) instead."));
 			return value;
 		}
 
@@ -146,4 +146,4 @@ namespace Rift
 			return IsSet() ? value : defaultValue;
 		}
 	};
-}	 // namespace ;
+}    // namespace Rift

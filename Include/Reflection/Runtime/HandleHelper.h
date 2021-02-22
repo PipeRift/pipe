@@ -17,4 +17,4 @@ namespace Rift::Refl
 			return std::make_shared<ClassHandle>(instance);
 		}
 	};
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

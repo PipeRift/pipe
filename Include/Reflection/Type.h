@@ -32,7 +32,7 @@ namespace Rift::Refl
 
 
 	public:
-		Type() = default;
+		Type()            = default;
 		Type(const Type&) = delete;
 		Type& operator=(const Type&) = delete;
 		virtual ~Type()
@@ -82,4 +82,4 @@ namespace Rift::Refl
 		void __GetAllChildren(TArray<Type*>& outChildren);
 		Type* __FindChild(const Name& className) const;
 	};
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

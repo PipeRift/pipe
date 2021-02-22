@@ -13,4 +13,4 @@ namespace Rift
 	{
 		ORPHAN_STRUCT(Struct, ReflectionTags::None)
 	};
-}	 // namespace Rift
+}    // namespace Rift

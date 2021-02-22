@@ -327,8 +327,8 @@ namespace Rift
 		i64 GetFractionMicro() const
 		{
 			return (Chrono::floor<Chrono::microseconds>(duration) -
-					Chrono::floor<Chrono::seconds>(duration))
-				.count();
+			        Chrono::floor<Chrono::seconds>(duration))
+			    .count();
 		}
 
 		/**
@@ -340,8 +340,8 @@ namespace Rift
 		i64 GetFractionMilli() const
 		{
 			return (Chrono::floor<Chrono::milliseconds>(duration) -
-					Chrono::floor<Chrono::seconds>(duration))
-				.count();
+			        Chrono::floor<Chrono::seconds>(duration))
+			    .count();
 		}
 
 		/**
@@ -352,8 +352,8 @@ namespace Rift
 		i64 GetFractionNano() const
 		{
 			return (Chrono::floor<Chrono::nanoseconds>(duration) -
-					Chrono::floor<Chrono::seconds>(duration))
-				.count();
+			        Chrono::floor<Chrono::seconds>(duration))
+			    .count();
 		}
 
 		/**
@@ -375,7 +375,7 @@ namespace Rift
 		i32 GetHours() const
 		{
 			return (i32)(Chrono::floor<Chrono::hours>(duration) - Chrono::floor<Days>(duration))
-				.count();
+			    .count();
 		}
 
 		/**
@@ -387,8 +387,8 @@ namespace Rift
 		i32 GetMinutes() const
 		{
 			return (i32)(
-				Chrono::floor<Chrono::minutes>(duration) - Chrono::floor<Chrono::hours>(duration))
-				.count();
+			    Chrono::floor<Chrono::minutes>(duration) - Chrono::floor<Chrono::hours>(duration))
+			    .count();
 		}
 
 		/**
@@ -400,8 +400,8 @@ namespace Rift
 		i32 GetSeconds() const
 		{
 			return (i32)(
-				Chrono::floor<Chrono::seconds>(duration) - Chrono::floor<Chrono::minutes>(duration))
-				.count();
+			    Chrono::floor<Chrono::seconds>(duration) - Chrono::floor<Chrono::minutes>(duration))
+			    .count();
 		}
 
 		/**
@@ -634,4 +634,4 @@ namespace Rift
 	{
 		return Timespan.operator*(Scalar);
 	}
-}	 // namespace Rift
+}    // namespace Rift

@@ -52,7 +52,7 @@ namespace Rift::Refl
 
 
 	template <typename T, typename Parent, typename TType,
-		ReflectionTags tags = ReflectionTags::None>
+	    ReflectionTags tags = ReflectionTags::None>
 	struct TTypeBuilder
 	{
 		static constexpr bool hasParent = !std::is_void_v<Parent>;
@@ -83,7 +83,7 @@ namespace Rift::Refl
 		{
 			ZoneScopedN("AddProperty");
 			static_assert(Rift::IsReflectableType<PropertyType>(),
-				"PropertyType is not a valid reflected type.");
+			    "PropertyType is not a valid reflected type.");
 			static_assert(!(propertyTags & Abstract), "Properties can't be Abstract");
 
 
@@ -122,4 +122,4 @@ namespace Rift::Refl
 			newType->tags = tags;
 		}
 	};
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

@@ -34,8 +34,8 @@ namespace Rift
 
 
 		public:
-			Property() = delete;
-			Property(Property&&) = delete;
+			Property()                = delete;
+			Property(Property&&)      = delete;
 			Property(const Property&) = delete;
 
 		protected:
@@ -84,7 +84,7 @@ namespace Rift
 			}
 
 			virtual std::shared_ptr<PropertyHandle> CreateHandle(
-				const Ptr<BaseObject>& instance) const = 0;
+			    const Ptr<BaseObject>& instance) const                                       = 0;
 			virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const = 0;
 
 		protected:
@@ -94,5 +94,5 @@ namespace Rift
 		private:
 			void SetDisplayName(const String& inDisplayName);
 		};
-	}	 // namespace Refl
-}	 // namespace Rift
+	}    // namespace Refl
+}    // namespace Rift

@@ -12,7 +12,7 @@
 namespace Rift
 {
 	/*-----------------------------------------------------------------------------
-		Character type functions.
+	    Character type functions.
 	-----------------------------------------------------------------------------*/
 
 	/**
@@ -59,12 +59,12 @@ namespace Rift
 	{
 		typedef T CharType;
 
-		static const CharType LineFeed = L'\x000A';
-		static const CharType VerticalTab = L'\x000B';
-		static const CharType FormFeed = L'\x000C';
-		static const CharType CarriageReturn = L'\x000D';
-		static const CharType NextLine = L'\x0085';
-		static const CharType LineSeparator = L'\x2028';
+		static const CharType LineFeed           = L'\x000A';
+		static const CharType VerticalTab        = L'\x000B';
+		static const CharType FormFeed           = L'\x000C';
+		static const CharType CarriageReturn     = L'\x000D';
+		static const CharType NextLine           = L'\x0085';
+		static const CharType LineSeparator      = L'\x2028';
 		static const CharType ParagraphSeparator = L'\x2029';
 	};
 
@@ -73,11 +73,11 @@ namespace Rift
 	{
 		using CharType = T;
 
-		static const CharType LineFeed = '\x000A';
-		static const CharType VerticalTab = '\x000B';
-		static const CharType FormFeed = '\x000C';
+		static const CharType LineFeed       = '\x000A';
+		static const CharType VerticalTab    = '\x000B';
+		static const CharType FormFeed       = '\x000C';
 		static const CharType CarriageReturn = '\x000D';
-		static const CharType NextLine = '\x0085';
+		static const CharType NextLine       = '\x0085';
 	};
 
 	template <typename T, const unsigned int Size>
@@ -87,12 +87,12 @@ namespace Rift
 		static inline bool IsLinebreak(CharType c)
 		{
 			return c == TCharBase<CharType, Size>::LineFeed ||
-				   c == TCharBase<CharType, Size>::VerticalTab ||
-				   c == TCharBase<CharType, Size>::FormFeed ||
-				   c == TCharBase<CharType, Size>::CarriageReturn ||
-				   c == TCharBase<CharType, Size>::NextLine ||
-				   c == TCharBase<CharType, Size>::LineSeparator ||
-				   c == TCharBase<CharType, Size>::ParagraphSeparator;
+			       c == TCharBase<CharType, Size>::VerticalTab ||
+			       c == TCharBase<CharType, Size>::FormFeed ||
+			       c == TCharBase<CharType, Size>::CarriageReturn ||
+			       c == TCharBase<CharType, Size>::NextLine ||
+			       c == TCharBase<CharType, Size>::LineSeparator ||
+			       c == TCharBase<CharType, Size>::ParagraphSeparator;
 		}
 	};
 
@@ -103,10 +103,10 @@ namespace Rift
 		static inline bool IsLinebreak(CharType c)
 		{
 			return c == TCharBase<CharType, 1>::LineFeed ||
-				   c == TCharBase<CharType, 1>::VerticalTab ||
-				   c == TCharBase<CharType, 1>::FormFeed ||
-				   c == TCharBase<CharType, 1>::CarriageReturn ||
-				   c == TCharBase<CharType, 1>::NextLine;
+			       c == TCharBase<CharType, 1>::VerticalTab ||
+			       c == TCharBase<CharType, 1>::FormFeed ||
+			       c == TCharBase<CharType, 1>::CarriageReturn ||
+			       c == TCharBase<CharType, 1>::NextLine;
 		}
 	};
 
@@ -168,7 +168,7 @@ namespace Rift
 	using FCharAnsi = TChar<ANSICHAR>;
 
 	/*-----------------------------------------------------------------------------
-		WIDECHAR specialized functions
+	    WIDECHAR specialized functions
 	-----------------------------------------------------------------------------*/
 	template <>
 	inline bool TChar<WIDECHAR>::IsUpper(CharType c)
@@ -227,7 +227,7 @@ namespace Rift
 	}
 
 	/*-----------------------------------------------------------------------------
-		ANSICHAR specialized functions
+	    ANSICHAR specialized functions
 	-----------------------------------------------------------------------------*/
 	template <>
 	inline bool TChar<ANSICHAR>::IsUpper(CharType Char)
@@ -284,4 +284,4 @@ namespace Rift
 	{
 		return ::strtol(str, end, radix);
 	}
-}	 // namespace Rift
+}    // namespace Rift

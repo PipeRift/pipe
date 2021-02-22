@@ -25,8 +25,8 @@ namespace Rift::Refl
 		    , prop{prop}
 		{}
 		PropertyHandle(BaseStruct* instance, const Property* prop)
-			: structInstance{instance}
-			, prop{prop}
+		    : structInstance{instance}
+		    , prop{prop}
 		{}
 
 	public:
@@ -75,4 +75,4 @@ namespace Rift::Refl
 			return IsValid();
 		}
 	};
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

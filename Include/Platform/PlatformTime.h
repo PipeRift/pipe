@@ -20,4 +20,4 @@ namespace Rift
 		}
 		static u64 Cycles64();
 	};
-}	 // namespace Rift
+}    // namespace Rift

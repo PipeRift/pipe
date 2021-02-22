@@ -35,16 +35,16 @@ namespace Rift::Refl
 	{
 		static constexpr u32 value = 0;
 	};
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl
 
 /** Defines a Class */
 #define __CLASS_NO_TAGS(type, parent) __CLASS_TAGS(type, parent, Rift::ReflectionTags::None)
 #define __CLASS_TAGS(type, parent, tags)                                               \
 public:                                                                                \
 	using ThisType = type;                                                             \
-	using Super = parent;                                                              \
+	using Super    = parent;                                                           \
 	using TypeBuilder =                                                                \
-		Rift::Refl::TTypeBuilder<ThisType, Super, Rift::Refl::TClass<ThisType>, tags>; \
+	    Rift::Refl::TTypeBuilder<ThisType, Super, Rift::Refl::TClass<ThisType>, tags>; \
                                                                                        \
 	Rift::Refl::Class* GetType() const override                                        \
 	{                                                                                  \
@@ -63,7 +63,7 @@ public:                                                                         
 public:                                                                               \
 	using ThisType = type;                                                            \
 	using TypeBuilder =                                                               \
-		Rift::Refl::TTypeBuilder<ThisType, void, Rift::Refl::TClass<ThisType>, tags>; \
+	    Rift::Refl::TTypeBuilder<ThisType, void, Rift::Refl::TClass<ThisType>, tags>; \
                                                                                       \
 	virtual Rift::Refl::Class* GetType() const                                        \
 	{                                                                                 \
@@ -76,28 +76,29 @@ public:                                                                         
 	BASECLASS(type)
 
 
-#define BASECLASS(type)                                                               \
-public:                                                                                           \
-	static Rift::Refl::TClass<ThisType>* StaticType()                                             \
-	{                                                                                             \
-		return Rift::Refl::TClass<ThisType>::GetStatic();                                         \
-	}                                                                                             \
-	static Rift::Refl::TClass<ThisType>* InitType()                                               \
-	{                                                                                             \
-		static TypeBuilder builder{                                                               \
-			Rift::Name{TX(#type ":" ENSURE_LITERAL(__FILE__) ":" ENSURE_LITERAL(__LINE__))}, Rift::Name{TX(#type)}, [](auto& builder) { \
-				__ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                       \
-			}};                                                                                   \
-		return builder.GetType();                                                                 \
-	}                                                                                             \
-                                                                                                  \
-private:                                                                                          \
-	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>);       \
-	template <Rift::u32 N>                                                                        \
-	static void __ReflBuildProperty(TypeBuilder&, Rift::Refl::MetaCounter<N>)                     \
-	{}                                                                                            \
-	template <Rift::u32 N>                                                                        \
-	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                      \
+#define BASECLASS(type)                                                                      \
+public:                                                                                      \
+	static Rift::Refl::TClass<ThisType>* StaticType()                                        \
+	{                                                                                        \
+		return Rift::Refl::TClass<ThisType>::GetStatic();                                    \
+	}                                                                                        \
+	static Rift::Refl::TClass<ThisType>* InitType()                                          \
+	{                                                                                        \
+		static TypeBuilder builder{                                                          \
+		    Rift::Name{TX(#type ":" ENSURE_LITERAL(__FILE__) ":" ENSURE_LITERAL(__LINE__))}, \
+		    Rift::Name{TX(#type)}, [](auto& builder) {                                       \
+			    __ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                  \
+		    }};                                                                              \
+		return builder.GetType();                                                            \
+	}                                                                                        \
+                                                                                             \
+private:                                                                                     \
+	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>);  \
+	template <Rift::u32 N>                                                                   \
+	static void __ReflBuildProperty(TypeBuilder&, Rift::Refl::MetaCounter<N>)                \
+	{}                                                                                       \
+	template <Rift::u32 N>                                                                   \
+	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                 \
 	{}
 
 
@@ -106,9 +107,9 @@ private:                                                                        
 #define __STRUCT_TAGS(type, parent, tags)                                               \
 public:                                                                                 \
 	using ThisType = type;                                                              \
-	using Super = parent;                                                               \
+	using Super    = parent;                                                            \
 	using TypeBuilder =                                                                 \
-		Rift::Refl::TTypeBuilder<ThisType, Super, Rift::Refl::TStruct<ThisType>, tags>; \
+	    Rift::Refl::TTypeBuilder<ThisType, Super, Rift::Refl::TStruct<ThisType>, tags>; \
                                                                                         \
 	Rift::Refl::Struct* GetType() const override                                        \
 	{                                                                                   \
@@ -127,7 +128,7 @@ public:                                                                         
 public:                                                                                \
 	using ThisType = type;                                                             \
 	using TypeBuilder =                                                                \
-		Rift::Refl::TTypeBuilder<ThisType, void, Rift::Refl::TStruct<ThisType>, tags>; \
+	    Rift::Refl::TTypeBuilder<ThisType, void, Rift::Refl::TStruct<ThisType>, tags>; \
                                                                                        \
 	virtual Rift::Refl::Struct* GetType() const                                        \
 	{                                                                                  \
@@ -140,30 +141,31 @@ public:                                                                         
 	BASESTRUCT(type)
 
 
-#define BASESTRUCT(type)                                                              \
-public:                                                                                           \
-	static Rift::Refl::TStruct<ThisType>* StaticType()                                            \
-	{                                                                                             \
-		return Rift::Refl::TStruct<ThisType>::GetStatic();                                        \
-	}                                                                                             \
-	static Rift::Refl::TStruct<ThisType>* InitType()                                              \
-	{                                                                                             \
-		static TypeBuilder builder{                                                               \
-			Rift::Name{TX(#type ":" ENSURE_LITERAL(__FILE__) ":" ENSURE_LITERAL(__LINE__))}, Rift::Name{TX(#type)}, [](auto& builder) { \
-				__ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                       \
-			}};                                                                                   \
-		return builder.GetType();                                                                 \
-	}                                                                                             \
-                                                                                                  \
-private:                                                                                          \
-	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>);       \
-	template <Rift::u32 N>                                                                        \
-	static void __ReflBuildProperty(TypeBuilder&, Rift::Refl::MetaCounter<N>)                     \
-	{}                                                                                            \
-	template <Rift::u32 N>                                                                        \
-	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                      \
-	{}                                                                                            \
-                                                                                                  \
+#define BASESTRUCT(type)                                                                     \
+public:                                                                                      \
+	static Rift::Refl::TStruct<ThisType>* StaticType()                                       \
+	{                                                                                        \
+		return Rift::Refl::TStruct<ThisType>::GetStatic();                                   \
+	}                                                                                        \
+	static Rift::Refl::TStruct<ThisType>* InitType()                                         \
+	{                                                                                        \
+		static TypeBuilder builder{                                                          \
+		    Rift::Name{TX(#type ":" ENSURE_LITERAL(__FILE__) ":" ENSURE_LITERAL(__LINE__))}, \
+		    Rift::Name{TX(#type)}, [](auto& builder) {                                       \
+			    __ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                  \
+		    }};                                                                              \
+		return builder.GetType();                                                            \
+	}                                                                                        \
+                                                                                             \
+private:                                                                                     \
+	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>);  \
+	template <Rift::u32 N>                                                                   \
+	static void __ReflBuildProperty(TypeBuilder&, Rift::Refl::MetaCounter<N>)                \
+	{}                                                                                       \
+	template <Rift::u32 N>                                                                   \
+	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                 \
+	{}                                                                                       \
+                                                                                             \
 public:
 
 
@@ -171,9 +173,9 @@ public:
 #define __PROPERTY_TAGS(type, name, tags) __PROPERTY_IMPL(type, name, CAT(__refl_id_, name), tags)
 #define __PROPERTY_IMPL(type, name, id_name, inTags)                                          \
 	static constexpr Rift::u32 id_name =                                                      \
-		decltype(__refl_Counter(Rift::Refl::MetaCounter<255>{}))::value;                      \
+	    decltype(__refl_Counter(Rift::Refl::MetaCounter<255>{}))::value;                      \
 	static constexpr Rift::Refl::MetaCounter<(id_name) + 1> __refl_Counter(                   \
-		Rift::Refl::MetaCounter<(id_name) + 1>);                                              \
+	    Rift::Refl::MetaCounter<(id_name) + 1>);                                              \
                                                                                               \
 	static void __ReflBuildProperty(TypeBuilder& builder, Rift::Refl::MetaCounter<id_name>)   \
 	{                                                                                         \
@@ -207,9 +209,6 @@ public:
 	GET_4TH_ARG((__VA_ARGS__, TYPE_TAGS, TYPE_NO_TAGS, TYPE_INVALID))
 
 
-#define CLASS(...) \
-	TYPE_CHOOSER(__CLASS_NO_TAGS, __CLASS_TAGS, __VA_ARGS__)(__VA_ARGS__)
-#define STRUCT(...) \
-	TYPE_CHOOSER(__STRUCT_NO_TAGS, __STRUCT_TAGS, __VA_ARGS__)(__VA_ARGS__)
-#define PROP(...) \
-	TYPE_CHOOSER(__PROPERTY_NO_TAGS, __PROPERTY_TAGS, __VA_ARGS__)(__VA_ARGS__)
+#define CLASS(...) TYPE_CHOOSER(__CLASS_NO_TAGS, __CLASS_TAGS, __VA_ARGS__)(__VA_ARGS__)
+#define STRUCT(...) TYPE_CHOOSER(__STRUCT_NO_TAGS, __STRUCT_TAGS, __VA_ARGS__)(__VA_ARGS__)
+#define PROP(...) TYPE_CHOOSER(__PROPERTY_NO_TAGS, __PROPERTY_TAGS, __VA_ARGS__)(__VA_ARGS__)

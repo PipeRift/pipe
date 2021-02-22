@@ -45,4 +45,4 @@ namespace Rift
 
 		static CORE_API Ptr<AssetManager> Get();
 	};
-}	 // namespace Rift
+}    // namespace Rift

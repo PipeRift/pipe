@@ -309,4 +309,4 @@ namespace Rift
 			return Crc::MemCrc32(&k, sizeof(Guid));
 		}
 	};
-}	 // namespace Rift
+}    // namespace Rift

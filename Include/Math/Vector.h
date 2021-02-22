@@ -228,8 +228,8 @@ namespace Rift
 		}
 	};
 
-	using box2 = Box<float, 2>;
-	using box3 = Box<float, 3>;
+	using box2     = Box<float, 2>;
+	using box3     = Box<float, 3>;
 	using box2_i32 = Box<i32, 2>;
 	using box3_i32 = Box<i32, 3>;
-}	 // namespace Rift
+}    // namespace Rift

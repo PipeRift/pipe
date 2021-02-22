@@ -39,4 +39,4 @@ namespace Rift
 
 	template <typename Type>
 	using IsObject = std::is_base_of<BaseObject, Type>;
-}	 // namespace Rift
+}    // namespace Rift
