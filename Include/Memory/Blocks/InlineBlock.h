@@ -38,6 +38,10 @@ namespace Rift::Memory
 		{
 			return &data;
 		}
+		void* operator*() const
+		{
+			return data;
+		}
 		static constexpr sizet GetSize()
 		{
 			return size;

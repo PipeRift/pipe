@@ -17,7 +17,7 @@ namespace Rift
 {
 	constexpr i32 NO_INDEX = -1;
 
-	template <typename Type, typename Allocator = STLAllocator<Type>>
+	template <typename Type, typename Allocator = Memory::HeapAllocator>
 	class TArray
 	{
 	public:
@@ -25,7 +25,7 @@ namespace Rift
 		friend class TArray;
 
 		using ItemType = Type;
-		using VectorType = std::vector<Type, Allocator>;
+		using VectorType = std::vector<Type, STLAllocator<Type, Allocator>>;
 
 		using Iterator = typename VectorType::iterator;
 		using ConstIterator = typename VectorType::const_iterator;

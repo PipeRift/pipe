@@ -39,3 +39,7 @@
 
 #define IF(c) IIF(MBOOL(COMPL(c)))
 #define IFNOT(c) IIF(NOT(MBOOL(COMPL(c))))
+
+// Converts a macro parameter like __LINE__ to an string literal
+#define ENSURE_LITERAL(a) PRIMITIVE_ENSURE_LITERAL(a)
+#define PRIMITIVE_ENSURE_LITERAL(a) #a

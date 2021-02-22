@@ -55,7 +55,7 @@ public:                                                                         
 		Super::SerializeReflection(ar);                                                \
 		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});                     \
 	}                                                                                  \
-	BASECLASS(type, __FILE__, __LINE__)
+	BASECLASS(type)
 
 
 /** Defines a class with no parent */
@@ -73,10 +73,10 @@ public:                                                                         
 	{                                                                                 \
 		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});                    \
 	}                                                                                 \
-	BASECLASS(type, __FILE__, __LINE__)
+	BASECLASS(type)
 
 
-#define BASECLASS(type, file, line)                                                               \
+#define BASECLASS(type)                                                               \
 public:                                                                                           \
 	static Rift::Refl::TClass<ThisType>* StaticType()                                             \
 	{                                                                                             \
@@ -85,7 +85,7 @@ public:                                                                         
 	static Rift::Refl::TClass<ThisType>* InitType()                                               \
 	{                                                                                             \
 		static TypeBuilder builder{                                                               \
-			Rift::Name{TX(#type ":" #file ":" #line)}, Rift::Name{TX(#type)}, [](auto& builder) { \
+			Rift::Name{TX(#type ":" ENSURE_LITERAL(__FILE__) ":" ENSURE_LITERAL(__LINE__))}, Rift::Name{TX(#type)}, [](auto& builder) { \
 				__ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                       \
 			}};                                                                                   \
 		return builder.GetType();                                                                 \
@@ -119,7 +119,7 @@ public:                                                                         
 		Super::SerializeReflection(ar);                                                 \
 		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});                      \
 	}                                                                                   \
-	BASESTRUCT(type, __FILE__, __LINE__)
+	BASESTRUCT(type)
 
 
 /** Defines an struct with no parent */
@@ -137,10 +137,10 @@ public:                                                                         
 	{                                                                                  \
 		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});                     \
 	}                                                                                  \
-	BASESTRUCT(type, __FILE__, __LINE__)
+	BASESTRUCT(type)
 
 
-#define BASESTRUCT(type, file, line)                                                              \
+#define BASESTRUCT(type)                                                              \
 public:                                                                                           \
 	static Rift::Refl::TStruct<ThisType>* StaticType()                                            \
 	{                                                                                             \
@@ -149,7 +149,7 @@ public:                                                                         
 	static Rift::Refl::TStruct<ThisType>* InitType()                                              \
 	{                                                                                             \
 		static TypeBuilder builder{                                                               \
-			Rift::Name{TX(#type ":" #file ":" #line)}, Rift::Name{TX(#type)}, [](auto& builder) { \
+			Rift::Name{TX(#type ":" ENSURE_LITERAL(__FILE__) ":" ENSURE_LITERAL(__LINE__))}, Rift::Name{TX(#type)}, [](auto& builder) { \
 				__ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                       \
 			}};                                                                                   \
 		return builder.GetType();                                                                 \
@@ -207,6 +207,9 @@ public:
 	GET_4TH_ARG((__VA_ARGS__, TYPE_TAGS, TYPE_NO_TAGS, TYPE_INVALID))
 
 
-#define CLASS(...) TYPE_CHOOSER(__CLASS_NO_TAGS, __CLASS_TAGS, __VA_ARGS__)(__VA_ARGS__)
-#define STRUCT(...) TYPE_CHOOSER(__STRUCT_NO_TAGS, __STRUCT_TAGS, __VA_ARGS__)(__VA_ARGS__)
-#define PROP(...) TYPE_CHOOSER(__PROPERTY_NO_TAGS, __PROPERTY_TAGS, __VA_ARGS__)(__VA_ARGS__)
+#define CLASS(...) \
+	TYPE_CHOOSER(__CLASS_NO_TAGS, __CLASS_TAGS, __VA_ARGS__)(__VA_ARGS__)
+#define STRUCT(...) \
+	TYPE_CHOOSER(__STRUCT_NO_TAGS, __STRUCT_TAGS, __VA_ARGS__)(__VA_ARGS__)
+#define PROP(...) \
+	TYPE_CHOOSER(__PROPERTY_NO_TAGS, __PROPERTY_TAGS, __VA_ARGS__)(__VA_ARGS__)

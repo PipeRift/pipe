@@ -5,6 +5,7 @@
 #include "PCH.h"
 
 #include "Containers/Tuples.h"
+#include "Memory/STLAllocator.h"
 #include "Misc/Hash.h"
 #include "Platform/Platform.h"
 
@@ -16,7 +17,7 @@
 
 namespace Rift
 {
-	template <typename Key, typename Value>
+	template <typename Key, typename Value, typename Allocator = Memory::HeapAllocator>
 	class TMap
 	{
 		static_assert(std::is_nothrow_move_constructible<Value>::value ||
@@ -24,13 +25,13 @@ namespace Rift
 			"Value type must be nothrow move constructible and/or copy constructible.");
 
 	public:
-		template <typename OtherKey, typename OtherValue>
+		template <typename OtherKey, typename OtherValue, typename OtherAllocator>
 		friend class TMap;
 
 		using KeyType = Key;
 		using ValueType = Value;
-		using HashMapType =
-			tsl::sparse_map<KeyType, ValueType, Hash<KeyType>, std::equal_to<KeyType>>;
+		using HashMapType = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>,
+		    std::equal_to<KeyType>, STLAllocator<std::pair<Key, Value>, Allocator>>;
 
 		using Iterator = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;

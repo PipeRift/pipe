@@ -33,6 +33,10 @@ namespace Rift::Memory
 		{
 			return nullptr;
 		}
+		void* operator*() const
+		{
+			return nullptr;
+		}
 		sizet GetSize() const
 		{
 			return 0;

@@ -22,6 +22,7 @@ namespace Rift::Refl
 		// We map all classes by name in case we need to find them
 		TMap<Name, void*> typeIdToInstance{};
 
+
 	public:
 		template <typename T>
 		T& AddType(Name uniqueId)
