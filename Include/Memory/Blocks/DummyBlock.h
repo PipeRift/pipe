@@ -8,7 +8,7 @@
 
 namespace Rift::Memory
 {
-	/** This serves as a memory Block interface.
+	/** This is a memory Block interface.
 	 * It serves the single purpose of documenting a Block's interface.
 	 * Not intended to be used.
 	 */

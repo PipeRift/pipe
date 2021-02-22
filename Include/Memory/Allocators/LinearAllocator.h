@@ -34,6 +34,10 @@ namespace Rift::Memory
 		{
 			Reset();
 		}
+		LinearAllocator(const LinearAllocator&) = delete;
+		LinearAllocator(LinearAllocator&&)      = default;
+		LinearAllocator& operator=(const LinearAllocator&) = delete;
+		LinearAllocator& operator=(LinearAllocator&&) = default;
 
 		void* Allocate(const sizet size);
 		void* Allocate(const sizet size, const sizet alignment);
@@ -64,8 +68,5 @@ namespace Rift::Memory
 		{
 			return discardedBlocks;
 		}
-
-	private:
-		// void GrowIfNeeded();
 	};
 }    // namespace Rift::Memory

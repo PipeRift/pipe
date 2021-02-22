@@ -4,6 +4,7 @@
 #include "PCH.h"
 
 #include "Memory/Alloc.h"
+#include "Memory/Allocators/HeapAllocator.h"
 
 
 namespace Rift
@@ -36,9 +37,10 @@ namespace Rift
 	}    // namespace Memory
 
 
-	template <class T>
+	template <typename T, typename Allocator = Memory::HeapAllocator>
 	struct STLAllocator
 	{
+		// STD types
 		using value_type      = T;
 		using size_type       = sizet;
 		using difference_type = std::ptrdiff_t;
@@ -47,7 +49,8 @@ namespace Rift
 		using pointer         = value_type*;
 		using const_pointer   = const value_type*;
 
-		// STD types
+
+		Allocator allocator{};
 
 
 		STLAllocator() noexcept                    = default;
@@ -58,7 +61,7 @@ namespace Rift
 
 		pointer allocate(size_type count)
 		{
-			return static_cast<pointer>(Rift::Alloc(count * sizeof(T)));
+			return static_cast<pointer>(allocator.Allocate(count * sizeof(T)));
 		}
 		pointer allocate(size_type count, const void*)
 		{
@@ -66,7 +69,7 @@ namespace Rift
 		}
 		void deallocate(pointer p, size_type)
 		{
-			Rift::Free(p);
+			allocator.Free(p);
 		}
 
 		using propagate_on_container_copy_assignment = std::true_type;
@@ -91,13 +94,19 @@ namespace Rift
 		}
 	};
 
-	template <class T1, class T2>
-	bool operator==(const STLAllocator<T1>&, const STLAllocator<T2>&) noexcept
+
+	// Single parameter template type for pretemplated allocator arguments
+	// template<typename> typename AllocatorType
+	template <typename T>
+	using STLHeapAllocator = STLAllocator<T>;
+
+	template <typename T1, typename T2, typename Allocator>
+	bool operator==(const STLAllocator<T1, Allocator>&, const STLAllocator<T2, Allocator>&) noexcept
 	{
 		return true;
 	}
-	template <class T1, class T2>
-	bool operator!=(const STLAllocator<T1>&, const STLAllocator<T2>&) noexcept
+	template <typename T1, typename T2, typename Allocator>
+	bool operator!=(const STLAllocator<T1, Allocator>&, const STLAllocator<T2, Allocator>&) noexcept
 	{
 		return false;
 	}
