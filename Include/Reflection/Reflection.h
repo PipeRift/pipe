@@ -84,8 +84,8 @@ public:                                                                         
 	}                                                                                       \
 	static Rift::Refl::TClass<ThisType>* InitType()                                         \
 	{                                                                                       \
-		static TypeBuilder builder{TX(__FILE__), __LINE__,            \
-		    Rift::Name{TX(#type)}, [](auto& builder) {                                      \
+		static TypeBuilder builder{                                                         \
+		    TX(__FILE__), __LINE__, Rift::Name{TX(#type)}, [](auto& builder) {              \
 			    __ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                 \
 		    }};                                                                             \
 		return builder.GetType();                                                           \
@@ -148,8 +148,8 @@ public:                                                                         
 	}                                                                                       \
 	static Rift::Refl::TStruct<ThisType>* InitType()                                        \
 	{                                                                                       \
-		static TypeBuilder builder{TX(__FILE__), __LINE__,            \
-		    Rift::Name{TX(#type)}, [](auto& builder) {                                      \
+		static TypeBuilder builder{                                                         \
+		    TX(__FILE__), __LINE__, Rift::Name{TX(#type)}, [](auto& builder) {              \
 			    __ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                 \
 		    }};                                                                             \
 		return builder.GetType();                                                           \
