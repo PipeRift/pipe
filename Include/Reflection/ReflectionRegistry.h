@@ -66,8 +66,12 @@ namespace Rift::Refl
 
 
 	public:
-		TTypeBuilder(Name uniqueId, Name name, TFunction<void(TTypeBuilder& builder)> onBuild)
+		TTypeBuilder(
+		    String file, u32 line, Name name, TFunction<void(TTypeBuilder& builder)> onBuild)
 		{
+			CString::Replace(file, '\\', '/');
+			const Name uniqueId{CString::Format("{}:{}:{}", name, file, line)};
+
 			newType = static_cast<TType*>(ReflectionRegistry::Get().FindTypePtr(uniqueId));
 			if (!newType)
 			{

@@ -76,29 +76,28 @@ public:                                                                         
 	BASECLASS(type)
 
 
-#define BASECLASS(type)                                                                      \
-public:                                                                                      \
-	static Rift::Refl::TClass<ThisType>* StaticType()                                        \
-	{                                                                                        \
-		return Rift::Refl::TClass<ThisType>::GetStatic();                                    \
-	}                                                                                        \
-	static Rift::Refl::TClass<ThisType>* InitType()                                          \
-	{                                                                                        \
-		static TypeBuilder builder{                                                          \
-		    Rift::Name{TX(#type ":" ENSURE_LITERAL(__FILE__) ":" ENSURE_LITERAL(__LINE__))}, \
-		    Rift::Name{TX(#type)}, [](auto& builder) {                                       \
-			    __ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                  \
-		    }};                                                                              \
-		return builder.GetType();                                                            \
-	}                                                                                        \
-                                                                                             \
-private:                                                                                     \
-	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>);  \
-	template <Rift::u32 N>                                                                   \
-	static void __ReflBuildProperty(TypeBuilder&, Rift::Refl::MetaCounter<N>)                \
-	{}                                                                                       \
-	template <Rift::u32 N>                                                                   \
-	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                 \
+#define BASECLASS(type)                                                                     \
+public:                                                                                     \
+	static Rift::Refl::TClass<ThisType>* StaticType()                                       \
+	{                                                                                       \
+		return Rift::Refl::TClass<ThisType>::GetStatic();                                   \
+	}                                                                                       \
+	static Rift::Refl::TClass<ThisType>* InitType()                                         \
+	{                                                                                       \
+		static TypeBuilder builder{TX(__FILE__), __LINE__,            \
+		    Rift::Name{TX(#type)}, [](auto& builder) {                                      \
+			    __ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                 \
+		    }};                                                                             \
+		return builder.GetType();                                                           \
+	}                                                                                       \
+                                                                                            \
+private:                                                                                    \
+	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>); \
+	template <Rift::u32 N>                                                                  \
+	static void __ReflBuildProperty(TypeBuilder&, Rift::Refl::MetaCounter<N>)               \
+	{}                                                                                      \
+	template <Rift::u32 N>                                                                  \
+	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                \
 	{}
 
 
@@ -141,31 +140,30 @@ public:                                                                         
 	BASESTRUCT(type)
 
 
-#define BASESTRUCT(type)                                                                     \
-public:                                                                                      \
-	static Rift::Refl::TStruct<ThisType>* StaticType()                                       \
-	{                                                                                        \
-		return Rift::Refl::TStruct<ThisType>::GetStatic();                                   \
-	}                                                                                        \
-	static Rift::Refl::TStruct<ThisType>* InitType()                                         \
-	{                                                                                        \
-		static TypeBuilder builder{                                                          \
-		    Rift::Name{TX(#type ":" ENSURE_LITERAL(__FILE__) ":" ENSURE_LITERAL(__LINE__))}, \
-		    Rift::Name{TX(#type)}, [](auto& builder) {                                       \
-			    __ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                  \
-		    }};                                                                              \
-		return builder.GetType();                                                            \
-	}                                                                                        \
-                                                                                             \
-private:                                                                                     \
-	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>);  \
-	template <Rift::u32 N>                                                                   \
-	static void __ReflBuildProperty(TypeBuilder&, Rift::Refl::MetaCounter<N>)                \
-	{}                                                                                       \
-	template <Rift::u32 N>                                                                   \
-	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                 \
-	{}                                                                                       \
-                                                                                             \
+#define BASESTRUCT(type)                                                                    \
+public:                                                                                     \
+	static Rift::Refl::TStruct<ThisType>* StaticType()                                      \
+	{                                                                                       \
+		return Rift::Refl::TStruct<ThisType>::GetStatic();                                  \
+	}                                                                                       \
+	static Rift::Refl::TStruct<ThisType>* InitType()                                        \
+	{                                                                                       \
+		static TypeBuilder builder{TX(__FILE__), __LINE__,            \
+		    Rift::Name{TX(#type)}, [](auto& builder) {                                      \
+			    __ReflBuildProperty(builder, Rift::Refl::MetaCounter<0>{});                 \
+		    }};                                                                             \
+		return builder.GetType();                                                           \
+	}                                                                                       \
+                                                                                            \
+private:                                                                                    \
+	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>); \
+	template <Rift::u32 N>                                                                  \
+	static void __ReflBuildProperty(TypeBuilder&, Rift::Refl::MetaCounter<N>)               \
+	{}                                                                                      \
+	template <Rift::u32 N>                                                                  \
+	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                \
+	{}                                                                                      \
+                                                                                            \
 public:
 
 

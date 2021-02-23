@@ -194,5 +194,16 @@ namespace Rift
 			return k.GetId();
 		}
 	};
-
 }    // namespace Rift
+
+
+template <>
+struct fmt::formatter<Rift::Name> : public fmt::formatter<Rift::StringView>
+{
+	template <typename FormatContext>
+	auto format(const Rift::Name& name, FormatContext& ctx)
+	{
+		const Rift::StringView nameStr{name.ToString()};
+		return formatter<Rift::StringView>::format(nameStr, ctx);
+	}
+};

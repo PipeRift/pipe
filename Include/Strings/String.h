@@ -27,6 +27,7 @@ namespace Rift
 	using StringBuffer =
 	    fmt::basic_memory_buffer<TCHAR, fmt::inline_buffer_size, STLAllocator<TCHAR>>;
 
+
 	struct CORE_API CString
 	{
 		template <typename... Args>
