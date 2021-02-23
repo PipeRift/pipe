@@ -3,18 +3,24 @@
 
 #include "PCH.h"
 
+#include "Memory/Allocators/IAllocator.h"
+
 
 namespace Rift::Memory
 {
-	/** This is an Allocator interface.
-	 * It serves the single purpose of documenting an Allocator's interface.
-	 * Not intended to be used.
-	 */
-	class CORE_API HeapAllocator
+	template <u32 numElements>
+	class InlineAllocator : public IAllocator
 	{
 	public:
-		HeapAllocator() {}
-		~HeapAllocator() {}
+		enum
+		{
+			NeedsElementType = true
+		};
+
+
+	public:
+		InlineAllocator()          = default;
+		virtual ~InlineAllocator() = default;
 
 		void* Allocate(const sizet size)
 		{

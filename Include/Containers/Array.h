@@ -17,7 +17,7 @@ namespace Rift
 {
 	constexpr i32 NO_INDEX = -1;
 
-	template <typename Type, typename Allocator = Memory::HeapAllocator>
+	template <typename Type, typename Allocator = Memory::DefaultAllocator>
 	class TArray
 	{
 	public:

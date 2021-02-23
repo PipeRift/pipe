@@ -6,6 +6,7 @@
 
 namespace Rift
 {
+	// template <typename Allocator>
 	class BitArray
 	{
 	private:
@@ -17,6 +18,7 @@ namespace Rift
 
 		/** The array of uint32s containing the bits */
 		u32* bits;
+
 
 	public:
 		/** Constructors */

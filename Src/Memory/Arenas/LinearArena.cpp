@@ -1,11 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Memory/Allocators/LinearAllocator.h"
+#include "Memory/Arenas/LinearArena.h"
 
 
 namespace Rift::Memory
 {
-	void* LinearAllocator::Allocate(const sizet size)
+	void* LinearArena::Allocate(const sizet size)
 	{
 		if (usedBlockSize + size > activeBlock.GetSize())
 		{
@@ -22,7 +22,7 @@ namespace Rift::Memory
 		return ptr;
 	}
 
-	void* LinearAllocator::Allocate(const sizet size, const sizet alignment)
+	void* LinearArena::Allocate(const sizet size, const sizet alignment)
 	{
 		if (alignment == 0)
 		{
@@ -52,7 +52,7 @@ namespace Rift::Memory
 		return (u8*) (currentPtr) + padding;
 	}
 
-	void LinearAllocator::Reset()
+	void LinearArena::Reset()
 	{
 		usedBlockSize = 0;
 		activeBlock.Free();
@@ -63,7 +63,7 @@ namespace Rift::Memory
 		discardedBlocks.Empty();
 	}
 
-	void LinearAllocator::Grow(sizet size, sizet /*align*/)
+	void LinearArena::Grow(sizet size, sizet /*align*/)
 	{
 		if (size > 0)    // Don't reserve an empty block
 		{

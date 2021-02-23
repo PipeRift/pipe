@@ -5,7 +5,7 @@
 
 #include "Containers/Map.h"
 #include "Events/Function.h"
-#include "Memory/Allocators/LinearAllocator.h"
+#include "Memory/Arenas/LinearArena.h"
 #include "Profiler.h"
 #include "Reflection/TClass.h"
 #include "Reflection/TStruct.h"
@@ -18,7 +18,7 @@ namespace Rift::Refl
 	class CORE_API ReflectionRegistry
 	{
 		// Contains all reflection types linearly in memory
-		Memory::LinearAllocator allocator{256 * 1024};    // First block is 256KB
+		Memory::LinearArena arena{256 * 1024};    // First block is 256KB
 		// We map all classes by name in case we need to find them
 		TMap<Name, void*> typeIdToInstance{};
 
@@ -27,7 +27,7 @@ namespace Rift::Refl
 		template <typename T>
 		T& AddType(Name uniqueId)
 		{
-			void* ptr = allocator.Allocate(sizeof(T));
+			void* ptr = arena.Allocate(sizeof(T));
 			new (ptr) T();
 			typeIdToInstance.Insert(uniqueId, ptr);
 			return *static_cast<T*>(ptr);
@@ -44,7 +44,7 @@ namespace Rift::Refl
 
 		void* Allocate(sizet size)
 		{
-			return allocator.Allocate(size);
+			return arena.Allocate(size);
 		}
 
 		static ReflectionRegistry& Get();
@@ -63,6 +63,7 @@ namespace Rift::Refl
 
 	protected:
 		TType* newType = nullptr;
+
 
 	public:
 		TTypeBuilder(Name uniqueId, Name name, TFunction<void(TTypeBuilder& builder)> onBuild)

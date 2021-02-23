@@ -17,7 +17,7 @@
 
 namespace Rift
 {
-	template <typename Key, typename Value, typename Allocator = Memory::HeapAllocator>
+	template <typename Key, typename Value, typename Allocator = Memory::DefaultAllocator>
 	class TMap
 	{
 		static_assert(std::is_nothrow_move_constructible<Value>::value ||

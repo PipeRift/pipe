@@ -33,6 +33,14 @@ namespace Rift
 		return p;
 	}
 
+	void* Realloc(void* old, sizet size)
+	{
+		TracyFreeS(old, 8);
+		void* const p = std::realloc(old, size);
+		TracyAllocS(p, size, 8);
+		return p;
+	}
+
 	void Free(void* p)
 	{
 		TracyFreeS(p, 8);

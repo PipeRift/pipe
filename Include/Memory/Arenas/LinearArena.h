@@ -5,18 +5,19 @@
 
 #include "Containers/Array.h"
 #include "Math/Math.h"
+#include "Memory/Arenas/IArena.h"
 #include "Memory/Blocks/HeapBlock.h"
 
 
 namespace Rift::Memory
 {
 	/**
-	 * LinearAllocator holds memory linearly in a block of memory.
-	 * (Sometimes called ZoneAllocator if it resizes)
+	 * LinearArena holds memory linearly in a block of memory.
+	 * (Sometimes called ZoneArena if it resizes)
 	 * Individual allocations can't be freed. It can
 	 * be resized, but never smaller than its used size.
 	 */
-	class CORE_API LinearAllocator
+	class CORE_API LinearArena : public IArena
 	{
 	protected:
 		HeapBlock activeBlock{};
@@ -26,18 +27,18 @@ namespace Rift::Memory
 
 
 	public:
-		LinearAllocator(const sizet initialSize = 0, bool allowGrowing = true)
+		LinearArena(const sizet initialSize = 0, bool allowGrowing = true)
 		    : activeBlock{initialSize}
 		    , allowGrowing{allowGrowing}
 		{}
-		~LinearAllocator()
+		~LinearArena()
 		{
 			Reset();
 		}
-		LinearAllocator(const LinearAllocator&) = delete;
-		LinearAllocator(LinearAllocator&&)      = default;
-		LinearAllocator& operator=(const LinearAllocator&) = delete;
-		LinearAllocator& operator=(LinearAllocator&&) = default;
+		LinearArena(const LinearArena&) = delete;
+		LinearArena(LinearArena&&)      = default;
+		LinearArena& operator=(const LinearArena&) = delete;
+		LinearArena& operator=(LinearArena&&) = default;
 
 		void* Allocate(const sizet size);
 		void* Allocate(const sizet size, const sizet alignment);

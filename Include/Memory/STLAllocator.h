@@ -4,40 +4,12 @@
 #include "PCH.h"
 
 #include "Memory/Alloc.h"
-#include "Memory/Allocators/HeapAllocator.h"
+#include "Memory/Allocators/DefaultAllocator.h"
 
 
 namespace Rift
 {
-	namespace Memory
-	{
-		class CORE_API Arena
-		{
-			const char* name;
-
-		public:
-			Arena(const char* name) : name(name) {}
-
-			const char* GetName() const
-			{
-				return name;
-			}
-		};
-
-		class CORE_API GlobalArena : public Arena
-		{
-			using Arena::Arena;
-
-			static GlobalArena& GetInstance()
-			{
-				static GlobalArena arena{"Global"};
-				return arena;
-			}
-		};
-	}    // namespace Memory
-
-
-	template <typename T, typename Allocator = Memory::HeapAllocator>
+	template <typename T, typename Allocator = Memory::DefaultAllocator>
 	struct STLAllocator
 	{
 		// STD types
