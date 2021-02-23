@@ -9,21 +9,37 @@ namespace Rift::Memory
 	class CORE_API IAllocator
 	{
 	public:
+		// Allocator flag defaults
 		enum
 		{
-			// Allocator flag defaults
-			NeedsElementType = false
+			// If true, subclass Typed<T> will be used as the allocator instead of the allocator
+			UsesTemplateType = false
 		};
 
 	protected:
 		IAllocator() = default;
+	};
 
+
+	class DummyAllocator : public IAllocator
+	{
 	public:
-		virtual ~IAllocator() = default;
+		enum
+		{
+			NeedsElementType = false
+		};
 
-		virtual void* Allocate(const sizet size)                    = 0;
-		virtual void* Allocate(const sizet size, const sizet align) = 0;
+		DummyAllocator() = default;
 
-		virtual void Free(void* ptr) = 0;
+		void* Allocate(const sizet size)
+		{
+			return nullptr;
+		}
+		void* Allocate(const sizet size, const sizet align)
+		{
+			return nullptr;
+		}
+
+		void Free(void* ptr) {}
 	};
 }    // namespace Rift::Memory

@@ -12,26 +12,29 @@
 
 namespace Rift
 {
-	template <class Child, class Base, bool bIncludeSame = true>
+	template <typename Child, typename Base, bool bIncludeSame = true>
 	concept Derived =
 	    (bIncludeSame && std::is_same_v<Child, Base>) || std::is_base_of_v<Base, Child>;
 
-	template <class From, class To>
+	template <typename From, typename To>
 	concept Convertible = std::is_same_v<From, To> || std::is_convertible_v<From, To>;
 
-	template <bool B, class T = void>
+	template <bool B, typename T = void>
 	using EnableIf = std::enable_if<B, T>;
 
-	template <bool B, class T = void>
+	template <bool B, typename T = void>
 	using EnableIfT = std::enable_if_t<B, T>;
 
-	template <class T, sizet size>
+	template <typename T, sizet size>
 	struct IsSmallerType : std::integral_constant<bool, (sizeof(T) <= size)>
 	{};
 
-	template <class T, sizet size>
+	template <typename T, sizet size>
 	struct IsBiggerType : std::integral_constant<bool, (sizeof(T) > size)>
 	{};
+
+	template <bool Expression, typename True, typename False>
+	using SelectType = std::conditional<Expression, True, False>;
 
 
 #define EnableIfSmallerType(size) typename = EnableIf<IsSmallerType<T, size>::value>

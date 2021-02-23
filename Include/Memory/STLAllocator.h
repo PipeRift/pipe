@@ -5,6 +5,7 @@
 
 #include "Memory/Alloc.h"
 #include "Memory/Allocators/DefaultAllocator.h"
+#include "TypeTraits.h"
 
 
 namespace Rift
@@ -20,7 +21,11 @@ namespace Rift
 		using const_reference = const value_type&;
 		using pointer         = value_type*;
 		using const_pointer   = const value_type*;
-
+		template <typename U>
+		struct rebind
+		{
+			typedef STLAllocator<U, Allocator> other;
+		};
 
 		Allocator allocator{};
 
@@ -70,7 +75,7 @@ namespace Rift
 	// Single parameter template type for pretemplated allocator arguments
 	// template<typename> typename AllocatorType
 	template <typename T>
-	using STLHeapAllocator = STLAllocator<T>;
+	using STLDefaultAllocator = STLAllocator<T>;
 
 	template <typename T1, typename T2, typename Allocator>
 	bool operator==(const STLAllocator<T1, Allocator>&, const STLAllocator<T2, Allocator>&) noexcept
