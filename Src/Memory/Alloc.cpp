@@ -52,4 +52,10 @@ namespace Rift
 		assert(Math::IsPowerOfTwo(align));
 		return -reinterpret_cast<sizet>(ptr) & (align - 1);
 	}
+
+	sizet GetAlignmentPaddingWithHeader(void* ptr, sizet align, sizet headerSize)
+	{
+		// Get padding with the header as an offset
+		return headerSize + GetAlignmentPadding(static_cast<u8*>(ptr) + headerSize, align);
+	}
 }    // namespace Rift

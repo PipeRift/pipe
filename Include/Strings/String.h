@@ -7,6 +7,8 @@
 #include "Containers/Tuples.h"
 #include "Math/Math.h"
 #include "Misc/Hash.h"
+#include "Misc/Optional.h"
+#include "Misc/Utility.h"
 #include "Platform/Platform.h"
 #include "Strings/StringView.h"
 
@@ -151,7 +153,7 @@ namespace Rift
 
 		static String BackSubstr(const String& str, i32 size);
 
-		static TOptional<u32> ToU32(StringView str)
+		static Optional<u32> ToU32(StringView str)
 		{
 			u32 val;
 			if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
@@ -161,7 +163,7 @@ namespace Rift
 			return {};
 		}
 
-		static TOptional<i32> ToI32(StringView str)
+		static Optional<i32> ToI32(StringView str)
 		{
 			i32 val;
 			if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
@@ -171,7 +173,7 @@ namespace Rift
 			return {};
 		}
 
-		static TOptional<u32> ToU32(const char* str)
+		static Optional<u32> ToU32(const char* str)
 		{
 			if (str)
 			{
@@ -180,7 +182,7 @@ namespace Rift
 			return {};
 		}
 
-		static TOptional<i32> ToI32(const char* str)
+		static Optional<i32> ToI32(const char* str)
 		{
 			if (str)
 			{

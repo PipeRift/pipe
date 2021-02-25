@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "PCH.h"
+#include "Platform/Platform.h"
 
 #include <stddef.h>
 
@@ -18,6 +18,12 @@ namespace Rift
 
 	template <typename From, typename To>
 	concept Convertible = std::is_same_v<From, To> || std::is_convertible_v<From, To>;
+
+
+	template <typename T>
+	concept IsMoveConstructible = std::is_move_constructible_v<T>;
+	template <typename T>
+	concept IsMoveAssignable = std::is_move_constructible_v<T>;
 
 	template <bool B, typename T = void>
 	using EnableIf = std::enable_if<B, T>;
@@ -58,12 +64,28 @@ namespace Rift
 	{
 	private:
 		template <typename V>
-		static void impl(decltype(typename V::ItemType(), int()));
+		static void Impl(decltype(typename V::ItemType(), int()));
 		template <typename V>
-		static bool impl(char);
+		static bool Impl(char);
 
 	public:
-		static const bool value = std::is_void<decltype(impl<T>(0))>::value;
+		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
+	};
+
+
+	template <typename Predicate>
+	class ReversePredicate
+	{
+		const Predicate& predicate;
+
+	public:
+		ReversePredicate(const Predicate& predicate) : predicate(predicate) {}
+
+		template <typename T>
+		bool operator()(T&& A, T&& B) const
+		{
+			return predicate(Forward<T>(B), Forward<T>(A));
+		}
 	};
 
 }    // namespace Rift

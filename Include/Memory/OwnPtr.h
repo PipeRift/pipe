@@ -5,6 +5,7 @@
 #include "PCH.h"
 
 #include "Memory/PtrBuilder.h"
+#include "Misc/Utility.h"
 #include "TypeTraits.h"
 
 #include <atomic>
