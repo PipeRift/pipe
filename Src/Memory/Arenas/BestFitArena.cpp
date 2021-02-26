@@ -11,45 +11,17 @@
 
 namespace Rift::Memory
 {
-	void BestFitArena::SlotArray::Add(Slot&& slot)
-	{
-		--data;    // Point data at 1 item less.
-		++size;
-		data[0] = slot;
-	}
-
-	void BestFitArena::SlotArray::RemoveSwap(u32 index)
-	{
-		Swap(data[index], data[0]);
-		++data;
-		--size;
-	}
-
-	void BestFitArena::SlotArray::SortBySize()
-	{
-		Algorithms::Sort(data, size, [](const auto& a, const auto& b) {
-			return a.end - a.start > b.end - b.start;
-		});
-	}
-
-	u32 BestFitArena::SlotArray::FindSmallest(sizet minSlotSize)
-	{
-		return Algorithms::UpperBoundSearch(
-		    data, size, minSlotSize, [](sizet minSlotSize, const auto& slot) {
-			    return minSlotSize > slot.end - slot.start;
-		    });
-	}
-
-
 	BestFitArena::BestFitArena(const sizet initialSize)
 	{
 		assert(initialSize > 0);
 		block.Allocate(initialSize);
 		// Set address at end of block. Size is 0
-		freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.GetSize());
+		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.GetSize());
 		// Add first slot for the entire block
 		freeSlots.Add({reinterpret_cast<u8*>(block.GetData()),
 		    reinterpret_cast<u8*>(block.GetData()) + block.GetSize()});
+
+		availableSpace = initialSize;
 	}
 
 	void* BestFitArena::Allocate(const sizet size)
@@ -59,87 +31,117 @@ namespace Rift::Memory
 
 	void* BestFitArena::Allocate(const sizet size, sizet alignment)
 	{
-		// We always use at least 8 bytes of alignment
+		// We always use at least 8 bytes of alignment for the header
 		alignment = Math::Max(alignment, minAlignment);
 
-		if (pendingSort)
+		const u32 slotIndex = FindSmallestSlot(size);
+		if (slotIndex >= freeSlots.Size())
 		{
-			freeSlots.SortBySize();
-			pendingSort = false;
+			// Log::Error("No slots can fit {} bytes!", size);
+			return nullptr;
 		}
 
-		u32 slotIndex = freeSlots.FindSmallest(size);
-		assert(slotIndex < freeSlots.size && "No free slots!");
+		Slot& slot = freeSlots[slotIndex];
 
-		Slot& slot = freeSlots.GetRef(slotIndex);
-
-		const sizet padding =
-		    GetAlignmentPaddingWithHeader(slot.start, alignment, sizeof(AllocationHeader));
-
-		u8* ptr = slot.start + padding;
+		u8* const ptr = slot.start + GetAlignmentPaddingWithHeader(
+		                                 slot.start, alignment, sizeof(AllocationHeader));
 
 		auto* const header = GetHeader(ptr);
-
 		header->end = ptr + size;
 		header->end += GetAlignmentPadding(header->end, minAlignment);    // Align end by 8
-
-		if (header->end >= reinterpret_cast<u8*>(freeSlots.data))
+		if (header->end > block.GetEnd())
 		{
 			// Log::Error("Allocation doesn't fit!");
 			return nullptr;
 		}
 
-		slot.start = header->end;
-		// If empty, remove slot
-		if (slot.start == slot.end)
-		{
-			freeSlots.RemoveSwap(slotIndex);
-		}
+		ReduceSlot(slotIndex, slot, header->end);
+
+		availableSpace -= reinterpret_cast<sizet>(slot.start) - reinterpret_cast<sizet>(header);
 		return ptr;
 	}
 
 	void BestFitArena::Free(void* ptr)
 	{
-		auto* const header = GetHeader(ptr);
-
+		auto* const header        = GetHeader(ptr);
 		u8* const allocationStart = reinterpret_cast<u8*>(header);
 		u8* const allocationEnd   = header->end;
 
-		// Find previous and/or next slots
-		bool hasPrevious = false;
-		bool hasNext     = false;
-		u32 previousSlot;
-		u32 nextSlot;
-		for (u32 i = 0; i < freeSlots.size; ++i)
+		availableSpace += allocationEnd - allocationStart;
+		AbsorbFreeSpace(allocationStart, allocationEnd);
+	}
+
+	i32 BestFitArena::FindSmallestSlot(sizet size)
+	{
+		if (pendingSort)
 		{
-			const Slot& slot = freeSlots.GetRef(i);
+			// Sort slots by size. Small first
+			freeSlots.Sort([](const auto& a, const auto& b) {
+				return a.end - a.start > b.end - b.start;
+			});
+			pendingSort = false;
+		}
+
+		// Find smallest slot fitting our required size
+		return Algorithms::UpperBoundSearch(
+		    freeSlots.Data(), freeSlots.Size(), size, [](sizet desiredSize, const auto& slot) {
+			    return desiredSize < slot.end - slot.start;
+		    });
+	}
+
+	void BestFitArena::ReduceSlot(i32 slotIndex, Slot& slot, u8* const allocationEnd)
+	{
+		slot.start = allocationEnd;
+		if (slot.start == slot.end)
+		{
+			// If slot is empty, remove it
+			freeSlots.RemoveAtSwap(slotIndex, false);
+			// TODO: Investigate if Swap in this case is decremental since it requires sorting
+			pendingSort = true;
+		}
+	}
+
+	void BestFitArena::AbsorbFreeSpace(u8* const allocationStart, u8* const allocationEnd)
+	{
+		// Find previous and/or next slots
+		i32 previousSlot = NO_INDEX;
+		i32 nextSlot     = NO_INDEX;
+		for (i32 i = 0; i < freeSlots.Size(); ++i)
+		{
+			const Slot& slot = freeSlots[i];
 			if (slot.start == allocationEnd)
 			{
-				hasNext  = true;
 				nextSlot = i;
+				if (previousSlot != NO_INDEX)
+				{
+					break;    // We found both slots
+				}
 			}
 			else if (slot.end == allocationStart)
 			{
-				hasPrevious  = true;
 				previousSlot = i;
+				if (nextSlot != NO_INDEX)
+				{
+					break;    // We found both slots
+				}
 			}
 		}
 
-		if (hasPrevious && hasNext)
+		if (previousSlot != NO_INDEX && nextSlot != NO_INDEX)
 		{
 			// Expand next slot to the start of the previous slot
-			Slot& slot = freeSlots.GetRef(nextSlot);
-			slot.start = freeSlots.GetRef(previousSlot).start;
+			Slot& slot = freeSlots[nextSlot];
+			slot.start = freeSlots[previousSlot].start;
 
-			freeSlots.RemoveSwap(previousSlot);
+			freeSlots.RemoveAtSwap(previousSlot);
 		}
-		else if (hasPrevious)
+		else if (previousSlot != NO_INDEX)
 		{
-			freeSlots.GetRef(previousSlot).start = allocationStart;
+			freeSlots[previousSlot].end = allocationEnd;
 		}
-		else if (hasNext)
+		else if (nextSlot != NO_INDEX)
 		{
-			freeSlots.GetRef(nextSlot).end = allocationEnd;
+			freeSlots[nextSlot].start = allocationStart;
 		}
 		else
 		{

@@ -35,9 +35,19 @@ namespace Rift::Memory
 		void* GetData();
 		sizet GetSize() const;
 
+		void* GetEnd() const
+		{
+			return static_cast<u8*>(data) + size;
+		}
+
 		bool IsAllocated() const
 		{
 			return !!data;
+		}
+
+		bool Contains(void* ptr)
+		{
+			return data <= ptr && static_cast<u8*>(data) + size > ptr;
 		}
 	};
 

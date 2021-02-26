@@ -88,6 +88,23 @@ namespace Rift
 		}
 	};
 
+	struct Less
+	{
+		template <typename T>
+		bool operator()(T&& A, T&& B) const
+		{
+			return Forward<T>(A) < Forward<T>(B);
+		}
+	};
+
+	struct More
+	{
+		template <typename T>
+		bool operator()(T&& A, T&& B) const
+		{
+			return Forward<T>(A) > Forward<T>(B);
+		}
+	};
 }    // namespace Rift
 
 #define RIFT_DECLARE_IS_POD(T, isPod)                                                \

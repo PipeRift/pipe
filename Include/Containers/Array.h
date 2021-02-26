@@ -154,6 +154,12 @@ namespace Rift
 		}
 
 
+		template <typename Predicate>
+		void Sort(Predicate predicate)
+		{
+			Algorithms::Sort(Data(), Size(), predicate);
+		}
+
 		Iterator FindIt(const Type& item) const
 		{
 			auto& nonConstVector = const_cast<VectorType&>(vector);
@@ -416,7 +422,6 @@ namespace Rift
 		{
 			return vector.crend();
 		};
-
 
 		/** INTERNAl */
 	private:

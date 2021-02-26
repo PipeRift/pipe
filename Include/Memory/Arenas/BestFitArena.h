@@ -3,6 +3,7 @@
 
 #include "PCH.h"
 
+#include "Containers/Array.h"
 #include "Memory/Arenas/IArena.h"
 #include "Memory/Blocks/HeapBlock.h"
 
@@ -19,42 +20,19 @@ namespace Rift::Memory
 
 		struct Slot
 		{
+			// TODO: Test use of size instead of end for more efficient sort and search
 			u8* start;
 			u8* end;
 		};
 
-		struct SlotArray
-		{
-			Slot* data = nullptr;
-			u32 size   = 0;
-
-
-			void SetData(void* address)
-			{
-				data = static_cast<Slot*>(address);
-			}
-
-			void Add(Slot&& slot);
-			void RemoveSwap(u32 index);
-			void SortBySize();
-			u32 FindSmallest(sizet minSlotSize);
-
-			Slot& GetRef(u32 index)
-			{
-				return data[index];
-			}
-
-			bool IsValidIndex(u32 index)
-			{
-				return index >= 0 && index < size;
-			}
-		};
 
 		// TODO: Make sure minAlignment is multiple of 2. Unlikely to change though
 		static constexpr sizet minAlignment = sizeof(AllocationHeader);
+		// TODO: Support growing multiple blocks
 		HeapBlock block{};
-		SlotArray freeSlots{};
-		bool pendingSort = false;
+		TArray<Slot> freeSlots{};
+		bool pendingSort     = false;
+		sizet availableSpace = 0;
 
 
 	public:
@@ -71,9 +49,23 @@ namespace Rift::Memory
 			return block;
 		}
 
-		u32 GetNumFreeSlots() const
+		bool Contains(void* ptr)
 		{
-			return freeSlots.size;
+			return block.Contains(ptr);
+		}
+		sizet GetAvailableSpace()
+		{
+			return availableSpace;
+		}
+
+		sizet GetUsedSpace()
+		{
+			return block.GetSize() - availableSpace;
+		}
+
+		const TArray<Slot>& GetFreeSlots() const
+		{
+			return freeSlots;
 		}
 
 	private:
@@ -82,5 +74,9 @@ namespace Rift::Memory
 			return reinterpret_cast<AllocationHeader*>(
 			    static_cast<u8*>(ptr) - sizeof(AllocationHeader));
 		}
+
+		i32 FindSmallestSlot(sizet size);
+		void ReduceSlot(i32 slotIndex, Slot& slot, u8* const allocationEnd);
+		void AbsorbFreeSpace(u8* const allocationStart, u8* const allocationEnd);
 	};
 }    // namespace Rift::Memory
