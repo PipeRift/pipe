@@ -71,40 +71,6 @@ namespace Rift
 	public:
 		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
 	};
-
-
-	template <typename Predicate>
-	class ReversePredicate
-	{
-		const Predicate& predicate;
-
-	public:
-		ReversePredicate(const Predicate& predicate) : predicate(predicate) {}
-
-		template <typename T>
-		bool operator()(T&& A, T&& B) const
-		{
-			return predicate(Forward<T>(B), Forward<T>(A));
-		}
-	};
-
-	struct Less
-	{
-		template <typename T>
-		bool operator()(T&& A, T&& B) const
-		{
-			return Forward<T>(A) < Forward<T>(B);
-		}
-	};
-
-	struct More
-	{
-		template <typename T>
-		bool operator()(T&& A, T&& B) const
-		{
-			return Forward<T>(A) > Forward<T>(B);
-		}
-	};
 }    // namespace Rift
 
 #define RIFT_DECLARE_IS_POD(T, isPod)                                                \

@@ -7,6 +7,7 @@
 #include "Math/Search.h"
 #include "Math/Sorting.h"
 #include "Memory/Alloc.h"
+#include "Misc/Utility.h"
 
 
 namespace Rift::Memory
