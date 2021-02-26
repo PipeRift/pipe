@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Misc/Utility.h"
+
 
 namespace Rift
 {
