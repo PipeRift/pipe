@@ -12,7 +12,7 @@ namespace Rift::Memory
 {
 	class CORE_API BestFitArena : public IArena
 	{
-	protected:
+	public:
 		struct AllocationHeader
 		{
 			u8* end;
@@ -25,14 +25,14 @@ namespace Rift::Memory
 			u8* end;
 		};
 
-
+	protected:
 		// TODO: Make sure minAlignment is multiple of 2. Unlikely to change though
 		static constexpr sizet minAlignment = sizeof(AllocationHeader);
 		// TODO: Support growing multiple blocks
 		HeapBlock block{};
 		TArray<Slot> freeSlots{};
 		bool pendingSort     = false;
-		sizet availableSpace = 0;
+		sizet freeSize       = 0;
 
 
 	public:
@@ -53,14 +53,14 @@ namespace Rift::Memory
 		{
 			return block.Contains(ptr);
 		}
-		sizet GetAvailableSpace()
+		sizet GetFreeSize()
 		{
-			return availableSpace;
+			return freeSize;
 		}
 
-		sizet GetUsedSpace()
+		sizet GetUsedSize()
 		{
-			return block.GetSize() - availableSpace;
+			return block.GetSize() - freeSize;
 		}
 
 		const TArray<Slot>& GetFreeSlots() const
@@ -68,15 +68,25 @@ namespace Rift::Memory
 			return freeSlots;
 		}
 
+		void* GetAllocationStart(void* ptr) const
+		{
+			return GetHeader(ptr);
+		}
+		void* GetAllocationEnd(void* ptr) const
+		{
+			return GetHeader(ptr)->end;
+		}
+
 	private:
-		AllocationHeader* GetHeader(void* ptr)
+		AllocationHeader* GetHeader(void* ptr) const
 		{
 			return reinterpret_cast<AllocationHeader*>(
 			    static_cast<u8*>(ptr) - sizeof(AllocationHeader));
 		}
 
-		i32 FindSmallestSlot(sizet size);
-		void ReduceSlot(i32 slotIndex, Slot& slot, u8* const allocationEnd);
-		void AbsorbFreeSpace(u8* const allocationStart, u8* const allocationEnd);
+		i32 FindSmallestSlot(sizet size, sizet alignment);
+		void ReduceSlot(
+		    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd);
+		void AbsorbfreeSize(u8* const allocationStart, u8* const allocationEnd);
 	};
 }    // namespace Rift::Memory

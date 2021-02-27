@@ -19,6 +19,8 @@ namespace Rift
 	template <typename From, typename To>
 	concept Convertible = std::is_same_v<From, To> || std::is_convertible_v<From, To>;
 
+	template <typename T>
+	concept Integral = std::is_integral_v<T>;
 
 	template <typename T>
 	concept IsMoveConstructible = std::is_move_constructible_v<T>;

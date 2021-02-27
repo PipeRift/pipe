@@ -21,7 +21,7 @@ go_bandit([]() {
 		describe("Best Fit Arena", []() {
 			it("Reserves a block on construction", [&]() {
 				BestFitArena arena{1024};
-				AssertThat(arena.GetAvailableSpace(), Equals(1024));
+				AssertThat(arena.GetFreeSize(), Equals(1024));
 				AssertThat(*arena.GetBlock(), Is().Not().Null());
 				AssertThat(arena.GetBlock().GetSize(), Is().EqualTo(1024));
 			});
@@ -38,11 +38,12 @@ go_bandit([]() {
 			it("Allocates at correct addresses", [&]() {
 				BestFitArena arena{1024};
 
-				Rift::u8* blockPtr = static_cast<Rift::u8*>(*arena.GetBlock());
+				const auto* blockPtr = static_cast<const Rift::u8*>(*arena.GetBlock());
 
 				void* p = arena.Allocate(4);
 				new (p) TypeOfSize<4>();
-				void* expectedP = blockPtr + Rift::GetAlignmentPaddingWithHeader(blockPtr, 8, 8);
+				const void* expectedP =
+				    blockPtr + Rift::GetAlignmentPaddingWithHeader(blockPtr, 8, 8);
 				AssertThat(p, Is().EqualTo(expectedP));
 
 				void* p2 = arena.Allocate(4);
@@ -100,10 +101,10 @@ go_bandit([]() {
 				void* p = arena.Allocate(32);
 				new (p) TypeOfSize<32>();
 				AssertThat(p, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(24));
+				AssertThat(arena.GetFreeSize(), Equals(24));
 
 				arena.Free(p);
-				AssertThat(arena.GetAvailableSpace(), Equals(64));
+				AssertThat(arena.GetFreeSize(), Equals(64));
 			});
 
 			it("Can free multiple", [&]() {
@@ -112,18 +113,18 @@ go_bandit([]() {
 				void* p = arena.Allocate(16);
 				new (p) TypeOfSize<16>();
 				AssertThat(p, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(40));
+				AssertThat(arena.GetFreeSize(), Equals(40));
 
 				void* p2 = arena.Allocate(16);
 				new (p2) TypeOfSize<16>();
 				AssertThat(p2, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(16));
+				AssertThat(arena.GetFreeSize(), Equals(16));
 
 				arena.Free(p2);
-				AssertThat(arena.GetAvailableSpace(), Equals(40));
+				AssertThat(arena.GetFreeSize(), Equals(40));
 
 				arena.Free(p);
-				AssertThat(arena.GetAvailableSpace(), Equals(64));
+				AssertThat(arena.GetFreeSize(), Equals(64));
 			});
 
 			it("Can free in between allocations", [&]() {
@@ -132,23 +133,23 @@ go_bandit([]() {
 				void* p = arena.Allocate(16);
 				new (p) TypeOfSize<16>();
 				AssertThat(p, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(40));
+				AssertThat(arena.GetFreeSize(), Equals(40));
 
 				void* p2 = arena.Allocate(16);
 				new (p2) TypeOfSize<16>();
 				AssertThat(p2, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(16));
+				AssertThat(arena.GetFreeSize(), Equals(16));
 				AssertThat(arena.GetFreeSlots().Size(), Equals(1));
 
 				void* p3 = arena.Allocate(8);
 				new (p3) TypeOfSize<8>();
 				AssertThat(p3, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(0));
+				AssertThat(arena.GetFreeSize(), Equals(0));
 				// No space left, no free slots
 				AssertThat(arena.GetFreeSlots().Size(), Equals(0));
 
 				arena.Free(p2);
-				AssertThat(arena.GetAvailableSpace(), Equals(24));
+				AssertThat(arena.GetFreeSize(), Equals(24));
 				AssertThat(arena.GetFreeSlots().Size(), Equals(1));
 				AssertThat(arena.GetFreeSlots()[0].start, Equals(static_cast<Rift::u8*>(p2) - 8));
 				AssertThat(arena.GetFreeSlots()[0].end, Equals(static_cast<Rift::u8*>(p3) - 8));
@@ -160,18 +161,18 @@ go_bandit([]() {
 				void* p = arena.Allocate(16);
 				new (p) TypeOfSize<16>();
 				AssertThat(p, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(40));
+				AssertThat(arena.GetFreeSize(), Equals(40));
 
 				void* p2 = arena.Allocate(16);
 				new (p2) TypeOfSize<16>();
 				AssertThat(p2, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(16));
+				AssertThat(arena.GetFreeSize(), Equals(16));
 				AssertThat(arena.GetFreeSlots().Size(), Equals(1));
 
 				void* p3 = arena.Allocate(8);
 				new (p3) TypeOfSize<8>();
 				AssertThat(p3, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(0));
+				AssertThat(arena.GetFreeSize(), Equals(0));
 
 				// No space left, no free slots
 				AssertThat(arena.GetFreeSlots().Size(), Equals(0));
@@ -198,12 +199,12 @@ go_bandit([]() {
 				void* p = arena.Allocate(16);
 				new (p) TypeOfSize<16>();
 				AssertThat(p, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(24));
+				AssertThat(arena.GetFreeSize(), Equals(24));
 
 				void* p2 = arena.Allocate(16);
 				new (p2) TypeOfSize<16>();
 				AssertThat(p2, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(0));
+				AssertThat(arena.GetFreeSize(), Equals(0));
 				AssertThat(arena.GetFreeSlots().Size(), Equals(0));
 
 				arena.Free(p);
@@ -225,12 +226,12 @@ go_bandit([]() {
 				void* p = arena.Allocate(16);
 				new (p) TypeOfSize<16>();
 				AssertThat(p, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(24));
+				AssertThat(arena.GetFreeSize(), Equals(24));
 
 				void* p2 = arena.Allocate(16);
 				new (p2) TypeOfSize<16>();
 				AssertThat(p2, Is().Not().Null());
-				AssertThat(arena.GetAvailableSpace(), Equals(0));
+				AssertThat(arena.GetFreeSize(), Equals(0));
 				AssertThat(arena.GetFreeSlots().Size(), Equals(0));
 
 				arena.Free(p2);
@@ -244,6 +245,30 @@ go_bandit([]() {
 				    Equals(static_cast<const Rift::u8*>(arena.GetBlock().GetData())));
 				AssertThat(arena.GetFreeSlots()[0].end,
 				    Equals(static_cast<const Rift::u8*>(arena.GetBlock().GetEnd())));
+			});
+
+			it("Ensures a big alignment leaves a gap", [&]() {
+				BestFitArena arena{128};
+
+				// We ensure first allocation aligns the block (just for the test)
+				void* p = arena.Allocate(8);
+				new (p) TypeOfSize<8>();
+				AssertThat(arena.GetFreeSize(), Equals(112));
+
+				void* p2 = arena.Allocate(8, 64);
+				new (p2) TypeOfSize<8>();
+				AssertThat(p2, Is().Not().Null());
+				AssertThat(arena.GetFreeSize(), Equals(96));
+				AssertThat(arena.GetFreeSlots().Size(), Equals(2));
+
+				// Slot contains the rest if the block
+				AssertThat(arena.GetFreeSlots()[0].start, Equals(arena.GetAllocationEnd(p2)));
+				AssertThat(arena.GetFreeSlots()[0].end,
+				    Equals(static_cast<const Rift::u8*>(arena.GetBlock().GetEnd())));
+
+				// Slot contains the alignment gap
+				AssertThat(arena.GetFreeSlots()[1].start, Equals(arena.GetAllocationEnd(p)));
+				AssertThat(arena.GetFreeSlots()[1].end, Equals(arena.GetAllocationStart(p2)));
 			});
 		});
 	});

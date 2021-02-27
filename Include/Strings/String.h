@@ -35,7 +35,6 @@ namespace Rift
 		template <typename... Args>
 		static String Format(StringView format, Args... args)
 		{
-			StringBuffer buffer;
 			String str;
 			fmt::format_to(std::back_inserter(str), format, std::forward<Args>(args)...);
 			return Move(str);
@@ -117,7 +116,7 @@ namespace Rift
 		}
 		static void RemoveFromEnd(String& str, sizet size)
 		{
-			str.erase(str.size() - 1 - size, size);
+			str.erase(str.size() - 1 - size, str.size() - 1);
 		}
 
 		static i32 Split(const String& str, TArray<String>& tokens, const TCHAR delim)

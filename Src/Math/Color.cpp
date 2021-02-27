@@ -124,12 +124,10 @@ namespace Rift
 		}
 
 		Color ret;
-
-		ret.a = (u8) Math::FloorToI32(floata * 255.999f);
 		ret.r = (u8) Math::FloorToI32(floatr * 255.999f);
 		ret.g = (u8) Math::FloorToI32(floatg * 255.999f);
 		ret.b = (u8) Math::FloorToI32(floatb * 255.999f);
-
+		ret.a = (u8) Math::FloorToI32(floata * 255.999f);
 		return ret;
 	}
 
@@ -191,7 +189,7 @@ namespace Rift
 	/**
 	 * Converts byte hue-saturation-brightness to floating point red-green-blue.
 	 */
-	LinearColor LinearColor::FGetHSV(u8 H, u8 S, u8 V)
+	LinearColor LinearColor::GetHSV(u8 H, u8 S, u8 V)
 	{
 		float Brightness = V * 1.4f / 255.f;
 		Brightness *= 0.7f / (0.01f + Math::Sqrt(Brightness));
@@ -319,7 +317,7 @@ namespace Rift
 	LinearColor LinearColor::MakeRandomColor()
 	{
 		const u8 Hue = (u8)(Math::Rand01() * 255.f);
-		return LinearColor::FGetHSV(Hue, 0, 255);
+		return LinearColor::GetHSV(Hue, 0, 255);
 	}
 
 	Color Color::MakeRandomColor()

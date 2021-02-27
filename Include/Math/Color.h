@@ -33,7 +33,7 @@ namespace Rift
 	/**
 	 * A linear, 32-bit/component floating point RGBA color.
 	 */
-	struct LinearColor
+	struct CORE_API LinearColor
 	{
 		float r = 0.f, g = 0.f, b = 0.f, a = 0.f;
 
@@ -213,7 +213,7 @@ namespace Rift
 		/**
 		 * Converts byte hue-saturation-brightness to floating point red-green-blue.
 		 */
-		static LinearColor FGetHSV(u8 H, u8 S, u8 V);
+		static LinearColor GetHSV(u8 H, u8 S, u8 V);
 
 		/**
 		 * Makes a random but quite nice color.
@@ -278,7 +278,7 @@ namespace Rift
 
 		/** Quantizes the linear color and returns the result as a FColor with optional sRGB
 		 * conversion and quality as goal. */
-		Color ToColor(const bool bSRGB) const;
+		Color ToColor(const bool bSRGB = true) const;
 
 		/**
 		 * Returns a desaturated color, with 0 meaning no desaturation and 1 == full desaturation
@@ -342,21 +342,20 @@ namespace Rift
 		static const LinearColor Yellow;
 	};
 
-	LinearColor operator*(float scalar, const LinearColor& Color)
+	inline CORE_API LinearColor operator*(float scalar, const LinearColor& Color)
 	{
 		return Color.operator*(scalar);
 	}
 
-	//
-	//	FColor
-	//	Stores a color with 8 bits of precision per channel.
-	//	Note: Linear color values should always be converted to gamma space before stored in an
-	// FColor,
-	// as 8 bits of precision is not
-	// enough to store linear space colors! 	This can be done with FLinearColor::ToFColor(true)
-	//
 
-	struct Color
+	/**
+	 * Color
+	 * Stores a color with 8 bits of precision per channel.
+	 * Note: Linear color values should always be converted to gamma space before stored in a
+	 * Color, as 8 bits of precision is not enough to store linear space colors! This can be done
+	 * with FLinearColor::ToColor(true)
+	 */
+	struct CORE_API Color
 	{
 	public:
 #pragma warning(disable : 4201)    // Avoid warning about nameless struct
@@ -524,7 +523,7 @@ namespace Rift
 
 	private:
 		/**
-		 * Please use .ToFColor(true) on FLinearColor if you wish to convert from FLinearColor to
+		 * Please use .ToColor(true) on FLinearColor if you wish to convert from FLinearColor to
 		 * FColor, with proper sRGB conversion applied.
 		 *
 		 * Note: Do not implement or make public.  We don't want people needlessly and implicitly
@@ -534,7 +533,7 @@ namespace Rift
 	};
 
 
-	u32 GetTypeHash(const Color& Color)
+	inline CORE_API u32 GetTypeHash(const Color& Color)
 	{
 		return Color.DWColor();
 	}
@@ -559,7 +558,7 @@ namespace Rift
 	/**
 	 * Helper struct for a 16 bit 565 color of a DXT1/3/5 block.
 	 */
-	struct FDXTColor565
+	struct CORE_API FDXTColor565
 	{
 		/** Blue component, 5 bit. */
 		u16 B : 5;
@@ -575,7 +574,7 @@ namespace Rift
 	/**
 	 * Helper struct for a 16 bit 565 color of a DXT1/3/5 block.
 	 */
-	struct FDXTColor16
+	struct CORE_API FDXTColor16
 	{
 		union
 		{
@@ -590,7 +589,7 @@ namespace Rift
 	/**
 	 * Structure encompassing single DXT1 block.
 	 */
-	struct FDXT1
+	struct CORE_API FDXT1
 	{
 		/** Color 0/1 */
 		union
@@ -606,7 +605,7 @@ namespace Rift
 	/**
 	 * Structure encompassing single DXT5 block
 	 */
-	struct FDXT5
+	struct CORE_API FDXT5
 	{
 		/** Alpha component of DXT5 */
 		u8 Alpha[8];

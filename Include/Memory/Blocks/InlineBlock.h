@@ -3,7 +3,7 @@
 
 #include "PCH.h"
 
-#include "BaseBlock.h"
+#include "Memory/Blocks/Block.h"
 
 
 namespace Rift::Memory
@@ -11,45 +11,33 @@ namespace Rift::Memory
 	template <sizet Size>
 	class CORE_API InlineBlock : BaseBlock
 	{
-	public:
-		static constexpr sizet size = Size;
-
-	protected:
-		u8 data[size]{};
+	private:
+		u8 inlineData[Size];
 
 
 	public:
-		InlineBlock()                   = default;
-		~InlineBlock()                  = default;
-		InlineBlock(const InlineBlock&) = default;
-		InlineBlock(InlineBlock&&)      = delete;    // Can't move
-		InlineBlock& operator=(const InlineBlock&) = default;
+		InlineBlock()
+		{
+			data = &inlineData;
+			size = Size;
+		}
+		~InlineBlock() = default;
+
+		template <sizet Size2>
+		InlineBlock(const InlineBlock<Size2>& other) : InlineBlock() requires(Size >= Size2)
+		{
+			inlineData = other.inlineData;
+		}
+		template <sizet Size2>
+		InlineBlock& operator=(const InlineBlock&) requires(Size >= Size2)
+		{
+			inlineData = other.inlineData;
+		}
+		InlineBlock(InlineBlock&&) = delete;               // Can't move
 		InlineBlock& operator=(InlineBlock&&) = delete;    // Can't move
 
 		// Allocate and Free don't do anything
 		void Allocate(sizet) {}
 		void Free() {}
-
-		const void* GetData() const
-		{
-			return &data;
-		}
-		void* GetData()
-		{
-			return &data;
-		}
-		void* operator*() const
-		{
-			return data;
-		}
-		static constexpr sizet GetSize()
-		{
-			return size;
-		}
-
-		bool IsAllocated() const
-		{
-			return true;
-		}
 	};
 }    // namespace Rift::Memory

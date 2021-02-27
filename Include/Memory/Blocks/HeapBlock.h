@@ -4,17 +4,13 @@
 #include "PCH.h"
 
 #include "Memory/Alloc.h"
+#include "Memory/Blocks/Block.h"
 
 
 namespace Rift::Memory
 {
-	class CORE_API HeapBlock
+	class CORE_API HeapBlock : public Block
 	{
-	protected:
-		void* data = nullptr;
-		sizet size = 0;
-
-
 	public:
 		HeapBlock() = default;
 		HeapBlock(sizet initialSize);
@@ -23,32 +19,9 @@ namespace Rift::Memory
 		HeapBlock(HeapBlock&& other);
 		HeapBlock& operator=(const HeapBlock& other);
 		HeapBlock& operator=(HeapBlock&& other);
-		void* operator*() const
-		{
-			return data;
-		}
 
 		void Allocate(sizet size);
 		void Free();
-
-		const void* GetData() const;
-		void* GetData();
-		sizet GetSize() const;
-
-		void* GetEnd() const
-		{
-			return static_cast<u8*>(data) + size;
-		}
-
-		bool IsAllocated() const
-		{
-			return !!data;
-		}
-
-		bool Contains(void* ptr)
-		{
-			return data <= ptr && static_cast<u8*>(data) + size > ptr;
-		}
 	};
 
 
@@ -115,18 +88,5 @@ namespace Rift::Memory
 		Rift::Free(data);
 		data = nullptr;
 		size = 0;
-	}
-
-	inline const void* HeapBlock::GetData() const
-	{
-		return data;
-	}
-	inline void* HeapBlock::GetData()
-	{
-		return data;
-	}
-	inline sizet HeapBlock::GetSize() const
-	{
-		return size;
 	}
 }    // namespace Rift::Memory
