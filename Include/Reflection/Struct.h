@@ -12,10 +12,6 @@ namespace Rift::Refl
 	class CORE_API Struct : public Type
 	{
 	public:
-		/** Equivalent to "new Type()" */
-		virtual BaseStruct* New() const = 0;
-
-
 		// NOTE: Most of the class comparison functions do actually
 		// call Type to reduce complexity and code duplication.
 		//

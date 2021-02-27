@@ -11,13 +11,11 @@ namespace Rift
 {
 	Refl::Class* BaseObject::GetType() const
 	{
-		const auto* thisObj = static_cast<const Object*>(this);
-		return thisObj ? thisObj->GetType() : nullptr;
+		return static_cast<const Object*>(this)->GetType();
 	}
 
 	Ptr<Object> BaseObject::Self() const
 	{
-		const auto* thisObj = static_cast<const Object*>(this);
-		return thisObj ? thisObj->Self() : Ptr<Object>{};
+		return static_cast<const Object*>(this)->Self();
 	}
 }	 // namespace Rift

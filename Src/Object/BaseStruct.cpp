@@ -7,13 +7,4 @@
 
 
 namespace Rift
-{
-	Refl::Struct* BaseStruct::GetType() const
-	{
-		if (const auto* thisObj = dynamic_cast<const Struct*>(this))
-		{
-			return thisObj->GetType();
-		}
-		return nullptr;
-	}
-}	 // namespace Rift
+{}    // namespace Rift

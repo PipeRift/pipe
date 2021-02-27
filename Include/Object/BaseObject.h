@@ -21,9 +21,11 @@ namespace Rift
 	class CORE_API BaseObject : public BaseStruct
 	{
 	protected:
-		BaseObject() : BaseStruct() {}
+		BaseObject() = default;
 
 	public:
+		virtual ~BaseObject() = default;
+
 		void StartDestroy()
 		{
 			BeforeDestroy();

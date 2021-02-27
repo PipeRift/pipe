@@ -33,27 +33,27 @@ namespace Rift::Refl
 		    , access(access)
 		{}
 
-		virtual std::shared_ptr<PropertyHandle> CreateHandle(
-		    const Ptr<BaseObject>& instance) const override
+		virtual OwnPtr<PropertyHandle> CreateHandle(const Ptr<BaseObject>& instance) const override
 		{
 			const Type* type = GetInstanceType(instance);
 			if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
 			{
-				return std::shared_ptr<PropertyHandle>(
-				    new TPropertyHandle<VariableT>(instance, this, access));
+				return OwnPtr<PropertyHandle>(
+				    MakeOwned<TPropertyHandle<VariableT>>(instance, this, access));
 			}
 			return {};
 		}
 
-		virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const override
+		// TODO: Improve struct property reflection
+		/*virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const override
 		{
-			const Type* type = GetInstanceType(instance);
-			if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
-			{
-				return std::shared_ptr<PropertyHandle>(
-				    new TPropertyHandle<VariableT>(instance, this, access));
-			}
-			return {};
-		}
+		    const Type* type = GetInstanceType(instance);
+		    if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
+		    {
+		        return std::shared_ptr<PropertyHandle>(
+		            new TPropertyHandle<VariableT>(instance, this, access));
+		    }
+		    return {};
+		}*/
 	};
 }    // namespace Rift::Refl

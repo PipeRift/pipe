@@ -24,11 +24,6 @@ namespace Rift::Refl
 	public:
 		TStruct() : Struct() {}
 
-		BaseStruct* New() const override
-		{
-			return new T();
-		}
-
 		static TStruct* GetStatic()
 		{
 			return _instance;

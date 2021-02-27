@@ -326,31 +326,27 @@ namespace Rift
 		/** Templates for down-casting */
 
 		template <typename T2, typename Builder2>
-		Ptr(const OwnPtr<T2, Builder2>& owner) requires Convertible<T2, T> : Super(owner)
+		Ptr(const OwnPtr<T2, Builder2>& owner) requires Derived<T2, T> : Super(owner)
 		{}
 
 		template <typename T2>
-		Ptr(const Ptr<T2>& other) requires Convertible<T2, T> : Super(other)
+		Ptr(const Ptr<T2>& other) requires Derived<T2, T> : Super(other)
 		{}
 
 		template <typename T2>
-		Ptr(Ptr<T2>&& other) requires Convertible<T2, T> : Super(Move(other))
+		Ptr(Ptr<T2>&& other) requires Derived<T2, T> : Super(Move(other))
 		{}
 
 		template <typename T2>
-		Ptr& operator=(const Ptr<T2>& other)
+		Ptr& operator=(const Ptr<T2>& other) requires Derived<T2, T>
 		{
-			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
-			    "Type is not down-castable!");
 			CopyFrom(other);
 			return *this;
 		}
 
 		template <typename T2>
-		Ptr& operator=(Ptr<T2>&& other)
+		Ptr& operator=(Ptr<T2>&& other) requires Derived<T2, T>
 		{
-			static_assert(std::is_same_v<T2, T> || std::is_convertible_v<T2, T>,
-			    "Type is not down-castable!");
 			MoveFrom(Move(other));
 			return *this;
 		}

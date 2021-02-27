@@ -6,13 +6,11 @@
 #include "Strings/Name.h"
 #include "Strings/String.h"
 
-#include <memory>
-
 
 namespace Rift
 {
 	class BaseObject;
-	struct BaseStruct;
+	struct Struct;
 
 
 	namespace Refl
@@ -83,13 +81,12 @@ namespace Rift
 				return typeName;
 			}
 
-			virtual std::shared_ptr<PropertyHandle> CreateHandle(
-			    const Ptr<BaseObject>& instance) const                                       = 0;
-			virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const = 0;
+			virtual OwnPtr<PropertyHandle> CreateHandle(const Ptr<BaseObject>& instance) const = 0;
+			// virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const = 0;
 
 		protected:
 			static const Type* GetInstanceType(const Ptr<BaseObject>& instance);
-			static const Type* GetInstanceType(BaseStruct* instance);
+			static const Type* GetInstanceType(BaseObject* instance);
 
 		private:
 			void SetDisplayName(const String& inDisplayName);

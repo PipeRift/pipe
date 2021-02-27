@@ -26,9 +26,8 @@ namespace Rift::Refl
 	{
 		return instance->GetType();
 	}
-	const Type* Property::GetInstanceType(BaseStruct* instance)
+	const Type* Property::GetInstanceType(BaseObject* instance)
 	{
 		return instance->GetType();
 	}
-
 }	 // namespace Rift::Refl
