@@ -4,6 +4,7 @@
 #include "PCH.h"
 
 #include "Misc/Hash.h"
+#include "Misc/Utility.h"
 #include "Reflection/ClassTraits.h"
 #include "String.h"
 

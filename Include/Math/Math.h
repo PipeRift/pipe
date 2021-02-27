@@ -402,7 +402,7 @@ namespace Rift
 		}
 		static const float Log(const float k, float base)
 		{
-			return log(k) / log(base);
+			return Log(k) / Log(base);
 		}
 
 		static const double Log(const double k)
@@ -411,7 +411,27 @@ namespace Rift
 		}
 		static const double Log(const double k, double base)
 		{
-			return log(k) / log(base);
+			return Log(k) / Log(base);
+		}
+
+		template <Integral T>
+		static double Log(const T k)
+		{
+			return log(k);
+		}
+
+		static const float Exp2(const float k)
+		{
+			return std::exp2(k);
+		}
+		static const double Exp2(const double k)
+		{
+			return std::exp2(k);
+		}
+		template <Integral T>
+		static const double Exp2(T k)
+		{
+			return std::exp2(k);
 		}
 
 		template <typename T>

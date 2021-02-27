@@ -4,6 +4,7 @@
 
 #include "PCH.h"
 
+#include "Math/Sorting.h"
 #include "Memory/STLAllocator.h"
 #include "Platform/Platform.h"
 
@@ -153,6 +154,12 @@ namespace Rift
 			Insert(index, {}, count);
 		}
 
+
+		template <typename Predicate>
+		void Sort(Predicate predicate)
+		{
+			Algorithms::Sort(Data(), Size(), predicate);
+		}
 
 		Iterator FindIt(const Type& item) const
 		{
@@ -416,7 +423,6 @@ namespace Rift
 		{
 			return vector.crend();
 		};
-
 
 		/** INTERNAl */
 	private:

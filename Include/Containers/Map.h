@@ -44,11 +44,11 @@ namespace Rift
 	public:
 		TMap() = default;
 		TMap(u32 defaultSize) : map{defaultSize} {}
-		TMap(const TPair<const KeyType, ValueType>& item) : map{}
+		TMap(const Pair<const KeyType, ValueType>& item) : map{}
 		{
 			Insert(item);
 		}
-		TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList)
+		TMap(std::initializer_list<Pair<const KeyType, ValueType>> initList)
 		    : map{initList.begin(), initList.end()}
 		{}
 
@@ -77,7 +77,7 @@ namespace Rift
 			map.insert({key, value});
 		}
 
-		void Insert(const TPair<KeyType, ValueType>& pair)
+		void Insert(const Pair<KeyType, ValueType>& pair)
 		{
 			map.insert(pair);
 		}

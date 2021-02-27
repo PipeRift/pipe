@@ -7,6 +7,8 @@
 #include "Containers/Tuples.h"
 #include "Math/Math.h"
 #include "Misc/Hash.h"
+#include "Misc/Optional.h"
+#include "Misc/Utility.h"
 #include "Platform/Platform.h"
 #include "Strings/StringView.h"
 
@@ -33,7 +35,6 @@ namespace Rift
 		template <typename... Args>
 		static String Format(StringView format, Args... args)
 		{
-			StringBuffer buffer;
 			String str;
 			fmt::format_to(std::back_inserter(str), format, std::forward<Args>(args)...);
 			return Move(str);
@@ -115,7 +116,7 @@ namespace Rift
 		}
 		static void RemoveFromEnd(String& str, sizet size)
 		{
-			str.erase(str.size() - 1 - size, size);
+			str.erase(str.size() - 1 - size, str.size() - 1);
 		}
 
 		static i32 Split(const String& str, TArray<String>& tokens, const TCHAR delim)
@@ -151,7 +152,7 @@ namespace Rift
 
 		static String BackSubstr(const String& str, i32 size);
 
-		static TOptional<u32> ToU32(StringView str)
+		static Optional<u32> ToU32(StringView str)
 		{
 			u32 val;
 			if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
@@ -161,7 +162,7 @@ namespace Rift
 			return {};
 		}
 
-		static TOptional<i32> ToI32(StringView str)
+		static Optional<i32> ToI32(StringView str)
 		{
 			i32 val;
 			if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
@@ -171,7 +172,7 @@ namespace Rift
 			return {};
 		}
 
-		static TOptional<u32> ToU32(const char* str)
+		static Optional<u32> ToU32(const char* str)
 		{
 			if (str)
 			{
@@ -180,7 +181,7 @@ namespace Rift
 			return {};
 		}
 
-		static TOptional<i32> ToI32(const char* str)
+		static Optional<i32> ToI32(const char* str)
 		{
 			if (str)
 			{

@@ -65,13 +65,25 @@ namespace Rift
 			return "0B";
 		}
 
-		static const char* sizes[]{"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+		static StringView sizes[]{"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 
 		const double scaleD = Math::Log(double(size), 1024.l);
 		const u32 scale = u32(Math::FloorToI64(scaleD));
-		const sizet finalSize = size / Math::Pow(1024, scale) * (1 / size);
+		const double finalSize = double(size) / Math::Pow(1024, scale);
 
-		return CString::Format("{}{}", finalSize, sizes[scale]);
+		String sizeStr       = CString::Format("{:.1f}", finalSize);
+		u32 numTrailingZeros = 0;
+		for (u32 i = sizeStr.size() - 1; i >= 0; --i)
+		{
+			if (sizeStr[i] == '0')
+			{
+				++numTrailingZeros;
+			}
+			break;
+		}
+		CString::RemoveFromEnd(sizeStr, numTrailingZeros);
+
+		return CString::Format("{}{}", sizeStr, sizes[scale]);
 	}
 
 	sizet CString::GetStringHash(const TCHAR* str)

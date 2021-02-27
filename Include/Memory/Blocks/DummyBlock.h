@@ -23,29 +23,5 @@ namespace Rift::Memory
 		void Allocate(sizet) {}
 		// Free the block of memory
 		void Free() {}
-
-		// Get memory and size
-		const void* GetData() const
-		{
-			return nullptr;
-		}
-		void* GetData()
-		{
-			return nullptr;
-		}
-		void* operator*() const
-		{
-			return nullptr;
-		}
-		sizet GetSize() const
-		{
-			return 0;
-		}
-
-		bool IsAllocated() const
-		{
-			// return !!data;
-			return false;
-		}
 	};
 }    // namespace Rift::Memory

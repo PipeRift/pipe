@@ -5,10 +5,10 @@
 
 namespace Rift::Memory
 {
-	static HeapArena globalArena{};
+	static BestFitArena globalArena{1024 * 1024};    // 1MB initial block size
 
 
-	HeapArena& GetGlobalArena()
+	BestFitArena& GetGlobalArena()
 	{
 		return globalArena;
 	}

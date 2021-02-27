@@ -47,9 +47,15 @@ namespace Rift
 		std::free(p);
 	}
 
-	sizet GetAlignmentPadding(void* ptr, sizet align)
+	sizet GetAlignmentPadding(const void* ptr, sizet align)
 	{
 		assert(Math::IsPowerOfTwo(align));
 		return -reinterpret_cast<sizet>(ptr) & (align - 1);
+	}
+
+	sizet GetAlignmentPaddingWithHeader(const void* ptr, sizet align, sizet headerSize)
+	{
+		// Get padding with the header as an offset
+		return headerSize + GetAlignmentPadding(static_cast<const u8*>(ptr) + headerSize, align);
 	}
 }    // namespace Rift
