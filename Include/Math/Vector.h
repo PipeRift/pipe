@@ -67,6 +67,43 @@ namespace Rift
 		{
 			return glm::one<Vec<L, T>>();
 		}
+
+
+		template <typename T2>
+		constexpr Vec<L, T>& operator+=(Vec<L, T2>& other)
+		{
+			for (i32 i = 0; i < L; ++i)
+			{
+				*this[i] += other[i];
+			}
+			return *this;
+		}
+
+		template <typename T2>
+		constexpr Vec<L, T> operator+(Vec<L, T2>& other)
+		{
+			Vec<L, T> result = *this;
+			result += other;
+			return result;
+		}
+
+		template <typename T2>
+		constexpr Vec<L, T>& operator*=(Vec<L, T2>& other)
+		{
+			for (i32 i = 0; i < L; ++i)
+			{
+				*this[i] *= other[i];
+			}
+			return *this;
+		}
+
+		template <typename T2>
+		constexpr Vec<L, T> operator*(Vec<L, T2>& other)
+		{
+			Vec<L, T> result = *this;
+			result *= other;
+			return result;
+		}
 	};
 
 	class v2 : public Vec<2, float>
