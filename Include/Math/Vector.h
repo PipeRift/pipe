@@ -70,17 +70,17 @@ namespace Rift
 
 
 		template <typename T2>
-		constexpr Vec<L, T>& operator+=(Vec<L, T2>& other)
+		constexpr Vec<L, T>& operator+=(const Vec<L, T2>& other)
 		{
 			for (i32 i = 0; i < L; ++i)
 			{
-				*this[i] += other[i];
+				(*this)[i] += other[i];
 			}
 			return *this;
 		}
 
 		template <typename T2>
-		constexpr Vec<L, T> operator+(Vec<L, T2>& other)
+		constexpr Vec<L, T> operator+(const Vec<L, T2>& other)
 		{
 			Vec<L, T> result = *this;
 			result += other;
@@ -88,17 +88,17 @@ namespace Rift
 		}
 
 		template <typename T2>
-		constexpr Vec<L, T>& operator*=(Vec<L, T2>& other)
+		constexpr Vec<L, T>& operator*=(const Vec<L, T2>& other)
 		{
 			for (i32 i = 0; i < L; ++i)
 			{
-				*this[i] *= other[i];
+				(*this)[i] *= other[i];
 			}
 			return *this;
 		}
 
 		template <typename T2>
-		constexpr Vec<L, T> operator*(Vec<L, T2>& other)
+		constexpr Vec<L, T> operator*(const Vec<L, T2>& other) const
 		{
 			Vec<L, T> result = *this;
 			result *= other;
