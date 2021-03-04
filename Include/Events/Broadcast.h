@@ -4,6 +4,7 @@
 #include "CoreObject.h"
 #include "CoreTypes.h"
 #include "EventHandle.h"
+#include "Function.h"
 #include "Log.h"
 
 
@@ -14,7 +15,7 @@ namespace Rift
 	{
 	protected:
 		using Method   = void(Params...);
-		using Function = std::function<void(Params...)>;
+		using Function = TFunction<void(Params...)>;
 
 		using MethodPtr = void (*)(Params...);
 		template <typename Type>

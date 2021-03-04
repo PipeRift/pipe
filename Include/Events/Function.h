@@ -8,6 +8,6 @@
 
 namespace Rift
 {
-	template <typename _Fty>
-	using TFunction = std::function<_Fty>;
+	template <typename Predicate>
+	using TFunction = std::function<Predicate>;
 }
