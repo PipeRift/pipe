@@ -116,11 +116,11 @@ namespace Rift
 		class v3 xz() const;
 		class v3 xy() const;
 	};
-	DECLARE_REFLECTION_TYPE(v2);
+	DECLARE_REFLECTED_TYPE(v2);
 
 
 	using v2_u32 = Vec<2, u32>;
-	DECLARE_REFLECTION_TYPE(v2_u32);
+	DECLARE_REFLECTED_TYPE(v2_u32);
 
 
 	class v3 : public Vec<3, float>
@@ -179,7 +179,7 @@ namespace Rift
 		static const v3 Right;
 		static const v3 Up;
 	};
-	DECLARE_REFLECTION_TYPE(v3);
+	DECLARE_REFLECTED_TYPE(v3);
 
 
 	/** Non reflected vectors */

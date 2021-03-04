@@ -1,10 +1,10 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "Class.h"
 #include "Memory/OwnPtr.h"
 #include "Object/ObjectBuilder.h"
-#include "TProperty.h"
+#include "Reflection/Static/Class.h"
+#include "Reflection/Static/TProperty.h"
 #include "TypeTraits.h"
 
 
@@ -15,7 +15,7 @@ namespace Rift::Refl
 	template <typename T>
 	class TClass : public Class
 	{
-		static_assert(IsObject<T>::value, "Type is not an Object!");
+		static_assert(IsObject<T>(), "Type is not an Object!");
 
 	private:
 		static TClass* _instance;

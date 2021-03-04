@@ -5,6 +5,7 @@
 #include "PCH.h"
 
 #include "Object/BaseObject.h"
+#include "Reflection/ReflectionTypeTraits.h"
 #include "TypeTraits.h"
 
 
@@ -28,7 +29,7 @@ namespace Rift
 		static void Delete(void* rawPtr)
 		{
 			T* ptr = static_cast<T*>(rawPtr);
-			if constexpr (IsObject<T>::value)
+			if constexpr (IsObject<T>())
 			{
 				ptr->StartDestroy();
 			}

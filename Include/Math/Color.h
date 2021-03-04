@@ -552,7 +552,7 @@ namespace Rift
 
 
 	DEFINE_CLASS_TRAITS(Color, HasCustomSerialize = true, HasDetailsWidget = true);
-	DECLARE_REFLECTION_TYPE(Color);
+	DECLARE_REFLECTED_TYPE(Color);
 
 
 	/**

@@ -5,7 +5,7 @@
 #include "Memory/OwnPtr.h"
 #include "Object/BaseObject.h"
 #include "Object/BaseStruct.h"
-#include "Reflection/Property.h"
+#include "Reflection/Static/Property.h"
 #include "Strings/String.h"
 
 

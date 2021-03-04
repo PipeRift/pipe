@@ -64,7 +64,7 @@ namespace Rift
 			return {1, 0, 0, 0};
 		}
 	};
-	DECLARE_REFLECTION_TYPE(Quat);
+	DECLARE_REFLECTED_TYPE(Quat);
 
 
 	inline Quat Quat::Inverse() const

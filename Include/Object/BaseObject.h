@@ -37,8 +37,4 @@ namespace Rift
 	protected:
 		virtual void BeforeDestroy() {}
 	};
-
-
-	template <typename Type>
-	using IsObject = std::is_base_of<BaseObject, Type>;
 }    // namespace Rift

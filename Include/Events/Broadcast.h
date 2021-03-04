@@ -83,7 +83,7 @@ namespace Rift
 		{
 			if (instance && method)
 			{
-				if constexpr (IsObject<Type>::value)
+				if constexpr (IsObject<Type>())
 				{
 					return Bind<Type>(instance->Self(), Move(method));
 				}
@@ -146,7 +146,7 @@ namespace Rift
 		{
 			if (instance)
 			{
-				if constexpr (IsObject<Type>::value)
+				if constexpr (IsObject<Type>())
 				{
 					return UnbindAll(instance->Self());
 				}

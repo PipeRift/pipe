@@ -7,8 +7,8 @@
 #include "Events/Function.h"
 #include "Memory/Arenas/LinearArena.h"
 #include "Profiler.h"
-#include "Reflection/TClass.h"
-#include "Reflection/TStruct.h"
+#include "Reflection/Static/TClass.h"
+#include "Reflection/Static/TStruct.h"
 #include "Strings/Name.h"
 #include "TypeTraits.h"
 
@@ -17,8 +17,10 @@ namespace Rift::Refl
 {
 	class CORE_API ReflectionRegistry
 	{
-		// Contains all reflection types linearly in memory
+		// Contains all compiled reflection types linearly in memory
 		Memory::LinearArena arena{256 * 1024};    // First block is 256KB
+		// Contains all runtime/data defined types in memory
+		// Memory::BestFitArena dynamicArena{256 * 1024};    // First block is 256KB
 		// We map all classes by name in case we need to find them
 		TMap<Name, void*> typeIdToInstance{};
 
@@ -87,14 +89,14 @@ namespace Rift::Refl
 		void AddProperty(Name name, TFunction<PropertyType*(void*)>&& access)
 		{
 			ZoneScopedN("AddProperty");
-			static_assert(Rift::IsReflectableType<PropertyType>(),
-			    "PropertyType is not a valid reflected type.");
+			static_assert(
+			    Rift::IsReflected<PropertyType>(), "PropertyType is not a valid reflected type.");
 			static_assert(!(propertyTags & Abstract), "Properties can't be Abstract");
 
 
 			void* ptr = ReflectionRegistry::Get().Allocate(sizeof(TProperty<PropertyType>));
 			auto* const property = new (ptr) TProperty<PropertyType>(
-			    newType, GetReflectableName<PropertyType>(), name, Move(access), propertyTags);
+			    newType, GetReflectedName<PropertyType>(), name, Move(access), propertyTags);
 			newType->properties.Insert(name, property);
 		}
 

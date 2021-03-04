@@ -275,7 +275,7 @@ namespace Rift
 		{
 			return ::Serialize(*this, name, val);
 		}
-		else if constexpr (IsStructType<T>())
+		else if constexpr (IsStruct<T>())
 		{
 			SerializeStruct(name, val);
 			return true;

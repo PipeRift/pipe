@@ -2,11 +2,11 @@
 #pragma once
 
 #include "Events/Function.h"
-#include "Property.h"
-#include "ReflectionTags.h"
-#include "Runtime/TPropertyHandle.h"
+#include "Reflection/ReflectionTags.h"
+#include "Reflection/Static/Property.h"
+#include "Reflection/Runtime/TPropertyHandle.h"
+#include "Reflection/Static/Type.h"
 #include "Strings/Name.h"
-#include "Type.h"
 
 #include <functional>
 #include <memory>

@@ -1,8 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Reflection/Type.h"
+#include "Reflection/Static/Type.h"
 
-#include "Reflection/Property.h"
+#include "Reflection/Static/Property.h"
 
 
 namespace Rift::Refl
@@ -76,4 +76,4 @@ namespace Rift::Refl
 		}
 		GetOwnProperties(outProperties);
 	}
-}	 // namespace Rift::Refl
+}    // namespace Rift::Refl

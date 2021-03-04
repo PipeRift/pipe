@@ -16,30 +16,30 @@ namespace Rift
 	class TAssetPtr;
 
 	template <typename T>
-	inline constexpr bool IsArrayType()
+	inline constexpr bool IsStruct()
+	{
+		return Derived<T, Struct>;
+	}
+
+	template <typename T>
+	inline constexpr bool IsObject()
+	{
+		return Derived<T, BaseObject>;
+	}
+
+	template <typename T>
+	inline constexpr bool IsArray()
 	{
 		// Check if we are dealing with a TArray
 		if constexpr (HasItemType<T>::value)
 		{
-			return std::is_same<TArray<typename T::ItemType>, T>::value;
+			return IsSame<TArray<typename T::ItemType>, T>;
 		}
 		return false;
 	}
 
 	template <typename T>
-	inline constexpr bool IsStructType()
-	{
-		return std::is_same_v<T, Struct> || std::is_convertible_v<T, Struct>;
-	}
-
-	template <typename T>
-	inline constexpr bool IsObjectType()
-	{
-		return std::is_convertible_v<T, BaseObject>;
-	}
-
-	template <typename T>
-	inline constexpr bool IsAssetType()
+	inline constexpr bool IsAsset()
 	{
 		// Check if we are dealing with a TAssetPtr
 		if constexpr (HasItemType<T>::value)
@@ -50,35 +50,35 @@ namespace Rift
 	}
 
 	template <typename T>
-	inline constexpr bool IsReflectableType()
+	inline constexpr bool IsReflected()
 	{
-		if constexpr (IsArrayType<T>())
+		if constexpr (IsArray<T>())
 		{
-			return IsReflectableType<typename T::ItemType>();
+			return IsReflected<typename T::ItemType>();
 		}
-		return IsAssetType<T>() || IsStructType<T>();
+		return IsAsset<T>() || IsStruct<T>() || IsObject<T>();
 	}
 
 	template <typename T>
-	inline Name GetReflectableName()
+	inline Name GetReflectedName()
 	{
-		if constexpr (IsArrayType<T>())
+		if constexpr (IsArray<T>())
 		{
-			if constexpr (IsReflectableType<typename T::ItemType>())
+			if constexpr (IsReflected<typename T::ItemType>())
 			{
 				// TArray<Itemtype> name
 				return {CString::Format(
-				    TX("TArray<{}>"), GetReflectableName<typename T::ItemType>().ToString())};
+				    TX("TArray<{}>"), GetReflectedName<typename T::ItemType>().ToString())};
 			}
 			return TX("TArray<Invalid>");
 		}
-		else if constexpr (IsAssetType<T>())
+		else if constexpr (IsAsset<T>())
 		{
 			// TAssetPtr<Itemtype> name
 			return {CString::Format(
-			    TX("TAssetPtr<{}>"), GetReflectableName<typename T::ItemType>().ToString())};
+			    TX("TAssetPtr<{}>"), GetReflectedName<typename T::ItemType>().ToString())};
 		}
-		else if constexpr (IsStructType<T>() || IsObjectType<T>())
+		else if constexpr (IsStruct<T>() || IsObject<T>())
 		{
 			return T::StaticType()->GetName();
 		}
@@ -87,15 +87,15 @@ namespace Rift
 }    // namespace Rift
 
 
-#define DECLARE_REFLECTION_TYPE(Type)               \
-	template <>                                     \
-	inline constexpr bool IsReflectableType<Type>() \
-	{                                               \
-		return true;                                \
-	}                                               \
-	template <>                                     \
-	inline Name GetReflectableName<Type>()          \
-	{                                               \
-		static const Name typeName{TX(#Type)};      \
-		return typeName;                            \
+#define DECLARE_REFLECTED_TYPE(Type)           \
+	template <>                                \
+	inline constexpr bool IsReflected<Type>()  \
+	{                                          \
+		return true;                           \
+	}                                          \
+	template <>                                \
+	inline Name GetReflectedName<Type>()       \
+	{                                          \
+		static const Name typeName{TX(#Type)}; \
+		return typeName;                       \
 	}

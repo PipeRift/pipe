@@ -6,8 +6,8 @@
 #include "Containers/Array.h"
 #include "Containers/Map.h"
 #include "CoreTypes.h"
-#include "Reflection/Property.h"
 #include "Reflection/ReflectionTags.h"
+#include "Reflection/Static/Property.h"
 #include "Strings/String.h"
 
 

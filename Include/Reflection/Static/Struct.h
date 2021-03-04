@@ -3,7 +3,7 @@
 
 #include "PCH.h"
 
-#include "Reflection/TProperty.h"
+#include "Reflection/Static/TProperty.h"
 #include "Type.h"
 
 

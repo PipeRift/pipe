@@ -10,6 +10,7 @@ namespace Rift
 {
 	namespace Refl
 	{
+		// TODO: Implement property specific flags
 		enum class PropertyTags : u16
 		{
 			None        = 0,

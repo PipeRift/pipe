@@ -117,5 +117,5 @@ namespace Rift
 
 	DEFINE_CLASS_TRAITS(Transform, HasCustomSerialize = true, HasDetailsWidget = true);
 
-	DECLARE_REFLECTION_TYPE(Transform);
+	DECLARE_REFLECTED_TYPE(Transform);
 }    // namespace Rift

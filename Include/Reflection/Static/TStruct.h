@@ -1,8 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "Reflection/Struct.h"
-#include "TProperty.h"
+#include "Reflection/Static/Struct.h"
+#include "Reflection/Static/TProperty.h"
 
 #include <type_traits>
 

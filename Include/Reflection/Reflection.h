@@ -5,9 +5,9 @@
 
 #include "Platform/Macros.h"
 #include "Platform/Platform.h"
-#include "Reflection/ReflectionRegistry.h"
-#include "Reflection/TClass.h"
-#include "Reflection/TStruct.h"
+#include "Reflection/Static/ReflectionRegistry.h"
+#include "Reflection/Static/TClass.h"
+#include "Reflection/Static/TStruct.h"
 #include "ReflectionTags.h"
 
 

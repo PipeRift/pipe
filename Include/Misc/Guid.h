@@ -299,7 +299,7 @@ namespace Rift
 	};
 
 	DEFINE_CLASS_TRAITS(Guid, HasCustomSerialize = true);
-	DECLARE_REFLECTION_TYPE(Guid);
+	DECLARE_REFLECTED_TYPE(Guid);
 
 	template <>
 	struct Hash<Guid>

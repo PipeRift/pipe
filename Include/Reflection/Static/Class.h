@@ -4,8 +4,7 @@
 #include "PCH.h"
 
 #include "Object/BaseObject.h"
-#include "Reflection/TProperty.h"
-#include "Type.h"
+#include "Reflection/Static/Type.h"
 
 
 namespace Rift

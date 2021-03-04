@@ -16,5 +16,5 @@ namespace Rift
 	using Json = nlohmann::basic_json<std::map, std::vector, String, bool, i64, u64, double,
 	    STLDefaultAllocator>;
 
-	DECLARE_REFLECTION_TYPE(Json);
+	DECLARE_REFLECTED_TYPE(Json);
 }    // namespace Rift

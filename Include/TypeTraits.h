@@ -12,9 +12,11 @@
 
 namespace Rift
 {
+	template <typename One, typename Other>
+	concept IsSame = std::is_same_v<One, Other>;
+
 	template <typename Child, typename Base, bool bIncludeSame = true>
-	concept Derived =
-	    (bIncludeSame && std::is_same_v<Child, Base>) || std::is_base_of_v<Base, Child>;
+	concept Derived = (bIncludeSame && IsSame<Child, Base>) || std::is_base_of_v<Base, Child>;
 
 	template <typename From, typename To>
 	concept Convertible = std::is_same_v<From, To> || std::is_convertible_v<From, To>;
