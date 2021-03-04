@@ -7,6 +7,7 @@
 #include "Containers/Tuples.h"
 #include "Memory/STLAllocator.h"
 #include "Misc/Hash.h"
+#include "Misc/Utility.h"
 #include "Platform/Platform.h"
 
 #include <tsl/sparse_map.h>
