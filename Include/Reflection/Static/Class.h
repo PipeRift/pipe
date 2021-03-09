@@ -17,10 +17,10 @@ namespace Rift
 
 namespace Rift::Refl
 {
-	class CORE_API Class : public Type
+	class CORE_API ClassType : public DataType
 	{
 		template <typename T, typename Parent, ReflectionTags tags>
-		friend struct TClassBuilder;
+		friend struct TClassTypeBuilder;
 
 		using CreateFunc =
 		    TFunction<OwnPtr<BaseObject, ObjectBuilder<BaseObject>>(const Ptr<BaseObject>&)>;
@@ -31,24 +31,24 @@ namespace Rift::Refl
 	public:
 		OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(const Ptr<BaseObject>& owner);
 
-		Class* GetParent() const
+		ClassType* GetParent() const
 		{
-			return static_cast<Class*>(parent);
+			return static_cast<ClassType*>(parent);
 		}
 
-		void GetAllChildren(TArray<Class*>& outChildren)
+		void GetAllChildren(TArray<ClassType*>& outChildren)
 		{
 			// Classes only have Class children. It is safe to reinterpret_cast.
-			__GetAllChildren(reinterpret_cast<TArray<Type*>&>(outChildren));
+			__GetAllChildren(reinterpret_cast<TArray<DataType*>&>(outChildren));
 		}
 
-		Class* FindChild(const Name& className) const
+		ClassType* FindChild(const Name& className) const
 		{
 			// Classes only have Class children. It is safe to static_cast.
-			return static_cast<Class*>(__FindChild(className));
+			return static_cast<ClassType*>(__FindChild(className));
 		}
 
-		bool IsA(Class* other) const
+		bool IsA(ClassType* other) const
 		{
 			return this == other;
 		}

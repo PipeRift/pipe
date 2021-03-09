@@ -8,7 +8,7 @@ namespace Rift
 {
 	namespace Refl
 	{
-		class Struct;
+		class StructType;
 	}
 
 	struct CORE_API BaseStruct
@@ -16,6 +16,6 @@ namespace Rift
 		BaseStruct()  = default;
 		~BaseStruct() = default;
 
-		// Refl::Struct* GetType() const;
+		// Refl::StructType* GetType() const;
 	};
 }    // namespace Rift

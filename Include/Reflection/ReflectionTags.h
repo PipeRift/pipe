@@ -17,7 +17,7 @@ namespace Rift
 			DetailsEdit = 1 << 0,
 			DetailsView = 1 << 1
 		};
-	}
+	}    // namespace Refl
 	enum class ReflectionTags : u16
 	{
 		None = 0,

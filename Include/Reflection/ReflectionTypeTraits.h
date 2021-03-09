@@ -86,22 +86,22 @@ namespace Rift
 		}
 		else if constexpr (IsStruct<T>() || IsClass<T>())
 		{
-			return T::StaticType()->GetName();
+			return GetType<T>()->GetName();
 		}
 		return TX("Invalid");
 	}
 }    // namespace Rift
 
 
-#define DECLARE_REFLECTED_TYPE(Type)           \
+#define DECLARE_REFLECTED_TYPE(type)           \
 	template <>                                \
-	inline constexpr bool IsReflected<Type>()  \
+	inline constexpr bool IsReflected<type>()  \
 	{                                          \
 		return true;                           \
 	}                                          \
 	template <>                                \
-	inline Name GetReflectedName<Type>()       \
+	inline Name GetReflectedName<type>()       \
 	{                                          \
-		static const Name typeName{TX(#Type)}; \
+		static const Name typeName{TX(#type)}; \
 		return typeName;                       \
 	}

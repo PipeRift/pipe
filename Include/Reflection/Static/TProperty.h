@@ -3,8 +3,8 @@
 
 #include "Events/Function.h"
 #include "Reflection/ReflectionTags.h"
-#include "Reflection/Static/Property.h"
 #include "Reflection/Runtime/TPropertyHandle.h"
+#include "Reflection/Static/Property.h"
 #include "Reflection/Static/Type.h"
 #include "Strings/Name.h"
 
@@ -28,14 +28,14 @@ namespace Rift::Refl
 
 
 	public:
-		TProperty(Type* type, Name typeName, Name name, Access&& access, ReflectionTags tags)
+		TProperty(DataType* type, Name typeName, Name name, Access&& access, ReflectionTags tags)
 		    : Property(type, typeName, name, tags)
 		    , access(access)
 		{}
 
 		virtual OwnPtr<PropertyHandle> CreateHandle(const Ptr<BaseObject>& instance) const override
 		{
-			const Type* type = GetInstanceType(instance);
+			const DataType* type = GetInstanceType(instance);
 			if (type == GetContainerType() || type->IsChildOf(GetContainerType()))
 			{
 				return OwnPtr<PropertyHandle>(

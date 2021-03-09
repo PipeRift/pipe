@@ -11,7 +11,8 @@ namespace Rift
 	template <typename T>
 	struct ObjectBuilder
 	{
-		static OwnPtr<T, ObjectBuilder<T>> New(Refl::Class* objectClass, Ptr<BaseObject> owner = {})
+		static OwnPtr<T, ObjectBuilder<T>> New(
+		    Refl::ClassType* objectClass, Ptr<BaseObject> owner = {})
 		{
 			static_assert(IsClass<T>(), "Type is not an Object!");
 			if (objectClass)

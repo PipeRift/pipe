@@ -7,35 +7,35 @@
 #include "Reflection/TypeId.h"
 
 
-namespace Rift::Refl
+namespace Rift
 {
 	template <typename T>
-	Struct* GetType() requires(IsStruct<T>())
+	Refl::StructType* GetType() requires(IsStruct<T>())
 	{
-		if constexpr (IsDefined<struct TTypeInstance<T>>())
+		if constexpr (IsDefined<struct Refl::TTypeInstance<T>>())
 		{
-			return static_cast<Struct*>(TTypeInstance<T>::instance);
+			return static_cast<Refl::StructType*>(Refl::TTypeInstance<T>::instance);
 		}
 		return nullptr;
 	}
 
 	template <typename T>
-	Class* GetType() requires(IsClass<T>())
+	Refl::ClassType* GetType() requires(IsClass<T>())
 	{
-		if constexpr (IsDefined<struct TTypeInstance<T>>())
+		if constexpr (IsDefined<struct Refl::TTypeInstance<T>>())
 		{
-			return static_cast<Class*>(TTypeInstance<T>::instance);
+			return static_cast<Refl::ClassType*>(Refl::TTypeInstance<T>::instance);
 		}
 		return nullptr;
 	}
 
 	template <typename T>
-	EnumType* GetType() requires(IsEnum<T>())
+	Refl::EnumType* GetType() requires(IsEnum<T>())
 	{
-		if constexpr (IsDefined<struct TTypeInstance<T>>())
+		if constexpr (IsDefined<struct Refl::TTypeInstance<T>>())
 		{
-			return static_cast<EnumType*>(TTypeInstance<T>::instance);
+			return static_cast<Refl::EnumType*>(Refl::TTypeInstance<T>::instance);
 		}
 		return nullptr;
 	}
-}    // namespace Rift::Refl
+}    // namespace Rift

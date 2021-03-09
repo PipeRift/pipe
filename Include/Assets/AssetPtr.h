@@ -116,7 +116,7 @@ namespace Rift
 			{
 				if (auto manager = AssetManager::Get())
 				{
-					cachedAsset = manager->LoadOrCreate(info, T::Type());
+					cachedAsset = manager->LoadOrCreate(info, GetType<T>());
 				}
 			}
 			return cachedAsset.IsValid();

@@ -7,7 +7,7 @@
 
 namespace Rift::Refl
 {
-	OwnPtr<BaseObject, ObjectBuilder<BaseObject>> Class::CreateInstance(
+	OwnPtr<BaseObject, ObjectBuilder<BaseObject>> ClassType::CreateInstance(
 	    const Ptr<BaseObject>& owner)
 	{
 		if (onCreate)

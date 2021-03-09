@@ -37,48 +37,44 @@ namespace Rift::Refl
 
 /** Defines a Class */
 #define __CLASS_NO_TAGS(type, parent) __CLASS_TAGS(type, parent, Rift::ReflectionTags::None)
-#define __CLASS_TAGS(type, parent, tags)                                  \
-public:                                                                   \
-	using ThisType    = type;                                             \
-	using Super       = parent;                                           \
-	using TypeBuilder = Rift::Refl::TClassBuilder<ThisType, Super, tags>; \
-                                                                          \
-	Rift::Refl::Class* GetType() const override                           \
-	{                                                                     \
-		return StaticType();                                              \
-	}                                                                     \
-	void SerializeReflection(Rift::Archive& ar) override                  \
-	{                                                                     \
-		Super::SerializeReflection(ar);                                   \
-		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});        \
-	}                                                                     \
+#define __CLASS_TAGS(type, parent, tags)                                      \
+public:                                                                       \
+	using ThisType    = type;                                                 \
+	using Super       = parent;                                               \
+	using TypeBuilder = Rift::Refl::TClassTypeBuilder<ThisType, Super, tags>; \
+                                                                              \
+	Rift::Refl::ClassType* GetClass() const override                          \
+	{                                                                         \
+		return Rift::GetType<ThisType>();                                     \
+	}                                                                         \
+	void SerializeReflection(Rift::Archive& ar) override                      \
+	{                                                                         \
+		Super::SerializeReflection(ar);                                       \
+		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});            \
+	}                                                                         \
 	BASECLASS(type)
 
 
 /** Defines a class with no parent */
-#define ORPHAN_CLASS(type, tags)                                         \
-public:                                                                  \
-	using ThisType    = type;                                            \
-	using TypeBuilder = Rift::Refl::TClassBuilder<ThisType, void, tags>; \
-                                                                         \
-	virtual Rift::Refl::Class* GetType() const                           \
-	{                                                                    \
-		return StaticType();                                             \
-	}                                                                    \
-	virtual void SerializeReflection(Rift::Archive& ar)                  \
-	{                                                                    \
-		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});       \
-	}                                                                    \
+#define ORPHAN_CLASS(type, tags)                                             \
+public:                                                                      \
+	using ThisType    = type;                                                \
+	using TypeBuilder = Rift::Refl::TClassTypeBuilder<ThisType, void, tags>; \
+                                                                             \
+	virtual Rift::Refl::ClassType* GetClass() const                          \
+	{                                                                        \
+		return Rift::GetType<ThisType>();                                    \
+	}                                                                        \
+	virtual void SerializeReflection(Rift::Archive& ar)                      \
+	{                                                                        \
+		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});           \
+	}                                                                        \
 	BASECLASS(type)
 
 
 #define BASECLASS(type)                                                                     \
 public:                                                                                     \
-	static Rift::Refl::Class* StaticType()                                                  \
-	{                                                                                       \
-		return Rift::Refl::GetType<ThisType>();                                             \
-	}                                                                                       \
-	static Rift::Refl::Class* InitType()                                                    \
+	static Rift::Refl::ClassType* InitType()                                                \
 	{                                                                                       \
 		TypeBuilder builder{Rift::Name{TX(#type)}};                                         \
 		builder.onBuild = [](auto& builder) {                                               \
@@ -100,48 +96,44 @@ private:                                                                        
 
 /** Defines an struct */
 #define __STRUCT_NO_TAGS(type, parent) __STRUCT_TAGS(type, parent, Rift::ReflectionTags::None)
-#define __STRUCT_TAGS(type, parent, tags)                                  \
-public:                                                                    \
-	using ThisType    = type;                                              \
-	using Super       = parent;                                            \
-	using TypeBuilder = Rift::Refl::TStructBuilder<ThisType, Super, tags>; \
-                                                                           \
-	Rift::Refl::Struct* GetType() const override                           \
-	{                                                                      \
-		return StaticType();                                               \
-	}                                                                      \
-	void SerializeReflection(Rift::Archive& ar) override                   \
-	{                                                                      \
-		Super::SerializeReflection(ar);                                    \
-		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});         \
-	}                                                                      \
+#define __STRUCT_TAGS(type, parent, tags)                                      \
+public:                                                                        \
+	using ThisType    = type;                                                  \
+	using Super       = parent;                                                \
+	using TypeBuilder = Rift::Refl::TStructTypeBuilder<ThisType, Super, tags>; \
+                                                                               \
+	static Rift::Refl::StructType* GetType()                                   \
+	{                                                                          \
+		return Rift::GetType<ThisType>();                                      \
+	}                                                                          \
+	void SerializeReflection(Rift::Archive& ar)                                \
+	{                                                                          \
+		Super::SerializeReflection(ar);                                        \
+		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});             \
+	}                                                                          \
 	BASESTRUCT(type)
 
 
 /** Defines an struct with no parent */
-#define ORPHAN_STRUCT(type, tags)                                         \
-public:                                                                   \
-	using ThisType    = type;                                             \
-	using TypeBuilder = Rift::Refl::TStructBuilder<ThisType, void, tags>; \
-                                                                          \
-	virtual Rift::Refl::Struct* GetType() const                           \
-	{                                                                     \
-		return StaticType();                                              \
-	}                                                                     \
-	virtual void SerializeReflection(Rift::Archive& ar)                   \
-	{                                                                     \
-		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});        \
-	}                                                                     \
+#define ORPHAN_STRUCT(type, tags)                                             \
+public:                                                                       \
+	using ThisType    = type;                                                 \
+	using TypeBuilder = Rift::Refl::TStructTypeBuilder<ThisType, void, tags>; \
+                                                                              \
+	static Rift::Refl::StructType* GetType()                                  \
+	{                                                                         \
+		return Rift::GetType<ThisType>();                                     \
+	}                                                                         \
+	void SerializeReflection(Rift::Archive& ar)                               \
+	{                                                                         \
+		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});            \
+	}                                                                         \
 	BASESTRUCT(type)
 
 
 #define BASESTRUCT(type)                                                                    \
 public:                                                                                     \
-	static Rift::Refl::Struct* StaticType()                                                 \
-	{                                                                                       \
-		return Rift::Refl::GetType<ThisType>();                                             \
-	}                                                                                       \
-	static Rift::Refl::Struct* InitType()                                                   \
+	static Rift::Refl::StructType* InitType()                                               \
 	{                                                                                       \
 		TypeBuilder builder{Rift::Name{TX(#type)}};                                         \
 		builder.onBuild = [](auto& builder) {                                               \
@@ -207,11 +199,11 @@ public:
 #define STRUCT(...) TYPE_CHOOSER(__STRUCT_NO_TAGS, __STRUCT_TAGS, __VA_ARGS__)(__VA_ARGS__)
 #define PROP(...) TYPE_CHOOSER(__PROPERTY_NO_TAGS, __PROPERTY_TAGS, __VA_ARGS__)(__VA_ARGS__)
 
-#define ENUM(type) \
-	//template <>                                                                        \
-	//Rift::Refl::TEnumType<type>* InitEnumType<type>()                                  \
-	//{                                                                                  \
-	//	TEnumTypeBuilder<type> builder{Rift::Name{TX(#type)}}; \
-	//	builder.Initialize();                                                          \
-	//	return builder.GetType();                                                      \
-	//}
+#define ENUM(type)                                                             \
+	template <>                                                                \
+	inline Rift::TFunction<Rift::Refl::EnumType*()>                            \
+	    Rift::Refl::TStaticEnumInitializer<type>::onInit{[]() {                \
+		    Rift::Refl::TEnumTypeBuilder<type> builder{Rift::Name{TX(#type)}}; \
+		    builder.Initialize();                                              \
+		    return builder.GetType();                                          \
+	    }};

@@ -7,7 +7,7 @@
 
 namespace Rift::Refl
 {
-	void Type::__GetAllChildren(TArray<Type*>& outChildren)
+	void DataType::__GetAllChildren(TArray<DataType*>& outChildren)
 	{
 		// Yes, we loop two times children, but
 		// also do one single allocation in each recursion
@@ -18,7 +18,7 @@ namespace Rift::Refl
 		}
 	}
 
-	Type* Type::__FindChild(const Name& className) const
+	DataType* DataType::__FindChild(const Name& className) const
 	{
 		if (className.IsNone())
 			return nullptr;
@@ -29,7 +29,7 @@ namespace Rift::Refl
 			{
 				return child;
 			}
-			else if (Type* found = child->__FindChild(className))
+			else if (DataType* found = child->__FindChild(className))
 			{
 				return found;
 			}
@@ -37,12 +37,12 @@ namespace Rift::Refl
 		return nullptr;
 	}
 
-	bool Type::IsChildOf(const Type* other) const
+	bool DataType::IsChildOf(const DataType* other) const
 	{
 		if (!other || !parent)
 			return false;
 
-		const Type* current = parent;
+		const DataType* current = parent;
 		while (current)
 		{
 			if (other == current)
@@ -53,13 +53,13 @@ namespace Rift::Refl
 		return false;
 	}
 
-	const Property* Type::FindProperty(const Name& propertyName) const
+	const Property* DataType::FindProperty(const Name& propertyName) const
 	{
 		const auto* prop = properties.Find(propertyName);
 		return prop ? *prop : nullptr;
 	}
 
-	void Type::GetOwnProperties(PropertyMap& outProperties) const
+	void DataType::GetOwnProperties(PropertyMap& outProperties) const
 	{
 		outProperties.Resize(outProperties.Size() + properties.Size());
 		for (const auto& prop : properties)
@@ -68,7 +68,7 @@ namespace Rift::Refl
 		}
 	}
 
-	void Type::GetAllProperties(PropertyMap& outProperties) const
+	void DataType::GetAllProperties(PropertyMap& outProperties) const
 	{
 		if (parent)
 		{

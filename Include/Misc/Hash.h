@@ -32,7 +32,7 @@ namespace Rift
 		if constexpr (sizeof(sizet) < 64)
 		{
 			u32 c = 0, result = 2166136261U;
-			while ((c = *str++) != 0)
+			while ((c = u32(*str++)) != 0)
 			{
 				result = (result * 16777619) ^ c;
 			}
@@ -41,7 +41,7 @@ namespace Rift
 		else
 		{
 			u64 c = 0, result = 14695981039346656037U;
-			while ((c = *str++) != 0)
+			while ((c = u64(*str++)) != 0)
 			{
 				result = (result * 1099511628211) ^ c;
 			}

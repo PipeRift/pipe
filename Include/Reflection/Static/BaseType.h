@@ -3,12 +3,18 @@
 
 #include "PCH.h"
 
+#include "Reflection/TypeId.h"
+
 
 namespace Rift::Refl
 {
 	/** Smallest reflection type */
 	class CORE_API BaseType
 	{
+	protected:
+		TypeId id;
+
+
 	protected:
 		BaseType() = default;
 

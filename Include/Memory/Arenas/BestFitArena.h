@@ -31,8 +31,8 @@ namespace Rift::Memory
 		// TODO: Support growing multiple blocks
 		HeapBlock block{};
 		TArray<Slot> freeSlots{};
-		bool pendingSort     = false;
-		sizet freeSize       = 0;
+		bool pendingSort = false;
+		sizet freeSize   = 0;
 
 
 	public:

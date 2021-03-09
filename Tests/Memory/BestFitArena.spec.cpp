@@ -57,7 +57,7 @@ go_bandit([]() {
 				BestFitArena arena{32};
 
 				// 16 bytes
-				void* p     = arena.Allocate(8);
+				void* p = arena.Allocate(8);
 				new (p) TypeOfSize<8>();
 				AssertThat(p, Is().Not().Null());
 				AssertThat(arena.Contains(p), Is().True());

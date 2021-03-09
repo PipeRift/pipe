@@ -545,7 +545,7 @@ namespace Rift
 		 */
 		static DateTime MaxValue()
 		{
-			return DateTime(SysTime::max());
+			return {SysTime::max()};
 		}
 
 		/**
@@ -557,7 +557,7 @@ namespace Rift
 		 */
 		static DateTime MinValue()
 		{
-			return DateTime(SysTime::min());
+			return {SysTime::min()};
 		}
 
 		/**

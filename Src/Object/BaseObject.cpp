@@ -9,9 +9,9 @@
 
 namespace Rift
 {
-	Refl::Class* BaseObject::GetType() const
+	Refl::ClassType* BaseObject::GetClass() const
 	{
-		return static_cast<const Object*>(this)->GetType();
+		return static_cast<const Object*>(this)->GetClass();
 	}
 
 	Ptr<Object> BaseObject::Self() const

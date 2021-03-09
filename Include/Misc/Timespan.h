@@ -315,7 +315,7 @@ namespace Rift
 		 */
 		Timespan GetDuration()
 		{
-			return Timespan(duration.count() >= 0 ? duration : -duration);
+			return {duration.count() >= 0 ? duration : -duration};
 		}
 
 		/**
@@ -552,7 +552,7 @@ namespace Rift
 		 */
 		static Timespan MaxValue()
 		{
-			return Timespan(DecMicroseconds::max());
+			return {DecMicroseconds::max()};
 		}
 
 		/**
@@ -565,7 +565,7 @@ namespace Rift
 		 */
 		static Timespan MinValue()
 		{
-			return Timespan(DecMicroseconds::min());
+			return {DecMicroseconds::min()};
 		}
 
 		/**
@@ -596,7 +596,7 @@ namespace Rift
 		 */
 		static Timespan Zero()
 		{
-			return Timespan(DecMicroseconds::zero());
+			return {DecMicroseconds::zero()};
 		}
 
 	public:

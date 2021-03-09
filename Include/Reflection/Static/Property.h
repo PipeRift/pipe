@@ -15,7 +15,7 @@ namespace Rift
 
 	namespace Refl
 	{
-		class Type;
+		class DataType;
 		struct PropertyHandle;
 
 		/**
@@ -24,7 +24,7 @@ namespace Rift
 		class CORE_API Property
 		{
 		private:
-			Type* typePtr;
+			DataType* typePtr;
 			Name typeName;
 			Name name;
 			String displayName;
@@ -37,7 +37,7 @@ namespace Rift
 			Property(const Property&) = delete;
 
 		protected:
-			Property(Type* typePtr, Name typeName, Name name, ReflectionTags tags)
+			Property(DataType* typePtr, Name typeName, Name name, ReflectionTags tags)
 			    : typePtr(typePtr)
 			    , typeName(Move(typeName))
 			    , name(Move(name))
@@ -71,7 +71,7 @@ namespace Rift
 				return (tags & inTags) > 0;
 			}
 
-			Type* GetContainerType() const
+			DataType* GetContainerType() const
 			{
 				return typePtr;
 			}
@@ -85,8 +85,8 @@ namespace Rift
 			// virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const = 0;
 
 		protected:
-			static const Type* GetInstanceType(const Ptr<BaseObject>& instance);
-			static const Type* GetInstanceType(BaseObject* instance);
+			static const DataType* GetInstanceType(const Ptr<BaseObject>& instance);
+			static const DataType* GetInstanceType(BaseObject* instance);
 
 		private:
 			void SetDisplayName(const String& inDisplayName);

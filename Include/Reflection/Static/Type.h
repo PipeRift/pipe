@@ -17,7 +17,7 @@ namespace Rift::Refl
 	using PropertyMap = TMap<Name, Property*>;
 
 	/** Smallest reflection type that contains all basic class or struct data */
-	class CORE_API Type : public BaseType
+	class CORE_API DataType : public BaseType
 	{
 		template <typename T, typename Parent, typename TType, ReflectionTags tags>
 		friend struct TTypeBuilder;
@@ -26,19 +26,19 @@ namespace Rift::Refl
 		Name name;
 		ReflectionTags tags = ReflectionTags::None;
 
-		Type* parent = nullptr;
-		TArray<Type*> children;
+		DataType* parent = nullptr;
+		TArray<DataType*> children;
 
 		PropertyMap properties{};
 
 
 	protected:
-		Type()            = default;
+		DataType() = default;
 
 	public:
-		Type(const Type&) = delete;
-		Type& operator=(const Type&) = delete;
-		virtual ~Type()
+		DataType(const DataType&) = delete;
+		DataType& operator=(const DataType&) = delete;
+		virtual ~DataType()
 		{
 			for (auto& it : properties)
 			{
@@ -61,15 +61,15 @@ namespace Rift::Refl
 			return (tags & tag) > 0;
 		}
 
-		bool IsChildOf(const Type* other) const;
+		bool IsChildOf(const DataType* other) const;
 
 		template <typename T>
 		bool IsChildOf() const
 		{
-			return IsChildOf(T::StaticType());
+			return IsChildOf(GetType<T>());
 		}
 
-		bool IsParentOf(const Type* other) const
+		bool IsParentOf(const DataType* other) const
 		{
 			return other && other->IsChildOf(this);
 		}
@@ -82,7 +82,7 @@ namespace Rift::Refl
 
 
 	protected:
-		void __GetAllChildren(TArray<Type*>& outChildren);
-		Type* __FindChild(const Name& className) const;
+		void __GetAllChildren(TArray<DataType*>& outChildren);
+		DataType* __FindChild(const Name& className) const;
 	};
 }    // namespace Rift::Refl

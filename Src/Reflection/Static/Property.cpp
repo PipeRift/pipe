@@ -22,12 +22,12 @@ namespace Rift::Refl
 		}
 	}
 
-	const Type* Property::GetInstanceType(const Ptr<BaseObject>& instance)
+	const DataType* Property::GetInstanceType(const Ptr<BaseObject>& instance)
 	{
-		return instance->GetType();
+		return instance->GetClass();
 	}
-	const Type* Property::GetInstanceType(BaseObject* instance)
+	const DataType* Property::GetInstanceType(BaseObject* instance)
 	{
-		return instance->GetType();
+		return instance->GetClass();
 	}
 }    // namespace Rift::Refl

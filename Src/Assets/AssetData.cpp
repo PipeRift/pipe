@@ -30,7 +30,7 @@ namespace Rift
 			return false;
 
 		JsonArchive ar{};
-		Name className = GetType()->GetName();
+		Name className = GetClass()->GetName();
 		ar("asset_type", className);
 		Serialize(ar);
 
