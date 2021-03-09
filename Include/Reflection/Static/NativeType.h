@@ -3,13 +3,8 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
-#include "Containers/Map.h"
-#include "CoreTypes.h"
-#include "Reflection/ReflectionTags.h"
 #include "Reflection/Static/BaseType.h"
-#include "Reflection/Static/Property.h"
-#include "Strings/String.h"
+#include "Strings/Name.h"
 
 
 namespace Rift::Refl

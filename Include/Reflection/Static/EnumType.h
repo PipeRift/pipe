@@ -4,6 +4,7 @@
 #include "PCH.h"
 
 #include "Reflection/Static/BaseType.h"
+#include "Strings/Name.h"
 
 #include <magic_enum.hpp>
 

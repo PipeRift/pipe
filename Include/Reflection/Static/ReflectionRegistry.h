@@ -102,11 +102,6 @@ namespace Rift::Refl
 
 	protected:
 		virtual BaseType* Build() = 0;
-
-		BaseType* __GetType() const
-		{
-			return initializedType;
-		}
 	};
 
 
@@ -131,6 +126,7 @@ namespace Rift::Refl
 
 
 			void* ptr = ReflectionRegistry::Get().Allocate(sizeof(TProperty<PropertyType>));
+
 			auto* const property = new (ptr) TProperty<PropertyType>(GetComposeType(),
 			    GetReflectedName<PropertyType>(), name, Move(access), propertyTags);
 
@@ -139,7 +135,7 @@ namespace Rift::Refl
 
 		Type* GetComposeType() const
 		{
-			return static_cast<Type*>(__GetType());
+			return static_cast<Type*>(initializedType);
 		}
 
 	protected:
@@ -183,13 +179,13 @@ namespace Rift::Refl
 
 		Class* GetType() const
 		{
-			return static_cast<Class*>(__GetType());
+			return static_cast<Class*>(initializedType);
 		}
 
 	protected:
 		BaseType* Build() override
 		{
-			auto* type = TTypeBuilder::Build();
+			auto* type = Super::Build();
 
 			GetType()->onCreate = [](const auto& owner) {
 				if constexpr (IsSame<T, BaseObject>)
@@ -224,13 +220,13 @@ namespace Rift::Refl
 
 		Struct* GetType() const
 		{
-			return static_cast<Struct*>(__GetType());
+			return static_cast<Struct*>(initializedType);
 		}
 
 	protected:
 		BaseType* Build() override
 		{
-			auto* type = TTypeBuilder::Build();
+			auto* type = Super::Build();
 			if (onBuild)
 			{
 				onBuild(*this);
@@ -244,7 +240,7 @@ namespace Rift::Refl
 	 * Enum Type Builder
 	 * Builds enum types during static initialization
 	 */
-	template <typename Enum>
+	template <typename T>
 	struct TEnumTypeBuilder : public BaseTypeBuilder
 	{
 	public:
@@ -255,13 +251,13 @@ namespace Rift::Refl
 
 		EnumType* GetType() const
 		{
-			return static_cast<EnumType*>(__GetType());
+			return static_cast<EnumType*>(initializedType);
 		}
 
 	protected:
 		BaseType* Build() override
 		{
-			EnumType& newType = ReflectionRegistry::Get().AddType<EnumType>(GetUniqueId());
+			EnumType& newType = ReflectionRegistry::Get().AddType<EnumType>(GetId());
 			newType.name      = name;
 			return &newType;
 		}
