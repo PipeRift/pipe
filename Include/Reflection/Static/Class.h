@@ -6,7 +6,6 @@
 #include "Events/Function.h"
 #include "Memory/OwnPtr.h"
 #include "Object/BaseObject.h"
-#include "Object/ObjectBuilder.h"
 #include "Reflection/Static/Type.h"
 
 

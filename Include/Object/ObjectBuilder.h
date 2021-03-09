@@ -1,7 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "BaseObject.h"
 #include "Log.h"
 #include "Reflection/ReflectionTypeTraits.h"
 #include "Reflection/Static/Class.h"
@@ -12,7 +11,7 @@ namespace Rift
 	template <typename T>
 	struct ObjectBuilder
 	{
-		static OwnPtr<T, ObjectBuilder> New(Refl::Class* objectClass, Ptr<BaseObject> owner = {})
+		static OwnPtr<T, ObjectBuilder<T>> New(Refl::Class* objectClass, Ptr<BaseObject> owner = {})
 		{
 			static_assert(IsClass<T>(), "Type is not an Object!");
 			if (objectClass)
@@ -22,7 +21,7 @@ namespace Rift
 			return {};
 		}
 
-		static OwnPtr<T, ObjectBuilder> New(Ptr<BaseObject> owner = {})
+		static OwnPtr<T, ObjectBuilder<T>> New(Ptr<BaseObject> owner = {})
 		{
 			static_assert(IsClass<T>(), "Type is not an Object!");
 
@@ -34,7 +33,7 @@ namespace Rift
 			}
 			else
 			{
-				OwnPtr<T, ObjectBuilder> ptr{new T()};
+				OwnPtr<T, ObjectBuilder<T>> ptr{new T()};
 				ptr->PreConstruct(ptr.AsPtr(), owner);
 				ptr->Construct();
 				return ptr;

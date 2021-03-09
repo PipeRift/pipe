@@ -15,6 +15,7 @@ namespace Rift
 	}
 	class Object;
 
+
 	template <typename Type>
 	struct Ptr;
 
