@@ -3,7 +3,10 @@
 
 #include "PCH.h"
 
+#include "Events/Function.h"
+#include "Memory/OwnPtr.h"
 #include "Object/BaseObject.h"
+#include "Object/ObjectBuilder.h"
 #include "Reflection/Static/Type.h"
 
 
@@ -17,14 +20,24 @@ namespace Rift::Refl
 {
 	class CORE_API Class : public Type
 	{
-	public:
-		virtual OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(
-		    const Ptr<BaseObject>& owner) = 0;
+		template <typename T, typename Parent, ReflectionTags tags>
+		friend struct TClassBuilder;
 
-		// NOTE: Most of the class comparison functions do actually
-		// call Type to reduce complexity and code duplication.
-		//
-		// We can cast safely to Type since Classes only inherit Classes
+		using CreateFunc =
+		    TFunction<OwnPtr<BaseObject, ObjectBuilder<BaseObject>>(const Ptr<BaseObject>&)>;
+
+		CreateFunc onCreate;
+
+
+	public:
+		OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(const Ptr<BaseObject>& owner)
+		{
+			if (onCreate)
+			{
+				return onCreate(owner);
+			}
+			return {};
+		}
 
 		Class* GetParent() const
 		{
@@ -33,11 +46,13 @@ namespace Rift::Refl
 
 		void GetAllChildren(TArray<Class*>& outChildren)
 		{
+			// Classes only have Class children. It is safe to reinterpret_cast.
 			__GetAllChildren(reinterpret_cast<TArray<Type*>&>(outChildren));
 		}
 
 		Class* FindChild(const Name& className) const
 		{
+			// Classes only have Class children. It is safe to static_cast.
 			return static_cast<Class*>(__FindChild(className));
 		}
 

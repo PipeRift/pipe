@@ -63,6 +63,7 @@ target_link_libraries(RiftCore PUBLIC
     tsl::robin_map
     tsl::sparse_map
     Tracy
+    magic_enum
 )
 target_link_libraries(RiftCore PRIVATE
     portable_file_dialogs

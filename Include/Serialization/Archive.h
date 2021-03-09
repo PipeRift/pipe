@@ -106,7 +106,7 @@ namespace Rift
 		// Starts an object by name
 		virtual void BeginObject(StringView name) = 0;
 		virtual bool HasObject(StringView name)   = 0;
-		virtual bool IsObjectValid()              = 0;
+		virtual bool IsClassValid()               = 0;
 
 		// Starts an object by index (Array)
 		virtual void BeginObject(u32 index) = 0;
@@ -196,7 +196,7 @@ namespace Rift
 			depthData.Add(&Data()[index]);
 		}
 
-		bool IsObjectValid() override
+		bool IsClassValid() override
 		{
 			return !Data().is_null();
 		}

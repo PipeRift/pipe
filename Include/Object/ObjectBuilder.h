@@ -14,7 +14,7 @@ namespace Rift
 	{
 		static OwnPtr<T, ObjectBuilder> New(Refl::Class* objectClass, Ptr<BaseObject> owner = {})
 		{
-			static_assert(IsObject<T>(), "Type is not an Object!");
+			static_assert(IsClass<T>(), "Type is not an Object!");
 			if (objectClass)
 			{
 				return objectClass->CreateInstance(owner).Cast<T>();
@@ -24,7 +24,7 @@ namespace Rift
 
 		static OwnPtr<T, ObjectBuilder> New(Ptr<BaseObject> owner = {})
 		{
-			static_assert(IsObject<T>(), "Type is not an Object!");
+			static_assert(IsClass<T>(), "Type is not an Object!");
 
 			if constexpr (std::is_abstract_v<T>)
 			{

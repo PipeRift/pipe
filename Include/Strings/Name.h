@@ -85,11 +85,7 @@ namespace Rift
 		sizet Register(StringView string);
 		const String& Find(sizet hash) const;
 
-		static NameTable& Get()
-		{
-			static NameTable instance{};
-			return instance;
-		}
+		static NameTable& Get();
 	};
 
 
@@ -120,7 +116,7 @@ namespace Rift
 			// Index this name
 			id = NameTable::Get().Register(key);
 #if BUILD_DEBUG
-			value = key;
+			value = ToString();
 #endif
 		}
 		Name(const String& str) : Name(StringView(str)) {}
@@ -138,7 +134,8 @@ namespace Rift
 #endif
 		}
 		Name& operator=(const Name& other) = default;
-		Name& operator                     =(Name&& other) noexcept
+
+		Name& operator=(Name&& other) noexcept
 		{
 			std::swap(id, other.id);
 #if BUILD_DEBUG

@@ -4,7 +4,7 @@
 
 #include "Object/Object.h"
 #include "Reflection/Reflection.h"
-#include "Reflection/Static/TClass.h"
+#include "Reflection/Static/Class.h"
 
 
 namespace Rift

@@ -63,6 +63,17 @@ namespace Rift
 #define EnableIfAll typename = void
 
 
+	template <typename, typename = void>
+	constexpr bool isDefinedV = false;
+	template <typename T>
+	constexpr bool isDefinedV<T, std::void_t<decltype(sizeof(T))>> = true;
+
+	template <typename T>
+	constexpr bool IsDefined()
+	{
+		return isDefinedV<T>;
+	};
+
 	template <typename T>
 	struct HasItemType
 	{

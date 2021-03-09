@@ -77,11 +77,13 @@ namespace Rift
 			return Size() - 1;
 		}
 
-		i32 AddUnique(const Type item)
+		i32 AddUnique(const Type& item)
 		{
 			const i32 foundIndex = FindIndex(item);
 			if (foundIndex == NO_INDEX)
-				return Add(Move(item));
+			{
+				return Add(item);
+			}
 			return foundIndex;
 		}
 

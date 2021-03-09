@@ -10,4 +10,21 @@ namespace Rift::Refl
 		static ReflectionRegistry instance{};
 		return instance;
 	}
+
+
+	void BaseTypeBuilder::Initialize()
+	{
+		if (initializedType)
+		{
+			return;
+		}
+
+		// Make sure this type has not been initialized before from another builder instance
+		// (including DLL static memory)
+		initializedType = ReflectionRegistry::Get().FindType(id);
+		if (!initializedType)
+		{
+			initializedType = Build();
+		}
+	}
 }    // namespace Rift::Refl

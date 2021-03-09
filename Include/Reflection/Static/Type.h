@@ -7,6 +7,7 @@
 #include "Containers/Map.h"
 #include "CoreTypes.h"
 #include "Reflection/ReflectionTags.h"
+#include "Reflection/Static/BaseType.h"
 #include "Reflection/Static/Property.h"
 #include "Strings/String.h"
 
@@ -16,7 +17,7 @@ namespace Rift::Refl
 	using PropertyMap = TMap<Name, Property*>;
 
 	/** Smallest reflection type that contains all basic class or struct data */
-	class CORE_API Type
+	class CORE_API Type : public BaseType
 	{
 		template <typename T, typename Parent, typename TType, ReflectionTags tags>
 		friend struct TTypeBuilder;
@@ -31,8 +32,10 @@ namespace Rift::Refl
 		PropertyMap properties{};
 
 
-	public:
+	protected:
 		Type()            = default;
+
+	public:
 		Type(const Type&) = delete;
 		Type& operator=(const Type&) = delete;
 		virtual ~Type()

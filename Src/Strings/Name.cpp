@@ -45,6 +45,12 @@ namespace Rift
 		return Name::NoneStr();
 	}
 
+	NameTable& NameTable::Get()
+	{
+		static NameTable instance{};
+		return instance;
+	}
+
 	bool Name::Serialize(Archive& ar, StringView name)
 	{
 		if (ar.IsSaving())

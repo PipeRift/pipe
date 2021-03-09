@@ -18,13 +18,19 @@ namespace Rift
 	template <typename T>
 	inline constexpr bool IsStruct()
 	{
-		return Derived<T, Struct>;
+		return Derived<T, Struct>;    // && IsDefined<struct TTypeInstance<T>>();
 	}
 
 	template <typename T>
-	inline constexpr bool IsObject()
+	inline constexpr bool IsClass()
 	{
-		return Derived<T, BaseObject>;
+		return Derived<T, BaseObject, false>;    // && IsDefined<struct TTypeInstance<T>>();
+	}
+
+	template <typename T>
+	inline constexpr bool IsEnum()
+	{
+		return std::is_enum<T>::value;
 	}
 
 	template <typename T>
@@ -44,7 +50,7 @@ namespace Rift
 		// Check if we are dealing with a TAssetPtr
 		if constexpr (HasItemType<T>::value)
 		{
-			return std::is_same<TAssetPtr<typename T::ItemType>, T>::value;
+			return IsSame<TAssetPtr<typename T::ItemType>, T>;
 		}
 		return false;
 	}
@@ -56,7 +62,7 @@ namespace Rift
 		{
 			return IsReflected<typename T::ItemType>();
 		}
-		return IsAsset<T>() || IsStruct<T>() || IsObject<T>();
+		return IsAsset<T>() || IsStruct<T>() || IsClass<T>() || IsEnum<T>();
 	}
 
 	template <typename T>
@@ -78,7 +84,7 @@ namespace Rift
 			return {CString::Format(
 			    TX("TAssetPtr<{}>"), GetReflectedName<typename T::ItemType>().ToString())};
 		}
-		else if constexpr (IsStruct<T>() || IsObject<T>())
+		else if constexpr (IsStruct<T>() || IsClass<T>())
 		{
 			return T::StaticType()->GetName();
 		}
