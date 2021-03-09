@@ -1,6 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Reflection/Static/Class.h"
+#include "Reflection/Static/ClassType.h"
 
 #include "Object/ObjectBuilder.h"
 

@@ -4,7 +4,7 @@
 #include "BaseObject.h"
 #include "Log.h"
 #include "ObjectBuilder.h"
-#include "Reflection/Static/Class.h"
+#include "Reflection/Static/ClassType.h"
 #include "Serialization/Archive.h"
 
 

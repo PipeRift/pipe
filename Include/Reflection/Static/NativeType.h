@@ -3,14 +3,14 @@
 
 #include "PCH.h"
 
-#include "Reflection/Static/BaseType.h"
+#include "Reflection/Static/Type.h"
 #include "Strings/Name.h"
 
 
 namespace Rift::Refl
 {
 	/** Smallest reflection type that contains all basic class or struct data */
-	class CORE_API NativeType : public BaseType
+	class CORE_API NativeType : public Type
 	{
 	protected:
 		Name name;

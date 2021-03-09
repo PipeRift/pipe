@@ -3,7 +3,7 @@
 
 #include "Log.h"
 #include "Reflection/ReflectionTypeTraits.h"
-#include "Reflection/Static/Class.h"
+#include "Reflection/Static/ClassType.h"
 
 
 namespace Rift

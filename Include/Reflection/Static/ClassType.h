@@ -6,7 +6,7 @@
 #include "Events/Function.h"
 #include "Memory/OwnPtr.h"
 #include "Object/BaseObject.h"
-#include "Reflection/Static/Type.h"
+#include "Reflection/Static/DataType.h"
 
 
 namespace Rift

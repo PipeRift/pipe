@@ -7,10 +7,10 @@
 #include "Events/Function.h"
 #include "Memory/Arenas/LinearArena.h"
 #include "Profiler.h"
-#include "Reflection/Static/BaseType.h"
-#include "Reflection/Static/Class.h"
+#include "Reflection/Static/Type.h"
+#include "Reflection/Static/ClassType.h"
 #include "Reflection/Static/EnumType.h"
-#include "Reflection/Static/Struct.h"
+#include "Reflection/Static/StructType.h"
 #include "Reflection/TypeId.h"
 #include "Strings/Name.h"
 #include "Strings/String.h"
@@ -20,9 +20,16 @@
 namespace Rift::Refl
 {
 	template <typename T>
+	struct TStaticEnumInitializer
+	{
+		static TFunction<EnumType*()> onInit;
+	};
+
+
+	template <typename T>
 	struct TTypeInstance
 	{
-		static BaseType* instance;
+		static Type* instance;
 
 
 		static DataType* InitType() requires(IsClass<T>() || IsStruct<T>())
@@ -37,7 +44,7 @@ namespace Rift::Refl
 	};
 
 	template <typename T>
-	inline BaseType* TTypeInstance<T>::instance = TTypeInstance<T>::InitType();
+	inline Type* TTypeInstance<T>::instance = TTypeInstance<T>::InitType();
 
 
 	/////////////////////////////////////////////////////////////////
@@ -52,21 +59,21 @@ namespace Rift::Refl
 		// Memory::BestFitArena dynamicArena{256 * 1024};    // First block is 256KB
 
 		// We map all classes by name in case we need to find them
-		TMap<TypeId, BaseType*> idToTypes{};
+		TMap<TypeId, Type*> idToTypes{};
 
 
 	public:
 		template <typename TType>
-		TType& AddType(TypeId id) requires Derived<TType, BaseType, false>
+		TType& AddType(TypeId id) requires Derived<TType, Type, false>
 		{
 			TType* ptr = new (arena.Allocate(sizeof(TType))) TType();
 			idToTypes.Insert(id, ptr);
 			return *ptr;
 		}
 
-		BaseType* FindType(TypeId id) const
+		Type* FindType(TypeId id) const
 		{
-			if (BaseType* const* foundTypePtr = idToTypes.Find(id))
+			if (Type* const* foundTypePtr = idToTypes.Find(id))
 			{
 				return *foundTypePtr;
 			}
@@ -82,17 +89,17 @@ namespace Rift::Refl
 	};
 
 
-	struct CORE_API BaseTypeBuilder
+	struct CORE_API TypeBuilder
 	{
 	protected:
 		TypeId id;
 		Name name;
-		BaseType* initializedType = nullptr;
+		Type* initializedType = nullptr;
 
 
 	public:
-		BaseTypeBuilder(TypeId id, Name name) : id{id}, name{name} {}
-		virtual ~BaseTypeBuilder() {}
+		TypeBuilder(TypeId id, Name name) : id{id}, name{name} {}
+		virtual ~TypeBuilder() {}
 
 		void Initialize();
 
@@ -106,13 +113,13 @@ namespace Rift::Refl
 		}
 
 	protected:
-		virtual BaseType* Build() = 0;
+		virtual Type* Build() = 0;
 	};
 
 
 	template <typename T, typename Parent, typename TType,
 	    ReflectionTags tags = ReflectionTags::None>
-	struct TTypeBuilder : public BaseTypeBuilder
+	struct TDataTypeBuilder : public TypeBuilder
 	{
 		static constexpr bool hasParent = !std::is_void_v<Parent>;
 		static_assert(!hasParent || Derived<T, Parent, false>, "Type must derive from parent.");
@@ -120,7 +127,7 @@ namespace Rift::Refl
 		static_assert(!(tags & DetailsView), "Only properties can use DetailsView");
 
 	public:
-		TTypeBuilder(Name name) : BaseTypeBuilder(TypeId::Get<T>(), name) {}
+		TDataTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
 
 		template <typename PropertyType, ReflectionTags propertyTags>
 		void AddProperty(Name name, TFunction<PropertyType*(void*)>&& access)
@@ -144,7 +151,7 @@ namespace Rift::Refl
 		}
 
 	protected:
-		BaseType* Build() override
+		Type* Build() override
 		{
 			TType* newType;
 			if constexpr (hasParent)
@@ -171,10 +178,10 @@ namespace Rift::Refl
 	};
 
 	template <typename T, typename Parent, ReflectionTags tags = ReflectionTags::None>
-	struct TClassTypeBuilder : public TTypeBuilder<T, Parent, ClassType, tags>
+	struct TClassTypeBuilder : public TDataTypeBuilder<T, Parent, ClassType, tags>
 	{
 		static_assert(IsClass<T>(), "Type does not inherit Object!");
-		using Super     = TTypeBuilder<T, Parent, ClassType, tags>;
+		using Super     = TDataTypeBuilder<T, Parent, ClassType, tags>;
 		using BuildFunc = TFunction<void(TClassTypeBuilder& builder)>;
 		using Super::GetType;
 
@@ -185,7 +192,7 @@ namespace Rift::Refl
 		TClassTypeBuilder(Name name) : Super(name) {}
 
 	protected:
-		BaseType* Build() override
+		Type* Build() override
 		{
 			auto* type = Super::Build();
 
@@ -207,11 +214,11 @@ namespace Rift::Refl
 
 
 	template <typename T, typename Parent, ReflectionTags tags = ReflectionTags::None>
-	struct TStructTypeBuilder : public TTypeBuilder<T, Parent, StructType, tags>
+	struct TStructTypeBuilder : public TDataTypeBuilder<T, Parent, StructType, tags>
 	{
 		static_assert(IsStruct<T>(), "Type does not inherit Struct!");
 
-		using Super     = TTypeBuilder<T, Parent, StructType, tags>;
+		using Super     = TDataTypeBuilder<T, Parent, StructType, tags>;
 		using BuildFunc = TFunction<void(TStructTypeBuilder& builder)>;
 		using Super::GetType;
 
@@ -222,7 +229,7 @@ namespace Rift::Refl
 		TStructTypeBuilder(Name name) : Super(name) {}
 
 	protected:
-		BaseType* Build() override
+		Type* Build() override
 		{
 			auto* type = Super::Build();
 			if (onBuild)
@@ -239,10 +246,10 @@ namespace Rift::Refl
 	 * Builds enum types during static initialization
 	 */
 	template <typename T>
-	struct TEnumTypeBuilder : public BaseTypeBuilder
+	struct TEnumTypeBuilder : public TypeBuilder
 	{
 	public:
-		TEnumTypeBuilder(Name name) : BaseTypeBuilder(TypeId::Get<T>(), name) {}
+		TEnumTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
 
 		EnumType* GetType() const
 		{
@@ -250,7 +257,7 @@ namespace Rift::Refl
 		}
 
 	protected:
-		BaseType* Build() override
+		Type* Build() override
 		{
 			EnumType& newType = ReflectionRegistry::Get().AddType<EnumType>(GetId());
 
@@ -258,11 +265,5 @@ namespace Rift::Refl
 			newType.name = name;
 			return &newType;
 		}
-	};
-
-	template <typename T>
-	struct TStaticEnumInitializer
-	{
-		static TFunction<EnumType*()> onInit;
 	};
 }    // namespace Rift::Refl

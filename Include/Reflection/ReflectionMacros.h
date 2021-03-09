@@ -5,10 +5,10 @@
 
 #include "Platform/Macros.h"
 #include "Platform/Platform.h"
-#include "Reflection/Static/Class.h"
+#include "Reflection/Static/ClassType.h"
 #include "Reflection/Static/EnumType.h"
 #include "Reflection/Static/ReflectionRegistry.h"
-#include "Reflection/Static/Struct.h"
+#include "Reflection/Static/StructType.h"
 #include "ReflectionTags.h"
 
 

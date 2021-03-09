@@ -3,8 +3,8 @@
 
 #include "PCH.h"
 
+#include "Reflection/Static/DataType.h"
 #include "Reflection/Static/TProperty.h"
-#include "Type.h"
 
 
 namespace Rift::Refl

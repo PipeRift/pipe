@@ -12,7 +12,7 @@ namespace Rift::Refl
 	}
 
 
-	void BaseTypeBuilder::Initialize()
+	void TypeBuilder::Initialize()
 	{
 		if (initializedType)
 		{

@@ -3,7 +3,7 @@
 
 #include "PCH.h"
 
-#include "Reflection/Static/BaseType.h"
+#include "Reflection/Static/Type.h"
 #include "Strings/Name.h"
 
 #include <magic_enum.hpp>
@@ -12,7 +12,7 @@
 namespace Rift::Refl
 {
 	/** Smallest reflection type that contains all basic class or struct data */
-	class CORE_API EnumType : public BaseType
+	class CORE_API EnumType : public Type
 	{
 		template <typename T>
 		friend struct TEnumTypeBuilder;
