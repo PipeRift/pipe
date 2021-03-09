@@ -170,6 +170,7 @@ namespace Rift::Refl
 		static_assert(IsClass<T>(), "Type does not inherit Object!");
 		using Super     = TTypeBuilder<T, Parent, Class, tags>;
 		using BuildFunc = TFunction<void(TClassBuilder& builder)>;
+		using Super::GetType;
 
 		BuildFunc onBuild;
 
@@ -206,6 +207,7 @@ namespace Rift::Refl
 
 		using Super     = TTypeBuilder<T, Parent, Struct, tags>;
 		using BuildFunc = TFunction<void(TStructBuilder& builder)>;
+		using Super::GetType;
 
 		BuildFunc onBuild;
 
