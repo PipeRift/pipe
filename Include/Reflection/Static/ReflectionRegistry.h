@@ -127,15 +127,15 @@ namespace Rift::Refl
 
 			void* ptr = ReflectionRegistry::Get().Allocate(sizeof(TProperty<PropertyType>));
 
-			auto* const property = new (ptr) TProperty<PropertyType>(GetComposeType(),
-			    GetReflectedName<PropertyType>(), name, Move(access), propertyTags);
+			auto* const property = new (ptr) TProperty<PropertyType>(
+			    GetType(), GetReflectedName<PropertyType>(), name, Move(access), propertyTags);
 
-			GetComposeType()->properties.Insert(name, property);
+			GetType()->properties.Insert(name, property);
 		}
 
-		Type* GetComposeType() const
+		TType* GetType() const
 		{
-			return static_cast<Type*>(initializedType);
+			return static_cast<TType*>(initializedType);
 		}
 
 	protected:
@@ -177,11 +177,6 @@ namespace Rift::Refl
 	public:
 		TClassBuilder(Name name) : Super(name) {}
 
-		Class* GetType() const
-		{
-			return static_cast<Class*>(initializedType);
-		}
-
 	protected:
 		BaseType* Build() override
 		{
@@ -217,11 +212,6 @@ namespace Rift::Refl
 
 	public:
 		TStructBuilder(Name name) : Super(name) {}
-
-		Struct* GetType() const
-		{
-			return static_cast<Struct*>(initializedType);
-		}
 
 	protected:
 		BaseType* Build() override
