@@ -30,14 +30,7 @@ namespace Rift::Refl
 
 
 	public:
-		OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(const Ptr<BaseObject>& owner)
-		{
-			if (onCreate)
-			{
-				return onCreate(owner);
-			}
-			return {};
-		}
+		OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(const Ptr<BaseObject>& owner);
 
 		Class* GetParent() const
 		{
