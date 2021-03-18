@@ -8,16 +8,7 @@
 
 namespace Rift
 {
-	namespace Refl
-	{
-		// TODO: Implement property specific flags
-		enum class PropertyTags : u16
-		{
-			None        = 0,
-			DetailsEdit = 1 << 0,
-			DetailsView = 1 << 1
-		};
-	}    // namespace Refl
+	// TODO: Implement type & property specific flags
 	enum class ReflectionTags : u16
 	{
 		None = 0,

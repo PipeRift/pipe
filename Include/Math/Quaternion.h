@@ -4,7 +4,7 @@
 
 #include "Math.h"
 #include "Matrix.h"
-#include "Reflection/ReflectionTypeTraits.h"
+#include "Reflection/Static/NativeType.h"
 
 #include <glm/ext/quaternion_common.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -64,7 +64,7 @@ namespace Rift
 			return {1, 0, 0, 0};
 		}
 	};
-	DECLARE_REFLECTED_TYPE(Quat);
+	REFLECT_NATIVE_TYPE(Quat);
 
 
 	inline Quat Quat::Inverse() const

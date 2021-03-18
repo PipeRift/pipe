@@ -18,4 +18,6 @@ namespace Rift::Refl
 	public:
 		NativeType() = default;
 	};
+
+#define REFLECT_NATIVE_TYPE(type)    // TODO
 }    // namespace Rift::Refl

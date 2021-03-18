@@ -28,8 +28,10 @@ namespace Rift::Refl
 
 
 	public:
-		TProperty(DataType* type, Name typeName, Name name, Access&& access, ReflectionTags tags)
-		    : Property(type, typeName, name, tags)
+		// TODO: Obtain a Type* of the holded type
+		TProperty(
+		    DataType* type, StringView typeName, Name name, Access&& access, ReflectionTags tags)
+		    : Property(type, Name{typeName}, name, tags)
 		    , access(access)
 		{}
 

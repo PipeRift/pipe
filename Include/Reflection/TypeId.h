@@ -6,16 +6,6 @@
 #include "Misc/Hash.h"
 
 
-#undef UNIQUE_FUNCTION_ID
-#if defined(_MSC_VER)
-#	define UNIQUE_FUNCTION_ID __FUNCSIG__
-#else
-#	if defined(__GNUG__)
-#		define UNIQUE_FUNCTION_ID __PRETTY_FUNCTION__
-#	endif
-#endif
-
-
 namespace Rift
 {
 	namespace Refl
@@ -46,6 +36,12 @@ namespace Rift
 				return id == other.id;
 			}
 		};
+
+		inline std::ostream& operator<<(std::ostream& stream, TypeId typeId)
+		{
+			stream << "TypeId(id=" << typeId.GetId() << ")";
+			return stream;
+		}
 	}    // namespace Refl
 
 	template <>

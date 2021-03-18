@@ -7,6 +7,7 @@
 #include "AssetInfo.h"
 #include "AssetManager.h"
 #include "Files/FileSystem.h"
+#include "Strings/FixedString.h"
 #include "Strings/StringView.h"
 #include "TypeTraits.h"
 
@@ -207,5 +208,28 @@ namespace Rift
 		}
 	};
 
-	DEFINE_TEMPLATE_CLASS_TRAITS(TAssetPtr, HasCustomSerialize = true, HasDetailsWidget = true);
+	DEFINE_TEMPLATE_CLASS_TRAITS(TAssetPtr, HasCustomSerialize = true);
+
+
+	template <typename T>
+	inline constexpr bool IsAsset()
+	{
+		// Check if we are dealing with a TAssetPtr
+		if constexpr (HasItemType<T>::value)
+		{
+			return IsSame<TAssetPtr<typename T::ItemType>, T>;
+		}
+		return false;
+	}
+
+
+	template <typename T>
+	constexpr StringView GetTypeName() requires(IsAsset<T>())
+	{
+		constexpr StringView itemName = GetTypeName<T::Itemtype>();
+		constexpr sizet nameSize      = itemName.size() + 11;
+		constexpr FixedString<nameSize> str;
+		fmt::format_to(std::back_inserter(str), TX("TAssetPtr<{}>"), itemName);
+		return str;
+	}
 }    // namespace Rift

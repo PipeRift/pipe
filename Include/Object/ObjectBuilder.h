@@ -2,8 +2,9 @@
 #pragma once
 
 #include "Log.h"
-#include "Reflection/ReflectionTypeTraits.h"
 #include "Reflection/Static/ClassType.h"
+#include "Reflection/ReflectionTraits.h"
+#include "Reflection/TypeName.h"
 
 
 namespace Rift
@@ -29,7 +30,7 @@ namespace Rift
 			if constexpr (std::is_abstract_v<T>)
 			{
 				Log::Error("Tried to create an instance of '{}' which is abstract.",
-				    GetReflectedName<T>().ToString());
+				    GetTypeName<T>());
 				return {};
 			}
 			else

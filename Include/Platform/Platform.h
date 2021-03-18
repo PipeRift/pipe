@@ -87,3 +87,12 @@ namespace Rift
 #	endif
 #	define TX(x) TEXT_PASTE(x)
 #endif
+
+#undef UNIQUE_FUNCTION_ID
+#if defined(_MSC_VER)
+#	define UNIQUE_FUNCTION_ID __FUNCSIG__
+#else
+#	if defined(__GNUG__)
+#		define UNIQUE_FUNCTION_ID __PRETTY_FUNCTION__
+#	endif
+#endif

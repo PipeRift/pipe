@@ -6,7 +6,7 @@
 
 #include "Misc/Crc.h"
 #include "Reflection/ClassTraits.h"
-#include "Reflection/ReflectionTypeTraits.h"
+#include "Reflection/Static/NativeType.h"
 #include "Strings/Name.h"
 
 
@@ -299,7 +299,7 @@ namespace Rift
 	};
 
 	DEFINE_CLASS_TRAITS(Guid, HasCustomSerialize = true);
-	DECLARE_REFLECTED_TYPE(Guid);
+	REFLECT_NATIVE_TYPE(Guid);
 
 	template <>
 	struct Hash<Guid>

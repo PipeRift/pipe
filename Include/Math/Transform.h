@@ -8,7 +8,7 @@
 #include "Matrix.h"
 #include "Quaternion.h"
 #include "Reflection/ClassTraits.h"
-#include "Reflection/ReflectionTypeTraits.h"
+#include "Reflection/Static/NativeType.h"
 #include "Rotator.h"
 #include "Strings/StringView.h"
 #include "Vector.h"
@@ -115,7 +115,7 @@ namespace Rift
 		}
 	};
 
-	DEFINE_CLASS_TRAITS(Transform, HasCustomSerialize = true, HasDetailsWidget = true);
+	DEFINE_CLASS_TRAITS(Transform, HasCustomSerialize = true);
 
-	DECLARE_REFLECTED_TYPE(Transform);
+	REFLECT_NATIVE_TYPE(Transform);
 }    // namespace Rift

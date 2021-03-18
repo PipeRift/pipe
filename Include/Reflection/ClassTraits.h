@@ -14,7 +14,6 @@ namespace Rift
 		{
 			HasCustomSerialize = false,
 			HasGlobalSerialize = false,
-			HasDetailsWidget   = false,
 			HasPostSerialize   = false
 		};
 	};

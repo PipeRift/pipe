@@ -3,15 +3,16 @@
 
 #include "PCH.h"
 
-#include "Containers/Map.h"
 #include "Events/Function.h"
-#include "Memory/Arenas/LinearArena.h"
 #include "Profiler.h"
-#include "Reflection/Static/Type.h"
+#include "Reflection/Registry/Registry.h"
+#include "Reflection/Registry/TypeBuilder.h"
 #include "Reflection/Static/ClassType.h"
 #include "Reflection/Static/EnumType.h"
 #include "Reflection/Static/StructType.h"
+#include "Reflection/Static/Type.h"
 #include "Reflection/TypeId.h"
+#include "Reflection/TypeName.h"
 #include "Strings/Name.h"
 #include "Strings/String.h"
 #include "TypeTraits.h"
@@ -19,13 +20,6 @@
 
 namespace Rift::Refl
 {
-	template <typename T>
-	struct TStaticEnumInitializer
-	{
-		static TFunction<EnumType*()> onInit;
-	};
-
-
 	template <typename T>
 	struct TTypeInstance
 	{
@@ -48,74 +42,7 @@ namespace Rift::Refl
 
 
 	/////////////////////////////////////////////////////////////////
-	//  Type Builders & Registry
-
-	class CORE_API ReflectionRegistry
-	{
-		// Contains all compiled reflection types linearly in memory
-		Memory::LinearArena arena{256 * 1024};    // First block is 256KB
-
-		// Contains all runtime/data defined types in memory
-		// Memory::BestFitArena dynamicArena{256 * 1024};    // First block is 256KB
-
-		// We map all classes by name in case we need to find them
-		TMap<TypeId, Type*> idToTypes{};
-
-
-	public:
-		template <typename TType>
-		TType& AddType(TypeId id) requires Derived<TType, Type, false>
-		{
-			TType* ptr = new (arena.Allocate(sizeof(TType))) TType();
-			idToTypes.Insert(id, ptr);
-			return *ptr;
-		}
-
-		Type* FindType(TypeId id) const
-		{
-			if (Type* const* foundTypePtr = idToTypes.Find(id))
-			{
-				return *foundTypePtr;
-			}
-			return nullptr;
-		}
-
-		void* Allocate(sizet size)
-		{
-			return arena.Allocate(size);
-		}
-
-		static ReflectionRegistry& Get();
-	};
-
-
-	struct CORE_API TypeBuilder
-	{
-	protected:
-		TypeId id;
-		Name name;
-		Type* initializedType = nullptr;
-
-
-	public:
-		TypeBuilder(TypeId id, Name name) : id{id}, name{name} {}
-		virtual ~TypeBuilder() {}
-
-		void Initialize();
-
-		TypeId GetId() const
-		{
-			return id;
-		}
-		Name GetName() const
-		{
-			return name;
-		}
-
-	protected:
-		virtual Type* Build() = 0;
-	};
-
+	//  Type Builders
 
 	template <typename T, typename Parent, typename TType,
 	    ReflectionTags tags = ReflectionTags::None>
@@ -127,20 +54,20 @@ namespace Rift::Refl
 		static_assert(!(tags & DetailsView), "Only properties can use DetailsView");
 
 	public:
+		TDataTypeBuilder() = default;
 		TDataTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
 
 		template <typename PropertyType, ReflectionTags propertyTags>
 		void AddProperty(Name name, TFunction<PropertyType*(void*)>&& access)
 		{
-			static_assert(
-			    Rift::IsReflected<PropertyType>(), "PropertyType is not a valid reflected type.");
+			static_assert(HasType<PropertyType>(), "PropertyType is not a reflected type.");
 			static_assert(!(propertyTags & Abstract), "Properties can't be Abstract");
 
 
 			void* ptr = ReflectionRegistry::Get().Allocate(sizeof(TProperty<PropertyType>));
 
 			auto* const property = new (ptr) TProperty<PropertyType>(
-			    GetType(), GetReflectedName<PropertyType>(), name, Move(access), propertyTags);
+			    GetType(), GetTypeName<PropertyType>(), name, Move(access), propertyTags);
 
 			GetType()->properties.Insert(name, property);
 		}
@@ -189,6 +116,7 @@ namespace Rift::Refl
 
 
 	public:
+		TClassTypeBuilder() = default;
 		TClassTypeBuilder(Name name) : Super(name) {}
 
 	protected:
@@ -226,6 +154,7 @@ namespace Rift::Refl
 
 
 	public:
+		TStructTypeBuilder() = default;
 		TStructTypeBuilder(Name name) : Super(name) {}
 
 	protected:
@@ -246,10 +175,11 @@ namespace Rift::Refl
 	 * Builds enum types during static initialization
 	 */
 	template <typename T>
-	struct TEnumTypeBuilder : public TypeBuilder
+	struct TNativeTypeBuilder : public TypeBuilder
 	{
 	public:
-		TEnumTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
+		TNativeTypeBuilder() = default;
+		TNativeTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
 
 		EnumType* GetType() const
 		{
@@ -259,7 +189,7 @@ namespace Rift::Refl
 	protected:
 		Type* Build() override
 		{
-			EnumType& newType = ReflectionRegistry::Get().AddType<EnumType>(GetId());
+			NativeType& newType = ReflectionRegistry::Get().AddType<NativeType>(GetId());
 
 			newType.id   = id;
 			newType.name = name;

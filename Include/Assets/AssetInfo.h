@@ -5,6 +5,7 @@
 
 #include "CoreTypes.h"
 #include "Files/FileSystem.h"
+#include "Reflection/Static/NativeType.h"
 #include "Strings/Name.h"
 #include "Strings/StringView.h"
 #include "TypeTraits.h"
@@ -59,7 +60,6 @@ namespace Rift
 		}
 	};
 
-	DEFINE_CLASS_TRAITS(AssetInfo, HasCustomSerialize = true, HasDetailsWidget = true);
-
-	DECLARE_REFLECTED_TYPE(AssetInfo);
+	DEFINE_CLASS_TRAITS(AssetInfo, HasCustomSerialize = true);
+	REFLECT_NATIVE_TYPE(AssetInfo);
 }    // namespace Rift

@@ -10,6 +10,7 @@
 #include "Misc/Optional.h"
 #include "Misc/Utility.h"
 #include "Platform/Platform.h"
+#include "Reflection/TypeName.h"
 #include "Strings/StringView.h"
 
 #include <fmt/chrono.h>
@@ -229,4 +230,7 @@ namespace Rift
 			return GetStringHash(str);
 		}
 	};
+
+
+	OVERRIDE_TYPE_NAME(String)
 }    // namespace Rift

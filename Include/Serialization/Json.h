@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Memory/STLAllocator.h"
-#include "Reflection/ReflectionTypeTraits.h"
+#include "Reflection/Static/NativeType.h"
 #include "Strings/Name.h"
 #include "Strings/String.h"
 
@@ -16,5 +16,5 @@ namespace Rift
 	using Json = nlohmann::basic_json<std::map, std::vector, String, bool, i64, u64, double,
 	    STLDefaultAllocator>;
 
-	DECLARE_REFLECTED_TYPE(Json);
+	REFLECT_NATIVE_TYPE(Json);
 }    // namespace Rift

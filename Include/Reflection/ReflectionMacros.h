@@ -165,7 +165,8 @@ public:
                                                                                               \
 	static void __ReflReflectProperty(TypeBuilder& builder, Rift::Refl::MetaCounter<id_name>) \
 	{                                                                                         \
-		constexpr Rift::ReflectionTags tags = Rift::ReflectionTagsInitializer<inTags>::value; \
+		static constexpr Rift::ReflectionTags tags =                                          \
+		    Rift::ReflectionTagsInitializer<inTags>::value;                                   \
 		builder.AddProperty<type, tags>(TX(#name), [](void* instance) {                       \
 			return &static_cast<ThisType*>(instance)->name;                                   \
 		});                                                                                   \
@@ -176,7 +177,8 @@ public:
                                                                                               \
 	void __ReflSerializeProperty(Rift::Archive& ar, Rift::Refl::MetaCounter<id_name>)         \
 	{                                                                                         \
-		constexpr Rift::ReflectionTags tags = Rift::ReflectionTagsInitializer<inTags>::value; \
+		static constexpr Rift::ReflectionTags tags =                                          \
+		    Rift::ReflectionTagsInitializer<inTags>::value;                                   \
                                                                                               \
 		if constexpr (!(tags & Transient))                                                    \
 		{ /* Don't serialize property if Transient */                                         \
@@ -201,9 +203,14 @@ public:
 
 #define ENUM(type)                                                             \
 	template <>                                                                \
-	inline Rift::TFunction<Rift::Refl::EnumType*()>                            \
-	    Rift::Refl::TStaticEnumInitializer<type>::onInit{[]() {                \
+	struct Rift::Refl::TStaticEnumInitializer<type>                            \
+	{                                                                          \
+		static constexpr bool reflected = true;                                \
+		static const Rift::TFunction<Rift::Refl::EnumType*()> onInit;          \
+	};                                                                         \
+	inline const Rift::TFunction<Rift::Refl::EnumType*()>                      \
+	    Rift::Refl::TStaticEnumInitializer<type>::onInit = []() {              \
 		    Rift::Refl::TEnumTypeBuilder<type> builder{Rift::Name{TX(#type)}}; \
 		    builder.Initialize();                                              \
 		    return builder.GetType();                                          \
-	    }};
+	    };

@@ -5,7 +5,7 @@
 #include "PCH.h"
 
 #include "Object/BaseObject.h"
-#include "Reflection/ReflectionTypeTraits.h"
+#include "Reflection/ReflectionTraits.h"
 #include "TypeTraits.h"
 
 

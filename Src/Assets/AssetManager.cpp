@@ -71,6 +71,7 @@ namespace Rift
 
 			// Get asset type from json
 			const String typeStr = type.get<String>();
+
 			data.type            = GetType<AssetData>()->FindChild(typeStr);
 			if (!data.type)
 			{

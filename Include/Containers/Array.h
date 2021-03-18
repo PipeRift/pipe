@@ -7,6 +7,7 @@
 #include "Math/Sorting.h"
 #include "Memory/STLAllocator.h"
 #include "Platform/Platform.h"
+#include "TypeTraits.h"
 
 #include <algorithm>
 #include <cassert>
@@ -447,5 +448,16 @@ namespace Rift
 		{
 			std::iter_swap(vector.begin() + firstIndex, vector.begin() + secondIndex);
 		}
+	}
+
+	template <typename T>
+	inline constexpr bool IsArray()
+	{
+		// Check if we are dealing with a TArray
+		if constexpr (HasItemType<T>::value)
+		{
+			return IsSame<TArray<typename T::ItemType>, T>;
+		}
+		return false;
 	}
 }    // namespace Rift
