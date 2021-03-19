@@ -688,14 +688,17 @@ namespace Rift
 	template <typename TChar, sizet N>
 	BasicFixedString(const TChar (&)[N]) -> BasicFixedString<TChar, N - 1>;
 
-
 	template <sizet N>
-	struct FixedString : BasicFixedString<TCHAR, N>
+	struct FixedString : public BasicFixedString<TCHAR, N>
 	{
 		using BasicFixedString<TCHAR, N>::BasicFixedString;
+
+		constexpr FixedString(const TCHAR (&array)[N + 1]) noexcept
+		    : BasicFixedString<TCHAR, N>(array)
+		{}
 	};
 	template <sizet N>
-	FixedString(const char (&)[N]) -> FixedString<N - 1>;
+	FixedString(const TCHAR (&)[N]) -> FixedString<N - 1>;
 
 
 	template <typename TChar, sizet N, sizet M, typename TTraits>

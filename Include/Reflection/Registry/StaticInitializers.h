@@ -4,24 +4,30 @@
 #include "PCH.h"
 
 #include "Events/Function.h"
-#include "Reflection/Registry/Registry.h"
-#include "Reflection/Registry/StaticInitializers.h"
-#include "Reflection/Registry/TypeBuilder.h"
-#include "Reflection/Static/EnumType.h"
-#include "Reflection/TypeId.h"
-#include "Strings/Name.h"
-#include "TypeTraits.h"
 
 
 namespace Rift::Refl
 {
+	class EnumType;
+	class NativeType;
+
+
 	template <typename T>
 	struct TStaticEnumInitializer
 	{
-		static constexpr bool reflected = false;
+		static constexpr bool enabled = false;
 		static const TFunction<EnumType*()> onInit;
 	};
 	template <typename T>
 	inline const TFunction<EnumType*()> TStaticEnumInitializer<T>::onInit{};
 
+
+	template <typename T>
+	struct TStaticNativeInitializer
+	{
+		static constexpr bool enabled = false;
+		static const TFunction<NativeType*()> onInit;
+	};
+	template <typename T>
+	inline const TFunction<NativeType*()> TStaticNativeInitializer<T>::onInit{};
 }    // namespace Rift::Refl

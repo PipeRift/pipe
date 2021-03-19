@@ -5,6 +5,7 @@
 
 #include "Events/Function.h"
 #include "Reflection/Registry/Registry.h"
+#include "Reflection/Registry/StaticInitializers.h"
 #include "Reflection/Registry/TypeBuilder.h"
 #include "Reflection/Static/EnumType.h"
 #include "Reflection/TypeId.h"
@@ -12,18 +13,23 @@
 #include "TypeTraits.h"
 
 
+#define ENUM(type)                                                             \
+	template <>                                                                \
+	struct Rift::Refl::TStaticEnumInitializer<type>                            \
+	{                                                                          \
+		static constexpr bool enabled = true;                                  \
+		static const Rift::TFunction<Rift::Refl::EnumType*()> onInit;          \
+	};                                                                         \
+	inline const Rift::TFunction<Rift::Refl::EnumType*()>                      \
+	    Rift::Refl::TStaticEnumInitializer<type>::onInit = []() {              \
+		    Rift::Refl::TEnumTypeBuilder<type> builder{Rift::Name{TX(#type)}}; \
+		    builder.Initialize();                                              \
+		    return builder.GetType();                                          \
+	    };
+
+
 namespace Rift::Refl
 {
-	template <typename T>
-	struct TStaticEnumInitializer
-	{
-		static constexpr bool reflected = false;
-		static const TFunction<EnumType*()> onInit;
-	};
-	template <typename T>
-	inline const TFunction<EnumType*()> TStaticEnumInitializer<T>::onInit{};
-
-
 	/**
 	 * Enum Type Builder
 	 * Builds enum types during static initialization

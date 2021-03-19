@@ -31,19 +31,25 @@ namespace Rift
 
 
 	template <typename T>
-	inline constexpr StringView GetTypeName()
+	inline constexpr StringView GetFullTypeName()
 	{
 		const StringView raw = Refl::TypeName::GetRaw<T>();
 		return {raw.data() + Refl::TypeName::prefixLength,
 		    raw.size() - Refl::TypeName::prefixLength - Refl::TypeName::suffixLength};
 	}
 
+	template <typename T>
+	inline constexpr StringView GetTypeName()
+	{
+		return GetFullTypeName<T>();
+	}
 
-#define OVERRIDE_TYPE_NAME(type)                    \
-	template <>                                     \
-	inline constexpr StringView GetTypeName<type>() \
-	{                                               \
-		return TX(#type);                           \
+
+#define OVERRIDE_TYPE_NAME(type)                        \
+	template <>                                         \
+	inline constexpr StringView GetFullTypeName<type>() \
+	{                                                   \
+		return TX(#type);                               \
 	}
 
 	OVERRIDE_TYPE_NAME(u8)

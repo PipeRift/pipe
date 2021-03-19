@@ -62,16 +62,20 @@ go_bandit([]() {
 		});
 
 		it("Can get TAssetPtr names", [&]() {
-			AssertThat(GetTypeName<TAssetPtr<AssetData>>(), Equals("TAssetPtr<AssetData>"));
+			AssertThat(GetTypeName<TAssetPtr<AssetData>>(), Equals("TAssetPtr"));
+			AssertThat(GetFullTypeName<TAssetPtr<AssetData>>(), Equals("TAssetPtr<AssetData>"));
 		});
 
 		describe("Containers", []() {
 			it("Can get TArray names", [&]() {
-				AssertThat(GetTypeName<TArray<bool>>(), Equals("TArray<bool>"));
+				AssertThat(GetTypeName<TArray<bool>>(), Equals("TArray"));
+				AssertThat(GetFullTypeName<TArray<bool>>(), Equals("TArray<bool>"));
 			});
 
 			it("Can get TMap names", [&]() {
-				AssertThat(GetTypeName<TMap<u8, bool>>(), Equals("TMap<u8, bool>"));
+				// AssertThat(GetTypeName<TMap<u8, bool>>(), Equals("TMap"));
+				// AssertThat(GetFullTypeName<TMap<u8, bool>>(), Equals("TMap<u8, bool>"));
 			});
 		});
 	});
+});

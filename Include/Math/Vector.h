@@ -5,7 +5,7 @@
 #include "PCH.h"
 
 #include "Math.h"
-#include "Reflection/Static/NativeType.h"
+#include "Reflection/Registry/NativeTypeBuilder.h"
 #include "Strings/Name.h"
 #include "glm/fwd.hpp"
 

@@ -14,7 +14,6 @@
 #include <functional>
 #include <vector>
 
-
 namespace Rift
 {
 	constexpr i32 NO_INDEX = -1;
@@ -448,16 +447,5 @@ namespace Rift
 		{
 			std::iter_swap(vector.begin() + firstIndex, vector.begin() + secondIndex);
 		}
-	}
-
-	template <typename T>
-	inline constexpr bool IsArray()
-	{
-		// Check if we are dealing with a TArray
-		if constexpr (HasItemType<T>::value)
-		{
-			return IsSame<TArray<typename T::ItemType>, T>;
-		}
-		return false;
 	}
 }    // namespace Rift

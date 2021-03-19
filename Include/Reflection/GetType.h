@@ -3,7 +3,9 @@
 
 #include "PCH.h"
 
+#include "Reflection/HasType.h"
 #include "Reflection/ReflectionTraits.h"
+#include "Reflection/Registry/TypeInstance.h"
 
 
 namespace Rift

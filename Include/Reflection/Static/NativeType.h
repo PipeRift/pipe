@@ -12,12 +12,13 @@ namespace Rift::Refl
 	/** Smallest reflection type that contains all basic class or struct data */
 	class CORE_API NativeType : public Type
 	{
+		template <typename T>
+		friend struct TNativeTypeBuilder;
+
 	protected:
 		Name name;
 
 	public:
 		NativeType() = default;
 	};
-
-#define REFLECT_NATIVE_TYPE(type)    // TODO
 }    // namespace Rift::Refl

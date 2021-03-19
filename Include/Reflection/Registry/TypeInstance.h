@@ -3,6 +3,8 @@
 
 #include "PCH.h"
 
+#include "Reflection/Static/DataType.h"
+#include "Reflection/Static/EnumType.h"
 #include "Reflection/Static/Type.h"
 
 
@@ -22,6 +24,11 @@ namespace Rift::Refl
 		static EnumType* InitType() requires(IsEnum<T>())
 		{
 			return TStaticEnumInitializer<T>::onInit();
+		}
+
+		static NativeType* InitType() requires(IsNative<T>())
+		{
+			return TStaticNativeInitializer<T>::onInit();
 		}
 	};
 

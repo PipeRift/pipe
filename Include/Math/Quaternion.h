@@ -4,7 +4,7 @@
 
 #include "Math.h"
 #include "Matrix.h"
-#include "Reflection/Static/NativeType.h"
+#include "Reflection/Registry/NativeTypeBuilder.h"
 
 #include <glm/ext/quaternion_common.hpp>
 #include <glm/gtx/quaternion.hpp>

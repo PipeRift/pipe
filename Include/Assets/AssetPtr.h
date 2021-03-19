@@ -7,9 +7,11 @@
 #include "AssetInfo.h"
 #include "AssetManager.h"
 #include "Files/FileSystem.h"
+#include "Reflection/TypeName.h"
 #include "Strings/FixedString.h"
 #include "Strings/StringView.h"
 #include "TypeTraits.h"
+
 
 
 namespace Rift
@@ -222,14 +224,24 @@ namespace Rift
 		return false;
 	}
 
+	template <typename T>
+	constexpr bool HasType() requires(IsAsset<T>())
+	{
+		return HasType<typename T::ItemType>();
+	}
+
+	template <typename T>
+	constexpr StringView GetFullTypeName() requires(IsAsset<T>())
+	{
+		constexpr auto preffix        = FixedString("TAssetPtr<");
+		constexpr auto suffix         = FixedString(">");
+		constexpr StringView itemName = GetTypeName<typename T::ItemType>();
+		return preffix + *itemName.data() + suffix;
+	}
 
 	template <typename T>
 	constexpr StringView GetTypeName() requires(IsAsset<T>())
 	{
-		constexpr StringView itemName = GetTypeName<T::Itemtype>();
-		constexpr sizet nameSize      = itemName.size() + 11;
-		constexpr FixedString<nameSize> str;
-		fmt::format_to(std::back_inserter(str), TX("TAssetPtr<{}>"), itemName);
-		return str;
+		return "TAssetPtr";
 	}
 }    // namespace Rift

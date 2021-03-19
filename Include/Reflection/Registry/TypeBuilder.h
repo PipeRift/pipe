@@ -4,13 +4,15 @@
 #include "PCH.h"
 
 #include "Reflection/Static/Type.h"
-#include "Reflection/TypeId.h"
-#include "Strings/Name.h"
 #include "TypeTraits.h"
+#include "Strings/Name.h"
 
 
 namespace Rift::Refl
 {
+	struct TypeId;
+
+
 	struct CORE_API TypeBuilder
 	{
 	protected:
@@ -21,19 +23,13 @@ namespace Rift::Refl
 
 	public:
 		TypeBuilder() = default;
-		TypeBuilder(TypeId id, Name name) : id{id}, name{name} {}
+		TypeBuilder(TypeId id, Name name);
 		virtual ~TypeBuilder() {}
 
 		void Initialize();
 
-		TypeId GetId() const
-		{
-			return id;
-		}
-		Name GetName() const
-		{
-			return name;
-		}
+		TypeId GetId() const;
+		Name GetName() const;
 
 	protected:
 		virtual Type* Build() = 0;

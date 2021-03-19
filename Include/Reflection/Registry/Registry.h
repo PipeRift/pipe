@@ -44,7 +44,7 @@ namespace Rift::Refl
 
 		template <typename TType>
 		void AddProperty()
-		{}
+		{}    // TODO
 
 		CORE_API void* Allocate(sizet size)
 		{

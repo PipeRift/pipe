@@ -6,7 +6,7 @@
 
 #include "Misc/Crc.h"
 #include "Reflection/ClassTraits.h"
-#include "Reflection/Static/NativeType.h"
+#include "Reflection/Registry/NativeTypeBuilder.h"
 #include "Strings/Name.h"
 
 

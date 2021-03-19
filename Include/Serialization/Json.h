@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Memory/STLAllocator.h"
-#include "Reflection/Static/NativeType.h"
+#include "Reflection/Registry/NativeTypeBuilder.h"
 #include "Strings/Name.h"
 #include "Strings/String.h"
 
