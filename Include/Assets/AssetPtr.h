@@ -230,13 +230,23 @@ namespace Rift
 		return HasType<typename T::ItemType>();
 	}
 
+
+	// Contains an static fixed string with the name of a TAssetPtr<T>
+	template <typename ItemType>
+	struct StaticAssetPtrName
+	{
+		static constexpr auto preffix  = FixedString("TAssetPtr<");
+		static constexpr auto suffix   = FixedString(">");
+		static constexpr auto itemName = GetTypeName<ItemType>();
+		static constexpr FixedString<itemName.size()> fixedItemName{itemName};
+
+		static constexpr auto name = preffix + fixedItemName + suffix;
+	};
+
 	template <typename T>
 	constexpr StringView GetFullTypeName() requires(IsAsset<T>())
 	{
-		constexpr auto preffix        = FixedString("TAssetPtr<");
-		constexpr auto suffix         = FixedString(">");
-		constexpr StringView itemName = GetTypeName<typename T::ItemType>();
-		return preffix + *itemName.data() + suffix;
+		return StaticAssetPtrName<typename T::ItemType>::name;
 	}
 
 	template <typename T>

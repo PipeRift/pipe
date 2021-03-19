@@ -2,21 +2,15 @@
 #pragma once
 
 #include "Containers/Array.h"
+#include "Containers/Map.h"
 #include "Object/BaseObject.h"
 #include "Reflection/Registry/TypeBuilder.h"
 #include "TypeTraits.h"
 
 
-
 namespace Rift
 {
 	struct Struct;
-
-	template <typename T>
-	inline constexpr bool IsEnum()
-	{
-		return std::is_enum<T>::value;
-	}
 
 	template <typename T>
 	inline constexpr bool IsStruct()
@@ -37,6 +31,18 @@ namespace Rift
 		if constexpr (HasItemType<T>::value)
 		{
 			return IsSame<TArray<typename T::ItemType>, T>;
+		}
+		return false;
+	}
+
+	template <typename T>
+	inline constexpr bool IsMap()
+	{
+		// Check if we are dealing with a TAssetPtr
+		if constexpr (HasKeyType<T>::value && HasValueType<T>::value)
+		{
+			return IsSame<
+			    TMap<typename T::KeyType, typename T::ValueType, typename T::AllocatorType>, T>;
 		}
 		return false;
 	}

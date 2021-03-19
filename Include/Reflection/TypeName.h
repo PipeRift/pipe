@@ -52,14 +52,4 @@ namespace Rift
 		return TX(#type);                               \
 	}
 
-	OVERRIDE_TYPE_NAME(u8)
-	OVERRIDE_TYPE_NAME(u16)
-	OVERRIDE_TYPE_NAME(u32)
-	OVERRIDE_TYPE_NAME(u64)
-	OVERRIDE_TYPE_NAME(i8)
-	OVERRIDE_TYPE_NAME(i16)
-	OVERRIDE_TYPE_NAME(i32)
-	OVERRIDE_TYPE_NAME(i64)
-	OVERRIDE_TYPE_NAME(TCHAR)
-	OVERRIDE_TYPE_NAME(StringView)
 }    // namespace Rift

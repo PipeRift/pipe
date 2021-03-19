@@ -52,13 +52,6 @@ namespace Rift
 		return Refl::TStaticEnumInitializer<T>::enabled;
 	}
 
-
-	template <typename T>
-	inline constexpr bool IsNative()
-	{
-		return Refl::TStaticNativeInitializer<T>::enabled;
-	}
-
 	template <typename T>
 	constexpr bool HasType() requires(IsNative<T>())
 	{

@@ -9,7 +9,6 @@
 #include "Misc/Hash.h"
 #include "Misc/Utility.h"
 #include "Platform/Platform.h"
-#include "Reflection/TypeName.h"
 #include "Strings/FixedString.h"
 #include "Strings/StringView.h"
 
@@ -32,11 +31,11 @@ namespace Rift
 		template <typename OtherKey, typename OtherValue, typename OtherAllocator>
 		friend class TMap;
 
-		using KeyType     = Key;
-		using ValueType   = Value;
+		using KeyType       = Key;
+		using ValueType     = Value;
 		using AllocatorType = Allocator;
-		using HashMapType = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>,
-		    std::equal_to<KeyType>, STLAllocator<std::pair<Key, Value>, Allocator>>;
+		using HashMapType   = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>,
+            std::equal_to<KeyType>, STLAllocator<std::pair<Key, Value>, Allocator>>;
 
 		using Iterator      = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;
@@ -273,59 +272,4 @@ namespace Rift
 			map = Move(other.map);
 		}
 	};
-
-
-	template <typename T>
-	struct HasKeyType
-	{
-	private:
-		template <typename V>
-		static void Impl(decltype(typename V::KeyType(), int()));
-		template <typename V>
-		static bool Impl(char);
-
-	public:
-		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
-	};
-
-	template <typename T>
-	struct HasValueType
-	{
-	private:
-		template <typename V>
-		static void Impl(decltype(typename V::ValueType(), int()));
-		template <typename V>
-		static bool Impl(char);
-
-	public:
-		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
-	};
-
-
-	template <typename T>
-	inline constexpr bool IsMap()
-	{
-		// Check if we are dealing with a TAssetPtr
-		if constexpr (HasKeyType<T>::value && HasValueType<T>::value)
-		{
-			return IsSame<
-			    TMap<typename T::KeyType, typename T::ValueType, typename T::AllocatorType>, T>;
-		}
-		return false;
-	}
-
-	template <typename T>
-	constexpr StringView GetFullTypeName() requires(IsMap<T>())
-	{
-		constexpr auto preffix        = FixedString("TMap<");
-		constexpr auto suffix         = FixedString(">");
-		constexpr StringView itemName = GetTypeName<typename T::ItemType>();
-		return preffix + *itemName.data() + suffix;
-	}
-
-	template <typename T>
-	constexpr StringView GetTypeName() requires(IsMap<T>())
-	{
-		return "TMap";
-	}
 }    // namespace Rift

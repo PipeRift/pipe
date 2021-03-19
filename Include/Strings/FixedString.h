@@ -693,10 +693,17 @@ namespace Rift
 	{
 		using BasicFixedString<TCHAR, N>::BasicFixedString;
 
+		constexpr FixedString() noexcept : BasicFixedString<TCHAR, N>() {}
 		constexpr FixedString(const TCHAR (&array)[N + 1]) noexcept
 		    : BasicFixedString<TCHAR, N>(array)
 		{}
+
+		constexpr FixedString(string_view_type str)
+		{
+			Details::copy(str.begin(), str.end(), begin());
+		}
 	};
+
 	template <sizet N>
 	FixedString(const TCHAR (&)[N]) -> FixedString<N - 1>;
 

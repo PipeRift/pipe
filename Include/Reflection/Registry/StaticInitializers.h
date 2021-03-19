@@ -6,28 +6,46 @@
 #include "Events/Function.h"
 
 
-namespace Rift::Refl
+namespace Rift
 {
-	class EnumType;
-	class NativeType;
-
-
-	template <typename T>
-	struct TStaticEnumInitializer
+	namespace Refl
 	{
-		static constexpr bool enabled = false;
-		static const TFunction<EnumType*()> onInit;
-	};
-	template <typename T>
-	inline const TFunction<EnumType*()> TStaticEnumInitializer<T>::onInit{};
+		class EnumType;
+		class NativeType;
+
+
+		template <typename T>
+		struct TStaticEnumInitializer
+		{
+			static constexpr bool enabled = false;
+			static const TFunction<EnumType*()> onInit;
+		};
+
+		template <typename T>
+		inline const TFunction<EnumType*()> TStaticEnumInitializer<T>::onInit{};
+
+
+		template <typename T>
+		struct TStaticNativeInitializer
+		{
+			static constexpr bool enabled = false;
+			static const TFunction<NativeType*()> onInit;
+		};
+
+		template <typename T>
+		inline const TFunction<NativeType*()> TStaticNativeInitializer<T>::onInit{};
+	}    // namespace Refl
 
 
 	template <typename T>
-	struct TStaticNativeInitializer
+	inline constexpr bool IsEnum()
 	{
-		static constexpr bool enabled = false;
-		static const TFunction<NativeType*()> onInit;
-	};
+		return Refl::TStaticEnumInitializer<T>::enabled;
+	}
+
 	template <typename T>
-	inline const TFunction<NativeType*()> TStaticNativeInitializer<T>::onInit{};
-}    // namespace Rift::Refl
+	inline constexpr bool IsNative()
+	{
+		return Refl::TStaticNativeInitializer<T>::enabled;
+	}
+}    // namespace Rift

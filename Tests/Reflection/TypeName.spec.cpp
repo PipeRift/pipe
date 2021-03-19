@@ -3,6 +3,7 @@
 #include <Assets/AssetPtr.h>
 #include <Containers/Array.h>
 #include <Containers/Map.h>
+#include <Reflection/PredefinedTypes.h>
 #include <Reflection/TypeName.h>
 #include <Strings/String.h>
 #include <bandit/bandit.h>
@@ -63,7 +64,8 @@ go_bandit([]() {
 
 		it("Can get TAssetPtr names", [&]() {
 			AssertThat(GetTypeName<TAssetPtr<AssetData>>(), Equals("TAssetPtr"));
-			AssertThat(GetFullTypeName<TAssetPtr<AssetData>>(), Equals("TAssetPtr<AssetData>"));
+			AssertThat(
+			    GetFullTypeName<TAssetPtr<AssetData>>(), Equals("TAssetPtr<Rift::AssetData>"));
 		});
 
 		describe("Containers", []() {
@@ -73,8 +75,11 @@ go_bandit([]() {
 			});
 
 			it("Can get TMap names", [&]() {
-				// AssertThat(GetTypeName<TMap<u8, bool>>(), Equals("TMap"));
-				// AssertThat(GetFullTypeName<TMap<u8, bool>>(), Equals("TMap<u8, bool>"));
+				auto name = GetTypeName<TMap<u8, bool>>();
+				AssertThat(name, Equals("TMap"));
+
+				auto fullName = GetFullTypeName<TMap<u8, bool>>();
+				AssertThat(fullName, Equals("TMap<u8, bool>"));
 			});
 		});
 	});

@@ -3,8 +3,7 @@
 
 #include "PCH.h"
 
-#include "Reflection/Static/DataType.h"
-#include "Reflection/Static/EnumType.h"
+#include "Reflection/Registry/StaticInitializers.h"
 #include "Reflection/Static/Type.h"
 
 
@@ -16,17 +15,17 @@ namespace Rift::Refl
 		static Type* instance;
 
 
-		static DataType* InitType() requires(IsClass<T>() || IsStruct<T>())
+		static Type* InitType() requires(IsClass<T>() || IsStruct<T>())
 		{
 			return T::InitType();
 		}
 
-		static EnumType* InitType() requires(IsEnum<T>())
+		static Type* InitType() requires(IsEnum<T>())
 		{
 			return TStaticEnumInitializer<T>::onInit();
 		}
 
-		static NativeType* InitType() requires(IsNative<T>())
+		static Type* InitType() requires(IsNative<T>())
 		{
 			return TStaticNativeInitializer<T>::onInit();
 		}
@@ -34,4 +33,12 @@ namespace Rift::Refl
 
 	template <typename T>
 	inline Type* TTypeInstance<T>::instance = TTypeInstance<T>::InitType();
+
+
+	template <typename T>
+	Refl::Type* InternalGetType()
+	{
+		static_assert(HasType<T>(), "T is not reflected and doesnt have a type.");
+		return TTypeInstance<T>::instance;
+	}
 }    // namespace Rift::Refl

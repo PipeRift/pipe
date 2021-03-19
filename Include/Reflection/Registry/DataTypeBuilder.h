@@ -56,7 +56,7 @@ namespace Rift::Refl
 			if constexpr (hasParent)
 			{
 				// Parent gets initialized before anything else
-				DataType* parent = TTypeInstance<Parent>::InitType();
+				DataType* parent = (DataType*) TTypeInstance<Parent>::InitType();
 				assert(parent);
 
 				newType = &ReflectionRegistry::Get().AddType<TType>(GetId());

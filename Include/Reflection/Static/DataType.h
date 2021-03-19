@@ -7,6 +7,8 @@
 #include "Containers/Map.h"
 #include "CoreTypes.h"
 #include "Reflection/ReflectionTags.h"
+#include "Reflection/ReflectionTraits.h"
+#include "Reflection/Registry/TypeInstance.h"
 #include "Reflection/Static/Property.h"
 #include "Reflection/Static/Type.h"
 #include "Strings/String.h"
@@ -66,7 +68,9 @@ namespace Rift::Refl
 		template <typename T>
 		bool IsChildOf() const
 		{
-			return IsChildOf(GetType<T>());
+			static_assert(
+			    IsStruct<T>() || IsClass<T>(), "IsChildOf only valid with Structs or Classes.");
+			return IsChildOf(static_cast<DataType*>(InternalGetType<T>()));
 		}
 
 		bool IsParentOf(const DataType* other) const
