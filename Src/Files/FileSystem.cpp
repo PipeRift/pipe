@@ -96,6 +96,7 @@ namespace Rift
 
 		std::ofstream file(path);
 		file.write(data.data(), data.size());
+		file.close();
 		return true;
 	}
 
