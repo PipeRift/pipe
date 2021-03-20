@@ -38,7 +38,6 @@ namespace Rift::Refl
 	template <typename T>
 	Refl::Type* InternalGetType()
 	{
-		static_assert(HasType<T>(), "T is not reflected and doesnt have a type.");
 		return TTypeInstance<T>::instance;
 	}
 }    // namespace Rift::Refl

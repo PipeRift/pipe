@@ -698,9 +698,9 @@ namespace Rift
 		    : BasicFixedString<TCHAR, N>(array)
 		{}
 
-		constexpr FixedString(string_view_type str)
+		constexpr FixedString(BasicFixedString<TCHAR, N>::string_view_type str)
 		{
-			Details::copy(str.begin(), str.end(), begin());
+			Details::copy(str.begin(), str.end(), this->begin());
 		}
 	};
 
