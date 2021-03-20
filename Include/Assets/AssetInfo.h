@@ -40,6 +40,11 @@ namespace Rift
 		{
 			return id.ToString();
 		}
+		inline String GetFilename() const
+		{
+			// TODO: Optimize after Paths are used for the asset system
+			return FileSystem::GetFilename(FileSystem::FromString(id.ToString()));
+		}
 
 		bool operator==(const AssetInfo& other) const
 		{

@@ -155,6 +155,11 @@ namespace Rift
 			return path;
 		}
 
+		static String GetFilename(const Path& path)
+		{
+			return ToString(path.filename());
+		}
+
 	private:
 		SpaceInfo Space(const Path& target)
 		{

@@ -163,6 +163,10 @@ namespace Rift
 		{
 			return info.GetStrPath();
 		}
+		inline String GetFilename() const
+		{
+			return info.GetFilename();
+		}
 
 		operator bool() const
 		{
