@@ -8,26 +8,26 @@ namespace Rift
 	BitArray::BitArray(u32 newSize)
 	{
 		arraySize = newSize;
-		bitLongs = ((arraySize - 1) >> 5) + 1;
-		bits = new u32[bitLongs];
+		bitLongs  = ((arraySize - 1) >> 5) + 1;
+		bits      = new u32[bitLongs];
 	}
 
 	BitArray::BitArray(BitArray&& other) noexcept
 	{
 		arraySize = other.arraySize;
-		bitLongs = other.bitLongs;
-		bits = other.bits;
+		bitLongs  = other.bitLongs;
+		bits      = other.bits;
 
 		other.arraySize = 0;
-		other.bitLongs = 0;
-		other.bits = nullptr;
+		other.bitLongs  = 0;
+		other.bits      = nullptr;
 	}
 
 	BitArray::BitArray(const BitArray& other)
 	{
 		arraySize = other.arraySize;
-		bitLongs = other.bitLongs;
-		bits = new u32[bitLongs];
+		bitLongs  = other.bitLongs;
+		bits      = new u32[bitLongs];
 		for (u32 i = 0; i < bitLongs; i++)
 			bits[i] = other.bits[i];
 	}
@@ -35,8 +35,8 @@ namespace Rift
 	BitArray::BitArray(u32 newSize, bool bitValues)
 	{
 		arraySize = newSize;
-		bitLongs = ((arraySize - 1) >> 5) + 1;
-		bits = new u32[bitLongs];
+		bitLongs  = ((arraySize - 1) >> 5) + 1;
+		bits      = new u32[bitLongs];
 
 		if (bitValues)
 			FillBits();
@@ -47,8 +47,8 @@ namespace Rift
 	BitArray::BitArray(u32 newSize, u32* newBits)
 	{
 		arraySize = newSize;
-		bitLongs = ((arraySize - 1) >> 5) + 1;
-		bits = new u32[bitLongs];
+		bitLongs  = ((arraySize - 1) >> 5) + 1;
+		bits      = new u32[bitLongs];
 		for (u32 i = 0; i < bitLongs; i++)
 			bits[i] = newBits[i];
 	}
@@ -64,12 +64,12 @@ namespace Rift
 		delete[] bits;
 
 		arraySize = other.arraySize;
-		bitLongs = other.bitLongs;
-		bits = other.bits;
+		bitLongs  = other.bitLongs;
+		bits      = other.bits;
 
 		other.arraySize = 0;
-		other.bitLongs = 0;
-		other.bits = nullptr;
+		other.bitLongs  = 0;
+		other.bits      = nullptr;
 
 		return *this;
 	}
@@ -78,7 +78,7 @@ namespace Rift
 		bool equalSize = arraySize == other.arraySize;
 
 		arraySize = other.arraySize;
-		bitLongs = other.bitLongs;
+		bitLongs  = other.bitLongs;
 
 		if (!equalSize)
 		{
@@ -193,4 +193,4 @@ namespace Rift
 		}
 		return -1;
 	}
-}	 // namespace Rift
+}    // namespace Rift

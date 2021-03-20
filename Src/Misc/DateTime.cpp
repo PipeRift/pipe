@@ -1,8 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Misc/DateTime.h"
+
 #include "Log.h"
 #include "Misc/Char.h"
-#include "Misc/DateTime.h"
 
 
 namespace Rift
@@ -11,15 +12,15 @@ namespace Rift
 	 *****************************************************************************/
 
 	const i32 DateTime::DaysPerMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-	const i32 DateTime::DaysToMonth[] = {
-		0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+	const i32 DateTime::DaysToMonth[]  = {
+        0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 
 
 	/* DateTime Constructors
 	 *****************************************************************************/
 
 	DateTime::DateTime(
-		i32 year, i32 month, i32 day, i32 hour, i32 minute, i32 second, i32 millisecond)
+	    i32 year, i32 month, i32 day, i32 hour, i32 minute, i32 second, i32 millisecond)
 	{
 		if (!Validate(year, month, day, hour, minute, second, millisecond))
 		{
@@ -28,7 +29,7 @@ namespace Rift
 		}
 
 		value = SysTime{SysDays(Year{year} / month / day) + Hours{hour} + Minutes{minute} +
-						Seconds{second} + Milliseconds{millisecond}};
+		                Seconds{second} + Milliseconds{millisecond}};
 	}
 
 
@@ -60,7 +61,7 @@ namespace Rift
 		const YearMonthDay ymd{timeDays};
 
 		return (timeDays.time_since_epoch() - LocalDays{ymd.year() / Jan / 1}.time_since_epoch())
-			.count();
+		    .count();
 	}
 
 
@@ -159,7 +160,7 @@ namespace Rift
 		}
 
 		return CString::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(),
-			GetDay(), MonthStr.c_str(), GetYear(), GetHour(), GetMinute(), GetSecond());
+		    GetDay(), MonthStr.c_str(), GetYear(), GetHour(), GetMinute(), GetSecond());
 	}
 
 
@@ -293,12 +294,12 @@ namespace Rift
 			return false;
 		}
 
-		const i32 Year = *CString::ToI32(Tokens[0]);
-		const i32 Month = *CString::ToI32(Tokens[1]);
-		const i32 Day = *CString::ToI32(Tokens[2]);
-		const i32 Hour = *CString::ToI32(Tokens[3]);
-		const i32 Minute = *CString::ToI32(Tokens[4]);
-		const i32 Second = *CString::ToI32(Tokens[5]);
+		const i32 Year        = *CString::ToI32(Tokens[0]);
+		const i32 Month       = *CString::ToI32(Tokens[1]);
+		const i32 Day         = *CString::ToI32(Tokens[2]);
+		const i32 Hour        = *CString::ToI32(Tokens[3]);
+		const i32 Minute      = *CString::ToI32(Tokens[4]);
+		const i32 Second      = *CString::ToI32(Tokens[5]);
 		const i32 Millisecond = Tokens.Size() > 6 ? *CString::ToI32(Tokens[6]) : 0;
 
 		if (!Validate(Year, Month, Day, Hour, Minute, Second, Millisecond))
@@ -318,7 +319,7 @@ namespace Rift
 		// DateTime: YYYY-mm-ddTHH:MM:SS(.ssss)(Z|+th:tm|-th:tm)
 
 		const TCHAR* ptr = DateTimeString;
-		TCHAR* Next = nullptr;
+		TCHAR* Next      = nullptr;
 
 		i32 Year = 0, Month = 0, Day = 0;
 		i32 Hour = 0, Minute = 0, Second = 0, Millisecond = 0;
@@ -332,7 +333,7 @@ namespace Rift
 			return false;
 		}
 
-		ptr = Next + 1;	   // skip separator
+		ptr   = Next + 1;    // skip separator
 		Month = FChar::StrtoI32(ptr, &Next, 10);
 
 		if ((Next <= ptr) || (*Next == TX('\0')))
@@ -340,7 +341,7 @@ namespace Rift
 			return false;
 		}
 
-		ptr = Next + 1;	   // skip separator
+		ptr = Next + 1;    // skip separator
 		Day = FChar::StrtoI32(ptr, &Next, 10);
 
 		if (Next <= ptr)
@@ -361,7 +362,7 @@ namespace Rift
 				return false;
 			}
 
-			ptr = Next + 1;	   // skip separator
+			ptr    = Next + 1;    // skip separator
 			Minute = FChar::StrtoI32(ptr, &Next, 10);
 
 			if ((Next <= ptr) || (*Next == TX('\0')))
@@ -369,7 +370,7 @@ namespace Rift
 				return false;
 			}
 
-			ptr = Next + 1;	   // skip separator
+			ptr    = Next + 1;    // skip separator
 			Second = FChar::StrtoI32(ptr, &Next, 10);
 
 			if (Next <= ptr)
@@ -380,7 +381,7 @@ namespace Rift
 			// check for milliseconds
 			if (*Next == TX('.'))
 			{
-				ptr = Next + 1;
+				ptr         = Next + 1;
 				Millisecond = FChar::StrtoI32(ptr, &Next, 10);
 
 				// should be no more than 3 digits
@@ -409,7 +410,7 @@ namespace Rift
 					return false;
 				}
 
-				ptr = Next + 1;	   // skip separator
+				ptr      = Next + 1;    // skip separator
 				TzMinute = FChar::StrtoI32(ptr, &Next, 10);
 
 				if (Next <= ptr)
@@ -443,11 +444,11 @@ namespace Rift
 	}
 
 	bool DateTime::Validate(
-		i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond)
+	    i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond)
 	{
 		return (Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) && (Day >= 1) &&
-			   (Day <= DaysInMonth(Year, Month)) && (Hour >= 0) && (Hour <= 23) && (Minute >= 0) &&
-			   (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0) &&
-			   (Millisecond <= 999);
+		       (Day <= DaysInMonth(Year, Month)) && (Hour >= 0) && (Hour <= 23) && (Minute >= 0) &&
+		       (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0) &&
+		       (Millisecond <= 999);
 	}
-}	 // namespace Rift
+}    // namespace Rift

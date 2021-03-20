@@ -3,8 +3,8 @@
 
 #include "Events/Function.h"
 #include "Reflection/ReflectionTags.h"
-#include "Reflection/Static/Property.h"
 #include "Reflection/Runtime/TPropertyHandle.h"
+#include "Reflection/Static/Property.h"
 #include "Reflection/Static/Type.h"
 #include "Strings/Name.h"
 

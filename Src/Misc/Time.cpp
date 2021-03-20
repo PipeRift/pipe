@@ -12,7 +12,7 @@ namespace Rift
 	void FrameTime::Tick()
 	{
 		previousTime = currentTime;
-		currentTime = DateTime::Now();
+		currentTime  = DateTime::Now();
 
 		// Avoid too big delta times
 		realDeltaTime = Math::Min(0.15f, (currentTime - previousTime).GetTotalSeconds());
@@ -34,4 +34,4 @@ namespace Rift
 			std::this_thread::sleep_for(sleepPeriod);
 		}
 	}
-}	 // namespace Rift
+}    // namespace Rift

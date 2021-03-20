@@ -155,4 +155,4 @@ namespace Rift
 			Data()[name.data()] = val;
 		}
 	}
-}	 // namespace Rift
+}    // namespace Rift

@@ -3,5 +3,4 @@
 
 
 namespace Rift
-{
-}	 // namespace Rift
+{}    // namespace Rift

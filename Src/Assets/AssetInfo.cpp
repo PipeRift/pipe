@@ -11,4 +11,4 @@ namespace Rift
 		ar(name, id);
 		return true;
 	}
-}	 // namespace Rift
+}    // namespace Rift

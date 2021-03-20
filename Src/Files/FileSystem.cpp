@@ -116,4 +116,4 @@ namespace Rift
 		}
 		return bool(err);
 	}
-}	 // namespace Rift
+}    // namespace Rift

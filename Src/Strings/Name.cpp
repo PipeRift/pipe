@@ -35,8 +35,8 @@ namespace Rift
 	const String& NameTable::Find(sizet hash) const
 	{
 		// Ensure no other thread is editing the table
-		std::shared_lock lock{ editTableMutex };
-		ConstIterator foundIt = table.find({ hash });
+		std::shared_lock lock{editTableMutex};
+		ConstIterator foundIt = table.find({hash});
 		if (foundIt != table.end())
 		{
 			return foundIt->GetString();

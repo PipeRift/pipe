@@ -48,4 +48,4 @@ namespace Rift
 	{
 		return v3{x, y, 0.f};
 	}
-}	 // namespace Rift
+}    // namespace Rift

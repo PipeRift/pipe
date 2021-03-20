@@ -20,7 +20,7 @@ namespace Rift
 
 		if (IncrementCounter == 0)
 		{
-			InitialDateTime = DateTime::Now();
+			InitialDateTime          = DateTime::Now();
 			EstimatedCurrentDateTime = InitialDateTime;
 		}
 		else
@@ -29,12 +29,12 @@ namespace Rift
 		}
 
 		u32 SequentialBits = static_cast<u32>(
-			IncrementCounter++);	// Add sequential bits to ensure sequentially generated guids
-									// are unique even if Cycles is wrong
+		    IncrementCounter++);    // Add sequential bits to ensure sequentially generated guids
+		                            // are unique even if Cycles is wrong
 		u32 RandBits =
-			Math::Rand() & 0xFFFF;	  // Add randomness to improve uniqueness across machines
+		    Math::Rand() & 0xFFFF;    // Add randomness to improve uniqueness across machines
 
 		guid = Guid(RandBits | (SequentialBits << 16), EstimatedCurrentDateTime.GetTicks() >> 32,
-			EstimatedCurrentDateTime.GetTicks() & 0xffffffff, PlatformTime::Cycles());
+		    EstimatedCurrentDateTime.GetTicks() & 0xffffffff, PlatformTime::Cycles());
 	}
-}	 // namespace Rift
+}    // namespace Rift

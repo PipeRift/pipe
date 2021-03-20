@@ -18,4 +18,4 @@ namespace Rift
 	{
 		return static_cast<const Object*>(this)->Self();
 	}
-}	 // namespace Rift
+}    // namespace Rift

@@ -12,4 +12,4 @@ namespace Rift::Memory
 	{
 		return globalArena;
 	}
-};
+};    // namespace Rift::Memory

@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Assets/AssetManager.h"
+
 #include "Context.h"
 #include "Files/FileSystem.h"
 #include "Profiler.h"
@@ -66,12 +67,12 @@ namespace Rift
 			if (!type.is_string())
 			{
 				Log::Error("Asset ({}) must have a type (asset_type)", info.GetStrPath());
-				return;	   // Asset doesn't have a type
+				return;    // Asset doesn't have a type
 			}
 
 			// Get asset type from json
 			const String typeStr = type.get<String>();
-			data.type = AssetData::StaticType()->FindChild(typeStr);
+			data.type            = AssetData::StaticType()->FindChild(typeStr);
 			if (!data.type)
 			{
 				Log::Error("Asset ({}) has unknown asset_type '{}' ", info.GetStrPath(), typeStr);
@@ -91,7 +92,7 @@ namespace Rift
 			ZoneScopedNC("Deserialize asset", 0xD19D45);
 
 			// Create the asset instance
-			auto newAsset = data.type->CreateInstance(Self()).Cast<AssetData>();
+			auto newAsset    = data.type->CreateInstance(Self()).Cast<AssetData>();
 			const auto& info = infos[I];
 
 			if (newAsset->OnLoad(info, data.json))
@@ -141,4 +142,4 @@ namespace Rift
 	{
 		return Context::Get()->GetAssetManager();
 	}
-}	 // namespace Rift
+}    // namespace Rift
