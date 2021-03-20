@@ -39,7 +39,6 @@ jobs:
       run: cmake -E make_directory ${{github.workspace}}/Build
 
     - name: Configure & Format
-      working-directory: ${{github.workspace}}/Build
       shell: bash
       run: cmake --build Build --config $BUILD_TYPE --target ClangFormat
       
