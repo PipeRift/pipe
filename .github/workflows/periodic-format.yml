@@ -38,7 +38,11 @@ jobs:
       # We'll use this as our working directory for all subsequent commands
       run: cmake -E make_directory ${{github.workspace}}/Build
 
-    - name: Configure & Format
+    - name: Configure CMake
+      shell: bash
+      run: cmake -S ${{github.workspace}} -B ${{github.workspace}}/Build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+  
+    - name: Format
       shell: bash
       run: cmake --build Build --config $BUILD_TYPE --target ClangFormat
       
