@@ -16,6 +16,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      
+    - name: Init Submodules
+      uses: snickerbockers/submodules-init@v4
 
     - name: Cache LLVM and Clang
       if: matrix.compiler == 'clang'
