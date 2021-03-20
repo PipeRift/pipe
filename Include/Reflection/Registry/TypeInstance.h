@@ -15,19 +15,21 @@ namespace Rift::Refl
 		static Type* instance;
 
 
-		static Type* InitType() requires(IsClass<T>() || IsStruct<T>())
+		static Type* InitType()
 		{
-			return T::InitType();
-		}
-
-		static Type* InitType() requires(IsEnum<T>())
-		{
-			return TStaticEnumInitializer<T>::onInit();
-		}
-
-		static Type* InitType() requires(IsNative<T>())
-		{
-			return TStaticNativeInitializer<T>::onInit();
+			if constexpr (IsClass<T>() || IsStruct<T>())
+			{
+				return T::InitType();
+			}
+			else if constexpr (IsEnum<T>())
+			{
+				return TStaticEnumInitializer<T>::onInit();
+			}
+			else if constexpr (IsNative<T>())
+			{
+				return TStaticNativeInitializer<T>::onInit();
+			}
+			return nullptr;
 		}
 	};
 
