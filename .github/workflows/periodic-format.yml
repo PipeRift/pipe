@@ -48,7 +48,9 @@ jobs:
     - name: Format
       shell: bash
       run: cmake --build Build --config $BUILD_TYPE --target ClangFormat
-      
+    
+    - uses: nelonoel/branch-name@v1.0.1
+
     - name: Commit & Push changes
       uses: actions-js/push@master
       with:
@@ -56,3 +58,4 @@ jobs:
         author_email: 'info@piperift.com'
         author_name: 'Automatron'
         message: 'Periodic format'
+        branch: ${BRANCH_NAME}
