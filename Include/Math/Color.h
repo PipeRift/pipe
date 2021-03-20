@@ -7,6 +7,7 @@
 #include "Containers/Array.h"
 #include "Math.h"
 #include "Reflection/ClassTraits.h"
+#include "Reflection/Static/NativeType.h"
 #include "Strings/String.h"
 #include "Vector.h"
 
@@ -533,26 +534,13 @@ namespace Rift
 	};
 
 
-	inline CORE_API u32 GetTypeHash(const Color& Color)
-	{
-		return Color.DWColor();
-	}
-
-
-	/*uint32 GetTypeHash( const LinearColor& LinearColor )
-	{
-	    // Note: this assumes there's no padding in FLinearColor that could contain uncompared data.
-	    return FCrc::MemCrc_DEPRECATED(&LinearColor, sizeof(LinearColor));
-	}*/
-
-
 	/** Computes a brightness and a fixed point color from a floating point color. */
 	extern void ComputeAndFixedColorAndIntensity(
 	    const LinearColor& InLinearColor, Color& OutColor, float& OutIntensity);
 
 
-	DEFINE_CLASS_TRAITS(Color, HasCustomSerialize = true, HasDetailsWidget = true);
-	DECLARE_REFLECTED_TYPE(Color);
+	DEFINE_CLASS_TRAITS(Color, HasCustomSerialize = true);
+	REFLECT_NATIVE_TYPE(Color);
 
 
 	/**
@@ -613,7 +601,26 @@ namespace Rift
 		FDXT1 DXT1;
 	};
 
+
+	template <>
+	struct Hash<LinearColor>
+	{
+		sizet operator()(const LinearColor& color) const
+		{
+			return HashBytes(&color, sizeof(LinearColor));
+		}
+	};
+
+	template <>
+	struct Hash<Color>
+	{
+		sizet operator()(const Color& color) const
+		{
+			return color.DWColor();
+		}
+	};
 }    // namespace Rift
+
 
 // These types act like a POD
 RIFT_DECLARE_IS_POD(Rift::Color, true);

@@ -9,6 +9,8 @@
 #include "Misc/Hash.h"
 #include "Misc/Utility.h"
 #include "Platform/Platform.h"
+#include "Strings/FixedString.h"
+#include "Strings/StringView.h"
 
 #include <tsl/sparse_map.h>
 
@@ -29,10 +31,11 @@ namespace Rift
 		template <typename OtherKey, typename OtherValue, typename OtherAllocator>
 		friend class TMap;
 
-		using KeyType     = Key;
-		using ValueType   = Value;
-		using HashMapType = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>,
-		    std::equal_to<KeyType>, STLAllocator<std::pair<Key, Value>, Allocator>>;
+		using KeyType       = Key;
+		using ValueType     = Value;
+		using AllocatorType = Allocator;
+		using HashMapType   = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>,
+            std::equal_to<KeyType>, STLAllocator<std::pair<Key, Value>, Allocator>>;
 
 		using Iterator      = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;

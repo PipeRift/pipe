@@ -62,6 +62,19 @@ namespace Rift
 
 #define EnableIfAll typename = void
 
+	template <typename T, typename = void>
+	constexpr bool isDefined = false;
+	template <typename T>
+	constexpr bool isDefined<T, decltype(typeid(T), void())> = true;
+
+	template <typename, typename = void>
+	struct isSpecialized : std::false_type
+	{};
+
+	template <typename T>
+	struct isSpecialized<T, std::void_t<decltype(T{})>> : std::true_type
+	{};
+
 
 	template <typename T>
 	struct HasItemType
@@ -69,6 +82,32 @@ namespace Rift
 	private:
 		template <typename V>
 		static void Impl(decltype(typename V::ItemType(), int()));
+		template <typename V>
+		static bool Impl(char);
+
+	public:
+		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
+	};
+
+	template <typename T>
+	struct HasKeyType
+	{
+	private:
+		template <typename V>
+		static void Impl(decltype(typename V::KeyType(), int()));
+		template <typename V>
+		static bool Impl(char);
+
+	public:
+		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
+	};
+
+	template <typename T>
+	struct HasValueType
+	{
+	private:
+		template <typename V>
+		static void Impl(decltype(typename V::ValueType(), int()));
 		template <typename V>
 		static bool Impl(char);
 

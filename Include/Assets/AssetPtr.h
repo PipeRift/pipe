@@ -7,8 +7,11 @@
 #include "AssetInfo.h"
 #include "AssetManager.h"
 #include "Files/FileSystem.h"
+#include "Reflection/TypeName.h"
+#include "Strings/FixedString.h"
 #include "Strings/StringView.h"
 #include "TypeTraits.h"
+
 
 
 namespace Rift
@@ -116,7 +119,7 @@ namespace Rift
 			{
 				if (auto manager = AssetManager::Get())
 				{
-					cachedAsset = manager->LoadOrCreate(info, T::Type());
+					cachedAsset = manager->LoadOrCreate(info, GetType<T>());
 				}
 			}
 			return cachedAsset.IsValid();
@@ -207,5 +210,48 @@ namespace Rift
 		}
 	};
 
-	DEFINE_TEMPLATE_CLASS_TRAITS(TAssetPtr, HasCustomSerialize = true, HasDetailsWidget = true);
+	DEFINE_TEMPLATE_CLASS_TRAITS(TAssetPtr, HasCustomSerialize = true);
+
+
+	template <typename T>
+	inline constexpr bool IsAsset()
+	{
+		// Check if we are dealing with a TAssetPtr
+		if constexpr (HasItemType<T>::value)
+		{
+			return IsSame<TAssetPtr<typename T::ItemType>, T>;
+		}
+		return false;
+	}
+
+	template <typename T>
+	constexpr bool HasType() requires(IsAsset<T>())
+	{
+		return HasType<typename T::ItemType>();
+	}
+
+
+	// Contains an static fixed string with the name of a TAssetPtr<T>
+	template <typename ItemType>
+	struct StaticAssetPtrName
+	{
+		static constexpr auto preffix  = FixedString("TAssetPtr<");
+		static constexpr auto suffix   = FixedString(">");
+		static constexpr auto itemName = GetTypeName<ItemType>();
+		static constexpr FixedString<itemName.size()> fixedItemName{itemName};
+
+		static constexpr auto name = preffix + fixedItemName + suffix;
+	};
+
+	template <typename T>
+	constexpr StringView GetFullTypeName() requires(IsAsset<T>())
+	{
+		return StaticAssetPtrName<typename T::ItemType>::name;
+	}
+
+	template <typename T>
+	constexpr StringView GetTypeName() requires(IsAsset<T>())
+	{
+		return "TAssetPtr";
+	}
 }    // namespace Rift

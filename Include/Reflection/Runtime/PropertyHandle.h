@@ -63,7 +63,7 @@ namespace Rift::Refl
 			return objInstance.IsValid();
 		}
 
-		virtual Class* GetTypeDefinedWidgetClass()
+		virtual ClassType* GetTypeDefinedWidgetClass()
 		{
 			return nullptr;
 		}

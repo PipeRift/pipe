@@ -17,32 +17,34 @@ namespace Rift
 			return Name::noneId;
 		}
 
-		// Calculate hash once
-		NameKey key{str};
-		ConstIterator FoundIt = table.find(key);
-		if (FoundIt != table.end())
-		{
-			std::shared_lock lock{editTableMutex};
-			return FoundIt->GetHash();
-		}
-		else
+		static constexpr Hash<StringView> hasher{};
+
+		const sizet hash = hasher(str);
+		if (!table.contains({hash}))
 		{
 			std::unique_lock lock{editTableMutex};
-			return table.insert(Move(key)).first->GetHash();
+			table.insert({str, hash});
 		}
+		return hash;
 	}
 
 	const String& NameTable::Find(sizet hash) const
 	{
 		// Ensure no other thread is editing the table
-		std::shared_lock lock{editTableMutex};
-		ConstIterator foundIt = table.find({hash});
+		std::shared_lock lock{ editTableMutex };
+		const ConstIterator foundIt = table.find({hash});
 		if (foundIt != table.end())
 		{
-			return foundIt->GetString();
+			return foundIt->value;
 		}
 		// Should never reach
 		return Name::NoneStr();
+	}
+
+	NameTable& NameTable::Get()
+	{
+		static NameTable instance{};
+		return instance;
 	}
 
 	bool Name::Serialize(Archive& ar, StringView name)

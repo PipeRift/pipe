@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Platform/Platform.h"
+
 #include <date/date.h>
 
 #include <chrono>

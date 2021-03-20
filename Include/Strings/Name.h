@@ -21,33 +21,23 @@ namespace Rift
 	/** Represents an string with an already hashed value */
 	struct NameKey
 	{
-	private:
-		static constexpr Hash<String> hasher{};
-
-		String str;
+		String value;
 		sizet hash = 0;
 
-	public:
-		NameKey() = default;
-		NameKey(sizet hash) : hash{hash} {}
-		NameKey(StringView inStr) : str{inStr}, hash{hasher(str)} {}
 
-		NameKey(const NameKey& other) : hash{other.hash} {}
-		NameKey(NameKey&& other) noexcept : str{Move(other.str)}, hash{other.hash} {}
-		NameKey& operator=(const NameKey& other)
+		NameKey(sizet hash) : hash{hash} {}
+		NameKey(StringView value, sizet hash) : value{value}, hash{hash} {}
+
+		NameKey(NameKey&& other) noexcept : value{Move(other.value)}, hash{other.hash} {}
+		NameKey(const NameKey& other) = delete;
+		NameKey& operator             =(NameKey&& other) noexcept
 		{
-			hash = other.hash;
+			value      = Move(other.value);
+			hash       = other.hash;
+			other.hash = 0;
 			return *this;
 		}
-
-		const String& GetString() const
-		{
-			return str;
-		}
-		const sizet GetHash() const
-		{
-			return hash;
-		}
+		NameKey& operator=(const NameKey& other) = delete;
 
 		bool operator==(const NameKey& other) const
 		{
@@ -60,7 +50,7 @@ namespace Rift
 	{
 		sizet operator()(const NameKey& x) const
 		{
-			return x.GetHash();
+			return x.hash;
 		}
 	};
 
@@ -85,11 +75,7 @@ namespace Rift
 		sizet Register(StringView string);
 		const String& Find(sizet hash) const;
 
-		static NameTable& Get()
-		{
-			static NameTable instance{};
-			return instance;
-		}
+		static NameTable& Get();
 	};
 
 
@@ -120,7 +106,7 @@ namespace Rift
 			// Index this name
 			id = NameTable::Get().Register(key);
 #if BUILD_DEBUG
-			value = key;
+			value = ToString();
 #endif
 		}
 		Name(const String& str) : Name(StringView(str)) {}
@@ -138,7 +124,8 @@ namespace Rift
 #endif
 		}
 		Name& operator=(const Name& other) = default;
-		Name& operator                     =(Name&& other) noexcept
+
+		Name& operator=(Name&& other) noexcept
 		{
 			std::swap(id, other.id);
 #if BUILD_DEBUG

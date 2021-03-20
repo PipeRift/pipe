@@ -4,7 +4,7 @@
 #include "BaseObject.h"
 #include "Log.h"
 #include "ObjectBuilder.h"
-#include "Reflection/Static/Class.h"
+#include "Reflection/Static/ClassType.h"
 #include "Serialization/Archive.h"
 
 
@@ -70,7 +70,7 @@ namespace Rift
 	using ObjectPtr = OwnPtr<T, ObjectBuilder<T>>;
 
 	template <class T>
-	static ObjectPtr<T> Create(Refl::Class* objectClass, const Ptr<Object> owner = {})
+	static ObjectPtr<T> Create(Refl::ClassType* objectClass, const Ptr<Object> owner = {})
 	{
 		return MakeOwned<T, ObjectBuilder<T>>(objectClass, owner);
 	}

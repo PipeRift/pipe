@@ -27,7 +27,7 @@ namespace Rift
 		CORE_API Ptr<AssetData> Load(AssetInfo info);
 		CORE_API TArray<Ptr<AssetData>> Load(TArray<AssetInfo> infos);
 
-		CORE_API Ptr<AssetData> LoadOrCreate(const AssetInfo& info, Refl::Class* assetType);
+		CORE_API Ptr<AssetData> LoadOrCreate(const AssetInfo& info, Refl::ClassType* assetType);
 
 		CORE_API Ptr<AssetData> GetLoadedAsset(const AssetInfo& id) const
 		{

@@ -1,9 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Strings/String.h"
-
 #include "Math/Math.h"
 #include "Misc/Char.h"
+#include "Strings/String.h"
 
 
 namespace Rift
@@ -84,22 +83,5 @@ namespace Rift
 		CString::RemoveFromEnd(sizeStr, numTrailingZeros);
 
 		return CString::Format("{}{}", sizeStr, sizes[scale]);
-	}
-
-	sizet CString::GetStringHash(const TCHAR* str)
-	{
-		// FNV String hash
-		// Use offset and prime based on the architecture (64bit or 32bit)
-		// http://www.isthe.com/chongo/tech/comp/fnv/index.html
-		static constexpr bool bIs32Bit     = sizeof(sizet) < 64;
-		static constexpr sizet offsetBasis = bIs32Bit ? 2166136261U : 14695981039346656037U;
-		static constexpr sizet fnvPrime    = bIs32Bit ? 16777619 : 1099511628211;
-
-		sizet c, result = offsetBasis;
-		while ((c = *str++) != 0)
-		{
-			result = (result * fnvPrime) ^ c;
-		}
-		return result;
 	}
 }    // namespace Rift

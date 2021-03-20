@@ -10,6 +10,7 @@
 #include "Misc/Optional.h"
 #include "Misc/Utility.h"
 #include "Platform/Platform.h"
+#include "Reflection/TypeName.h"
 #include "Strings/StringView.h"
 
 #include <fmt/chrono.h>
@@ -32,6 +33,7 @@ namespace Rift
 
 	struct CORE_API CString
 	{
+	public:
 		template <typename... Args>
 		static String Format(StringView format, Args... args)
 		{
@@ -197,8 +199,6 @@ namespace Rift
 		static bool IsNumeric(const TCHAR* Str);
 
 		static String ParseMemorySize(sizet size);
-
-		static sizet GetStringHash(const TCHAR* str);
 	};
 
 	using Regex = std::basic_regex<TCHAR>;
@@ -209,7 +209,7 @@ namespace Rift
 	{
 		sizet operator()(const String& str) const
 		{
-			return CString::GetStringHash(str.data());
+			return GetStringHash(str.data());
 		}
 	};
 
@@ -218,7 +218,7 @@ namespace Rift
 	{
 		sizet operator()(const StringView& str) const
 		{
-			return CString::GetStringHash(str.data());
+			return GetStringHash(str.data());
 		}
 	};
 
@@ -227,7 +227,10 @@ namespace Rift
 	{
 		sizet operator()(const TCHAR* str) const
 		{
-			return CString::GetStringHash(str);
+			return GetStringHash(str);
 		}
 	};
+
+
+	OVERRIDE_TYPE_NAME(String)
 }    // namespace Rift

@@ -1,6 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Reflection/Static/ReflectionRegistry.h"
+#include "Reflection/Registry/Registry.h"
 
 
 namespace Rift::Refl

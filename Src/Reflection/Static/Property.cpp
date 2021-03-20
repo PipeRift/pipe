@@ -3,8 +3,8 @@
 #include "Reflection/Static/Property.h"
 
 #include "Reflection/Runtime/PropertyHandle.h"
-#include "Reflection/Static/Class.h"
-#include "Reflection/Static/Struct.h"
+#include "Reflection/Static/ClassType.h"
+#include "Reflection/Static/StructType.h"
 
 
 namespace Rift::Refl
@@ -22,12 +22,12 @@ namespace Rift::Refl
 		}
 	}
 
-	const Type* Property::GetInstanceType(const Ptr<BaseObject>& instance)
+	const DataType* Property::GetInstanceType(const Ptr<BaseObject>& instance)
 	{
-		return instance->GetType();
+		return instance->GetClass();
 	}
-	const Type* Property::GetInstanceType(BaseObject* instance)
+	const DataType* Property::GetInstanceType(BaseObject* instance)
 	{
-		return instance->GetType();
+		return instance->GetClass();
 	}
 }    // namespace Rift::Refl

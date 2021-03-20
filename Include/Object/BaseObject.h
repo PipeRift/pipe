@@ -11,9 +11,10 @@ namespace Rift
 {
 	namespace Refl
 	{
-		class Class;
+		class ClassType;
 	}
 	class Object;
+
 
 	template <typename Type>
 	struct Ptr;
@@ -31,7 +32,7 @@ namespace Rift
 			BeforeDestroy();
 		}
 
-		Refl::Class* GetType() const;
+		Refl::ClassType* GetClass() const;
 		Ptr<Object> Self() const;
 
 	protected:

@@ -12,7 +12,7 @@ namespace Rift
 {
 	struct FAssetLoadingData
 	{
-		Refl::Class* type = nullptr;
+		Refl::ClassType* type = nullptr;
 		Json json;
 	};
 
@@ -72,7 +72,8 @@ namespace Rift
 
 			// Get asset type from json
 			const String typeStr = type.get<String>();
-			data.type            = AssetData::StaticType()->FindChild(typeStr);
+
+			data.type            = GetType<AssetData>()->FindChild(typeStr);
 			if (!data.type)
 			{
 				Log::Error("Asset ({}) has unknown asset_type '{}' ", info.GetStrPath(), typeStr);
@@ -107,7 +108,7 @@ namespace Rift
 		return finalAssets;
 	}
 
-	Ptr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Refl::Class* assetType)
+	Ptr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Refl::ClassType* assetType)
 	{
 		if (info.IsNull() || !FileSystem::IsFolder(info.GetStrPath()))
 		{
