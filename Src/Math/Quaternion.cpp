@@ -17,7 +17,7 @@ namespace Rift
 
 	v3 Quat::Unrotate(const v3& v) const
 	{
-		const v3 q(-x, -y, -z);	   // Inverse
+		const v3 q(-x, -y, -z);    // Inverse
 		const v3 t = 2.f * glm::cross(q, v);
 		return v + (w * t) + glm::cross(q, t);
 	}
@@ -39,8 +39,8 @@ namespace Rift
 	Rotator Quat::ToRotator() const
 	{
 		const float SingularityTest = z * x - w * y;
-		const float YawY = 2.f * (w * z + x * y);
-		const float YawX = (1.f - 2.f * (Math::Square(y) + Math::Square(z)));
+		const float YawY            = 2.f * (w * z + x * y);
+		const float YawX            = (1.f - 2.f * (Math::Square(y) + Math::Square(z)));
 
 		// reference
 		// http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -55,24 +55,24 @@ namespace Rift
 		if (SingularityTest < -SINGULARITY_THRESHOLD)
 		{
 			RotatorFromQuat.Pitch() = -90.f;
-			RotatorFromQuat.Yaw() = Math::Atan2(YawY, YawX) * Math::RADTODEG;
-			RotatorFromQuat.Roll() = Rotator::NormalizeAxis(
-				-RotatorFromQuat.Yaw() - (2.f * Math::Atan2(x, w) * Math::RADTODEG));
+			RotatorFromQuat.Yaw()   = Math::Atan2(YawY, YawX) * Math::RADTODEG;
+			RotatorFromQuat.Roll()  = Rotator::NormalizeAxis(
+                -RotatorFromQuat.Yaw() - (2.f * Math::Atan2(x, w) * Math::RADTODEG));
 		}
 		else if (SingularityTest > SINGULARITY_THRESHOLD)
 		{
 			RotatorFromQuat.Pitch() = 90.f;
-			RotatorFromQuat.Yaw() = Math::Atan2(YawY, YawX) * Math::RADTODEG;
-			RotatorFromQuat.Roll() = Rotator::NormalizeAxis(
-				RotatorFromQuat.Yaw() - (2.f * Math::Atan2(x, w) * Math::RADTODEG));
+			RotatorFromQuat.Yaw()   = Math::Atan2(YawY, YawX) * Math::RADTODEG;
+			RotatorFromQuat.Roll()  = Rotator::NormalizeAxis(
+                RotatorFromQuat.Yaw() - (2.f * Math::Atan2(x, w) * Math::RADTODEG));
 		}
 		else
 		{
 			RotatorFromQuat.Pitch() = Math::FastAsin(2.f * (SingularityTest)) * Math::RADTODEG;
-			RotatorFromQuat.Yaw() = Math::Atan2(YawY, YawX) * Math::RADTODEG;
-			RotatorFromQuat.Roll() = Math::Atan2(-2.f * (w * x + y * z),
-										 (1.f - 2.f * (Math::Square(x) + Math::Square(y)))) *
-									 Math::RADTODEG;
+			RotatorFromQuat.Yaw()   = Math::Atan2(YawY, YawX) * Math::RADTODEG;
+			RotatorFromQuat.Roll()  = Math::Atan2(-2.f * (w * x + y * z),
+                                         (1.f - 2.f * (Math::Square(x) + Math::Square(y)))) *
+			                         Math::RADTODEG;
 		}
 
 		return RotatorFromQuat;
@@ -86,8 +86,8 @@ namespace Rift
 	bool Quat::Equals(const Quat& other, float tolerance) const
 	{
 		return Math::NearlyEqual(x, other.x, tolerance) &&
-			   Math::NearlyEqual(y, other.y, tolerance) &&
-			   Math::NearlyEqual(z, other.z, tolerance) && Math::NearlyEqual(w, other.w, tolerance);
+		       Math::NearlyEqual(y, other.y, tolerance) &&
+		       Math::NearlyEqual(z, other.z, tolerance) && Math::NearlyEqual(w, other.w, tolerance);
 	}
 
 	Quat Quat::FromRotator(Rotator rotator)
@@ -101,13 +101,13 @@ namespace Rift
 		Math::SinCos(&SR, &CR, rotator.Roll() * DIVIDE_BY_2);
 
 		Quat RotationQuat{CR * CP * CY + SR * SP * SY, CR * SP * SY - SR * CP * CY,
-			-CR * SP * CY - SR * CP * SY, CR * CP * SY - SR * SP * CY};
+		    -CR * SP * CY - SR * CP * SY, CR * CP * SY - SR * SP * CY};
 
 #if ENABLE_NAN_DIAGNOSTIC || DO_CHECK
 		// Very large inputs can cause NaN's. Want to catch this here
 		ensureMsgf(!RotationQuat.ContainsNaN(),
-			TEXT("Invalid input to FRotator::Quaternion - generated NaN output: %s"),
-			*RotationQuat.ToString());
+		    TEXT("Invalid input to FRotator::Quaternion - generated NaN output: %s"),
+		    *RotationQuat.ToString());
 #endif
 
 		return RotationQuat;
@@ -122,4 +122,4 @@ namespace Rift
 	{
 		return glm::lookAt(origin, dest, v3::Forward);
 	}
-}	 // namespace Rift
+}    // namespace Rift

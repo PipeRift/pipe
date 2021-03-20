@@ -48,7 +48,7 @@ namespace Rift::Memory
 		                                 slot.start, alignment, sizeof(AllocationHeader));
 
 		auto* const header = GetHeader(ptr);
-		header->end = ptr + size;
+		header->end        = ptr + size;
 		header->end += GetAlignmentPadding(header->end, minAlignment);    // Align end by 8
 		if (header->end > block.GetEnd())
 		{

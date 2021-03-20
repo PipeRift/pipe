@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Files/FileDialog.h"
+
 #include "Profiler.h"
 
 #include <portable-file-dialogs.h>
@@ -32,11 +33,11 @@ namespace Rift::Dialogs
 		    std::string{title}, defaultPath.string(), ParseFilters(filters), options);
 
 		std::vector<std::string> files = dialog.result();
-        if (files.size() > 0)
-        {
-            return Path{files[0]};
-        }
-        return {};
+		if (files.size() > 0)
+		{
+			return Path{files[0]};
+		}
+		return {};
 	}
 
 	void SelectFiles(StringView title, const Path& defaultPath, TArray<Path>& outFiles,
@@ -51,11 +52,11 @@ namespace Rift::Dialogs
 		    std::string{title}, defaultPath.string(), ParseFilters(filters), options);
 
 		std::vector<std::string> files = dialog.result();
-        outFiles.Resize(files.size());
-        for(u32 i = 0; i < files.size(); ++i)
-        {
-            outFiles[i] = Path{files[0]};
-        }
+		outFiles.Resize(files.size());
+		for (u32 i = 0; i < files.size(); ++i)
+		{
+			outFiles[i] = Path{files[0]};
+		}
 	}
 
 	Path SelectFolder(StringView title, const Path& defaultPath, bool bAlwaysShowDefaultPath)
@@ -68,4 +69,4 @@ namespace Rift::Dialogs
 		pfd::select_folder dialog(std::string{title}, defaultPath.string(), options);
 		return Path{dialog.result()};
 	}
-}    // namespace Rift
+}    // namespace Rift::Dialogs

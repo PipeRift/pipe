@@ -19,4 +19,4 @@ namespace Rift
 		ar.EndObject();
 		return true;
 	}
-}	 // namespace Rift
+}    // namespace Rift

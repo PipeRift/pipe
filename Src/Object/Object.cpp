@@ -11,4 +11,4 @@ namespace Rift
 	{
 		return Context::Get();
 	}
-}	 // namespace Rift
+}    // namespace Rift

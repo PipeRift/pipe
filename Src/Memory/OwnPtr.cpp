@@ -28,7 +28,7 @@ namespace Rift::Impl
 
 	Ptr::Ptr(const OwnPtr& owner)
 	{
-		value = owner.value;
+		value   = owner.value;
 		counter = owner.counter;
 		if (counter)
 		{
@@ -37,7 +37,7 @@ namespace Rift::Impl
 	}
 	Ptr::Ptr(const Ptr& other)
 	{
-		value = other.value;
+		value   = other.value;
 		counter = other.counter;
 		if (counter)
 		{
@@ -46,8 +46,8 @@ namespace Rift::Impl
 	}
 	Ptr::Ptr(Ptr&& other) noexcept
 	{
-		value = other.value;
-		counter = other.counter;
+		value         = other.value;
+		counter       = other.counter;
 		other.counter = nullptr;
 	}
 
@@ -56,11 +56,11 @@ namespace Rift::Impl
 		if (counter != other.counter)
 		{
 			Reset();
-			value = other.value;
-			counter = other.counter;
+			value         = other.value;
+			counter       = other.counter;
 			other.counter = nullptr;
 		}
-		else	// If equals, we reset previous anyway
+		else    // If equals, we reset previous anyway
 		{
 			other.Reset();
 		}
@@ -71,7 +71,7 @@ namespace Rift::Impl
 		if (counter != other.counter)
 		{
 			Reset();
-			value = other.value;
+			value   = other.value;
 			counter = other.counter;
 			if (counter)
 			{
@@ -87,6 +87,6 @@ namespace Rift::Impl
 			delete counter;
 		}
 		counter = nullptr;
-		value = nullptr;
+		value   = nullptr;
 	}
-}	 // namespace Rift::Impl
+}    // namespace Rift::Impl

@@ -41,4 +41,4 @@ namespace Rift
 	{
 		return SaveToPath(info.GetPath());
 	}
-}	 // namespace Rift
+}    // namespace Rift

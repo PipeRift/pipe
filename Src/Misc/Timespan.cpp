@@ -83,7 +83,7 @@ namespace Rift
 
 		// get string tokens
 		const bool HasFractional = CString::Contains(TimespanString, TX('.')) ||
-								   CString::Contains(TimespanString, TX(','));
+		                           CString::Contains(TimespanString, TX(','));
 		String TokenString = TimespanString;
 		CString::Replace(TokenString, TX('.'), TX(':'));
 		CString::Replace(TokenString, TX(','), TX(':'));
@@ -134,10 +134,10 @@ namespace Rift
 			}
 		}
 
-		const i32 days = *CString::ToI32(Tokens[0]);
-		const i32 hours = *CString::ToI32(Tokens[1]);
-		const i32 minutes = *CString::ToI32(Tokens[2]);
-		const i32 seconds = *CString::ToI32(Tokens[3]);
+		const i32 days         = *CString::ToI32(Tokens[0]);
+		const i32 hours        = *CString::ToI32(Tokens[1]);
+		const i32 minutes      = *CString::ToI32(Tokens[2]);
+		const i32 seconds      = *CString::ToI32(Tokens[3]);
 		const i32 fractionNano = *CString::ToI32(Tokens[4]);
 
 		// Max days
@@ -168,8 +168,8 @@ namespace Rift
 	void Timespan::Assign(i32 days, i32 hours, i32 minutes, i32 seconds, i32 fractionNano)
 	{
 		duration = Chrono::floor<DecMicroseconds>(
-			Days{days} + Chrono::hours{hours} + Chrono::minutes{minutes} +
-			Chrono::seconds{seconds} + Chrono::nanoseconds{fractionNano});
+		    Days{days} + Chrono::hours{hours} + Chrono::minutes{minutes} +
+		    Chrono::seconds{seconds} + Chrono::nanoseconds{fractionNano});
 	}
 
 	Timespan Timespan::FromHours(i32 hours)
@@ -186,4 +186,4 @@ namespace Rift
 	{
 		return Timespan{0, 0, seconds};
 	}
-}	 // namespace Rift
+}    // namespace Rift

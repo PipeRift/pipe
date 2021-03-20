@@ -1,9 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Strings/String.h"
-
 #include "Math/Math.h"
 #include "Misc/Char.h"
+#include "Strings/String.h"
 
 
 namespace Rift
@@ -15,7 +14,7 @@ namespace Rift
 			// static const std::regex wordToCapital("\b[a-z]");
 			static const Regex spaceCamelCase(TX("([a-zA-Z])(?=[A-Z0-9])"));
 
-			result = String{std::regex_replace(str.c_str(), spaceCamelCase, TX("$& ")).c_str()};
+			result    = String{std::regex_replace(str.c_str(), spaceCamelCase, TX("$& ")).c_str()};
 			result[0] = (char) ::toupper(result[0]);
 		}
 		else
@@ -67,8 +66,8 @@ namespace Rift
 
 		static StringView sizes[]{"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 
-		const double scaleD = Math::Log(double(size), 1024.l);
-		const u32 scale = u32(Math::FloorToI64(scaleD));
+		const double scaleD    = Math::Log(double(size), 1024.l);
+		const u32 scale        = u32(Math::FloorToI64(scaleD));
 		const double finalSize = double(size) / Math::Pow(1024, scale);
 
 		String sizeStr       = CString::Format("{:.1f}", finalSize);
@@ -85,4 +84,4 @@ namespace Rift
 
 		return CString::Format("{}{}", sizeStr, sizes[scale]);
 	}
-}	 // namespace Rift
+}    // namespace Rift
