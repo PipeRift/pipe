@@ -4,8 +4,8 @@
 #include "PCH.h"
 
 #include "Reflection/Static/Type.h"
-#include "TypeTraits.h"
 #include "Strings/Name.h"
+#include "TypeTraits.h"
 
 
 namespace Rift::Refl
@@ -34,4 +34,4 @@ namespace Rift::Refl
 	protected:
 		virtual Type* Build() = 0;
 	};
-}
+}    // namespace Rift::Refl
