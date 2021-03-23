@@ -26,7 +26,8 @@
 
 namespace Rift
 {
-	using String = std::basic_string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>;
+	using String  = std::basic_string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>;
+	using WString = std::basic_string<WIDECHAR, std::char_traits<WIDECHAR>, STLAllocator<WIDECHAR>>;
 	using StringBuffer =
 	    fmt::basic_memory_buffer<TCHAR, fmt::inline_buffer_size, STLAllocator<TCHAR>>;
 

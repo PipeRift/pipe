@@ -119,12 +119,12 @@ namespace Rift
 			return fs::is_directory(path);
 		}
 
-		static Path ToRelative(const Path& path, const Path& parent = GetCurrent())
+		static Path ToRelative(const Path& path, const Path& parent = GetCurrentPath())
 		{
 			return fs::relative(path, parent);
 		}
 
-		static Path ToAbsolute(const Path& path, const Path& parent = GetCurrent())
+		static Path ToAbsolute(const Path& path, const Path& parent = GetCurrentPath())
 		{
 			if (path.is_absolute())
 			{
@@ -138,7 +138,7 @@ namespace Rift
 			return !ToRelative(base, parent).empty();
 		}
 
-		static Path GetCurrent()
+		static Path GetCurrentPath()
 		{
 			return fs::current_path();
 		}
@@ -159,6 +159,8 @@ namespace Rift
 		{
 			return ToString(path.filename());
 		}
+
+		static Path GetBasePath();
 
 	private:
 		SpaceInfo Space(const Path& target)

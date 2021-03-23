@@ -9,5 +9,6 @@
 
 namespace Rift
 {
-	using StringView = std::basic_string_view<TCHAR>;
-}
+	using StringView  = std::basic_string_view<TCHAR, std::char_traits<TCHAR>>;
+	using WStringView = std::basic_string_view<WIDECHAR, std::char_traits<WIDECHAR>>;
+}    // namespace Rift
