@@ -34,9 +34,12 @@ namespace Rift::Refl
 		{
 			static_assert(!(propTags & Abstract), "Properties can't be Abstract");
 
+			Type* const valueType = TTypeInstance<PropertyType>::InitType();
+
 			auto& registry  = ReflectionRegistry::Get();
-			auto* const ptr = registry.AddProperty<Property>(
-			    GetType(), GetType<PropertyType>(), name, access, tags);
+			auto* const ptr =
+			    registry.AddProperty<Property>(GetType(), valueType, name, access, propTags);
+
 			GetType()->properties.Insert(name, ptr);
 		}
 
