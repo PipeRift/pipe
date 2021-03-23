@@ -4,7 +4,6 @@
 #include "PCH.h"
 
 #include "Reflection/Static/DataType.h"
-#include "Reflection/Static/TProperty.h"
 
 
 namespace Rift::Refl

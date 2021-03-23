@@ -16,19 +16,25 @@ namespace Rift
 	namespace Refl
 	{
 		class DataType;
-		struct PropertyHandle;
 
 		/**
 		 * Static information about a property
 		 */
 		class CORE_API Property
 		{
-		private:
-			DataType* typePtr;
-			Name typeName;
+			friend class ReflectionRegistry;
+
+			// Returns a pointer to the variable from an owner instance pointer
+			using Access = TFunction<void*(void*)>;
+
+		protected:
+			DataType* owner;
+			Type* type;
 			Name name;
-			String displayName;
+
+			Access access;
 			ReflectionTags tags;
+			String displayName;
 
 
 		public:
@@ -37,59 +43,59 @@ namespace Rift
 			Property(const Property&) = delete;
 
 		protected:
-			Property(DataType* typePtr, Name typeName, Name name, ReflectionTags tags)
-			    : typePtr(typePtr)
-			    , typeName(Move(typeName))
-			    , name(Move(name))
+			Property(DataType* owner, Type* type, Name name, Access access, ReflectionTags tags)
+			    : owner(owner)
+			    , type(type)
+			    , name(name)
+			    , access(Move(access))
 			    , tags(tags)
-			{
-				SetDisplayName(name.ToString());
-			}
+			{}
 
 		public:
 			virtual ~Property() = default;
 
-			const String& GetName() const
-			{
-				return name.ToString();
-			}
-			const String& GetDisplayName() const
-			{
-				return displayName;
-			}
-
-			bool HasTag(ReflectionTags tag) const
-			{
-				return HasAnyTags(tag);
-			}
-			bool HasAllTags(ReflectionTags inTags) const
-			{
-				return (tags & inTags) == inTags;
-			}
-			bool HasAnyTags(ReflectionTags inTags) const
-			{
-				return (tags & inTags) > 0;
-			}
-
-			DataType* GetContainerType() const
-			{
-				return typePtr;
-			}
-
-			Name GetTypeName() const
-			{
-				return typeName;
-			}
-
-			virtual OwnPtr<PropertyHandle> CreateHandle(const Ptr<BaseObject>& instance) const = 0;
-			// virtual std::shared_ptr<PropertyHandle> CreateHandle(BaseStruct* instance) const = 0;
-
-		protected:
-			static const DataType* GetInstanceType(const Ptr<BaseObject>& instance);
-			static const DataType* GetInstanceType(BaseObject* instance);
-
-		private:
-			void SetDisplayName(const String& inDisplayName);
+			DataType* GetOwner() const;
+			Type* GetType() const;
+			Name GetName() const;
+			void* GetDataPtr(void* instance);
+			const String& GetDisplayName() const;
+			bool HasTag(ReflectionTags tag) const;
+			bool HasAllTags(ReflectionTags inTags) const;
+			bool HasAnyTags(ReflectionTags inTags) const;
 		};
+
+
+		inline DataType* Property::GetOwner() const
+		{
+			return owner;
+		}
+		inline Type* Property::GetType() const
+		{
+			return type;
+		}
+		inline Name Property::GetName() const
+		{
+			return name;
+		}
+		inline void* Property::GetDataPtr(void* instance)
+		{
+			return access(instance);
+		}
+		inline const String& Property::GetDisplayName() const
+		{
+			return displayName;
+		}
+		inline bool Property::HasTag(ReflectionTags tag) const
+		{
+			return HasAnyTags(tag);
+		}
+		inline bool Property::HasAllTags(ReflectionTags inTags) const
+		{
+			return (tags & inTags) == inTags;
+		}
+		inline bool Property::HasAnyTags(ReflectionTags inTags) const
+		{
+			return (tags & inTags) > 0;
+		}
 	}    // namespace Refl
 }    // namespace Rift

@@ -134,7 +134,7 @@ namespace Rift
 		ValueType* Find(const KeyType& key)
 		{
 			Iterator it = FindIt(key);
-			return it != end() ? &it->second : nullptr;
+			return it != end() ? const_cast<ValueType*>(&it->second) : nullptr;
 		}
 
 		const ValueType* Find(const KeyType& key) const

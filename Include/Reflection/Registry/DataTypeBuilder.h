@@ -29,19 +29,15 @@ namespace Rift::Refl
 		TDataTypeBuilder() = default;
 		TDataTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
 
-		template <typename PropertyType, ReflectionTags propertyTags>
+		template <typename PropertyType, ReflectionTags propTags>
 		void AddProperty(Name name, TFunction<PropertyType*(void*)>&& access)
 		{
-			static_assert(HasType<PropertyType>(), "PropertyType is not a reflected type.");
-			static_assert(!(propertyTags & Abstract), "Properties can't be Abstract");
+			static_assert(!(propTags & Abstract), "Properties can't be Abstract");
 
-
-			void* ptr = ReflectionRegistry::Get().Allocate(sizeof(TProperty<PropertyType>));
-
-			auto* const property = new (ptr) TProperty<PropertyType>(
-			    GetType(), GetTypeName<PropertyType>(), name, Move(access), propertyTags);
-
-			GetType()->properties.Insert(name, property);
+			auto& registry  = ReflectionRegistry::Get();
+			auto* const ptr = registry.AddProperty<Property>(
+			    GetType(), GetType<PropertyType>(), name, access, tags);
+			GetType()->properties.Insert(name, ptr);
 		}
 
 		TType* GetType() const
@@ -291,6 +287,7 @@ public:
                                                                                               \
 	static void __ReflReflectProperty(BuilderType& builder, Rift::Refl::MetaCounter<id_name>) \
 	{                                                                                         \
+		static_assert(HasType<type>(), "Type is not reflected");                              \
 		static constexpr Rift::ReflectionTags tags =                                          \
 		    Rift::ReflectionTagsInitializer<inTags>::value;                                   \
 		builder.AddProperty<type, tags>(TX(#name), [](void* instance) {                       \

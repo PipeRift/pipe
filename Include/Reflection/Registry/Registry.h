@@ -42,13 +42,11 @@ namespace Rift::Refl
 			return nullptr;
 		}
 
-		template <typename TType>
-		void AddProperty()
-		{}    // TODO
-
-		CORE_API void* Allocate(sizet size)
+		template <typename PropertyType, typename... Args>
+		PropertyType* AddProperty(Args&&... args)
 		{
-			return arena.Allocate(size);
+			void* ptr = arena.Allocate(sizeof(PropertyType));
+			return new (ptr) PropertyType(std::forward<Args>(args)...);
 		}
 
 		static CORE_API ReflectionRegistry& Get();

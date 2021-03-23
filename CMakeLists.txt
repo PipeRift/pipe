@@ -52,6 +52,7 @@ rift_target_define_platform(RiftCore)
 target_include_directories(RiftCore PUBLIC Include)
 file(GLOB_RECURSE CORE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(RiftCore PRIVATE ${CORE_SOURCE_FILES})
+target_compile_definitions(RiftCore PRIVATE NOMINMAX)
 
 target_link_libraries(RiftCore PUBLIC
     date::date

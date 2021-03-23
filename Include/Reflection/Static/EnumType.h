@@ -11,6 +11,19 @@
 
 namespace Rift::Refl
 {
+	template <typename T>
+	constexpr sizet GetEnumSize()
+	{
+		return magic_enum::enum_count<T>();
+	}
+
+	template <typename T>
+	constexpr StringView GetEnumName(T value)
+	{
+		return magic_enum::enum_name(value);
+	}
+
+
 	/** Smallest reflection type that contains all basic class or struct data */
 	class CORE_API EnumType : public Type
 	{
