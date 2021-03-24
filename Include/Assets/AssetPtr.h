@@ -6,7 +6,7 @@
 #include "AssetData.h"
 #include "AssetInfo.h"
 #include "AssetManager.h"
-#include "Files/FileSystem.h"
+#include "Files/Files.h"
 #include "Reflection/TypeName.h"
 #include "Strings/FixedString.h"
 #include "Strings/StringView.h"

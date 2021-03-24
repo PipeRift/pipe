@@ -5,7 +5,6 @@
 #include "AssetInfo.h"
 #include "Containers/Map.h"
 #include "CoreObject.h"
-#include "Files/FileSystem.h"
 
 
 namespace Rift

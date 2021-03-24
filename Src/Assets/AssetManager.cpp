@@ -1,9 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Assets/AssetManager.h"
-
 #include "Context.h"
-#include "Files/FileSystem.h"
+#include "Files/Files.h"
 #include "Profiler.h"
 #include "Tasks.h"
 
@@ -57,7 +56,7 @@ namespace Rift
 			auto& info = infos[i];
 			auto& data = loadedDatas[i];
 
-			if (!FileSystem::LoadJsonFile(info.GetStrPath(), data.json))
+			if (!Files::LoadJsonFile(info.GetStrPath(), data.json))
 			{
 				Log::Error("Asset ({}) could not be loaded from disk", info.GetStrPath());
 				return;
@@ -110,7 +109,7 @@ namespace Rift
 
 	Ptr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Refl::ClassType* assetType)
 	{
-		if (info.IsNull() || !FileSystem::IsFolder(info.GetStrPath()))
+		if (info.IsNull() || !Files::IsFolder(info.GetStrPath()))
 		{
 			return {};
 		}

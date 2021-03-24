@@ -3,20 +3,23 @@
 
 #include "Files/Paths.h"
 #include "Misc/Char.h"
+#include "Platform/PlatformProcess.h"
 
 
 namespace Rift::Paths
 {
+	Path GetBasePath()
+	{
+		return FromString(PlatformProcess::GetBasePath());
+	}
+
 #if PLATFORM_WINDOWS
 	bool _HasDriveLetterPrefix(const TCHAR* const first, const TCHAR* const last)
 	{
 		// test if [first, last) has a prefix of the form X:
-		if (last - first >= 2)
+		if (last - first >= 2 && FChar::ToUpper(first[0]) >= 'A' && FChar::ToUpper(first[0]) <= 'Z')
 		{
-			if (FChar::ToUpper(first[0]) >= 'A' && FChar::ToUpper(first[0]) <= 'Z')
-			{
-				return first[1] == ':';
-			}
+			return first[1] == ':';
 		}
 		return false;
 	}
@@ -159,5 +162,41 @@ namespace Rift::Paths
 		}
 
 		return {first, static_cast<size_t>(last - first)};
+	}
+
+	Path ToRelative(const Path& path, const Path& parent)
+	{
+		return fs::relative(path, parent);
+	}
+
+	Path ToAbsolute(const Path& path, const Path& parent)
+	{
+		if (path.is_absolute())
+		{
+			return path;
+		}
+		return parent / path;
+	}
+
+	bool IsInside(const Path& base, const Path& parent)
+	{
+		return !ToRelative(base, parent).empty();
+	}
+
+	String GetFilename(const Path& path)
+	{
+		return ToString(path.filename());
+	}
+
+	String ToString(const Path& path)
+	{
+		return path.string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>();
+	}
+
+	Path FromString(StringView pathStr)
+	{
+		Path path;
+		path.assign(pathStr);
+		return path;
 	}
 }    // namespace Rift::Paths

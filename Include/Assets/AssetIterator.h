@@ -9,13 +9,13 @@
 namespace Rift
 {
 	template <bool bRecursive = false>
-	class AssetIterator : public FormatFileIterator<FileSystem::Iterator>
+	class AssetIterator : public FormatFileIterator<Files::Iterator>
 	{
 	public:
 		mutable AssetInfo currentAsset;
 
 
-		using FormatFileIterator<FileSystem::Iterator>::FormatFileIterator;
+		using FormatFileIterator<Files::Iterator>::FormatFileIterator;
 
 		explicit AssetIterator(const Path& path)
 		    : FormatFileIterator(AssetManager::assetFormat, path)
@@ -34,13 +34,13 @@ namespace Rift
 	};
 
 	template <>
-	class AssetIterator<true> : public FormatFileIterator<FileSystem::RecursiveIterator>
+	class AssetIterator<true> : public FormatFileIterator<Files::RecursiveIterator>
 	{
 	public:
 		mutable AssetInfo currentAsset;
 
 
-		using FormatFileIterator<FileSystem::RecursiveIterator>::FormatFileIterator;
+		using FormatFileIterator<Files::RecursiveIterator>::FormatFileIterator;
 
 		explicit AssetIterator(const Path& path)
 		    : FormatFileIterator(AssetManager::assetFormat, path)

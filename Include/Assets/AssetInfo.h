@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 #include "CoreTypes.h"
-#include "Files/FileSystem.h"
+#include "Files/Paths.h"
 #include "Reflection/Static/NativeType.h"
 #include "Strings/Name.h"
 #include "Strings/StringView.h"
@@ -22,7 +22,7 @@ namespace Rift
 	public:
 		AssetInfo() : id(Name::None()) {}
 		AssetInfo(Name id) : id(Move(id)) {}
-		AssetInfo(const Path& path) : id(FileSystem::ToString(path)) {}
+		AssetInfo(const Path& path) : id(Paths::ToString(path)) {}
 
 		/**
 		 * @returns true if this can never be pointed towards an asset
@@ -43,7 +43,7 @@ namespace Rift
 		inline String GetFilename() const
 		{
 			// TODO: Optimize after Paths are used for the asset system
-			return FileSystem::GetFilename(FileSystem::FromString(id.ToString()));
+			return Paths::GetFilename(Paths::FromString(id.ToString()));
 		}
 
 		bool operator==(const AssetInfo& other) const

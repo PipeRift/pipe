@@ -1,8 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Files/Files.h"
+#include "Files/Paths.h"
 #include "Log.h"
-
-#include "Files/FileSystem.h"
 
 #include <spdlog/details/null_mutex.h>
 #include <spdlog/sinks/base_sink.h>
@@ -38,7 +38,7 @@ namespace Rift::Log
 			spdlog::memory_buf_t formatted;
 			Super::formatter_->format(msg, formatted);
 
-			TracyMessage(formatted.data(), formatted.size());	 // Send to profiler
+			TracyMessage(formatted.data(), formatted.size());    // Send to profiler
 		}
 
 		void flush_() override {}
@@ -57,7 +57,7 @@ namespace Rift::Log
 		if (!logFile.empty())
 		{
 			Path logFolder = logFile;
-			if (FileSystem::IsFile(logFile))
+			if (Files::IsFile(logFile))
 			{
 				logFolder.remove_filename();
 			}
@@ -65,10 +65,10 @@ namespace Rift::Log
 			{
 				logFile /= "log.txt";
 			}
-			FileSystem::CreateFolder(logFolder, true);
+			Files::CreateFolder(logFolder, true);
 
 			sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-				FileSystem::ToString(logFile).c_str(), 1048576 * 5, 3));
+			    Paths::ToString(logFile).c_str(), 1048576 * 5, 3));
 		}
 
 #if TRACY_ENABLE
@@ -78,7 +78,7 @@ namespace Rift::Log
 
 		// Console
 		generalLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
-		errLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
+		errLogger     = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
 		generalLogger->set_pattern("%^[%D %T][%l]%$ %v");
 		errLogger->set_pattern("%^[%D %T][%t][%l]%$ %v");
 
@@ -115,4 +115,4 @@ namespace Rift::Log
 	{
 		errLogger->error(msg);
 	}
-}	 // namespace Rift::Log
+}    // namespace Rift::Log

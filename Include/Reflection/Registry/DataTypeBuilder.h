@@ -36,7 +36,7 @@ namespace Rift::Refl
 
 			Type* const valueType = TTypeInstance<PropertyType>::InitType();
 
-			auto& registry  = ReflectionRegistry::Get();
+			auto& registry = ReflectionRegistry::Get();
 			auto* const ptr =
 			    registry.AddProperty<Property>(GetType(), valueType, name, access, propTags);
 

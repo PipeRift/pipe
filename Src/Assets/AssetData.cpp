@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #include "Assets/AssetData.h"
+#include "Files/Files.h"
 
-#include "Files/FileSystem.h"
 
 
 namespace Rift
@@ -26,7 +26,7 @@ namespace Rift
 	bool AssetData::SaveToPath(const Name& path)
 	{
 		const String& sPath = path.ToString();
-		if (sPath.empty() || !FileSystem::IsFolder(sPath))
+		if (sPath.empty() || !Files::IsFolder(sPath))
 			return false;
 
 		JsonArchive ar{};
@@ -34,7 +34,7 @@ namespace Rift
 		ar("asset_type", className);
 		Serialize(ar);
 
-		return FileSystem::SaveJsonFile(sPath, ar.GetData(), ar.GetIndent());
+		return Files::SaveJsonFile(sPath, ar.GetData(), ar.GetIndent());
 	}
 
 	bool AssetData::Save()

@@ -13,6 +13,7 @@ namespace Rift
 
 		AssetInfo info;
 
+
 	public:
 		AssetData() : Super() {}
 

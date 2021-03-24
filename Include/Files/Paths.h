@@ -1,12 +1,30 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#pragma once
+
 #include "Export.h"
+#include "Files/STDFileSystem.h"
 #include "Platform/Platform.h"
+#include "Strings/String.h"
 #include "Strings/StringView.h"
 
 
 namespace Rift::Paths
 {
+	///////////////////////////////////////////////////////////
+	// PATHS
+
+	inline CORE_API Path GetCurrent()
+	{
+		return fs::current_path();
+	}
+
+	CORE_API Path GetBasePath();
+
+
+	///////////////////////////////////////////////////////////
+	// PATH HELPERS
+
 	inline CORE_API constexpr bool IsSlash(TCHAR c)
 	{
 		return c == TX('\\') || c == TX('/');
@@ -30,4 +48,12 @@ namespace Rift::Paths
 	// E.g: "/var/tmp/file.txt" -> "/var/tmp"
 	// E.g: "/var/tmp/." -> "/var/tmp"
 	CORE_API StringView GetParent(StringView path);
+
+
+	CORE_API Path ToRelative(const Path& path, const Path& parent = GetCurrent());
+	CORE_API Path ToAbsolute(const Path& path, const Path& parent = GetCurrent());
+	CORE_API bool IsInside(const Path& base, const Path& parent);
+	CORE_API String GetFilename(const Path& path);
+	CORE_API String ToString(const Path& path);
+	CORE_API Path FromString(StringView pathStr);
 }    // namespace Rift::Paths
