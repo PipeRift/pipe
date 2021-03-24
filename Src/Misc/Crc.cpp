@@ -1,9 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 // Based on Unreal Engine 4 Crc
 
+#include "Memory/Alloc.h"
 #include "Misc/Crc.h"
-
-#include "Platform/PlatformMisc.h"
 
 
 namespace Rift
@@ -322,7 +321,7 @@ namespace Rift
 		const u8* __restrict Data = (u8*) InData;
 
 		// First we need to align to 32-bits
-		i32 initBytes = i32(Align(Data, 4) - Data);
+		i32 initBytes = i32(GetAlignmentPadding(Data, 4));
 
 		if (length > initBytes)
 		{
