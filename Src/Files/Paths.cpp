@@ -2,6 +2,7 @@
 // Some functions are adaptations to StringView from std::filesystem
 
 #include "Files/Paths.h"
+
 #include "Misc/Char.h"
 #include "Platform/PlatformProcess.h"
 
