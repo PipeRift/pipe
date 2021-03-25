@@ -176,7 +176,7 @@ namespace Rift
 	}
 
 
-	String DateTime::ToString(const TCHAR* format) const
+	String DateTime::ToString(const TChar* format) const
 	{
 		// return CString::Format(format, *value);
 		String result;
@@ -313,13 +313,13 @@ namespace Rift
 		return true;
 	}
 
-	bool DateTime::ParseIso8601(const TCHAR* DateTimeString, DateTime& OutDateTime)
+	bool DateTime::ParseIso8601(const TChar* DateTimeString, DateTime& OutDateTime)
 	{
 		// DateOnly: YYYY-MM-DD
 		// DateTime: YYYY-mm-ddTHH:MM:SS(.ssss)(Z|+th:tm|-th:tm)
 
-		const TCHAR* ptr = DateTimeString;
-		TCHAR* Next      = nullptr;
+		const TChar* ptr = DateTimeString;
+		TChar* Next      = nullptr;
 
 		i32 Year = 0, Month = 0, Day = 0;
 		i32 Hour = 0, Minute = 0, Second = 0, Millisecond = 0;

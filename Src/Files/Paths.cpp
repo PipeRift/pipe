@@ -15,7 +15,7 @@ namespace Rift::Paths
 	}
 
 #if PLATFORM_WINDOWS
-	bool _HasDriveLetterPrefix(const TCHAR* const first, const TCHAR* const last)
+	bool _HasDriveLetterPrefix(const TChar* const first, const TChar* const last)
 	{
 		// test if [first, last) has a prefix of the form X:
 		if (last - first >= 2 && FChar::ToUpper(first[0]) >= 'A' && FChar::ToUpper(first[0]) <= 'Z')
@@ -26,7 +26,7 @@ namespace Rift::Paths
 	}
 #endif
 
-	const TCHAR* _FindRootNameEnd(const TCHAR* const first, const TCHAR* const last)
+	const TChar* _FindRootNameEnd(const TChar* const first, const TChar* const last)
 	{
 		const sizet len = last - first;
 #if PLATFORM_WINDOWS
@@ -94,7 +94,7 @@ namespace Rift::Paths
 		if (len > 2 && IsSlash(first[0]) && IsSlash(first[1]) && !IsSlash(first[2]) &&
 		    std::isprint(first[2]))
 		{
-			const TCHAR* c = first + 3;
+			const TChar* c = first + 3;
 			while (c <= last)
 			{
 				if (IsSlash(*c))
@@ -111,7 +111,7 @@ namespace Rift::Paths
 #endif
 	}
 
-	const TCHAR* FindRelativeChar(const TCHAR* const first, const TCHAR* const last)
+	const TChar* FindRelativeChar(const TChar* const first, const TChar* const last)
 	{
 		// attempt to parse [first, last) as a path and return the start of relative-path
 		return std::find_if_not(_FindRootNameEnd(first, last), last, IsSlash);
@@ -191,7 +191,7 @@ namespace Rift::Paths
 
 	String ToString(const Path& path)
 	{
-		return path.string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>();
+		return path.string<TChar, std::char_traits<TChar>, STLAllocator<TChar>>();
 	}
 
 	Path FromString(StringView pathStr)

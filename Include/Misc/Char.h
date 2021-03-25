@@ -22,24 +22,24 @@ namespace Rift
 	template <typename T>
 	struct TLiteral
 	{
-		static const ANSICHAR Select(const ANSICHAR ansi, const WIDECHAR)
+		static const AnsiChar Select(const AnsiChar ansi, const WideChar)
 		{
 			return ansi;
 		}
-		static const ANSICHAR* Select(const ANSICHAR* ansi, const WIDECHAR*)
+		static const AnsiChar* Select(const AnsiChar* ansi, const WideChar*)
 		{
 			return ansi;
 		}
 	};
 
 	template <>
-	struct TLiteral<WIDECHAR>
+	struct TLiteral<WideChar>
 	{
-		static const WIDECHAR Select(const ANSICHAR, const WIDECHAR wide)
+		static const WideChar Select(const AnsiChar, const WideChar wide)
 		{
 			return wide;
 		}
-		static const WIDECHAR* Select(const ANSICHAR*, const WIDECHAR* wide)
+		static const WideChar* Select(const AnsiChar*, const WideChar* wide)
 		{
 			return wide;
 		}
@@ -50,12 +50,12 @@ namespace Rift
 	/**
 	 * TChar
 	 * Set of utility functions operating on a single character. The functions
-	 * are specialized for ANSICHAR and TCHAR character types. You can use the
+	 * are specialized for AnsiChar and TChar character types. You can use the
 	 * typedefs FChar and FCharAnsi for convenience.
 	 */
 
 	template <typename T, const unsigned int Size>
-	struct TCharBase
+	struct TCharHelpersBase
 	{
 		typedef T CharType;
 
@@ -69,7 +69,7 @@ namespace Rift
 	};
 
 	template <typename T>
-	struct TCharBase<T, 1>
+	struct TCharHelpersBase<T, 1>
 	{
 		using CharType = T;
 
@@ -86,13 +86,13 @@ namespace Rift
 		using CharType = T;
 		static inline bool IsLinebreak(CharType c)
 		{
-			return c == TCharBase<CharType, Size>::LineFeed ||
-			       c == TCharBase<CharType, Size>::VerticalTab ||
-			       c == TCharBase<CharType, Size>::FormFeed ||
-			       c == TCharBase<CharType, Size>::CarriageReturn ||
-			       c == TCharBase<CharType, Size>::NextLine ||
-			       c == TCharBase<CharType, Size>::LineSeparator ||
-			       c == TCharBase<CharType, Size>::ParagraphSeparator;
+			return c == TCharHelpersBase<CharType, Size>::LineFeed ||
+			       c == TCharHelpersBase<CharType, Size>::VerticalTab ||
+			       c == TCharHelpersBase<CharType, Size>::FormFeed ||
+			       c == TCharHelpersBase<CharType, Size>::CarriageReturn ||
+			       c == TCharHelpersBase<CharType, Size>::NextLine ||
+			       c == TCharHelpersBase<CharType, Size>::LineSeparator ||
+			       c == TCharHelpersBase<CharType, Size>::ParagraphSeparator;
 		}
 	};
 
@@ -102,16 +102,16 @@ namespace Rift
 		using CharType = T;
 		static inline bool IsLinebreak(CharType c)
 		{
-			return c == TCharBase<CharType, 1>::LineFeed ||
-			       c == TCharBase<CharType, 1>::VerticalTab ||
-			       c == TCharBase<CharType, 1>::FormFeed ||
-			       c == TCharBase<CharType, 1>::CarriageReturn ||
-			       c == TCharBase<CharType, 1>::NextLine;
+			return c == TCharHelpersBase<CharType, 1>::LineFeed ||
+			       c == TCharHelpersBase<CharType, 1>::VerticalTab ||
+			       c == TCharHelpersBase<CharType, 1>::FormFeed ||
+			       c == TCharHelpersBase<CharType, 1>::CarriageReturn ||
+			       c == TCharHelpersBase<CharType, 1>::NextLine;
 		}
 	};
 
 	template <typename T>
-	struct TChar : public TCharBase<T, sizeof(T)>
+	struct TCharHelpers : public TCharHelpersBase<T, sizeof(T)>
 	{
 		using CharType = T;
 
@@ -163,124 +163,124 @@ namespace Rift
 		static inline i32 StrtoI32(const CharType* str, CharType** end, i32 radix);
 	};
 
-	using FChar     = TChar<TCHAR>;
-	using FCharWide = TChar<WIDECHAR>;
-	using FCharAnsi = TChar<ANSICHAR>;
+	using FChar     = TCharHelpers<TChar>;
+	using FCharWide = TCharHelpers<WideChar>;
+	using FCharAnsi = TCharHelpers<AnsiChar>;
 
 	/*-----------------------------------------------------------------------------
-	    WIDECHAR specialized functions
+	    WideChar specialized functions
 	-----------------------------------------------------------------------------*/
 	template <>
-	inline bool TChar<WIDECHAR>::IsUpper(CharType c)
+	inline bool TCharHelpers<WideChar>::IsUpper(CharType c)
 	{
 		return ::iswupper(c) != 0;
 	}
 	template <>
-	inline bool TChar<WIDECHAR>::IsLower(CharType c)
+	inline bool TCharHelpers<WideChar>::IsLower(CharType c)
 	{
 		return ::iswlower(c) != 0;
 	}
 	template <>
-	inline bool TChar<WIDECHAR>::IsAlpha(CharType c)
+	inline bool TCharHelpers<WideChar>::IsAlpha(CharType c)
 	{
 		return ::iswalpha(c) != 0;
 	}
 	template <>
-	inline bool TChar<WIDECHAR>::IsGraph(CharType c)
+	inline bool TCharHelpers<WideChar>::IsGraph(CharType c)
 	{
 		return ::iswgraph(c) != 0;
 	}
 	template <>
-	inline bool TChar<WIDECHAR>::IsPrint(CharType c)
+	inline bool TCharHelpers<WideChar>::IsPrint(CharType c)
 	{
 		return ::iswprint(c) != 0;
 	}
 	template <>
-	inline bool TChar<WIDECHAR>::IsPunct(CharType c)
+	inline bool TCharHelpers<WideChar>::IsPunct(CharType c)
 	{
 		return ::iswpunct(c) != 0;
 	}
 	template <>
-	inline bool TChar<WIDECHAR>::IsAlnum(CharType c)
+	inline bool TCharHelpers<WideChar>::IsAlnum(CharType c)
 	{
 		return ::iswalnum(c) != 0;
 	}
 	template <>
-	inline bool TChar<WIDECHAR>::IsDigit(CharType c)
+	inline bool TCharHelpers<WideChar>::IsDigit(CharType c)
 	{
 		return ::iswdigit(c) != 0;
 	}
 	template <>
-	inline bool TChar<WIDECHAR>::IsHexDigit(CharType c)
+	inline bool TCharHelpers<WideChar>::IsHexDigit(CharType c)
 	{
 		return ::iswxdigit(c) != 0;
 	}
 	template <>
-	inline bool TChar<WIDECHAR>::IsWhitespace(CharType c)
+	inline bool TCharHelpers<WideChar>::IsWhitespace(CharType c)
 	{
 		return ::iswspace(c) != 0;
 	}
 	template <>
-	inline i32 TChar<WIDECHAR>::StrtoI32(const CharType* str, CharType** end, i32 radix)
+	inline i32 TCharHelpers<WideChar>::StrtoI32(const CharType* str, CharType** end, i32 radix)
 	{
 		return ::wcstol(str, end, radix);
 	}
 
 	/*-----------------------------------------------------------------------------
-	    ANSICHAR specialized functions
+	    AnsiChar specialized functions
 	-----------------------------------------------------------------------------*/
 	template <>
-	inline bool TChar<ANSICHAR>::IsUpper(CharType Char)
+	inline bool TCharHelpers<AnsiChar>::IsUpper(CharType Char)
 	{
 		return ::isupper((unsigned char) Char) != 0;
 	}
 	template <>
-	inline bool TChar<ANSICHAR>::IsLower(CharType Char)
+	inline bool TCharHelpers<AnsiChar>::IsLower(CharType Char)
 	{
 		return ::islower((unsigned char) Char) != 0;
 	}
 	template <>
-	inline bool TChar<ANSICHAR>::IsAlpha(CharType Char)
+	inline bool TCharHelpers<AnsiChar>::IsAlpha(CharType Char)
 	{
 		return ::isalpha((unsigned char) Char) != 0;
 	}
 	template <>
-	inline bool TChar<ANSICHAR>::IsGraph(CharType Char)
+	inline bool TCharHelpers<AnsiChar>::IsGraph(CharType Char)
 	{
 		return ::isgraph((unsigned char) Char) != 0;
 	}
 	template <>
-	inline bool TChar<ANSICHAR>::IsPrint(CharType Char)
+	inline bool TCharHelpers<AnsiChar>::IsPrint(CharType Char)
 	{
 		return ::isprint((unsigned char) Char) != 0;
 	}
 	template <>
-	inline bool TChar<ANSICHAR>::IsPunct(CharType Char)
+	inline bool TCharHelpers<AnsiChar>::IsPunct(CharType Char)
 	{
 		return ::ispunct((unsigned char) Char) != 0;
 	}
 	template <>
-	inline bool TChar<ANSICHAR>::IsAlnum(CharType Char)
+	inline bool TCharHelpers<AnsiChar>::IsAlnum(CharType Char)
 	{
 		return ::isalnum((unsigned char) Char) != 0;
 	}
 	template <>
-	inline bool TChar<ANSICHAR>::IsDigit(CharType Char)
+	inline bool TCharHelpers<AnsiChar>::IsDigit(CharType Char)
 	{
 		return ::isdigit((unsigned char) Char) != 0;
 	}
 	template <>
-	inline bool TChar<ANSICHAR>::IsHexDigit(CharType Char)
+	inline bool TCharHelpers<AnsiChar>::IsHexDigit(CharType Char)
 	{
 		return ::isxdigit((unsigned char) Char) != 0;
 	}
 	template <>
-	inline bool TChar<ANSICHAR>::IsWhitespace(CharType Char)
+	inline bool TCharHelpers<AnsiChar>::IsWhitespace(CharType Char)
 	{
 		return ::isspace((unsigned char) Char) != 0;
 	}
 	template <>
-	inline i32 TChar<ANSICHAR>::StrtoI32(const CharType* str, CharType** end, i32 radix)
+	inline i32 TCharHelpers<AnsiChar>::StrtoI32(const CharType* str, CharType** end, i32 radix)
 	{
 		return ::strtol(str, end, radix);
 	}

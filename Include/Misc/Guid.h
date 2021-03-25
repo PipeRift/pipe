@@ -207,7 +207,7 @@ namespace Rift
 			return Value.ToString();
 		}
 
-		friend void LexFromString(Guid& Result, const TCHAR* String)
+		friend void LexFromString(Guid& Result, const TChar* String)
 		{
 			Guid::Parse(String, Result);
 		}

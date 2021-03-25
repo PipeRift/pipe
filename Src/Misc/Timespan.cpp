@@ -19,7 +19,7 @@ namespace Rift
 	}
 
 
-	String Timespan::ToString(const TCHAR* format) const
+	String Timespan::ToString(const TChar* format) const
 	{
 		String result;
 

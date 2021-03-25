@@ -15,6 +15,7 @@
 
 #include <fmt/chrono.h>
 #include <fmt/format.h>
+#include <utf8.h>
 
 #include <charconv>
 #include <regex>
@@ -26,10 +27,16 @@
 
 namespace Rift
 {
-	using String  = std::basic_string<TCHAR, std::char_traits<TCHAR>, STLAllocator<TCHAR>>;
-	using WString = std::basic_string<WIDECHAR, std::char_traits<WIDECHAR>, STLAllocator<WIDECHAR>>;
-	using StringBuffer =
-	    fmt::basic_memory_buffer<TCHAR, fmt::inline_buffer_size, STLAllocator<TCHAR>>;
+	template <typename CharType, typename Allocator = STLAllocator<CharType>>
+	using TString = std::basic_string<CharType, std::char_traits<CharType>, Allocator>;
+	using String  = TString<TChar>;
+	using WString = TString<WideChar>;
+
+	template <typename CharType, typename Allocator = STLAllocator<CharType>>
+	using TStringBuffer = fmt::basic_memory_buffer<CharType, fmt::inline_buffer_size, Allocator>;
+	using StringBuffer  = TStringBuffer<TChar>;
+
+	using Regex = std::basic_regex<TChar>;
 
 
 	struct CORE_API CString
@@ -52,19 +59,19 @@ namespace Rift
 		static void ToSentenceCase(const String& str, String& result);
 
 		static String ReplaceCopy(
-		    const String& original, const TCHAR searchChar, const TCHAR replacementChar)
+		    const String& original, const TChar searchChar, const TChar replacementChar)
 		{
 			String result = original;
 			Replace(result, searchChar, replacementChar);
 			return result;
 		}
 
-		static void Replace(String& value, const TCHAR searchChar, const TCHAR replacementChar)
+		static void Replace(String& value, const TChar searchChar, const TChar replacementChar)
 		{
 			std::replace(value.begin(), value.end(), searchChar, replacementChar);
 		}
 
-		static bool Contains(StringView str, const TCHAR c)
+		static bool Contains(StringView str, const TChar c)
 		{
 			return str.find(c) != String::npos;
 		}
@@ -79,7 +86,7 @@ namespace Rift
 			return one.size() == other.size() && std::equal(one.begin(), one.end(), other.begin());
 		}
 
-		static constexpr bool Equals(StringView str, const TCHAR c)
+		static constexpr bool Equals(StringView str, const TChar c)
 		{
 			return str.size() == 1 && str[0] == c;
 		}
@@ -94,7 +101,7 @@ namespace Rift
 		 * @return	The number of elements in InArray
 		 */
 		static i32 ParseIntoArray(const String& str, TArray<String>& OutArray,
-		    const TCHAR* pchDelim, bool InCullEmpty = true);
+		    const TChar* pchDelim, bool InCullEmpty = true);
 
 		static constexpr bool StartsWith(StringView str, StringView subStr)
 		{
@@ -108,7 +115,7 @@ namespace Rift
 			       std::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
 		}
 
-		static constexpr bool EndsWith(StringView str, const TCHAR c)
+		static constexpr bool EndsWith(StringView str, const TChar c)
 		{
 			return str.size() >= 1 && str.back() == c;
 		}
@@ -122,7 +129,7 @@ namespace Rift
 			str.erase(str.size() - 1 - size, str.size() - 1);
 		}
 
-		static i32 Split(const String& str, TArray<String>& tokens, const TCHAR delim)
+		static i32 Split(const String& str, TArray<String>& tokens, const TChar delim)
 		{
 			sizet current, previous = 0;
 			current = str.find(delim);
@@ -136,7 +143,7 @@ namespace Rift
 			return tokens.Size();
 		}
 
-		static bool Split(const String& str, String& a, String& b, const TCHAR* delim)
+		static bool Split(const String& str, String& a, String& b, const TChar* delim)
 		{
 			const sizet pos = str.find(delim);
 			if (pos != String::npos)
@@ -197,12 +204,62 @@ namespace Rift
 		{
 			return IsNumeric(str.data());
 		}
-		static bool IsNumeric(const TCHAR* Str);
+		static bool IsNumeric(const TChar* Str);
 
 		static String ParseMemorySize(sizet size);
-	};
 
-	using Regex = std::basic_regex<TCHAR>;
+		template<typename CharType>
+		static sizet Length(const CharType* str)
+		{
+			return std::strlen(str);
+		}
+
+
+		template <typename ToStringType, typename FromChar>
+		static void ConvertTo(TStringView<FromChar> source, ToStringType& dest) requires(
+		    !IsSame<FromChar, ToStringType::value_type>)
+		{
+			using ToChar = ToStringType::value_type;
+			static_assert(std::is_integral_v<FromChar>, "FromChar is not integral (so it is not a char)");
+			static_assert(std::is_integral_v<ToChar>, "ToChar is not integral (so it is not a char)");
+
+			if constexpr (sizeof(FromChar) == 1 && sizeof(ToChar) == 2)
+			{
+				utf8::utf8to16(source.begin(), source.end(), std::back_inserter(dest));
+			}
+			else if constexpr (sizeof(FromChar) == 2 && sizeof(ToChar) == 1)
+			{
+				utf8::utf16to8(source.begin(), source.end(), std::back_inserter(dest));
+			}
+			else if constexpr (sizeof(FromChar) == 1 && sizeof(ToChar) == 4)
+			{
+				utf8::utf8to32(source.begin(), source.end(), std::back_inserter(dest));
+			}
+			else if constexpr (sizeof(FromChar) == 4 && sizeof(ToChar) == 1)
+			{
+				utf8::utf32to8(source.begin(), source.end(), std::back_inserter(dest));
+			}
+			else
+			{
+				//static_assert(false, "Unknown char conversion types");
+			}
+		}
+
+		template <typename ToStringType, typename FromChar>
+		static ToStringType Convert(TStringView<FromChar> source)
+		{
+			ToStringType dest;
+			ConvertTo(source, dest);
+			return dest;
+		}
+
+		// Do nothing. Converting to same type
+		template <typename CharType>
+		static TStringView<CharType> Convert(TStringView<CharType> source)
+		{
+			return source;
+		}
+	};
 
 
 	template <>
@@ -224,9 +281,9 @@ namespace Rift
 	};
 
 	template <>
-	struct Hash<const TCHAR*>
+	struct Hash<const TChar*>
 	{
-		sizet operator()(const TCHAR* str) const
+		sizet operator()(const TChar* str) const
 		{
 			return GetStringHash(str);
 		}

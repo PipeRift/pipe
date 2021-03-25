@@ -65,6 +65,7 @@ target_link_libraries(RiftCore PUBLIC
     tsl::sparse_map
     Tracy
     magic_enum
+    utf8cpp
 )
 target_link_libraries(RiftCore PRIVATE
     portable_file_dialogs

@@ -3,10 +3,12 @@
 
 #include "Platform/Generic/GenericPlatformMisc.h"
 
+#include <linux/limits.h>
+
 
 namespace Rift
 {
-	struct LinuxPlatformTypes : public GenericPlatformTypes
+	struct LinuxPlatformMisc : public GenericPlatformMisc
 	{
 		static constexpr u32 GetMaxPathLength()
 		{

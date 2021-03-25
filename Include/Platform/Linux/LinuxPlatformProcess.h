@@ -9,12 +9,9 @@ namespace Rift
 {
 	struct CORE_API LinuxPlatformProcess : public GenericPlatformProcess
 	{
-		static StringView GetModuleFilePath();
+		static StringView GetExecutableFile();
+		static StringView GetExecutablePath();
 		static StringView GetBasePath();
-		// static StringView GetUserDir();
-		// static StringView GetUserTempDir();
-		// static StringView GetUserSettingsDir();
-		// static StringView GetApplicationSettingsDir();
 	};
 
 	using PlatformProcess = LinuxPlatformProcess;

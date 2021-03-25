@@ -20,10 +20,10 @@ namespace Rift
 		using sizet        = std::size_t;
 		using TYPE_OF_NULL = decltype(nullptr);
 #if PLATFORM_MACOS_USE_CHAR16
-		using WIDECHAR = char16_t;
-		using TCHAR    = WIDECHAR;
+		using WideChar = char16_t;
+		using TChar    = WideChar;
 #else
-		using CHAR16 = char16_t;
+		using Char16 = char16_t;
 #endif
 	};
 

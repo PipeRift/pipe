@@ -473,7 +473,7 @@ namespace Rift
 		 * @return String representation.
 		 * @see Parse, ToIso8601
 		 */
-		String ToString(const TCHAR* Format) const;
+		String ToString(const TChar* Format) const;
 
 		/**
 		 * Returns this date as the number of seconds since the Unix Epoch (January
@@ -630,7 +630,7 @@ namespace Rift
 		 * @return true if the string was converted successfully, false otherwise.
 		 * @see Parse, ParseHttpDate, ToIso8601
 		 */
-		static bool ParseIso8601(const TCHAR* DateTimeString, DateTime& OutDateTime);
+		static bool ParseIso8601(const TChar* DateTimeString, DateTime& OutDateTime);
 
 		/**
 		 * Gets the local date on this computer.

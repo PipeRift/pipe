@@ -17,8 +17,8 @@ namespace Rift
 		using sizet        = __SIZE_TYPE__;
 		using TYPE_OF_NULL = decltype(__null);
 #if PLATFORM_LINUX_USE_CHAR16
-		using WIDECHAR = char16_t;
-		using TCHAR    = WIDECHAR;
+		using WideChar = char16_t;
+		using TChar    = WideChar;
 #endif
 	};
 

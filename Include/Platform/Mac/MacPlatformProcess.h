@@ -7,12 +7,12 @@
 
 namespace Rift
 {
-	struct CORE_API WindowsPlatformProcess : public GenericPlatformProcess
+	struct CORE_API MacPlatformProcess : public GenericPlatformProcess
 	{
 		static StringView GetExecutableFile();
 		static StringView GetExecutablePath();
 		static StringView GetBasePath();
 	};
 
-	using PlatformProcess = WindowsPlatformProcess;
+	using PlatformProcess = MacPlatformProcess;
 }    // namespace Rift

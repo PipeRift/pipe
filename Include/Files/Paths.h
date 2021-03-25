@@ -25,12 +25,12 @@ namespace Rift::Paths
 	///////////////////////////////////////////////////////////
 	// PATH HELPERS
 
-	inline CORE_API constexpr bool IsSlash(TCHAR c)
+	inline CORE_API constexpr bool IsSlash(TChar c)
 	{
 		return c == TX('\\') || c == TX('/');
 	}
 
-	CORE_API const TCHAR* FindRelativeChar(const TCHAR* const first, const TCHAR* const last);
+	CORE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
 
 	// @return root name of a path, or an empty view if missing
 	// E.g: "C:\Folder" -> "C:"

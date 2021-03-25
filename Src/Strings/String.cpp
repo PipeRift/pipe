@@ -29,7 +29,7 @@ namespace Rift
 		return str.substr(Math::Max(sizet(0u), sizet(str.size() - size)), size);
 	}
 
-	bool CString::IsNumeric(const TCHAR* Str)
+	bool CString::IsNumeric(const TChar* Str)
 	{
 		if (*Str == TX('-') || *Str == TX('+'))
 		{

@@ -38,19 +38,26 @@ namespace Rift
 		}
 	}
 
-	StringView WindowsPlatformProcess::GetModuleFilePath()
+	StringView WindowsPlatformProcess::GetExecutableFile()
 	{
-		static const WString path =
-		    GetStringFromWindowsAPI<WString>([](WIDECHAR* buffer, int size) {
-			    return GetModuleFileNameW(nullptr, buffer, size);
-		    });
-		WStringView root = fs::_Parse_parent_path(path);
-		return {};
+		static const String filePath = GetStringFromWindowsAPI<String>([](TChar* buffer, int size) {
+#	if PLATFORM_TCHAR_IS_WCHAR
+			return GetModuleFileNameW(nullptr, buffer, size);
+#	else
+			return GetModuleFileNameA(nullptr, buffer, size);
+#	endif
+		});
+		return filePath;
+	}
+
+	StringView WindowsPlatformProcess::GetExecutablePath()
+	{
+		return Paths::GetParent(GetExecutableFile());
 	}
 
 	StringView WindowsPlatformProcess::GetBasePath()
 	{
-		return GetModuleFilePath();
+		return GetExecutablePath();
 	}
 }    // namespace Rift
 #endif

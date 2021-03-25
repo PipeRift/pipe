@@ -48,31 +48,31 @@ namespace Rift
 
 		// Character types.
 		// An ANSI character - 8-bit fixed-width representation of 7-bit characters.
-		using ANSICHAR = char;
+		using AnsiChar = char;
 
 		// A wide character - In-memory only. ?-bit fixed-width representation of
 		// the platform's natural wide character set. Could be different sizes on
 		// different platforms.
-		using WIDECHAR = wchar_t;
+		using WideChar = wchar_t;
 
 		// An 8-bit character type - In-memory only. 8-bit representation. Should
 		// really be char8_t but making this the generic option is easier for
 		// compilers which don't fully support C++11 yet (i.e. MSVC).
-		using CHAR8 = uint8;
+		using Char8 = uint8;
 
 		// A 16-bit character type - In-memory only. 16-bit representation. Should
 		// really be char16_t but making this the generic option is easier for
 		// compilers which don't fully support C++11 yet (i.e. MSVC).
-		using CHAR16 = uint16;
+		using Char16 = uint16;
 
 		// A 32-bit character type - In-memory only.  32-bit representation.  Should
 		// really be char32_t but making this the generic option is easier for
 		// compilers which don't fully support C++11 yet (i.e. MSVC).
-		using CHAR32 = uint32;
+		using Char32 = uint32;
 
 		// A switchable character - In-memory only.
-		// Either ANSICHAR or WIDECHAR
-		using TCHAR = ANSICHAR;
+		// Either AnsiChar or WideChar
+		using TChar = AnsiChar;
 
 		// unsigned int the same size as a pointer
 		using uPtr = SelectIntPointerType<uint32, uint64, sizeof(void*)>::TIntPointer;
@@ -92,15 +92,15 @@ namespace Rift
 }    // namespace Rift
 
 
-#ifndef PLATFORM_TCHAR_IS_1_BYTE
-#	define PLATFORM_TCHAR_IS_1_BYTE 0
+#ifndef PLATFORM_TCHAR_IS_WCHAR
+#	define PLATFORM_TCHAR_IS_WCHAR 0
 #endif
-#ifndef PLATFORM_TCHAR_IS_4_BYTES
-#	define PLATFORM_TCHAR_IS_4_BYTES 0
+#ifndef PLATFORM_TCHAR_IS_CHAR8
+#	define PLATFORM_TCHAR_IS_CHAR8 0
 #endif
 #ifndef PLATFORM_TCHAR_IS_CHAR16
 #	define PLATFORM_TCHAR_IS_CHAR16 0
 #endif
-#ifndef PLATFORM_TCHAR_IS_WCHAR
-#	define PLATFORM_TCHAR_IS_WCHAR 0
+#ifndef PLATFORM_TCHAR_IS_CHAR32
+#	define PLATFORM_TCHAR_IS_CHAR32 0
 #endif

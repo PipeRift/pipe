@@ -100,7 +100,7 @@ namespace Rift
 
 	public:
 		Name() = default;
-		Name(const TCHAR* key) : Name(StringView{key}) {}
+		Name(const TChar* key) : Name(StringView{key}) {}
 		Name(StringView key)
 		{
 			// Index this name

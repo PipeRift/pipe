@@ -36,45 +36,16 @@ namespace Rift
 	using EnableIfT = std::enable_if_t<B, T>;
 
 	template <typename T, sizet size>
-	struct IsSmallerType : std::integral_constant<bool, (sizeof(T) <= size)>
-	{};
+	concept IsSmaller = sizeof(T) < size;
 
 	template <typename T, sizet size>
-	struct IsBiggerType : std::integral_constant<bool, (sizeof(T) > size)>
-	{};
+	concept IsBigger = sizeof(T) > size;
 
 	template <bool Expression, typename True, typename False>
 	using SelectType = std::conditional<Expression, True, False>;
 
-
-#define EnableIfSmallerType(size) typename = EnableIf<IsSmallerType<T, size>::value>
-#define EnableIfNotSmallerType(size) typename = EnableIf<!IsSmallerType<T, size>::value>
-
-#define EnableIfBiggerType(size) typename = EnableIf<IsBiggerType<T, size>::value>
-#define EnableIfNotBiggerType(size) typename = EnableIf<!IsBiggerType<T, size>::value>
-
-#define EnableIfPassByValue(T) \
-	typename =                 \
-	    EnableIf < IsSmallerType<T, sizeof(sizet)>::value && std::is_copy_constructible<T>::type >
-#define EnableIfNotPassByValue(T) \
-	typename =                    \
-	    EnableIf<!(IsSmallerType<T, sizeof(sizet)>::value && std::is_copy_constructible<T>::type)>
-
-#define EnableIfAll typename = void
-
-	template <typename T, typename = void>
-	constexpr bool isDefined = false;
-	template <typename T>
-	constexpr bool isDefined<T, decltype(typeid(T), void())> = true;
-
-	template <typename, typename = void>
-	struct isSpecialized : std::false_type
-	{};
-
-	template <typename T>
-	struct isSpecialized<T, std::void_t<decltype(T{})>> : std::true_type
-	{};
-
+	template<typename T>
+	concept CanPassByValue = sizeof(T) <= sizeof(sizet) && std::is_copy_constructible_v<T>;
 
 	template <typename T>
 	struct HasItemType

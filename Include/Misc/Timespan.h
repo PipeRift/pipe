@@ -539,7 +539,7 @@ namespace Rift
 		 * @return String representation.
 		 * @see Parse
 		 */
-		String ToString(const TCHAR* Format) const;
+		String ToString(const TChar* Format) const;
 
 	public:
 		/**

@@ -26,7 +26,7 @@ namespace Rift
 	// FNV String hash
 	// Use offset and prime based on the architecture (64bit or 32bit)
 	// http://www.isthe.com/chongo/tech/comp/fnv/index.html
-	inline CORE_API constexpr sizet GetStringHash(const TCHAR* str)
+	inline CORE_API constexpr sizet GetStringHash(const TChar* str)
 	{
 		// 32/64 bit architecture switch
 		if constexpr (sizeof(sizet) < 64)

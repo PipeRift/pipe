@@ -39,7 +39,7 @@ go_bandit([]() {
 			AssertThat(GetTypeName<i16>(), Equals("i16"));
 			AssertThat(GetTypeName<i32>(), Equals("i32"));
 			AssertThat(GetTypeName<i64>(), Equals("i64"));
-			AssertThat(GetTypeName<TCHAR>(), Equals("TCHAR"));
+			AssertThat(GetTypeName<TChar>(), Equals("TChar"));
 			AssertThat(GetTypeName<StringView>(), Equals("StringView"));
 			AssertThat(GetTypeName<String>(), Equals("String"));
 		});

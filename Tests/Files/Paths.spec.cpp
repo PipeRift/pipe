@@ -1,6 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include <Log.h>
+#include <Context.h>
 #include <Files/Paths.h>
+#include <Platform/PlatformProcess.h>
 #include <bandit/bandit.h>
 
 

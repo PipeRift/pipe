@@ -11,7 +11,10 @@ namespace Rift
 	{
 		/** Content saved to compiler or project directories should be rerouted to user directories
 		 * instead **/
-		static bool ShouldSaveToUserDir();
+		static bool ShouldSaveToUserDir()
+		{
+			return false;
+		}
 
 		static StringView GetBasePath()
 		{
