@@ -36,5 +36,9 @@ go_bandit([]() {
 			AssertThat(Paths::GetRelative("/SomeFolder/AnotherFolder"),
 			    Equals("SomeFolder/AnotherFolder"));
 		});
+
+		it("Executable path is not empty", [&]() {
+			AssertThat(Paths::GetExecutablePath(), !Equals(""));
+		});
 	});
 });
