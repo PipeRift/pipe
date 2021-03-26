@@ -34,7 +34,7 @@ namespace Rift
 
 	StringView MacPlatformProcess::GetBasePath()
 	{
-		return {};
+		return GetExecutablePath();
 	}
 }    // namespace Rift
 #endif

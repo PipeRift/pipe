@@ -15,14 +15,5 @@ namespace Rift
 		{
 			return false;
 		}
-
-		static StringView GetBasePath()
-		{
-			return {};
-		}
-		// static String GetUserDir() = 0;
-		// static String GetUserSettingsDir() = 0;
-		// static String GetUserTempDir() = 0;
-		// static String GetApplicationSettingsDir() = 0;
 	};
 }    // namespace Rift
