@@ -198,13 +198,13 @@ namespace Rift
 		Type* Find(const Type& item) const
 		{
 			Iterator it = FindIt(item);
-			return it != end() ? it : nullptr;
+			return it != end() ? &*it : nullptr;
 		}
 
 		Type* Find(std::function<bool(const Type&)> cb) const
 		{
 			Iterator it = FindIt(Move(cb));
-			return it != end() ? it : nullptr;
+			return it != end() ? &*it : nullptr;
 		}
 
 		bool Contains(const Type& item) const

@@ -9,8 +9,8 @@
 namespace Rift
 {
 	template <typename T1, typename T2>
-	using Pair = std::pair<T1, T2>;
+	using TPair = std::pair<T1, T2>;
 
 	template <typename... T>
-	using Tuple = std::tuple<T...>;
+	using TTuple = std::tuple<T...>;
 }    // namespace Rift

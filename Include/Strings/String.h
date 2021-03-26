@@ -208,7 +208,7 @@ namespace Rift
 
 		static String ParseMemorySize(sizet size);
 
-		template<typename CharType>
+		template <typename CharType>
 		static sizet Length(const CharType* str)
 		{
 			return std::strlen(str);
@@ -220,8 +220,10 @@ namespace Rift
 		    !IsSame<FromChar, typename ToStringType::value_type>)
 		{
 			using ToChar = typename ToStringType::value_type;
-			static_assert(std::is_integral_v<FromChar>, "FromChar is not integral (so it is not a char)");
-			static_assert(std::is_integral_v<ToChar>, "ToChar is not integral (so it is not a char)");
+			static_assert(
+			    std::is_integral_v<FromChar>, "FromChar is not integral (so it is not a char)");
+			static_assert(
+			    std::is_integral_v<ToChar>, "ToChar is not integral (so it is not a char)");
 
 			if constexpr (sizeof(FromChar) == 1 && sizeof(ToChar) == 2)
 			{
@@ -241,7 +243,7 @@ namespace Rift
 			}
 			else
 			{
-				//static_assert(false, "Unknown char conversion types");
+				// static_assert(false, "Unknown char conversion types");
 			}
 		}
 

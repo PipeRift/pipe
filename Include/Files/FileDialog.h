@@ -11,7 +11,7 @@
 
 namespace Rift::Dialogs
 {
-	using FileFilter = Pair<StringView, StringView>;
+	using FileFilter = TPair<StringView, StringView>;
 
 	/**
 	 * Selects a file using a system dialog.

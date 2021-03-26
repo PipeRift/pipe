@@ -498,8 +498,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator==(
-	    const TFixedString<CharType, N, TTraits>& lhs, std::basic_string_view<CharType, TTraits> rhs)
+	[[nodiscard]] constexpr bool operator==(const TFixedString<CharType, N, TTraits>& lhs,
+	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
 		using sv_type  = typename lhs_type::string_view_type;
@@ -507,8 +507,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator==(
-	    std::basic_string_view<CharType, TTraits> lhs, const TFixedString<CharType, N, TTraits>& rhs)
+	[[nodiscard]] constexpr bool operator==(std::basic_string_view<CharType, TTraits> lhs,
+	    const TFixedString<CharType, N, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
 		using sv_type  = typename rhs_type::string_view_type;
@@ -527,8 +527,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr auto operator<=>(
-	    const TFixedString<CharType, N, TTraits>& lhs, std::basic_string_view<CharType, TTraits> rhs)
+	[[nodiscard]] constexpr auto operator<=>(const TFixedString<CharType, N, TTraits>& lhs,
+	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
 		using sv_type  = typename lhs_type::string_view_type;
@@ -536,8 +536,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr auto operator<=>(
-	    std::basic_string_view<CharType, TTraits> lhs, const TFixedString<CharType, N, TTraits>& rhs)
+	[[nodiscard]] constexpr auto operator<=>(std::basic_string_view<CharType, TTraits> lhs,
+	    const TFixedString<CharType, N, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
 		using sv_type  = typename rhs_type::string_view_type;
@@ -558,8 +558,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator!=(
-	    const TFixedString<CharType, N, TTraits>& lhs, std::basic_string_view<CharType, TTraits> rhs)
+	[[nodiscard]] constexpr bool operator!=(const TFixedString<CharType, N, TTraits>& lhs,
+	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
 		using sv_type = typename lhs_type::string_view_type;
@@ -567,8 +567,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator!=(
-	    std::basic_string_view<CharType, TTraits> lhs, const TFixedString<CharType, N, TTraits>& rhs)
+	[[nodiscard]] constexpr bool operator!=(std::basic_string_view<CharType, TTraits> lhs,
+	    const TFixedString<CharType, N, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
 		using sv_type = typename rhs_type::string_view_type;
@@ -585,8 +585,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator<(
-	    const TFixedString<CharType, N, TTraits>& lhs, std::basic_string_view<CharType, TTraits> rhs)
+	[[nodiscard]] constexpr bool operator<(const TFixedString<CharType, N, TTraits>& lhs,
+	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
 		using sv_type = typename lhs_type::string_view_type;
@@ -594,8 +594,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator<(
-	    std::basic_string_view<CharType, TTraits> lhs, const TFixedString<CharType, N, TTraits>& rhs)
+	[[nodiscard]] constexpr bool operator<(std::basic_string_view<CharType, TTraits> lhs,
+	    const TFixedString<CharType, N, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
 		using sv_type = typename rhs_type::string_view_type;
@@ -612,8 +612,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator<=(
-	    const TFixedString<CharType, N, TTraits>& lhs, std::basic_string_view<CharType, TTraits> rhs)
+	[[nodiscard]] constexpr bool operator<=(const TFixedString<CharType, N, TTraits>& lhs,
+	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
 		using sv_type = typename lhs_type::string_view_type;
@@ -621,8 +621,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator<=(
-	    std::basic_string_view<CharType, TTraits> lhs, const TFixedString<CharType, N, TTraits>& rhs)
+	[[nodiscard]] constexpr bool operator<=(std::basic_string_view<CharType, TTraits> lhs,
+	    const TFixedString<CharType, N, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
 		using sv_type = typename rhs_type::string_view_type;
@@ -639,8 +639,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator>(
-	    const TFixedString<CharType, N, TTraits>& lhs, std::basic_string_view<CharType, TTraits> rhs)
+	[[nodiscard]] constexpr bool operator>(const TFixedString<CharType, N, TTraits>& lhs,
+	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
 		using sv_type = typename lhs_type::string_view_type;
@@ -648,8 +648,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator>(
-	    std::basic_string_view<CharType, TTraits> lhs, const TFixedString<CharType, N, TTraits>& rhs)
+	[[nodiscard]] constexpr bool operator>(std::basic_string_view<CharType, TTraits> lhs,
+	    const TFixedString<CharType, N, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
 		using sv_type = typename rhs_type::string_view_type;
@@ -666,8 +666,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator>=(
-	    const TFixedString<CharType, N, TTraits>& lhs, std::basic_string_view<CharType, TTraits> rhs)
+	[[nodiscard]] constexpr bool operator>=(const TFixedString<CharType, N, TTraits>& lhs,
+	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
 		using sv_type = typename lhs_type::string_view_type;
@@ -675,8 +675,8 @@ namespace Rift
 	}
 
 	template <typename CharType, typename TTraits, sizet N>
-	[[nodiscard]] constexpr bool operator>=(
-	    std::basic_string_view<CharType, TTraits> lhs, const TFixedString<CharType, N, TTraits>& rhs)
+	[[nodiscard]] constexpr bool operator>=(std::basic_string_view<CharType, TTraits> lhs,
+	    const TFixedString<CharType, N, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
 		using sv_type = typename rhs_type::string_view_type;
@@ -694,8 +694,7 @@ namespace Rift
 		using TFixedString<TChar, N>::TFixedString;
 
 		constexpr FixedString() noexcept : TFixedString<TChar, N>() {}
-		constexpr FixedString(const TChar (&array)[N + 1]) noexcept
-		    : TFixedString<TChar, N>(array)
+		constexpr FixedString(const TChar (&array)[N + 1]) noexcept : TFixedString<TChar, N>(array)
 		{}
 
 		constexpr FixedString(std::basic_string_view<TChar> str)
