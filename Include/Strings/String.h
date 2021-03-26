@@ -217,9 +217,9 @@ namespace Rift
 
 		template <typename ToStringType, typename FromChar>
 		static void ConvertTo(TStringView<FromChar> source, ToStringType& dest) requires(
-		    !IsSame<FromChar, ToStringType::value_type>)
+		    !IsSame<FromChar, typename ToStringType::value_type>)
 		{
-			using ToChar = ToStringType::value_type;
+			using ToChar = typename ToStringType::value_type;
 			static_assert(std::is_integral_v<FromChar>, "FromChar is not integral (so it is not a char)");
 			static_assert(std::is_integral_v<ToChar>, "ToChar is not integral (so it is not a char)");
 

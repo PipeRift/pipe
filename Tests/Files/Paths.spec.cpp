@@ -1,7 +1,5 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Log.h>
-#include <Context.h>
 #include <Files/Paths.h>
 #include <Platform/PlatformProcess.h>
 #include <bandit/bandit.h>
@@ -38,7 +36,7 @@ go_bandit([]() {
 		});
 
 		it("Executable path is not empty", [&]() {
-			AssertThat(Paths::GetExecutablePath(), !Equals(""));
+			AssertThat(PlatformProcess::GetExecutablePath(), !Equals(""));
 		});
 	});
 });

@@ -5,9 +5,9 @@
 #	include "Platform/PlatformMisc.h"
 #	include "Strings/String.h"
 #	include "Strings/FixedString.h"
-#    include "Files/Paths.h"
+#	include "Files/Paths.h"
 
-#include <unistd.h>
+#	include <unistd.h>
 
 namespace Rift
 {
@@ -20,14 +20,11 @@ namespace Rift
 			if (readlink("/proc/self/exe", rawPath.data(), rawPath.size() - 1) == -1)
 			{
 				// readlink() failed. Unreachable
-				return filePath;
+				return {};
 			}
-			rawPath[rawPath.size() - 1] = 0;
 
-			filePath = CString::Convert(TStringView<char>{
-				rawPath.data(),
-				CString::Length(rawPath.data())
-			});
+			filePath = CString::Convert(
+			    TStringView<char>{rawPath.data(), CString::Length(rawPath.data())});
 		}
 		return filePath;
 	}
