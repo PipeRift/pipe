@@ -86,6 +86,7 @@ rift_target_enable_CPP20(RiftCore)
 if(BUILD_TESTING AND RIFT_CORE_BUILD_TESTS)
     include (CTest)
     add_subdirectory(Tests)
+    add_subdirectory(Benchmarks)
 endif()
 
 
