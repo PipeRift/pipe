@@ -44,7 +44,7 @@ namespace Rift::Memory
 		void* Allocate(const sizet size);
 		void* Allocate(const sizet size, const sizet alignment);
 
-		void Free(void* ptr) {}
+		void Free(void* ptr, sizet size) {}
 
 		void Reset();
 

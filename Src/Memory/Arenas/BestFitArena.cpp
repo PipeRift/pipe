@@ -1,12 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Memory/Arenas/BestFitArena.h"
-
 #include "Log.h"
 #include "Math/Math.h"
 #include "Math/Search.h"
 #include "Math/Sorting.h"
 #include "Memory/Alloc.h"
+#include "Memory/Arenas/BestFitArena.h"
 #include "Misc/Utility.h"
 
 
@@ -19,23 +18,38 @@ namespace Rift::Memory
 		// Set address at end of block. Size is 0
 		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.GetSize());
 		// Add first slot for the entire block
-		freeSlots.Add({reinterpret_cast<u8*>(block.GetData()),
-		    reinterpret_cast<u8*>(block.GetData()) + block.GetSize()});
+		freeSlots.Add({reinterpret_cast<u8*>(block.GetData()), block.GetSize()});
 
 		freeSize = initialSize;
 	}
 
 	void* BestFitArena::Allocate(const sizet size)
 	{
-		return Allocate(size, minAlignment);    // Always align by header size
+		const u32 slotIndex = FindSmallestSlot(size);
+		if (slotIndex >= freeSlots.Size())
+		{
+			// Log::Error("No slots can fit {} bytes!", size);
+			return nullptr;
+		}
+
+		Slot& slot      = freeSlots[slotIndex];
+		u8* const start = slot.start;
+		u8* const end   = start + size;
+
+		if (end > block.GetEnd())
+		{
+			// Log::Error("Allocation doesn't fit!");
+			return nullptr;
+		}
+		ReduceSlot(slotIndex, slot, start, end);
+		freeSize -= size;
+		return start;
 	}
 
 	void* BestFitArena::Allocate(const sizet size, sizet alignment)
 	{
-		// We always use at least 8 bytes of alignment for the header
-		alignment = Math::Max(alignment, minAlignment);
-
-		const u32 slotIndex = FindSmallestSlot(size, alignment);
+		// Maximum size needed, based on worst possible alignment:
+		const u32 slotIndex = FindSmallestSlot(size + (alignment - 1));
 		if (slotIndex >= freeSlots.Size())
 		{
 			// Log::Error("No slots can fit {} bytes!", size);
@@ -43,61 +57,56 @@ namespace Rift::Memory
 		}
 
 		Slot& slot = freeSlots[slotIndex];
+		u8* const start = slot.start + GetAlignmentPadding(slot.start, alignment);
+		u8* const end   = start + size;
 
-		u8* const ptr = slot.start + GetAlignmentPaddingWithHeader(
-		                                 slot.start, alignment, sizeof(AllocationHeader));
-
-		auto* const header = GetHeader(ptr);
-		header->end        = ptr + size;
-		header->end += GetAlignmentPadding(header->end, minAlignment);    // Align end by 8
-		if (header->end > block.GetEnd())
+		if (end > block.GetEnd())
 		{
 			// Log::Error("Allocation doesn't fit!");
 			return nullptr;
 		}
 
-		ReduceSlot(slotIndex, slot, reinterpret_cast<u8*>(header), header->end);
-		freeSize -= reinterpret_cast<sizet>(header->end) - reinterpret_cast<sizet>(header);
-		return ptr;
+		ReduceSlot(slotIndex, slot, start, end);
+		freeSize -= size;
+		return start;
 	}
 
-	void BestFitArena::Free(void* ptr)
+	void BestFitArena::Free(void* ptr, sizet size)
 	{
-		auto* const header        = GetHeader(ptr);
-		u8* const allocationStart = reinterpret_cast<u8*>(header);
-		u8* const allocationEnd   = header->end;
+		u8* const allocationStart = static_cast<u8*>(ptr);
+		u8* const allocationEnd   = allocationStart + size;
 
 		freeSize += allocationEnd - allocationStart;
-		AbsorbfreeSize(allocationStart, allocationEnd);
+		AbsorbFreeSpace(allocationStart, allocationEnd);
 	}
 
-	i32 BestFitArena::FindSmallestSlot(sizet size, sizet alignment)
+	i32 BestFitArena::FindSmallestSlot(sizet neededSize)
 	{
 		if (pendingSort)
 		{
 			freeSlots.Shrink();
 			// Sort slots by size. Small first
 			freeSlots.Sort([](const auto& a, const auto& b) {
-				return a.end - a.start < b.end - b.start;
+				return a.size < b.size;
 			});
 			pendingSort = false;
 		}
 
 		// Find smallest slot fitting our required size
-		return Algorithms::UpperBoundSearch(freeSlots.Data(), freeSlots.Size(), size + alignment,
+		return Algorithms::UpperBoundSearch(freeSlots.Data(), freeSlots.Size(), neededSize,
 		    [](sizet desiredSize, const auto& slot) {
-			    return desiredSize <= slot.end - slot.start;
+			    return desiredSize <= slot.size;
 		    });
 	}
 
 	void BestFitArena::ReduceSlot(
 	    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd)
 	{
-		if (allocationEnd == slot.end)    // Slot would become empty
+		if (allocationEnd == slot.GetEnd())    // Slot would become empty
 		{
 			if (allocationStart > slot.start)    // Slot can still fill alignment gap
 			{
-				slot.end = allocationStart;
+				slot.size = allocationEnd - allocationStart;
 			}
 			else
 			{
@@ -109,17 +118,19 @@ namespace Rift::Memory
 			return;
 		}
 
-		u8* const slotStart = slot.start;
-		slot.start          = allocationEnd;
-		if (allocationStart > slotStart)
+		u8* const oldSlotStart = slot.start;
+		slot.size += slot.start - allocationEnd;
+		slot.start = allocationEnd;
+
+		// If alignment leaves a gap in the slot, save this space as a new slot
+		if (allocationStart > oldSlotStart)
 		{
-			// We are leaving a gap due to alignment, so add a new slot
-			freeSlots.Add({slotStart, allocationStart});
+			freeSlots.Add({oldSlotStart, allocationStart - oldSlotStart});
 		}
 		pendingSort = true;
 	}
 
-	void BestFitArena::AbsorbfreeSize(u8* const allocationStart, u8* const allocationEnd)
+	void BestFitArena::AbsorbFreeSpace(u8* const allocationStart, u8* const allocationEnd)
 	{
 		// Find previous and/or next slots
 		i32 previousSlot = NO_INDEX;
@@ -135,7 +146,7 @@ namespace Rift::Memory
 					break;    // We found both slots
 				}
 			}
-			else if (slot.end == allocationStart)
+			else if (slot.GetEnd() == allocationStart)
 			{
 				previousSlot = i;
 				if (nextSlot != NO_INDEX)
@@ -148,22 +159,26 @@ namespace Rift::Memory
 		if (previousSlot != NO_INDEX && nextSlot != NO_INDEX)
 		{
 			// Expand next slot to the start of the previous slot
-			Slot& slot = freeSlots[nextSlot];
-			slot.start = freeSlots[previousSlot].start;
+			Slot& next     = freeSlots[nextSlot];
+			Slot& previous = freeSlots[previousSlot];
+			previous.size  = next.GetEnd() - previous.start;
 
-			freeSlots.RemoveAtSwap(previousSlot, false);
+			freeSlots.RemoveAtSwap(nextSlot, false);
 		}
 		else if (previousSlot != NO_INDEX)
 		{
-			freeSlots[previousSlot].end = allocationEnd;
+			Slot& previous = freeSlots[previousSlot];
+			previous.size  = allocationEnd - previous.start;
 		}
 		else if (nextSlot != NO_INDEX)
 		{
-			freeSlots[nextSlot].start = allocationStart;
+			Slot& next = freeSlots[nextSlot];
+			next.size += next.start - allocationStart;
+			next.start = allocationStart;
 		}
 		else
 		{
-			freeSlots.Add({allocationStart, allocationEnd});
+			freeSlots.Add({allocationStart, allocationEnd - allocationStart});
 		}
 		pendingSort = true;
 	}

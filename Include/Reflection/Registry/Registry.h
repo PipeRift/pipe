@@ -18,7 +18,7 @@ namespace Rift::Refl
 		Memory::LinearArena arena{256 * 1024};    // First block is 256KB
 
 		// Contains all runtime/data defined types in memory
-		// Memory::BestFitArena dynamicArena{256 * 1024};    // First block is 256KB
+		// Memory::BigBestFitArena dynamicArena{256 * 1024};    // First block is 256KB
 
 		// We map all classes by name in case we need to find them
 		TMap<TypeId, Type*> idToTypes{};
