@@ -4,6 +4,8 @@
 #	include "Platform/Mac/MacPlatformProcess.h"
 #	include "Platform/PlatformMisc.h"
 #	include "Strings/String.h"
+#	include "Strings/FixedString.h"
+#	include "Files/Paths.h"
 
 #	include <mach-o/dyld.h>
 
