@@ -1,6 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#if PLATFORM_MAC
+#if PLATFORM_MACOS
 #	include "Platform/Mac/MacPlatformProcess.h"
 #	include "Platform/PlatformMisc.h"
 #	include "Strings/String.h"
