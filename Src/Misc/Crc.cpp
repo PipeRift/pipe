@@ -1,8 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 // Based on Unreal Engine 4 Crc
 
-#include "Memory/Alloc.h"
 #include "Misc/Crc.h"
+
+#include "Memory/Alloc.h"
 
 
 namespace Rift
