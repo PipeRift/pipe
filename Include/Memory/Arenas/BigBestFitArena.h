@@ -84,9 +84,9 @@ namespace Rift::Memory
 			    static_cast<u8*>(ptr) - sizeof(AllocationHeader));
 		}
 
-		i32 FindSmallestSlot(sizet size, sizet alignment);
+		i32 FindSmallestSlot(sizet size);
 		void ReduceSlot(
 		    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd);
-		void AbsorbfreeSize(u8* const allocationStart, u8* const allocationEnd);
+		void AbsorbFreeSpace(u8* const allocationStart, u8* const allocationEnd);
 	};
 }    // namespace Rift::Memory

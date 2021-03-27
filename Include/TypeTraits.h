@@ -103,3 +103,11 @@ namespace Rift
 		struct is_pod<const volatile T> : public std::integral_constant<bool, isPod> \
 		{};                                                                          \
 	}
+
+#ifdef COMPILER_MSVC
+#	define RIFT_LIKELY(condition) (condition)
+#	define RIFT_UNLIKELY(condition) (condition)
+#else
+#	define RIFT_LIKELY(condition) __builtin_expect(condition, 1)
+#	define RIFT_UNLIKELY(condition) __builtin_expect(condition, 0)
+#endif

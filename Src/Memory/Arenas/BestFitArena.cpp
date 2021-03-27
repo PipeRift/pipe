@@ -56,7 +56,7 @@ namespace Rift::Memory
 			return nullptr;
 		}
 
-		Slot& slot = freeSlots[slotIndex];
+		Slot& slot      = freeSlots[slotIndex];
 		u8* const start = slot.start + GetAlignmentPadding(slot.start, alignment);
 		u8* const end   = start + size;
 
@@ -73,30 +73,40 @@ namespace Rift::Memory
 
 	void BestFitArena::Free(void* ptr, sizet size)
 	{
-		u8* const allocationStart = static_cast<u8*>(ptr);
-		u8* const allocationEnd   = allocationStart + size;
-
-		freeSize += allocationEnd - allocationStart;
-		AbsorbFreeSpace(allocationStart, allocationEnd);
+		if (ptr)
+		{
+			u8* const allocationStart = static_cast<u8*>(ptr);
+			u8* const allocationEnd   = allocationStart + size;
+			freeSize += allocationEnd - allocationStart;
+			AbsorbFreeSpace(allocationStart, allocationEnd);
+		}
 	}
 
 	i32 BestFitArena::FindSmallestSlot(sizet neededSize)
 	{
-		if (pendingSort)
+		if (RIFT_UNLIKELY(pendingSort))
 		{
-			freeSlots.Shrink();
-			// Sort slots by size. Small first
-			freeSlots.Sort([](const auto& a, const auto& b) {
-				return a.size < b.size;
-			});
 			pendingSort = false;
+			if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.25f)
+			{
+				// Dont shrink until there is 75% of unused space
+				freeSlots.Shrink();
+			}
+			// Sort slots by size. Small first
+			{
+				freeSlots.Sort([](const auto& a, const auto& b) {
+					return a.size > b.size;
+				});
+			}
 		}
 
-		// Find smallest slot fitting our required size
-		return Algorithms::UpperBoundSearch(freeSlots.Data(), freeSlots.Size(), neededSize,
-		    [](sizet desiredSize, const auto& slot) {
-			    return desiredSize <= slot.size;
-		    });
+		{
+			// Find smallest slot fitting our required size
+			return Algorithms::LowerBoundSearch(
+			    freeSlots.Data(), freeSlots.Size(), [neededSize](const auto& slot) {
+				    return neededSize <= slot.size;
+			    });
+		}
 	}
 
 	void BestFitArena::ReduceSlot(
@@ -107,14 +117,12 @@ namespace Rift::Memory
 			if (allocationStart > slot.start)    // Slot can still fill alignment gap
 			{
 				slot.size = allocationEnd - allocationStart;
+				pendingSort = true;
 			}
 			else
 			{
-				freeSlots.RemoveAtSwap(slotIndex, false);
-				// TODO: Investigate if RemoveSwap in this case is decremental since it requires
-				// sorting
+				freeSlots.RemoveAtChecked(slotIndex, false);
 			}
-			pendingSort = true;
 			return;
 		}
 
@@ -159,11 +167,11 @@ namespace Rift::Memory
 		if (previousSlot != NO_INDEX && nextSlot != NO_INDEX)
 		{
 			// Expand next slot to the start of the previous slot
-			Slot& next     = freeSlots[nextSlot];
+			const Slot& next = freeSlots[nextSlot];
 			Slot& previous = freeSlots[previousSlot];
 			previous.size  = next.GetEnd() - previous.start;
 
-			freeSlots.RemoveAtSwap(nextSlot, false);
+			freeSlots.RemoveAtSwapChecked(nextSlot, false);
 		}
 		else if (previousSlot != NO_INDEX)
 		{

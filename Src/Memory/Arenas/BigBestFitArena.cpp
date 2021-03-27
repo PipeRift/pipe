@@ -34,7 +34,7 @@ namespace Rift::Memory
 		// We always use at least 8 bytes of alignment for the header
 		alignment = Math::Max(alignment, minAlignment);
 
-		const u32 slotIndex = FindSmallestSlot(size, alignment);
+		const u32 slotIndex = FindSmallestSlot(size + alignment - 1);
 		if (slotIndex >= freeSlots.Size())
 		{
 			// Log::Error("No slots can fit {} bytes!", size);
@@ -62,30 +62,38 @@ namespace Rift::Memory
 
 	void BigBestFitArena::Free(void* ptr, sizet size)
 	{
-		auto* const header        = GetHeader(ptr);
-		u8* const allocationStart = reinterpret_cast<u8*>(header);
-		u8* const allocationEnd   = header->end;
+		if (ptr)
+		{
+			auto* const header        = GetHeader(ptr);
+			u8* const allocationStart = reinterpret_cast<u8*>(header);
+			u8* const allocationEnd   = header->end;
 
-		freeSize += allocationEnd - allocationStart;
-		AbsorbfreeSize(allocationStart, allocationEnd);
+			freeSize += allocationEnd - allocationStart;
+			AbsorbFreeSpace(allocationStart, allocationEnd);
+		}
 	}
 
-	i32 BigBestFitArena::FindSmallestSlot(sizet size, sizet alignment)
+	i32 BigBestFitArena::FindSmallestSlot(sizet neededSize)
 	{
-		if (pendingSort)
+		if (RIFT_UNLIKELY(pendingSort))
 		{
-			freeSlots.Shrink();
+			pendingSort = false;
+			if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.25f)
+			{
+				// Dont shrink until there is 75% of unused space
+				freeSlots.Shrink();
+			}
 			// Sort slots by size. Small first
 			freeSlots.Sort([](const auto& a, const auto& b) {
-				return a.end - a.start < b.end - b.start;
+				return a.end - a.start > b.end - b.start;
 			});
-			pendingSort = false;
 		}
 
 		// Find smallest slot fitting our required size
-		return Algorithms::UpperBoundSearch(freeSlots.Data(), freeSlots.Size(), size + alignment,
-		    [](sizet desiredSize, const auto& slot) {
-			    return desiredSize <= slot.end - slot.start;
+
+		return Algorithms::LowerBoundSearch(
+		    freeSlots.Data(), freeSlots.Size(), [neededSize](const auto& slot) {
+			    return neededSize <= slot.end - slot.start;
 		    });
 	}
 
@@ -97,14 +105,12 @@ namespace Rift::Memory
 			if (allocationStart > slot.start)    // Slot can still fill alignment gap
 			{
 				slot.end = allocationStart;
+				pendingSort = true;
 			}
 			else
 			{
-				freeSlots.RemoveAtSwap(slotIndex, false);
-				// TODO: Investigate if RemoveSwap in this case is decremental since it requires
-				// sorting
+				freeSlots.RemoveAtChecked(slotIndex, false);
 			}
-			pendingSort = true;
 			return;
 		}
 
@@ -118,7 +124,7 @@ namespace Rift::Memory
 		pendingSort = true;
 	}
 
-	void BigBestFitArena::AbsorbfreeSize(u8* const allocationStart, u8* const allocationEnd)
+	void BigBestFitArena::AbsorbFreeSpace(u8* const allocationStart, u8* const allocationEnd)
 	{
 		// Find previous and/or next slots
 		i32 previousSlot = NO_INDEX;
@@ -150,7 +156,7 @@ namespace Rift::Memory
 			Slot& slot = freeSlots[nextSlot];
 			slot.start = freeSlots[previousSlot].start;
 
-			freeSlots.RemoveAtSwap(previousSlot, false);
+			freeSlots.RemoveAtSwapChecked(previousSlot, false);
 		}
 		else if (previousSlot != NO_INDEX)
 		{

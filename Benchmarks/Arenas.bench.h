@@ -55,14 +55,14 @@ void RunArenasBenchmarks()
 		}
 
 		{
-			Rift::Memory::BestFitArena arena{10 * 1024 * 1024};
+			Rift::Memory::BestFitArena arena{100 * 1024 * 1024};
 			consecutiveFree.run("BestFitArena", [&] {
 				arena.Allocate(16);
 			});
 		}
 
 		{
-			Rift::Memory::BigBestFitArena arena{10 * 1024 * 1024};
+			Rift::Memory::BigBestFitArena arena{100 * 1024 * 1024};
 			consecutiveFree.run("BigBestFitArena", [&] {
 				arena.Allocate(16);
 			});
@@ -84,31 +84,28 @@ void RunArenasBenchmarks()
 				Rift::Free(p);
 				void* p3 = Rift::Alloc(8);
 				Rift::Free(p3);
-				Rift::Free(p2);
 			});
 		}
 
 		{
-			Rift::Memory::BestFitArena arena{10 * 1024 * 1024};
+			Rift::Memory::BestFitArena arena{100 * 1024 * 1024};
 			allocSequence.run("BestFitArena", [&] {
 				void* p  = arena.Allocate(16);
 				void* p2 = arena.Allocate(21);
 				arena.Free(p, 16);
 				void* p3 = arena.Allocate(8);
 				arena.Free(p3, 8);
-				arena.Free(p2, 21);
 			});
 		}
 
 		{
-			Rift::Memory::BigBestFitArena arena{10 * 1024 * 1024};
+			Rift::Memory::BigBestFitArena arena{100 * 1024 * 1024};
 			allocSequence.run("BigBestFitArena", [&] {
 				void* p  = arena.Allocate(16);
 				void* p2 = arena.Allocate(21);
 				arena.Free(p, 16);
 				void* p3 = arena.Allocate(8);
 				arena.Free(p3, 8);
-				arena.Free(p2, 21);
 			});
 		}
 	}

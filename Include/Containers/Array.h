@@ -240,35 +240,57 @@ namespace Rift
 		{
 			if (IsValidIndex(index))
 			{
-				const i32 lastSize = Size();
-				vector.erase(vector.begin() + index);
-
-				if (shouldShrink)
-					Shrink();
-
-				return lastSize - Size() > 0;
+				return RemoveAtChecked(index, shouldShrink);
 			}
 			return false;
 		}
 
 		/**
-		 * Delete item at index. Doesn't preserve order but its considerably faster
+		 * Delete item at index.
+		 * Unsafe version. Doesn't make sure index is valid!
+		 * @return true if removed
+		 */
+		bool RemoveAtChecked(i32 index, const bool shouldShrink = true)
+		{
+			const i32 lastSize = Size();
+			vector.erase(vector.begin() + index);
+
+			if (shouldShrink)
+				Shrink();
+
+			return lastSize - Size() > 0;
+		}
+
+		/**
+		 * Delete item at an index by swapping with the last element. Doesn't preserve order.
+		 * Faster than RemoveAt since it doesnt push all remaining elements 1 position left.
 		 * @return true if removed
 		 */
 		bool RemoveAtSwap(i32 index, const bool shouldShrink = true)
 		{
 			if (IsValidIndex(index))
 			{
-				const i32 lastSize = Size();
-				Swap(index, lastSize - 1);
-				vector.pop_back();
-
-				if (shouldShrink)
-					Shrink();
-
-				return lastSize - Size() > 0;
+				return RemoveAtChecked(index, shouldShrink);
 			}
 			return false;
+		}
+
+		/**
+		 * Delete item at an index by swapping with the last element. Doesn't preserve order.
+		 * Faster than RemoveAt since it doesnt push all remaining elements 1 position left.
+		 * Unsafe version. Doesn't make sure index is valid!
+		 * @return true if removed
+		 */
+		bool RemoveAtSwapChecked(i32 index, const bool shouldShrink = true)
+		{
+			const i32 lastSize = Size();
+			Swap(index, lastSize - 1);
+			vector.pop_back();
+
+			if (shouldShrink)
+				Shrink();
+
+			return lastSize - Size() > 0;
 		}
 
 		/**
@@ -310,6 +332,11 @@ namespace Rift
 		i32 Size() const
 		{
 			return (i32) vector.size();
+		}
+
+		i32 MaxSize() const
+		{
+			return (i32) vector.capacity();
 		}
 
 		bool IsEmpty() const

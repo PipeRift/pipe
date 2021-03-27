@@ -22,8 +22,8 @@ namespace Rift::Algorithms
 	 *
 	 * @returns Position of the first element >= Value, may be position after last element in range
 	 */
-	template <typename T, typename Index, typename ValueType, typename SortPredicate>
-	Index LowerBoundSearch(T* data, Index size, const ValueType& value, SortPredicate sortPredicate)
+	template <typename T, typename Index, typename SortPredicate>
+	Index LowerBoundSearch(T* data, Index size, SortPredicate sortPredicate)
 	{
 		Index start = 0;    // Current start of sequence to check
 		// "size" will become the size of sequence to check
@@ -38,7 +38,7 @@ namespace Rift::Algorithms
 			const Index checkIndex  = start + size;
 			const Index startIfLess = checkIndex + leftoverSize;
 
-			start = sortPredicate(data[checkIndex], value) ? startIfLess : start;
+			start = sortPredicate(data[checkIndex]) ? startIfLess : start;
 		}
 		return start;
 	}
@@ -53,8 +53,8 @@ namespace Rift::Algorithms
 	 *
 	 * @returns Position of the first element > Value, may be past end of range
 	 */
-	template <typename T, typename Index, typename ValueType, typename SortPredicate>
-	Index UpperBoundSearch(T* data, Index size, const ValueType& value, SortPredicate sortPredicate)
+	template <typename T, typename Index, typename SortPredicate>
+	Index UpperBoundSearch(T* data, Index size, SortPredicate sortPredicate)
 	{
 		Index start = 0;    // Current start of sequence to check
 		// "size" will become the size of sequence to check
@@ -69,7 +69,7 @@ namespace Rift::Algorithms
 			const Index checkIndex  = start + size;
 			const Index startIfLess = checkIndex + leftoverSize;
 
-			start = !sortPredicate(value, data[checkIndex]) ? startIfLess : start;
+			start = sortPredicate(data[checkIndex]) ? start : startIfLess;
 		}
 
 		return start;
@@ -85,16 +85,15 @@ namespace Rift::Algorithms
 	 * @param sortPredicate Predicate for sort comparison, defaults to <
 	 * @return index of found element. If not found, optional is not set
 	 */
-	template <typename T, typename Index, typename ValueType, typename SortPredicate>
-	Optional<Index> BinarySearch(
-	    T* data, Index size, const ValueType& value, SortPredicate sortPredicate)
+	template <typename T, typename Index, typename SortPredicate>
+	Optional<Index> BinarySearch(T* data, Index size, SortPredicate sortPredicate)
 	{
 		const Index checkIndex = LowerBoundSearch(data, size, value, sortPredicate);
 		if (checkIndex < size)
 		{
 			// Since we returned lower bound we already know Value <= CheckValue. So if Value is not
 			// < checkValue, they must be equal
-			if (!sortPredicate(value, data[checkIndex]))
+			if (!sortPredicate(data[checkIndex]))
 			{
 				return checkIndex;
 			}
