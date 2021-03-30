@@ -134,7 +134,7 @@ namespace Rift::Memory
 		// If alignment leaves a gap in the slot, save this space as a new slot
 		if (allocationStart > oldSlotStart)
 		{
-			freeSlots.Add({oldSlotStart, allocationStart - oldSlotStart});
+			freeSlots.Add({oldSlotStart, sizet(allocationStart - oldSlotStart)});
 		}
 		pendingSort = true;
 	}
@@ -187,7 +187,7 @@ namespace Rift::Memory
 		}
 		else
 		{
-			freeSlots.Add({allocationStart, allocationEnd - allocationStart});
+			freeSlots.Add({allocationStart, sizet(allocationEnd - allocationStart)});
 		}
 		pendingSort = true;
 	}

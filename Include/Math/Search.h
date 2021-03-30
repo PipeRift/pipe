@@ -48,7 +48,6 @@ namespace Rift::Algorithms
 	 *
 	 * @param data containing the elements
 	 * @param size of the data. Number of elements
-	 * @param value Value to look for
 	 * @param sortPredicate Predicate for sort comparison, defaults to <
 	 *
 	 * @returns Position of the first element > Value, may be past end of range
@@ -76,19 +75,18 @@ namespace Rift::Algorithms
 	}
 
 	/**
-	 * Returns the index of the first found element matching a value.
+	 * Returns the index of the first found element matching a predicate.
 	 * Elements must be sorted by sortPredicate
 	 *
 	 * @param data containing the elements
 	 * @param size of the data. Number of elements
-	 * @param value to search for
 	 * @param sortPredicate Predicate for sort comparison, defaults to <
 	 * @return index of found element. If not found, optional is not set
 	 */
 	template <typename T, typename Index, typename SortPredicate>
 	Optional<Index> BinarySearch(T* data, Index size, SortPredicate sortPredicate)
 	{
-		const Index checkIndex = LowerBoundSearch(data, size, value, sortPredicate);
+		const Index checkIndex = LowerBoundSearch(data, size, sortPredicate);
 		if (checkIndex < size)
 		{
 			// Since we returned lower bound we already know Value <= CheckValue. So if Value is not
