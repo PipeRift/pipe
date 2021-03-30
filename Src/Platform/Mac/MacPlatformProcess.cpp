@@ -18,7 +18,7 @@ namespace Rift
 		if (filePath.empty())
 		{
 			TFixedString<char, PlatformMisc::GetMaxPathLength()> rawPath{};
-			if (_NSGetExecutablePath(rawPath.data(), rawPath.size()) != 0)
+			if (_NSGetExecutablePath(rawPath.data(), u32(rawPath.size())) != 0)
 			{
 				// Failed to retrive a path
 				return {};
