@@ -84,7 +84,7 @@ namespace Rift::Memory
 
 	i32 BestFitArena::FindSmallestSlot(sizet neededSize)
 	{
-		if (RIFT_UNLIKELY(pendingSort))
+		if (pendingSort) [[unlikely]]
 		{
 			pendingSort = false;
 			if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.25f)
