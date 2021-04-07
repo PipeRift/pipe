@@ -20,7 +20,6 @@ namespace Rift::Memory
 
 		struct Slot
 		{
-			// TODO: Test use of size instead of end for more efficient sort and search
 			u8* start;
 			u8* end;
 
@@ -43,7 +42,6 @@ namespace Rift::Memory
 		};
 
 	protected:
-		// TODO: Make sure minAlignment is multiple of 2. Unlikely to change though
 		static constexpr sizet minAlignment = sizeof(AllocationHeader);
 		// TODO: Support growing multiple blocks
 		HeapBlock block{};

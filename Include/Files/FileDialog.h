@@ -9,7 +9,6 @@
 #include "Templates/Tuples.h"
 
 
-
 namespace Rift::Dialogs
 {
 	using FileFilter = TPair<StringView, StringView>;

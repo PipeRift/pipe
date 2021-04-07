@@ -76,21 +76,23 @@ namespace Rift::Memory
 
 	i32 BigBestFitArena::FindSmallestSlot(sizet neededSize)
 	{
-		if (pendingSort) [[unlikely]]
-		{
-			pendingSort = false;
-			if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.25f)
+		if (pendingSort)
+			[[unlikely]]
 			{
-				// Dont shrink until there is 75% of unused space
-				freeSlots.Shrink();
+				pendingSort = false;
+				if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.25f)
+				{
+					// Dont shrink until there is 75% of unused space
+					freeSlots.Shrink();
+				}
+
+				// Sort slots by size. Small first
+				freeSlots.Sort(TGreater<>());
 			}
-			// Sort slots by size. Small first
-			freeSlots.Sort(TGreater<>());
-		}
 
 		// Find smallest slot fitting our required size
 		return freeSlots.FindSortedMin(neededSize, true);
-	}
+	}    // namespace Rift::Memory
 
 	void BigBestFitArena::ReduceSlot(
 	    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd)
@@ -99,7 +101,7 @@ namespace Rift::Memory
 		{
 			if (allocationStart > slot.start)    // Slot can still fill alignment gap
 			{
-				slot.end = allocationStart;
+				slot.end    = allocationStart;
 				pendingSort = true;
 			}
 			else

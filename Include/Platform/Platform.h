@@ -75,7 +75,7 @@ namespace Rift
 	// The type of the C++ nullptr keyword.
 	using TYPE_OF_NULLPTR = PlatformTypes::TYPE_OF_NULLPTR;
 
-	
+
 	constexpr i32 NO_INDEX = -1;
 }    // namespace Rift
 

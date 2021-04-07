@@ -29,7 +29,8 @@ namespace Rift::Refl
 
 
 	public:
-		TOwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(const TPtr<BaseObject>& owner);
+		TOwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(
+		    const TPtr<BaseObject>& owner);
 
 		ClassType* GetParent() const
 		{

@@ -8,8 +8,8 @@
 #include "Math/Math.h"
 #include "Misc/Utility.h"
 #include "Profiler.h"
-#include "Templates/Less.h"
 #include "Templates/Greater.h"
+#include "Templates/Less.h"
 #include "Templates/Optional.h"
 
 
@@ -122,8 +122,8 @@ namespace Rift::Algorithms
 		}
 
 		const Index last = first + size - 1;
-		const T& firstV   = data[first];
-		const T& lastV    = data[last];
+		const T& firstV  = data[first];
+		const T& lastV   = data[last];
 		if (firstV < lastV)    // First is smaller than last. Order is small to big
 		{
 			// Check Limits
@@ -182,8 +182,8 @@ namespace Rift::Algorithms
 		}
 
 		const Index last = first + size - 1;
-		const T& firstV   = data[first];
-		const T& lastV    = data[last];
+		const T& firstV  = data[first];
+		const T& lastV   = data[last];
 		if (firstV < lastV)    // First is smaller than last. Order is small to big
 		{
 			// Check Limits

@@ -99,7 +99,7 @@ namespace Rift::Memory
 		{
 			if (allocationStart > slot.start)    // Slot can still fill alignment gap
 			{
-				slot.size = allocationEnd - allocationStart;
+				slot.size   = allocationEnd - allocationStart;
 				pendingSort = true;
 			}
 			else
@@ -156,8 +156,8 @@ namespace Rift::Memory
 		{
 			// Expand next slot to the start of the previous slot
 			const Slot& next = freeSlots[nextSlot];
-			Slot& previous = freeSlots[previousSlot];
-			previous.size  = next.GetEnd() - previous.start;
+			Slot& previous   = freeSlots[previousSlot];
+			previous.size    = next.GetEnd() - previous.start;
 
 			freeSlots.RemoveAtSwapChecked(nextSlot, false);
 		}

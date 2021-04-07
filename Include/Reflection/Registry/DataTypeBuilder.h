@@ -98,7 +98,8 @@ namespace Rift::Refl
 			GetType()->onCreate = [](const auto& owner) {
 				if constexpr (IsSame<T, BaseObject>)
 				{
-					return TOwnPtr<T, ObjectBuilder<T>>{};    // Can't create instances of BaseObject
+					return TOwnPtr<T,
+					    ObjectBuilder<T>>{};    // Can't create instances of BaseObject
 				}
 				return MakeOwned<T, ObjectBuilder<T>>(owner);
 			};
