@@ -21,7 +21,7 @@ namespace Rift
 
 	protected:
 		AssetInfo info;
-		mutable Ptr<AssetData> cachedAsset;
+		mutable TPtr<AssetData> cachedAsset;
 
 	public:
 		BaseAssetPtr() = default;
@@ -64,7 +64,7 @@ namespace Rift
 		TAssetPtr(Name path) : BaseAssetPtr(path) {}
 		TAssetPtr(StringView key) : TAssetPtr(Name{key}) {}
 		TAssetPtr(const AssetInfo& other) : BaseAssetPtr(other) {}
-		TAssetPtr(Ptr<ItemType> asset)
+		TAssetPtr(TPtr<ItemType> asset)
 		{
 			if (asset)
 			{
@@ -127,7 +127,7 @@ namespace Rift
 		/**
 		 * @returns the asset if it's valid and loaded
 		 */
-		Ptr<T> Get() const
+		TPtr<T> Get() const
 		{
 			if (!IsNull() && TryCacheAsset())
 			{
@@ -171,11 +171,11 @@ namespace Rift
 		{
 			return IsValid();
 		};
-		Ptr<T> operator*() const
+		TPtr<T> operator*() const
 		{
 			return Get();
 		}
-		Ptr<T> operator->() const
+		TPtr<T> operator->() const
 		{
 			return Get();
 		}
@@ -193,7 +193,7 @@ namespace Rift
 				return true;
 			}
 
-			if (Ptr<AssetManager> manager = AssetManager::Get())
+			if (TPtr<AssetManager> manager = AssetManager::Get())
 			{
 				cachedAsset = manager->GetLoadedAsset(info);
 			}

@@ -12,7 +12,7 @@ namespace Rift::Refl
 	{
 	public:
 		// #TODO: Move to TClass
-		static std::shared_ptr<ClassHandle> CreateClassHandle(const Ptr<BaseObject>& instance)
+		static std::shared_ptr<ClassHandle> CreateClassHandle(const TPtr<BaseObject>& instance)
 		{
 			return std::make_shared<ClassHandle>(instance);
 		}

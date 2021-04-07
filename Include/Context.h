@@ -58,7 +58,7 @@ namespace Rift
 			Log::Shutdown();
 		}
 
-		Ptr<AssetManager> GetAssetManager()
+		TPtr<AssetManager> GetAssetManager()
 		{
 			return assetManager;
 		}
@@ -68,7 +68,7 @@ namespace Rift
 			return tasks;
 		}
 
-		static Ptr<Context> Get()
+		static TPtr<Context> Get()
 		{
 			assert(globalInstance && "Context is not initialized! Call Context::Initialize().");
 			return globalInstance;

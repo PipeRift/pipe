@@ -40,19 +40,19 @@ go_bandit([]() {
 	describe("OwnPtr", []() {
 		describe("Owner pointer", []() {
 			it("Can initialize to empty", [&]() {
-				OwnPtr<EmptyStruct> ptr;
+				TOwnPtr<EmptyStruct> ptr;
 				AssertThat(ptr.IsValid(), Equals(false));
 				AssertThat(ptr.Get(), Equals(nullptr));
 			});
 
 			it("Can instantiate", [&]() {
-				OwnPtr<EmptyStruct> ptr = MakeOwned<EmptyStruct>();
+				TOwnPtr<EmptyStruct> ptr = MakeOwned<EmptyStruct>();
 				AssertThat(ptr.IsValid(), Equals(true));
 				AssertThat(ptr.Get(), Is().Not().EqualTo(nullptr));
 			});
 
 			it("Owner can release", [&]() {
-				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				AssertThat(owner.IsValid(), Equals(true));
 
 				owner.Release();
@@ -60,9 +60,9 @@ go_bandit([]() {
 			});
 
 			it("Owner is released when destroyed", [&]() {
-				Ptr<EmptyStruct> ptr;
+				TPtr<EmptyStruct> ptr;
 				{
-					OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+					TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 					ptr = owner;
 					AssertThat(ptr.IsValid(), Equals(true));
 				}
@@ -87,24 +87,24 @@ go_bandit([]() {
 
 		describe("Weak pointer", []() {
 			it("Can initialize to empty", [&]() {
-				Ptr<EmptyStruct> ptr;
+				TPtr<EmptyStruct> ptr;
 				AssertThat(ptr.IsValid(), Equals(false));
 				AssertThat(ptr.Get(), Equals(nullptr));
 			});
 
 			it("Can initialize from owner", [&]() {
-				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
-				Ptr<EmptyStruct> ptr = owner;
+				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+				TPtr<EmptyStruct> ptr     = owner;
 
 				AssertThat(ptr.IsValid(), Equals(true));
 				AssertThat(ptr.Get(), Is().Not().EqualTo(nullptr));
 			});
 
 			it("Can copy from other weak", [&]() {
-				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				auto* raw = *owner;
-				Ptr<EmptyStruct> ptr = owner;
-				Ptr<EmptyStruct> ptr2 = ptr;
+				TPtr<EmptyStruct> ptr     = owner;
+				TPtr<EmptyStruct> ptr2    = ptr;
 
 				AssertThat(ptr2.IsValid(), Equals(true));
 				AssertThat(ptr.Get(), Equals(raw));
@@ -112,10 +112,10 @@ go_bandit([]() {
 			});
 
 			it("Can move from other weak", [&]() {
-				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				auto* raw = *owner;
-				Ptr<EmptyStruct> ptr = owner;
-				Ptr<EmptyStruct> ptr2     = Move(ptr);
+				TPtr<EmptyStruct> ptr     = owner;
+				TPtr<EmptyStruct> ptr2    = Move(ptr);
 
 				AssertThat(ptr.IsValid(), Equals(false));
 				AssertThat(ptr2.IsValid(), Equals(true));
@@ -125,8 +125,8 @@ go_bandit([]() {
 			});
 
 			it("Ptr is null after IsValid() == false", [&]() {
-				OwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
-				Ptr<EmptyStruct> ptr = owner;
+				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+				TPtr<EmptyStruct> ptr     = owner;
 				owner.Release();
 
 				AssertThat(*ptr, Is().Not().EqualTo(nullptr));
@@ -140,7 +140,7 @@ go_bandit([]() {
 			it("Owner can equal Owner", [&]() {
 				auto owner = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
-				OwnPtr<EmptyStruct> ownerEmpty;
+				TOwnPtr<EmptyStruct> ownerEmpty;
 
 				AssertThat(owner == owner, Equals(true));
 				AssertThat(owner == owner2, Equals(false));
@@ -157,8 +157,8 @@ go_bandit([]() {
 				auto owner = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
 				auto weak = owner.AsPtr();
-				OwnPtr<EmptyStruct> ownerEmpty;
-				Ptr<EmptyStruct> weakEmpty;
+				TOwnPtr<EmptyStruct> ownerEmpty;
+				TPtr<EmptyStruct> weakEmpty;
 
 				AssertThat(owner == weak, Equals(true));
 				AssertThat(owner2 == weak, Equals(false));
@@ -176,7 +176,7 @@ go_bandit([]() {
 				auto owner2 = MakeOwned<EmptyStruct>();
 				auto weak = owner.AsPtr();
 				auto weak2 = owner2.AsPtr();
-				Ptr<EmptyStruct> weakEmpty;
+				TPtr<EmptyStruct> weakEmpty;
 
 				AssertThat(weak == weak, Equals(true));
 				AssertThat(weak2 == weak, Equals(false));
@@ -194,8 +194,8 @@ go_bandit([]() {
 				auto owner2 = MakeOwned<EmptyStruct>();
 				auto weak = owner.AsPtr();
 				auto weak2 = owner2.AsPtr();
-				OwnPtr<EmptyStruct> ownerEmpty;
-				Ptr<EmptyStruct> weakEmpty;
+				TOwnPtr<EmptyStruct> ownerEmpty;
+				TPtr<EmptyStruct> weakEmpty;
 
 				AssertThat(weak == owner, Equals(true));
 				AssertThat(weak2 == owner, Equals(false));

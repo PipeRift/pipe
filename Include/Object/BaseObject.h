@@ -15,9 +15,9 @@ namespace Rift
 	}
 	class Object;
 
-
 	template <typename Type>
-	struct Ptr;
+	struct TPtr;
+
 
 	class CORE_API BaseObject : public BaseStruct
 	{
@@ -33,7 +33,7 @@ namespace Rift
 		}
 
 		Refl::ClassType* GetClass() const;
-		Ptr<Object> Self() const;
+		TPtr<Object> Self() const;
 
 	protected:
 		virtual void BeforeDestroy() {}

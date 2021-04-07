@@ -19,6 +19,23 @@ namespace Rift::Memory
 			sizet size;
 
 			u8* GetEnd() const;
+
+			auto operator<=>(const Slot& other) const
+			{
+				return size <=> other.size;
+			}
+			auto operator<=>(sizet other) const
+			{
+				return size <=> other;
+			}
+			auto operator==(const Slot& other) const
+			{
+				return size == other.size;
+			}
+			auto operator==(sizet other) const
+			{
+				return size == other;
+			}
 		};
 
 	protected:

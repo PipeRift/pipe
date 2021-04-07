@@ -26,13 +26,14 @@ namespace Rift
 {
 	class Archive
 	{
-		const bool bLoads = false;
+		const bool bLoading = false;
+
 
 	public:
 		class Context* context = nullptr;
 
 		Archive() = default;
-		Archive(bool bLoads) : bLoads(bLoads), context{nullptr} {}
+		Archive(bool bLoading) : bLoading(bLoading), context{nullptr} {}
 		virtual ~Archive() = default;
 
 		template <typename T>
@@ -62,7 +63,7 @@ namespace Rift
 		void Serialize(StringView name, Quat& val);
 
 		template <typename T>
-		void Serialize(StringView name, OwnPtr<T>& val)
+		void Serialize(StringView name, TOwnPtr<T>& val)
 		{
 			BeginObject(name);
 			// Not yet supported. Hard and soft references need to take care of each
@@ -80,7 +81,7 @@ namespace Rift
 		}
 
 		template <typename T>
-		void Serialize(StringView name, Ptr<T>& val)
+		void Serialize(StringView name, TPtr<T>& val)
 		{
 			Name ptrName;
 			if (IsSaving())
@@ -114,11 +115,11 @@ namespace Rift
 
 		bool IsLoading()
 		{
-			return bLoads;
+			return bLoading;
 		}
 		bool IsSaving()
 		{
-			return !bLoads;
+			return !bLoading;
 		}
 
 		virtual void SerializeArraySize(u32& Size) = 0;

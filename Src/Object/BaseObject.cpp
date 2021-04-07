@@ -14,7 +14,7 @@ namespace Rift
 		return static_cast<const Object*>(this)->GetClass();
 	}
 
-	Ptr<Object> BaseObject::Self() const
+	TPtr<Object> BaseObject::Self() const
 	{
 		return static_cast<const Object*>(this)->Self();
 	}

@@ -7,7 +7,7 @@
 
 namespace Rift
 {
-	Ptr<Context> Object::GetContext() const
+	TPtr<Context> Object::GetContext() const
 	{
 		return Context::Get();
 	}

@@ -926,7 +926,7 @@ namespace ankerl
 			 * @brief Marks the next run as the baseline.
 			 *
 			 * Call `relative(true)` to mark the run as the baseline. Successive runs will be
-			 * compared to this run. It is calculated by
+			 * sortPredicated to this run. It is calculated by
 			 *
 			 * @f[
 			 * 100\% * \frac{baseline}{runtime}
@@ -1394,15 +1394,15 @@ namespace ankerl
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #	include <algorithm>    // sort, reverse
-#	include <atomic>       // compare_exchange_strong in loop overhead
-#	include <cstdlib>      // getenv
-#	include <cstring>      // strstr, strncmp
-#	include <fstream>      // ifstream to parse proc files
-#	include <iomanip>      // setw, setprecision
-#	include <iostream>     // cout
-#	include <numeric>      // accumulate
-#	include <random>       // random_device
-#	include <sstream>      // to_s in Number
+#	include <atomic>      // sortPredicate_exchange_strong in loop overhead
+#	include <cstdlib>     // getenv
+#	include <cstring>     // strstr, strncmp
+#	include <fstream>     // ifstream to parse proc files
+#	include <iomanip>     // setw, setprecision
+#	include <iostream>    // cout
+#	include <numeric>     // accumulate
+#	include <random>      // random_device
+#	include <sstream>     // to_s in Number
 #	include <stdexcept>    // throw for rendering templates
 #	include <tuple>        // std::tie
 #	if defined(__linux__)
@@ -3589,8 +3589,8 @@ namespace ankerl
 			return mConfig.mComplexityN;
 		}
 
-		// Set a baseline to compare it to. 100% it is exactly as fast as the baseline, >100% means
-		// it is faster than the baseline, <100% means it is slower than the baseline.
+		// Set a baseline to sortPredicate it to. 100% it is exactly as fast as the baseline, >100%
+		// means it is faster than the baseline, <100% means it is slower than the baseline.
 		Bench& Bench::relative(bool isRelativeEnabled) noexcept
 		{
 			mConfig.mIsRelative = isRelativeEnabled;

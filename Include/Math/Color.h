@@ -623,9 +623,7 @@ namespace Rift
 
 
 // These types act like a POD
-RIFT_DECLARE_IS_POD(Rift::Color, true);
-RIFT_DECLARE_IS_POD(Rift::LinearColor, true);
-RIFT_DECLARE_IS_POD(Rift::FDXT1, true);
-RIFT_DECLARE_IS_POD(Rift::FDXT5, true);
-RIFT_DECLARE_IS_POD(Rift::FDXTColor16, true);
-RIFT_DECLARE_IS_POD(Rift::FDXTColor565, true);
+RIFT_DECLARE_IS_TRIVIAL(Rift::FDXT1, true);
+RIFT_DECLARE_IS_TRIVIAL(Rift::FDXT5, true);
+RIFT_DECLARE_IS_TRIVIAL(Rift::FDXTColor16, true);
+RIFT_DECLARE_IS_TRIVIAL(Rift::FDXTColor565, true);

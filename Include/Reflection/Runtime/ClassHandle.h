@@ -10,7 +10,7 @@ namespace Rift::Refl
 {
 	class ClassHandle
 	{
-		const Ptr<BaseObject> instance;
+		const TPtr<BaseObject> instance;
 
 	public:
 		ClassHandle()                   = delete;
@@ -20,6 +20,6 @@ namespace Rift::Refl
 		ClassHandle& operator=(const ClassHandle&) = default;
 		virtual ~ClassHandle()                     = default;
 
-		ClassHandle(const Ptr<BaseObject>& instance) : instance(instance) {}
+		ClassHandle(const TPtr<BaseObject>& instance) : instance(instance) {}
 	};
 }    // namespace Rift::Refl

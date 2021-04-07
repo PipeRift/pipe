@@ -11,7 +11,7 @@
 namespace Rift
 {
 	template <typename... Params>
-	class Broadcast
+	class TBroadcast
 	{
 	protected:
 		using Method   = void(Params...);
@@ -31,17 +31,17 @@ namespace Rift
 		{
 			void* instance;
 		};
-		struct ObjListener : public BaseListener
+		struct PtrListener : public BaseListener
 		{
-			Ptr<Object> object;
+			TPtr<Object> instance;
 		};
 
 		mutable TArray<RawListener> rawListeners{};
-		mutable TArray<ObjListener> objListeners{};
+		mutable TArray<PtrListener> ptrListeners{};
 
 
 	public:
-		Broadcast() = default;
+		TBroadcast() = default;
 
 		/** Broadcast to all binded functions */
 		void DoBroadcast(const Params&... params)
@@ -51,9 +51,9 @@ namespace Rift
 				listener.method(params...);
 			}
 
-			for (auto& listener : objListeners)
+			for (auto& listener : ptrListeners)
 			{
-				if (listener.object)
+				if (listener.instance)
 				{
 					listener.method(params...);
 				}
@@ -76,8 +76,7 @@ namespace Rift
 			return EventHandle::Invalid();
 		}
 
-		/** Binds a member function. Must be unbinded manually (unless its an
-		 * Object). */
+		/** Binds a member function. Must be unbinded manually. */
 		template <typename Type>
 		EventHandle Bind(Type* instance, MemberMethodPtr<Type> method) const
 		{
@@ -102,17 +101,17 @@ namespace Rift
 		/** Binds an object's function. Gets unbinded when the objects is destroyed
 		 */
 		template <typename Type>
-		EventHandle Bind(Ptr<Type> object, MemberMethodPtr<Type> method) const
+		EventHandle Bind(TPtr<Type> instance, MemberMethodPtr<Type> method) const
 		{
-			if (object && method)
+			if (instance && method)
 			{
-				Type* const instance = *object;
-				Function func        = [instance, method](Params... params) {
-                    (instance->*method)(params...);
+				Type* const instancePtr = *instance;
+				Function func           = [instancePtr, method](Params... params) {
+                    (instancePtr->*method)(params...);
 				};
 
 				EventHandle handle{};
-				objListeners.Add({handle.Id(), Move(func), object});
+				ptrListeners.Add({handle.Id(), Move(func), instance});
 				return handle;
 			}
 
@@ -130,32 +129,37 @@ namespace Rift
 			}) > 0;
 		}
 
-		bool UnbindAll(Ptr<Object> object) const
+		template <typename Type>
+		bool Unbind(TPtr<Type> instance) const
 		{
-			if (object)
+			if (instance) [[likely]]
 			{
-				return objListeners.RemoveIf([object](const auto& listener) {
-					return !listener.object || listener.object == object;
+				return ptrListeners.RemoveIf([instance](const auto& listener) {
+					return !listener.instance || listener.instance == instance;
 				}) > 0;
 			}
 			return false;
 		}
 
 		template <typename Type>
-		bool UnbindAll(Type* instance) const
+		bool Unbind(Type* instance) const
 		{
-			if (instance)
+			if (instance) [[likely]]
 			{
-				if constexpr (IsClass<Type>())
-				{
-					return UnbindAll(instance->Self());
-				}
-				else
-				{
-					return rawListeners.RemoveIf([instance](const auto& listener) {
-						return listener.instance == instance;
-					}) > 0;
-				}
+				return rawListeners.RemoveIf([instance](const auto& listener) {
+					return listener.instance == instance;
+				}) > 0;
+			}
+			return false;
+		}
+
+		bool UnbindAll() const
+		{
+			if (!rawListeners.IsEmpty() || !ptrListeners.IsEmpty()) [[likely]]
+			{
+				rawListeners.Empty();
+				ptrListeners.Empty();
+				return true;
 			}
 			return false;
 		}

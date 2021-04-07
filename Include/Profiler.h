@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "Log.h"
 #include "Platform/Platform.h"
 
 #ifdef RIFT_ENABLE_PROFILER

@@ -19,6 +19,8 @@ namespace Rift
 	using SysDuration = Chrono::duration<SysClock, DecMicroseconds>;
 
 
+	using Nanoseconds  = Chrono::nanoseconds;
+	using Microseconds = Chrono::microseconds;
 	using Milliseconds = Chrono::milliseconds;
 	using Seconds      = Chrono::seconds;
 	using Minutes      = Chrono::minutes;

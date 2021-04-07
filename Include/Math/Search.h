@@ -6,96 +6,229 @@
 
 #include "Math/Heap.h"
 #include "Math/Math.h"
-#include "Misc/Optional.h"
 #include "Misc/Utility.h"
+#include "Profiler.h"
+#include "Templates/Less.h"
+#include "Templates/Greater.h"
+#include "Templates/Optional.h"
 
 
 namespace Rift::Algorithms
 {
 	/**
-	 * Performs binary search, resulting in position of the first element >= Value using predicate
+	 * Finds the position of the first element in a sorted range that has a value
+	 * greater than or equivalent to a specified value.
 	 *
-	 * @param data containing the elements
-	 * @param size of the data. Number of elements
-	 * @param value Value to look for
-	 * @param sortPredicate Predicate for sort comparison, defaults to <
+	 * @param sortPredicate used to sort the array. Default: a < b
+	 * @return the furthermost iterator i in the range [first, last) such that
+	 * for any iterator j in the range [first, i) the following corresponding
+	 * condition holds: sortPredicate(*j, value) == false.
 	 *
-	 * @returns Position of the first element >= Value, may be position after last element in range
+	 * Complexity: worst O(log(n)) | best O(1)
 	 */
-	template <typename T, typename Index, typename SortPredicate>
-	Index LowerBoundSearch(T* data, Index size, SortPredicate sortPredicate)
+	template <typename T, typename Index, typename Value, typename SortPredicate = TLess<>>
+	Index LowerBound(
+	    T* data, Index first, Index size, const Value& value, SortPredicate sortPredicate = {})
 	{
-		Index start = 0;    // Current start of sequence to check
-		// "size" will become the size of sequence to check
+		const Index last = first + size;
 
-		// With this method, if size is even it will do one more comparison than necessary, but
-		// because size can be predicted by the CPU it is faster in practice
 		while (size > 0)
 		{
-			const Index leftoverSize = size % 2;
-			size                     = size / 2;
+			// We use '>>1' here instead of '/2' because MSVC++ for some reason
+			// generates significantly worse code for '/2'.
+			const Index halfSize = size >> 1;
 
-			const Index checkIndex  = start + size;
-			const Index startIfLess = checkIndex + leftoverSize;
-
-			start = sortPredicate(data[checkIndex]) ? startIfLess : start;
-		}
-		return start;
-	}
-
-	/**
-	 * Performs binary search, resulting in position of the first element > Value using predicate
-	 *
-	 * @param data containing the elements
-	 * @param size of the data. Number of elements
-	 * @param sortPredicate Predicate for sort comparison, defaults to <
-	 *
-	 * @returns Position of the first element > Value, may be past end of range
-	 */
-	template <typename T, typename Index, typename SortPredicate>
-	Index UpperBoundSearch(T* data, Index size, SortPredicate sortPredicate)
-	{
-		Index start = 0;    // Current start of sequence to check
-		// "size" will become the size of sequence to check
-
-		// With this method, if Size is even it will do one more comparison than necessary, but
-		// because size can be predicted by the CPU it is faster in practice
-		while (size > 0)
-		{
-			const Index leftoverSize = size % 2;
-			size                     = size / 2;
-
-			const Index checkIndex  = start + size;
-			const Index startIfLess = checkIndex + leftoverSize;
-
-			start = sortPredicate(data[checkIndex]) ? start : startIfLess;
-		}
-
-		return start;
-	}
-
-	/**
-	 * Returns the index of the first found element matching a predicate.
-	 * Elements must be sorted by sortPredicate
-	 *
-	 * @param data containing the elements
-	 * @param size of the data. Number of elements
-	 * @param sortPredicate Predicate for sort comparison, defaults to <
-	 * @return index of found element. If not found, optional is not set
-	 */
-	template <typename T, typename Index, typename SortPredicate>
-	Optional<Index> BinarySearch(T* data, Index size, SortPredicate sortPredicate)
-	{
-		const Index checkIndex = LowerBoundSearch(data, size, sortPredicate);
-		if (checkIndex < size)
-		{
-			// Since we returned lower bound we already know Value <= CheckValue. So if Value is not
-			// < checkValue, they must be equal
-			if (!sortPredicate(data[checkIndex]))
+			const Index mid = first + halfSize;
+			if (sortPredicate(data[mid], value))
 			{
-				return checkIndex;
+				first = mid + 1;
+				size -= halfSize + 1;
+			}
+			else
+			{
+				size = halfSize;
 			}
 		}
-		return {};
+		return first != last ? first : NO_INDEX;
+	}
+
+	/**
+	 * Finds the position of the first element in a sorted range that has a
+	 * value that is greater than a specified value.
+	 *
+	 * @param sortPredicate used to sort the array. Default: a < b
+	 * @return the furthermost iterator i in the range [first, last) such that
+	 * for any iterator j in the range [first, i) the following corresponding
+	 * condition holds: sortPredicate(value, *j) == false.
+	 *
+	 * Complexity: worst O(log(n)) | best O(1)
+	 */
+	template <typename T, typename Index, typename Value, typename SortPredicate = TLess<>>
+	Index UpperBound(
+	    T* data, Index first, Index size, const Value& value, SortPredicate sortPredicate = {})
+	{
+		const Index last = first + size;
+
+		while (size > 0)
+		{
+			// We use '>>1' here instead of '/2' because MSVC++ for some reason generates
+			// significantly worse code for '/2'.
+			const Index halfSize = size >> 1;
+
+			const Index mid = first + halfSize;
+			if (!sortPredicate(value, data[mid]))
+			{
+				first = mid + 1;
+				size -= halfSize + 1;
+			}
+			else
+			{
+				size = halfSize;
+			}
+		}
+		return first != last ? first : NO_INDEX;
+	}
+
+	/**
+	 * Finds the position of the first element in a sorted range that has a
+	 * value that is equal to a specified value.
+	 *
+	 * @param sortPredicate used to sort the array. Default: a < b
+	 * @return true if there is an iterator i in the range [first, last) that
+	 * satisfies the corresponding conditions: sortPredicate(*i, value) == false &&
+	 * sortPredicate(value, *i) == false.
+	 *
+	 * Complexity: worst O(log(n)) | best O(1)
+	 */
+	template <typename T, typename Index, typename Value, typename SortPredicate = TLess<>>
+	Index BinarySearch(
+	    T* data, Index first, Index size, const Value& value, SortPredicate sortPredicate = {})
+	{
+		const Index it = LowerBound(data, first, size, value, sortPredicate);
+		if (it != NO_INDEX && !sortPredicate(value, data[it]))
+		{
+			return it;
+		}
+		return NO_INDEX;
+	}
+
+
+	template <typename T, typename Index, typename Value>
+	Index FindSortedMax(T* data, Index first, Index size, const Value& max, bool included = false)
+	{
+		if (first == NO_INDEX || size == 0)
+		{
+			return NO_INDEX;
+		}
+
+		const Index last = first + size - 1;
+		const T& firstV   = data[first];
+		const T& lastV    = data[last];
+		if (firstV < lastV)    // First is smaller than last. Order is small to big
+		{
+			// Check Limits
+			if (firstV >= max)
+			{
+				return (included && firstV == max) ? first : NO_INDEX;
+			}
+			else if (lastV <= max)
+			{
+				const bool moveDown = !included && lastV == max;
+				return last - Index(moveDown);
+			}
+
+			auto i     = LowerBound(data, first, size, max, TLess<>());
+			const T& v = data[i];
+			if (v < max || (v == max && included))
+			{
+				return i;
+			}
+			return i - 1;
+		}
+		else if (firstV > lastV)
+		{
+			// Check Limits
+			if (firstV <= max)
+			{
+				const bool moveUp = !included && firstV == max;
+				return first + Index(moveUp);
+			}
+			else if (lastV >= max)
+			{
+				return (included && lastV == max) ? last : NO_INDEX;
+			}
+
+			auto i = UpperBound(data, first, size, max, TGreater<>());
+			--i;
+			const T& v = data[i];
+			if (v < max || (v == max && included))
+			{
+				return i;
+			}
+			return i + 1;
+		}
+
+		// If first and last values are equal, we can just compare one value
+		return firstV < max || (included && firstV == max) ? first : NO_INDEX;
+	}
+
+
+	template <typename T, typename Index, typename Value>
+	Index FindSortedMin(T* data, Index first, Index size, const Value& min, bool included = false)
+	{
+		if (first == NO_INDEX || size == 0)
+		{
+			return NO_INDEX;
+		}
+
+		const Index last = first + size - 1;
+		const T& firstV   = data[first];
+		const T& lastV    = data[last];
+		if (firstV < lastV)    // First is smaller than last. Order is small to big
+		{
+			// Check Limits
+			if (firstV >= min)
+			{
+				const bool moveUp = !included && firstV == min;
+				return first + Index(moveUp);
+			}
+			else if (lastV <= min)
+			{
+				return (included && lastV == min) ? last : NO_INDEX;
+			}
+
+			auto i = UpperBound(data, first, size, min, TLess<>());
+			--i;
+			const T& v = data[i];
+			if (v > min || (v == min && included))
+			{
+				return i;
+			}
+			return i + 1;
+		}
+		else if (firstV > lastV)
+		{
+			// Check Limits
+			if (firstV <= min)
+			{
+				return (included && firstV == min) ? first : NO_INDEX;
+			}
+			else if (lastV >= min)
+			{
+				const bool moveDown = !included && lastV == min;
+				return last - Index(moveDown);
+			}
+
+			auto i     = LowerBound(data, first, size, min, TGreater<>());
+			const T& v = data[i];
+			if (v > min || (v == min && included))
+			{
+				return i;
+			}
+			return i - 1;
+		}
+
+		// If first and last values are equal, we can just compare one value
+		return firstV > min || (included && firstV == min) ? first : NO_INDEX;
 	}
 }    // namespace Rift::Algorithms

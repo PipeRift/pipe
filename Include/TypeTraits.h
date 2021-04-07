@@ -87,19 +87,19 @@ namespace Rift
 	};
 }    // namespace Rift
 
-#define RIFT_DECLARE_IS_POD(T, isPod)                                                \
+#define RIFT_DECLARE_IS_TRIVIAL(T, isPod)                                                \
 	namespace std                                                                    \
 	{                                                                                \
 		template <>                                                                  \
-		struct is_pod<T> : public std::integral_constant<bool, isPod>                \
+		struct is_trivial<T> : public std::integral_constant<bool, isPod>                \
 		{};                                                                          \
 		template <>                                                                  \
-		struct is_pod<const T> : public std::integral_constant<bool, isPod>          \
+		struct is_trivial<const T> : public std::integral_constant<bool, isPod>          \
 		{};                                                                          \
 		template <>                                                                  \
-		struct is_pod<volatile T> : public std::integral_constant<bool, isPod>       \
+		struct is_trivial<volatile T> : public std::integral_constant<bool, isPod>       \
 		{};                                                                          \
 		template <>                                                                  \
-		struct is_pod<const volatile T> : public std::integral_constant<bool, isPod> \
+		struct is_trivial<const volatile T> : public std::integral_constant<bool, isPod> \
 		{};                                                                          \
 	}

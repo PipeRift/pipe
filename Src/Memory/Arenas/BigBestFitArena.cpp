@@ -1,13 +1,13 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Memory/Arenas/BigBestFitArena.h"
-
 #include "Log.h"
 #include "Math/Math.h"
 #include "Math/Search.h"
 #include "Math/Sorting.h"
 #include "Memory/Alloc.h"
+#include "Memory/Arenas/BigBestFitArena.h"
 #include "Misc/Utility.h"
+#include "Templates/Greater.h"
 
 
 namespace Rift::Memory
@@ -85,17 +85,11 @@ namespace Rift::Memory
 				freeSlots.Shrink();
 			}
 			// Sort slots by size. Small first
-			freeSlots.Sort([](const auto& a, const auto& b) {
-				return a.end - a.start > b.end - b.start;
-			});
+			freeSlots.Sort(TGreater<>());
 		}
 
 		// Find smallest slot fitting our required size
-
-		return Algorithms::LowerBoundSearch(
-		    freeSlots.Data(), freeSlots.Size(), [neededSize](const auto& slot) {
-			    return neededSize <= slot.end - slot.start;
-		    });
+		return freeSlots.FindSortedMin(neededSize, true);
 	}
 
 	void BigBestFitArena::ReduceSlot(

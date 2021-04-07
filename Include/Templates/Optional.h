@@ -12,7 +12,7 @@ namespace Rift
 	 * Otherwise GetValue() is not meaningful.
 	 */
 	template <typename Type>
-	struct Optional
+	struct TOptional
 	{
 	private:
 		Type value;
@@ -20,21 +20,21 @@ namespace Rift
 
 	public:
 		/** Construct an Type with no value; i.e. unset */
-		Optional() : isSet(false) {}
+		TOptional() : isSet(false) {}
 
 		/** Construct an Type with a valid value. */
-		Optional(const Type& value) : isSet{true}, value{value} {}
-		Optional(Type&& value) : isSet{true}, value{Move(value)} {}
+		TOptional(const Type& value) : isSet{true}, value{value} {}
+		TOptional(Type&& value) : isSet{true}, value{Move(value)} {}
 
 		/** Copy/Move construction */
-		Optional(const Optional& other) : isSet(other.isSet)
+		TOptional(const TOptional& other) : isSet(other.isSet)
 		{
 			if (isSet)
 			{
 				value = other.value;
 			}
 		}
-		Optional(Optional&& other) noexcept : isSet(Move(other.isSet))
+		TOptional(TOptional&& other) noexcept : isSet(Move(other.isSet))
 		{
 			if (isSet)
 			{
@@ -42,7 +42,7 @@ namespace Rift
 			}
 		}
 
-		Optional& operator=(const Optional& other)
+		TOptional& operator=(const TOptional& other)
 		{
 			isSet = other.isSet;
 			if (isSet)
@@ -51,7 +51,7 @@ namespace Rift
 			}
 			return *this;
 		}
-		Optional& operator=(Optional&& other) noexcept
+		TOptional& operator=(TOptional&& other) noexcept
 		{
 			isSet = Move(other.isSet);
 			if (isSet)
@@ -61,13 +61,13 @@ namespace Rift
 			return *this;
 		}
 
-		Optional& operator=(const Type& otherValue)
+		TOptional& operator=(const Type& otherValue)
 		{
 			isSet = true;
 			value = otherValue;
 			return *this;
 		}
-		Optional& operator=(Type&& otherValue)
+		TOptional& operator=(Type&& otherValue)
 		{
 			isSet = true;
 			value = Move(otherValue);
@@ -86,11 +86,11 @@ namespace Rift
 			value = Type(Forward<ArgsType>(Args)...);
 		}
 
-		friend bool operator==(const Optional& lhs, const Optional& rhs)
+		friend bool operator==(const TOptional& lhs, const TOptional& rhs)
 		{
 			return lhs.isSet == rhs.isSet && (!lhs->isSet || lhs.value == rhs.value);
 		}
-		friend bool operator!=(const Optional& lhs, const Optional& rhs)
+		friend bool operator!=(const TOptional& lhs, const TOptional& rhs)
 		{
 			return !(lhs == rhs);
 		}
@@ -106,36 +106,36 @@ namespace Rift
 		}
 
 		/** @return The optional value; undefined when IsSet() returns false. */
-		const Type& GetValue() const
+		const Type& Get() const
 		{
 			assert(IsSet() &&
 			       "Called GetValue() on an unset Optional. Please either check IsSet() or "
 			       "use Get(defaultValue) instead.");
 			return value;
 		}
-		Type& GetValue()
+		Type& Get()
 		{
 			assert(IsSet() &&
-			       "Called GetValue() on an unset Optional. Please either check IsSet() or "
+			       "Called Get() on an unset Optional. Please either check IsSet() or "
 			       "use Get(defaultValue) instead.");
 			return value;
 		}
 
 		const Type& operator*() const
 		{
-			return GetValue();
+			return Get();
 		}
 		Type& operator*()
 		{
-			return GetValue();
+			return Get();
 		}
 		const Type* operator->() const
 		{
-			return &GetValue();
+			return &Get();
 		}
 		Type* operator->()
 		{
-			return &GetValue();
+			return &Get();
 		}
 
 		/** @return The optional value when set; DefaultValue otherwise. */

@@ -6,7 +6,7 @@ set(BUILD_SHARED_LIBS OFF)
 # Tracy
 set(TRACY_ENABLE ${RIFT_ENABLE_PROFILER})
 option(TRACY_ON_DEMAND "Profiling enabled on demand" ON)
-option(TRACY_NO_EXIT "Client executable does not exit until all profile data is sent to server" OFF)
+option(TRACY_NO_EXIT "Client executable does not exit until all profile data is sent to server" ON)
 option(TRACY_NO_BROADCAST "Disable client discovery by broadcast to local network" OFF)
 
 add_library(Tracy SHARED)
@@ -18,7 +18,7 @@ set_option(Tracy PRIVATE TRACY_ON_DEMAND)
 set_option(Tracy PRIVATE TRACY_NO_BROADCAST)
 
 target_compile_definitions(Tracy PRIVATE TRACY_EXPORTS)
-target_compile_definitions(Tracy PRIVATE _CRT_SECURE_NO_WARNINGS)
+target_compile_definitions(Tracy PRIVATE _CRT_SECURE_NO_WARNINGS TRACY_TIMER_FALLBACK)
 if(PLATFORM_LINUX)
     find_library(DLPATH dl)
     target_link_libraries(Tracy PRIVATE ${DLPATH})
@@ -50,6 +50,7 @@ add_subdirectory(robin_hood)
 add_subdirectory(robin-map)
 
 add_subdirectory(glm)
+target_compile_options(glm INTERFACE -Wno-volatile)
 
 add_subdirectory(spdlog)
 set_target_properties (spdlog PROPERTIES FOLDER Extern)

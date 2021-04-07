@@ -4,20 +4,20 @@
 
 #include "PCH.h"
 
+#include "Events/Function.h"
+#include "Math/Search.h"
 #include "Math/Sorting.h"
 #include "Memory/STLAllocator.h"
 #include "Platform/Platform.h"
+#include "Templates/Less.h"
 #include "TypeTraits.h"
 
-#include <algorithm>
 #include <cassert>
-#include <functional>
 #include <vector>
+
 
 namespace Rift
 {
-	constexpr i32 NO_INDEX = -1;
-
 	template <typename Type, typename Allocator = Memory::DefaultAllocator>
 	class TArray
 	{
@@ -169,7 +169,7 @@ namespace Rift
 			return std::find(nonConstVector.begin(), nonConstVector.end(), item);
 		}
 
-		Iterator FindIt(std::function<bool(const Type&)> cb) const
+		Iterator FindIt(TFunction<bool(const Type&)> cb) const
 		{
 			auto& nonConstVector = const_cast<VectorType&>(vector);
 			return std::find_if(nonConstVector.begin(), nonConstVector.end(), cb);
@@ -185,7 +185,7 @@ namespace Rift
 			return NO_INDEX;
 		}
 
-		i32 FindIndex(std::function<bool(const Type&)> cb) const
+		i32 FindIndex(TFunction<bool(const Type&)> cb) const
 		{
 			ConstIterator it = FindIt(Move(cb));
 			if (it != vector.end())
@@ -201,10 +201,62 @@ namespace Rift
 			return it != end() ? &*it : nullptr;
 		}
 
-		Type* Find(std::function<bool(const Type&)> cb) const
+		Type* Find(TFunction<bool(const Type&)> cb) const
 		{
 			Iterator it = FindIt(Move(cb));
 			return it != end() ? &*it : nullptr;
+		}
+
+		/**
+		 * Finds the index of the first element that has a value greater than or equivalent to a
+		 * specified value.
+		 *
+		 * @param sortPredicate used to sort the array. Default: a < b
+		 * @return the furthermost iterator i in the range [first, last) such that
+		 * for any iterator j in the range [first, i) the following corresponding
+		 * condition holds: sortPredicate(*j, value) == false.
+		 *
+		 * Complexity: worst O(log(n)) | best O(1)
+		 */
+		template <typename Value, typename SortPredicate = TLess<>>
+		i32 LowerBound(const Value& value, SortPredicate sortPredicate = {}) const
+		{
+			return Algorithms::LowerBound(Data(), 0, Size(), value, sortPredicate);
+		}
+
+		/**
+		 * Finds the index of the first element that has a value that is greater than a specified
+		 * value.
+		 *
+		 * @param sortPredicate used to sort the array. Default: a < b
+		 * @return the furthermost iterator i in the range [first, last) such that
+		 * for any iterator j in the range [first, i) the following corresponding
+		 * condition holds: sortPredicate(value, *j) == false.
+		 *
+		 * Complexity: worst O(log(n)) | best O(1)
+		 */
+		template <typename Value, typename SortPredicate = TLess<>>
+		i32 UpperBound(const Value& value, SortPredicate sortPredicate = {}) const
+		{
+			return Algorithms::UpperBound(Data(), 0, Size(), value, sortPredicate);
+		}
+
+		template <typename Value, typename SortPredicate = TLess<>>
+		i32 FindSortedEqual(const Value& value, SortPredicate sortPredicate = {}) const
+		{
+			return Algorithms::BinarySearch(Data(), 0, Size(), value, sortPredicate);
+		}
+
+		template <typename Value>
+		i32 FindSortedMax(const Value& max, bool included = false) const
+		{
+			return Algorithms::FindSortedMax(Data(), 0, Size(), max, included);
+		}
+
+		template <typename Value>
+		i32 FindSortedMin(const Value& min, bool included = false) const
+		{
+			return Algorithms::FindSortedMin(Data(), 0, Size(), min, included);
 		}
 
 		bool Contains(const Type& item) const
@@ -212,7 +264,7 @@ namespace Rift
 			return FindIt(item) != vector.end();
 		}
 
-		bool Contains(std::function<bool(const Type&)> cb) const
+		bool Contains(TFunction<bool(const Type&)> cb) const
 		{
 			return FindIt(Move(cb)) != vector.end();
 		}
@@ -227,8 +279,9 @@ namespace Rift
 			std::remove(vector.begin(), vector.end(), item);
 
 			if (bShouldShrink)
+			{
 				Shrink();
-
+			}
 			return lastSize - Size();
 		}
 
@@ -297,7 +350,7 @@ namespace Rift
 		 * Delete all items that match a delegate
 		 * @return number of deleted items
 		 */
-		i32 RemoveIf(std::function<bool(const Type&)>&& callback, const bool bShouldShrink = true)
+		i32 RemoveIf(TFunction<bool(const Type&)>&& callback, const bool bShouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			vector.erase(std::remove_if(vector.begin(), vector.end(), callback), vector.end());
@@ -385,7 +438,7 @@ namespace Rift
 		Type& operator[](i32 index)
 		{
 			assert(IsValidIndex(index));
-			return vector.at(index);
+			return Data()[index];
 		}
 
 		/**
@@ -398,7 +451,7 @@ namespace Rift
 		const Type& operator[](i32 index) const
 		{
 			assert(IsValidIndex(index));
-			return vector.at(index);
+			return Data()[index];
 		}
 
 		Iterator begin()

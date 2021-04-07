@@ -17,7 +17,7 @@ namespace Rift
 	};
 
 
-	Ptr<AssetData> AssetManager::Load(AssetInfo info)
+	TPtr<AssetData> AssetManager::Load(AssetInfo info)
 	{
 		const auto loaded = Load(TArray<AssetInfo>{Move(info)});
 		if (loaded.Size() > 0)
@@ -27,7 +27,7 @@ namespace Rift
 		return {};
 	}
 
-	TArray<Ptr<AssetData>> AssetManager::Load(TArray<AssetInfo> infos)
+	TArray<TPtr<AssetData>> AssetManager::Load(TArray<AssetInfo> infos)
 	{
 		if (infos.Size() <= 0)
 		{
@@ -36,12 +36,12 @@ namespace Rift
 
 		ZoneScopedC(0x459bd1);
 
-		TArray<Ptr<AssetData>> finalAssets;
+		TArray<TPtr<AssetData>> finalAssets;
 		{
 			ZoneScopedNC("Ignore already loaded assets", 0xD19D45);
 			for (i32 I = 0; I < infos.Size(); ++I)
 			{
-				if (Ptr<AssetData> loadedAsset = GetLoadedAsset(infos[I]))
+				if (TPtr<AssetData> loadedAsset = GetLoadedAsset(infos[I]))
 				{
 					infos.RemoveAtSwap(I, false);
 					finalAssets.Add(loadedAsset);
@@ -108,14 +108,14 @@ namespace Rift
 		return finalAssets;
 	}
 
-	Ptr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Refl::ClassType* assetType)
+	TPtr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Refl::ClassType* assetType)
 	{
 		if (info.IsNull() || !Files::IsFolder(info.GetStrPath()))
 		{
 			return {};
 		}
 
-		Ptr<AssetData> loadedAsset = Load(info);
+		TPtr<AssetData> loadedAsset = Load(info);
 		if (loadedAsset)
 		{
 			return loadedAsset;
@@ -129,7 +129,7 @@ namespace Rift
 			auto newAsset = Create<AssetData>(assetType, Self());
 			if (newAsset->OnCreate(info))
 			{
-				const Ptr<AssetData> newAssetPtr = newAsset;
+				const TPtr<AssetData> newAssetPtr = newAsset;
 
 				loadedAssets[info.GetPath()] = Move(newAsset);
 
@@ -139,7 +139,7 @@ namespace Rift
 		return {};
 	}
 
-	Ptr<AssetManager> AssetManager::Get()
+	TPtr<AssetManager> AssetManager::Get()
 	{
 		return Context::Get()->GetAssetManager();
 	}

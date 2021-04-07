@@ -23,13 +23,13 @@ namespace Rift::Refl
 		friend struct TClassTypeBuilder;
 
 		using CreateFunc =
-		    TFunction<OwnPtr<BaseObject, ObjectBuilder<BaseObject>>(const Ptr<BaseObject>&)>;
+		    TFunction<TOwnPtr<BaseObject, ObjectBuilder<BaseObject>>(const TPtr<BaseObject>&)>;
 
 		CreateFunc onCreate;
 
 
 	public:
-		OwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(const Ptr<BaseObject>& owner);
+		TOwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(const TPtr<BaseObject>& owner);
 
 		ClassType* GetParent() const
 		{

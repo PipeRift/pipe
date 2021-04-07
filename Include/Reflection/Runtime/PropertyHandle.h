@@ -15,12 +15,12 @@ namespace Rift::Refl
 	{
 	protected:
 		BaseStruct* const structInstance = nullptr;
-		Ptr<BaseObject> objInstance;
+		TPtr<BaseObject> objInstance;
 		const Property* const prop = nullptr;
 
 
 	protected:
-		PropertyHandle(const Ptr<BaseObject>& objInstance, const Property* prop)
+		PropertyHandle(const TPtr<BaseObject>& objInstance, const Property* prop)
 		    : objInstance{objInstance}
 		    , prop{prop}
 		{}

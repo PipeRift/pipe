@@ -23,6 +23,23 @@ namespace Rift::Memory
 			// TODO: Test use of size instead of end for more efficient sort and search
 			u8* start;
 			u8* end;
+
+			auto operator<=>(const Slot& other) const
+			{
+				return sizet(end - start) <=> sizet(other.end - other.start);
+			}
+			auto operator<=>(sizet other) const
+			{
+				return sizet(end - start) <=> other;
+			}
+			auto operator==(const Slot& other) const
+			{
+				return sizet(end - start) == sizet(other.end - other.start);
+			}
+			auto operator==(sizet other) const
+			{
+				return sizet(end - start) == other;
+			}
 		};
 
 	protected:
@@ -89,4 +106,28 @@ namespace Rift::Memory
 		    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd);
 		void AbsorbFreeSpace(u8* const allocationStart, u8* const allocationEnd);
 	};
+
+
+	/*inline auto operator<=>(const BigBestFitArena::Slot& one, const BigBestFitArena::Slot& other)
+	{
+	    return sizet(one.end - one.start) <=> sizet(other.end - other.start);
+	}
+	inline auto operator<=>(const BigBestFitArena::Slot& one, sizet other)
+	{
+	    return sizet(one.end - one.start) <=> other;
+	}
+	inline auto operator<=>(sizet one, const BigBestFitArena::Slot& other)
+	{
+	    return one <=> sizet(other.end - other.start);
+	}
+
+	// Operator <=> doesnt implement == in this case
+	inline auto operator==(const BigBestFitArena::Slot& one, const BigBestFitArena::Slot& other)
+	{
+	    return sizet(one.end - one.start) == sizet(other.end - other.start);
+	}
+	inline auto operator==(const BigBestFitArena::Slot& one, sizet other)
+	{
+	    return sizet(one.end - one.start) == other;
+	}*/
 }    // namespace Rift::Memory

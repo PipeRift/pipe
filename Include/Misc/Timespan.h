@@ -326,8 +326,7 @@ namespace Rift
 		 */
 		i64 GetFractionMicro() const
 		{
-			return (Chrono::floor<Chrono::microseconds>(duration) -
-			        Chrono::floor<Chrono::seconds>(duration))
+			return (Chrono::floor<Microseconds>(duration) - Chrono::floor<Seconds>(duration))
 			    .count();
 		}
 
@@ -339,8 +338,7 @@ namespace Rift
 		 */
 		i64 GetFractionMilli() const
 		{
-			return (Chrono::floor<Chrono::milliseconds>(duration) -
-			        Chrono::floor<Chrono::seconds>(duration))
+			return (Chrono::floor<Milliseconds>(duration) - Chrono::floor<Seconds>(duration))
 			    .count();
 		}
 
@@ -351,8 +349,7 @@ namespace Rift
 		 */
 		i64 GetFractionNano() const
 		{
-			return (Chrono::floor<Chrono::nanoseconds>(duration) -
-			        Chrono::floor<Chrono::seconds>(duration))
+			return (Chrono::floor<Nanoseconds>(duration) - Chrono::floor<Seconds>(duration))
 			    .count();
 		}
 
@@ -363,7 +360,7 @@ namespace Rift
 		 */
 		i64 GetFractionTicks() const
 		{
-			return (duration - Chrono::floor<Chrono::seconds>(duration)).count();
+			return (duration - Chrono::floor<Seconds>(duration)).count();
 		}
 
 		/**
@@ -374,8 +371,7 @@ namespace Rift
 		 */
 		i32 GetHours() const
 		{
-			return (i32)(Chrono::floor<Chrono::hours>(duration) - Chrono::floor<Days>(duration))
-			    .count();
+			return (i32)(Chrono::floor<Hours>(duration) - Chrono::floor<Days>(duration)).count();
 		}
 
 		/**
@@ -386,9 +382,7 @@ namespace Rift
 		 */
 		i32 GetMinutes() const
 		{
-			return (i32)(
-			    Chrono::floor<Chrono::minutes>(duration) - Chrono::floor<Chrono::hours>(duration))
-			    .count();
+			return (i32)(Chrono::floor<Minutes>(duration) - Chrono::floor<Hours>(duration)).count();
 		}
 
 		/**
@@ -399,8 +393,7 @@ namespace Rift
 		 */
 		i32 GetSeconds() const
 		{
-			return (i32)(
-			    Chrono::floor<Chrono::seconds>(duration) - Chrono::floor<Chrono::minutes>(duration))
+			return (i32)(Chrono::floor<Seconds>(duration) - Chrono::floor<Minutes>(duration))
 			    .count();
 		}
 
@@ -436,7 +429,7 @@ namespace Rift
 		template <typename PrecisionType = float>
 		PrecisionType GetTotalHours() const
 		{
-			return Chrono::duration<PrecisionType, Chrono::hours::period>(duration).count();
+			return Chrono::duration<PrecisionType, Hours::period>(duration).count();
 		}
 
 		/**
@@ -460,7 +453,7 @@ namespace Rift
 		template <typename PrecisionType = float>
 		PrecisionType GetTotalMilliseconds() const
 		{
-			return Chrono::duration<PrecisionType, Chrono::milliseconds::period>(duration).count();
+			return Chrono::duration<PrecisionType, Milliseconds::period>(duration).count();
 		}
 
 		/**
@@ -472,7 +465,7 @@ namespace Rift
 		template <typename PrecisionType = float>
 		PrecisionType GetTotalMinutes() const
 		{
-			return Chrono::duration<PrecisionType, Chrono::minutes::period>(duration).count();
+			return Chrono::duration<PrecisionType, Minutes::period>(duration).count();
 		}
 
 		/**
@@ -484,7 +477,7 @@ namespace Rift
 		template <typename PrecisionType = float>
 		PrecisionType GetTotalSeconds() const
 		{
-			return Chrono::duration<PrecisionType, Chrono::seconds::period>(duration).count();
+			return Chrono::duration<PrecisionType, Seconds::period>(duration).count();
 		}
 
 		/**

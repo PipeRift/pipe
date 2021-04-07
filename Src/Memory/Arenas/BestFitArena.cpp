@@ -1,13 +1,14 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Memory/Arenas/BestFitArena.h"
-
 #include "Log.h"
 #include "Math/Math.h"
 #include "Math/Search.h"
 #include "Math/Sorting.h"
 #include "Memory/Alloc.h"
+#include "Memory/Arenas/BestFitArena.h"
 #include "Misc/Utility.h"
+#include "Profiler.h"
+#include "Templates/Greater.h"
 
 
 namespace Rift::Memory
@@ -27,9 +28,9 @@ namespace Rift::Memory
 	void* BestFitArena::Allocate(const sizet size)
 	{
 		const u32 slotIndex = FindSmallestSlot(size);
-		if (slotIndex >= freeSlots.Size())
+		if (slotIndex >= freeSlots.Size()) [[unlikely]]
 		{
-			// Log::Error("No slots can fit {} bytes!", size);
+			// Log::Error("Couldn't fit {} bytes", size);
 			return nullptr;
 		}
 
@@ -37,11 +38,6 @@ namespace Rift::Memory
 		u8* const start = slot.start;
 		u8* const end   = start + size;
 
-		if (end > block.GetEnd())
-		{
-			// Log::Error("Allocation doesn't fit!");
-			return nullptr;
-		}
 		ReduceSlot(slotIndex, slot, start, end);
 		freeSize -= size;
 		return start;
@@ -51,21 +47,15 @@ namespace Rift::Memory
 	{
 		// Maximum size needed, based on worst possible alignment:
 		const u32 slotIndex = FindSmallestSlot(size + (alignment - 1));
-		if (slotIndex >= freeSlots.Size())
+		if (slotIndex >= freeSlots.Size()) [[unlikely]]
 		{
-			// Log::Error("No slots can fit {} bytes!", size);
+			// Log::Error("Couldn't fit {} bytes", size);
 			return nullptr;
 		}
 
 		Slot& slot      = freeSlots[slotIndex];
 		u8* const start = slot.start + GetAlignmentPadding(slot.start, alignment);
 		u8* const end   = start + size;
-
-		if (end > block.GetEnd())
-		{
-			// Log::Error("Allocation doesn't fit!");
-			return nullptr;
-		}
 
 		ReduceSlot(slotIndex, slot, start, end);
 		freeSize -= size;
@@ -88,26 +78,18 @@ namespace Rift::Memory
 		if (pendingSort) [[unlikely]]
 		{
 			pendingSort = false;
-			if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.25f)
+			if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.1f)
 			{
-				// Dont shrink until there is 75% of unused space
+				// Dont shrink until there is 90% of unused space
 				freeSlots.Shrink();
 			}
 			// Sort slots by size. Small first
-			{
-				freeSlots.Sort([](const auto& a, const auto& b) {
-					return a.size > b.size;
-				});
-			}
+			freeSlots.Sort(TGreater<>());
 		}
 
-		{
-			// Find smallest slot fitting our required size
-			return Algorithms::LowerBoundSearch(
-			    freeSlots.Data(), freeSlots.Size(), [neededSize](const auto& slot) {
-				    return neededSize <= slot.size;
-			    });
-		}
+		// Find smallest slot fitting our required size
+		return freeSlots.FindSortedMin(neededSize, true);
+		// return freeSlots.UpperBound(neededSize);
 	}
 
 	void BestFitArena::ReduceSlot(
@@ -128,15 +110,20 @@ namespace Rift::Memory
 		}
 
 		u8* const oldSlotStart = slot.start;
-		slot.size += slot.start - allocationEnd;
 		slot.start = allocationEnd;
+		slot.size += oldSlotStart - allocationEnd;
 
 		// If alignment leaves a gap in the slot, save this space as a new slot
 		if (allocationStart > oldSlotStart)
 		{
 			freeSlots.Add({oldSlotStart, sizet(allocationStart - oldSlotStart)});
+			pendingSort = true;
 		}
-		pendingSort = true;
+		// If slot is smaller than prev slot, we have to sort
+		else if (slotIndex > 0 && slot.size < freeSlots[slotIndex - 1].size)
+		{
+			pendingSort = true;
+		}
 	}
 
 	void BestFitArena::AbsorbFreeSpace(u8* const allocationStart, u8* const allocationEnd)

@@ -119,7 +119,7 @@ namespace Rift
 
 
 	template <typename T>
-	struct Ptr;
+	struct TPtr;
 
 
 	/**
@@ -127,12 +127,12 @@ namespace Rift
 	 * Contains an unique instance of T that is kept automatically removed on owner destruction.
 	 */
 	template <typename T, typename Builder = PtrBuilder<T>>
-	struct OwnPtr : public Impl::OwnPtr
+	struct TOwnPtr : public Impl::OwnPtr
 	{
 		using Super = Impl::OwnPtr;
 
 		template <typename T2, typename Builder2>
-		friend struct OwnPtr;
+		friend struct TOwnPtr;
 
 #if BUILD_DEBUG
 		// Pointer to value for debugging
@@ -141,15 +141,15 @@ namespace Rift
 
 
 	public:
-		OwnPtr() = default;
-		explicit OwnPtr(T* value)
+		TOwnPtr() = default;
+		explicit TOwnPtr(T* value)
 		    : Super(value)
 #if BUILD_DEBUG
 		    , instance(value)
 #endif
 		{}
 
-		OwnPtr(OwnPtr&& other) noexcept
+		TOwnPtr(TOwnPtr&& other) noexcept
 		{
 #if BUILD_DEBUG
 			instance       = reinterpret_cast<T*>(other.instance);
@@ -158,7 +158,7 @@ namespace Rift
 			MoveFrom(Move(other));
 		}
 
-		OwnPtr& operator=(OwnPtr&& other) noexcept
+		TOwnPtr& operator=(TOwnPtr&& other) noexcept
 		{
 #if BUILD_DEBUG
 			instance       = other.instance;
@@ -170,7 +170,7 @@ namespace Rift
 
 		/** Templates for down-casting */
 		template <typename T2, typename Builder2>
-		OwnPtr(OwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
+		TOwnPtr(TOwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
 		{
 #if BUILD_DEBUG
 			instance       = reinterpret_cast<T*>(other.instance);
@@ -179,7 +179,7 @@ namespace Rift
 			MoveFrom(Move(other));
 		}
 		template <typename T2, typename Builder2>
-		OwnPtr& operator=(OwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
+		TOwnPtr& operator=(TOwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
 		{
 #if BUILD_DEBUG
 			instance       = other.instance;
@@ -189,7 +189,7 @@ namespace Rift
 			return *this;
 		}
 
-		~OwnPtr()
+		~TOwnPtr()
 		{
 			Release();
 		}
@@ -201,12 +201,12 @@ namespace Rift
 
 		/** Cast a global pointer into another type. Will invalidate previous owner on success */
 		template <typename T2>
-		OwnPtr<T2, Builder> Cast()
+		TOwnPtr<T2, Builder> Cast()
 		{
 			// If can be casted statically or dynamically
 			if (IsValid() && (std::is_convertible_v<T2, T> || dynamic_cast<T2*>(**this) != nullptr))
 			{
-				OwnPtr<T2, Builder> newPtr{};
+				TOwnPtr<T2, Builder> newPtr{};
 				newPtr.MoveFrom(Move(*this));
 #if BUILD_DEBUG
 				newPtr.instance = reinterpret_cast<T2*>(instance);
@@ -218,7 +218,7 @@ namespace Rift
 		}
 
 		template <typename T2 = T>
-		Ptr<T2> AsPtr() const
+		TPtr<T2> AsPtr() const
 		{
 			if constexpr (Derived<T2, T>)
 			{
@@ -226,7 +226,7 @@ namespace Rift
 			}
 			else if (IsValid() && dynamic_cast<T2*>(**this) != nullptr)
 			{
-				Ptr<T> ptr{*this};
+				TPtr<T> ptr{*this};
 				return ptr.template Cast<T2>();
 			}
 			return {};
@@ -266,12 +266,12 @@ namespace Rift
 			return **this == other;
 		}
 		template <typename T2>
-		bool operator==(const OwnPtr<T2, Builder>& other) const
+		bool operator==(const TOwnPtr<T2, Builder>& other) const
 		{
 			return operator==(*other);
 		}
 		template <typename T2>
-		bool operator==(const Ptr<T2>& other) const
+		bool operator==(const TPtr<T2>& other) const
 		{
 			return operator==(*other);
 		}
@@ -281,12 +281,12 @@ namespace Rift
 			return **this != other;
 		}
 		template <typename T2>
-		bool operator!=(const OwnPtr<T2, Builder>& other) const
+		bool operator!=(const TOwnPtr<T2, Builder>& other) const
 		{
 			return operator!=(*other);
 		}
 		template <typename T2>
-		bool operator!=(const Ptr<T2>& other) const
+		bool operator!=(const TPtr<T2>& other) const
 		{
 			return operator!=(*other);
 		}
@@ -299,24 +299,24 @@ namespace Rift
 	 * invalidated.
 	 */
 	template <typename T>
-	struct Ptr : public Impl::Ptr
+	struct TPtr : public Impl::Ptr
 	{
 		template <typename T2>
-		friend struct Ptr;
+		friend struct TPtr;
 
 		using Super = Impl::Ptr;
 
-		Ptr() = default;
-		Ptr(const Ptr& other) : Super(other) {}
-		Ptr(Ptr&& other) noexcept : Super(Move(other)) {}
+		TPtr() = default;
+		TPtr(const TPtr& other) : Super(other) {}
+		TPtr(TPtr&& other) noexcept : Super(Move(other)) {}
 
-		Ptr& operator=(const Ptr& other)
+		TPtr& operator=(const TPtr& other)
 		{
 			CopyFrom(other);
 			return *this;
 		}
 
-		Ptr& operator=(Ptr&& other) noexcept
+		TPtr& operator=(TPtr&& other) noexcept
 		{
 			MoveFrom(Move(other));
 			return *this;
@@ -326,26 +326,26 @@ namespace Rift
 		/** Templates for down-casting */
 
 		template <typename T2, typename Builder2>
-		Ptr(const OwnPtr<T2, Builder2>& owner) requires Derived<T2, T> : Super(owner)
+		TPtr(const TOwnPtr<T2, Builder2>& owner) requires Derived<T2, T> : Super(owner)
 		{}
 
 		template <typename T2>
-		Ptr(const Ptr<T2>& other) requires Derived<T2, T> : Super(other)
+		TPtr(const TPtr<T2>& other) requires Derived<T2, T> : Super(other)
 		{}
 
 		template <typename T2>
-		Ptr(Ptr<T2>&& other) requires Derived<T2, T> : Super(Move(other))
+		TPtr(TPtr<T2>&& other) requires Derived<T2, T> : Super(Move(other))
 		{}
 
 		template <typename T2>
-		Ptr& operator=(const Ptr<T2>& other) requires Derived<T2, T>
+		TPtr& operator=(const TPtr<T2>& other) requires Derived<T2, T>
 		{
 			CopyFrom(other);
 			return *this;
 		}
 
 		template <typename T2>
-		Ptr& operator=(Ptr<T2>&& other) requires Derived<T2, T>
+		TPtr& operator=(TPtr<T2>&& other) requires Derived<T2, T>
 		{
 			MoveFrom(Move(other));
 			return *this;
@@ -367,11 +367,11 @@ namespace Rift
 		}
 
 		template <typename T2>
-		Ptr<T2> Cast() const
+		TPtr<T2> Cast() const
 		{
 			if (IsValid() && (std::is_convertible_v<T2, T> || dynamic_cast<T2*>(**this) == nullptr))
 			{
-				Ptr<T2> ptr{};
+				TPtr<T2> ptr{};
 				ptr.CopyFrom(*this);
 				return ptr;
 			}
@@ -384,12 +384,12 @@ namespace Rift
 			return **this == other;
 		}
 		template <typename T2, typename Builder2>
-		bool operator==(const OwnPtr<T2, Builder2>& other) const
+		bool operator==(const TOwnPtr<T2, Builder2>& other) const
 		{
 			return operator==(*other);
 		}
 		template <typename T2>
-		bool operator==(const Ptr<T2>& other) const
+		bool operator==(const TPtr<T2>& other) const
 		{
 			return operator==(*other);
 		}
@@ -399,12 +399,12 @@ namespace Rift
 			return **this != other;
 		}
 		template <typename T2, typename Builder2>
-		bool operator!=(const OwnPtr<T2, Builder2>& other) const
+		bool operator!=(const TOwnPtr<T2, Builder2>& other) const
 		{
 			return operator!=(*other);
 		}
 		template <typename T2>
-		bool operator!=(const Ptr<T2>& other) const
+		bool operator!=(const TPtr<T2>& other) const
 		{
 			return operator!=(*other);
 		}
@@ -413,14 +413,14 @@ namespace Rift
 
 	template <typename T, typename Builder = PtrBuilder<T>, typename... Args,
 	    EnableIfT<!std::is_array_v<T>, i32> = 0>
-	OwnPtr<T, Builder> MakeOwned(Args&&... args)
+	TOwnPtr<T, Builder> MakeOwned(Args&&... args)
 	{
-		return OwnPtr<T, Builder>(Builder::New(std::forward<Args>(args)...));
+		return TOwnPtr<T, Builder>(Builder::New(std::forward<Args>(args)...));
 	}
 
 	template <typename T, typename Builder = PtrBuilder<T>,
 	    EnableIfT<std::is_array_v<T> && std::extent_v<T> == 0, i32> = 0>
-	OwnPtr<T, Builder> MakeOwned(sizet size)
+	TOwnPtr<T, Builder> MakeOwned(sizet size)
 	{
 		using Elem = std::remove_extent_t<T>;
 		return {Builder::NewArray(size)};

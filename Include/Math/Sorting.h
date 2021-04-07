@@ -7,6 +7,7 @@
 #include "Math/Heap.h"
 #include "Math/Math.h"
 #include "Misc/Utility.h"
+#include "Profiler.h"
 
 
 namespace Rift::Algorithms
