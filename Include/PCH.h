@@ -9,7 +9,3 @@
 #include <robin_hood.h>
 
 #include <taskflow/taskflow.hpp>
-
-
-namespace Rift
-{}    // namespace Rift

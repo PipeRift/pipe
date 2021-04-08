@@ -59,7 +59,7 @@ namespace Rift
 			String str;
 			ar(name, str);
 
-			if (CString::Equals(str, noneStr))
+			if (Strings::Equals(str, noneStr))
 			{
 				*this = None();
 			}

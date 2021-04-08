@@ -10,7 +10,7 @@
 namespace Rift
 {
 	template <typename T>
-	constexpr void Swap(T& a, T& b) noexcept requires IsMoveConstructible<T>&& IsMoveAssignable<T>
+	constexpr void Swap(T& a, T& b) noexcept requires(IsMoveConstructible<T>&& IsMoveAssignable<T>)
 	{
 		std::swap(a, b);
 	}
@@ -53,26 +53,6 @@ namespace Rift
 		bool operator()(T&& A, T&& B) const
 		{
 			return predicate(Forward<T>(B), Forward<T>(A));
-		}
-	};
-
-
-	struct Less
-	{
-		template <typename T>
-		bool operator()(T&& A, T&& B) const
-		{
-			return Forward<T>(A) < Forward<T>(B);
-		}
-	};
-
-
-	struct More
-	{
-		template <typename T>
-		bool operator()(T&& A, T&& B) const
-		{
-			return Forward<T>(A) > Forward<T>(B);
 		}
 	};
 }    // namespace Rift

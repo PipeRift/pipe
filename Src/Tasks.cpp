@@ -45,7 +45,7 @@ namespace Rift
 			    }
 			    {
 				    // Name each worker thread in the debugger
-				    tracy::SetThreadName(CString::Format("Worker {}", i + 1).c_str());
+				    tracy::SetThreadName(Strings::Format("Worker {}", i + 1).c_str());
 			    }
 		    });
 		auto future = RunFlow(flow);

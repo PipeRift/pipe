@@ -32,31 +32,31 @@ namespace Rift
 				switch (*format)
 				{
 					case TX('d'):
-						CString::FormatTo(result, TX("{}"), Math::Abs(GetDays()));
+						Strings::FormatTo(result, TX("{}"), Math::Abs(GetDays()));
 						break;
 					case TX('D'):
-						CString::FormatTo(result, TX("{:08i}"), Math::Abs(GetDays()));
+						Strings::FormatTo(result, TX("{:08i}"), Math::Abs(GetDays()));
 						break;
 					case TX('h'):
-						CString::FormatTo(result, TX("{:02i}"), Math::Abs(GetHours()));
+						Strings::FormatTo(result, TX("{:02i}"), Math::Abs(GetHours()));
 						break;
 					case TX('m'):
-						CString::FormatTo(result, TX("{:02i}"), Math::Abs(GetMinutes()));
+						Strings::FormatTo(result, TX("{:02i}"), Math::Abs(GetMinutes()));
 						break;
 					case TX('s'):
-						CString::FormatTo(result, TX("{:02i}"), Math::Abs(GetSeconds()));
+						Strings::FormatTo(result, TX("{:02i}"), Math::Abs(GetSeconds()));
 						break;
 					case TX('f'):
-						CString::FormatTo(result, TX("{:03i}"), Math::Abs(GetFractionMilli()));
+						Strings::FormatTo(result, TX("{:03i}"), Math::Abs(GetFractionMilli()));
 						break;
 					case TX('u'):
-						CString::FormatTo(result, TX("{:06i}"), Math::Abs(GetFractionMicro()));
+						Strings::FormatTo(result, TX("{:06i}"), Math::Abs(GetFractionMicro()));
 						break;
 					case TX('t'):
-						CString::FormatTo(result, TX("{:07i}"), Math::Abs(GetFractionTicks()));
+						Strings::FormatTo(result, TX("{:07i}"), Math::Abs(GetFractionTicks()));
 						break;
 					case TX('n'):
-						CString::FormatTo(result, TX("{:09i}"), Math::Abs(GetFractionNano()));
+						Strings::FormatTo(result, TX("{:09i}"), Math::Abs(GetFractionNano()));
 						break;
 					default:
 						result += *format;
@@ -82,18 +82,18 @@ namespace Rift
 		// @todo gmp: implement stricter FTimespan parsing; this implementation is too forgiving
 
 		// get string tokens
-		const bool HasFractional = CString::Contains(TimespanString, TX('.')) ||
-		                           CString::Contains(TimespanString, TX(','));
+		const bool HasFractional = Strings::Contains(TimespanString, TX('.')) ||
+		                           Strings::Contains(TimespanString, TX(','));
 		String TokenString = TimespanString;
-		CString::Replace(TokenString, TX('.'), TX(':'));
-		CString::Replace(TokenString, TX(','), TX(':'));
+		Strings::Replace(TokenString, TX('.'), TX(':'));
+		Strings::Replace(TokenString, TX(','), TX(':'));
 
 		const bool Negative = TokenString[0] == TX('-');
-		CString::Replace(TokenString, TX('-'), TX(':'));
-		CString::Replace(TokenString, TX('+'), TX(':'));
+		Strings::Replace(TokenString, TX('-'), TX(':'));
+		Strings::Replace(TokenString, TX('+'), TX(':'));
 
 		TArray<String> Tokens;
-		CString::Split(TokenString, Tokens, TX(':'));
+		Strings::Split(TokenString, Tokens, TX(':'));
 
 		if (!HasFractional)
 		{
@@ -103,7 +103,7 @@ namespace Rift
 		// poor man's token verification
 		for (const String& token : Tokens)
 		{
-			if (!token.empty() && !CString::IsNumeric(token))
+			if (!token.empty() && !Strings::IsNumeric(token))
 			{
 				return false;
 			}
@@ -126,19 +126,19 @@ namespace Rift
 
 			if (FractionalLen > 9)
 			{
-				Tokens[4] = CString::FrontSubstr(Tokens[4], 9);
+				Tokens[4] = Strings::FrontSubstr(Tokens[4], 9);
 			}
 			else if (FractionalLen < 9)
 			{
-				Tokens[4] += CString::FrontSubstr({TX("000000000")}, 9 - FractionalLen);
+				Tokens[4] += Strings::FrontSubstr({TX("000000000")}, 9 - FractionalLen);
 			}
 		}
 
-		const i32 days         = *CString::ToI32(Tokens[0]);
-		const i32 hours        = *CString::ToI32(Tokens[1]);
-		const i32 minutes      = *CString::ToI32(Tokens[2]);
-		const i32 seconds      = *CString::ToI32(Tokens[3]);
-		const i32 fractionNano = *CString::ToI32(Tokens[4]);
+		const i32 days         = *Strings::ToI32(Tokens[0]);
+		const i32 hours        = *Strings::ToI32(Tokens[1]);
+		const i32 minutes      = *Strings::ToI32(Tokens[2]);
+		const i32 seconds      = *Strings::ToI32(Tokens[3]);
+		const i32 fractionNano = *Strings::ToI32(Tokens[4]);
 
 		// Max days
 		if ((days > Chrono::floor<Days>(DecMicroseconds::max()).count() - 1))

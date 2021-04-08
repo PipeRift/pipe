@@ -33,7 +33,7 @@ namespace Rift::Log
 	{
 		if (!format.empty())
 		{
-			Info(CString::Format(format, std::forward<Args>(args)...));
+			Info(Strings::Format(format, std::forward<Args>(args)...));
 		}
 	}
 
@@ -42,7 +42,7 @@ namespace Rift::Log
 	{
 		if (!format.empty())
 		{
-			Warning(CString::Format(format, std::forward<Args>(args)...));
+			Warning(Strings::Format(format, std::forward<Args>(args)...));
 		}
 	}
 
@@ -51,7 +51,7 @@ namespace Rift::Log
 	{
 		if (!format.empty())
 		{
-			Error(CString::Format(format, std::forward<Args>(args)...));
+			Error(Strings::Format(format, std::forward<Args>(args)...));
 		}
 	}
 };	  // namespace Rift::Log

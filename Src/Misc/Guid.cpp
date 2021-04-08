@@ -32,28 +32,28 @@ namespace Rift
 		switch (Format)
 		{
 			case EGuidFormats::DigitsWithHyphens:
-				return CString::Format(TX("{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}"), a, b >> 16,
+				return Strings::Format(TX("{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}"), a, b >> 16,
 				    b & 0xFFFF, c >> 16, c & 0xFFFF, d);
 
 			case EGuidFormats::DigitsWithHyphensInBraces:
-				return CString::Format(TX("{{{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}}}"), a,
+				return Strings::Format(TX("{{{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}}}"), a,
 				    b >> 16, b & 0xFFFF, c >> 16, c & 0xFFFF, d);
 
 			case EGuidFormats::DigitsWithHyphensInParentheses:
-				return CString::Format(TX("({:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X})"), a, b >> 16,
+				return Strings::Format(TX("({:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X})"), a, b >> 16,
 				    b & 0xFFFF, c >> 16, c & 0xFFFF, d);
 
 			case EGuidFormats::HexValuesInBraces:
-				return CString::Format(
+				return Strings::Format(
 				    TX("{{0x{:08X},0x{:04X},0x{:04X},{{0x{:02X},0x{:02X},0x{:02X},"
 				       "0x{:02X},0x{:02X},0x{:02X},0x{:02X},0x{:02X}}}}}"),
 				    a, b >> 16, b & 0xFFFF, c >> 24, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0XFF,
 				    d >> 24, (d >> 16) & 0XFF, (d >> 8) & 0XFF, d & 0XFF);
 
 			case EGuidFormats::UniqueObjectGuid:
-				return CString::Format(TX("{:08X}-{:08X}-{:08X}-{:08X}"), a, b, c, d);
+				return Strings::Format(TX("{:08X}-{:08X}-{:08X}-{:08X}"), a, b, c, d);
 			default:
-				return CString::Format(TX("{:08X}{:08X}{:08X}{:08X}"), a, b, c, d);
+				return Strings::Format(TX("{:08X}{:08X}{:08X}{:08X}"), a, b, c, d);
 		}
 	}
 

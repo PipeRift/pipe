@@ -23,8 +23,8 @@ namespace Rift
 				return {};
 			}
 
-			filePath = CString::Convert(
-			    TStringView<char>{rawPath.data(), CString::Length(rawPath.data())});
+			filePath = Strings::Convert(
+			    TStringView<char>{rawPath.data(), Strings::Length(rawPath.data())});
 		}
 		return filePath;
 	}

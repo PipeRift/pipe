@@ -329,7 +329,7 @@ namespace Rift
 
 		String ToString() const
 		{
-			return CString::Format(TX("(r={},g={},b={},a={})"), r, g, b, a);
+			return Strings::Format(TX("(r={},g={},b={},a={})"), r, g, b, a);
 		}
 
 		// Common colors.
@@ -460,7 +460,7 @@ namespace Rift
 		 */
 		String ToHex() const
 		{
-			return CString::Format(TX("{:02X}{:02X}{:02X}{:02X}"), r, g, b, a);
+			return Strings::Format(TX("{:02X}{:02X}{:02X}{:02X}"), r, g, b, a);
 		}
 
 		/**
@@ -471,7 +471,7 @@ namespace Rift
 		 */
 		String ToString() const
 		{
-			return CString::Format(TX("(R={},G={},B={},A={})"), r, g, b, a);
+			return Strings::Format(TX("(R={},G={},B={},A={})"), r, g, b, a);
 		}
 
 		/**

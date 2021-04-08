@@ -159,7 +159,7 @@ namespace Rift
 				break;
 		}
 
-		return CString::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(),
+		return Strings::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(),
 		    GetDay(), MonthStr.c_str(), GetYear(), GetHour(), GetMinute(), GetSecond());
 	}
 
@@ -178,7 +178,7 @@ namespace Rift
 
 	String DateTime::ToString(const TChar* format) const
 	{
-		// return CString::Format(format, *value);
+		// return Strings::Format(format, *value);
 		String result;
 
 		if (format != nullptr)
@@ -196,34 +196,34 @@ namespace Rift
 							result += IsMorning() ? TX("AM") : TX("PM");
 							break;
 						case TX('d'):
-							CString::FormatTo(result, TX("{:02i}"), GetDay());
+							Strings::FormatTo(result, TX("{:02i}"), GetDay());
 							break;
 						case TX('D'):
-							CString::FormatTo(result, TX("{:03i}"), GetDayOfYear());
+							Strings::FormatTo(result, TX("{:03i}"), GetDayOfYear());
 							break;
 						case TX('m'):
-							CString::FormatTo(result, TX("{:02i}"), GetMonth());
+							Strings::FormatTo(result, TX("{:02i}"), GetMonth());
 							break;
 						case TX('y'):
-							CString::FormatTo(result, TX("{:02i}"), GetYear() % 100);
+							Strings::FormatTo(result, TX("{:02i}"), GetYear() % 100);
 							break;
 						case TX('Y'):
-							CString::FormatTo(result, TX("{:04i}"), GetYear());
+							Strings::FormatTo(result, TX("{:04i}"), GetYear());
 							break;
 						case TX('h'):
-							CString::FormatTo(result, TX("{:02i}"), GetHour12());
+							Strings::FormatTo(result, TX("{:02i}"), GetHour12());
 							break;
 						case TX('H'):
-							CString::FormatTo(result, TX("{:02i}"), GetHour());
+							Strings::FormatTo(result, TX("{:02i}"), GetHour());
 							break;
 						case TX('M'):
-							CString::FormatTo(result, TX("{:02i}"), GetMinute());
+							Strings::FormatTo(result, TX("{:02i}"), GetMinute());
 							break;
 						case TX('S'):
-							CString::FormatTo(result, TX("{:02i}"), GetSecond());
+							Strings::FormatTo(result, TX("{:02i}"), GetSecond());
 							break;
 						case TX('s'):
-							CString::FormatTo(result, TX("{:03i}"), GetMillisecond());
+							Strings::FormatTo(result, TX("{:03i}"), GetMillisecond());
 							break;
 						default:
 							result += *format;
@@ -277,16 +277,17 @@ namespace Rift
 		return {Chrono::floor<SysTime::duration>(SysClock::now())};
 	}
 
-	bool DateTime::Parse(const String& DateTimeString, DateTime& OutDateTime)
+	bool DateTime::Parse(const String& dateTimeString, DateTime& OutDateTime)
 	{
+		String fixedString = dateTimeString;
 		// first replace -, : and . with space
-		String FixedString = CString::ReplaceCopy(DateTimeString, '-', ' ');
-		CString::Replace(FixedString, ':', ' ');
-		CString::Replace(FixedString, '.', ' ');
+		Strings::Replace(fixedString, '-', ' ');
+		Strings::Replace(fixedString, ':', ' ');
+		Strings::Replace(fixedString, '.', ' ');
 
 		// split up on a single delimiter
 		TArray<String> Tokens;
-		CString::Split(FixedString, Tokens, TX(' '));
+		Strings::Split(fixedString, Tokens, TX(' '));
 
 		// make sure it parsed it properly (within reason)
 		if ((Tokens.Size() < 6) || (Tokens.Size() > 7))
@@ -294,13 +295,13 @@ namespace Rift
 			return false;
 		}
 
-		const i32 Year        = *CString::ToI32(Tokens[0]);
-		const i32 Month       = *CString::ToI32(Tokens[1]);
-		const i32 Day         = *CString::ToI32(Tokens[2]);
-		const i32 Hour        = *CString::ToI32(Tokens[3]);
-		const i32 Minute      = *CString::ToI32(Tokens[4]);
-		const i32 Second      = *CString::ToI32(Tokens[5]);
-		const i32 Millisecond = Tokens.Size() > 6 ? *CString::ToI32(Tokens[6]) : 0;
+		const i32 Year        = *Strings::ToI32(Tokens[0]);
+		const i32 Month       = *Strings::ToI32(Tokens[1]);
+		const i32 Day         = *Strings::ToI32(Tokens[2]);
+		const i32 Hour        = *Strings::ToI32(Tokens[3]);
+		const i32 Minute      = *Strings::ToI32(Tokens[4]);
+		const i32 Second      = *Strings::ToI32(Tokens[5]);
+		const i32 Millisecond = Tokens.Size() > 6 ? *Strings::ToI32(Tokens[6]) : 0;
 
 		if (!Validate(Year, Month, Day, Hour, Minute, Second, Millisecond))
 		{

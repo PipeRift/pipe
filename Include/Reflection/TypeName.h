@@ -34,8 +34,12 @@ namespace Rift
 	inline constexpr StringView GetFullTypeName()
 	{
 		const StringView raw = Refl::TypeName::GetRaw<T>();
-		return {raw.data() + Refl::TypeName::prefixLength,
+		StringView typeName{raw.data() + Refl::TypeName::prefixLength,
 		    raw.size() - Refl::TypeName::prefixLength - Refl::TypeName::suffixLength};
+
+		typeName = Strings::RemoveFromStart(typeName, "struct ");
+		typeName = Strings::RemoveFromStart(typeName, "class ");
+		return typeName;
 	}
 
 	template <typename T>

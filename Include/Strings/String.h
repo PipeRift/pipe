@@ -17,8 +17,6 @@
 #include <fmt/format.h>
 #include <utf8.h>
 
-#include <charconv>
-#include <regex>
 #include <string>
 
 
@@ -36,14 +34,11 @@ namespace Rift
 	using TStringBuffer = fmt::basic_memory_buffer<CharType, fmt::inline_buffer_size, Allocator>;
 	using StringBuffer  = TStringBuffer<TChar>;
 
-	using Regex = std::basic_regex<TChar>;
 
-
-	struct CORE_API CString
+	namespace Strings
 	{
-	public:
 		template <typename... Args>
-		static String Format(StringView format, Args... args)
+		inline CORE_API String Format(StringView format, Args... args)
 		{
 			String str;
 			fmt::format_to(std::back_inserter(str), format, std::forward<Args>(args)...);
@@ -51,45 +46,12 @@ namespace Rift
 		}
 
 		template <typename... Args>
-		static void FormatTo(String& buffer, StringView format, Args... args)
+		inline CORE_API void FormatTo(String& buffer, StringView format, Args... args)
 		{
 			fmt::format_to(std::back_inserter(buffer), format, std::forward<Args>(args)...);
 		}
 
-		static void ToSentenceCase(const String& str, String& result);
-
-		static String ReplaceCopy(
-		    const String& original, const TChar searchChar, const TChar replacementChar)
-		{
-			String result = original;
-			Replace(result, searchChar, replacementChar);
-			return result;
-		}
-
-		static void Replace(String& value, const TChar searchChar, const TChar replacementChar)
-		{
-			std::replace(value.begin(), value.end(), searchChar, replacementChar);
-		}
-
-		static bool Contains(StringView str, const TChar c)
-		{
-			return str.find(c) != String::npos;
-		}
-
-		static bool Contains(StringView str, StringView subStr)
-		{
-			return str.find(subStr) != String::npos;
-		}
-
-		static constexpr bool Equals(StringView one, StringView other)
-		{
-			return one.size() == other.size() && std::equal(one.begin(), one.end(), other.begin());
-		}
-
-		static constexpr bool Equals(StringView str, const TChar c)
-		{
-			return str.size() == 1 && str[0] == c;
-		}
+		CORE_API void ToSentenceCase(const String& str, String& result);
 
 		/**
 		 * Breaks up a delimited string into elements of a string array.
@@ -100,123 +62,23 @@ namespace Rift
 		 *
 		 * @return	The number of elements in InArray
 		 */
-		static i32 ParseIntoArray(const String& str, TArray<String>& OutArray,
+		CORE_API i32 ParseIntoArray(const String& str, TArray<String>& OutArray,
 		    const TChar* pchDelim, bool InCullEmpty = true);
 
-		static constexpr bool StartsWith(StringView str, StringView subStr)
-		{
-			return str.size() >= subStr.size() &&
-			       std::equal(subStr.begin(), subStr.end(), str.begin()) == 0;
-		}
+		CORE_API void RemoveFromStart(String& str, sizet size);
+		CORE_API void RemoveFromEnd(String& str, sizet size);
 
-		static constexpr bool EndsWith(StringView str, StringView subStr)
-		{
-			return str.size() >= subStr.size() &&
-			       std::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
-		}
+		CORE_API i32 Split(const String& str, TArray<String>& tokens, const TChar delim);
 
-		static constexpr bool EndsWith(StringView str, const TChar c)
-		{
-			return str.size() >= 1 && str.back() == c;
-		}
+		CORE_API bool Split(const String& str, String& a, String& b, const TChar* delim);
 
-		static void RemoveFromStart(String& str, sizet size)
-		{
-			str.erase(0, size);
-		}
-		static void RemoveFromEnd(String& str, sizet size)
-		{
-			str.erase(str.size() - 1 - size, str.size() - 1);
-		}
+		CORE_API bool IsNumeric(const String& str);
+		CORE_API bool IsNumeric(const TChar* Str);
 
-		static i32 Split(const String& str, TArray<String>& tokens, const TChar delim)
-		{
-			sizet current, previous = 0;
-			current = str.find(delim);
-			while (current != std::string::npos)
-			{
-				tokens.Add(str.substr(previous, current - previous));
-				previous = current + 1;
-				current  = str.find(delim, previous);
-			}
-			tokens.Add(str.substr(previous, current - previous));
-			return tokens.Size();
-		}
-
-		static bool Split(const String& str, String& a, String& b, const TChar* delim)
-		{
-			const sizet pos = str.find(delim);
-			if (pos != String::npos)
-			{
-				a = str.substr(0, pos);
-				b = str.substr(pos, str.size() - pos);
-				return true;
-			}
-			return false;
-		}
-
-		static String FrontSubstr(const String& str, i32 size)
-		{
-			return str.substr(0, size);
-		}
-
-		static String BackSubstr(const String& str, i32 size);
-
-		static TOptional<u32> ToU32(StringView str)
-		{
-			u32 val;
-			if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
-			{
-				return val;
-			}
-			return {};
-		}
-
-		static TOptional<i32> ToI32(StringView str)
-		{
-			i32 val;
-			if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
-			{
-				return val;
-			}
-			return {};
-		}
-
-		static TOptional<u32> ToU32(const char* str)
-		{
-			if (str)
-			{
-				return std::strtoul(str, nullptr, 0);
-			}
-			return {};
-		}
-
-		static TOptional<i32> ToI32(const char* str)
-		{
-			if (str)
-			{
-				return std::atoi(str);
-			}
-			return {};
-		}
-
-		static bool IsNumeric(const String& str)
-		{
-			return IsNumeric(str.data());
-		}
-		static bool IsNumeric(const TChar* Str);
-
-		static String ParseMemorySize(sizet size);
-
-		template <typename CharType>
-		static sizet Length(const CharType* str)
-		{
-			return std::strlen(str);
-		}
-
+		CORE_API String ParseMemorySize(sizet size);
 
 		template <typename ToStringType, typename FromChar>
-		static void ConvertTo(TStringView<FromChar> source, ToStringType& dest) requires(
+		inline CORE_API void ConvertTo(TStringView<FromChar> source, ToStringType& dest) requires(
 		    !IsSame<FromChar, typename ToStringType::value_type>)
 		{
 			using ToChar = typename ToStringType::value_type;
@@ -248,7 +110,7 @@ namespace Rift
 		}
 
 		template <typename ToStringType, typename FromChar>
-		static ToStringType Convert(TStringView<FromChar> source)
+		inline CORE_API ToStringType Convert(TStringView<FromChar> source)
 		{
 			ToStringType dest;
 			ConvertTo(source, dest);
@@ -257,11 +119,11 @@ namespace Rift
 
 		// Do nothing. Converting to same type
 		template <typename CharType>
-		static TStringView<CharType> Convert(TStringView<CharType> source)
+		inline CORE_API TStringView<CharType> Convert(TStringView<CharType> source)
 		{
 			return source;
 		}
-	};
+	};    // namespace Strings
 
 
 	template <>
@@ -272,25 +134,6 @@ namespace Rift
 			return GetStringHash(str.data());
 		}
 	};
-
-	template <>
-	struct Hash<StringView>
-	{
-		sizet operator()(const StringView& str) const
-		{
-			return GetStringHash(str.data());
-		}
-	};
-
-	template <>
-	struct Hash<const TChar*>
-	{
-		sizet operator()(const TChar* str) const
-		{
-			return GetStringHash(str);
-		}
-	};
-
 
 	OVERRIDE_TYPE_NAME(String)
 }    // namespace Rift
