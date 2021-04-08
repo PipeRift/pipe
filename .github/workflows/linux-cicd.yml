@@ -15,13 +15,13 @@ jobs:
           - name: Clang
             compiler: clang
             os: ubuntu-20.04
-            cxx: clang++
-            cc: clang
+            cxx: clang++-11
+            cc: clang-11
           - name: GCC
             compiler: gcc
             os: ubuntu-20.04
-            cxx: g++
-            cc: gcc
+            cxx: g++-10
+            cc: gcc-10
 
     steps:
       - name: Checkout repository
