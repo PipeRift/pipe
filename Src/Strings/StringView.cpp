@@ -10,7 +10,7 @@ namespace Rift::Strings
 	TOptional<u32> ToU32(StringView str)
 	{
 		u32 val;
-		if (std::from_chars(str.begin(), str.end(), val).ec != std::errc())
+		if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
 		{
 			return val;
 		}
@@ -20,7 +20,7 @@ namespace Rift::Strings
 	TOptional<i32> ToI32(StringView str)
 	{
 		i32 val;
-		if (std::from_chars(str.begin(), str.end(), val).ec != std::errc())
+		if (std::from_chars(str.data(), str.data() + str.size(), val).ec != std::errc())
 		{
 			return val;
 		}
