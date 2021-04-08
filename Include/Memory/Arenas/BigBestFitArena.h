@@ -7,6 +7,8 @@
 #include "Memory/Arenas/IArena.h"
 #include "Memory/Blocks/HeapBlock.h"
 
+#include <compare>
+
 
 namespace Rift::Memory
 {

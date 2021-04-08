@@ -68,8 +68,10 @@ function(rift_target_enable_warnings target_name)
 endfunction()
 
 function(rift_target_disable_all_warnings target_name exposure)
-    if(COMPILER_CLANG OR COMPILER_GNU)
-        target_compile_options(${target_name} ${exposure} -Wno-everything)
+    if(COMPILER_CLANG)
+    target_compile_options(${target_name} ${exposure} -Wno-everything)
+    elseif(COMPILER_GCC)
+        target_compile_options(${target_name} ${exposure} -Wno-volatile)
     endif()
     # TODO: Support disabling MSVC warnings too
 endfunction()
