@@ -65,14 +65,13 @@ namespace Rift
 
 		CORE_API constexpr bool StartsWith(const StringView str, const StringView subStr)
 		{
-			return str.size() >= subStr.size() &&
-			       std::equal(subStr.begin(), subStr.end(), str.begin()) == 0;
+			return str.substr(0, subStr.size()) == subStr;
 		}
 
 		CORE_API constexpr bool EndsWith(const StringView str, const StringView subStr)
 		{
 			return str.size() >= subStr.size() &&
-			       std::equal(subStr.rbegin(), subStr.rend(), str.rbegin());
+			       str.compare(str.size() - subStr.size(), StringView::npos, subStr) == 0;
 		}
 
 		CORE_API constexpr bool EndsWith(const StringView str, const TChar c)
@@ -82,12 +81,12 @@ namespace Rift
 
 		CORE_API constexpr StringView RemoveFromStart(const StringView str, sizet size)
 		{
-			return {str.data(), str.size() - size};
+			return {str.data() + size, str.size() - size};
 		}
 
 		CORE_API constexpr StringView RemoveFromEnd(const StringView str, sizet size)
 		{
-			return {str.data() + size, str.size() - size};
+			return {str.data(), str.size() - size};
 		}
 
 		CORE_API constexpr StringView RemoveFromStart(const StringView str, const StringView subStr)
@@ -127,13 +126,14 @@ namespace Rift
 		}
 
 		CORE_API constexpr void Replace(
-		    StringView value, const TChar searchChar, const TChar replacementChar)
+		    StringView str, const TChar searchChar, const TChar replacementChar)
 		{
-			for (TChar* c = const_cast<TChar*>(value.begin()); c != value.end(); ++c)
+			for (u32 i = 0; i < str.size(); ++i)
 			{
-				if (*c == searchChar)
+				TChar& c = const_cast<TChar&>(str[i]);
+				if (c == searchChar)
 				{
-					*c = replacementChar;
+					c = replacementChar;
 				}
 			}
 		}
