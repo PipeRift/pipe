@@ -28,6 +28,8 @@ namespace Rift
 	{
 		const bool bLoading = false;
 
+		// TMap<void*, FGuid> ownPtrToGuid;
+
 
 	public:
 		class Context* context = nullptr;
@@ -66,32 +68,34 @@ namespace Rift
 		void Serialize(StringView name, TOwnPtr<T>& val)
 		{
 			BeginObject(name);
-			// Not yet supported. Hard and soft references need to take care of each
-			// other while serializing
-			/*if (IsLoading())
-			{
-			    val->Serialize(*this);
-			}
 
-			if (val)
+			if (IsLoading())
 			{
-			    val->Serialize(*this);
-			}*/
+				if (!IsDataValid())
+				{
+					// Object doesn't exist, we just reset the ptr
+					val.Release();
+					EndObject();
+					return;
+				}
+
+				auto* ptrType = FindType<T>();
+			}
+			else
+			{
+				if (val)
+				{
+					Serialize("_ptrType", GetType(val));
+					// Serialize("_ptrId", FGuid::New());
+					val->Serialize(*this);
+				}
+			}
 			EndObject();
 		}
 
 		template <typename T>
 		void Serialize(StringView name, TPtr<T>& val)
-		{
-			Name ptrName;
-			if (IsSaving())
-				ptrName = val ? val->GetName() : TX("None");
-
-			// CustomSerializeOrNot(name, ptrName);
-
-			/*if(IsLoading())
-			    Find and Assign object */
-		}
+		{}
 
 		template <typename T>
 		void Serialize(StringView name, TArray<T>& val);
@@ -107,7 +111,7 @@ namespace Rift
 		// Starts an object by name
 		virtual void BeginObject(StringView name) = 0;
 		virtual bool HasObject(StringView name)   = 0;
-		virtual bool IsClassValid()               = 0;
+		virtual bool IsDataValid()                = 0;
 
 		// Starts an object by index (Array)
 		virtual void BeginObject(u32 index) = 0;
@@ -187,17 +191,17 @@ namespace Rift
 			depthData.Add(&Data()[name.data()]);
 		}
 
-		bool HasObject(StringView name) override
-		{
-			return Data().find(name) != Data().end();
-		}
-
 		void BeginObject(u32 index) override
 		{
 			depthData.Add(&Data()[index]);
 		}
 
-		bool IsClassValid() override
+		bool HasObject(StringView name) override
+		{
+			return Data().find(name) != Data().end();
+		}
+
+		bool IsDataValid() override
 		{
 			return !Data().is_null();
 		}

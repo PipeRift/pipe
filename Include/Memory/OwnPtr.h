@@ -1,4 +1,4 @@
-// Copyright 2015-2021 Piperift - All rights reserved
+ // Copyright 2015-2021 Piperift - All rights reserved
 
 #pragma once
 
@@ -194,17 +194,24 @@ namespace Rift
 			Release();
 		}
 
+
 		T* Get() const
 		{
-			return IsValid() ? operator*() : nullptr;
+			return IsValid() ? GetUnsafe() : nullptr;
 		}
+
+		T* GetUnsafe() const
+		{
+			return static_cast<T*>(value);
+		}
+
 
 		/** Cast a global pointer into another type. Will invalidate previous owner on success */
 		template <typename T2>
 		TOwnPtr<T2, Builder> Cast()
 		{
 			// If can be casted statically or dynamically
-			if (IsValid() && (std::is_convertible_v<T2, T> || dynamic_cast<T2*>(**this) != nullptr))
+			if (IsValid() && (Convertible<T2, T> || dynamic_cast<T2*>(GetUnsafe()) != nullptr))
 			{
 				TOwnPtr<T2, Builder> newPtr{};
 				newPtr.MoveFrom(Move(*this));
@@ -224,7 +231,7 @@ namespace Rift
 			{
 				return {*this};
 			}
-			else if (IsValid() && dynamic_cast<T2*>(**this) != nullptr)
+			else if (IsValid() && dynamic_cast<T2*>(GetUnsafe()) != nullptr)
 			{
 				TPtr<T> ptr{*this};
 				return ptr.template Cast<T2>();
@@ -251,44 +258,44 @@ namespace Rift
 			}
 		}
 
-		T* operator*() const
+		T& operator*() const
 		{
-			return static_cast<T*>(value);
+			return *GetUnsafe();
 		}
 		T* operator->() const
 		{
-			return static_cast<T*>(value);
+			return GetUnsafe();
 		}
 
 		template <typename T2>
 		bool operator==(T2* other) const
 		{
-			return **this == other;
+			return value == other;
 		}
 		template <typename T2>
 		bool operator==(const TOwnPtr<T2, Builder>& other) const
 		{
-			return operator==(*other);
+			return value == other.GetUnsafe();
 		}
 		template <typename T2>
 		bool operator==(const TPtr<T2>& other) const
 		{
-			return operator==(*other);
+			return value == other.GetUnsafe();
 		}
 		template <typename T2>
 		bool operator!=(T2* other) const
 		{
-			return **this != other;
+			return value != other;
 		}
 		template <typename T2>
 		bool operator!=(const TOwnPtr<T2, Builder>& other) const
 		{
-			return operator!=(*other);
+			return value != other.GetUnsafe();
 		}
 		template <typename T2>
 		bool operator!=(const TPtr<T2>& other) const
 		{
-			return operator!=(*other);
+			return value != other.GetUnsafe();
 		}
 	};
 
@@ -351,25 +358,20 @@ namespace Rift
 			return *this;
 		}
 
-
-		T* operator*() const
-		{
-			return static_cast<T*>(value);
-		}
-		T* operator->() const
-		{
-			return static_cast<T*>(value);
-		}
-
 		T* Get() const
 		{
-			return IsValid() ? operator*() : nullptr;
+			return IsValid() ? GetUnsafe() : nullptr;
+		}
+
+		T* GetUnsafe() const
+		{
+			return static_cast<T*>(value);
 		}
 
 		template <typename T2>
 		TPtr<T2> Cast() const
 		{
-			if (IsValid() && (std::is_convertible_v<T2, T> || dynamic_cast<T2*>(**this) == nullptr))
+			if (IsValid() && (Convertible<T2, T> || dynamic_cast<T2*>(GetUnsafe()) == nullptr))
 			{
 				TPtr<T2> ptr{};
 				ptr.CopyFrom(*this);
@@ -378,35 +380,45 @@ namespace Rift
 			return {};
 		}
 
+
+		T& operator*() const
+		{
+			return *GetUnsafe();
+		}
+		T* operator->() const
+		{
+			return GetUnsafe();
+		}
+
 		template <typename T2>
 		bool operator==(T2* other) const
 		{
-			return **this == other;
+			return value == other;
 		}
 		template <typename T2, typename Builder2>
 		bool operator==(const TOwnPtr<T2, Builder2>& other) const
 		{
-			return operator==(*other);
+			return value == other.GetUnsafe();
 		}
 		template <typename T2>
 		bool operator==(const TPtr<T2>& other) const
 		{
-			return operator==(*other);
+			return value == other.GetUnsafe();
 		}
 		template <typename T2>
 		bool operator!=(T2* other) const
 		{
-			return **this != other;
+			return value != other;
 		}
 		template <typename T2, typename Builder2>
 		bool operator!=(const TOwnPtr<T2, Builder2>& other) const
 		{
-			return operator!=(*other);
+			return value != other.GetUnsafe();
 		}
 		template <typename T2>
 		bool operator!=(const TPtr<T2>& other) const
 		{
-			return operator!=(*other);
+			return value != other.GetUnsafe();
 		}
 	};
 

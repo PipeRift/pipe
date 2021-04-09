@@ -39,11 +39,11 @@ namespace Rift
 		TArray<TPtr<AssetData>> finalAssets;
 		{
 			ZoneScopedNC("Ignore already loaded assets", 0xD19D45);
-			for (i32 I = 0; I < infos.Size(); ++I)
+			for (i32 i = 0; i < infos.Size(); ++i)
 			{
-				if (TPtr<AssetData> loadedAsset = GetLoadedAsset(infos[I]))
+				if (TPtr<AssetData> loadedAsset = GetLoadedAsset(infos[i]))
 				{
-					infos.RemoveAtSwap(I, false);
+					infos.RemoveAtSwap(i, false);
 					finalAssets.Add(loadedAsset);
 				}
 			}
