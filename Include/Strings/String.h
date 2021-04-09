@@ -38,7 +38,7 @@ namespace Rift
 	namespace Strings
 	{
 		template <typename... Args>
-		inline CORE_API String Format(StringView format, Args... args)
+		inline String Format(StringView format, Args... args)
 		{
 			String str;
 			fmt::format_to(std::back_inserter(str), format, std::forward<Args>(args)...);
@@ -46,7 +46,7 @@ namespace Rift
 		}
 
 		template <typename... Args>
-		inline CORE_API void FormatTo(String& buffer, StringView format, Args... args)
+		inline void FormatTo(String& buffer, StringView format, Args... args)
 		{
 			fmt::format_to(std::back_inserter(buffer), format, std::forward<Args>(args)...);
 		}
@@ -78,7 +78,7 @@ namespace Rift
 		CORE_API String ParseMemorySize(sizet size);
 
 		template <typename ToStringType, typename FromChar>
-		inline CORE_API void ConvertTo(TStringView<FromChar> source, ToStringType& dest) requires(
+		inline void ConvertTo(TStringView<FromChar> source, ToStringType& dest) requires(
 		    !IsSame<FromChar, typename ToStringType::value_type>)
 		{
 			using ToChar = typename ToStringType::value_type;
@@ -110,7 +110,7 @@ namespace Rift
 		}
 
 		template <typename ToStringType, typename FromChar>
-		inline CORE_API ToStringType Convert(TStringView<FromChar> source)
+		inline ToStringType Convert(TStringView<FromChar> source)
 		{
 			ToStringType dest;
 			ConvertTo(source, dest);
@@ -119,7 +119,7 @@ namespace Rift
 
 		// Do nothing. Converting to same type
 		template <typename CharType>
-		inline CORE_API TStringView<CharType> Convert(TStringView<CharType> source)
+		inline TStringView<CharType> Convert(TStringView<CharType> source)
 		{
 			return source;
 		}

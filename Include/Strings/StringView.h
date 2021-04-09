@@ -139,7 +139,7 @@ namespace Rift
 		}
 
 		template <typename CharType>
-		CORE_API constexpr sizet Length(const CharType* str)
+		constexpr sizet Length(const CharType* str)
 		{
 			return std::strlen(str);
 		}
