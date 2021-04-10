@@ -1,9 +1,10 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Strings/String.h"
+
 #include "Math/Math.h"
 #include "Misc/Char.h"
 #include "Strings/Regex.h"
-#include "Strings/String.h"
 
 
 namespace Rift::Strings

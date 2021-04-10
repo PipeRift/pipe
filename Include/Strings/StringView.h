@@ -9,7 +9,6 @@
 #include <string_view>
 
 
-
 namespace Rift
 {
 	template <typename CharType>
