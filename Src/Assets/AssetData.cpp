@@ -1,8 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #include "Assets/AssetData.h"
+
 #include "Files/Files.h"
 #include "Serialization/JsonArchive.h"
-
 
 
 namespace Rift
