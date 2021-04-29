@@ -10,6 +10,7 @@
 #include "Reflection/Static/ClassType.h"
 #include "Reflection/Static/StructType.h"
 #include "Reflection/TypeId.h"
+#include "Serialization\Archive.h"
 #include "Strings/Name.h"
 #include "TypeTraits.h"
 
