@@ -38,9 +38,9 @@ namespace Rift
 
 
 		public:
-			CORE_API Property()                = delete;
-			CORE_API Property(Property&&)      = delete;
-			CORE_API Property(const Property&) = delete;
+			Property()                = delete;
+			Property(Property&&)      = delete;
+			Property(const Property&) = delete;
 
 		protected:
 			CORE_API Property(

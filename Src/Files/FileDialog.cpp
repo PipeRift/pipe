@@ -52,7 +52,7 @@ namespace Rift::Dialogs
 		    std::string{title}, defaultPath.string(), ParseFilters(filters), options);
 
 		std::vector<std::string> files = dialog.result();
-		outFiles.Resize(files.size());
+		outFiles.Resize(i32(files.size()));
 		for (u32 i = 0; i < files.size(); ++i)
 		{
 			outFiles[i] = Path{files[0]};

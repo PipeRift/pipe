@@ -15,8 +15,8 @@ using namespace Rift;
 go_bandit([]() {
 	describe("Math", []() {
 		describe("Binary Search", []() {
-			TArray<u32> bottomUp{23, 34, 50, 100, 120};
-			TArray<u32> topDown{120, 100, 50, 34, 23};
+			TArray<i32> bottomUp{23, 34, 50, 100, 120};
+			TArray<i32> topDown{120, 100, 50, 34, 23};
 
 			it("LowerBound", [&]() {
 				AssertThat(bottomUp.LowerBound(34), Equals(1));
@@ -48,7 +48,7 @@ go_bandit([]() {
 
 			describe("FindSortedMax", []() {
 				describe("Ordered by a < b", []() {
-					TArray<u32> bottomUp{23, 34, 50, 50, 100, 120};
+					TArray<i32> bottomUp{23, 34, 50, 50, 100, 120};
 
 					it("Find first item", [&]() {
 						auto i4 = bottomUp.FindSortedMax(23, false);
@@ -88,7 +88,7 @@ go_bandit([]() {
 				});
 
 				describe("Ordered by a > b", []() {
-					TArray<u32> topDown{120, 100, 50, 50, 34, 23};
+					TArray<i32> topDown{120, 100, 50, 50, 34, 23};
 
 					it("Find first item", [&]() {
 						auto i4 = topDown.FindSortedMax(120, true);
@@ -125,7 +125,7 @@ go_bandit([]() {
 				});
 
 				describe("All same values", []() {
-					TArray<u32> allEqual{10, 10, 10};
+					TArray<i32> allEqual{10, 10, 10};
 
 					it("Doesnt find smaller", [&]() {
 						auto i1 = allEqual.FindSortedMax(9, false);
@@ -146,7 +146,7 @@ go_bandit([]() {
 			});
 			describe("FindSortedMin", []() {
 				describe("Ordered by a < b", []() {
-					TArray<u32> bottomUp{23, 34, 50, 50, 100, 120};
+					TArray<i32> bottomUp{23, 34, 50, 50, 100, 120};
 
 					it("Find first item", [&]() {
 						auto i1 = bottomUp.FindSortedMin(23, true);
@@ -186,7 +186,7 @@ go_bandit([]() {
 				});
 
 				describe("Ordered by a > b", [&]() {
-					TArray<u32> topDown{120, 100, 50, 50, 34, 23};
+					TArray<i32> topDown{120, 100, 50, 50, 34, 23};
 
 					it("Find first item", [&]() {
 						auto i4 = topDown.FindSortedMin(120, true);
@@ -223,7 +223,7 @@ go_bandit([]() {
 				});
 
 				describe("All same values", []() {
-					TArray<u32> allEqual{10, 10, 10};
+					TArray<i32> allEqual{10, 10, 10};
 
 					it("Doesnt find bigger", [&]() {
 						auto i1 = allEqual.FindSortedMin(11, false);

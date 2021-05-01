@@ -36,9 +36,9 @@ namespace Rift::Memory
 		{
 			Reset();
 		}
-		CORE_API LinearArena(const LinearArena&) = delete;
+		LinearArena(const LinearArena&)          = delete;
 		CORE_API LinearArena(LinearArena&&)      = default;
-		CORE_API LinearArena& operator=(const LinearArena&) = delete;
+		LinearArena& operator=(const LinearArena&) = delete;
 		CORE_API LinearArena& operator=(LinearArena&&) = default;
 
 		CORE_API void* Allocate(const sizet size);
