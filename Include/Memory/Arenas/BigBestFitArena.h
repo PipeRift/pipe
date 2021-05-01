@@ -20,7 +20,7 @@ namespace Rift::Memory
 			u8* end;
 		};
 
-		struct Slot
+		struct CORE_API Slot
 		{
 			u8* start;
 			u8* end;

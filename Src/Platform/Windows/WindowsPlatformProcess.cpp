@@ -40,13 +40,14 @@ namespace Rift
 
 	StringView WindowsPlatformProcess::GetExecutableFile()
 	{
-		static const String filePath = GetStringFromWindowsAPI<String>([](TChar* buffer, int size) {
+		static const String filePath =
+		    GetStringFromWindowsAPI<String>([](TChar* buffer, sizet size) {
 #	if PLATFORM_TCHAR_IS_WCHAR
-			return GetModuleFileNameW(nullptr, buffer, size);
+			    return GetModuleFileNameW(nullptr, buffer, u32(size));
 #	else
-			return GetModuleFileNameA(nullptr, buffer, size);
+			    return GetModuleFileNameA(nullptr, buffer, u32(size));
 #	endif
-		});
+		    });
 		return filePath;
 	}
 

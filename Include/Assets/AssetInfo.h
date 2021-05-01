@@ -13,45 +13,45 @@
 
 namespace Rift
 {
-	class CORE_API AssetInfo
+	class AssetInfo
 	{
-	protected:
+	private:
 		Name id;
 
 
 	public:
-		AssetInfo() : id(Name::None()) {}
-		AssetInfo(Name id) : id(Move(id)) {}
-		AssetInfo(const Path& path) : id(Paths::ToString(path)) {}
+		CORE_API AssetInfo() : id(Name::None()) {}
+		CORE_API AssetInfo(Name id) : id(Move(id)) {}
+		CORE_API AssetInfo(const Path& path) : id(Paths::ToString(path)) {}
 
 		/**
 		 * @returns true if this can never be pointed towards an asset
 		 */
-		const bool IsNull() const
+		CORE_API const bool IsNull() const
 		{
 			return id.IsNone();
 		}
 
-		inline const Name& GetPath() const
+		CORE_API const Name& GetPath() const
 		{
 			return id;
 		}
-		inline const String& GetStrPath() const
+		CORE_API const String& GetStrPath() const
 		{
 			return id.ToString();
 		}
-		inline String GetFilename() const
+		CORE_API String GetFilename() const
 		{
 			// TODO: Optimize after Paths are used for the asset system
 			return Paths::GetFilename(Paths::FromString(id.ToString()));
 		}
 
-		bool operator==(const AssetInfo& other) const
+		CORE_API bool operator==(const AssetInfo& other) const
 		{
 			return id == other.id;
 		}
 
-		bool Serialize(class Archive& ar, StringView name);
+		CORE_API bool Serialize(class Archive& ar, StringView name);
 	};
 
 

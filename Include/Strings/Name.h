@@ -59,6 +59,8 @@ namespace Rift
 	class NameTable
 	{
 		friend Name;
+		static const String noneStr;
+
 
 		// #TODO: Move to TSet
 		using Container     = tsl::robin_set<NameKey, Hash<NameKey>, std::equal_to<NameKey>>;
@@ -91,7 +93,6 @@ namespace Rift
 
 	private:
 		static const Id noneId;
-		static const String noneStr;
 		Id id = noneId;
 #if BUILD_DEBUG
 		StringView value;    // Only used for debugging purposes
@@ -136,7 +137,7 @@ namespace Rift
 
 		const String& ToString() const
 		{
-			return IsNone() ? noneStr : NameTable::Get().Find(id);
+			return NameTable::Get().Find(id);
 		}
 
 		bool operator==(const Name& other) const
@@ -163,7 +164,7 @@ namespace Rift
 
 		static const String& NoneStr()
 		{
-			return noneStr;
+			return NameTable::noneStr;
 		}
 
 		bool Serialize(class Archive& ar, StringView name);

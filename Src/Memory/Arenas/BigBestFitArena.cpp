@@ -36,7 +36,7 @@ namespace Rift::Memory
 		// We always use at least 8 bytes of alignment for the header
 		alignment = Math::Max(alignment, minAlignment);
 
-		const u32 slotIndex = FindSmallestSlot(size + alignment - 1);
+		const i32 slotIndex = FindSmallestSlot(size + alignment - 1);
 		if (slotIndex >= freeSlots.Size())
 		{
 			// Log::Error("No slots can fit {} bytes!", size);

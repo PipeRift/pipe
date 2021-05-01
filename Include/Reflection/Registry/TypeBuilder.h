@@ -13,7 +13,7 @@ namespace Rift::Refl
 	struct TypeId;
 
 
-	struct CORE_API TypeBuilder
+	struct TypeBuilder
 	{
 	protected:
 		TypeId id;
@@ -22,16 +22,16 @@ namespace Rift::Refl
 
 
 	public:
-		TypeBuilder() = default;
-		TypeBuilder(TypeId id, Name name);
-		virtual ~TypeBuilder() {}
+		CORE_API TypeBuilder() = default;
+		CORE_API TypeBuilder(TypeId id, Name name);
+		CORE_API virtual ~TypeBuilder() {}
 
-		void Initialize();
+		CORE_API void Initialize();
 
-		TypeId GetId() const;
-		Name GetName() const;
+		CORE_API TypeId GetId() const;
+		CORE_API Name GetName() const;
 
 	protected:
-		virtual Type* Build() = 0;
+		CORE_API virtual Type* Build() = 0;
 	};
 }    // namespace Rift::Refl

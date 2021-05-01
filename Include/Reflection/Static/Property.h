@@ -20,7 +20,7 @@ namespace Rift
 		/**
 		 * Static information about a property
 		 */
-		class CORE_API Property
+		class Property
 		{
 			friend class ReflectionRegistry;
 
@@ -38,12 +38,13 @@ namespace Rift
 
 
 		public:
-			Property()                = delete;
-			Property(Property&&)      = delete;
-			Property(const Property&) = delete;
+			CORE_API Property()                = delete;
+			CORE_API Property(Property&&)      = delete;
+			CORE_API Property(const Property&) = delete;
 
 		protected:
-			Property(DataType* owner, Type* type, Name name, Access access, ReflectionTags tags)
+			CORE_API Property(
+			    DataType* owner, Type* type, Name name, Access access, ReflectionTags tags)
 			    : owner(owner)
 			    , type(type)
 			    , name(name)
@@ -52,16 +53,16 @@ namespace Rift
 			{}
 
 		public:
-			virtual ~Property() = default;
+			CORE_API virtual ~Property() = default;
 
-			DataType* GetOwner() const;
-			Type* GetType() const;
-			Name GetName() const;
-			void* GetDataPtr(void* instance);
-			const String& GetDisplayName() const;
-			bool HasTag(ReflectionTags tag) const;
-			bool HasAllTags(ReflectionTags inTags) const;
-			bool HasAnyTags(ReflectionTags inTags) const;
+			CORE_API DataType* GetOwner() const;
+			CORE_API Type* GetType() const;
+			CORE_API Name GetName() const;
+			CORE_API void* GetDataPtr(void* instance);
+			CORE_API const String& GetDisplayName() const;
+			CORE_API bool HasTag(ReflectionTags tag) const;
+			CORE_API bool HasAllTags(ReflectionTags inTags) const;
+			CORE_API bool HasAnyTags(ReflectionTags inTags) const;
 		};
 
 

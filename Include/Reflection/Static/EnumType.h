@@ -25,7 +25,7 @@ namespace Rift::Refl
 
 
 	/** Smallest reflection type that contains all basic class or struct data */
-	class CORE_API EnumType : public Type
+	class EnumType : public Type
 	{
 		template <typename T>
 		friend struct TEnumTypeBuilder;
@@ -35,6 +35,6 @@ namespace Rift::Refl
 
 
 	public:
-		EnumType() = default;
+		CORE_API EnumType() = default;
 	};
 }    // namespace Rift::Refl

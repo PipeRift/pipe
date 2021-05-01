@@ -7,7 +7,7 @@
 
 namespace Rift
 {
-	const String Name::noneStr{"none"};
+	const String NameTable::noneStr{"none"};
 	const Name::Id Name::noneId{0};
 
 	sizet NameTable::Register(StringView str)
@@ -30,6 +30,11 @@ namespace Rift
 
 	const String& NameTable::Find(sizet hash) const
 	{
+		if (hash == Name::noneId)
+		{
+			return noneStr;
+		}
+
 		// Ensure no other thread is editing the table
 		std::shared_lock lock{editTableMutex};
 		const ConstIterator foundIt = table.find({hash});
@@ -38,7 +43,7 @@ namespace Rift
 			return foundIt->value;
 		}
 		// Should never reach
-		return Name::NoneStr();
+		return noneStr;
 	}
 
 	NameTable& NameTable::Get()
@@ -59,7 +64,7 @@ namespace Rift
 			String str;
 			ar(name, str);
 
-			if (Strings::Equals(str, noneStr))
+			if (Strings::Equals(str, NameTable::noneStr))
 			{
 				*this = None();
 			}

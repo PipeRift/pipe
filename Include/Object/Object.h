@@ -12,25 +12,39 @@ namespace Rift
 {
 	class Context;
 
+
+	// For shared export purposes, we separate pointers from the exported Object
+	struct ObjectOwnership
+	{
+		TPtr<BaseObject> self;
+		TPtr<BaseObject> owner;
+
+		CORE_API const TPtr<BaseObject>& GetSelf() const
+		{
+			return self;
+		}
+		CORE_API const TPtr<BaseObject>& GetOwner() const
+		{
+			return owner;
+		}
+	};
+
+
 	class CORE_API Object : public BaseObject
 	{
 		ORPHAN_CLASS(Object, ReflectionTags::None)
 
 	private:
-		PROP(Name, name);
-		Name name;
-
-		TPtr<BaseObject> self;
-		TPtr<BaseObject> owner;
+		ObjectOwnership ownership;
 
 
 	public:
-		Object() : BaseObject(), self{}, owner{} {};
+		Object() = default;
 
 		void PreConstruct(TPtr<BaseObject>&& inSelf, const TPtr<BaseObject>& inOwner)
 		{
-			self  = inSelf;
-			owner = inOwner;
+			ownership.self  = inSelf;
+			ownership.owner = inOwner;
 		}
 		virtual void Construct() {}
 
@@ -43,22 +57,13 @@ namespace Rift
 		template <typename T = Object>
 		TPtr<T> Self() const
 		{
-			return self.Cast<T>();
+			return ownership.GetSelf().Cast<T>();
 		}
 
 		template <typename T = Object>
 		TPtr<T> GetOwner() const
 		{
-			return owner.Cast<T>();
-		}
-
-		void SetName(Name newName)
-		{
-			name = Move(newName);
-		}
-		Name GetName() const
-		{
-			return name;
+			return ownership.GetOwner().Cast<T>();
 		}
 
 		virtual TPtr<Context> GetContext() const;

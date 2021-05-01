@@ -276,7 +276,7 @@ namespace Rift
 		i32 Remove(const Type& item, const bool bShouldShrink = true)
 		{
 			const i32 lastSize = Size();
-			std::remove(vector.begin(), vector.end(), item);
+			(void) std::remove(vector.begin(), vector.end(), item);
 
 			if (bShouldShrink)
 			{

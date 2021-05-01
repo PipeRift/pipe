@@ -30,6 +30,7 @@ namespace Rift
 	using String  = TString<TChar>;
 	using WString = TString<WideChar>;
 
+
 	template <typename CharType, typename Allocator = STLAllocator<CharType>>
 	using TStringBuffer = fmt::basic_memory_buffer<CharType, fmt::inline_buffer_size, Allocator>;
 	using StringBuffer  = TStringBuffer<TChar>;

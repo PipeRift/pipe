@@ -8,7 +8,7 @@
 
 namespace Rift::Refl
 {
-	class CORE_API StructType : public DataType
+	class StructType : public DataType
 	{
 	public:
 		// NOTE: Most of the class comparison functions do actually
@@ -16,22 +16,22 @@ namespace Rift::Refl
 		//
 		// We can cast safely to Type since Structs only inherit Structs
 
-		StructType* GetParent() const
+		CORE_API StructType* GetParent() const
 		{
 			return static_cast<StructType*>(parent);
 		}
 
-		void GetAllChildren(TArray<StructType*>& outChildren)
+		CORE_API void GetAllChildren(TArray<StructType*>& outChildren)
 		{
 			__GetAllChildren(reinterpret_cast<TArray<DataType*>&>(outChildren));
 		}
 
-		StructType* FindChild(const Name& Name) const
+		CORE_API StructType* FindChild(const Name& Name) const
 		{
 			return static_cast<StructType*>(__FindChild(Name));
 		}
 
-		bool IsA(StructType* other) const
+		CORE_API bool IsA(StructType* other) const
 		{
 			return this == other;
 		}

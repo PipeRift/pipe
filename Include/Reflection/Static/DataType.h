@@ -18,8 +18,9 @@ namespace Rift::Refl
 {
 	using PropertyMap = TMap<Name, Property*>;
 
+
 	/** Smallest reflection type that contains all basic class or struct data */
-	class CORE_API DataType : public Type
+	class DataType : public Type
 	{
 		template <typename T, typename Parent, typename TType, ReflectionTags tags>
 		friend struct TDataTypeBuilder;
@@ -49,21 +50,21 @@ namespace Rift::Refl
 		}
 
 		/** Type */
-		const Name& GetName() const
+		CORE_API const Name& GetName() const
 		{
 			return name;
 		}
-		const String& GetSName() const
+		CORE_API const String& GetSName() const
 		{
 			return GetName().ToString();
 		}
 
-		bool HasTag(ReflectionTags tag) const
+		CORE_API bool HasTag(ReflectionTags tag) const
 		{
 			return (tags & tag) > 0;
 		}
 
-		bool IsChildOf(const DataType* other) const;
+		CORE_API bool IsChildOf(const DataType* other) const;
 
 		template <typename T>
 		bool IsChildOf() const
