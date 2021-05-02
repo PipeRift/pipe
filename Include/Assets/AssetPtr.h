@@ -36,6 +36,11 @@ namespace Rift
 			info = Move(newInfo);
 			cachedAsset.Reset();
 		}
+
+		bool operator==(const BaseAssetPtr& other) const noexcept
+		{
+			return info == other.info;
+		}
 	};
 
 
