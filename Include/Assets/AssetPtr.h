@@ -174,7 +174,7 @@ namespace Rift
 
 		operator bool() const
 		{
-			return IsValid();
+			return !IsNull();
 		};
 		TPtr<T> operator*() const
 		{
