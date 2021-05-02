@@ -28,7 +28,7 @@ namespace Rift::Memory
 	void* BestFitArena::Allocate(const sizet size)
 	{
 		const i32 slotIndex = FindSmallestSlot(size);
-		if (slotIndex >= freeSlots.Size()) [[unlikely]]
+		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size()) [[unlikely]]
 		{
 			// Log::Error("Couldn't fit {} bytes", size);
 			return nullptr;
@@ -47,7 +47,7 @@ namespace Rift::Memory
 	{
 		// Maximum size needed, based on worst possible alignment:
 		const i32 slotIndex = FindSmallestSlot(size + (alignment - 1));
-		if (slotIndex >= freeSlots.Size()) [[unlikely]]
+		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size()) [[unlikely]]
 		{
 			// Log::Error("Couldn't fit {} bytes", size);
 			return nullptr;

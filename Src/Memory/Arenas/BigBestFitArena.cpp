@@ -36,7 +36,7 @@ namespace Rift::Memory
 		alignment = Math::Max(alignment, minAlignment);
 
 		const i32 slotIndex = FindSmallestSlot(size + alignment - 1);
-		if (slotIndex >= freeSlots.Size())
+		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size())
 		{
 			// Log::Error("No slots can fit {} bytes!", size);
 			return nullptr;
@@ -50,11 +50,6 @@ namespace Rift::Memory
 		auto* const header = GetHeader(ptr);
 		header->end        = ptr + size;
 		header->end += GetAlignmentPadding(header->end, minAlignment);    // Align end by 8
-		if (header->end > block.GetEnd())
-		{
-			// Log::Error("Allocation doesn't fit!");
-			return nullptr;
-		}
 
 		ReduceSlot(slotIndex, slot, reinterpret_cast<u8*>(header), header->end);
 		freeSize -= reinterpret_cast<sizet>(header->end) - reinterpret_cast<sizet>(header);
