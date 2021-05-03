@@ -19,23 +19,23 @@ namespace Rift
 	};
 
 /** Custom traits go here */
-#define DEFINE_CLASS_TRAITS(type, ...)                      \
-	template <>                                             \
-	struct ClassTraits<type> : public BaseClassTraits<type> \
-	{                                                       \
-		enum                                                \
-		{                                                   \
-			__VA_ARGS__                                     \
-		};                                                  \
-	}
-#define DEFINE_TEMPLATE_CLASS_TRAITS(type, ...)                   \
-	template <typename T>                                         \
-	struct ClassTraits<type<T>> : public BaseClassTraits<type<T>> \
+#define DEFINE_CLASS_TRAITS(type, ...)                            \
+	template <>                                                   \
+	struct ClassTraits<type> : public Rift::BaseClassTraits<type> \
 	{                                                             \
 		enum                                                      \
 		{                                                         \
 			__VA_ARGS__                                           \
 		};                                                        \
+	}
+#define DEFINE_TEMPLATE_CLASS_TRAITS(type, ...)                         \
+	template <typename T>                                               \
+	struct ClassTraits<type<T>> : public Rift::BaseClassTraits<type<T>> \
+	{                                                                   \
+		enum                                                            \
+		{                                                               \
+			__VA_ARGS__                                                 \
+		};                                                              \
 	}
 
 	template <typename T>

@@ -21,8 +21,6 @@ namespace Rift
 		JsonArchive(const Json& data) : Archive(true), baseData(data), depthData{}, bBeautify{false}
 		{}
 
-		~JsonArchive() override = default;
-
 		String GetDataString() const
 		{
 			return baseData.dump(GetIndent());
