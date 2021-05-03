@@ -36,8 +36,8 @@ namespace Rift::Memory
 		{
 			Reset();
 		}
-		LinearArena(const LinearArena&)          = delete;
-		CORE_API LinearArena(LinearArena&&)      = default;
+		LinearArena(const LinearArena&)     = delete;
+		CORE_API LinearArena(LinearArena&&) = default;
 		LinearArena& operator=(const LinearArena&) = delete;
 		CORE_API LinearArena& operator=(LinearArena&&) = default;
 
