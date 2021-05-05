@@ -243,10 +243,10 @@ namespace Rift
 	template <typename ItemType>
 	struct StaticAssetPtrName
 	{
-		static constexpr auto preffix  = FixedString("TAssetPtr<");
-		static constexpr auto suffix   = FixedString(">");
-		static constexpr auto itemName = GetTypeName<ItemType>();
-		static constexpr FixedString<itemName.size()> fixedItemName{itemName};
+		static constexpr auto preffix        = TFixedString("TAssetPtr<");
+		static constexpr auto suffix         = TFixedString(">");
+		static constexpr StringView itemName = GetTypeName<ItemType>();
+		static constexpr TFixedString<itemName.size()> fixedItemName{itemName};
 
 		static constexpr auto name = preffix + fixedItemName + suffix;
 	};

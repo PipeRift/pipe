@@ -24,10 +24,10 @@ namespace Rift
 	template <typename ItemType>
 	struct StaticArrayName
 	{
-		static constexpr auto preffix  = FixedString("TArray<");
-		static constexpr auto suffix   = FixedString(">");
-		static constexpr auto itemName = GetTypeName<ItemType>();
-		static constexpr FixedString<itemName.size()> fixedItemName{itemName};
+		static constexpr auto preffix        = TFixedString("TArray<");
+		static constexpr auto suffix         = TFixedString(">");
+		static constexpr StringView itemName = GetTypeName<ItemType>();
+		static constexpr TFixedString<itemName.size()> fixedItemName{itemName};
 
 		static constexpr auto name = preffix + fixedItemName + suffix;
 	};
@@ -36,13 +36,13 @@ namespace Rift
 	template <typename KeyType, typename ValueType>
 	struct StaticMapName
 	{
-		static constexpr auto preffix   = FixedString("TMap<");
-		static constexpr auto separator = FixedString(", ");
-		static constexpr auto suffix    = FixedString(">");
-		static constexpr auto keyName   = GetTypeName<KeyType>();
-		static constexpr auto valueName = GetTypeName<ValueType>();
-		static constexpr FixedString<keyName.size()> fixedKeyName{keyName};
-		static constexpr FixedString<valueName.size()> fixedValueName{valueName};
+		static constexpr auto preffix         = TFixedString("TMap<");
+		static constexpr auto separator       = TFixedString(", ");
+		static constexpr auto suffix          = TFixedString(">");
+		static constexpr StringView keyName   = GetTypeName<KeyType>();
+		static constexpr StringView valueName = GetTypeName<ValueType>();
+		static constexpr TFixedString<keyName.size()> fixedKeyName{keyName};
+		static constexpr TFixedString<valueName.size()> fixedValueName{valueName};
 
 		static constexpr auto name = preffix + fixedKeyName + separator + fixedValueName + suffix;
 	};
