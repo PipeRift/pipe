@@ -139,6 +139,13 @@ namespace Rift
 		return {};
 	}
 
+	void AssetManager::Rename(AssetInfo asset, Name newName)
+	{
+		// TODO: Implement rename
+		// Files::Move();
+		// onAssetRenamed(asset);
+	}
+
 	TPtr<AssetManager> AssetManager::Get()
 	{
 		return Context::Get()->GetAssetManager();

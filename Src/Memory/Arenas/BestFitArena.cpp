@@ -108,7 +108,7 @@ namespace Rift::Memory
 			}
 			else
 			{
-				freeSlots.RemoveAtChecked(slotIndex, false);
+				freeSlots.RemoveAtUnsafe(slotIndex, false);
 			}
 			return;
 		}
@@ -163,7 +163,7 @@ namespace Rift::Memory
 			Slot& previous   = freeSlots[previousSlot];
 			previous.size    = next.GetEnd() - previous.start;
 
-			freeSlots.RemoveAtSwapChecked(nextSlot, false);
+			freeSlots.RemoveAtSwapUnsafe(nextSlot, false);
 		}
 		else if (previousSlot != NO_INDEX)
 		{

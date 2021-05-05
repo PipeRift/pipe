@@ -169,6 +169,17 @@ namespace Rift::Files
 		return fs::space(target);
 	}
 
+	bool CopyFolder(const Path& origin, const Path& destination, CopyOptions options)
+	{
+		if (ExistsAsFolder(origin))
+		{
+			const auto stdOptions =
+			    static_cast<fs::copy_options>(*(options | CopyOptions::DirectoriesOnly));
+			fs::copy(origin, destination, stdOptions);
+		}
+	}
+	bool Move(const Path& origin, const Path& destination) {}
+
 
 	/** String API */
 

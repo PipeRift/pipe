@@ -5,6 +5,7 @@
 #include "AssetInfo.h"
 #include "Containers/Map.h"
 #include "CoreObject.h"
+#include "Events/Broadcast.h"
 
 
 namespace Rift
@@ -21,6 +22,8 @@ namespace Rift
 
 		TMap<AssetInfo, ObjectPtr<AssetData>> loadedAssets{};
 
+		TBroadcast<AssetInfo, AssetInfo> onAssetRenamed;
+
 
 	public:
 		CORE_API TPtr<AssetData> Load(AssetInfo info);
@@ -35,6 +38,14 @@ namespace Rift
 				return asset->AsPtr();
 			}
 			return {};
+		}
+
+		void Rename(AssetInfo asset, Name newName);
+
+		// Broadcast notified when an asset is renamed (AssetInfo lastAsset, AssetInfo newAsset)
+		CORE_API const TBroadcast<AssetInfo, AssetInfo>& OnAssetRenamed()
+		{
+			return onAssetRenamed;
 		}
 
 		CORE_API bool IsLoaded(const AssetInfo& id) const

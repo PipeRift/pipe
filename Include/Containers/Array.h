@@ -293,7 +293,7 @@ namespace Rift
 		{
 			if (IsValidIndex(index))
 			{
-				return RemoveAtChecked(index, shouldShrink);
+				return RemoveAtUnsafe(index, shouldShrink);
 			}
 			return false;
 		}
@@ -303,7 +303,7 @@ namespace Rift
 		 * Unsafe version. Doesn't make sure index is valid!
 		 * @return true if removed
 		 */
-		bool RemoveAtChecked(i32 index, const bool shouldShrink = true)
+		bool RemoveAtUnsafe(i32 index, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			vector.erase(vector.begin() + index);
@@ -323,7 +323,7 @@ namespace Rift
 		{
 			if (IsValidIndex(index))
 			{
-				return RemoveAtChecked(index, shouldShrink);
+				return RemoveAtSwapUnsafe(index, shouldShrink);
 			}
 			return false;
 		}
@@ -334,7 +334,7 @@ namespace Rift
 		 * Unsafe version. Doesn't make sure index is valid!
 		 * @return true if removed
 		 */
-		bool RemoveAtSwapChecked(i32 index, const bool shouldShrink = true)
+		bool RemoveAtSwapUnsafe(i32 index, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			Swap(index, lastSize - 1);
@@ -353,7 +353,38 @@ namespace Rift
 		i32 RemoveIf(TFunction<bool(const Type&)>&& callback, const bool bShouldShrink = true)
 		{
 			const i32 lastSize = Size();
-			vector.erase(std::remove_if(vector.begin(), vector.end(), callback), vector.end());
+			// We remove from the back so that there are less elements to move when removing an
+			// element
+			for (i32 i = lastSize - 1; i >= 0; --i)
+			{
+				if (callback(Data()[i]))
+				{
+					RemoveAtUnsafe(i, false);
+				}
+			}
+
+			if (bShouldShrink)
+			{
+				Shrink();
+			}
+			return lastSize - Size();
+		}
+
+		/**
+		 * Delete all items that match a delegate
+		 * @return number of deleted items
+		 */
+		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool bShouldShrink = true)
+		{
+			const i32 lastSize = Size();
+			for (i32 i = 0; i < Size(); ++i)
+			{
+				if (callback(Data()[i]))
+				{
+					RemoveAtSwapUnsafe(i, false);
+					--i;    // We removed one item, so we iterate the same index
+				}
+			}
 
 			if (bShouldShrink)
 			{
@@ -419,11 +450,12 @@ namespace Rift
 			return vector.back();
 		}
 
-		Type* Data()
+		Type* Data() requires(!IsSame<Type, bool>)    // std::vector of bool can't access Data()
 		{
 			return vector.data();
 		}
 		const Type* Data() const
+		    requires(!IsSame<Type, bool>)    // std::vector of bool can't access Data()
 		{
 			return vector.data();
 		}
@@ -438,6 +470,11 @@ namespace Rift
 		Type& operator[](i32 index)
 		{
 			assert(IsValidIndex(index));
+			if constexpr (IsSame<Type, bool>)
+			{
+				// std::vector of bool can't access Data()
+				return vector.operator[](index);
+			}
 			return Data()[index];
 		}
 
@@ -451,6 +488,11 @@ namespace Rift
 		const Type& operator[](i32 index) const
 		{
 			assert(IsValidIndex(index));
+			if constexpr (IsSame<Type, bool>)
+			{
+				// std::vector of bool can't access Data()
+				return vector.operator[](index);
+			}
 			return Data()[index];
 		}
 

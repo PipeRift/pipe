@@ -44,7 +44,7 @@ namespace Rift
 		TBroadcast() = default;
 
 		/** Broadcast to all binded functions */
-		void DoBroadcast(const Params&... params)
+		void Broadcast(const Params&... params)
 		{
 			for (RawListener& listener : rawListeners)
 			{
@@ -122,9 +122,11 @@ namespace Rift
 		bool Unbind(const EventHandle& handle) const
 		{
 			if (!handle)
+			{
 				return false;
+			}
 
-			return rawListeners.RemoveIf([handle](const auto& listener) {
+			return rawListeners.RemoveIfSwap([handle](const auto& listener) {
 				return listener.id == handle.Id();
 			}) > 0;
 		}
@@ -134,7 +136,7 @@ namespace Rift
 		{
 			if (instance) [[likely]]
 			{
-				return ptrListeners.RemoveIf([instance](const auto& listener) {
+				return ptrListeners.RemoveIfSwap([instance](const auto& listener) {
 					return !listener.instance || listener.instance == instance;
 				}) > 0;
 			}
@@ -146,7 +148,7 @@ namespace Rift
 		{
 			if (instance) [[likely]]
 			{
-				return rawListeners.RemoveIf([instance](const auto& listener) {
+				return rawListeners.RemoveIfSwap([instance](const auto& listener) {
 					return listener.instance == instance;
 				}) > 0;
 			}
@@ -162,6 +164,11 @@ namespace Rift
 				return true;
 			}
 			return false;
+		}
+
+		void operator()(const Params&... params)
+		{
+			Broadcast(Forward<Params>(params)...);
 		}
 	};
 }    // namespace Rift

@@ -41,6 +41,11 @@ namespace Rift::Files
 	CORE_API bool ExistsAsFolder(const Path& path);
 	CORE_API SpaceInfo Space(const Path& target);
 
+	// TODO: Implement plural copy and move
+	CORE_API bool Copy(const Path& origin, const Path& destination,
+	    CopyOptions options = CopyOptions::Overwrite | CopyOptions::Recursive);
+	CORE_API bool Move(const Path& origin, const Path& destination);
+
 
 	/** String API */
 

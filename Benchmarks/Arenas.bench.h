@@ -205,7 +205,7 @@ void RunArenasBenchmarks()
 					Rift::u32 index = rng.bounded(allocated.Size());
 					void* toRemove  = allocated[index];
 					arena.Free(toRemove, 16);
-					allocated.RemoveAtSwapChecked(index, false);
+					allocated.RemoveAtSwapUnsafe(index, false);
 				}
 			});
 
@@ -235,7 +235,7 @@ void RunArenasBenchmarks()
 					Rift::u32 index = rng.bounded(allocated.Size());
 					void* toRemove  = allocated[index];
 					arena.Free(toRemove, 16);
-					allocated.RemoveAtSwapChecked(index, false);
+					allocated.RemoveAtSwapUnsafe(index, false);
 				}
 			});
 
