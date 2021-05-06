@@ -110,7 +110,7 @@ namespace Rift
 
 	TPtr<AssetData> AssetManager::LoadOrCreate(const AssetInfo& info, Refl::ClassType* assetType)
 	{
-		if (info.IsNull() || !Files::IsFolder(info.GetStrPath()))
+		if (info.IsNull() || Files::IsFolder(info.GetStrPath()))
 		{
 			return {};
 		}

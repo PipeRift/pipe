@@ -22,10 +22,10 @@ namespace Rift::Dialogs
 	}
 
 	Path SelectFile(StringView title, const Path& defaultPath, const TArray<FileFilter>& filters,
-	    bool bAlwaysShowDefaultPath)
+	    bool alwaysShowDefaultPath)
 	{
 		pfd::opt options{};
-		if (bAlwaysShowDefaultPath)
+		if (alwaysShowDefaultPath)
 		{
 			options = options | pfd::opt::force_path;
 		}
@@ -41,10 +41,10 @@ namespace Rift::Dialogs
 	}
 
 	void SelectFiles(StringView title, const Path& defaultPath, TArray<Path>& outFiles,
-	    const TArray<FileFilter>& filters, bool bAlwaysShowDefaultPath)
+	    const TArray<FileFilter>& filters, bool alwaysShowDefaultPath)
 	{
 		pfd::opt options = pfd::opt::multiselect;
-		if (bAlwaysShowDefaultPath)
+		if (alwaysShowDefaultPath)
 		{
 			options = options | pfd::opt::force_path;
 		}
@@ -59,14 +59,29 @@ namespace Rift::Dialogs
 		}
 	}
 
-	Path SelectFolder(StringView title, const Path& defaultPath, bool bAlwaysShowDefaultPath)
+	Path SelectFolder(StringView title, const Path& defaultPath, bool alwaysShowDefaultPath)
 	{
 		pfd::opt options{};
-		if (bAlwaysShowDefaultPath)
+		if (alwaysShowDefaultPath)
 		{
 			options = options | pfd::opt::force_path;
 		}
 		pfd::select_folder dialog(std::string{title}, defaultPath.string(), options);
 		return Path{dialog.result()};
+	}
+
+	Path SaveFile(StringView title, const Path& defaultPath, const TArray<FileFilter>& filters,
+	    bool alwaysShowDefaultPath, bool confirmOverwrite)
+	{
+		pfd::opt options{};
+		if (alwaysShowDefaultPath)
+		{
+			options = options | pfd::opt::force_path;
+		}
+		pfd::save_file dialog(
+		    std::string{title}, defaultPath.string(), ParseFilters(filters), options);
+		Path path = {dialog.result()};
+		path.replace_extension("rf");
+		return path;
 	}
 }    // namespace Rift::Dialogs

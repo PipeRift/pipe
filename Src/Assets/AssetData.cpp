@@ -10,7 +10,7 @@ namespace Rift
 	bool AssetData::OnCreate(const AssetInfo& inInfo)
 	{
 		info = inInfo;
-		return PostLoad();
+		return PostLoad(true);
 	}
 
 	bool AssetData::OnLoad(const AssetInfo& inInfo, Json& data)
@@ -21,13 +21,13 @@ namespace Rift
 		JsonArchive ar(data);
 		Serialize(ar);
 
-		return PostLoad();
+		return PostLoad(false);
 	}
 
 	bool AssetData::SaveToPath(const Name& path)
 	{
 		const String& sPath = path.ToString();
-		if (sPath.empty() || !Files::IsFolder(sPath))
+		if (sPath.empty() || Files::IsFolder(sPath))
 			return false;
 
 		JsonArchive ar{};

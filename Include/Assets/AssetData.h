@@ -24,14 +24,14 @@ namespace Rift
 		bool OnLoad(const AssetInfo& inInfo, Json& data);
 
 
-		bool SaveToPath(const Name& path);
+		CORE_API bool SaveToPath(const Name& path);
 
-		bool Save();
+		CORE_API bool Save();
 
 
 	protected:
 		/** Called after the asset was loaded or created */
-		virtual bool PostLoad()
+		virtual bool PostLoad(bool justCreated)
 		{
 			return true;
 		}
