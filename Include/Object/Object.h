@@ -34,6 +34,11 @@ namespace Rift
 	{
 		ORPHAN_CLASS(Object, ReflectionTags::None)
 
+	public:
+		template <typename T>
+		using PtrBuilder = TObjectBuilder<T>;
+
+
 	private:
 		ObjectOwnership ownership;
 
@@ -41,10 +46,14 @@ namespace Rift
 	public:
 		Object() = default;
 
-		void PreConstruct(TPtr<BaseObject>&& inSelf, const TPtr<BaseObject>& inOwner)
+		void SetOwner(const TPtr<BaseObject>& inOwner)
 		{
-			ownership.self  = inSelf;
 			ownership.owner = inOwner;
+		}
+
+		void PreConstruct(TPtr<BaseObject>&& inSelf)
+		{
+			ownership.self = inSelf;
 		}
 		virtual void Construct() {}
 
@@ -70,20 +79,16 @@ namespace Rift
 	};
 
 
-	// BEGIN - Pointer helpers
-	template <typename T>
-	using ObjectPtr = TOwnPtr<T, ObjectBuilder<T>>;
-
 	template <class T>
-	static ObjectPtr<T> Create(Refl::ClassType* objectClass, const TPtr<Object> owner = {})
+	static TOwnPtr<T> Create(Refl::ClassType* objectClass, const TPtr<Object> owner = {})
 	{
-		return MakeOwned<T, ObjectBuilder<T>>(objectClass, owner);
+		return MakeOwned<T>(objectClass, owner);
 	}
 
 	template <class T>
-	static ObjectPtr<T> Create(const TPtr<Object> owner = {})
+	static TOwnPtr<T> Create(const TPtr<Object> owner = {})
 	{
-		return MakeOwned<T, ObjectBuilder<T>>(owner);
+		return MakeOwned<T>(owner);
 	}
 	// END - Pointer helpers
 }    // namespace Rift

@@ -46,7 +46,7 @@ namespace Rift::Refl
 
 		void* GetInstance() const
 		{
-			if (UsesObjectPtr())
+			if (UsesTOwnPtr())
 			{
 				return *objInstance;
 			}
@@ -55,10 +55,10 @@ namespace Rift::Refl
 
 		bool IsValid() const
 		{
-			return prop != nullptr && (UsesObjectPtr() || structInstance);
+			return prop != nullptr && (UsesTOwnPtr() || structInstance);
 		}
 
-		bool UsesObjectPtr() const
+		bool UsesTOwnPtr() const
 		{
 			return objInstance.IsValid();
 		}

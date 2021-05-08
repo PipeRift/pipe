@@ -8,17 +8,9 @@ using namespace snowhouse;
 using namespace bandit;
 using namespace Rift;
 
-struct EmptyStruct
-{};
-
-struct MockStruct
-{
-	bool bCalledNew = false;
-	static bool bCalledDelete;
-};
 
 template <typename T>
-struct TestPtrBuilder : Rift::PtrBuilder<T>
+struct TestPtrBuilder : Rift::TPtrBuilder<T>
 {
 	template <typename... Args>
 	static T* New(Args&&... args)
@@ -33,6 +25,19 @@ struct TestPtrBuilder : Rift::PtrBuilder<T>
 		T::bCalledDelete = true;
 		delete static_cast<T*>(ptr);
 	}
+};
+
+
+struct EmptyStruct
+{};
+
+struct MockStruct
+{
+	template <typename T>
+	using PtrBuilder = TestPtrBuilder<T>;
+
+	bool bCalledNew = false;
+	static bool bCalledDelete;
 };
 
 
@@ -71,13 +76,13 @@ go_bandit([]() {
 
 			describe("Ptr Builder", []() {
 				it("Calls custom new", [&]() {
-					auto owner = MakeOwned<MockStruct, TestPtrBuilder<MockStruct>>();
+					auto owner = MakeOwned<MockStruct>();
 					AssertThat(owner->bCalledNew, Equals(true));
 				});
 
 				it("Calls custom delete", [&]() {
 					MockStruct::bCalledDelete = false;
-					auto owner = MakeOwned<MockStruct, TestPtrBuilder<MockStruct>>();
+					auto owner                = MakeOwned<MockStruct>();
 					AssertThat(MockStruct::bCalledDelete, Equals(false));
 					owner.Release();
 					AssertThat(MockStruct::bCalledDelete, Equals(true));
@@ -213,10 +218,10 @@ go_bandit([]() {
 			it("Adds weaks", [&]() {
 				auto owner = MakeOwned<EmptyStruct>();
 				const auto* counter = owner.GetCounter();
-				AssertThat(counter->weaks.load(), Equals(0u));
+				AssertThat(counter->weakCount, Equals(0u));
 
 				auto weak = owner.AsPtr();
-				AssertThat(counter->weaks.load(), Equals(1u));
+				AssertThat(counter->weakCount, Equals(1u));
 			});
 
 			it("Removes weaks", [&]() {
@@ -224,9 +229,9 @@ go_bandit([]() {
 				const auto* counter = owner.GetCounter();
 				{
 					auto weak = owner.AsPtr();
-					AssertThat(counter->weaks.load(), Equals(1u));
+					AssertThat(counter->weakCount, Equals(1u));
 				}
-				AssertThat(counter->weaks.load(), Equals(0u));
+				AssertThat(counter->weakCount, Equals(0u));
 			});
 
 			it("Removes with owner release", [&]() {
@@ -237,7 +242,7 @@ go_bandit([]() {
 				AssertThat(owner.GetCounter(), Equals(nullptr));
 			});
 
-			it("Removes with no weaks left", [&]() {
+			it("Removes with no weakCount left", [&]() {
 				auto owner = MakeOwned<EmptyStruct>();
 				auto weak = owner.AsPtr();
 				AssertThat(weak.GetCounter(), Is().Not().EqualTo(nullptr));
@@ -248,6 +253,12 @@ go_bandit([]() {
 				weak.Reset();
 				AssertThat(owner.GetCounter(), Equals(nullptr));
 			});
+		});
+
+
+		it("Can detect custom PtrBuilders", [&]() {
+			AssertThat(Rift::HasCustomPtrBuilder<EmptyStruct>::value, Equals(false));
+			AssertThat(Rift::HasCustomPtrBuilder<MockStruct>::value, Equals(true));
 		});
 	});
 });

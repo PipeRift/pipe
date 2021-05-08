@@ -4,5 +4,5 @@
 
 namespace Rift
 {
-	ObjectPtr<Context> Context::globalInstance{};
+	TOwnPtr<Context> Context::globalInstance{};
 }

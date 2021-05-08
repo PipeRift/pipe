@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Log.h"
+#include "Memory/PtrBuilder.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/Static/ClassType.h"
 #include "Reflection/TypeName.h"
@@ -10,36 +11,34 @@
 namespace Rift
 {
 	template <typename T>
-	struct ObjectBuilder
+	struct TObjectBuilder : public TPtrBuilder<T>
 	{
-		static TOwnPtr<T, ObjectBuilder<T>> New(
-		    Refl::ClassType* objectClass, TPtr<BaseObject> owner = {})
+		template <typename... Args>
+		static T* New(Args&&... args, const TPtr<BaseObject>& owner = {})
 		{
-			static_assert(IsClass<T>(), "Type is not an Object!");
-			if (objectClass)
+			T* instance = new T(std::forward<Args>(args)...);
+			instance->SetOwner(owner);
+			return instance;
+		}
+
+		// Allow creation of classes using reflection
+		static T* New(Refl::ClassType* objClass, TPtr<BaseObject> owner = {})
+		{
+			if (objClass)
 			{
-				return objectClass->CreateInstance(owner).Cast<T>();
+				if (T* instance = dynamic_cast<T*>(objClass->CreateInstance()))
+				{
+					instance->SetOwner(owner);
+					return instance;
+				}
 			}
 			return {};
 		}
 
-		static TOwnPtr<T, ObjectBuilder<T>> New(TPtr<BaseObject> owner = {})
+		static void PostNew(TOwnPtr<T>& ptr)
 		{
-			static_assert(IsClass<T>(), "Type is not an Object!");
-
-			if constexpr (std::is_abstract_v<T>)
-			{
-				Log::Error(
-				    "Tried to create an instance of '{}' which is abstract.", GetTypeName<T>());
-				return {};
-			}
-			else
-			{
-				TOwnPtr<T, ObjectBuilder<T>> ptr{new T()};
-				ptr->PreConstruct(ptr.AsPtr(), owner);
-				ptr->Construct();
-				return ptr;
-			}
+			ptr->PreConstruct(ptr.AsPtr());
+			ptr->Construct();
 		}
 
 		static void Delete(void* rawPtr)
@@ -48,5 +47,8 @@ namespace Rift
 			ptr->StartDestroy();
 			delete ptr;
 		}
+
+		static T* NewArray(sizet size)                        = delete;
+		static void PostNewArray(TOwnPtr<T>& ptr, sizet size) = delete;
 	};
 }    // namespace Rift

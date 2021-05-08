@@ -93,7 +93,7 @@ namespace Rift
 			ZoneScopedNC("Deserialize asset", 0xD19D45);
 
 			// Create the asset instance
-			auto newAsset    = data.type->CreateInstance(Self()).Cast<AssetData>();
+			auto newAsset    = Create<AssetData>(data.type, Self());
 			const auto& info = infos[I];
 
 			if (newAsset->OnLoad(info, data.json))

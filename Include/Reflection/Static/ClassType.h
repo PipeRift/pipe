@@ -4,7 +4,6 @@
 #include "PCH.h"
 
 #include "Events/Function.h"
-#include "Memory/OwnPtr.h"
 #include "Object/BaseObject.h"
 #include "Reflection/Static/DataType.h"
 
@@ -22,15 +21,13 @@ namespace Rift::Refl
 		template <typename T, typename Parent, ReflectionTags tags>
 		friend struct TClassTypeBuilder;
 
-		using CreateFunc =
-		    TFunction<TOwnPtr<BaseObject, ObjectBuilder<BaseObject>>(const TPtr<BaseObject>&)>;
+		using CreateFunc = TFunction<BaseObject*()>;
 
 		CreateFunc onCreate;
 
 
 	public:
-		CORE_API TOwnPtr<BaseObject, ObjectBuilder<BaseObject>> CreateInstance(
-		    const TPtr<BaseObject>& owner);
+		CORE_API BaseObject* CreateInstance();
 
 		CORE_API ClassType* GetParent() const
 		{

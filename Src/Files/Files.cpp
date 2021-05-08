@@ -177,8 +177,13 @@ namespace Rift::Files
 			    static_cast<fs::copy_options>(*(options | CopyOptions::DirectoriesOnly));
 			fs::copy(origin, destination, stdOptions);
 		}
+		return false;
 	}
-	bool Move(const Path& origin, const Path& destination) {}
+
+	bool Move(const Path& origin, const Path& destination)
+	{
+		return false;
+	}
 
 
 	/** String API */

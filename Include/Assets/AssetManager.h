@@ -20,7 +20,7 @@ namespace Rift
 	private:
 		TArray<AssetInfo> assetInfos;
 
-		TMap<AssetInfo, ObjectPtr<AssetData>> loadedAssets{};
+		TMap<AssetInfo, TOwnPtr<AssetData>> loadedAssets{};
 
 		TBroadcast<AssetInfo, AssetInfo> onAssetRenamed;
 

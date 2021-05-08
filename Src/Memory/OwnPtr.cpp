@@ -5,11 +5,32 @@
 
 namespace Rift::Impl
 {
+	void OwnPtr::Release()
+	{
+		if (!counter)
+		{
+			return;
+		}
+
+		counter->deleter(value);
+		if (counter->weakCount <= 0)
+		{
+			delete counter;
+		}
+		else
+		{
+			// With this weaks know the value has been deleted
+			counter->deleter = nullptr;
+		}
+		counter = nullptr;
+		value   = nullptr;
+	}
+
 	void Ptr::Reset()
 	{
 		if (counter)
 		{
-			__ResetNoCheck(counter->bIsSet);
+			__ResetNoCheck(counter->IsSet());
 		}
 	}
 
@@ -17,7 +38,7 @@ namespace Rift::Impl
 	{
 		if (counter)
 		{
-			if (counter->bIsSet)
+			if (counter->IsSet())
 			{
 				return true;
 			}
@@ -32,7 +53,7 @@ namespace Rift::Impl
 		counter = owner.counter;
 		if (counter)
 		{
-			++counter->weaks;
+			++counter->weakCount;
 		}
 	}
 	Ptr::Ptr(const Ptr& other)
@@ -41,7 +62,7 @@ namespace Rift::Impl
 		counter = other.counter;
 		if (counter)
 		{
-			++counter->weaks;
+			++counter->weakCount;
 		}
 	}
 	Ptr::Ptr(Ptr&& other) noexcept
@@ -75,16 +96,21 @@ namespace Rift::Impl
 			counter = other.counter;
 			if (counter)
 			{
-				++counter->weaks;
+				++counter->weakCount;
 			}
 		}
 	}
 
-	void Ptr::__ResetNoCheck(const bool bIsSet)
+	void Ptr::__ResetNoCheck(const bool isSet)
 	{
-		if (--counter->weaks <= 0 && !bIsSet)
+		// counter check is reducing one and then checking
+		if (!isSet && counter->weakCount <= 1)
 		{
 			delete counter;
+		}
+		else
+		{
+			--counter->weakCount;
 		}
 		counter = nullptr;
 		value   = nullptr;

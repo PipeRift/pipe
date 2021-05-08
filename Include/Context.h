@@ -15,20 +15,21 @@ namespace Rift
 		CLASS(Context, Object)
 
 	private:
-		static ObjectPtr<Context> globalInstance;
+		static TOwnPtr<Context> globalInstance;
 
-		ObjectPtr<AssetManager> assetManager;
+		TOwnPtr<AssetManager> assetManager;
 
 		TaskSystem tasks;
 
 
 	public:
 		/** Called to initialize the global context. */
+		template <typename ContextType = Context>
 		static void Initialize()
 		{
 			if (!globalInstance)
 			{
-				globalInstance = Create<Context>();
+				globalInstance = Create<ContextType>();
 			}
 		}
 
@@ -72,6 +73,13 @@ namespace Rift
 		{
 			assert(globalInstance && "Context is not initialized! Call Context::Initialize().");
 			return globalInstance;
+		}
+
+		template <typename T>
+		static TPtr<T> Get()
+		{
+			assert(globalInstance && "Context is not initialized! Call Context::Initialize().");
+			return globalInstance.Cast<T>();
 		}
 	};
 }	 // namespace Rift

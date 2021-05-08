@@ -96,13 +96,12 @@ namespace Rift::Refl
 		{
 			auto* type = Super::Build();
 
-			GetType()->onCreate = [](const auto& owner) {
+			GetType()->onCreate = []() {
 				if constexpr (IsSame<T, BaseObject>)
 				{
-					return TOwnPtr<T,
-					    ObjectBuilder<T>>{};    // Can't create instances of BaseObject
+					return nullptr;    // Can't create instances of BaseObject
 				}
-				return MakeOwned<T, ObjectBuilder<T>>(owner);
+				return new T();
 			};
 
 			if (onBuild)

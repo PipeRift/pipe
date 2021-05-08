@@ -16,12 +16,20 @@ namespace Rift
 {
 	namespace Impl
 	{
+		// TODO: Use pool arena for counters
+		using Deleter = void(void*);
+
 		// Container that lives from when an owner is created to when the last weak has been reset
 		struct PtrWeakCounter
 		{
-			// Owner and weak references
-			std::atomic<bool> bIsSet = true;
-			std::atomic<u32> weaks   = 0;
+			Deleter* deleter;
+			u32 weakCount = 0;
+
+			PtrWeakCounter(Deleter& deleter) : deleter(&deleter) {}
+			bool IsSet() const
+			{
+				return deleter != nullptr;
+			}
 		};
 
 		struct Ptr;
@@ -36,6 +44,11 @@ namespace Rift
 
 
 		public:
+			~OwnPtr()
+			{
+				Release();
+			}
+
 			bool IsValid() const
 			{
 				return counter != nullptr;
@@ -51,15 +64,19 @@ namespace Rift
 				return counter;
 			}
 
+			void Release();
+
+
 		protected:
 			OwnPtr() = default;
-			OwnPtr(void* value) : value{value}
+			OwnPtr(void* value, Deleter& deleter) : value{value}
 			{
 				if (value)
 				{
-					counter = new PtrWeakCounter();
+					counter = new PtrWeakCounter(deleter);
 				}
 			}
+
 
 			void MoveFrom(OwnPtr&& other)
 			{
@@ -126,12 +143,12 @@ namespace Rift
 	 * Pointer Owner
 	 * Contains an unique instance of T that is kept automatically removed on owner destruction.
 	 */
-	template <typename T, typename Builder = PtrBuilder<T>>
+	template <typename T>
 	struct TOwnPtr : public Impl::OwnPtr
 	{
 		using Super = Impl::OwnPtr;
 
-		template <typename T2, typename Builder2>
+		template <typename T2>
 		friend struct TOwnPtr;
 
 #if BUILD_DEBUG
@@ -142,8 +159,8 @@ namespace Rift
 
 	public:
 		TOwnPtr() = default;
-		explicit TOwnPtr(T* value)
-		    : Super(value)
+		explicit TOwnPtr(T* value, Impl::Deleter& deleter)
+		    : Super(value, deleter)
 #if BUILD_DEBUG
 		    , instance(value)
 #endif
@@ -169,8 +186,8 @@ namespace Rift
 		}
 
 		/** Templates for down-casting */
-		template <typename T2, typename Builder2>
-		TOwnPtr(TOwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
+		template <typename T2>
+		TOwnPtr(TOwnPtr<T2>&& other) requires Derived<T2, T>
 		{
 #if BUILD_DEBUG
 			instance       = reinterpret_cast<T*>(other.instance);
@@ -178,8 +195,8 @@ namespace Rift
 #endif
 			MoveFrom(Move(other));
 		}
-		template <typename T2, typename Builder2>
-		TOwnPtr& operator=(TOwnPtr<T2, Builder2>&& other) requires Derived<T2, T>
+		template <typename T2>
+		TOwnPtr& operator=(TOwnPtr<T2>&& other) requires Derived<T2, T>
 		{
 #if BUILD_DEBUG
 			instance       = other.instance;
@@ -188,12 +205,6 @@ namespace Rift
 			MoveFrom(Move(other));
 			return *this;
 		}
-
-		~TOwnPtr()
-		{
-			Release();
-		}
-
 
 		T* Get() const
 		{
@@ -205,15 +216,14 @@ namespace Rift
 			return static_cast<T*>(value);
 		}
 
-
 		/** Cast a global pointer into another type. Will invalidate previous owner on success */
 		template <typename T2>
-		TOwnPtr<T2, Builder> Cast()
+		TOwnPtr<T2> Cast()
 		{
 			// If can be casted statically or dynamically
 			if (IsValid() && (Convertible<T2, T> || dynamic_cast<T2*>(GetUnsafe()) != nullptr))
 			{
-				TOwnPtr<T2, Builder> newPtr{};
+				TOwnPtr<T2> newPtr{};
 				newPtr.MoveFrom(Move(*this));
 #if BUILD_DEBUG
 				newPtr.instance = reinterpret_cast<T2*>(instance);
@@ -239,25 +249,6 @@ namespace Rift
 			return {};
 		}
 
-		void Release()
-		{
-			if (counter)
-			{
-				Builder::Delete(value);
-				value = nullptr;
-
-				if (counter->weaks <= 0)
-				{
-					delete counter;
-				}
-				else
-				{
-					counter->bIsSet = false;
-				}
-				counter = nullptr;
-			}
-		}
-
 		T& operator*() const
 		{
 			return *GetUnsafe();
@@ -273,7 +264,7 @@ namespace Rift
 			return value == other;
 		}
 		template <typename T2>
-		bool operator==(const TOwnPtr<T2, Builder>& other) const
+		bool operator==(const TOwnPtr<T2>& other) const
 		{
 			return value == other.GetUnsafe();
 		}
@@ -288,7 +279,7 @@ namespace Rift
 			return value != other;
 		}
 		template <typename T2>
-		bool operator!=(const TOwnPtr<T2, Builder>& other) const
+		bool operator!=(const TOwnPtr<T2>& other) const
 		{
 			return value != other.GetUnsafe();
 		}
@@ -296,6 +287,26 @@ namespace Rift
 		bool operator!=(const TPtr<T2>& other) const
 		{
 			return value != other.GetUnsafe();
+		}
+
+		template <typename... Args>
+		static TOwnPtr<T> Make(Args&&... args) requires(HasCustomPtrBuilder<T>::value)
+		{
+			using Builder  = typename T::PtrBuilder<T>;
+			auto* instance = Builder::New(std::forward<Args>(args)...);
+			auto ptr       = TOwnPtr<T>(instance, Builder::Delete);
+			Builder::PostNew(ptr);
+			return Move(ptr);
+		}
+
+		template <typename... Args>
+		static TOwnPtr<T> Make(Args&&... args) requires(!HasCustomPtrBuilder<T>::value)
+		{
+			using Builder  = TPtrBuilder<T>;
+			auto* instance = Builder::New(std::forward<Args>(args)...);
+			auto ptr       = TOwnPtr<T>(instance, Builder::Delete);
+			Builder::PostNew(ptr);
+			return Move(ptr);
 		}
 	};
 
@@ -332,8 +343,8 @@ namespace Rift
 
 		/** Templates for down-casting */
 
-		template <typename T2, typename Builder2>
-		TPtr(const TOwnPtr<T2, Builder2>& owner) requires Derived<T2, T> : Super(owner)
+		template <typename T2>
+		TPtr(const TOwnPtr<T2>& owner) requires Derived<T2, T> : Super(owner)
 		{}
 
 		template <typename T2>
@@ -395,8 +406,8 @@ namespace Rift
 		{
 			return value == other;
 		}
-		template <typename T2, typename Builder2>
-		bool operator==(const TOwnPtr<T2, Builder2>& other) const
+		template <typename T2>
+		bool operator==(const TOwnPtr<T2>& other) const
 		{
 			return value == other.GetUnsafe();
 		}
@@ -410,8 +421,8 @@ namespace Rift
 		{
 			return value != other;
 		}
-		template <typename T2, typename Builder2>
-		bool operator!=(const TOwnPtr<T2, Builder2>& other) const
+		template <typename T2>
+		bool operator!=(const TOwnPtr<T2>& other) const
 		{
 			return value != other.GetUnsafe();
 		}
@@ -423,22 +434,16 @@ namespace Rift
 	};
 
 
-	template <typename T, typename Builder = PtrBuilder<T>, typename... Args,
-	    EnableIfT<!std::is_array_v<T>, i32> = 0>
-	TOwnPtr<T, Builder> MakeOwned(Args&&... args)
+	template <typename T, typename... Args>
+	TOwnPtr<T> MakeOwned(Args&&... args) requires(!std::is_array_v<T>)
 	{
-		return TOwnPtr<T, Builder>(Builder::New(std::forward<Args>(args)...));
+		return TOwnPtr<T>::Make(std::forward<Args>(args)...);
 	}
 
-	template <typename T, typename Builder = PtrBuilder<T>,
-	    EnableIfT<std::is_array_v<T> && std::extent_v<T> == 0, i32> = 0>
-	TOwnPtr<T, Builder> MakeOwned(sizet size)
-	{
-		using Elem = std::remove_extent_t<T>;
-		return {Builder::NewArray(size)};
-	}
-
-	template <typename T, typename Builder = PtrBuilder<T>, typename... Args,
-	    EnableIfT<std::extent_v<T> != 0, i32> = 0>
-	void MakeOwned(Args&&...) = delete;
+	// template <typename T>
+	// TOwnPtr<T> MakeOwned(sizet size) requires(std::is_array_v<T>&& std::extent_v<T> == 0)
+	//{
+	//	using Elem = std::remove_extent_t<T>;
+	//	return {Builder::NewArray(size)};
+	//}
 }    // namespace Rift
