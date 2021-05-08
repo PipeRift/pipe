@@ -134,35 +134,38 @@ namespace Rift
 		template <typename Type>
 		bool Unbind(TPtr<Type> instance) const
 		{
-			if (instance) [[likely]]
-			{
-				return ptrListeners.RemoveIfSwap([instance](const auto& listener) {
-					return !listener.instance || listener.instance == instance;
-				}) > 0;
-			}
+			if (instance)
+				[[likely]]
+				{
+					return ptrListeners.RemoveIfSwap([instance](const auto& listener) {
+						return !listener.instance || listener.instance == instance;
+					}) > 0;
+				}
 			return false;
 		}
 
 		template <typename Type>
 		bool Unbind(Type* instance) const
 		{
-			if (instance) [[likely]]
-			{
-				return rawListeners.RemoveIfSwap([instance](const auto& listener) {
-					return listener.instance == instance;
-				}) > 0;
-			}
+			if (instance)
+				[[likely]]
+				{
+					return rawListeners.RemoveIfSwap([instance](const auto& listener) {
+						return listener.instance == instance;
+					}) > 0;
+				}
 			return false;
 		}
 
 		bool UnbindAll() const
 		{
-			if (!rawListeners.IsEmpty() || !ptrListeners.IsEmpty()) [[likely]]
-			{
-				rawListeners.Empty();
-				ptrListeners.Empty();
-				return true;
-			}
+			if (!rawListeners.IsEmpty() || !ptrListeners.IsEmpty())
+				[[likely]]
+				{
+					rawListeners.Empty();
+					ptrListeners.Empty();
+					return true;
+				}
 			return false;
 		}
 
