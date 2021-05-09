@@ -55,6 +55,6 @@ namespace Rift
 
 	TaskSystem& TaskSystem::Get()
 	{
-		return Context::Get()->GetTasks();
+		return GetContext()->GetTasks();
 	}
 }    // namespace Rift

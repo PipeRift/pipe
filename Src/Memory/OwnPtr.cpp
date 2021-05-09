@@ -5,7 +5,7 @@
 
 namespace Rift::Impl
 {
-	void OwnPtr::Release()
+	void OwnPtr::Delete()
 	{
 		if (!counter)
 		{

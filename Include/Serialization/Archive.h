@@ -74,7 +74,7 @@ namespace Rift
 				if (!IsDataValid())
 				{
 					// Object doesn't exist, we just reset the ptr
-					val.Release();
+					val.Delete();
 					EndObject();
 					return;
 				}

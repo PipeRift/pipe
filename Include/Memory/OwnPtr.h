@@ -46,7 +46,7 @@ namespace Rift
 		public:
 			~OwnPtr()
 			{
-				Release();
+				Delete();
 			}
 
 			bool IsValid() const
@@ -64,7 +64,7 @@ namespace Rift
 				return counter;
 			}
 
-			void Release();
+			void Delete();
 
 
 		protected:
@@ -177,6 +177,7 @@ namespace Rift
 
 		TOwnPtr& operator=(TOwnPtr&& other) noexcept
 		{
+			Delete();
 #if BUILD_DEBUG
 			instance       = other.instance;
 			other.instance = nullptr;
@@ -198,6 +199,7 @@ namespace Rift
 		template <typename T2>
 		TOwnPtr& operator=(TOwnPtr<T2>&& other) requires Derived<T2, T>
 		{
+			Delete();
 #if BUILD_DEBUG
 			instance       = other.instance;
 			other.instance = nullptr;
@@ -216,9 +218,11 @@ namespace Rift
 			return static_cast<T*>(value);
 		}
 
-		/** Cast a global pointer into another type. Will invalidate previous owner on success */
+		/** Casts this OwnPtr into another. On success, it will transfer its ownership, else, the
+		 * ownership is kept and the new ptr is invalid.
+		 * */
 		template <typename T2>
-		TOwnPtr<T2> Cast()
+		TOwnPtr<T2> Transfer()
 		{
 			// If can be casted statically or dynamically
 			if (IsValid() && (Convertible<T2, T> || dynamic_cast<T2*>(GetUnsafe()) != nullptr))
@@ -226,7 +230,7 @@ namespace Rift
 				TOwnPtr<T2> newPtr{};
 				newPtr.MoveFrom(Move(*this));
 #if BUILD_DEBUG
-				newPtr.instance = reinterpret_cast<T2*>(instance);
+				newPtr.instance = static_cast<T2*>(instance);
 				instance        = nullptr;
 #endif
 				return newPtr;
@@ -235,11 +239,11 @@ namespace Rift
 		}
 
 		template <typename T2 = T>
-		TPtr<T2> AsPtr() const
+		TPtr<T2> Cast() const
 		{
-			if constexpr (Derived<T2, T>)
+			if constexpr (Derived<T, T2>)    // Is T2 is T or its base
 			{
-				return {*this};
+				return TPtr<T2>{*this};
 			}
 			else if (IsValid() && dynamic_cast<T2*>(GetUnsafe()) != nullptr)
 			{
@@ -247,6 +251,11 @@ namespace Rift
 				return ptr.template Cast<T2>();
 			}
 			return {};
+		}
+
+		TPtr<T> AsPtr() const
+		{
+			return TPtr<T>{*this};
 		}
 
 		T& operator*() const

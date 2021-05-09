@@ -37,7 +37,7 @@ namespace Rift
 
 		static void PostNew(TOwnPtr<T>& ptr)
 		{
-			ptr->PreConstruct(ptr.AsPtr());
+			ptr->PreConstruct(ptr);
 			ptr->Construct();
 		}
 

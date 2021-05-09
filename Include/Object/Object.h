@@ -74,19 +74,18 @@ namespace Rift
 		{
 			return ownership.GetOwner().Cast<T>();
 		}
-
-		virtual TPtr<Context> GetContext() const;
 	};
 
 
-	template <class T>
-	static TOwnPtr<T> Create(Refl::ClassType* objectClass, const TPtr<Object> owner = {})
+	template <typename T>
+	static TOwnPtr<T> Create(Refl::ClassType* objectClass, const TPtr<Object> owner = {}) requires(
+	    Derived<T, Object>)
 	{
 		return MakeOwned<T>(objectClass, owner);
 	}
 
-	template <class T>
-	static TOwnPtr<T> Create(const TPtr<Object> owner = {})
+	template <typename T>
+	static TOwnPtr<T> Create(const TPtr<Object> owner = {}) requires(Derived<T, Object>)
 	{
 		return MakeOwned<T>(owner);
 	}

@@ -148,6 +148,6 @@ namespace Rift
 
 	TPtr<AssetManager> AssetManager::Get()
 	{
-		return Context::Get()->GetAssetManager();
+		return GetContext()->GetAssetManager();
 	}
 }    // namespace Rift

@@ -60,7 +60,7 @@ go_bandit([]() {
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				AssertThat(owner.IsValid(), Equals(true));
 
-				owner.Release();
+				owner.Delete();
 				AssertThat(owner.IsValid(), Equals(false));
 			});
 
@@ -68,6 +68,7 @@ go_bandit([]() {
 				TPtr<EmptyStruct> ptr;
 				{
 					TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
+
 					ptr = owner;
 					AssertThat(ptr.IsValid(), Equals(true));
 				}
@@ -84,7 +85,7 @@ go_bandit([]() {
 					MockStruct::bCalledDelete = false;
 					auto owner                = MakeOwned<MockStruct>();
 					AssertThat(MockStruct::bCalledDelete, Equals(false));
-					owner.Release();
+					owner.Delete();
 					AssertThat(MockStruct::bCalledDelete, Equals(true));
 				});
 			});
@@ -99,7 +100,7 @@ go_bandit([]() {
 
 			it("Can initialize from owner", [&]() {
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
-				TPtr<EmptyStruct> ptr     = owner;
+				TPtr<EmptyStruct> ptr      = owner;
 
 				AssertThat(ptr.IsValid(), Equals(true));
 				AssertThat(ptr.Get(), Is().Not().EqualTo(nullptr));
@@ -108,7 +109,7 @@ go_bandit([]() {
 			it("Can copy from other weak", [&]() {
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				auto* raw                  = owner.GetUnsafe();
-				TPtr<EmptyStruct> ptr     = owner;
+				TPtr<EmptyStruct> ptr      = owner;
 				TPtr<EmptyStruct> ptr2    = ptr;
 
 				AssertThat(ptr2.IsValid(), Equals(true));
@@ -119,20 +120,20 @@ go_bandit([]() {
 			it("Can move from other weak", [&]() {
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				auto* raw                  = owner.GetUnsafe();
-				TPtr<EmptyStruct> ptr     = owner;
-				TPtr<EmptyStruct> ptr2    = Move(ptr);
+				auto weak                  = owner.AsPtr();
+				auto movedWeak             = Move(weak);
 
-				AssertThat(ptr.IsValid(), Equals(false));
-				AssertThat(ptr2.IsValid(), Equals(true));
+				AssertThat(weak.IsValid(), Equals(false));
+				AssertThat(movedWeak.IsValid(), Equals(true));
 
-				AssertThat(ptr.Get(), Equals(nullptr));
-				AssertThat(ptr2.Get(), Equals(raw));
+				AssertThat(weak.Get(), Equals(nullptr));
+				AssertThat(movedWeak.Get(), Equals(raw));
 			});
 
 			it("Ptr is null after IsValid() == false", [&]() {
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
-				TPtr<EmptyStruct> ptr     = owner;
-				owner.Release();
+				TPtr<EmptyStruct> ptr      = owner;
+				owner.Delete();
 
 				AssertThat(ptr.GetUnsafe(), Is().Not().EqualTo(nullptr));
 
@@ -161,7 +162,7 @@ go_bandit([]() {
 			it("Owner can equal Weak", [&]() {
 				auto owner = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
-				auto weak = owner.AsPtr();
+				auto weak   = owner.AsPtr();
 				TOwnPtr<EmptyStruct> ownerEmpty;
 				TPtr<EmptyStruct> weakEmpty;
 
@@ -179,8 +180,8 @@ go_bandit([]() {
 			it("Weak can equal Weak", [&]() {
 				auto owner = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
-				auto weak = owner.AsPtr();
-				auto weak2 = owner2.AsPtr();
+				auto weak   = owner.AsPtr();
+				auto weak2  = owner2.AsPtr();
 				TPtr<EmptyStruct> weakEmpty;
 
 				AssertThat(weak == weak, Equals(true));
@@ -197,8 +198,8 @@ go_bandit([]() {
 			it("Weak can equal Owner", [&]() {
 				auto owner = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
-				auto weak = owner.AsPtr();
-				auto weak2 = owner2.AsPtr();
+				auto weak   = owner.AsPtr();
+				auto weak2  = owner2.AsPtr();
 				TOwnPtr<EmptyStruct> ownerEmpty;
 				TPtr<EmptyStruct> weakEmpty;
 
@@ -238,16 +239,16 @@ go_bandit([]() {
 				auto owner = MakeOwned<EmptyStruct>();
 				AssertThat(owner.GetCounter(), Is().Not().EqualTo(nullptr));
 
-				owner.Release();
+				owner.Delete();
 				AssertThat(owner.GetCounter(), Equals(nullptr));
 			});
 
 			it("Removes with no weakCount left", [&]() {
 				auto owner = MakeOwned<EmptyStruct>();
-				auto weak = owner.AsPtr();
+				auto weak  = owner.AsPtr();
 				AssertThat(weak.GetCounter(), Is().Not().EqualTo(nullptr));
 
-				owner.Release();
+				owner.Delete();
 				AssertThat(weak.GetCounter(), Is().Not().EqualTo(nullptr));
 
 				weak.Reset();

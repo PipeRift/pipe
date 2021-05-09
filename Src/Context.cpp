@@ -4,5 +4,19 @@
 
 namespace Rift
 {
-	TOwnPtr<Context> Context::globalInstance{};
+	TOwnPtr<Context> globalInstance{};
+
+
+	void ShutdownContext()
+	{
+		if (globalInstance)
+		{
+			globalInstance.Delete();
+		}
+	}
+
+	TOwnPtr<Context>& InternalGetContext()
+	{
+		return globalInstance;
+	}
 }

@@ -15,41 +15,20 @@ namespace Rift
 		CLASS(Context, Object)
 
 	private:
-		static TOwnPtr<Context> globalInstance;
-
 		TOwnPtr<AssetManager> assetManager;
 
 		TaskSystem tasks;
 
 
 	public:
-		/** Called to initialize the global context. */
-		template <typename ContextType = Context>
-		static void Initialize()
-		{
-			if (!globalInstance)
-			{
-				globalInstance = Create<ContextType>();
-			}
-		}
-
-		/** Called to manually shutdown the global context. */
-		static void Shutdown()
-		{
-			if (globalInstance)
-			{
-				globalInstance.Release();
-			}
-		}
-
 		Context() : Super(), assetManager{Create<AssetManager>()} {}
 
 		virtual void Construct() override
 		{
 			Super::Construct();
-
-			Log::Init("Saved/Logs");
-			Log::Info("Initialize Context");
+			
+			Log::Init("Saved/Logs"); // Init logger
+			Log::Info("Initialized Context");
 		}
 
 		virtual void BeforeDestroy() override
@@ -68,18 +47,26 @@ namespace Rift
 		{
 			return tasks;
 		}
-
-		static TPtr<Context> Get()
-		{
-			assert(globalInstance && "Context is not initialized! Call Context::Initialize().");
-			return globalInstance;
-		}
-
-		template <typename T>
-		static TPtr<T> Get()
-		{
-			assert(globalInstance && "Context is not initialized! Call Context::Initialize().");
-			return globalInstance.Cast<T>();
-		}
 	};
+
+
+	template <typename T = Context>
+	void InitializeContext()
+	{
+		if (!InternalGetContext())
+		{
+			InternalGetContext() = Create<T>();
+		}
+	}
+
+	template <typename T = Context>
+	TPtr<T> GetContext()
+	{
+		assert(
+		    InternalGetContext() && "Context is not initialized! Call InitializeContext<Type>().");
+		return InternalGetContext().Cast<T>();
+	}
+
+	CORE_API void ShutdownContext();
+	CORE_API TOwnPtr<Context>& InternalGetContext();
 }	 // namespace Rift
