@@ -51,12 +51,14 @@ namespace Rift
 
 
 	template <typename T = Context>
-	void InitializeContext()
+	TPtr<T> InitializeContext()
 	{
-		if (!InternalGetContext())
+		TOwnPtr<Context>& context = InternalGetContext();
+		if (!context)
 		{
-			InternalGetContext() = Create<T>();
+			context = Create<T>();
 		}
+		return context.Cast<T>();
 	}
 
 	template <typename T = Context>
