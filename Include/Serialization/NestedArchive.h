@@ -6,6 +6,8 @@
 
 namespace Rift
 {
+	// TODO: REFACTOR archives in general. Should be cache friendly, prevent IsLoading/Saving
+	// branches and avoid virtual call chains
 	class CORE_API NestedArchive : public Archive
 	{
 		Archive& parent;

@@ -46,7 +46,7 @@ namespace Rift
 	{
 	private:
 		template <typename V>
-		static void Impl(decltype(typename V::PtrBuilder<T>(), int()));
+		static void Impl(decltype(typename V::template PtrBuilder<T>(), int()));
 		template <typename V>
 		static bool Impl(char);
 

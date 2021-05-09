@@ -50,6 +50,8 @@ namespace Rift
 	};
 
 
+	CORE_API TOwnPtr<Context>& InternalGetContext();
+
 	template <typename T = Context>
 	TPtr<T> InitializeContext()
 	{
@@ -61,6 +63,8 @@ namespace Rift
 		return context.Cast<T>();
 	}
 
+	CORE_API void ShutdownContext();
+
 	template <typename T = Context>
 	TPtr<T> GetContext()
 	{
@@ -68,7 +72,4 @@ namespace Rift
 		    InternalGetContext() && "Context is not initialized! Call InitializeContext<Type>().");
 		return InternalGetContext().Cast<T>();
 	}
-
-	CORE_API void ShutdownContext();
-	CORE_API TOwnPtr<Context>& InternalGetContext();
 }	 // namespace Rift

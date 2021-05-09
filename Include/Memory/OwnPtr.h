@@ -301,7 +301,7 @@ namespace Rift
 		template <typename... Args>
 		static TOwnPtr<T> Make(Args&&... args) requires(HasCustomPtrBuilder<T>::value)
 		{
-			using Builder  = typename T::PtrBuilder<T>;
+			using Builder  = typename T::template PtrBuilder<T>;
 			auto* instance = Builder::New(std::forward<Args>(args)...);
 			auto ptr       = TOwnPtr<T>(instance, Builder::Delete);
 			Builder::PostNew(ptr);

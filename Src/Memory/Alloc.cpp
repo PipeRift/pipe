@@ -50,7 +50,7 @@ namespace Rift
 	sizet GetAlignmentPadding(const void* ptr, sizet align)
 	{
 		assert(Math::IsPowerOfTwo(align));
-		return -reinterpret_cast<sizet>(ptr) & (align - 1);
+		return -reinterpret_cast<ssizet>(ptr) & (align - 1);
 	}
 
 	sizet GetAlignmentPaddingWithHeader(const void* ptr, sizet align, sizet headerSize)
