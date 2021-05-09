@@ -6,9 +6,10 @@
 
 namespace Rift
 {
-	class NestedArchive : public Archive
+	class CORE_API NestedArchive : public Archive
 	{
 		Archive& parent;
+
 
 	public:
 		NestedArchive(Archive& inParent) : Archive(inParent.IsLoading()), parent(parent) {}

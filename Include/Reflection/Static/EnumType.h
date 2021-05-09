@@ -23,6 +23,12 @@ namespace Rift::Refl
 		return magic_enum::enum_name(value);
 	}
 
+	template <typename T>
+	constexpr std::optional<T> GetEnumValue(StringView str)
+	{
+		return magic_enum::enum_cast<T>(str);
+	}
+
 
 	/** Smallest reflection type that contains all basic class or struct data */
 	class EnumType : public Type
