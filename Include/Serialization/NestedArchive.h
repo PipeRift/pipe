@@ -16,7 +16,6 @@ namespace Rift
 	public:
 		NestedArchive(Archive& inParent) : Archive(inParent.IsLoading()), parent(parent) {}
 
-	private:
 		void Serialize(StringView name, bool& val) override
 		{
 			parent.Serialize(name, val);

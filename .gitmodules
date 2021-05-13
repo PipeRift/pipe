@@ -34,3 +34,6 @@
 [submodule "Extern/utfcpp"]
 	path = Extern/utfcpp
 	url = https://github.com/nemtrif/utfcpp.git
+[submodule "Extern/simdjson"]
+	path = Extern/simdjson
+	url = https://github.com/simdjson/simdjson.git
