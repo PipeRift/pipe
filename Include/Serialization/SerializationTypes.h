@@ -6,13 +6,23 @@
 
 namespace Rift::Serl
 {
+	enum Format
+	{
+		Format_None = 0,
+		Format_Json,
+		Format_Bson,
+		Format_Binary
+	};
+
+
 	enum Flags
 	{
 		Flags_None = 0,
 		Flags_CheckVersion =
-		    1 << 0,    // Version will be saved while writing. While reading, it will be checked.
+		    1 << 0,    // Version will be written in data. While reading, it will be checked.
 		Flags_CheckFlags =
-		    1 << 1,    // Flags will be saved while writing. While reading, they will be checked.
-		Flags_NamesAsHashes = 1 << 2
+		    1 << 1,    // Flags will be written in data. While reading, they will be checked.
+		Flags_NamesAsHashes        = 1 << 2,
+		Flags_StoreContainedOwnPtr = 1 << 3    // Store OwnPtr<> instances and their dependant Ptr<>
 	};
 }    // namespace Rift::Serl

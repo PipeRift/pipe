@@ -37,3 +37,6 @@
 [submodule "Extern/simdjson"]
 	path = Extern/simdjson
 	url = https://github.com/simdjson/simdjson.git
+[submodule "Extern/yyjson"]
+	path = Extern/yyjson
+	url = https://github.com/ibireme/yyjson.git

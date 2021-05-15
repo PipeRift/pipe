@@ -74,4 +74,4 @@ target_include_directories(magic_enum INTERFACE magic_enum)
 
 add_subdirectory(utfcpp)
 
-add_subdirectory(simdjson)
+add_subdirectory(yyjson)
