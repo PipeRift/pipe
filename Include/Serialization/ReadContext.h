@@ -26,19 +26,35 @@ namespace Rift::Serl
 		ReadContext() = default;
 
 	public:
+		ReadContext(const ReadContext&) = default;
+		ReadContext& operator=(const ReadContext&) = default;
 		virtual ~ReadContext() {}
 	};
 
 
-	CORE_API void EnterScope(ReadContext& ct, StringView name);
-	CORE_API void EnterScope(ReadContext& ct, u32 index);
+	CORE_API bool EnterScope(ReadContext& ct, StringView name);
+	CORE_API bool EnterScope(ReadContext& ct, u32 index);
 	CORE_API void LeaveScope(ReadContext& ct);
+
+	CORE_API void IterateObject(ReadContext& ct, TFunction<void()> callback);
+	CORE_API void IterateObject(ReadContext& ct, TFunction<void(const char*)> callback);
+	CORE_API bool IsObject(ReadContext& ct);
+	CORE_API sizet GetObjectSize(ReadContext& ct);
+
+	CORE_API void IterateArray(ReadContext& ct, TFunction<void()> callback);
+	CORE_API void IterateArray(ReadContext& ct, TFunction<void(u32)> callback);
+	CORE_API bool IsArray(ReadContext& ct);
+	CORE_API sizet GetArraySize(ReadContext& ct);
 
 	CORE_API void Read(ReadContext& ct, bool& val);
 	CORE_API void Read(ReadContext& ct, u8& val);
 	CORE_API void Read(ReadContext& ct, i32& val);
 	CORE_API void Read(ReadContext& ct, u32& val);
+	CORE_API void Read(ReadContext& ct, i64& val);
+	CORE_API void Read(ReadContext& ct, u64& val);
 	CORE_API void Read(ReadContext& ct, float& val);
+	CORE_API void Read(ReadContext& ct, double& val);
+	CORE_API void Read(ReadContext& ct, StringView& val);
 	CORE_API void Read(ReadContext& ct, String& val);
 
 	template <typename T1, typename T2>
@@ -62,16 +78,12 @@ namespace Rift::Serl
 		LeaveScope(ct);
 	}
 
-	//template <typename T>
-	//void Read(T& val) requires(IsArray<T>)
-	//{
-	//	const u32 size = ct.GetScopeSize();
-	//	val.Resize(size);
-	//	for (u32 i = 0; i < size; ++i)
-	//	{
-	//		EnterScope(ct, i);
-	//		Read(val[i]);
-	//		LeaveScope();
-	//	}
-	//}
+	template <typename T>
+	void Read(ReadContext& ct, T& val) requires(IsArray<T>())
+	{
+		val.Resize(GetArraySize(ct));
+		IterateArray(ct, [&ct](u32 index) {
+			Read(ct, val[index]);
+		});
+	}
 }    // namespace Rift::Serl

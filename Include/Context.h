@@ -26,9 +26,8 @@ namespace Rift
 		virtual void Construct() override
 		{
 			Super::Construct();
-			
-			Log::Init("Saved/Logs"); // Init logger
-			Log::Info("Initialized Context");
+
+			Log::Init("Saved/Logs");    // Init logger
 		}
 
 		virtual void BeforeDestroy() override

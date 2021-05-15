@@ -101,17 +101,17 @@ namespace Rift::Log
 
 	void Shutdown() {}
 
-	void Info(const String& msg)
+	void Info(StringView msg)
 	{
 		generalLogger->info(msg);
 	}
 
-	void Warning(const String& msg)
+	void Warning(StringView msg)
 	{
 		errLogger->warn(msg);
 	}
 
-	void Error(const String& msg)
+	void Error(StringView msg)
 	{
 		errLogger->error(msg);
 	}

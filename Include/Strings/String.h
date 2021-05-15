@@ -10,8 +10,6 @@
 #include "Platform/Platform.h"
 #include "Reflection/TypeName.h"
 #include "Strings/StringView.h"
-#include "Templates/Optional.h"
-#include "Templates/Tuples.h"
 
 #include <fmt/chrono.h>
 #include <fmt/format.h>

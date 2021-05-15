@@ -21,12 +21,12 @@ namespace Rift::Log
 	inline std::shared_ptr<spdlog::logger> errLogger;
 
 
-	void Init(Path logPath = {});
+	CORE_API void Init(Path logPath = {});
 	void Shutdown();
 
-	void CORE_API Info(const String& msg);
-	void CORE_API Warning(const String& msg);
-	void CORE_API Error(const String& msg);
+	void CORE_API Info(StringView msg);
+	void CORE_API Warning(StringView msg);
+	void CORE_API Error(StringView msg);
 
 	template <typename... Args>
 	void Info(StringView format, Args... args)

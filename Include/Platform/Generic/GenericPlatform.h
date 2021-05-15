@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "PCH.h"
+#include "Export.h"
 
 
 namespace Rift
