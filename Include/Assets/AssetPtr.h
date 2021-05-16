@@ -218,7 +218,7 @@ namespace Rift
 		}
 	};
 
-	DEFINE_TEMPLATE_CLASS_TRAITS(TAssetPtr, HasCustomSerialize = true);
+	DEFINE_TEMPLATE_TYPE_FLAGS(TAssetPtr, HasMemberSerialize = true);
 
 
 	template <typename T>

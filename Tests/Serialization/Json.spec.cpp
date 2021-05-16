@@ -151,6 +151,13 @@ go_bandit([]() {
 				ReadScope(reader2, "alive", value2);
 				AssertThat(value2, Equals(4.f));
 			});
+
+			it("Can read StringView values", [&]() {
+				JsonFormatReader reader{"{\"alive\": \"yes\"}"};
+				StringView value;
+				ReadScope(reader, "alive", value);
+				AssertThat(value, Equals("yes"));
+			});
 		});
 	});
 });

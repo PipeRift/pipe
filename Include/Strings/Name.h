@@ -5,7 +5,7 @@
 
 #include "Misc/Hash.h"
 #include "Misc/Utility.h"
-#include "Reflection/ClassTraits.h"
+#include "Reflection/TypeFlags.h"
 #include "String.h"
 
 #include <tsl/robin_set.h>
@@ -173,7 +173,7 @@ namespace Rift
 		Name(const Id& id) : id(id) {}
 	};
 
-	DEFINE_CLASS_TRAITS(Name, HasCustomSerialize = true);
+	DEFINE_TYPE_FLAGS(Name, HasMemberSerialize = true);
 
 	template <>
 	struct Hash<Name>

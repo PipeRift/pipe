@@ -4,6 +4,7 @@
 #include "Serialization/Formats/TFormat.h"
 #include "Serialization/Json.h"
 #include "Serialization/ReadContext.h"
+#include "Serialization/WriteContext.h"
 
 
 struct yyjson_doc;

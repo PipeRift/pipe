@@ -18,7 +18,6 @@ namespace Rift::Serl
 	template <Format format>
 	struct FormatBind
 	{
-		static constexpr bool available = false;
 		using Reader                    = void;
 		using Writer                    = void;
 	};

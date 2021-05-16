@@ -6,8 +6,8 @@
 
 #include "Containers/Array.h"
 #include "Math.h"
-#include "Reflection/ClassTraits.h"
 #include "Reflection/Static/NativeType.h"
+#include "Reflection/TypeFlags.h"
 #include "Strings/String.h"
 #include "Vector.h"
 
@@ -539,7 +539,7 @@ namespace Rift
 	    const LinearColor& InLinearColor, Color& OutColor, float& OutIntensity);
 
 
-	DEFINE_CLASS_TRAITS(Color, HasCustomSerialize = true);
+	DEFINE_TYPE_FLAGS(Color, HasMemberSerialize = true);
 	REFLECT_NATIVE_TYPE(Color);
 
 

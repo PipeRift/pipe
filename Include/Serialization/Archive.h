@@ -179,11 +179,11 @@ namespace Rift
 	template <typename T>
 	inline bool Archive::CustomSerializeOrNot(StringView name, T& val)
 	{
-		if constexpr (ClassTraits<T>::HasCustomSerialize)
+		if constexpr (TypeFlags<T>::HasMemberSerialize)
 		{
 			return val.Serialize(*this, name);
 		}
-		else if constexpr (ClassTraits<T>::HasGlobalSerialize)
+		else if constexpr (TypeFlags<T>::HasGlobalSerialize)
 		{
 			return ::Serialize(*this, name, val);
 		}

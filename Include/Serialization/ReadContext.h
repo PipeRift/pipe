@@ -2,11 +2,11 @@
 #pragma once
 
 #include "Platform/Platform.h"
-#include "Reflection/ClassTraits.h"
+#include "Reflection/TypeFlags.h"
 #include "Serialization/Formats/IFormat.h"
 #include "Serialization/SerializationTypes.h"
-#include "Strings/StringView.h"
 #include "Strings/String.h"
+#include "Strings/StringView.h"
 #include "Templates/Tuples.h"
 
 
@@ -65,17 +65,24 @@ namespace Rift::Serl
 	}
 
 	template <typename T>
-	void Read(ReadContext& ct, T& val) requires(ClassTraits<T>::HasCustomSerialize)
+	void Read(ReadContext& ct, T& val) requires(bool(TypeFlags<T>::HasMemberSerialize))
 	{
-		v.Read(ct, val);
+		if constexpr (TypeFlags<T>::HasSingleSerialize)
+		{
+			val.Serialize(ct);
+		}
+		else
+		{
+			val.Read(ct);
+		}
 	}
 
+	// Some types
 	template <typename T>
-	void ReadScope(ReadContext& ct, StringView name, T& val)
+	void Read(ReadContext& ct, T& val) requires(
+	    bool(TypeFlags<T>::HasSingleSerialize && !TypeFlags<T>::HasMemberSerialize))
 	{
-		EnterScope(ct, name);
-		Read(ct, val);
-		LeaveScope(ct);
+		Serialize(ct, val);
 	}
 
 	template <typename T>
@@ -85,5 +92,26 @@ namespace Rift::Serl
 		IterateArray(ct, [&ct](u32 index) {
 			Read(ct, val[index]);
 		});
+	}
+
+
+	template <typename T>
+	void ReadScope(ReadContext& ct, StringView name, T& val)
+	{
+		EnterScope(ct, name);
+		Read(ct, val);
+		LeaveScope(ct);
+	}
+
+
+	template <typename T>
+	bool IsReading() requires(Derived<T, ReadContext>)
+	{
+		return true;
+	}
+	template <typename T>
+	bool IsWriting() requires(Derived<T, ReadContext>)
+	{
+		return false;
 	}
 }    // namespace Rift::Serl

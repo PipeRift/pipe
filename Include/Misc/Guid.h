@@ -5,8 +5,8 @@
 #include "PCH.h"
 
 #include "Misc/Crc.h"
-#include "Reflection/ClassTraits.h"
 #include "Reflection/Registry/NativeTypeBuilder.h"
+#include "Reflection/TypeFlags.h"
 #include "Strings/Name.h"
 
 
@@ -298,7 +298,7 @@ namespace Rift
 		u32 d = 0;
 	};
 
-	DEFINE_CLASS_TRAITS(Guid, HasCustomSerialize = true);
+	DEFINE_TYPE_FLAGS(Guid, HasMemberSerialize = true);
 	REFLECT_NATIVE_TYPE(Guid);
 
 	template <>

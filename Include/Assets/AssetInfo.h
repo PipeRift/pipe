@@ -65,6 +65,6 @@ namespace Rift
 		}
 	};
 
-	DEFINE_CLASS_TRAITS(AssetInfo, HasCustomSerialize = true);
+	DEFINE_TYPE_FLAGS(AssetInfo, HasMemberSerialize = true);
 	REFLECT_NATIVE_TYPE(AssetInfo);
 }    // namespace Rift
