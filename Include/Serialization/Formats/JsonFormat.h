@@ -16,11 +16,17 @@ namespace Rift::Serl
 	struct JsonFormatReader : public TFormatReader<Format_Json>
 	{
 	private:
+		struct Scope
+		{
+			u32 id;
+			u32 size;
+			yyjson_val* parent;
+		};
 		yyjson_doc* doc  = nullptr;
 		yyjson_val* root = nullptr;
-		yyjson_val* currentScope = nullptr;
-		TArray<yyjson_val*> scopeStack;
- 
+		yyjson_val* currentValue = nullptr;
+		TArray<Scope> scopeStack;
+
 
 	public:
 		/**
@@ -32,19 +38,12 @@ namespace Rift::Serl
 		CORE_API JsonFormatReader(const String& data);
 		CORE_API ~JsonFormatReader();
 
-		CORE_API bool EnterScope(StringView name);
-		CORE_API bool EnterScope(u32 index);
-		CORE_API void LeaveScope();
+		CORE_API void BeginObject();
+		CORE_API void BeginArray(u32& size);
 
-		CORE_API void IterateObject(TFunction<void()> callback);
-		CORE_API void IterateObject(TFunction<void(const char*)> callback);
-		CORE_API bool IsObject() const;
-		CORE_API sizet GetObjectSize() const;
-
-		CORE_API void IterateArray(TFunction<void()> callback);
-		CORE_API void IterateArray(TFunction<void(u32)> callback);
-		CORE_API bool IsArray() const;
-		CORE_API sizet GetArraySize() const;
+		CORE_API bool EnterNext(StringView name);
+		CORE_API bool EnterNext();
+		CORE_API void Leave();
 
 		CORE_API void Read(bool& val);
 		CORE_API void Read(u8& val);
@@ -57,19 +56,50 @@ namespace Rift::Serl
 		CORE_API void Read(StringView& val);
 		CORE_API void Read(String& val);
 
+
+		CORE_API bool IsObject() const;
+		CORE_API bool IsArray() const;
 		CORE_API bool IsValid() const
 		{
 			return root != nullptr;
 		}
-		CORE_API sizet GetSize() const
-		{
-			return IsObject()? GetObjectSize() : GetArraySize();
-		}
+
+	private:
+		Scope& GetContainer();
+		void PushContainer();
+		void PopContainer();
 	};
 
 
 	struct JsonFormatWriter : public TFormatWriter<Format_Json>
-	{};
+	{
+	private:
+	public:
+		CORE_API bool EnterNext(StringView name);
+		CORE_API bool EnterNext();
+		CORE_API void Leave();
+
+		CORE_API void BeginObject();
+		CORE_API void BeginArray(u32& size);
+
+		CORE_API void Write(WriteContext& ct, const bool& val);
+		CORE_API void Write(WriteContext& ct, const u8& val);
+		CORE_API void Write(WriteContext& ct, const i32& val);
+		CORE_API void Write(WriteContext& ct, const u32& val);
+		CORE_API void Write(WriteContext& ct, const i64& val);
+		CORE_API void Write(WriteContext& ct, const u64& val);
+		CORE_API void Write(WriteContext& ct, const float& val);
+		CORE_API void Write(WriteContext& ct, const double& val);
+		CORE_API void Write(WriteContext& ct, const StringView& val);
+		CORE_API void Write(WriteContext& ct, const String& val);
+
+		CORE_API bool IsObject() const;
+		CORE_API bool IsArray() const;
+		CORE_API bool IsValid() const
+		{
+			return false;    // root != nullptr;
+		}
+	};
 
 
 	template <>

@@ -30,8 +30,10 @@ go_bandit([]() {
 			String data{"{\"name\": \"Miguel\"}"};
 			JsonFormatReader reader{data};
 
+			ReadContext& ct = reader;
+			ct.BeginObject();
 			String name;
-			ReadScope(reader, "name", name);
+			ct.Next("name", name);
 
 			AssertThat(name.data(), Equals("Miguel"));
 		});
@@ -40,41 +42,41 @@ go_bandit([]() {
 			String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
 			JsonFormatReader reader{data};
 
-			ReadContext& ct = reader.GetContext();
-
-			EnterScope(ct, "players");
+			ReadContext& ct = reader;
+			ct.BeginObject();
+			if (ct.EnterNext("players"))
 			{
+				u32 size;
+				ct.BeginArray(size);
 				String name;
-				EnterScope(ct, 0);
-				Read(ct, name);
-				LeaveScope(ct);
+				ct.Next(name);
 				AssertThat(name.data(), Equals("Miguel"));
 
-				EnterScope(ct, 1);
-				Read(ct, name);
-				LeaveScope(ct);
+				ct.Next(name);
 				AssertThat(name.data(), Equals("Juan"));
+
+				ct.Leave();
 			}
-			LeaveScope(ct);
 		});
 
 		it("Can iterate arrays", [&]() {
 			String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
 			JsonFormatReader reader{data};
 
-			ReadContext& ct = reader.GetContext();
-
-			if (EnterScope(ct, "players"))
+			ReadContext& ct = reader;
+			ct.BeginObject();
+			if (ct.EnterNext("players"))
 			{
 				static const StringView expected[]{"Miguel", "Juan"};
-
-				IterateArray(ct, [&ct](u32 index) {
+				u32 size;
+				ct.BeginArray(size);
+				for (u32 i = 0; i < size; ++i)
+				{
 					StringView name;
-					Read(ct, name);
-
-					AssertThat(name, Equals(expected[index]));
-				});
-				LeaveScope(ct);
+					ct.Next(name);
+					AssertThat(name, Equals(expected[i]));
+				}
+				ct.Leave();
 			}
 		});
 
@@ -82,80 +84,95 @@ go_bandit([]() {
 			String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
 			JsonFormatReader reader{data};
 
-			ReadContext& ct = reader.GetContext();
-
-			AssertThat(IsObject(ct), Equals(true));
-			EnterScope(ct, "players");
-			AssertThat(IsArray(ct), Equals(true));
-			LeaveScope(ct);
+			ReadContext& ct = reader;
+			AssertThat(reader.IsObject(), Equals(true));
+			if (ct.EnterNext("players"))
+			{
+				AssertThat(reader.IsArray(), Equals(true));
+				ct.Leave();
+			}
 		});
 
 		describe("Types", []() {
 			it("Can read bool values", [&]() {
 				JsonFormatReader reader{"{\"alive\": true}"};
+				ReadContext& ct = reader;
 				bool value = false;
-				ReadScope(reader, "alive", value);
+				ct.Next("alive", value);
 				AssertThat(value, Equals(true));
 
 				JsonFormatReader reader2{"{\"alive\": false}"};
+				ct          = reader2;
 				bool value2 = false;
-				ReadScope(reader2, "alive", value2);
+				ct.Next("alive", value2);
 				AssertThat(value2, Equals(false));
 			});
 
 			it("Can read u8 values", [&]() {
 				JsonFormatReader reader{"{\"alive\": 3}"};
+				ReadContext& ct = reader;
 				u8 value = 0;
-				ReadScope(reader, "alive", value);
+				ct.Next("alive", value);
 				AssertThat(value, Equals(3));
 
 				JsonFormatReader reader2{"{\"alive\": 1.344}"};
+				ct        = reader2;
 				u8 value2 = 0;
-				ReadScope(reader2, "alive", value2);
+				ct.Next("alive", value2);
 				AssertThat(value2, Equals(1));
 			});
 
 			it("Can read u32 values", [&]() {
 				JsonFormatReader reader{"{\"alive\": 35533}"};
+				ReadContext ct = reader;
+				ct.BeginObject();
 				u32 value = 0;
-				ReadScope(reader, "alive", value);
+				ct.Next("alive", value);
 				AssertThat(value, Equals(35533));
 
 
 				JsonFormatReader reader2{"{\"alive\": -5}"};
+
+				ct = reader2;
+				ct.BeginObject();
 				u32 value2 = 0;
-				ReadScope(reader2, "alive", value2);
+				ct.Next("alive", value2);
 				AssertThat(value2, Equals(0));
 			});
 
 			it("Can read i32 values", [&]() {
 				JsonFormatReader reader{"{\"alive\": 35533}"};
+				ReadContext ct = reader;
+				ct.BeginObject();
 				i32 value = 0;
-				ReadScope(reader, "alive", value);
+				ct.Next("alive", value);
 				AssertThat(value, Equals(35533));
 
 				JsonFormatReader reader2{"{\"alive\": -35533}"};
 				i32 value2 = 0;
-				ReadScope(reader2, "alive", value2);
+				ct.Next("alive", value2);
 				AssertThat(value2, Equals(-35533));
 			});
 
 			it("Can read float values", [&]() {
 				JsonFormatReader reader{"{\"alive\": 0.344}"};
+				ReadContext& ct = reader;
 				float value = 0.f;
-				ReadScope(reader, "alive", value);
+				ct.Next("alive", value);
 				AssertThat(value, Equals(0.344f));
 
 				JsonFormatReader reader2{"{\"alive\": 4}"};
+				ct           = reader2;
 				float value2 = 0.f;
-				ReadScope(reader2, "alive", value2);
+				ct.Next("alive", value2);
 				AssertThat(value2, Equals(4.f));
 			});
 
 			it("Can read StringView values", [&]() {
 				JsonFormatReader reader{"{\"alive\": \"yes\"}"};
+				ReadContext& ct = reader;
 				StringView value;
-				ReadScope(reader, "alive", value);
+				ct.Next("alive", value);
 				AssertThat(value, Equals("yes"));
 			});
 		});

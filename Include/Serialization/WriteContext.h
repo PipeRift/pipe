@@ -28,33 +28,52 @@ namespace Rift::Serl
 		WriteContext(const WriteContext&) = default;
 		WriteContext& operator=(const WriteContext&) = default;
 		virtual ~WriteContext() {}
+
+		// Reads a type from the current scope
+		template <typename T>
+		void Serialize(T& val)
+		{
+			::Write(*this, val);
+		}
+		template <typename T>
+		void Write(T& val)
+		{
+			::Write(*this, val);
+		}
+
+		static constexpr bool IsReading()
+		{
+			return false;
+		}
+		static constexpr bool IsWriting()
+		{
+			return true;
+		}
 	};
 
+	template <typename T1, typename T2>
+	void Write(WriteContext& ct, TPair<T1, T2>& val)
+	{
+		ct.BeginObject();
+		ct.Next("first", v.first);
+		ct.Next("second", v.second);
+	}
 
-	CORE_API bool EnterScope(WriteContext& ct, StringView name);
-	CORE_API bool EnterScope(WriteContext& ct, u32 index);
-	CORE_API void LeaveScope(WriteContext& ct);
+	template <typename T>
+	void Write(WriteContext& ct, T& val) requires(
+	    bool(TypeFlags<T>::HasMemberSerialize && !TypeFlags<T>::HasSingleSerialize))
+	{
+		val.Write(ct);
+	}
 
 	template <typename T>
 	void Write(WriteContext& ct, T& val) requires(IsArray<T>())
-	{}
-
-	template <typename T>
-	void WriteScope(WriteContext& ct, StringView name, const T& val)
 	{
-		EnterScope(ct, name);
-		Write(ct, val);
-		LeaveScope(ct);
-	}
-
-	template <typename T>
-	bool IsReading() requires(Derived<T, WriteContext>)
-	{
-		return false;
-	}
-	template <typename T>
-	bool IsWriting() requires(Derived<T, WriteContext>)
-	{
-		return true;
+		u32 size = val.Size();
+		ct.BeginArray(size);
+		for (u32 i = 0; i < size; ++i)
+		{
+			ct.Next(val[i])
+		}
 	}
 }    // namespace Rift::Serl

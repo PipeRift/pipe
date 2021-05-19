@@ -16,10 +16,9 @@
 #endif
 
 #ifndef Check
-#	define Check(expr, ...)         \
+#	define Check(expr)         \
 		if (!(expr)) [[unlikely]]    \
 		{                            \
-			Log::Error(__VA_ARGS__); \
 			PLATFORM_BREAK();        \
 		}
 #endif

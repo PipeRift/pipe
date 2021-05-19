@@ -1,10 +1,12 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include <Context.h>
+#include <Serialization/CommonContext.h>
 #include <Serialization/Formats/JsonFormat.h>
 #include <Serialization/ReadContext.h>
 #include <Serialization/WriteContext.h>
 #include <bandit/bandit.h>
+
 
 
 using namespace snowhouse;
@@ -31,15 +33,15 @@ struct TypeB
 	bool value = false;
 };
 DEFINE_TYPE_FLAGS(TypeB, HasSingleSerialize = true);
-template <typename TContext>
-void Serialize(TContext& ct, TypeB& val)
+
+void Serialize(CommonContext& ct, TypeB& val)
 {
-	if (IsReading<TContext>())
+	if (ct.EnterNext())
 	{
-		ReadScope(ct, "value", val.value);
-		return;
+		ct.BeginObject();
+		ct.Next("value", val.value);
+		ct.Leave();
 	}
-	// WriteScope(ct, "value", val.value);
 }
 
 struct TypeC

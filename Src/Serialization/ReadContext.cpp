@@ -1,98 +1,71 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Misc/Checks.h"
 #include "Serialization/Formats/JsonFormat.h"
 #include "Serialization/ReadContext.h"
 
 
 namespace Rift::Serl
 {
-#define READER_SWITCH(func)                  \
-	switch (ct.format)                       \
-	{                                        \
-		case Format_Json:                    \
-			GetReader<Format_Json>(ct).func; \
+#define READER_SWITCH(ct, func)            \
+	switch (format)                        \
+	{                                      \
+		case Format_Json:                  \
+			GetReader<Format_Json>().func; \
 	}
 
-#define RETURN_READER_SWITCH(func, def)             \
-	switch (ct.format)                              \
-	{                                               \
-		case Format_Json:                           \
-			return GetReader<Format_Json>(ct).func; \
-	}                                               \
+#define RETURN_READER_SWITCH(ct, func, def)       \
+	switch (format)                               \
+	{                                             \
+		case Format_Json:                         \
+			return GetReader<Format_Json>().func; \
+	}                                             \
 	return def
 
 
 	// UNCHECKED helper returning a Reader from a format
-	template <Format format>
-	typename FormatBind<format>::Reader& GetReader(ReadContext& ct) requires(HasReader<format>)
+	template <Format inFormat>
+	typename FormatBind<inFormat>::Reader& ReadContext::GetReader() requires(HasReader<inFormat>)
 	{
-		return *static_cast<typename FormatBind<format>::Reader*>(ct.reader);
+		Check(format == inFormat);
+		return *static_cast<typename FormatBind<inFormat>::Reader*>(reader);
 	}
-
 
 	// Read a value directly from the format reader.
 	template <typename T>
 	void ReadFromFormat(ReadContext& ct, T& val)
 	{
-		READER_SWITCH(Read(val));
+		switch (ct.format)
+		{
+			case Format_Json:
+				ct.GetReader<Format_Json>().Read(val);
+		}
 	}
 
-	bool EnterScope(ReadContext& ct, StringView name)
+	bool ReadContext::EnterNext(StringView name)
 	{
-		RETURN_READER_SWITCH(EnterScope(name), false);
+		RETURN_READER_SWITCH(*this, EnterNext(name), false);
 	}
 
-	bool EnterScope(ReadContext& ct, u32 index)
+	bool ReadContext::EnterNext()
 	{
-		RETURN_READER_SWITCH(EnterScope(index), false);
+		RETURN_READER_SWITCH(*this, EnterNext(), false);
 	}
 
-	void LeaveScope(ReadContext& ct)
+	void ReadContext::Leave()
 	{
-		READER_SWITCH(LeaveScope());
+		READER_SWITCH(*this, Leave());
 	}
 
-
-	void IterateObject(ReadContext& ct, TFunction<void()> callback)
+	bool ReadContext::IsObject()
 	{
-		READER_SWITCH(IterateObject(callback));
+		RETURN_READER_SWITCH(*this, IsObject(), false);
 	}
 
-	void IterateObject(ReadContext& ct, TFunction<void(const char*)> callback)
+	bool ReadContext::IsArray()
 	{
-		READER_SWITCH(IterateObject(callback));
+		RETURN_READER_SWITCH(*this, IsArray(), false);
 	}
-
-	bool IsObject(ReadContext& ct)
-	{
-		RETURN_READER_SWITCH(IsObject(), false);
-	}
-
-	sizet GetObjectSize(ReadContext& ct)
-	{
-		RETURN_READER_SWITCH(GetObjectSize(), 0);
-	}
-
-	void IterateArray(ReadContext& ct, TFunction<void()> callback)
-	{
-		READER_SWITCH(IterateArray(callback));
-	}
-
-	void IterateArray(ReadContext& ct, TFunction<void(u32)> callback)
-	{
-		READER_SWITCH(IterateArray(callback));
-	}
-
-	bool IsArray(ReadContext& ct)
-	{
-		RETURN_READER_SWITCH(IsArray(), false);
-	}
-
-	sizet GetArraySize(ReadContext& ct)
-	{
-		RETURN_READER_SWITCH(GetArraySize(), 0);
-	}
-
 
 	void Read(ReadContext& ct, bool& val)
 	{

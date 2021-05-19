@@ -12,7 +12,7 @@
 
 namespace Rift::Serl
 {
-	struct ReadContext
+	struct CORE_API ReadContext
 	{
 		template <Format format>
 		friend struct TFormatReader;
@@ -29,22 +29,90 @@ namespace Rift::Serl
 		ReadContext(const ReadContext&) = default;
 		ReadContext& operator=(const ReadContext&) = default;
 		virtual ~ReadContext() {}
+
+
+		/**
+		 * Starts the deserialization of an scope as an object.
+		 */
+		void BeginObject();
+
+		/**
+		 * Enters the scope of a key in an object.
+		 * This function will fail on array scopes
+		 */
+		bool EnterNext(StringView name);
+
+		/**
+		 * Deserializes a value from an object key
+		 * This function will fail on array scopes
+		 */
+		template <typename T>
+		void Next(StringView name, T& val)
+		{
+			if (EnterNext(name))
+			{
+				Read(val);
+				Leave();
+			}
+		}
+
+
+		/**
+		 * Starts the deserialization of an scope as an array.
+		 * @param size of the array being read
+		 */
+		void BeginArray(u32& size);
+
+		/**
+		 * Enters the scope of the next element of an array.
+		 * This function will fail on object scopes
+		 */
+		bool EnterNext();
+
+		/**
+		 * Deserializes a value from the next element of an array.
+		 * This function will fail on object scopes
+		 */
+		template <typename T>
+		void Next(T& val)
+		{
+			if (EnterNext())
+			{
+				Read(val);
+				Leave();
+			}
+		}
+
+		// Reads a type from the current scope
+		template <typename T>
+		void Serialize(T& val)
+		{
+			::Read(*this, val);
+		}
+		template <typename T>
+		void Read(T& val)
+		{
+			::Read(*this, val);
+		}
+
+		void Leave();
+
+		bool IsObject();
+		bool IsArray();
+
+		constexpr bool IsReading()
+		{
+			return true;
+		}
+		constexpr bool IsWriting()
+		{
+			return false;
+		}
+
+	public:
+		template <Format format>
+		typename FormatBind<format>::Reader& GetReader() requires(HasReader<format>);
 	};
-
-
-	CORE_API bool EnterScope(ReadContext& ct, StringView name);
-	CORE_API bool EnterScope(ReadContext& ct, u32 index);
-	CORE_API void LeaveScope(ReadContext& ct);
-
-	CORE_API void IterateObject(ReadContext& ct, TFunction<void()> callback);
-	CORE_API void IterateObject(ReadContext& ct, TFunction<void(const char*)> callback);
-	CORE_API bool IsObject(ReadContext& ct);
-	CORE_API sizet GetObjectSize(ReadContext& ct);
-
-	CORE_API void IterateArray(ReadContext& ct, TFunction<void()> callback);
-	CORE_API void IterateArray(ReadContext& ct, TFunction<void(u32)> callback);
-	CORE_API bool IsArray(ReadContext& ct);
-	CORE_API sizet GetArraySize(ReadContext& ct);
 
 	CORE_API void Read(ReadContext& ct, bool& val);
 	CORE_API void Read(ReadContext& ct, u8& val);
@@ -60,58 +128,27 @@ namespace Rift::Serl
 	template <typename T1, typename T2>
 	void Read(ReadContext& ct, TPair<T1, T2>& val)
 	{
-		ReadScope(ct, "first", v.first);
-		ReadScope(ct, "second", v.second);
+		ct.BeginObject();
+		ct.Next("first", v.first);
+		ct.Next("second", v.second);
 	}
 
-	template <typename T>
-	void Read(ReadContext& ct, T& val) requires(bool(TypeFlags<T>::HasMemberSerialize))
-	{
-		if constexpr (TypeFlags<T>::HasSingleSerialize)
-		{
-			val.Serialize(ct);
-		}
-		else
-		{
-			val.Read(ct);
-		}
-	}
-
-	// Some types
 	template <typename T>
 	void Read(ReadContext& ct, T& val) requires(
-	    bool(TypeFlags<T>::HasSingleSerialize && !TypeFlags<T>::HasMemberSerialize))
+	    bool(TypeFlags<T>::HasMemberSerialize && !TypeFlags<T>::HasSingleSerialize))
 	{
-		Serialize(ct, val);
+		val.Read(ct);
 	}
 
 	template <typename T>
 	void Read(ReadContext& ct, T& val) requires(IsArray<T>())
 	{
-		val.Resize(GetArraySize(ct));
-		IterateArray(ct, [&ct](u32 index) {
-			Read(ct, val[index]);
-		});
-	}
-
-
-	template <typename T>
-	void ReadScope(ReadContext& ct, StringView name, T& val)
-	{
-		EnterScope(ct, name);
-		Read(ct, val);
-		LeaveScope(ct);
-	}
-
-
-	template <typename T>
-	bool IsReading() requires(Derived<T, ReadContext>)
-	{
-		return true;
-	}
-	template <typename T>
-	bool IsWriting() requires(Derived<T, ReadContext>)
-	{
-		return false;
+		u32 size;
+		ct.BeginArray(size);
+		val.Resize(size);
+		for (u32 i = 0; i < size; ++i)
+		{
+			ct.Next(val[i])
+		}
 	}
 }    // namespace Rift::Serl
