@@ -65,6 +65,7 @@ namespace Rift::Serl
 		}
 
 	private:
+		bool FindNextKey(StringView name, u32& outIndex, yyjson_val*& outValue);
 		Scope& GetContainer();
 		void PushContainer();
 		void PopContainer();

@@ -21,11 +21,13 @@ struct TypeA
 };
 void Read(ReadContext& ct, TypeA& val)
 {
-	ReadScope(ct, "value", val.value);
+	ct.BeginObject();
+	ct.Next("value", val.value);
 }
 void Write(WriteContext& ct, const TypeA& val)
 {
-	// WriteScope(ct, "value", val.value);
+	// ct.BeginObject();
+	// ct.Next("value", val.value);
 }
 
 struct TypeB
@@ -33,7 +35,6 @@ struct TypeB
 	bool value = false;
 };
 DEFINE_TYPE_FLAGS(TypeB, HasSingleSerialize = true);
-
 void Serialize(CommonContext& ct, TypeB& val)
 {
 	if (ct.EnterNext())
@@ -50,11 +51,13 @@ struct TypeC
 
 	void Read(ReadContext& ct)
 	{
-		ReadScope(ct, "value", value);
+		ct.BeginObject();
+		ct.Next("value", value);
 	}
 	void Write(WriteContext& ct)
 	{
-		// WriteScope(ct, "value", value);
+		// ct.BeginObject();
+		// ct.Next("value", value);
 	}
 };
 DEFINE_TYPE_FLAGS(TypeC, HasMemberSerialize = true);
@@ -63,15 +66,10 @@ struct TypeD
 {
 	bool value = false;
 
-	template <typename TContext>
-	void Serialize(TContext& ct)
+	void Serialize(CommonContext& ct)
 	{
-		if (IsReading<TContext>())
-		{
-			ReadScope(ct, "value", value);
-			return;
-		}
-		// WriteScope(ct, "value", val.value);
+		ct.BeginObject();
+		ct.Next("value", value);
 	}
 };
 DEFINE_TYPE_FLAGS(TypeD, HasMemberSerialize = true, HasSingleSerialize = true);
@@ -87,7 +85,10 @@ go_bandit([]() {
 			it("Can use custom Read()", [&]() {
 				TypeA val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
-				ReadScope(reader, "type", val);
+
+				ReadContext& ct = reader;
+				ct.BeginObject();
+				ct.Next("type", val);
 				AssertThat(val.value, Equals(true));
 			});
 
@@ -102,7 +103,10 @@ go_bandit([]() {
 			it("Can use Serialize() instead of Read()", [&]() {
 				TypeB val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
-				ReadScope(reader, "type", val);
+
+				ReadContext& ct = reader;
+				ct.BeginObject();
+				ct.Next("type", val);
 				AssertThat(val.value, Equals(true));
 			});
 
@@ -114,7 +118,10 @@ go_bandit([]() {
 			it("Can use custom Read()", [&]() {
 				TypeC val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
-				ReadScope(reader, "type", val);
+
+				ReadContext& ct = reader;
+				ct.BeginObject();
+				ct.Next("type", val);
 				AssertThat(val.value, Equals(true));
 			});
 
@@ -124,7 +131,10 @@ go_bandit([]() {
 			it("Can use Serialize() instead of Read()", [&]() {
 				TypeD val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
-				ReadScope(reader, "type", val);
+
+				ReadContext& ct = reader;
+				ct.BeginObject();
+				ct.Next("type", val);
 				AssertThat(val.value, Equals(true));
 			});
 

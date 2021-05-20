@@ -54,4 +54,18 @@ namespace Rift::Log
 			Error(Strings::Format(format, std::forward<Args>(args)...));
 		}
 	}
+
+	template <typename... Args>
+	void FailedCheckError(
+	    const AnsiChar* expr, const AnsiChar* file, u32 line, StringView format, Args... args)
+	{
+		if (!format.empty())
+		{
+			String newFormat =
+			    Strings::Format("{} (Failed check \"{}\" at {}:{})", format, expr, file, line);
+			Error(Strings::Format(newFormat, std::forward<Args>(args)...));
+			return;
+		}
+		Error(Strings::Format("Failed check \"{}\" at {}:{}", expr, file, line));
+	}
 };	  // namespace Rift::Log

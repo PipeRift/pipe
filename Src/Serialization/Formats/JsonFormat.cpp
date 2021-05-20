@@ -11,29 +11,13 @@
 
 namespace Rift::Serl
 {
-	JsonFormatReader::Scope& JsonFormatReader::GetContainer()
+	u64 GetKeyTag(const StringView& name)
 	{
-		return scopeStack.Last();
+		return (u64(name.size()) << YYJSON_TAG_BIT) | YYJSON_TYPE_STR;
 	}
-
-	bool JsonFormatReader::PushContainer()
+	bool CheckKey(yyjson_val* key, const StringView& name)
 	{
-		if (!currentValue) [[unlikely]]
-		{
-			return true;
-		}
-
-		Scope& scope = scopeStack.AddRef({});
-		scope.id     = 0;
-		scope.size   = 0;
-		scope.parent = currentValue;
-		return false;
-	}
-
-	void JsonFormatReader::PopContainer()
-	{
-		currentValue = scopeStack.Last().parent;
-		scopeStack.RemoveAt(scopeStack.Size() - 1, false);
+		return memcmp(key->uni.ptr, name.data(), name.size()) == 0;
 	}
 
 	JsonFormatReader::JsonFormatReader(const String& data)
@@ -42,25 +26,47 @@ namespace Rift::Serl
 		doc          = yyjson_read(data.data(), data.length(), 0);
 		root         = yyjson_doc_get_root(doc);
 		currentValue = root;
-		PushContainer();
+		if (currentValue)
+		{
+			PushContainer();
+		}
 	}
 
 	JsonFormatReader::~JsonFormatReader()
 	{
-		PopContainer();
-		Ensure(scopeStack.Size() == 0,
+		if (scopeStack.Size() > 0)
+		{
+			PopContainer();
+		}
+		EnsureMsg(scopeStack.Size() == 0,
 		    "Missing LeaveScope somewhere? An scope of more have not been closed.");
 		yyjson_doc_free(doc);
 	}
 
+	JsonFormatReader::Scope& JsonFormatReader::GetContainer()
+	{
+		return scopeStack.Last();
+	}
+
+	void JsonFormatReader::PushContainer()
+	{
+		Scope& scope = scopeStack.AddRef({});
+		scope.id     = 0;
+		scope.size   = 0;
+		scope.parent = currentValue;
+
+		// The iterator is now invalid
+		currentValue = nullptr;
+	}
+
+	void JsonFormatReader::PopContainer()
+	{
+		currentValue = scopeStack.Last().parent;
+		scopeStack.RemoveAt(scopeStack.Size() - 1, false);
+	}
+
 	void JsonFormatReader::BeginObject()
 	{
-		assert(IsObject());
-		if (!currentValue) [[unlikely]]
-		{
-			return;
-		}
-
 		Scope& container = GetContainer();
 		if (currentValue != container.parent) [[unlikely]]
 		{
@@ -82,8 +88,7 @@ namespace Rift::Serl
 
 	void JsonFormatReader::BeginArray(u32& size)
 	{
-		assert(IsArray());
-		if (!currentValue) [[unlikely]]
+		if (!Ensure(IsArray())) [[unlikely]]
 		{
 			return;
 		}
@@ -109,20 +114,27 @@ namespace Rift::Serl
 
 	bool JsonFormatReader::EnterNext(StringView name)
 	{
-		assert(IsObject());
-
 		auto& container = GetContainer();
-		if (container.id < container.size)
+		if (!Ensure(yyjson_is_obj(container.parent))) [[unlikely]]
 		{
-			currentValue = unsafe_yyjson_get_next(currentValue);
+			return;
 		}
-		PushContainer();
 
-
-		if (yyjson_val* newScope = yyjson_obj_getn(currentValue, name.data(), name.size()))
+		if (!currentValue)
 		{
-			scopeStack.Add({currentValue, 0});
-			currentValue = newScope;
+			// Check first element
+			yyjson_val* firstKey = unsafe_yyjson_get_first(container.parent);
+			const u64 tag        = GetKeyTag(name);
+			if (firstKey && firstKey->tag == tag && CheckKey(firstKey, name))
+			{
+				PushContainer();
+				return true;
+			}
+		}
+
+		if (FindNextKey(name, container.id, currentValue))
+		{
+			PushContainer();
 			return true;
 		}
 		return false;
@@ -130,9 +142,12 @@ namespace Rift::Serl
 
 	bool JsonFormatReader::EnterNext()
 	{
-		assert(IsArray());
-
 		auto& container = GetContainer();
+		if (!Ensure(yyjson_is_arr(container.parent))) [[unlikely]]
+		{
+			return;
+		}
+
 		if (container.id >= container.size)
 		{
 			Log::Error("Tried enter more child scopes than available (Index: {}, Max: {})",
@@ -146,17 +161,17 @@ namespace Rift::Serl
 			currentValue = unsafe_yyjson_get_next(currentValue);
 		}
 		PushContainer();
-
 		return true;
 	}
 
 	void JsonFormatReader::Leave()
 	{
-		Ensure(scopeStack.Size() >= 1,
-		    "Closed an extra scope! When surrounding EnterScope in if(), make sure to call leave "
-		    "scope inside the brackets.");
-
-		PopContainer();
+		if (EnsureMsg(scopeStack.Size() >= 1,
+		        "Closed an extra scope! When surrounding EnterScope in if(), make sure to call "
+		        "leave scope inside the brackets."))
+		{
+			PopContainer();
+		}
 	}
 
 	void JsonFormatReader::Read(bool& val)
@@ -301,70 +316,49 @@ namespace Rift::Serl
 		val = {};
 	}
 
-	void JsonFormatReader::IterateObject(TFunction<void()> callback)
-	{
-		yyjson_obj_iter objectIt;
-		scopeStack.Add(currentValue);    // Manually enter scope
-		yyjson_obj_iter_init(currentValue, &objectIt);
-		yyjson_val* key;
-		while (key = yyjson_obj_iter_next(&objectIt))
-		{
-			currentValue = yyjson_obj_iter_get_val(key);
-			callback();
-		}
-		Leave();
-	}
-
-	void JsonFormatReader::IterateObject(TFunction<void(const char*)> callback)
-	{
-		yyjson_obj_iter objectIt;
-		scopeStack.Add(currentValue);    // Manually enter scope
-		yyjson_obj_iter_init(currentValue, &objectIt);
-		yyjson_val* key;
-		while (key = yyjson_obj_iter_next(&objectIt))
-		{
-			currentValue = yyjson_obj_iter_get_val(key);
-			callback(yyjson_get_str(key));
-		}
-		Leave();
-	}
-
 	bool JsonFormatReader::IsObject() const
 	{
 		return yyjson_is_obj(currentValue);
 	}
 
-	sizet JsonFormatReader::ReadObjectSize() const
-	{
-		return yyjson_obj_size(currentValue);
-	}
-
-	void JsonFormatReader::IterateArray(TFunction<void()> callback)
-	{
-		yyjson_arr_iter arrayIt;
-		scopeStack.Add(currentValue);    // Manually enter scope
-		yyjson_arr_iter_init(currentValue, &arrayIt);
-		while (currentValue = yyjson_arr_iter_next(&arrayIt))
-		{
-			callback();
-		}
-		LeaveScope();
-	}
-
-	void JsonFormatReader::IterateArray(TFunction<void(u32)> callback)
-	{
-		yyjson_arr_iter arrayIt;
-		scopeStack.Add(currentValue);    // Manually enter scope
-		yyjson_arr_iter_init(currentValue, &arrayIt);
-		while (currentValue = yyjson_arr_iter_next(&arrayIt))
-		{
-			callback(arrayIt.idx - 1);
-		}
-		LeaveScope();
-	}
-
 	bool JsonFormatReader::IsArray() const
 	{
 		return yyjson_is_arr(currentValue);
+	}
+
+	bool JsonFormatReader::FindNextKey(StringView name, u32& outIndex, yyjson_val*& outValue)
+	{
+		const Scope& container = GetContainer();
+		const u64 tag          = GetKeyTag(name);
+
+		// Get key of the current value. See yyjson_obj_foreach
+		auto* key = currentValue - 1;
+		u32 i;
+		// Iterate (current, last]
+		for (i = container.id + 1; i < container.size; ++i)
+		{
+			key = unsafe_yyjson_get_next(key);
+			if (key->tag == tag && CheckKey(key, name))
+			{
+				outIndex = i;
+				outValue = key + 1;
+				return true;
+			}
+		}
+
+		// Iterate [first, current]
+		key = unsafe_yyjson_get_first(container.parent);
+		for (i = 0; i <= container.id; ++i)
+		{
+			key = unsafe_yyjson_get_next(key);
+			if (key->tag == tag && CheckKey(key, name))
+			{
+				outIndex = i;
+				outValue = key + 1;
+				return true;
+			}
+		}
+
+		return false;
 	}
 }    // namespace Rift::Serl

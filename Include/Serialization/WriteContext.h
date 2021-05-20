@@ -29,16 +29,25 @@ namespace Rift::Serl
 		WriteContext& operator=(const WriteContext&) = default;
 		virtual ~WriteContext() {}
 
+		/**
+		 * Deserializes a value from the next element of an array.
+		 * This function will fail on object scopes
+		 */
+		template <typename T>
+		void Next(T& val)
+		{
+			if (EnterNext())
+			{
+				Serialize(val);
+				Leave();
+			}
+		}
+
 		// Reads a type from the current scope
 		template <typename T>
 		void Serialize(T& val)
 		{
-			::Write(*this, val);
-		}
-		template <typename T>
-		void Write(T& val)
-		{
-			::Write(*this, val);
+			Write(*this, val);
 		}
 
 		static constexpr bool IsReading()

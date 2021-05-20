@@ -11,7 +11,7 @@
 
 namespace Rift::Serl
 {
-	struct CommonContext
+	struct CORE_API CommonContext
 	{
 		enum class Mode : u8
 		{
@@ -34,15 +34,79 @@ namespace Rift::Serl
 		CommonContext(WriteContext& writeContext) : mode{Mode::Write}, writeContext{&writeContext}
 		{}
 
+		/**
+		 * Starts the deserialization of an scope as an object.
+		 */
+		void BeginObject();
+
+		/**
+		 * Enters the scope of a key in an object.
+		 * This function will fail on array scopes
+		 */
+		bool EnterNext(StringView name);
+
+		/**
+		 * Deserializes a value from an object key
+		 * This function will fail on array scopes
+		 */
+		template <typename T>
+		void Next(StringView name, T& val)
+		{
+			if (IsWriting())
+			{
+				// writeContext->Next(name, val);
+			}
+			else
+			{
+				readContext->Next(name, val);
+			}
+		}
+
+
+		/**
+		 * Starts the deserialization of an scope as an array.
+		 * @param size of the array being read
+		 */
+		void BeginArray(u32& size);
+
+		/**
+		 * Enters the scope of the next element of an array.
+		 * This function will fail on object scopes
+		 */
+		bool EnterNext();
+
+		/**
+		 * Deserializes a value from the next element of an array.
+		 * This function will fail on object scopes
+		 */
+		template <typename T>
+		void Next(T& val)
+		{
+			if (IsWriting())
+			{
+				// writeContext->Next(val);
+			}
+			else
+			{
+				readContext->Next(val);
+			}
+		}
+
+		// Reads or Writes a type from the current scope
 		template <typename T>
 		void Serialize(T& val)
 		{
 			if (IsWriting())
 			{
-				writeContext->Write(*this, val);
+				// writeContext->Write(val);
 			}
-			readContext->Read(*this, val);
+			else
+			{
+				readContext->Read(val);
+			}
 		}
+
+		void Leave();
 
 		bool IsReading() const
 		{

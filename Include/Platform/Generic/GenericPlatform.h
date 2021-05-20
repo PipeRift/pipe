@@ -104,3 +104,20 @@ namespace Rift
 #ifndef PLATFORM_TCHAR_IS_CHAR32
 #	define PLATFORM_TCHAR_IS_CHAR32 0
 #endif
+
+
+#ifndef LIKELY
+#	if (defined(__clang__) || defined(__GNUC__)) && (PLATFORM_LINUX)
+#		define LIKELY(x) __builtin_expect(!!(x), 1)
+#	else
+#		define LIKELY(x) (x)
+#	endif
+#endif
+
+#ifndef UNLIKELY
+#	if (defined(__clang__) || defined(__GNUC__)) && (PLATFORM_LINUX)
+#		define UNLIKELY(x) __builtin_expect(!!(x), 0)
+#	else
+#		define UNLIKELY(x) (x)
+#	endif
+#endif

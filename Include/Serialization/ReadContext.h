@@ -51,7 +51,7 @@ namespace Rift::Serl
 		{
 			if (EnterNext(name))
 			{
-				Read(val);
+				Serialize(val);
 				Leave();
 			}
 		}
@@ -78,7 +78,7 @@ namespace Rift::Serl
 		{
 			if (EnterNext())
 			{
-				Read(val);
+				Serialize(val);
 				Leave();
 			}
 		}
@@ -87,12 +87,7 @@ namespace Rift::Serl
 		template <typename T>
 		void Serialize(T& val)
 		{
-			::Read(*this, val);
-		}
-		template <typename T>
-		void Read(T& val)
-		{
-			::Read(*this, val);
+			Read(*this, val);
 		}
 
 		void Leave();

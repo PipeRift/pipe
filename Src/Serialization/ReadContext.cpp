@@ -7,14 +7,14 @@
 
 namespace Rift::Serl
 {
-#define READER_SWITCH(ct, func)            \
+#define READER_SWITCH(func)                \
 	switch (format)                        \
 	{                                      \
 		case Format_Json:                  \
 			GetReader<Format_Json>().func; \
 	}
 
-#define RETURN_READER_SWITCH(ct, func, def)       \
+#define RETURN_READER_SWITCH(func, def)           \
 	switch (format)                               \
 	{                                             \
 		case Format_Json:                         \
@@ -42,29 +42,39 @@ namespace Rift::Serl
 		}
 	}
 
+	void ReadContext::BeginObject()
+	{
+		READER_SWITCH(BeginObject());
+	}
+
 	bool ReadContext::EnterNext(StringView name)
 	{
-		RETURN_READER_SWITCH(*this, EnterNext(name), false);
+		RETURN_READER_SWITCH(EnterNext(name), false);
+	}
+
+	void ReadContext::BeginArray(u32& size)
+	{
+		READER_SWITCH(BeginArray(size));
 	}
 
 	bool ReadContext::EnterNext()
 	{
-		RETURN_READER_SWITCH(*this, EnterNext(), false);
+		RETURN_READER_SWITCH(EnterNext(), false);
 	}
 
 	void ReadContext::Leave()
 	{
-		READER_SWITCH(*this, Leave());
+		READER_SWITCH(Leave());
 	}
 
 	bool ReadContext::IsObject()
 	{
-		RETURN_READER_SWITCH(*this, IsObject(), false);
+		RETURN_READER_SWITCH(IsObject(), false);
 	}
 
 	bool ReadContext::IsArray()
 	{
-		RETURN_READER_SWITCH(*this, IsArray(), false);
+		RETURN_READER_SWITCH(IsArray(), false);
 	}
 
 	void Read(ReadContext& ct, bool& val)
