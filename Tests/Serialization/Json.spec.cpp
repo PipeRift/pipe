@@ -86,6 +86,7 @@ go_bandit([]() {
 
 			ReadContext& ct = reader;
 			AssertThat(reader.IsObject(), Equals(true));
+			ct.BeginObject();
 			if (ct.EnterNext("players"))
 			{
 				AssertThat(reader.IsArray(), Equals(true));
@@ -93,17 +94,49 @@ go_bandit([]() {
 			}
 		});
 
+		it("Can find multiple keys", [&]() {
+			String data{"{\"one\": \"Miguel\", \"other\": \"Juan\"}"};
+			JsonFormatReader reader{data};
+
+			ReadContext& ct = reader;
+			AssertThat(reader.IsObject(), Equals(true));
+			ct.BeginObject();
+			StringView name;
+			ct.Next("one", name);
+			AssertThat(name, Equals("Miguel"));
+
+			ct.Next("other", name);
+			AssertThat(name, Equals("Juan"));
+		});
+
+		it("Can find multiple unordered keys", [&]() {
+			String data{"{\"one\": \"Miguel\", \"other\": \"Juan\"}"};
+			JsonFormatReader reader{data};
+
+			ReadContext& ct = reader;
+			AssertThat(reader.IsObject(), Equals(true));
+			ct.BeginObject();
+			StringView name;
+			ct.Next("other", name);
+			AssertThat(name, Equals("Juan"));
+
+			ct.Next("one", name);
+			AssertThat(name, Equals("Miguel"));
+		});
+
 		describe("Types", []() {
 			it("Can read bool values", [&]() {
 				JsonFormatReader reader{"{\"alive\": true}"};
 				ReadContext& ct = reader;
+				ct.BeginObject();
 				bool value = false;
 				ct.Next("alive", value);
 				AssertThat(value, Equals(true));
 
 				JsonFormatReader reader2{"{\"alive\": false}"};
-				ct          = reader2;
-				bool value2 = false;
+				ct = reader2;
+				ct.BeginObject();
+				bool value2 = true;
 				ct.Next("alive", value2);
 				AssertThat(value2, Equals(false));
 			});
@@ -111,12 +144,14 @@ go_bandit([]() {
 			it("Can read u8 values", [&]() {
 				JsonFormatReader reader{"{\"alive\": 3}"};
 				ReadContext& ct = reader;
+				ct.BeginObject();
 				u8 value = 0;
 				ct.Next("alive", value);
 				AssertThat(value, Equals(3));
 
 				JsonFormatReader reader2{"{\"alive\": 1.344}"};
-				ct        = reader2;
+				ct = reader2;
+				ct.BeginObject();
 				u8 value2 = 0;
 				ct.Next("alive", value2);
 				AssertThat(value2, Equals(1));
@@ -149,6 +184,8 @@ go_bandit([]() {
 				AssertThat(value, Equals(35533));
 
 				JsonFormatReader reader2{"{\"alive\": -35533}"};
+				ct = reader2;
+				ct.BeginObject();
 				i32 value2 = 0;
 				ct.Next("alive", value2);
 				AssertThat(value2, Equals(-35533));
@@ -157,12 +194,14 @@ go_bandit([]() {
 			it("Can read float values", [&]() {
 				JsonFormatReader reader{"{\"alive\": 0.344}"};
 				ReadContext& ct = reader;
+				ct.BeginObject();
 				float value = 0.f;
 				ct.Next("alive", value);
 				AssertThat(value, Equals(0.344f));
 
 				JsonFormatReader reader2{"{\"alive\": 4}"};
-				ct           = reader2;
+				ct = reader2;
+				ct.BeginObject();
 				float value2 = 0.f;
 				ct.Next("alive", value2);
 				AssertThat(value2, Equals(4.f));
@@ -171,6 +210,7 @@ go_bandit([]() {
 			it("Can read StringView values", [&]() {
 				JsonFormatReader reader{"{\"alive\": \"yes\"}"};
 				ReadContext& ct = reader;
+				ct.BeginObject();
 				StringView value;
 				ct.Next("alive", value);
 				AssertThat(value, Equals("yes"));

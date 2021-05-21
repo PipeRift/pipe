@@ -18,13 +18,13 @@ namespace Rift::Serl
 	private:
 		struct Scope
 		{
-			u32 id;
-			u32 size;
-			yyjson_val* parent;
+			u32 id             = 0;
+			u32 size           = 0;
+			yyjson_val* parent = nullptr;
 		};
 		yyjson_doc* doc  = nullptr;
 		yyjson_val* root = nullptr;
-		yyjson_val* currentValue = nullptr;
+		yyjson_val* current = nullptr;
 		TArray<Scope> scopeStack;
 
 
@@ -65,10 +65,12 @@ namespace Rift::Serl
 		}
 
 	private:
-		bool FindNextKey(StringView name, u32& outIndex, yyjson_val*& outValue);
-		Scope& GetContainer();
-		void PushContainer();
-		void PopContainer();
+		u32 InternalBegin();
+		bool FindNextKey(u32 firstId, yyjson_val* firstKey, StringView name, u32& outIndex,
+		    yyjson_val*& outValue);
+		Scope& GetScope();
+		void PushScope(yyjson_val* newScope);
+		void PopScope();
 	};
 
 

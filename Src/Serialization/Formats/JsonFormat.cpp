@@ -11,9 +11,9 @@
 
 namespace Rift::Serl
 {
-	u64 GetKeyTag(const StringView& name)
+	u64 GetKeyTag(sizet size)
 	{
-		return (u64(name.size()) << YYJSON_TAG_BIT) | YYJSON_TYPE_STR;
+		return (((u64) size) << YYJSON_TAG_BIT) | YYJSON_TYPE_STR;
 	}
 	bool CheckKey(yyjson_val* key, const StringView& name)
 	{
@@ -25,116 +25,87 @@ namespace Rift::Serl
 		// TODO: Support json from file (yyjson_read_file)
 		doc          = yyjson_read(data.data(), data.length(), 0);
 		root         = yyjson_doc_get_root(doc);
-		currentValue = root;
-		if (currentValue)
-		{
-			PushContainer();
-		}
+		PushScope(root);
 	}
 
 	JsonFormatReader::~JsonFormatReader()
 	{
 		if (scopeStack.Size() > 0)
 		{
-			PopContainer();
+			PopScope();
 		}
 		EnsureMsg(scopeStack.Size() == 0,
-		    "Missing LeaveScope somewhere? An scope of more have not been closed.");
+		    "Forgot to Leave() some scope? One or more scopes have not been closed.");
 		yyjson_doc_free(doc);
 	}
 
-	JsonFormatReader::Scope& JsonFormatReader::GetContainer()
+	JsonFormatReader::Scope& JsonFormatReader::GetScope()
 	{
 		return scopeStack.Last();
 	}
 
-	void JsonFormatReader::PushContainer()
+	void JsonFormatReader::PushScope(yyjson_val* newScope)
 	{
-		Scope& scope = scopeStack.AddRef({});
-		scope.id     = 0;
-		scope.size   = 0;
-		scope.parent = currentValue;
-
-		// The iterator is now invalid
-		currentValue = nullptr;
+		scopeStack.Add({});
+		current = newScope;
 	}
 
-	void JsonFormatReader::PopContainer()
+	void JsonFormatReader::PopScope()
 	{
-		currentValue = scopeStack.Last().parent;
+		if (auto* parent = GetScope().parent)
+		{
+			current = parent;
+		}
 		scopeStack.RemoveAt(scopeStack.Size() - 1, false);
 	}
 
 	void JsonFormatReader::BeginObject()
 	{
-		Scope& container = GetContainer();
-		if (currentValue != container.parent) [[unlikely]]
+		if (!yyjson_is_obj(current)) [[unlikely]]
 		{
-			Log::Error(
-			    "First value is not the container. Has this scope already been declared with "
-			    "BeginObject() or BeginArray()?");
-			return;
+			return;    // The current scope is not an object
 		}
-
-		if (unsafe_yyjson_get_type(currentValue) == YYJSON_TYPE_OBJ)
-		{
-			container.id   = 0;
-			container.size = unsafe_yyjson_get_len(currentValue);
-
-			// Clean the iterating value until the first Next()
-			currentValue = nullptr;
-		}
+		InternalBegin();
 	}
 
 	void JsonFormatReader::BeginArray(u32& size)
 	{
-		if (!Ensure(IsArray())) [[unlikely]]
+		if (!yyjson_is_arr(current)) [[unlikely]]
 		{
-			return;
+			return;    // The current scope is not an array
 		}
-
-		Scope& container = GetContainer();
-		if (currentValue != container.parent) [[unlikely]]
-		{
-			Log::Error(
-			    "First value is not the container. Has this scope already been declared with "
-			    "BeginObject() or BeginArray()?");
-			return;
-		}
-
-		if (unsafe_yyjson_get_type(currentValue) == YYJSON_TYPE_ARR)
-		{
-			container.id   = 0;
-			container.size = unsafe_yyjson_get_len(currentValue);
-
-			// Iterate to first value
-			currentValue = unsafe_yyjson_get_first(currentValue);
-		}
+		size = InternalBegin();
 	}
 
 	bool JsonFormatReader::EnterNext(StringView name)
 	{
-		auto& container = GetContainer();
-		if (!Ensure(yyjson_is_obj(container.parent))) [[unlikely]]
+		auto& scope = GetScope();
+		if (!EnsureMsg(yyjson_is_obj(scope.parent),
+		        "Current scope is not an object or has not been initialized with BeginObject()"))
+		    [[unlikely]]
 		{
-			return;
+			return false;
 		}
 
-		if (!currentValue)
+		u32 firstId;
+		yyjson_val* firstKey;
+		if (scope.id == 0 || scope.id >= scope.size) [[unlikely]]    // Look indexes
 		{
-			// Check first element
-			yyjson_val* firstKey = unsafe_yyjson_get_first(container.parent);
-			const u64 tag        = GetKeyTag(name);
-			if (firstKey && firstKey->tag == tag && CheckKey(firstKey, name))
-			{
-				PushContainer();
-				return true;
-			}
+			// Start looking from first element
+			firstId  = 0;
+			firstKey = unsafe_yyjson_get_first(scope.parent);
+		}
+		else
+		{
+			// Start looking from next element
+			firstId  = scope.id;
+			firstKey = unsafe_yyjson_get_next(current);
 		}
 
-		if (FindNextKey(name, container.id, currentValue))
+		if (FindNextKey(firstId, firstKey, name, scope.id, current))
 		{
-			PushContainer();
+			++scope.id;
+			PushScope(current);
 			return true;
 		}
 		return false;
@@ -142,25 +113,30 @@ namespace Rift::Serl
 
 	bool JsonFormatReader::EnterNext()
 	{
-		auto& container = GetContainer();
-		if (!Ensure(yyjson_is_arr(container.parent))) [[unlikely]]
+		auto& scope = GetScope();
+		if (!EnsureMsg(yyjson_is_arr(scope.parent),
+		        "Current scope is not an array or has not been initialized with BeginArray()"))
+		    [[unlikely]]
 		{
-			return;
-		}
-
-		if (container.id >= container.size)
-		{
-			Log::Error("Tried enter more child scopes than available (Index: {}, Max: {})",
-			    container.id, container.size);
 			return false;
 		}
 
-		// First value is already asigned to first, so we only check other ids
-		if (container.id > 0) [[likely]]
+		if (scope.id >= scope.size)
 		{
-			currentValue = unsafe_yyjson_get_next(currentValue);
+			Log::Error("Tried enter more child scopes than available (Index: {}, Max: {})",
+			    scope.id, scope.size);
+			return false;
 		}
-		PushContainer();
+
+		++scope.id;
+		if (scope.id == 1) [[unlikely]]
+		{
+			PushScope(unsafe_yyjson_get_first(scope.parent));
+		}
+		else
+		{
+			PushScope(unsafe_yyjson_get_next(current));
+		}
 		return true;
 	}
 
@@ -170,27 +146,27 @@ namespace Rift::Serl
 		        "Closed an extra scope! When surrounding EnterScope in if(), make sure to call "
 		        "leave scope inside the brackets."))
 		{
-			PopContainer();
+			PopScope();
 		}
 	}
 
 	void JsonFormatReader::Read(bool& val)
 	{
-		val = yyjson_get_bool(currentValue);
+		val = yyjson_get_bool(current);
 	}
 
 	void JsonFormatReader::Read(u8& val)
 	{
-		switch (yyjson_get_subtype(currentValue))
+		switch (yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_UINT:
-				val = u8(unsafe_yyjson_get_uint(currentValue));
+				val = u8(unsafe_yyjson_get_uint(current));
 				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u8(unsafe_yyjson_get_sint(currentValue));
+				val = u8(unsafe_yyjson_get_sint(current));
 				break;
 			case YYJSON_SUBTYPE_REAL:
-				val = u8(unsafe_yyjson_get_real(currentValue));
+				val = u8(unsafe_yyjson_get_real(current));
 				break;
 			default:
 				val = 0;
@@ -199,16 +175,16 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(i32& val)
 	{
-		switch (yyjson_get_subtype(currentValue))
+		switch (yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_SINT:
-				val = i32(unsafe_yyjson_get_sint(currentValue));
+				val = i32(unsafe_yyjson_get_sint(current));
 				break;
 			case YYJSON_SUBTYPE_UINT:
-				val = i32(unsafe_yyjson_get_uint(currentValue));
+				val = i32(unsafe_yyjson_get_uint(current));
 				break;
 			case YYJSON_SUBTYPE_REAL:
-				val = i32(unsafe_yyjson_get_real(currentValue));
+				val = i32(unsafe_yyjson_get_real(current));
 				break;
 			default:
 				val = 0;
@@ -217,17 +193,17 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(u32& val)
 	{
-		switch (yyjson_get_subtype(currentValue))
+		switch (yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_UINT:
-				val = u32(unsafe_yyjson_get_uint(currentValue));
+				val = u32(unsafe_yyjson_get_uint(current));
 				break;
 			case YYJSON_SUBTYPE_SINT: {
-				val = u32(Math::Max<i64>(unsafe_yyjson_get_sint(currentValue), 0));
+				val = u32(Math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
 				break;
 			}
 			case YYJSON_SUBTYPE_REAL:
-				val = u32(unsafe_yyjson_get_real(currentValue));
+				val = u32(unsafe_yyjson_get_real(current));
 				break;
 			default:
 				val = 0;
@@ -236,16 +212,16 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(i64& val)
 	{
-		switch (yyjson_get_subtype(currentValue))
+		switch (yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_SINT:
-				val = unsafe_yyjson_get_sint(currentValue);
+				val = unsafe_yyjson_get_sint(current);
 				break;
 			case YYJSON_SUBTYPE_UINT:
-				val = i64(unsafe_yyjson_get_uint(currentValue));
+				val = i64(unsafe_yyjson_get_uint(current));
 				break;
 			case YYJSON_SUBTYPE_REAL:
-				val = i64(unsafe_yyjson_get_real(currentValue));
+				val = i64(unsafe_yyjson_get_real(current));
 				break;
 			default:
 				val = 0;
@@ -254,16 +230,16 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(u64& val)
 	{
-		switch (yyjson_get_subtype(currentValue))
+		switch (yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_UINT:
-				val = unsafe_yyjson_get_uint(currentValue);
+				val = unsafe_yyjson_get_uint(current);
 				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u64(Math::Max<i64>(unsafe_yyjson_get_sint(currentValue), 0));
+				val = u64(Math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
 				break;
 			case YYJSON_SUBTYPE_REAL:
-				val = u64(unsafe_yyjson_get_real(currentValue));
+				val = u64(unsafe_yyjson_get_real(current));
 				break;
 			default:
 				val = 0;
@@ -272,16 +248,16 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(float& val)
 	{
-		switch (yyjson_get_subtype(currentValue))
+		switch (yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_REAL:
-				val = float(unsafe_yyjson_get_real(currentValue));
+				val = float(unsafe_yyjson_get_real(current));
 				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = float(unsafe_yyjson_get_sint(currentValue));
+				val = float(unsafe_yyjson_get_sint(current));
 				break;
 			case YYJSON_SUBTYPE_UINT:
-				val = float(unsafe_yyjson_get_uint(currentValue));
+				val = float(unsafe_yyjson_get_uint(current));
 				break;
 			default:
 				val = 0.f;
@@ -290,16 +266,16 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(double& val)
 	{
-		switch (yyjson_get_subtype(currentValue))
+		switch (yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_REAL:
-				val = unsafe_yyjson_get_real(currentValue);
+				val = unsafe_yyjson_get_real(current);
 				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = unsafe_yyjson_get_sint(currentValue);
+				val = unsafe_yyjson_get_sint(current);
 				break;
 			case YYJSON_SUBTYPE_UINT:
-				val = unsafe_yyjson_get_uint(currentValue);
+				val = unsafe_yyjson_get_uint(current);
 				break;
 			default:
 				val = 0.f;
@@ -308,9 +284,9 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(StringView& val)
 	{
-		if (yyjson_is_str(currentValue))
+		if (yyjson_is_str(current))
 		{
-			val = {unsafe_yyjson_get_str(currentValue), unsafe_yyjson_get_len(currentValue)};
+			val = {unsafe_yyjson_get_str(current), unsafe_yyjson_get_len(current)};
 			return;
 		}
 		val = {};
@@ -318,45 +294,61 @@ namespace Rift::Serl
 
 	bool JsonFormatReader::IsObject() const
 	{
-		return yyjson_is_obj(currentValue);
+		return yyjson_is_obj(current);
 	}
 
 	bool JsonFormatReader::IsArray() const
 	{
-		return yyjson_is_arr(currentValue);
+		return yyjson_is_arr(current);
 	}
 
-	bool JsonFormatReader::FindNextKey(StringView name, u32& outIndex, yyjson_val*& outValue)
+	u32 JsonFormatReader::InternalBegin()
 	{
-		const Scope& container = GetContainer();
-		const u64 tag          = GetKeyTag(name);
+		Scope& scope = GetScope();
+		if (scope.size > 0) [[unlikely]]
+		{
+			Log::Error("Have BeginObject() or BeginArray() been called already in this scope?");
+			return;
+		}
+		scope.id     = 0;
+		scope.size   = unsafe_yyjson_get_len(current);
+		scope.parent = current;
+		current      = nullptr;
+		return scope.size;
+	}
+
+	bool JsonFormatReader::FindNextKey(
+	    u32 firstId, yyjson_val* firstKey, StringView name, u32& outIndex, yyjson_val*& outValue)
+	{
+		const Scope& scope = GetScope();
+		const u64 tag      = GetKeyTag(name.size());
 
 		// Get key of the current value. See yyjson_obj_foreach
-		auto* key = currentValue - 1;
+		auto* key = firstKey;
 		u32 i;
-		// Iterate (current, last]
-		for (i = container.id + 1; i < container.size; ++i)
+		// Iterate [firstId, last]
+		for (i = firstId; i < scope.size; ++i)
 		{
-			key = unsafe_yyjson_get_next(key);
 			if (key->tag == tag && CheckKey(key, name))
 			{
 				outIndex = i;
 				outValue = key + 1;
 				return true;
 			}
+			key = unsafe_yyjson_get_next(key);
 		}
 
-		// Iterate [first, current]
-		key = unsafe_yyjson_get_first(container.parent);
-		for (i = 0; i <= container.id; ++i)
+		// Iterate [first, firstId)
+		key = unsafe_yyjson_get_first(scope.parent);
+		for (i = 0; i < firstId; ++i)
 		{
-			key = unsafe_yyjson_get_next(key);
 			if (key->tag == tag && CheckKey(key, name))
 			{
 				outIndex = i;
 				outValue = key + 1;
 				return true;
 			}
+			key = unsafe_yyjson_get_next(key);
 		}
 
 		return false;
