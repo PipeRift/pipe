@@ -29,12 +29,11 @@ namespace Rift::Memory
 	void* BestFitArena::Allocate(const sizet size)
 	{
 		const i32 slotIndex = FindSmallestSlot(size);
-		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size())
-			[[unlikely]]
-			{
-				// Log::Error("Couldn't fit {} bytes", size);
-				return nullptr;
-			}
+		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size()) [[unlikely]]
+		{
+			// Log::Error("Couldn't fit {} bytes", size);
+			return nullptr;
+		}
 
 		Slot& slot      = freeSlots[slotIndex];
 		u8* const start = slot.start;
@@ -49,12 +48,11 @@ namespace Rift::Memory
 	{
 		// Maximum size needed, based on worst possible alignment:
 		const i32 slotIndex = FindSmallestSlot(size + (alignment - 1));
-		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size())
-			[[unlikely]]
-			{
-				// Log::Error("Couldn't fit {} bytes", size);
-				return nullptr;
-			}
+		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size()) [[unlikely]]
+		{
+			// Log::Error("Couldn't fit {} bytes", size);
+			return nullptr;
+		}
 
 		Slot& slot      = freeSlots[slotIndex];
 		u8* const start = slot.start + GetAlignmentPadding(slot.start, alignment);
@@ -78,18 +76,17 @@ namespace Rift::Memory
 
 	i32 BestFitArena::FindSmallestSlot(sizet neededSize)
 	{
-		if (pendingSort)
-			[[unlikely]]
+		if (pendingSort) [[unlikely]]
+		{
+			pendingSort = false;
+			if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.1f)
 			{
-				pendingSort = false;
-				if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.1f)
-				{
-					// Dont shrink until there is 90% of unused space
-					freeSlots.Shrink();
-				}
-				// Sort slots by size. Small first
-				freeSlots.Sort(TGreater<>());
+				// Dont shrink until there is 90% of unused space
+				freeSlots.Shrink();
 			}
+			// Sort slots by size. Small first
+			freeSlots.Sort(TGreater<>());
+		}
 
 		// Find smallest slot fitting our required size
 		return freeSlots.FindSortedMin(neededSize, true);

@@ -72,19 +72,18 @@ namespace Rift::Memory
 
 	i32 BigBestFitArena::FindSmallestSlot(sizet neededSize)
 	{
-		if (pendingSort)
-			[[unlikely]]
+		if (pendingSort) [[unlikely]]
+		{
+			pendingSort = false;
+			if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.25f)
 			{
-				pendingSort = false;
-				if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.25f)
-				{
-					// Dont shrink until there is 75% of unused space
-					freeSlots.Shrink();
-				}
-
-				// Sort slots by size. Small first
-				freeSlots.Sort(TGreater<>());
+				// Dont shrink until there is 75% of unused space
+				freeSlots.Shrink();
 			}
+
+			// Sort slots by size. Small first
+			freeSlots.Sort(TGreater<>());
+		}
 
 		// Find smallest slot fitting our required size
 		return freeSlots.FindSortedMin(neededSize, true);

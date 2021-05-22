@@ -222,13 +222,11 @@ namespace Rift
 		const float RGBRange = RGBMax - RGBMin;
 
 		const float hue =
-		    (RGBMax == RGBMin
-		            ? 0.0f
-		            : RGBMax == r
-		                  ? Math::Mod((((g - b) / RGBRange) * 60.0f) + 360.0f, 360.0f)
-		                  : RGBMax == g
-		                        ? (((b - r) / RGBRange) * 60.0f) + 120.0f
-		                        : RGBMax == b ? (((r - g) / RGBRange) * 60.0f) + 240.0f : 0.0f);
+		    (RGBMax == RGBMin ? 0.0f
+		        : RGBMax == r ? Math::Mod((((g - b) / RGBRange) * 60.0f) + 360.0f, 360.0f)
+		        : RGBMax == g ? (((b - r) / RGBRange) * 60.0f) + 120.0f
+		        : RGBMax == b ? (((r - g) / RGBRange) * 60.0f) + 240.0f
+		                      : 0.0f);
 
 		const float Saturation = (RGBMax == 0.0f ? 0.0f : RGBRange / RGBMax);
 		const float Value      = RGBMax;
