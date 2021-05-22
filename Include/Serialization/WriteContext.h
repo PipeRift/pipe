@@ -17,7 +17,7 @@ namespace Rift::Serl
 		friend struct TFormatWriter;
 
 		Flags flags           = Flags_None;
-		Format format         = Format_None;
+		Format format         = Format::None;
 		IFormatWriter* writer = nullptr;
 
 

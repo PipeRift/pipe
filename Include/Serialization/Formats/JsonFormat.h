@@ -8,12 +8,14 @@
 
 
 struct yyjson_doc;
+struct yyjson_mut_doc;
 struct yyjson_val;
+struct yyjson_mut_val;
 
 
 namespace Rift::Serl
 {
-	struct JsonFormatReader : public TFormatReader<Format_Json>
+	struct JsonFormatReader : public TFormatReader<Format::Json>
 	{
 	private:
 		struct Scope
@@ -23,7 +25,7 @@ namespace Rift::Serl
 			yyjson_val* parent = nullptr;
 		};
 		yyjson_doc* doc  = nullptr;
-		yyjson_val* root = nullptr;
+		yyjson_val* root    = nullptr;
 		yyjson_val* current = nullptr;
 		TArray<Scope> scopeStack;
 
@@ -74,10 +76,24 @@ namespace Rift::Serl
 	};
 
 
-	struct JsonFormatWriter : public TFormatWriter<Format_Json>
+	struct JsonFormatWriter : public TFormatWriter<Format::Json>
 	{
 	private:
+		struct Scope
+		{
+			StringView name;
+			yyjson_val* parent = nullptr;
+		};
+		yyjson_mut_doc* doc      = nullptr;
+		yyjson_mut_val* root     = nullptr;
+		yyjson_mut_val** current = nullptr;
+		TArray<Scope> scopeStack;
+
+
 	public:
+		CORE_API JsonFormatWriter();
+		CORE_API ~JsonFormatWriter();
+
 		CORE_API bool EnterNext(StringView name);
 		CORE_API bool EnterNext();
 		CORE_API void Leave();
@@ -85,28 +101,30 @@ namespace Rift::Serl
 		CORE_API void BeginObject();
 		CORE_API void BeginArray(u32& size);
 
-		CORE_API void Write(WriteContext& ct, const bool& val);
-		CORE_API void Write(WriteContext& ct, const u8& val);
-		CORE_API void Write(WriteContext& ct, const i32& val);
-		CORE_API void Write(WriteContext& ct, const u32& val);
-		CORE_API void Write(WriteContext& ct, const i64& val);
-		CORE_API void Write(WriteContext& ct, const u64& val);
-		CORE_API void Write(WriteContext& ct, const float& val);
-		CORE_API void Write(WriteContext& ct, const double& val);
-		CORE_API void Write(WriteContext& ct, const StringView& val);
+		CORE_API void Write(WriteContext& ct, bool val);
+		CORE_API void Write(WriteContext& ct, u8 val);
+		CORE_API void Write(WriteContext& ct, i32 val);
+		CORE_API void Write(WriteContext& ct, u32 val);
+		CORE_API void Write(WriteContext& ct, i64 val);
+		CORE_API void Write(WriteContext& ct, u64 val);
+		CORE_API void Write(WriteContext& ct, float val);
+		CORE_API void Write(WriteContext& ct, double val);
+		CORE_API void Write(WriteContext& ct, StringView val);
 		CORE_API void Write(WriteContext& ct, const String& val);
 
 		CORE_API bool IsObject() const;
 		CORE_API bool IsArray() const;
 		CORE_API bool IsValid() const
 		{
-			return false;    // root != nullptr;
+			return doc != nullptr;
 		}
+
+		String ToString();
 	};
 
 
 	template <>
-	struct FormatBind<Format_Json>
+	struct FormatBind<Format::Json>
 	{
 		using Reader                    = JsonFormatReader;
 		using Writer                    = JsonFormatWriter;

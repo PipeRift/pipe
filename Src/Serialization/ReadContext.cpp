@@ -7,19 +7,19 @@
 
 namespace Rift::Serl
 {
-#define READER_SWITCH(func)                \
-	switch (format)                        \
-	{                                      \
-		case Format_Json:                  \
-			GetReader<Format_Json>().func; \
+#define READER_SWITCH(func)                 \
+	switch (format)                         \
+	{                                       \
+		case Format::Json:                  \
+			GetReader<Format::Json>().func; \
 	}
 
-#define RETURN_READER_SWITCH(func, def)           \
-	switch (format)                               \
-	{                                             \
-		case Format_Json:                         \
-			return GetReader<Format_Json>().func; \
-	}                                             \
+#define RETURN_READER_SWITCH(func, def)            \
+	switch (format)                                \
+	{                                              \
+		case Format::Json:                         \
+			return GetReader<Format::Json>().func; \
+	}                                              \
 	return def
 
 
@@ -37,8 +37,8 @@ namespace Rift::Serl
 	{
 		switch (ct.format)
 		{
-			case Format_Json:
-				ct.GetReader<Format_Json>().Read(val);
+			case Format::Json:
+				ct.GetReader<Format::Json>().Read(val);
 		}
 	}
 

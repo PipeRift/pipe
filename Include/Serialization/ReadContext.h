@@ -18,7 +18,7 @@ namespace Rift::Serl
 		friend struct TFormatReader;
 
 		Flags flags           = Flags_None;
-		Format format         = Format_None;
+		Format format         = Format::None;
 		IFormatReader* reader = nullptr;
 
 

@@ -3,6 +3,7 @@
 
 #include "Serialization/Formats/IFormat.h"
 #include "Serialization/ReadContext.h"
+#include "Serialization/WriteContext.h"
 
 
 namespace Rift::Serl
@@ -36,5 +37,27 @@ namespace Rift::Serl
 
 	template <Format format>
 	struct TFormatWriter : public IFormatWriter
-	{};
+	{
+	private:
+		WriteContext context{};
+
+
+	public:
+		TFormatWriter()
+		{
+			context.flags  = Flags_None;
+			context.format = format;
+			context.reader = this;
+		}
+
+		WriteContext& GetContext()
+		{
+			return context;
+		}
+
+		operator WriteContext&()
+		{
+			return GetContext();
+		}
+	};
 }    // namespace Rift::Serl

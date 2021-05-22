@@ -37,12 +37,8 @@ struct TypeB
 DEFINE_TYPE_FLAGS(TypeB, HasSingleSerialize = true);
 void Serialize(CommonContext& ct, TypeB& val)
 {
-	if (ct.EnterNext())
-	{
-		ct.BeginObject();
-		ct.Next("value", val.value);
-		ct.Leave();
-	}
+	ct.BeginObject();
+	ct.Next("value", val.value);
 }
 
 struct TypeC

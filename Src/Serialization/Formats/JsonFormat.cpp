@@ -89,7 +89,7 @@ namespace Rift::Serl
 
 		u32 firstId;
 		yyjson_val* firstKey;
-		if (scope.id == 0 || scope.id >= scope.size) [[unlikely]]    // Look indexes
+		if (scope.id == 0) [[unlikely]]    // Look indexes
 		{
 			// Start looking from first element
 			firstId  = 0;
@@ -105,6 +105,10 @@ namespace Rift::Serl
 		if (FindNextKey(firstId, firstKey, name, scope.id, current))
 		{
 			++scope.id;
+			if (scope.id >= scope.size)
+			{
+				scope.id = 0;
+			}
 			PushScope(current);
 			return true;
 		}
@@ -128,13 +132,14 @@ namespace Rift::Serl
 			return false;
 		}
 
-		++scope.id;
-		if (scope.id == 1) [[unlikely]]
+		if (scope.id == 0) [[unlikely]]
 		{
+			++scope.id;
 			PushScope(unsafe_yyjson_get_first(scope.parent));
 		}
 		else
 		{
+			++scope.id;
 			PushScope(unsafe_yyjson_get_next(current));
 		}
 		return true;
@@ -335,7 +340,7 @@ namespace Rift::Serl
 				outValue = key + 1;
 				return true;
 			}
-			key = unsafe_yyjson_get_next(key);
+			key = unsafe_yyjson_get_next(key + 1);
 		}
 
 		// Iterate [first, firstId)
@@ -348,9 +353,99 @@ namespace Rift::Serl
 				outValue = key + 1;
 				return true;
 			}
-			key = unsafe_yyjson_get_next(key);
+			key = unsafe_yyjson_get_next(key + 1);
 		}
 
+		return false;
+	}
+
+
+	JsonFormatWriter::JsonFormatWriter()
+	{
+		doc = yyjson_mut_doc_new(nullptr);
+		if (doc->root)
+		{
+			root    = doc->root;
+			current = &root;
+		}
+	}
+
+	JsonFormatWriter::~JsonFormatWriter()
+	{
+		yyjson_mut_doc_free(doc);
+	}
+
+	bool JsonFormatWriter::EnterNext(StringView name)
+	{
+		return true;
+	}
+
+	bool JsonFormatWriter::EnterNext()
+	{
+		return true;
+	}
+
+	void JsonFormatWriter::Leave() {}
+
+	void JsonFormatWriter::BeginObject()
+	{
+		if (!EnsureMsg(*current == nullptr, "Current value must not be initialized"))
+		{
+			return;
+		}
+
+		*current = yyjson_mut_arr(doc);
+	}
+
+	void JsonFormatWriter::BeginArray(u32& size) {}
+
+	void JsonFormatWriter::Write(WriteContext& ct, bool val)
+	{
+		*current = yyjson_mut_bool(doc, val);
+	}
+	void JsonFormatWriter::Write(WriteContext& ct, u8 val)
+	{
+		*current = yyjson_mut_uint(doc, val);
+	}
+	void JsonFormatWriter::Write(WriteContext& ct, i32 val)
+	{
+		*current = yyjson_mut_sint(doc, val);
+	}
+	void JsonFormatWriter::Write(WriteContext& ct, const u32 val)
+	{
+		*current = yyjson_mut_uint(doc, val);
+	}
+	void JsonFormatWriter::Write(WriteContext& ct, i64 val)
+	{
+		*current = yyjson_mut_sint(doc, val);
+	}
+	void JsonFormatWriter::Write(WriteContext& ct, u64 val)
+	{
+		*current = yyjson_mut_uint(doc, val);
+	}
+	void JsonFormatWriter::Write(WriteContext& ct, float val)
+	{
+		*current = yyjson_mut_real(doc, val);
+	}
+	void JsonFormatWriter::Write(WriteContext& ct, double val)
+	{
+		*current = yyjson_mut_real(doc, val);
+	}
+	void JsonFormatWriter::Write(WriteContext& ct, StringView val)
+	{
+		*current = yyjson_mut_strn(doc, val.data(), val.size());
+	}
+	void JsonFormatWriter::Write(WriteContext& ct, const String& val)
+	{
+		*current = yyjson_mut_strn(doc, val.data(), val.size());
+	}
+
+	bool JsonFormatWriter::IsObject() const
+	{
+		return false;
+	}
+	bool JsonFormatWriter::IsArray() const
+	{
 		return false;
 	}
 }    // namespace Rift::Serl

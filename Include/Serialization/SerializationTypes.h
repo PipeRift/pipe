@@ -6,12 +6,12 @@
 
 namespace Rift::Serl
 {
-	enum Format
+	enum class Format : u8
 	{
-		Format_None = 0,
-		Format_Json,
-		Format_Bson,
-		Format_Binary
+		None = 0,
+		Json,
+		Bson,
+		Binary
 	};
 
 

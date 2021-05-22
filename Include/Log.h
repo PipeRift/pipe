@@ -62,7 +62,7 @@ namespace Rift::Log
 		if (!format.empty())
 		{
 			String newFormat =
-			    Strings::Format("{} (Failed check \"{}\" at {}:{})", format, expr, file, line);
+			    Strings::Format("{} \n(Failed check \"{}\" at {}:{})", format, expr, file, line);
 			Error(Strings::Format(newFormat, std::forward<Args>(args)...));
 			return;
 		}
