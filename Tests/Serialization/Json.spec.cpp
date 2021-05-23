@@ -222,10 +222,85 @@ go_bandit([]() {
 		describe("Writer", [&]() {
 			it("Can create a writer", [&]() {
 				JsonFormatWriter writer{};
-				AssertThat(writer.IsValid(), Equals(false));
+				AssertThat(writer.IsValid(), Equals(true));
+			});
 
-				JsonFormatWriter writer2{};
-				AssertThat(writer2.IsValid(), Equals(true));
+			it("Can write to object value", [&]() {
+				JsonFormatWriter writer{};
+				WriteContext& ct = writer;
+				ct.BeginObject();
+				ct.Next("name", StringView{"Miguel"});
+				AssertThat(writer.ToString(false), Equals("{\"name\":\"Miguel\"}"));
+			});
+
+			it("Can read from array values", [&]() {
+				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
+				JsonFormatReader reader{data};
+
+				ReadContext& ct = reader;
+				ct.BeginObject();
+				if (ct.EnterNext("players"))
+				{
+					u32 size;
+					ct.BeginArray(size);
+					String name;
+					ct.Next(name);
+					AssertThat(name.data(), Equals("Miguel"));
+
+					ct.Next(name);
+					AssertThat(name.data(), Equals("Juan"));
+
+					ct.Leave();
+				}
+			});
+
+			it("Can iterate arrays", [&]() {
+				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
+				JsonFormatReader reader{data};
+
+				ReadContext& ct = reader;
+				ct.BeginObject();
+				if (ct.EnterNext("players"))
+				{
+					static const StringView expected[]{"Miguel", "Juan"};
+					u32 size;
+					ct.BeginArray(size);
+					for (u32 i = 0; i < size; ++i)
+					{
+						StringView name;
+						ct.Next(name);
+						AssertThat(name, Equals(expected[i]));
+					}
+					ct.Leave();
+				}
+			});
+
+			it("Can check types", [&]() {
+				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
+				JsonFormatReader reader{data};
+
+				ReadContext& ct = reader;
+				AssertThat(reader.IsObject(), Equals(true));
+				ct.BeginObject();
+				if (ct.EnterNext("players"))
+				{
+					AssertThat(reader.IsArray(), Equals(true));
+					ct.Leave();
+				}
+			});
+
+			it("Can write multiple keys", [&]() {
+				String data{"{\"one\": \"Miguel\", \"other\": \"Juan\"}"};
+				JsonFormatReader reader{data};
+
+				ReadContext& ct = reader;
+				ct.BeginObject();
+				StringView name;
+				ct.Next("one", name);
+				AssertThat(name, Equals("Miguel"));
+
+				ct.Next("other", name);
+				AssertThat(name, Equals("Juan"));
 			});
 
 			describe("Types", []() {
@@ -234,95 +309,66 @@ go_bandit([]() {
 					WriteContext& ct = writer;
 					ct.BeginObject();
 					ct.Next("alive", true);
-					AssertThat(writer.ToString(), Equals("{\"alive\": true}"));
+					AssertThat(writer.ToString(false), Equals("{\"alive\":true}"));
 
 					JsonFormatWriter writer2{};
 					ct = writer2;
 					ct.BeginObject();
 					ct.Next("alive", false);
-					AssertThat(writer2.ToString(), Equals("{\"alive\": false}"));
+					AssertThat(writer2.ToString(false), Equals("{\"alive\":false}"));
 				});
 
 				it("Can write u8 values", [&]() {
-					JsonFormatWriter writer{"{\"alive\": 3}"};
+					JsonFormatWriter writer{};
 					WriteContext ct = writer;
 					ct.BeginObject();
-					u8 value = 0;
-					ct.Next("alive", value);
-					AssertThat(value, Equals(3));
-					AssertThat(writer.ToString(), Equals("{\"alive\": false}"));
-
-					JsonFormatWriter writer2{"{\"alive\": 1.344}"};
-					ct = writer2;
-					ct.BeginObject();
-					u8 value2 = 0;
-					ct.Next("alive", value2);
-					AssertThat(value2, Equals(1));
-					AssertThat(writer2.ToString(), Equals("{\"alive\": false}"));
+					ct.Next("alive", u8(3));
+					AssertThat(writer.ToString(false), Equals("{\"alive\":3}"));
 				});
 
 				it("Can write u32 values", [&]() {
-					JsonFormatWriter writer{"{\"alive\": 35533}"};
+					JsonFormatWriter writer{};
 					WriteContext ct = writer;
 					ct.BeginObject();
-					u32 value = 0;
-					ct.Next("alive", value);
-					AssertThat(value, Equals(35533));
-					AssertThat(writer2.ToString(), Equals("{\"alive\": false}"));
-
-
-					JsonFormatWriter writer2{"{\"alive\": -5}"};
-					ct = writer2;
-					ct.BeginObject();
-					u32 value2 = 0;
-					ct.Next("alive", value2);
-					AssertThat(value2, Equals(0));
-					AssertThat(writer2.ToString(), Equals("{\"alive\": false}"));
+					ct.Next("alive", u32(35533));
+					AssertThat(writer.ToString(false), Equals("{\"alive\":35533}"));
 				});
 
 				it("Can write i32 values", [&]() {
-					JsonFormatWriter writer{"{\"alive\": 35533}"};
+					JsonFormatWriter writer{};
 					WriteContext ct = writer;
 					ct.BeginObject();
 					i32 value = 0;
-					ct.Next("alive", value);
-					AssertThat(value, Equals(35533));
-					AssertThat(writer2.ToString(), Equals("{\"alive\": false}"));
+					ct.Next("alive", u32(35533));
+					AssertThat(writer.ToString(false), Equals("{\"alive\":35533}"));
 
-					JsonFormatWriter writer2{"{\"alive\": -35533}"};
-					ct = reader2;
+					JsonFormatWriter writer2{};
+					ct = writer2;
 					ct.BeginObject();
-					i32 value2 = 0;
-					ct.Next("alive", value2);
-					AssertThat(value2, Equals(-35533));
-					AssertThat(writer2.ToString(), Equals("{\"alive\": false}"));
+					ct.Next("alive", i32(-35533));
+					AssertThat(writer2.ToString(false), Equals("{\"alive\":-35533}"));
 				});
 
 				it("Can write float values", [&]() {
-					JsonFormatWriter writer{"{\"alive\": 0.344}"};
+					JsonFormatWriter writer{};
 					WriteContext ct = writer;
 					ct.BeginObject();
-					float value = 0.f;
-					ct.Next("alive", value);
-					AssertThat(value, Equals(0.344f));
-					AssertThat(writer.ToString(), Equals("{\"alive\": false}"));
+					ct.Next("alive", 0.344f);
+					AssertThat(Strings::Contains(writer.ToString(false), "0.344"), Equals(true));
 
-					JsonFormatWriter writer2{"{\"alive\": 4}"};
+					JsonFormatWriter writer2{};
 					ct = writer2;
 					ct.BeginObject();
-					float value2 = 0.f;
-					ct.Next("alive", value2);
-					AssertThat(value2, Equals(4.f));
-					AssertThat(writer2.ToString(), Equals("{\"alive\": false}"));
+					ct.Next("alive", 4.f);
+					AssertThat(writer2.ToString(false), Equals("{\"alive\":4.0}"));
 				});
 
 				it("Can write StringView values", [&]() {
-					JsonFormatWriter writer{"{\"alive\": \"yes\"}"};
-					ReadContext ct = writer;
+					JsonFormatWriter writer{};
+					WriteContext ct = writer;
 					ct.BeginObject();
-					StringView value;
-					ct.Next("alive", value);
-					AssertThat(value, Equals("yes"));
+					ct.Next("alive", StringView{"yes"});
+					AssertThat(writer.ToString(false), Equals("{\"alive\":\"yes\"}"));
 				});
 			});
 		});

@@ -363,89 +363,165 @@ namespace Rift::Serl
 	JsonFormatWriter::JsonFormatWriter()
 	{
 		doc = yyjson_mut_doc_new(nullptr);
-		if (doc->root)
+		if (doc)
 		{
-			root    = doc->root;
-			current = &root;
+			current = doc->root;
+			PushScope({});
 		}
 	}
 
 	JsonFormatWriter::~JsonFormatWriter()
 	{
+		Close();
 		yyjson_mut_doc_free(doc);
+	}
+
+	JsonFormatWriter::Scope& JsonFormatWriter::GetScope()
+	{
+		return scopeStack.Last();
+	}
+
+	void JsonFormatWriter::PushScope(StringView key)
+	{
+		scopeStack.Add({key, current});
+		current = nullptr;    // New scope
+	}
+
+	void JsonFormatWriter::PopScope()
+	{
+		const Scope& scope = GetScope();
+		auto* parent       = scope.parent;
+		if (current)
+		{
+			switch (yyjson_mut_get_type(parent))
+			{
+				case YYJSON_TYPE_OBJ:
+					if (!scope.key.empty())
+					{
+						yyjson_mut_obj_add_val(doc, parent, scope.key.data(), current);
+					}
+					break;
+				case YYJSON_TYPE_ARR:
+					yyjson_mut_arr_append(parent, current);
+					break;
+			}
+		}
+		current = parent;
+		scopeStack.RemoveAt(scopeStack.Size() - 1, false);
 	}
 
 	bool JsonFormatWriter::EnterNext(StringView name)
 	{
+		if (!EnsureMsg(yyjson_mut_is_obj(current),
+		        "Current scope is not an object or has not been initialized with BeginObject()"))
+		    [[unlikely]]
+		{
+			return false;
+		}
+		PushScope(name);
 		return true;
 	}
 
 	bool JsonFormatWriter::EnterNext()
 	{
+		if (!EnsureMsg(yyjson_mut_is_arr(current),
+		        "Current scope is not an array or has not been initialized with BeginArray()"))
+		    [[unlikely]]
+		{
+			return false;
+		}
+		PushScope({});
 		return true;
 	}
 
-	void JsonFormatWriter::Leave() {}
+	void JsonFormatWriter::Leave()
+	{
+		PopScope();
+	}
 
 	void JsonFormatWriter::BeginObject()
 	{
-		if (!EnsureMsg(*current == nullptr, "Current value must not be initialized"))
+		Scope& scope = GetScope();
+		if (!EnsureMsg(!current, "Scope must not be initialized"))
 		{
 			return;
 		}
 
-		*current = yyjson_mut_arr(doc);
+		current = yyjson_mut_obj(doc);
 	}
 
-	void JsonFormatWriter::BeginArray(u32& size) {}
+	void JsonFormatWriter::BeginArray(u32& size)
+	{
+		Scope& scope = GetScope();
+		if (!EnsureMsg(!current, "Scope must not be initialized"))
+		{
+			return;
+		}
 
-	void JsonFormatWriter::Write(WriteContext& ct, bool val)
-	{
-		*current = yyjson_mut_bool(doc, val);
-	}
-	void JsonFormatWriter::Write(WriteContext& ct, u8 val)
-	{
-		*current = yyjson_mut_uint(doc, val);
-	}
-	void JsonFormatWriter::Write(WriteContext& ct, i32 val)
-	{
-		*current = yyjson_mut_sint(doc, val);
-	}
-	void JsonFormatWriter::Write(WriteContext& ct, const u32 val)
-	{
-		*current = yyjson_mut_uint(doc, val);
-	}
-	void JsonFormatWriter::Write(WriteContext& ct, i64 val)
-	{
-		*current = yyjson_mut_sint(doc, val);
-	}
-	void JsonFormatWriter::Write(WriteContext& ct, u64 val)
-	{
-		*current = yyjson_mut_uint(doc, val);
-	}
-	void JsonFormatWriter::Write(WriteContext& ct, float val)
-	{
-		*current = yyjson_mut_real(doc, val);
-	}
-	void JsonFormatWriter::Write(WriteContext& ct, double val)
-	{
-		*current = yyjson_mut_real(doc, val);
-	}
-	void JsonFormatWriter::Write(WriteContext& ct, StringView val)
-	{
-		*current = yyjson_mut_strn(doc, val.data(), val.size());
-	}
-	void JsonFormatWriter::Write(WriteContext& ct, const String& val)
-	{
-		*current = yyjson_mut_strn(doc, val.data(), val.size());
+		current = yyjson_mut_arr(doc);
 	}
 
-	bool JsonFormatWriter::IsObject() const
+	void JsonFormatWriter::Write(bool val)
 	{
-		return false;
+		current = yyjson_mut_bool(doc, val);
 	}
-	bool JsonFormatWriter::IsArray() const
+	void JsonFormatWriter::Write(u8 val)
 	{
-		return false;
+		current = yyjson_mut_uint(doc, val);
+	}
+	void JsonFormatWriter::Write(i32 val)
+	{
+		current = yyjson_mut_sint(doc, val);
+	}
+	void JsonFormatWriter::Write(const u32 val)
+	{
+		current = yyjson_mut_uint(doc, val);
+	}
+	void JsonFormatWriter::Write(i64 val)
+	{
+		current = yyjson_mut_sint(doc, val);
+	}
+	void JsonFormatWriter::Write(u64 val)
+	{
+		current = yyjson_mut_uint(doc, val);
+	}
+	void JsonFormatWriter::Write(float val)
+	{
+		current = yyjson_mut_real(doc, val);
+	}
+	void JsonFormatWriter::Write(double val)
+	{
+		current = yyjson_mut_real(doc, val);
+	}
+	void JsonFormatWriter::Write(StringView val)
+	{
+		current = yyjson_mut_strn(doc, val.data(), val.size());
+	}
+
+	void JsonFormatWriter::Close()
+	{
+		if (open)
+		{
+			open = false;
+			yyjson_mut_doc_set_root(doc, current);
+
+			if (scopeStack.Size() > 0)
+			{
+				PopScope();
+			}
+			EnsureMsg(scopeStack.Size() == 0,
+			    "Forgot to Leave() some scope? One or more scopes have not been closed.");
+		}
+	}
+
+	StringView JsonFormatWriter::ToString(bool pretty, bool ensureClosed)
+	{
+		if (ensureClosed)
+		{
+			Close();
+		}
+		yyjson_write_flag flags = pretty ? YYJSON_WRITE_PRETTY : 0;
+		sizet size;
+		return {yyjson_mut_write(doc, flags, &size), size};
 	}
 }    // namespace Rift::Serl

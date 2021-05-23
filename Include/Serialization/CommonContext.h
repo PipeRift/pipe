@@ -54,7 +54,7 @@ namespace Rift::Serl
 		{
 			if (IsWriting())
 			{
-				// writeContext->Next(name, val);
+				writeContext->Next(name, val);
 			}
 			else
 			{

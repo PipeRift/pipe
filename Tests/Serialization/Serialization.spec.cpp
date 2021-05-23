@@ -26,8 +26,8 @@ void Read(ReadContext& ct, TypeA& val)
 }
 void Write(WriteContext& ct, const TypeA& val)
 {
-	// ct.BeginObject();
-	// ct.Next("value", val.value);
+	ct.BeginObject();
+	ct.Next("value", val.value);
 }
 
 struct TypeB
@@ -52,8 +52,8 @@ struct TypeC
 	}
 	void Write(WriteContext& ct)
 	{
-		// ct.BeginObject();
-		// ct.Next("value", value);
+		ct.BeginObject();
+		ct.Next("value", value);
 	}
 };
 DEFINE_TYPE_FLAGS(TypeC, HasMemberSerialize = true);
@@ -88,12 +88,15 @@ go_bandit([]() {
 				AssertThat(val.value, Equals(true));
 			});
 
-			xit("Can use custom Write()", [&]() {
+			it("Can use custom Write()", [&]() {
 				TypeA val{};
 				val.value = true;
+
 				JsonFormatWriter writer{};
-				// WriteScope(writer, "type", val);
-				// AssertThat(writer.Data(), Equals("{\"type\": {\"value\": true }}"));
+				WriteContext ct = writer;
+				ct.BeginObject();
+				ct.Next("type", val);
+				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
 			});
 
 			it("Can use Serialize() instead of Read()", [&]() {
@@ -106,7 +109,15 @@ go_bandit([]() {
 				AssertThat(val.value, Equals(true));
 			});
 
-			xit("Can use Serialize() instead of Write()", [&]() {
+			it("Can use Serialize() instead of Write()", [&]() {
+				TypeB val{};
+				val.value = true;
+
+				JsonFormatWriter writer{};
+				WriteContext ct = writer;
+				ct.BeginObject();
+				ct.Next("type", val);
+				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
 			});
 		});
 
@@ -121,7 +132,15 @@ go_bandit([]() {
 				AssertThat(val.value, Equals(true));
 			});
 
-			xit("Can use custom Write()", [&]() {
+			it("Can use custom Write()", [&]() {
+				TypeC val{};
+				val.value = true;
+
+				JsonFormatWriter writer{};
+				WriteContext ct = writer;
+				ct.BeginObject();
+				ct.Next("type", val);
+				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
 			});
 
 			it("Can use Serialize() instead of Read()", [&]() {
@@ -134,7 +153,15 @@ go_bandit([]() {
 				AssertThat(val.value, Equals(true));
 			});
 
-			xit("Can use Serialize() instead of Write()", [&]() {
+			it("Can use Serialize() instead of Write()", [&]() {
+				TypeD val{};
+				val.value = true;
+
+				JsonFormatWriter writer{};
+				WriteContext ct = writer;
+				ct.BeginObject();
+				ct.Next("type", val);
+				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
 			});
 		});
 	});

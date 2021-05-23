@@ -15,7 +15,7 @@ struct yyjson_mut_val;
 
 namespace Rift::Serl
 {
-	struct JsonFormatReader : public TFormatReader<Format::Json>
+	struct CORE_API JsonFormatReader : public TFormatReader<Format::Json>
 	{
 	private:
 		struct Scope
@@ -37,31 +37,29 @@ namespace Rift::Serl
 		 * performance, but they are not thread-safe. While multithreading, use a parser for each
 		 * thread.
 		 */
-		CORE_API JsonFormatReader(const String& data);
-		CORE_API ~JsonFormatReader();
+		JsonFormatReader(const String& data);
+		~JsonFormatReader();
 
-		CORE_API void BeginObject();
-		CORE_API void BeginArray(u32& size);
+		void BeginObject();
+		void BeginArray(u32& size);
 
-		CORE_API bool EnterNext(StringView name);
-		CORE_API bool EnterNext();
-		CORE_API void Leave();
+		bool EnterNext(StringView name);
+		bool EnterNext();
+		void Leave();
 
-		CORE_API void Read(bool& val);
-		CORE_API void Read(u8& val);
-		CORE_API void Read(i32& val);
-		CORE_API void Read(u32& val);
-		CORE_API void Read(i64& val);
-		CORE_API void Read(u64& val);
-		CORE_API void Read(float& val);
-		CORE_API void Read(double& val);
-		CORE_API void Read(StringView& val);
-		CORE_API void Read(String& val);
+		void Read(bool& val);
+		void Read(u8& val);
+		void Read(i32& val);
+		void Read(u32& val);
+		void Read(i64& val);
+		void Read(u64& val);
+		void Read(float& val);
+		void Read(double& val);
+		void Read(StringView& val);
 
-
-		CORE_API bool IsObject() const;
-		CORE_API bool IsArray() const;
-		CORE_API bool IsValid() const
+		bool IsObject() const;
+		bool IsArray() const;
+		bool IsValid() const
 		{
 			return root != nullptr;
 		}
@@ -76,50 +74,54 @@ namespace Rift::Serl
 	};
 
 
-	struct JsonFormatWriter : public TFormatWriter<Format::Json>
+	struct CORE_API JsonFormatWriter : public TFormatWriter<Format::Json>
 	{
 	private:
 		struct Scope
 		{
-			StringView name;
-			yyjson_val* parent = nullptr;
+			StringView key;
+			yyjson_mut_val* parent = nullptr;
 		};
 		yyjson_mut_doc* doc      = nullptr;
-		yyjson_mut_val* root     = nullptr;
-		yyjson_mut_val** current = nullptr;
+		yyjson_mut_val* current  = nullptr;
 		TArray<Scope> scopeStack;
+		bool open = true;
 
 
 	public:
-		CORE_API JsonFormatWriter();
-		CORE_API ~JsonFormatWriter();
+		JsonFormatWriter();
+		~JsonFormatWriter();
 
-		CORE_API bool EnterNext(StringView name);
-		CORE_API bool EnterNext();
-		CORE_API void Leave();
+		bool EnterNext(StringView name);
+		bool EnterNext();
+		void Leave();
 
-		CORE_API void BeginObject();
-		CORE_API void BeginArray(u32& size);
+		void BeginObject();
+		void BeginArray(u32& size);
 
-		CORE_API void Write(WriteContext& ct, bool val);
-		CORE_API void Write(WriteContext& ct, u8 val);
-		CORE_API void Write(WriteContext& ct, i32 val);
-		CORE_API void Write(WriteContext& ct, u32 val);
-		CORE_API void Write(WriteContext& ct, i64 val);
-		CORE_API void Write(WriteContext& ct, u64 val);
-		CORE_API void Write(WriteContext& ct, float val);
-		CORE_API void Write(WriteContext& ct, double val);
-		CORE_API void Write(WriteContext& ct, StringView val);
-		CORE_API void Write(WriteContext& ct, const String& val);
+		void Write(bool val);
+		void Write(u8 val);
+		void Write(i32 val);
+		void Write(u32 val);
+		void Write(i64 val);
+		void Write(u64 val);
+		void Write(float val);
+		void Write(double val);
+		void Write(StringView val);
 
-		CORE_API bool IsObject() const;
-		CORE_API bool IsArray() const;
-		CORE_API bool IsValid() const
+		bool IsValid() const
 		{
 			return doc != nullptr;
 		}
 
-		String ToString();
+		void Close();
+
+		StringView ToString(bool pretty = true, bool ensureClosed = true);
+
+	private:
+		Scope& GetScope();
+		void PushScope(StringView key);
+		void PopScope();
 	};
 
 

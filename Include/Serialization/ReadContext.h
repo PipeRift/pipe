@@ -32,19 +32,23 @@ namespace Rift::Serl
 
 
 		/**
-		 * Starts the deserialization of an scope as an object.
+		 * Marks current scope as an Object.
+		 * See EnterNext(name) & Next(name, value)
 		 */
 		void BeginObject();
 
 		/**
 		 * Enters the scope of a key in an object.
-		 * This function will fail on array scopes
+		 * To make an object scope, see 'BeginObject()'
+		 * Complexity: Ordered access O(1), Inverse order O(n)
+		 * @return true if inside an object scope and the key is found.
 		 */
 		bool EnterNext(StringView name);
 
 		/**
-		 * Deserializes a value from an object key
-		 * This function will fail on array scopes
+		 * Finds and reads a value at key "name" of an object.
+		 * Complexity: Ordered access O(1), Inverse order O(n)
+		 * This function won't do anything on array or uninitialized scopes
 		 */
 		template <typename T>
 		void Next(StringView name, T& val)
@@ -58,20 +62,24 @@ namespace Rift::Serl
 
 
 		/**
-		 * Starts the deserialization of an scope as an array.
+		 * Marks current scope as an Array.
+		 * See EnterNext() & Next(value)
 		 * @param size of the array being read
 		 */
 		void BeginArray(u32& size);
 
 		/**
 		 * Enters the scope of the next element of an array.
-		 * This function will fail on object scopes
+		 * To make an object scope, see 'BeginArray()'
+		 * Complexity: O(1)
+		 * @return true if inside an array scope and num elements is not exceeded.
 		 */
 		bool EnterNext();
 
 		/**
-		 * Deserializes a value from the next element of an array.
-		 * This function will fail on object scopes
+		 * Reads a type from the next element of an array.
+		 * Complexity: O(1)
+		 * This function won't do anything on object or uninitialized scopes
 		 */
 		template <typename T>
 		void Next(T& val)
@@ -108,6 +116,7 @@ namespace Rift::Serl
 		template <Format format>
 		typename FormatBind<format>::Reader& GetReader() requires(HasReader<format>);
 	};
+
 
 	CORE_API void Read(ReadContext& ct, bool& val);
 	CORE_API void Read(ReadContext& ct, u8& val);

@@ -9,7 +9,7 @@ namespace Rift::Serl
 	{
 		if (IsWriting())
 		{
-			// writeContext->BeginObject();
+			writeContext->BeginObject();
 		}
 		else
 		{
@@ -21,7 +21,7 @@ namespace Rift::Serl
 	{
 		if (IsWriting())
 		{
-			// writeContext->EnterNext(name);
+			writeContext->EnterNext(name);
 		}
 		else
 		{
@@ -33,7 +33,7 @@ namespace Rift::Serl
 	{
 		if (IsWriting())
 		{
-			// writeContext->BeginArray(size);
+			writeContext->BeginArray(size);
 		}
 		else
 		{
@@ -45,7 +45,7 @@ namespace Rift::Serl
 	{
 		if (IsWriting())
 		{
-			// writeContext->EnterNext();
+			writeContext->EnterNext();
 		}
 		else
 		{
@@ -57,7 +57,7 @@ namespace Rift::Serl
 	{
 		if (IsWriting())
 		{
-			// writeContext->Leave();
+			writeContext->Leave();
 		}
 		else
 		{

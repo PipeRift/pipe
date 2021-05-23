@@ -47,7 +47,7 @@ namespace Rift::Serl
 		{
 			context.flags  = Flags_None;
 			context.format = format;
-			context.reader = this;
+			context.writer = this;
 		}
 
 		WriteContext& GetContext()

@@ -11,7 +11,7 @@
 
 namespace Rift::Serl
 {
-	struct WriteContext
+	struct CORE_API WriteContext
 	{
 		template <Format format>
 		friend struct TFormatWriter;
@@ -30,11 +30,73 @@ namespace Rift::Serl
 		virtual ~WriteContext() {}
 
 		/**
-		 * Deserializes a value from the next element of an array.
-		 * This function will fail on object scopes
+		 * Marks current scope as an Object.
+		 * See EnterNext(name) & Next(name, value)
+		 */
+		void BeginObject();
+
+		/**
+		 * Enters the scope of a key in an object.
+		 * To make object scope, see 'BeginObject()'
+		 * @return true if inside an object scope and the key is found.
+		 */
+		bool EnterNext(StringView name);
+
+		/**
+		 * Finds and writes a type at key "name" of an object.
+		 * This function won't do anything on array or uninitialized scopes
 		 */
 		template <typename T>
-		void Next(T& val)
+		void Next(StringView name, const T& val) requires(!ShouldPassByValue<T>)
+		{
+			if (EnterNext(name))
+			{
+				Serialize(val);
+				Leave();
+			}
+		}
+		template <typename T>
+		void Next(StringView name, T val) requires(ShouldPassByValue<T>)
+		{
+			if (EnterNext(name))
+			{
+				Serialize(val);
+				Leave();
+			}
+		}
+
+
+		/**
+		 * Marks current scope as an Array.
+		 * See EnterNext() & Next(value)
+		 * @param size of the array being read
+		 */
+		void BeginArray(u32& size);
+
+		/**
+		 * Enters the scope of the next element of an array.
+		 * To make an object scope, see 'BeginArray()'
+		 * Complexity: O(1)
+		 * @return true if inside an array scope and num elements is not exceeded.
+		 */
+		bool EnterNext();
+
+		/**
+		 * Reads a type from the next element of an array.
+		 * Complexity: O(1)
+		 * This function won't do anything on object or uninitialized scopes
+		 */
+		template <typename T>
+		void Next(const T& val) requires(!ShouldPassByValue<T>)
+		{
+			if (EnterNext())
+			{
+				Serialize(val);
+				Leave();
+			}
+		}
+		template <typename T>
+		void Next(T val) requires(ShouldPassByValue<T>)
 		{
 			if (EnterNext())
 			{
@@ -43,12 +105,20 @@ namespace Rift::Serl
 			}
 		}
 
-		// Reads a type from the current scope
+
+		// Write a type into the current scope
 		template <typename T>
-		void Serialize(T& val)
+		void Serialize(const T& val) requires(!ShouldPassByValue<T>)
 		{
 			Write(*this, val);
 		}
+		template <typename T>
+		void Serialize(T val) requires(ShouldPassByValue<T>)
+		{
+			Write(*this, val);
+		}
+
+		void Leave();
 
 		static constexpr bool IsReading()
 		{
@@ -58,7 +128,23 @@ namespace Rift::Serl
 		{
 			return true;
 		}
+
+	public:
+		template <Format format>
+		typename FormatBind<format>::Writer& GetWriter() requires(HasWriter<format>);
 	};
+
+
+	CORE_API void Write(WriteContext& ct, bool val);
+	CORE_API void Write(WriteContext& ct, u8 val);
+	CORE_API void Write(WriteContext& ct, i32 val);
+	CORE_API void Write(WriteContext& ct, u32 val);
+	CORE_API void Write(WriteContext& ct, i64 val);
+	CORE_API void Write(WriteContext& ct, u64 val);
+	CORE_API void Write(WriteContext& ct, float val);
+	CORE_API void Write(WriteContext& ct, double val);
+	CORE_API void Write(WriteContext& ct, StringView val);
+	CORE_API void Write(WriteContext& ct, const String& val);
 
 	template <typename T1, typename T2>
 	void Write(WriteContext& ct, TPair<T1, T2>& val)
