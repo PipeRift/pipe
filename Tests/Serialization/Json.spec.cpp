@@ -225,7 +225,7 @@ go_bandit([]() {
 				AssertThat(writer.IsValid(), Equals(true));
 			});
 
-			it("Can write to object value", [&]() {
+			it("Can write to object key", [&]() {
 				JsonFormatWriter writer{};
 				WriteContext& ct = writer;
 				ct.BeginObject();
@@ -233,74 +233,33 @@ go_bandit([]() {
 				AssertThat(writer.ToString(false), Equals("{\"name\":\"Miguel\"}"));
 			});
 
-			it("Can read from array values", [&]() {
-				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
-				JsonFormatReader reader{data};
+			it("Can write arrays", [&]() {
+				JsonFormatWriter writer{};
 
-				ReadContext& ct = reader;
-				ct.BeginObject();
-				if (ct.EnterNext("players"))
-				{
-					u32 size;
-					ct.BeginArray(size);
-					String name;
-					ct.Next(name);
-					AssertThat(name.data(), Equals("Miguel"));
-
-					ct.Next(name);
-					AssertThat(name.data(), Equals("Juan"));
-
-					ct.Leave();
-				}
-			});
-
-			it("Can iterate arrays", [&]() {
-				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
-				JsonFormatReader reader{data};
-
-				ReadContext& ct = reader;
+				WriteContext& ct = writer;
 				ct.BeginObject();
 				if (ct.EnterNext("players"))
 				{
 					static const StringView expected[]{"Miguel", "Juan"};
-					u32 size;
+					u32 size = 2;
 					ct.BeginArray(size);
 					for (u32 i = 0; i < size; ++i)
 					{
-						StringView name;
-						ct.Next(name);
-						AssertThat(name, Equals(expected[i]));
+						ct.Next(expected[i]);
 					}
 					ct.Leave();
 				}
+				AssertThat(writer.ToString(false), Equals("{\"players\":[\"Miguel\",\"Juan\"]}"));
 			});
 
-			it("Can check types", [&]() {
-				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
-				JsonFormatReader reader{data};
-
-				ReadContext& ct = reader;
-				AssertThat(reader.IsObject(), Equals(true));
+			it("Can write multiple object keys", [&]() {
+				JsonFormatWriter writer{};
+				WriteContext& ct = writer;
 				ct.BeginObject();
-				if (ct.EnterNext("players"))
-				{
-					AssertThat(reader.IsArray(), Equals(true));
-					ct.Leave();
-				}
-			});
-
-			it("Can write multiple keys", [&]() {
-				String data{"{\"one\": \"Miguel\", \"other\": \"Juan\"}"};
-				JsonFormatReader reader{data};
-
-				ReadContext& ct = reader;
-				ct.BeginObject();
-				StringView name;
-				ct.Next("one", name);
-				AssertThat(name, Equals("Miguel"));
-
-				ct.Next("other", name);
-				AssertThat(name, Equals("Juan"));
+				ct.Next("one", StringView{"Miguel"});
+				ct.Next("other", StringView{"Juan"});
+				AssertThat(
+				    writer.ToString(false), Equals("{\"one\":\"Miguel\",\"other\":\"Juan\"}"));
 			});
 
 			describe("Types", []() {
