@@ -1,12 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include <Context.h>
-#include <Serialization/CommonContext.h>
+#include <Serialization/Contexts.h>
 #include <Serialization/Formats/JsonFormat.h>
-#include <Serialization/ReadContext.h>
-#include <Serialization/WriteContext.h>
 #include <bandit/bandit.h>
-
 
 
 using namespace snowhouse;
@@ -50,7 +47,7 @@ struct TypeC
 		ct.BeginObject();
 		ct.Next("value", value);
 	}
-	void Write(WriteContext& ct)
+	void Write(WriteContext& ct) const
 	{
 		ct.BeginObject();
 		ct.Next("value", value);

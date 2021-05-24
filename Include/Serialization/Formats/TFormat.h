@@ -1,9 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "Serialization/Contexts/ReadContext.h"
+#include "Serialization/Contexts/WriteContext.h"
 #include "Serialization/Formats/IFormat.h"
-#include "Serialization/ReadContext.h"
-#include "Serialization/WriteContext.h"
 
 
 namespace Rift::Serl

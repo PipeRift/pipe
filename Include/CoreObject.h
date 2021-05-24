@@ -6,3 +6,4 @@
  */
 
 #include "Object/Object.h"
+#include "Object/Struct.h"

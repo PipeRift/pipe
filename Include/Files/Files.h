@@ -22,7 +22,7 @@ namespace Rift::Files
 	CORE_API bool LoadJsonFile(const Path& path, Json& result);
 	CORE_API bool SaveJsonFile(const Path& path, const Json& data, i32 indent = -1);
 
-	CORE_API bool LoadStringFile(const Path& path, String& result);
+	CORE_API bool LoadStringFile(const Path& path, String& result, sizet extraPadding = 0);
 	CORE_API bool SaveStringFile(const Path& path, const String& data);
 
 	CORE_API void CreateFolder(const Path& path, bool bRecursive = false);
@@ -51,7 +51,7 @@ namespace Rift::Files
 
 	CORE_API bool LoadJsonFile(const String& path, Json& result);
 	CORE_API bool SaveJsonFile(const String& path, const Json& data, i32 indent = -1);
-	CORE_API bool LoadStringFile(const String& path, String& result);
+	CORE_API bool LoadStringFile(const String& path, String& result, sizet extraPadding = 0);
 	CORE_API bool SaveStringFile(const String& path, const String& data);
 
 	CORE_API bool Exists(const String& path);

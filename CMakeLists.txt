@@ -79,6 +79,7 @@ if(RIFT_ENABLE_PROFILER)
 endif()
 rift_target_shared_output_directory(RiftCore)
 rift_target_enable_CPP20(RiftCore)
+#target_compile_options(RiftCore PRIVATE /showIncludes)
 
 
 ################################################################################

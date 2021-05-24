@@ -4,8 +4,8 @@
 #include "BaseObject.h"
 #include "Log.h"
 #include "ObjectBuilder.h"
-#include "Reflection/Static/ClassType.h"
-#include "Serialization/Archive.h"
+#include "Reflection/Reflection.h"
+#include "Serialization/Contexts.h"
 
 
 namespace Rift
@@ -57,10 +57,9 @@ namespace Rift
 		}
 		virtual void Construct() {}
 
-		virtual bool Serialize(Archive& ar)
+		virtual void Serialize(Serl::CommonContext& ct)
 		{
-			SerializeReflection(ar);
-			return true;
+			SerializeReflection(ct);
 		}
 
 		template <typename T = Object>
@@ -90,4 +89,21 @@ namespace Rift
 		return MakeOwned<T>(owner);
 	}
 	// END - Pointer helpers
+
+
+	template <typename T>
+	void Read(Serl::ReadContext& ct, T& value) requires(Derived<T, Object>)
+	{
+		ct.BeginObject();
+		Serl::CommonContext common{ct};
+		value.Serialize(common);
+	}
+
+	template <typename T>
+	void Write(Serl::WriteContext& ct, const T& value) requires(Derived<T, Object>)
+	{
+		ct.BeginObject();
+		Serl::CommonContext common{ct};
+		const_cast<T&>(value).Serialize(common);
+	}
 }    // namespace Rift

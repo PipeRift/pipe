@@ -10,6 +10,7 @@
 #include "Reflection/Static/NativeType.h"
 #include "Reflection/TypeFlags.h"
 #include "Rotator.h"
+#include "Serialization/ContextsFwd.h"
 #include "Strings/StringView.h"
 #include "Vector.h"
 
@@ -42,7 +43,8 @@ namespace Rift
 			rotation = Quat::FromRotator(angles);
 		}
 
-		bool Serialize(class Archive& ar, StringView name);
+		void Read(Serl::ReadContext& ct);
+		void Write(Serl::WriteContext& ct) const;
 
 
 		Matrix4f ToMatrix() const

@@ -1,6 +1,4 @@
 // Copyright 2015-2021 Piperift - All rights reserved
-#pragma once
-
 #include "Math/Math.h"
 #include "Misc/Checks.h"
 #include "Serialization/Formats/JsonFormat.h"
@@ -22,9 +20,22 @@ namespace Rift::Serl
 
 	JsonFormatReader::JsonFormatReader(const String& data)
 	{
-		// TODO: Support json from file (yyjson_read_file)
-		doc          = yyjson_read(data.data(), data.length(), 0);
-		root         = yyjson_doc_get_root(doc);
+		doc  = yyjson_read_opts((char*) data.data(), data.length(), 0, nullptr, nullptr);
+		root = yyjson_doc_get_root(doc);
+		PushScope(root);
+	}
+	JsonFormatReader::JsonFormatReader(String&& data)
+	{
+		insituBuffer = Move(data);
+		// Ensure there is at least 4 bytes of extra memory at the end for insitu reading.
+		if (data.capacity() - data.size() < 4)
+		{
+			data.reserve(data.size() + 4);
+		}
+
+		doc = yyjson_read_opts(
+		    insituBuffer.data(), insituBuffer.length(), YYJSON_READ_INSITU, nullptr, nullptr);
+		root = yyjson_doc_get_root(doc);
 		PushScope(root);
 	}
 
@@ -313,7 +324,7 @@ namespace Rift::Serl
 		if (scope.size > 0) [[unlikely]]
 		{
 			Log::Error("Have BeginObject() or BeginArray() been called already in this scope?");
-			return;
+			return 0;
 		}
 		scope.id     = 0;
 		scope.size   = unsafe_yyjson_get_len(current);
@@ -365,7 +376,6 @@ namespace Rift::Serl
 		doc = yyjson_mut_doc_new(nullptr);
 		if (doc)
 		{
-			current = doc->root;
 			PushScope({});
 		}
 	}

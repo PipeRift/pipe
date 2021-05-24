@@ -3,10 +3,9 @@
 
 #include "Platform/Platform.h"
 #include "Reflection/TypeFlags.h"
-#include "Serialization/Formats/IFormat.h"
-#include "Serialization/ReadContext.h"
+#include "Serialization/Contexts/ReadContext.h"
+#include "Serialization/Contexts/WriteContext.h"
 #include "Serialization/SerializationTypes.h"
-#include "Serialization/WriteContext.h"
 
 
 namespace Rift::Serl
@@ -98,11 +97,11 @@ namespace Rift::Serl
 		{
 			if (IsWriting())
 			{
-				// writeContext->Write(val);
+				writeContext->Serialize(const_cast<const T&>(val));
 			}
 			else
 			{
-				readContext->Read(val);
+				readContext->Serialize(val);
 			}
 		}
 
@@ -139,17 +138,17 @@ namespace Rift::Serl
 	// Types can be marked as single serialize, so that Serialize() will be called instead of Read
 	// and Write
 	template <typename T>
-	void Write(WriteContext& ct, T& val) requires(
+	void Write(WriteContext& ct, const T& val) requires(
 	    bool(TypeFlags<T>::HasSingleSerialize&& TypeFlags<T>::HasMemberSerialize))
 	{
 		CommonContext commonContext{ct};
-		val.Serialize(commonContext);
+		const_cast<T&>(val).Serialize(commonContext);
 	}
 	template <typename T>
-	void Write(WriteContext& ct, T& val) requires(
+	void Write(WriteContext& ct, const T& val) requires(
 	    bool(TypeFlags<T>::HasSingleSerialize && !TypeFlags<T>::HasMemberSerialize))
 	{
 		CommonContext commonContext{ct};
-		Serialize(commonContext, val);
+		Serialize(commonContext, const_cast<T&>(val));
 	}
 }    // namespace Rift::Serl

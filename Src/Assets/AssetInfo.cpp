@@ -1,14 +1,17 @@
 // Copyright 2015-2021 Piperift - All rights reserved
-#include "Assets/AssetInfo.h"
 
-#include "Serialization/Archive.h"
+#include "Assets/AssetInfo.h"
+#include "Serialization/Contexts.h"
 
 
 namespace Rift
 {
-	bool AssetInfo::Serialize(class Archive& ar, StringView name)
+	void AssetInfo::Read(Serl::ReadContext& ct)
 	{
-		ar(name, id);
-		return true;
+		ct.Serialize(id);
+	}
+	void AssetInfo::Write(Serl::WriteContext& ct) const
+	{
+		ct.Serialize(id);
 	}
 }    // namespace Rift

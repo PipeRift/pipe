@@ -1,11 +1,13 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Assets/AssetManager.h"
-
 #include "Context.h"
 #include "Files/Files.h"
 #include "Profiler.h"
+#include "Serialization/Contexts.h"
+#include "Serialization/Formats/JsonFormat.h"
 #include "Tasks.h"
+
 
 
 namespace Rift
@@ -13,7 +15,7 @@ namespace Rift
 	struct FAssetLoadingData
 	{
 		Refl::ClassType* type = nullptr;
-		Json json;
+		String str;
 	};
 
 
@@ -57,26 +59,29 @@ namespace Rift
 			auto& info = infos[i];
 			auto& data = loadedDatas[i];
 
-			if (!Files::LoadJsonFile(info.GetStrPath(), data.json))
+			if (!Files::LoadStringFile(
+			        info.GetStrPath(), data.str, 4))    // Set extra padding for insitu reading
 			{
 				Log::Error("Asset ({}) could not be loaded from disk", info.GetStrPath());
 				return;
 			}
 
-			const auto type = data.json["asset_type"];
-			if (!type.is_string())
+			// Discover asset type
+			Serl::JsonFormatReader typeReader{data.str};
+			Serl::ReadContext& ct = typeReader;
+			ct.BeginObject();
+			StringView typeName;
+			ct.Next("asset_type", typeName);
+			if (typeName.empty())
 			{
-				Log::Error("Asset ({}) must have a type (asset_type)", info.GetStrPath());
+				Log::Error("Asset '{}' doesn't have a type! (asset_type)", info.GetStrPath());
 				return;    // Asset doesn't have a type
 			}
 
-			// Get asset type from json
-			const String typeStr = type.get<String>();
-
-			data.type = GetType<AssetData>()->FindChild(typeStr);
+			data.type = GetType<AssetData>()->FindChild(typeName);
 			if (!data.type)
 			{
-				Log::Error("Asset ({}) has unknown asset_type '{}' ", info.GetStrPath(), typeStr);
+				Log::Error("Asset '{}' has unknown asset_type '{}' ", info.GetStrPath(), typeName);
 			}
 		});
 		TaskSystem::Get().RunFlow(loadTask).wait();
@@ -96,7 +101,7 @@ namespace Rift
 			auto newAsset    = Create<AssetData>(data.type, Self());
 			const auto& info = infos[I];
 
-			if (newAsset->OnLoad(info, data.json))
+			if (newAsset->OnLoad(info, data.str))
 			{
 				// Loading succeeded, registry the asset
 				finalAssets.Add(newAsset);

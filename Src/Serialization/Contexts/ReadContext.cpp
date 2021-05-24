@@ -1,8 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Serialization/Contexts/ReadContext.h"
 #include "Misc/Checks.h"
 #include "Serialization/Formats/JsonFormat.h"
-#include "Serialization/ReadContext.h"
 
 
 namespace Rift::Serl
@@ -112,11 +112,5 @@ namespace Rift::Serl
 	void Read(ReadContext& ct, StringView& val)
 	{
 		ReadFromFormat(ct, val);
-	}
-	void Read(ReadContext& ct, String& val)
-	{
-		StringView view;
-		Read(ct, view);
-		val = view;
 	}
 }    // namespace Rift::Serl

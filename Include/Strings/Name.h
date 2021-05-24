@@ -6,6 +6,7 @@
 #include "Misc/Hash.h"
 #include "Misc/Utility.h"
 #include "Reflection/TypeFlags.h"
+#include "Serialization/ContextsFwd.h"
 #include "String.h"
 
 #include <tsl/robin_set.h>
@@ -167,12 +168,12 @@ namespace Rift
 			return NameTable::noneStr;
 		}
 
-		bool Serialize(class Archive& ar, StringView name);
+		void Read(Serl::ReadContext& ct);
+		void Write(Serl::WriteContext& ct) const;
 
 	private:
 		Name(const Id& id) : id(id) {}
 	};
-
 	DEFINE_TYPE_FLAGS(Name, HasMemberSerialize = true);
 
 	template <>

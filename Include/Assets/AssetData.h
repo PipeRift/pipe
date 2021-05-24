@@ -21,7 +21,7 @@ namespace Rift
 		bool OnCreate(const AssetInfo& inInfo);
 
 		/** Deserializes the asset. Internal usage only. */
-		bool OnLoad(const AssetInfo& inInfo, Json& data);
+		bool OnLoad(const AssetInfo& inInfo, String& data);
 
 
 		CORE_API bool SaveToPath(const Name& path);

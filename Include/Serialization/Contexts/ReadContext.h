@@ -5,7 +5,6 @@
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Formats/IFormat.h"
 #include "Serialization/SerializationTypes.h"
-#include "Strings/String.h"
 #include "Strings/StringView.h"
 #include "Templates/Tuples.h"
 
@@ -127,14 +126,13 @@ namespace Rift::Serl
 	CORE_API void Read(ReadContext& ct, float& val);
 	CORE_API void Read(ReadContext& ct, double& val);
 	CORE_API void Read(ReadContext& ct, StringView& val);
-	CORE_API void Read(ReadContext& ct, String& val);
 
 	template <typename T1, typename T2>
 	void Read(ReadContext& ct, TPair<T1, T2>& val)
 	{
 		ct.BeginObject();
-		ct.Next("first", v.first);
-		ct.Next("second", v.second);
+		ct.Next("first", val.first);
+		ct.Next("second", val.second);
 	}
 
 	template <typename T>
@@ -152,7 +150,7 @@ namespace Rift::Serl
 		val.Resize(size);
 		for (u32 i = 0; i < size; ++i)
 		{
-			ct.Next(val[i])
+			ct.Next(val[i]);
 		}
 	}
 }    // namespace Rift::Serl

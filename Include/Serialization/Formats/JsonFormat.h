@@ -2,9 +2,6 @@
 #pragma once
 
 #include "Serialization/Formats/TFormat.h"
-#include "Serialization/Json.h"
-#include "Serialization/ReadContext.h"
-#include "Serialization/WriteContext.h"
 
 
 struct yyjson_doc;
@@ -24,7 +21,8 @@ namespace Rift::Serl
 			u32 size           = 0;
 			yyjson_val* parent = nullptr;
 		};
-		yyjson_doc* doc  = nullptr;
+		String insituBuffer;
+		yyjson_doc* doc     = nullptr;
 		yyjson_val* root    = nullptr;
 		yyjson_val* current = nullptr;
 		TArray<Scope> scopeStack;
@@ -32,12 +30,18 @@ namespace Rift::Serl
 
 	public:
 		/**
-		 * Constructs a JsonParser.
-		 * @param customParser will override the global parser. Reusing parsers can improve
-		 * performance, but they are not thread-safe. While multithreading, use a parser for each
-		 * thread.
+		 * Configures a JsonFormatReader to read from an string buffer
+		 * @param data containing the constant json string
+		 * @see JsonFormatReader(String& data, bool insitu = true) for optional insitu reading
 		 */
 		JsonFormatReader(const String& data);
+		/**
+		 * Configures a JsonFormatReader to read from an string buffer
+		 * This contructor transfers the buffer and modifies it if needed to improve reading speed
+		 * slightly.
+		 * @param data containing the json string
+		 */
+		JsonFormatReader(String&& data);
 		~JsonFormatReader();
 
 		void BeginObject();
@@ -82,8 +86,8 @@ namespace Rift::Serl
 			StringView key;
 			yyjson_mut_val* parent = nullptr;
 		};
-		yyjson_mut_doc* doc      = nullptr;
-		yyjson_mut_val* current  = nullptr;
+		yyjson_mut_doc* doc     = nullptr;
+		yyjson_mut_val* current = nullptr;
 		TArray<Scope> scopeStack;
 		bool open = true;
 
@@ -128,7 +132,7 @@ namespace Rift::Serl
 	template <>
 	struct FormatBind<Format::Json>
 	{
-		using Reader                    = JsonFormatReader;
-		using Writer                    = JsonFormatWriter;
+		using Reader = JsonFormatReader;
+		using Writer = JsonFormatWriter;
 	};
 }    // namespace Rift::Serl

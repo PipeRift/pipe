@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Misc/Checks.h"
-#include "Serialization/CommonContext.h"
+#include "Serialization/Contexts/CommonContext.h"
+
 
 namespace Rift::Serl
 {
@@ -21,11 +22,11 @@ namespace Rift::Serl
 	{
 		if (IsWriting())
 		{
-			writeContext->EnterNext(name);
+			return writeContext->EnterNext(name);
 		}
 		else
 		{
-			readContext->EnterNext(name);
+			return readContext->EnterNext(name);
 		}
 	}
 
@@ -45,11 +46,11 @@ namespace Rift::Serl
 	{
 		if (IsWriting())
 		{
-			writeContext->EnterNext();
+			return writeContext->EnterNext();
 		}
 		else
 		{
-			readContext->EnterNext();
+			return readContext->EnterNext();
 		}
 	}
 

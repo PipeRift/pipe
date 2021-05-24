@@ -12,7 +12,6 @@
 #include <glm/integer.hpp>
 
 
-
 namespace Rift
 {
 	class v3;

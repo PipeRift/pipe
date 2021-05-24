@@ -8,8 +8,10 @@
 #include "Math.h"
 #include "Reflection/Static/NativeType.h"
 #include "Reflection/TypeFlags.h"
+#include "Serialization/ContextsFwd.h"
 #include "Strings/String.h"
 #include "Vector.h"
+
 
 
 namespace Rift
@@ -56,9 +58,6 @@ namespace Rift
 		LinearColor(const v3& vector);
 
 		explicit LinearColor(const v4& vector);
-
-
-		bool Serialize(class Archive& ar, const char* name);
 
 		// Conversions.
 		Color ToRGBE() const;
@@ -393,8 +392,6 @@ namespace Rift
 			DWColor() = InColor;
 		}
 
-		bool Serialize(class Archive& ar, StringView name);
-
 		// Operators.
 		bool operator==(const Color& other) const
 		{
@@ -532,15 +529,12 @@ namespace Rift
 		 */
 		explicit Color(const LinearColor& LinearColor);
 	};
+	REFLECT_NATIVE_TYPE(Color);
 
 
 	/** Computes a brightness and a fixed point color from a floating point color. */
 	extern void ComputeAndFixedColorAndIntensity(
 	    const LinearColor& InLinearColor, Color& OutColor, float& OutIntensity);
-
-
-	DEFINE_TYPE_FLAGS(Color, HasMemberSerialize = true);
-	REFLECT_NATIVE_TYPE(Color);
 
 
 	/**
@@ -619,6 +613,13 @@ namespace Rift
 			return color.DWColor();
 		}
 	};
+
+
+	void Read(Serl::ReadContext& ct, LinearColor& color);
+	void Write(Serl::WriteContext& ct, const LinearColor& color);
+
+	void Read(Serl::ReadContext& ct, Color& color);
+	void Write(Serl::WriteContext& ct, Color color);
 }    // namespace Rift
 
 

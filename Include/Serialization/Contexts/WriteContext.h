@@ -5,7 +5,6 @@
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Formats/IFormat.h"
 #include "Serialization/SerializationTypes.h"
-#include "Strings/String.h"
 #include "Strings/StringView.h"
 
 
@@ -144,31 +143,30 @@ namespace Rift::Serl
 	CORE_API void Write(WriteContext& ct, float val);
 	CORE_API void Write(WriteContext& ct, double val);
 	CORE_API void Write(WriteContext& ct, StringView val);
-	CORE_API void Write(WriteContext& ct, const String& val);
 
 	template <typename T1, typename T2>
 	void Write(WriteContext& ct, TPair<T1, T2>& val)
 	{
 		ct.BeginObject();
-		ct.Next("first", v.first);
-		ct.Next("second", v.second);
+		ct.Next("first", val.first);
+		ct.Next("second", val.second);
 	}
 
 	template <typename T>
-	void Write(WriteContext& ct, T& val) requires(
+	void Write(WriteContext& ct, const T& val) requires(
 	    bool(TypeFlags<T>::HasMemberSerialize && !TypeFlags<T>::HasSingleSerialize))
 	{
 		val.Write(ct);
 	}
 
 	template <typename T>
-	void Write(WriteContext& ct, T& val) requires(IsArray<T>())
+	void Write(WriteContext& ct, const T& val) requires(IsArray<T>())
 	{
 		u32 size = val.Size();
 		ct.BeginArray(size);
 		for (u32 i = 0; i < size; ++i)
 		{
-			ct.Next(val[i])
+			ct.Next(val[i]);
 		}
 	}
 }    // namespace Rift::Serl

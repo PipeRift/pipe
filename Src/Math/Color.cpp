@@ -5,9 +5,9 @@
 =============================================================================*/
 
 #include "Math/Color.h"
-
 #include "Math/Vector.h"
-#include "Serialization/Archive.h"
+#include "Serialization/Contexts.h"
+
 
 
 namespace Rift
@@ -160,27 +160,6 @@ namespace Rift
 		float Lum = ComputeLuminance();
 		return Math::Lerp(*this, LinearColor(Lum, Lum, Lum, 0), desaturation);
 	}
-
-	bool Color::Serialize(Archive& ar, StringView name)
-	{
-		ar.BeginObject(name);
-		{
-			ar("r", r);
-			ar("g", g);
-			ar("b", b);
-			ar("a", a);
-		}
-		ar.EndObject();
-		return true;
-	}
-
-	// void Read(ReadContext& ct, Color& color)
-	//{
-	//	ReadScope(ct, "r", color.r);
-	//	ReadScope(ct, "g", color.g);
-	//	ReadScope(ct, "b", color.b);
-	//	ReadScope(ct, "a", color.a);
-	//}
 
 	// Convert from RGBE to float as outlined in Gregory Ward's Real Pixels article, Graphics Gems
 	// II, page 80.
@@ -718,4 +697,41 @@ namespace Rift
 	    0.991102093719252,
 	    1.0,
 	};
+
+
+	void Read(Serl::ReadContext& ct, LinearColor& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+
+	void Write(Serl::WriteContext& ct, const LinearColor& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+
+	void Read(Serl::ReadContext& ct, Color& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+
+	void Write(Serl::WriteContext& ct, Color color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
 }    // namespace Rift

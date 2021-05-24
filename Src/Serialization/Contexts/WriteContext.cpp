@@ -1,8 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Misc/Checks.h"
+#include "Serialization/Contexts/WriteContext.h"
 #include "Serialization/Formats/JsonFormat.h"
-#include "Serialization/WriteContext.h"
 
 
 namespace Rift::Serl
@@ -111,9 +111,5 @@ namespace Rift::Serl
 	void Write(WriteContext& ct, StringView val)
 	{
 		WriteFromFormat(ct, val);
-	}
-	void Write(WriteContext& ct, const String& val)
-	{
-		ct.Serialize(StringView{val});
 	}
 }    // namespace Rift::Serl
