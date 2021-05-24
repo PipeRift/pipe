@@ -5,8 +5,9 @@
 #include "PCH.h"
 
 #include "Misc/Crc.h"
-#include "Reflection/ClassTraits.h"
 #include "Reflection/Registry/NativeTypeBuilder.h"
+#include "Reflection/TypeFlags.h"
+#include "Serialization/ContextsFwd.h"
 #include "Strings/Name.h"
 
 
@@ -197,7 +198,8 @@ namespace Rift
 			return a;
 		}
 
-		bool Serialize(class Archive& Ar, StringView name);
+		void Read(Serl::ReadContext& ct);
+		void Write(Serl::WriteContext& ct) const;
 
 		/**
 		 * Guid default string conversion.
@@ -297,8 +299,7 @@ namespace Rift
 		/** Holds the fourth component. */
 		u32 d = 0;
 	};
-
-	DEFINE_CLASS_TRAITS(Guid, HasCustomSerialize = true);
+	DEFINE_TYPE_FLAGS(Guid, HasMemberSerialize = true);
 	REFLECT_NATIVE_TYPE(Guid);
 
 	template <>

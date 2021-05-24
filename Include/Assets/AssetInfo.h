@@ -5,7 +5,8 @@
 
 #include "CoreTypes.h"
 #include "Files/Paths.h"
-#include "Reflection/Static/NativeType.h"
+#include "Reflection/Reflection.h"
+#include "Serialization/ContextsFwd.h"
 #include "Strings/Name.h"
 #include "Strings/StringView.h"
 #include "TypeTraits.h"
@@ -51,8 +52,11 @@ namespace Rift
 			return id == other.id;
 		}
 
-		CORE_API bool Serialize(class Archive& ar, StringView name);
+		CORE_API void Read(Serl::ReadContext& ct);
+		CORE_API void Write(Serl::WriteContext& ct) const;
 	};
+	DEFINE_TYPE_FLAGS(AssetInfo, HasMemberSerialize = true);
+	REFLECT_NATIVE_TYPE(AssetInfo);
 
 
 	template <>
@@ -65,6 +69,4 @@ namespace Rift
 		}
 	};
 
-	DEFINE_CLASS_TRAITS(AssetInfo, HasCustomSerialize = true);
-	REFLECT_NATIVE_TYPE(AssetInfo);
 }    // namespace Rift

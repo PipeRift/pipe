@@ -1,8 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
-#include "Assets/AssetData.h"
 
+#include "Assets/AssetData.h"
 #include "Files/Files.h"
-#include "Serialization/JsonArchive.h"
+#include "Serialization/Contexts.h"
+#include "Serialization/Formats/JsonFormat.h"
+#include "Serialization/Contexts.h"
+
 
 
 namespace Rift
@@ -13,13 +16,13 @@ namespace Rift
 		return PostLoad(true);
 	}
 
-	bool AssetData::OnLoad(const AssetInfo& inInfo, Json& data)
+	bool AssetData::OnLoad(const AssetInfo& inInfo, String& data)
 	{
 		info = inInfo;
 
 		// Deserialize asset
-		JsonArchive ar(data);
-		Serialize(ar);
+		Serl::JsonFormatReader reader{Move(data)};
+		reader.GetContext().Serialize(*this);
 
 		return PostLoad(false);
 	}
@@ -30,12 +33,13 @@ namespace Rift
 		if (sPath.empty() || Files::IsFolder(sPath))
 			return false;
 
-		JsonArchive ar{};
-		Name className = GetClass()->GetName();
-		ar("asset_type", className);
-		Serialize(ar);
+		Serl::JsonFormatWriter writer;
+		Serl::WriteContext& ct = writer;
+		ct.BeginObject();
+		ct.Next("asset_type", GetClass()->GetName());
+		ct.Serialize(*this);
 
-		return Files::SaveJsonFile(sPath, ar.GetData(), ar.GetIndent());
+		return Files::SaveStringFile(sPath, String(writer.ToString()));
 	}
 
 	bool AssetData::Save()

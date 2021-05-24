@@ -4,8 +4,6 @@
 
 #include "PCH.h"
 
-#include "Platform/Platform.h"
-
 
 namespace Rift
 {

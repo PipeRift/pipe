@@ -6,10 +6,11 @@
 
 #include "Math.h"
 #include "Reflection/Registry/NativeTypeBuilder.h"
+#include "Serialization/ContextsFwd.h"
 #include "Strings/Name.h"
-#include "glm/fwd.hpp"
 
 #include <glm/ext.hpp>
+#include <glm/fwd.hpp>
 #include <glm/geometric.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtx/norm.hpp>
@@ -269,4 +270,14 @@ namespace Rift
 	using box3     = Box<float, 3>;
 	using box2_i32 = Box<i32, 2>;
 	using box3_i32 = Box<i32, 3>;
+
+
+	void Read(Serl::ReadContext& ct, v2& val);
+	void Write(Serl::WriteContext& ct, v2 val);
+
+	void Read(Serl::ReadContext& ct, v2_u32& val);
+	void Write(Serl::WriteContext& ct, v2_u32 val);
+
+	void Read(Serl::ReadContext& ct, v3& val);
+	void Write(Serl::WriteContext& ct, const v3& val);
 }    // namespace Rift

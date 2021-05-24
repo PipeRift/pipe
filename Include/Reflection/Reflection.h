@@ -10,6 +10,7 @@
 #include "Reflection/Registry/DataTypeBuilder.h"
 #include "Reflection/Registry/EnumTypeBuilder.h"
 #include "Reflection/Registry/NativeTypeBuilder.h"
+#include "Reflection/Registry/StaticInitializers.h"
 
 
 /**

@@ -1,8 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include "Serialization/Contexts.h"
 #include "Strings/Name.h"
-
-#include "Serialization/Archive.h"
 
 
 namespace Rift
@@ -52,27 +51,15 @@ namespace Rift
 		return instance;
 	}
 
-	bool Name::Serialize(Archive& ar, StringView name)
+	void Name::Read(Serl::ReadContext& ct)
 	{
-		if (ar.IsSaving())
-		{
-			String str = ToString();
-			ar(name, str);
-		}
-		else
-		{
-			String str;
-			ar(name, str);
+		String str;
+		ct.Serialize(str);
 
-			if (Strings::Equals(str, NameTable::noneStr))
-			{
-				*this = None();
-			}
-			else
-			{
-				*this = str;
-			}
-		}
-		return true;
+		*this = Strings::Equals(str, NameTable::noneStr) ? None() : str;
+	}
+	void Name::Write(Serl::WriteContext& ct) const
+	{
+		ct.Serialize(ToString());
 	}
 }    // namespace Rift

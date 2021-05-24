@@ -6,10 +6,12 @@
 
 #include "Containers/Array.h"
 #include "Math.h"
-#include "Reflection/ClassTraits.h"
 #include "Reflection/Static/NativeType.h"
+#include "Reflection/TypeFlags.h"
+#include "Serialization/ContextsFwd.h"
 #include "Strings/String.h"
 #include "Vector.h"
+
 
 
 namespace Rift
@@ -38,17 +40,17 @@ namespace Rift
 	{
 		float r = 0.f, g = 0.f, b = 0.f, a = 0.f;
 
-		/** Static lookup table used for FColor -> FLinearColor conversion. Pow(2.2) */
+		/** Static lookup table used for Color -> FLinearColor conversion. Pow(2.2) */
 		static double Pow22OneOver255Table[256];
 
-		/** Static lookup table used for FColor -> FLinearColor conversion. sRGB */
+		/** Static lookup table used for Color -> FLinearColor conversion. sRGB */
 		static double sRGBToLinearTable[256];
 
 		explicit LinearColor() = default;
 		constexpr LinearColor(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
 
 		/**
-		 * Converts an FColor which is assumed to be in sRGB space, into linear color space.
+		 * Converts an Color which is assumed to be in sRGB space, into linear color space.
 		 * @param Color The sRGB color that needs to be converted into linear space.
 		 */
 		LinearColor(const Color& Color);
@@ -57,20 +59,17 @@ namespace Rift
 
 		explicit LinearColor(const v4& vector);
 
-
-		bool Serialize(class Archive& ar, const char* name);
-
 		// Conversions.
 		Color ToRGBE() const;
 
 		/**
-		 * Converts an FColor coming from an observed sRGB output, into a linear color.
+		 * Converts an Color coming from an observed sRGB output, into a linear color.
 		 * @param Color The sRGB color that needs to be converted into linear space.
 		 */
 		static LinearColor FromSRGBColor(const Color& Color);
 
 		/**
-		 * Converts an FColor coming from an observed Pow(1/2.2) output, into a linear color.
+		 * Converts an Color coming from an observed Pow(1/2.2) output, into a linear color.
 		 * @param Color The Pow(1/2.2) color that needs to be converted into linear space.
 		 */
 		static LinearColor FromPow22Color(const Color& Color);
@@ -269,15 +268,15 @@ namespace Rift
 		static LinearColor LerpUsingHSV(
 		    const LinearColor& From, const LinearColor& To, const float Progress);
 
-		/** Quantizes the linear color and returns the result as a FColor.  This bypasses the SRGB
+		/** Quantizes the linear color and returns the result as a Color.  This bypasses the SRGB
 		 * conversion. */
 		Color Quantize() const;
 
-		/** Quantizes the linear color with rounding and returns the result as a FColor.  This
+		/** Quantizes the linear color with rounding and returns the result as a Color.  This
 		 * bypasses the SRGB conversion. */
 		Color QuantizeRound() const;
 
-		/** Quantizes the linear color and returns the result as a FColor with optional sRGB
+		/** Quantizes the linear color and returns the result as a Color with optional sRGB
 		 * conversion and quality as goal. */
 		Color ToColor(const bool bSRGB = true) const;
 
@@ -393,8 +392,6 @@ namespace Rift
 			DWColor() = InColor;
 		}
 
-		bool Serialize(class Archive& ar, StringView name);
-
 		// Operators.
 		bool operator==(const Color& other) const
 		{
@@ -432,8 +429,8 @@ namespace Rift
 		static Color MakeFromColorTemperature(float Temp);
 
 		/**
-		 *	@return a new FColor based of this color with the new alpha value.
-		 *	Usage: const FColor& MyColor = FColorList::Green.WithAlpha(128);
+		 *	@return a new Color based of this color with the new alpha value.
+		 *	Usage: const Color& MyColor = ColorList::Green.WithAlpha(128);
 		 */
 		Color WithAlpha(u8 alpha) const
 		{
@@ -525,22 +522,19 @@ namespace Rift
 	private:
 		/**
 		 * Please use .ToColor(true) on FLinearColor if you wish to convert from FLinearColor to
-		 * FColor, with proper sRGB conversion applied.
+		 * Color, with proper sRGB conversion applied.
 		 *
 		 * Note: Do not implement or make public.  We don't want people needlessly and implicitly
-		 * converting between FLinearColor and FColor.  It's not a free conversion.
+		 * converting between FLinearColor and Color.  It's not a free conversion.
 		 */
 		explicit Color(const LinearColor& LinearColor);
 	};
+	REFLECT_NATIVE_TYPE(Color);
 
 
 	/** Computes a brightness and a fixed point color from a floating point color. */
 	extern void ComputeAndFixedColorAndIntensity(
 	    const LinearColor& InLinearColor, Color& OutColor, float& OutIntensity);
-
-
-	DEFINE_CLASS_TRAITS(Color, HasCustomSerialize = true);
-	REFLECT_NATIVE_TYPE(Color);
 
 
 	/**
@@ -619,6 +613,13 @@ namespace Rift
 			return color.DWColor();
 		}
 	};
+
+
+	void Read(Serl::ReadContext& ct, LinearColor& color);
+	void Write(Serl::WriteContext& ct, const LinearColor& color);
+
+	void Read(Serl::ReadContext& ct, Color& color);
+	void Write(Serl::WriteContext& ct, Color color);
 }    // namespace Rift
 
 

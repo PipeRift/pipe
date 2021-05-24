@@ -59,6 +59,7 @@ target_link_libraries(RiftCore PUBLIC
     fmt::fmt
     glm::glm
     nlohmann_json
+    yyjson
     robin_hood
     Taskflow
     tsl::robin_map
@@ -78,6 +79,7 @@ if(RIFT_ENABLE_PROFILER)
 endif()
 rift_target_shared_output_directory(RiftCore)
 rift_target_enable_CPP20(RiftCore)
+#target_compile_options(RiftCore PRIVATE /showIncludes)
 
 
 ################################################################################

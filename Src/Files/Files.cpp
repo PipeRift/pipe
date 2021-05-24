@@ -51,7 +51,7 @@ namespace Rift::Files
 	}
 
 
-	bool LoadStringFile(const Path& path, String& result)
+	bool LoadStringFile(const Path& path, String& result, sizet extraPadding)
 	{
 		ZoneScopedNC("LoadStringFile", 0xBB45D1);
 
@@ -65,7 +65,7 @@ namespace Rift::Files
 		// Clean string and reserve it
 		result = {};
 		file.seekg(0, std::ios::end);
-		result.reserve(i32(file.tellg()));
+		result.reserve(sizet(file.tellg()) + extraPadding);
 		file.seekg(0, std::ios::beg);
 
 		// Improve by avoiding this copy from std::string to String
@@ -198,9 +198,9 @@ namespace Rift::Files
 		return SaveJsonFile(Paths::FromString(path), data, indent);
 	}
 
-	bool LoadStringFile(const String& path, String& result)
+	bool LoadStringFile(const String& path, String& result, sizet extraPadding)
 	{
-		return LoadStringFile(Paths::FromString(path), result);
+		return LoadStringFile(Paths::FromString(path), result, extraPadding);
 	}
 
 	bool SaveStringFile(const String& path, const String& data)

@@ -77,6 +77,18 @@ namespace Rift
 			return Size() - 1;
 		}
 
+		Type& AddRef(Type&& item)
+		{
+			vector.push_back(Move(item));
+			return Data()[Size() - 1];
+		}
+
+		Type& AddRef(const Type& item)
+		{
+			vector.push_back(item);
+			return Data()[Size() - 1];
+		}
+
 		i32 AddUnique(const Type& item)
 		{
 			const i32 foundIndex = FindIndex(item);

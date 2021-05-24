@@ -3,20 +3,24 @@
 #include "Math/Transform.h"
 
 #include "Math/Math.h"
-#include "Serialization/Archive.h"
+#include "Serialization/Contexts.h"
 
 
 namespace Rift
 {
-	bool Transform::Serialize(Archive& ar, StringView name)
+	void Transform::Read(Serl::ReadContext& ct)
 	{
-		ar.BeginObject(name);
-		{
-			ar("location", location);
-			ar("rotation", rotation);
-			ar("scale", scale);
-		}
-		ar.EndObject();
-		return true;
+		ct.BeginObject();
+		ct.Next("location", location);
+		ct.Next("rotation", rotation);
+		ct.Next("scale", scale);
+	}
+
+	void Transform::Write(Serl::WriteContext& ct) const
+	{
+		ct.BeginObject();
+		ct.Next("location", location);
+		ct.Next("rotation", rotation);
+		ct.Next("scale", scale);
 	}
 }    // namespace Rift

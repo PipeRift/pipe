@@ -10,7 +10,7 @@
 #include "Reflection/Static/ClassType.h"
 #include "Reflection/Static/StructType.h"
 #include "Reflection/TypeId.h"
-#include "Serialization/Archive.h"
+#include "Serialization/Contexts.h"
 #include "Strings/Name.h"
 #include "TypeTraits.h"
 
@@ -171,9 +171,9 @@ public:                                                                      \
 	{                                                                        \
 		return Rift::GetType<ThisType>();                                    \
 	}                                                                        \
-	virtual void SerializeReflection(Rift::Archive& ar)                      \
+	virtual void SerializeReflection(Rift::Serl::CommonContext& ct)                \
 	{                                                                        \
-		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});           \
+		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});           \
 	}                                                                        \
 	BASECLASS(type)
 
@@ -190,10 +190,10 @@ public:                                                                       \
 	{                                                                         \
 		return Rift::GetType<ThisType>();                                     \
 	}                                                                         \
-	void SerializeReflection(Rift::Archive& ar) override                      \
+	void SerializeReflection(Rift::Serl::CommonContext& ct) override                \
 	{                                                                         \
-		Super::SerializeReflection(ar);                                       \
-		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});            \
+		Super::SerializeReflection(ct);                                       \
+		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});            \
 	}                                                                         \
 	BASECLASS(type)
 
@@ -216,7 +216,7 @@ private:                                                                        
 	static void __ReflReflectProperty(BuilderType&, Rift::Refl::MetaCounter<N>)             \
 	{}                                                                                      \
 	template <Rift::u32 N>                                                                  \
-	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                \
+	void __ReflSerializeProperty(Rift::Serl::CommonContext&, Rift::Refl::MetaCounter<N>)    \
 	{}
 
 
@@ -230,9 +230,9 @@ public:                                                                       \
 	{                                                                         \
 		return Rift::GetType<ThisType>();                                     \
 	}                                                                         \
-	void SerializeReflection(Rift::Archive& ar)                               \
+	void SerializeReflection(Rift::Serl::CommonContext& ct)                   \
 	{                                                                         \
-		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});            \
+		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});            \
 	}                                                                         \
 	BASESTRUCT(type)
 
@@ -249,10 +249,10 @@ public:                                                                        \
 	{                                                                          \
 		return Rift::GetType<ThisType>();                                      \
 	}                                                                          \
-	void SerializeReflection(Rift::Archive& ar)                                \
+	void SerializeReflection(Rift::Serl::CommonContext& ct)                    \
 	{                                                                          \
-		Super::SerializeReflection(ar);                                        \
-		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<0>{});             \
+		Super::SerializeReflection(ct);                                        \
+		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});             \
 	}                                                                          \
 	BASESTRUCT(type)
 
@@ -275,7 +275,7 @@ private:                                                                        
 	static void __ReflReflectProperty(BuilderType&, Rift::Refl::MetaCounter<N>)             \
 	{}                                                                                      \
 	template <Rift::u32 N>                                                                  \
-	void __ReflSerializeProperty(Rift::Archive&, Rift::Refl::MetaCounter<N>)                \
+	void __ReflSerializeProperty(Rift::Serl::CommonContext&, Rift::Refl::MetaCounter<N>)    \
 	{}                                                                                      \
                                                                                             \
 public:
@@ -283,36 +283,36 @@ public:
 
 #define __PROPERTY_NO_TAGS(type, name) __PROPERTY_TAGS(type, name, Rift::ReflectionTags::None)
 #define __PROPERTY_TAGS(type, name, tags) __PROPERTY_IMPL(type, name, CAT(__refl_id_, name), tags)
-#define __PROPERTY_IMPL(type, name, id_name, inTags)                                          \
-	static constexpr Rift::u32 id_name =                                                      \
-	    decltype(__refl_Counter(Rift::Refl::MetaCounter<255>{}))::value;                      \
-	static constexpr Rift::Refl::MetaCounter<(id_name) + 1> __refl_Counter(                   \
-	    Rift::Refl::MetaCounter<(id_name) + 1>);                                              \
-                                                                                              \
-	static void __ReflReflectProperty(BuilderType& builder, Rift::Refl::MetaCounter<id_name>) \
-	{                                                                                         \
-		static_assert(HasType<type>(), "Type is not reflected");                              \
-		static constexpr Rift::ReflectionTags tags =                                          \
-		    Rift::ReflectionTagsInitializer<inTags>::value;                                   \
-		builder.AddProperty<type, tags>(TX(#name), [](void* instance) {                       \
-			return &static_cast<ThisType*>(instance)->name;                                   \
-		});                                                                                   \
-                                                                                              \
-		/* Registry next property if any */                                                   \
-		__ReflReflectProperty(builder, Rift::Refl::MetaCounter<(id_name) + 1>{});             \
-	};                                                                                        \
-                                                                                              \
-	void __ReflSerializeProperty(Rift::Archive& ar, Rift::Refl::MetaCounter<id_name>)         \
-	{                                                                                         \
-		static constexpr Rift::ReflectionTags tags =                                          \
-		    Rift::ReflectionTagsInitializer<inTags>::value;                                   \
-                                                                                              \
-		if constexpr (!(tags & Transient))                                                    \
-		{ /* Don't serialize property if Transient */                                         \
-			ar(#name, name);                                                                  \
-		}                                                                                     \
-		/* Serialize next property if any */                                                  \
-		__ReflSerializeProperty(ar, Rift::Refl::MetaCounter<(id_name) + 1>{});                \
+#define __PROPERTY_IMPL(type, name, id_name, inTags)                                              \
+	static constexpr Rift::u32 id_name =                                                          \
+	    decltype(__refl_Counter(Rift::Refl::MetaCounter<255>{}))::value;                          \
+	static constexpr Rift::Refl::MetaCounter<(id_name) + 1> __refl_Counter(                       \
+	    Rift::Refl::MetaCounter<(id_name) + 1>);                                                  \
+                                                                                                  \
+	static void __ReflReflectProperty(BuilderType& builder, Rift::Refl::MetaCounter<id_name>)     \
+	{                                                                                             \
+		static_assert(HasType<type>(), "Type is not reflected");                                  \
+		static constexpr Rift::ReflectionTags tags =                                              \
+		    Rift::ReflectionTagsInitializer<inTags>::value;                                       \
+		builder.AddProperty<type, tags>(TX(#name), [](void* instance) {                           \
+			return &static_cast<ThisType*>(instance)->name;                                       \
+		});                                                                                       \
+                                                                                                  \
+		/* Registry next property if any */                                                       \
+		__ReflReflectProperty(builder, Rift::Refl::MetaCounter<(id_name) + 1>{});                 \
+	};                                                                                            \
+                                                                                                  \
+	void __ReflSerializeProperty(Rift::Serl::CommonContext& ct, Rift::Refl::MetaCounter<id_name>) \
+	{                                                                                             \
+		static constexpr Rift::ReflectionTags tags =                                              \
+		    Rift::ReflectionTagsInitializer<inTags>::value;                                       \
+                                                                                                  \
+		if constexpr (!(tags & Transient))                                                        \
+		{ /* Don't serialize property if Transient */                                             \
+			ct.Next(#name, name);                                                                 \
+		}                                                                                         \
+		/* Serialize next property if any */                                                      \
+		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<(id_name) + 1>{});                    \
 	};
 
 

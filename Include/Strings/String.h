@@ -9,9 +9,8 @@
 #include "Misc/Utility.h"
 #include "Platform/Platform.h"
 #include "Reflection/TypeName.h"
+#include "Serialization/ContextsFwd.h"
 #include "Strings/StringView.h"
-#include "Templates/Optional.h"
-#include "Templates/Tuples.h"
 
 #include <fmt/chrono.h>
 #include <fmt/format.h>
@@ -125,6 +124,10 @@ namespace Rift
 			return source;
 		}
 	};    // namespace Strings
+
+
+	CORE_API void Read(Serl::ReadContext& ct, String& val);
+	CORE_API void Write(Serl::WriteContext& ct, const String& val);
 
 
 	template <>

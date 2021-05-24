@@ -8,6 +8,7 @@
 #include "AssetManager.h"
 #include "Files/Files.h"
 #include "Reflection/TypeName.h"
+#include "Serialization/ContextsFwd.h"
 #include "Strings/FixedString.h"
 #include "Strings/StringView.h"
 #include "TypeTraits.h"
@@ -185,9 +186,13 @@ namespace Rift
 			return Get();
 		}
 
-		bool Serialize(class Archive& ar, StringView inName)
+		void Read(Serl::ReadContext& ct)
 		{
-			return info.Serialize(ar, inName);
+			ct.Serialize(info);
+		}
+		void Write(Serl::WriteContext& ct) const
+		{
+			ct.Serialize(info);
 		}
 
 	private:
@@ -217,8 +222,7 @@ namespace Rift
 			cachedAsset = other.cachedAsset;
 		}
 	};
-
-	DEFINE_TEMPLATE_CLASS_TRAITS(TAssetPtr, HasCustomSerialize = true);
+	DEFINE_TEMPLATE_TYPE_FLAGS(TAssetPtr, HasMemberSerialize = true);
 
 
 	template <typename T>

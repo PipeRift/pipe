@@ -32,6 +32,8 @@ namespace Rift
 #endif    // BUILD_DEBUG
 #define NOINLINE __attribute__((noinline))
 
+#define PLATFORM_BREAK() __asm__ volatile("int $0x03")
+
 #if PLATFORM_LINUX_USE_CHAR16
 #	undef PLATFORM_TCHAR_IS_CHAR16
 #	define PLATFORM_TCHAR_IS_CHAR16 1

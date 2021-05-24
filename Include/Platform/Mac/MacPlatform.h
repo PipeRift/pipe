@@ -37,6 +37,8 @@ namespace Rift
 #endif
 #define NOINLINE __attribute__((noinline))
 
+#define PLATFORM_BREAK() __asm__("int $3")
+
 #if PLATFORM_MACOS_USE_CHAR16
 #	undef PLATFORM_TCHAR_IS_CHAR16
 #	define PLATFORM_TCHAR_IS_CHAR16 1

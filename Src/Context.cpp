@@ -2,6 +2,7 @@
 
 #include "Context.h"
 
+
 namespace Rift
 {
 	TOwnPtr<Context> globalInstance{};

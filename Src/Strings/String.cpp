@@ -1,11 +1,25 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Strings/String.h"
-
 #include "Math/Math.h"
 #include "Misc/Char.h"
+#include "Serialization/Contexts.h"
 #include "Strings/Regex.h"
+#include "Strings/String.h"
 
+
+namespace Rift
+{
+	void Read(Serl::ReadContext& ct, String& val)
+	{
+		StringView view;
+		ct.Serialize(view);
+		val = view;
+	}
+	void Write(Serl::WriteContext& ct, const String& val)
+	{
+		ct.Serialize(StringView{val});
+	}
+};    // namespace Rift
 
 namespace Rift::Strings
 {
@@ -110,7 +124,7 @@ namespace Rift::Strings
 
 		String sizeStr       = Format("{:.1f}", finalSize);
 		u32 numTrailingZeros = 0;
-		for (u32 i = sizeStr.size() - 1; i >= 0; --i)
+		for (u32 i = u32(sizeStr.size()) - 1; i >= 0; --i)
 		{
 			if (sizeStr[i] == '0')
 			{

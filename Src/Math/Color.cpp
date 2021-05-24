@@ -5,9 +5,9 @@
 =============================================================================*/
 
 #include "Math/Color.h"
-
 #include "Math/Vector.h"
-#include "Serialization/Archive.h"
+#include "Serialization/Contexts.h"
+
 
 
 namespace Rift
@@ -38,12 +38,12 @@ namespace Rift
 	const Color Color::Emerald{46, 204, 113};
 
 	/**
-	 * Helper used by FColor -> FLinearColor conversion. We don't use a lookup table as unlike pow,
+	 * Helper used by Color -> FLinearColor conversion. We don't use a lookup table as unlike pow,
 	 * multiplication is fast.
 	 */
 	static constexpr float OneOver255 = 1.0f / 255.0f;
 
-	//	FColor->FLinearColor conversion.
+	//	Color->FLinearColor conversion.
 	LinearColor::LinearColor(const Color& other)
 	{
 		r = float(sRGBToLinearTable[other.r]);
@@ -105,7 +105,7 @@ namespace Rift
 	}
 
 
-	/** Quantizes the linear color and returns the result as a FColor with optional sRGB conversion
+	/** Quantizes the linear color and returns the result as a Color with optional sRGB conversion
 	 * and quality as goal. */
 	Color LinearColor::ToColor(const bool bSRGB) const
 	{
@@ -159,19 +159,6 @@ namespace Rift
 	{
 		float Lum = ComputeLuminance();
 		return Math::Lerp(*this, LinearColor(Lum, Lum, Lum, 0), desaturation);
-	}
-
-	bool Color::Serialize(Archive& ar, StringView name)
-	{
-		ar.BeginObject(name);
-		{
-			ar("r", r);
-			ar("g", g);
-			ar("b", b);
-			ar("a", a);
-		}
-		ar.EndObject();
-		return true;
 	}
 
 	// Convert from RGBE to float as outlined in Gregory Ward's Real Pixels article, Graphics Gems
@@ -376,7 +363,7 @@ namespace Rift
 	}
 
 	/**
-	 * Pow table for fast FColor -> FLinearColor conversion.
+	 * Pow table for fast Color -> FLinearColor conversion.
 	 *
 	 * Math::Pow( i / 255.f, 2.2f )
 	 */
@@ -446,7 +433,7 @@ namespace Rift
 
 
 	/**
-	 * Table for fast FColor -> FLinearColor conversion.
+	 * Table for fast Color -> FLinearColor conversion.
 	 *
 	 * Color > 0.04045 ? pow( Color * (1.0 / 1.055) + 0.0521327, 2.4 ) : Color * (1.0 / 12.92);
 	 */
@@ -708,4 +695,41 @@ namespace Rift
 	    0.991102093719252,
 	    1.0,
 	};
+
+
+	void Read(Serl::ReadContext& ct, LinearColor& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+
+	void Write(Serl::WriteContext& ct, const LinearColor& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+
+	void Read(Serl::ReadContext& ct, Color& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+
+	void Write(Serl::WriteContext& ct, Color color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
 }    // namespace Rift

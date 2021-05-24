@@ -12,6 +12,9 @@
 
 namespace Rift
 {
+	template <typename T>
+	concept IsVoid = std::is_void_v<T>;
+
 	template <typename One, typename Other>
 	concept IsSame = std::is_same_v<One, Other>;
 

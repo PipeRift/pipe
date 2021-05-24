@@ -5,6 +5,7 @@
 
 #include "BaseStruct.h"
 #include "Reflection/Reflection.h"
+#include "Serialization/Contexts.h"
 
 
 namespace Rift
@@ -13,4 +14,21 @@ namespace Rift
 	{
 		ORPHAN_STRUCT(Struct, ReflectionTags::None)
 	};
+
+
+	template <typename T>
+	void Read(Serl::ReadContext& ct, T& value) requires(Derived<T, Struct>)
+	{
+		ct.BeginObject();
+		Serl::CommonContext common{ct};
+		value.SerializeReflection(common);
+	}
+
+	template <typename T>
+	void Write(Serl::WriteContext& ct, const T& value) requires(Derived<T, Struct>)
+	{
+		ct.BeginObject();
+		Serl::CommonContext common{ct};
+		const_cast<T&>(value).SerializeReflection(common);
+	}
 }    // namespace Rift

@@ -12,8 +12,6 @@
 
 namespace Rift
 {
-	class Archive;
-
 	/**
 	 * Enumerates the days of the week in 7-day calendars.
 	 */
@@ -427,13 +425,8 @@ namespace Rift
 			return (GetHour() < 12);
 		}
 
-		/**
-		 * Serializes this date and time from or into the specified archive.
-		 *
-		 * @param Ar The archive to serialize from or into.
-		 * @return true on success, false otherwise.
-		 */
-		bool Serialize(Archive& Ar);
+		void Read(class ReadContext& ct);
+		void Write(class WriteContext& ct) const;
 
 		/**
 		 * Returns the RFC 1123 string representation of the FDateTime.

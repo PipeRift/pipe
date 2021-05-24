@@ -1,9 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Math/Quaternion.h"
-
 #include "Math/Rotator.h"
 #include "Math/Vector.h"
+#include "Serialization/Contexts.h"
 
 
 namespace Rift
@@ -121,5 +121,23 @@ namespace Rift
 	Quat Quat::LookAt(const v3& origin, const v3& dest)
 	{
 		return glm::lookAt(origin, dest, v3::Forward);
+	}
+
+
+	void Read(Serl::ReadContext& ct, Quat& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+		ct.Next(TX("w"), val.w);
+	}
+	void Write(Serl::WriteContext& ct, const Quat& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+		ct.Next(TX("w"), val.w);
 	}
 }    // namespace Rift

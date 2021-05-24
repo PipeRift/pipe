@@ -5,6 +5,7 @@
 #include "Math.h"
 #include "Matrix.h"
 #include "Reflection/Registry/NativeTypeBuilder.h"
+#include "Serialization/ContextsFwd.h"
 
 #include <glm/ext/quaternion_common.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -72,4 +73,7 @@ namespace Rift
 		const auto result = glm::inverse<float, glm::highp>(*this);
 		return *static_cast<const Quat*>(&result);
 	}
+
+	void Read(Serl::ReadContext& ct, Quat& val);
+	void Write(Serl::WriteContext& ct, const Quat& val);
 }    // namespace Rift

@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "PCH.h"
-
 #include "Platform/Macros.h"
+#include "Platform/Platform.h"
 #include "TypeTraits.h"
 
 #include <cmath>

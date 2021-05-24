@@ -1,10 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Misc/Guid.h"
-
 #include "Misc/Char.h"
+#include "Misc/Guid.h"
 #include "Platform/PlatformMisc.h"
-#include "Serialization/Archive.h"
+#include "Serialization/Contexts.h"
 
 #include <stdio.h>
 
@@ -14,17 +13,22 @@ namespace Rift
 	/* Guid interface
 	 *****************************************************************************/
 
-	bool Guid::Serialize(Archive& ar, StringView name)
+	void Guid::Read(Serl::ReadContext& ct)
 	{
-		ar.BeginObject(name);
-		{
-			ar(TX("a"), a);
-			ar(TX("b"), b);
-			ar(TX("c"), c);
-			ar(TX("d"), d);
-		}
-		ar.EndObject();
-		return true;
+		ct.BeginObject();
+		ct.Next(TX("a"), a);
+		ct.Next(TX("b"), b);
+		ct.Next(TX("c"), c);
+		ct.Next(TX("d"), d);
+	}
+
+	void Guid::Write(Serl::WriteContext& ct) const
+	{
+		ct.BeginObject();
+		ct.Next(TX("a"), a);
+		ct.Next(TX("b"), b);
+		ct.Next(TX("c"), c);
+		ct.Next(TX("d"), d);
 	}
 
 	String Guid::ToString(EGuidFormats Format) const
@@ -226,10 +230,5 @@ namespace Rift
 		);*/
 
 		return true;
-	}
-
-	Archive& operator<<(Archive& ar, Guid& /*g*/)
-	{
-		return ar; /* << G.A << G.B << G.C << G.D;*/
 	}
 }    // namespace Rift
