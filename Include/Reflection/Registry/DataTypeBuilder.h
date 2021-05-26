@@ -171,7 +171,7 @@ public:                                                                      \
 	{                                                                        \
 		return Rift::GetType<ThisType>();                                    \
 	}                                                                        \
-	virtual void SerializeReflection(Rift::Serl::CommonContext& ct)                \
+	virtual void SerializeReflection(Rift::Serl::CommonContext& ct)          \
 	{                                                                        \
 		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});           \
 	}                                                                        \
@@ -190,7 +190,7 @@ public:                                                                       \
 	{                                                                         \
 		return Rift::GetType<ThisType>();                                     \
 	}                                                                         \
-	void SerializeReflection(Rift::Serl::CommonContext& ct) override                \
+	void SerializeReflection(Rift::Serl::CommonContext& ct) override          \
 	{                                                                         \
 		Super::SerializeReflection(ct);                                       \
 		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});            \

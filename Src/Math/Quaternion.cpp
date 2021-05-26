@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Math/Quaternion.h"
+
 #include "Math/Rotator.h"
 #include "Math/Vector.h"
 #include "Serialization/Contexts.h"

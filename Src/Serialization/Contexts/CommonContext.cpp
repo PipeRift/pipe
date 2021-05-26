@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Misc/Checks.h"
 #include "Serialization/Contexts/CommonContext.h"
+
+#include "Misc/Checks.h"
 
 
 namespace Rift::Serl

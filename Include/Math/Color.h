@@ -13,7 +13,6 @@
 #include "Vector.h"
 
 
-
 namespace Rift
 {
 	/**

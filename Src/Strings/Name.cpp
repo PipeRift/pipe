@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Serialization/Contexts.h"
 #include "Strings/Name.h"
+
+#include "Serialization/Contexts.h"
 
 
 namespace Rift
