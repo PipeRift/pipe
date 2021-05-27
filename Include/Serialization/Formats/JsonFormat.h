@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Serialization/Formats/TFormat.h"
+#include "Strings/String.h"
 
 
 struct yyjson_doc;

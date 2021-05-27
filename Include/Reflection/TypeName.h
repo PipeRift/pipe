@@ -42,10 +42,25 @@ namespace Rift
 		return typeName;
 	}
 
-	template <typename T>
-	inline constexpr StringView GetTypeName()
+	inline constexpr StringView RemoveNamespace(StringView value)
 	{
-		return GetFullTypeName<T>();
+		const sizet pos = Strings::Find(value, "::", FindDirection::Back);
+		if (pos != StringView::npos)
+		{
+			return Strings::RemoveFromStart(value, pos + 2);
+		}
+		return value;
+	}
+
+	template <typename T>
+	inline constexpr StringView GetTypeName(bool includeNamespaces = true)
+	{
+		const StringView fullName = GetFullTypeName<T>();
+		if (!includeNamespaces)
+		{
+			return RemoveNamespace(fullName);
+		}
+		return fullName;
 	}
 
 

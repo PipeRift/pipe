@@ -5,25 +5,26 @@
 #include "Log.h"
 #include "Platform/Platform.h"
 
+
 template <typename RetType = void, typename InnerType>
 RetType RunCheckCallback(InnerType&& callback)
 {
 	return callback();
 }
 
-#define EnsureImpl(capture, always, expression, ...)                               \
-	(LIKELY(!!(expression)) || (RunCheckCallback<bool>([capture]() {               \
-		static bool executed = false;                                              \
-		if (!executed || always)                                                   \
-		{                                                                          \
-			executed = true;                                                       \
-			Log::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
-			return true;                                                           \
-		}                                                                          \
-		return false;                                                              \
-	}) && ([capture]() {                                                                  \
-		PLATFORM_BREAK();                                                          \
-		return false;                                                              \
+#define EnsureImpl(capture, always, expression, ...)                                     \
+	(LIKELY(!!(expression)) || (RunCheckCallback<bool>([capture]() {                     \
+		static bool executed = false;                                                    \
+		if (!executed || always)                                                         \
+		{                                                                                \
+			executed = true;                                                             \
+			Rift::Log::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
+			return true;                                                                 \
+		}                                                                                \
+		return false;                                                                    \
+	}) && ([capture]() {                                                                 \
+		PLATFORM_BREAK();                                                                \
+		return false;                                                                    \
 	}())))
 
 
@@ -32,11 +33,11 @@ RetType RunCheckCallback(InnerType&& callback)
 
 
 #ifndef Check
-#	define CheckImpl(expression, ...)                                             \
-		if (!(expression)) [[unlikely]]                                            \
-		{                                                                          \
-			Log::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
-			PLATFORM_BREAK();                                                      \
+#	define CheckImpl(expression, ...)                                                   \
+		if (!(expression)) [[unlikely]]                                                  \
+		{                                                                                \
+			Rift::Log::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
+			PLATFORM_BREAK();                                                            \
 		}
 
 #	define Check(expression) CheckImpl(expression, "")

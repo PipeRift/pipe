@@ -21,7 +21,12 @@ namespace Rift::Serl
 
 	JsonFormatReader::JsonFormatReader(const String& data)
 	{
-		doc  = yyjson_read_opts((char*) data.data(), data.length(), 0, nullptr, nullptr);
+		yyjson_read_err err;
+		doc = yyjson_read_opts((char*) data.data(), data.length(), 0, nullptr, &err);
+		if (!doc)
+		{
+			Log::Error("Failed to parse json: {}", err.msg);
+		}
 		root = yyjson_doc_get_root(doc);
 		PushScope(root);
 	}

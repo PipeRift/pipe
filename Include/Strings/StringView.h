@@ -36,20 +36,48 @@ namespace Rift
 	};
 
 
+	enum class FindDirection : u8
+	{
+		Front,
+		Back
+	};
+
 	/**
 	 * Strings library
 	 * Provides helpers for common StringView based operations
 	 */
 	namespace Strings
 	{
-		CORE_API constexpr bool Contains(const StringView str, const TChar c)
+		CORE_API constexpr sizet Find(
+		    const StringView str, const TChar c, FindDirection direction = FindDirection::Front)
 		{
-			return str.find(c) != StringView::npos;
+			if (direction == FindDirection::Front)
+			{
+				return str.find(c);
+			}
+			return str.rfind(c);
 		}
 
-		CORE_API constexpr bool Contains(const StringView str, const StringView subStr)
+		CORE_API constexpr sizet Find(const StringView str, const StringView subStr,
+		    FindDirection direction = FindDirection::Front)
 		{
-			return str.find(subStr) != StringView::npos;
+			if (direction == FindDirection::Front)
+			{
+				return str.find(subStr);
+			}
+			return str.rfind(subStr);
+		}
+
+		CORE_API constexpr bool Contains(
+		    const StringView str, const TChar c, FindDirection direction = FindDirection::Front)
+		{
+			return Find(str, c, direction) != StringView::npos;
+		}
+
+		CORE_API constexpr bool Contains(const StringView str, const StringView subStr,
+		    FindDirection direction = FindDirection::Front)
+		{
+			return Find(str, subStr, direction) != StringView::npos;
 		}
 
 		CORE_API constexpr bool Equals(const StringView str, const StringView other)
