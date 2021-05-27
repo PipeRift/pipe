@@ -1,13 +1,13 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Assets/AssetManager.h"
+
 #include "Context.h"
 #include "Files/Files.h"
 #include "Profiler.h"
 #include "Serialization/Contexts.h"
 #include "Serialization/Formats/JsonFormat.h"
 #include "Tasks.h"
-
 
 
 namespace Rift

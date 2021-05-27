@@ -1,11 +1,10 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Assets/AssetData.h"
+
 #include "Files/Files.h"
 #include "Serialization/Contexts.h"
 #include "Serialization/Formats/JsonFormat.h"
-#include "Serialization/Contexts.h"
-
 
 
 namespace Rift

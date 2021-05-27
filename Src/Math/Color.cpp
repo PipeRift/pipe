@@ -5,9 +5,9 @@
 =============================================================================*/
 
 #include "Math/Color.h"
+
 #include "Math/Vector.h"
 #include "Serialization/Contexts.h"
-
 
 
 namespace Rift

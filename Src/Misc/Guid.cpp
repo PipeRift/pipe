@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Misc/Char.h"
 #include "Misc/Guid.h"
+
+#include "Misc/Char.h"
 #include "Platform/PlatformMisc.h"
 #include "Serialization/Contexts.h"
 
