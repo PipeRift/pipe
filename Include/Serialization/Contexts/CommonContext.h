@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "Misc/Checks.h"
 #include "Platform/Platform.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Contexts/ReadContext.h"
@@ -114,6 +115,18 @@ namespace Rift::Serl
 		bool IsWriting() const
 		{
 			return mode == Mode::Write;
+		}
+
+		ReadContext& GetRead() const
+		{
+			Check(IsReading());
+			return *readContext;
+		}
+
+		WriteContext& GetWrite() const
+		{
+			Check(IsWriting());
+			return *writeContext;
 		}
 	};
 

@@ -32,7 +32,8 @@ namespace Rift
 
 	class CORE_API Object : public BaseObject
 	{
-		ORPHAN_CLASS(Object, ReflectionTags::None)
+		CLASS_HEADER_ORPHAN(Object, ReflectionTags::None)
+		CLASS_BODY(Object, {})
 
 	public:
 		template <typename T>

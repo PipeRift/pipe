@@ -11,7 +11,7 @@ RetType RunCheckCallback(InnerType&& callback)
 	return callback();
 }
 
-#define Ensure_Impl(capture, always, expression, ...)                              \
+#define EnsureImpl(capture, always, expression, ...)                               \
 	(LIKELY(!!(expression)) || (RunCheckCallback<bool>([capture]() {               \
 		static bool executed = false;                                              \
 		if (!executed || always)                                                   \
@@ -21,20 +21,24 @@ RetType RunCheckCallback(InnerType&& callback)
 			return true;                                                           \
 		}                                                                          \
 		return false;                                                              \
-	}) && ([]() {                                                                  \
+	}) && ([capture]() {                                                                  \
 		PLATFORM_BREAK();                                                          \
 		return false;                                                              \
 	}())))
 
 
-#define Ensure(expression) Ensure_Impl(, false, expression, "")
-#define EnsureMsg(expression, format, ...) Ensure_Impl(&, false, expression, format, ##__VA_ARGS__)
+#define Ensure(expression) EnsureImpl(, false, expression, "")
+#define EnsureMsg(expression, format, ...) EnsureImpl(&, false, expression, format, ##__VA_ARGS__)
 
 
 #ifndef Check
-#	define Check(expr)           \
-		if (!(expr)) [[unlikely]] \
-		{                         \
-			PLATFORM_BREAK();     \
+#	define CheckImpl(expression, ...)                                             \
+		if (!(expression)) [[unlikely]]                                            \
+		{                                                                          \
+			Log::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
+			PLATFORM_BREAK();                                                      \
 		}
+
+#	define Check(expression) CheckImpl(expression, "")
+#	define CheckMsg(expression, format, ...) CheckImpl(expression, format, ##__VA_ARGS__)
 #endif

@@ -22,6 +22,7 @@ namespace Rift::Serl
 
 
 	private:
+		// Initialize child classes using the copy constructor
 		ReadContext() = default;
 
 	public:

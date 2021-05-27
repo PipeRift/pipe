@@ -197,6 +197,16 @@ namespace Rift
 			}
 		}
 
+		void Reserve(u32 size)
+		{
+			map.reserve(size);
+		}
+
+		void Rehash(u32 size)
+		{
+			map.rehash(size);
+		}
+
 		i32 Size() const
 		{
 			return (i32) map.size();
@@ -221,7 +231,8 @@ namespace Rift
 		}
 		const ValueType& operator[](const KeyType& key) const
 		{
-			return map[key];
+			auto* mutThis = const_cast<TMap*>(this);
+			return mutThis->map[key];
 		}
 		ValueType& operator[](KeyType&& key)
 		{
@@ -229,7 +240,8 @@ namespace Rift
 		}
 		const ValueType& operator[](KeyType&& key) const
 		{
-			return map[Move(key)];
+			auto* mutThis = const_cast<TMap*>(this);
+			return mutThis->map[Move(key)];
 		}
 
 		// Iterator functions

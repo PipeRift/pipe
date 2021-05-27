@@ -12,7 +12,8 @@ namespace Rift
 {
 	struct CORE_API Struct : public BaseStruct
 	{
-		ORPHAN_STRUCT(Struct, ReflectionTags::None)
+		STRUCT_HEADER_ORPHAN(Struct, ReflectionTags::None)
+		STRUCT_BODY(Struct, {})
 	};
 
 
