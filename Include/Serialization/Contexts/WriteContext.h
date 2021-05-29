@@ -26,7 +26,7 @@ namespace Rift::Serl
 		WriteContext() = default;
 
 	public:
-		WriteContext(const WriteContext&) = default;
+		explicit WriteContext(const WriteContext&) = default;
 		WriteContext& operator=(const WriteContext&) = default;
 		virtual ~WriteContext() {}
 

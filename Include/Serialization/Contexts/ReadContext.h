@@ -27,7 +27,7 @@ namespace Rift::Serl
 		ReadContext() = default;
 
 	public:
-		ReadContext(const ReadContext&) = default;
+		explicit ReadContext(const ReadContext&) = default;
 		ReadContext& operator=(const ReadContext&) = default;
 		virtual ~ReadContext() {}
 
