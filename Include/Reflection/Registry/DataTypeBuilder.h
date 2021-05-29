@@ -156,13 +156,13 @@ namespace Rift::Refl
 }    // namespace Rift::Refl
 
 
-#define CLASS(type, ...) \
-	TYPE_CHOOSER(CLASS_HEADER_NO_TAGS, CLASS_HEADER_TAGS, type, __VA_ARGS__)(type, __VA_ARGS__) \
-	CLASS_BODY(type, {})
+#define CLASS(type, ...)                                                     \
+	TYPE_CHOOSER(CLASS_HEADER_NO_TAGS, CLASS_HEADER_TAGS, type, __VA_ARGS__) \
+	(type, __VA_ARGS__) CLASS_BODY(type, {})
 
-#define STRUCT(type, ...) \
-	TYPE_CHOOSER(STRUCT_HEADER_NO_TAGS, STRUCT_HEADER_TAGS, type, __VA_ARGS__)(type, __VA_ARGS__) \
-	STRUCT_BODY(type, {})
+#define STRUCT(type, ...)                                                      \
+	TYPE_CHOOSER(STRUCT_HEADER_NO_TAGS, STRUCT_HEADER_TAGS, type, __VA_ARGS__) \
+	(type, __VA_ARGS__) STRUCT_BODY(type, {})
 
 #define PROP(...) TYPE_CHOOSER(PROPERTY_NO_TAGS, PROPERTY_TAGS, __VA_ARGS__)(__VA_ARGS__)
 
@@ -203,7 +203,7 @@ public:                                                                       \
 	}
 
 
-#define CLASS_BODY(type, buildCode)                                                           \
+#define CLASS_BODY(type, buildCode)                                                         \
 public:                                                                                     \
 	static Rift::Refl::ClassType* InitType()                                                \
 	{                                                                                       \
@@ -211,7 +211,7 @@ public:                                                                         
 		builder.onBuild = [](auto& builder) {                                               \
 			__ReflReflectProperty(builder, Rift::Refl::MetaCounter<0>{});                   \
 			{                                                                               \
-				buildCode                                                                     \
+				buildCode                                                                   \
 			}                                                                               \
 		};                                                                                  \
 		builder.Initialize();                                                               \
@@ -226,7 +226,6 @@ private:                                                                        
 	template <Rift::u32 N>                                                                  \
 	void __ReflSerializeProperty(Rift::Serl::CommonContext&, Rift::Refl::MetaCounter<N>)    \
 	{}
-
 
 
 /** Defines an struct with no parent */
@@ -246,8 +245,9 @@ public:                                                                       \
 
 
 /** Defines an struct */
-#define STRUCT_HEADER_NO_TAGS(type, parent) STRUCT_HEADER_TAGS(type, parent, Rift::ReflectionTags::None)
-#define STRUCT_HEADER_TAGS(type, parent, tags)                                      \
+#define STRUCT_HEADER_NO_TAGS(type, parent) \
+	STRUCT_HEADER_TAGS(type, parent, Rift::ReflectionTags::None)
+#define STRUCT_HEADER_TAGS(type, parent, tags)                                 \
 public:                                                                        \
 	using ThisType    = type;                                                  \
 	using Super       = parent;                                                \
@@ -264,7 +264,7 @@ public:                                                                        \
 	}
 
 
-#define STRUCT_BODY(type, buildCode)                                                           \
+#define STRUCT_BODY(type, buildCode)                                                        \
 public:                                                                                     \
 	static Rift::Refl::StructType* InitType()                                               \
 	{                                                                                       \
@@ -272,7 +272,7 @@ public:                                                                         
 		builder.onBuild = [](auto& builder) {                                               \
 			__ReflReflectProperty(builder, Rift::Refl::MetaCounter<0>{});                   \
 			{                                                                               \
-				buildCode                                                                     \
+				buildCode                                                                   \
 			}                                                                               \
 		};                                                                                  \
 		builder.Initialize();                                                               \
