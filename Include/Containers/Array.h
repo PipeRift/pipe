@@ -127,6 +127,12 @@ namespace Rift
 			}
 		}
 
+		template <typename ArrayView>    // Intended for TArrayView<T>
+		void Append(ArrayView values)
+		{
+			vector.insert(vector.end(), values.begin(), values.end());
+		}
+
 
 		void Reserve(i32 sizeNum)
 		{
@@ -173,6 +179,11 @@ namespace Rift
 		void Sort(Predicate predicate)
 		{
 			Algorithms::Sort(Data(), Size(), predicate);
+		}
+
+		void Sort()
+		{
+			Algorithms::Sort(Data(), Size(), TLess<Type>());
 		}
 
 		Iterator FindIt(const Type& item) const
@@ -290,6 +301,25 @@ namespace Rift
 			const i32 lastSize = Size();
 			(void) std::remove(vector.begin(), vector.end(), item);
 
+			if (bShouldShrink)
+			{
+				Shrink();
+			}
+			return lastSize - Size();
+		}
+
+		template <typename ArrayView>    // Intended for TArrayView<T>
+		i32 RemoveMany(ArrayView items, const bool bShouldShrink = true)
+		{
+			const i32 lastSize = Size();
+			for (i32 i = 0; i < lastSize; ++i)
+			{
+				if (items.Contains(Data()[i]))
+				{
+					RemoveAtUnsafe(i, false);
+					--i;    // Repeat same index
+				}
+			}
 			if (bShouldShrink)
 			{
 				Shrink();
@@ -560,7 +590,7 @@ namespace Rift
 			return vector.crend();
 		};
 
-		/** INTERNAl */
+		/** INTERNAL */
 	private:
 		void CopyFrom(const TArray& other)
 		{
