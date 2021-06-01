@@ -19,7 +19,7 @@ namespace Rift
 		T* const data  = nullptr;
 		const i32 size = 0;
 
-		constexpr TArrayView(const T& value) : data{&value}, size{1} {}
+		constexpr TArrayView(T& value) : data{&value}, size{1} {}
 		TArrayView(const TArray<T>& value) : data{value.data()}, size{value.size()} {}
 		TArrayView(const TArrayView<T>& other) : data{other.data}, size{other.size} {}
 		TArrayView& operator=(const TArrayView<T>& other)
