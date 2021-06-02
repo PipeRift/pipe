@@ -161,6 +161,35 @@ namespace Rift
 		return Math::Lerp(*this, LinearColor(Lum, Lum, Lum, 0), desaturation);
 	}
 
+	LinearColor LinearColor::Darken(float delta, bool relative) const
+	{
+		LinearColor hsv = LinearRGBToHSV();
+		if (relative)
+		{
+			hsv.b *= 1.f - delta;
+			return hsv.HSVToLinearRGB();
+		}
+		hsv.b -= delta;
+		return hsv.HSVToLinearRGB();
+	}
+
+	LinearColor LinearColor::Lighten(float delta, bool relative) const
+	{
+		LinearColor hsv = LinearRGBToHSV();
+		if (relative)
+		{
+			hsv.b *= 1.f + delta;
+			return hsv.HSVToLinearRGB();
+		}
+		hsv.b += delta;
+		return hsv.HSVToLinearRGB();
+	}
+
+	LinearColor LinearColor::Translucency(float alpha) const
+	{
+		return {r, g, b, Math::Clamp(alpha, 0.f, 1.f)};
+	}
+
 	// Convert from RGBE to float as outlined in Gregory Ward's Real Pixels article, Graphics Gems
 	// II, page 80.
 	LinearColor Color::FromRGBE() const

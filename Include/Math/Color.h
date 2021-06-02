@@ -285,7 +285,11 @@ namespace Rift
 		 * @param	Desaturation	Desaturation factor in range [0..1]
 		 * @return	Desaturated color
 		 */
-		LinearColor Desaturate(float Desaturation) const;
+		LinearColor Desaturate(float desaturation) const;
+		LinearColor Darken(float delta, bool relative = true) const;
+		LinearColor Lighten(float delta, bool relative = true) const;
+
+		LinearColor Translucency(float alpha) const;
 
 		/** Computes the perceptually weighted luminance value of a color. */
 		inline float ComputeLuminance() const
@@ -389,6 +393,13 @@ namespace Rift
 		explicit Color(u32 InColor)
 		{
 			DWColor() = InColor;
+
+			if (a == 0)
+			{
+				// Most of the times we pass the format 0xXXXXXX, where in theory alpha is 0.
+				// We want 255 by default
+				a = 255;
+			}
 		}
 
 		// Operators.
