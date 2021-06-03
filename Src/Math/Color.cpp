@@ -44,7 +44,7 @@ namespace Rift
 	static constexpr float OneOver255 = 1.0f / 255.0f;
 
 	//	Color->FLinearColor conversion.
-	LinearColor::LinearColor(const Color& other)
+	constexpr LinearColor::LinearColor(const Color& other)
 	{
 		r = float(sRGBToLinearTable[other.r]);
 		g = float(sRGBToLinearTable[other.g]);
