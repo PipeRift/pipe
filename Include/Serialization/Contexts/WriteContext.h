@@ -130,7 +130,19 @@ namespace Rift::Serl
 			return true;
 		}
 
-	public:
+		void PushAddFlags(WriteFlags flags)
+		{
+			writer->PushAddFlags(flags);
+		}
+		void PushRemoveFlags(WriteFlags flags)
+		{
+			writer->PushRemoveFlags(flags);
+		}
+		void PopFlags()
+		{
+			writer->PopFlags();
+		}
+
 		template <Format format>
 		typename FormatBind<format>::Writer& GetWriter() requires(HasWriter<format>);
 	};

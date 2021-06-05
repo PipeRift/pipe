@@ -8,6 +8,32 @@
 #include <yyjson.h>
 
 
+bool yyjson_mut_obj_add_val(
+    yyjson_mut_doc* doc, yyjson_mut_val* obj, Rift::StringView _key, yyjson_mut_val* _val)
+{
+	if (yyjson_unlikely(!_val))
+		return false;
+
+	if (yyjson_likely(yyjson_mut_is_obj(obj) && _key.data()))
+	{
+		yyjson_mut_val* key = unsafe_yyjson_mut_val(doc, 2);
+		if (yyjson_likely(key))
+		{
+			size_t len          = unsafe_yyjson_get_len(obj);
+			yyjson_mut_val* val = key + 1;
+			key->tag            = YYJSON_TYPE_STR | YYJSON_SUBTYPE_NONE;
+			key->tag |= (uint64_t) _key.size() << YYJSON_TAG_BIT;
+			key->uni.str = _key.data();
+			val          = _val;
+			unsafe_yyjson_set_len(obj, len + 1);
+			unsafe_yyjson_mut_obj_add(obj, key, val, len);
+			return true;
+		}
+	}
+	return false;
+}
+
+
 namespace Rift::Serl
 {
 	u64 GetKeyTag(sizet size)
@@ -78,18 +104,32 @@ namespace Rift::Serl
 
 	void JsonFormatReader::BeginObject()
 	{
-		if (!yyjson_is_obj(current)) [[unlikely]]
+		if (!current) [[unlikely]]
 		{
-			return;    // The current scope is not an object
+			return;
+		}
+		else if (!unsafe_yyjson_is_obj(current)) [[unlikely]]
+		{
+			CheckMsg(false,
+			    "Scope is already initialized but it is not an object. Is BeginObject() being "
+			    "mixed with BeginArray() in the same scope?");
+			return;
 		}
 		InternalBegin();
 	}
 
 	void JsonFormatReader::BeginArray(u32& size)
 	{
-		if (!yyjson_is_arr(current)) [[unlikely]]
+		if (!current) [[unlikely]]
 		{
-			return;    // The current scope is not an array
+			return;
+		}
+		else if (!unsafe_yyjson_is_arr(current)) [[unlikely]]
+		{
+			CheckMsg(false,
+			    "Scope is already initialized but it is not an array. Is BeginArray() being "
+			    "mixed with BeginObject() in the same scope?");
+			return;
 		}
 		size = InternalBegin();
 	}
@@ -399,6 +439,14 @@ namespace Rift::Serl
 
 	void JsonFormatWriter::PushScope(StringView key)
 	{
+		if ((GetFlags() & WriteFlags_CacheStrings) > 0)
+		{
+			stringBuffer.append(key);
+			stringBuffer.push_back('\0');
+			const TChar* keyEnd = stringBuffer.end() - 1;
+			key                 = StringView{keyEnd - key.size(), keyEnd};
+		}
+
 		scopeStack.Add({key, current});
 		current = nullptr;    // New scope
 	}
@@ -406,23 +454,22 @@ namespace Rift::Serl
 	void JsonFormatWriter::PopScope()
 	{
 		const Scope& scope = GetScope();
-		auto* parent       = scope.parent;
 		if (current)
 		{
-			switch (yyjson_mut_get_type(parent))
+			switch (yyjson_mut_get_type(scope.parent))
 			{
 				case YYJSON_TYPE_OBJ:
 					if (!scope.key.empty())
 					{
-						yyjson_mut_obj_add_val(doc, parent, scope.key.data(), current);
+						yyjson_mut_obj_add_val(doc, scope.parent, scope.key, current);
 					}
 					break;
 				case YYJSON_TYPE_ARR:
-					yyjson_mut_arr_append(parent, current);
+					yyjson_mut_arr_append(scope.parent, current);
 					break;
 			}
 		}
-		current = parent;
+		current = scope.parent;
 		scopeStack.RemoveAt(scopeStack.Size() - 1, false);
 	}
 
@@ -458,8 +505,14 @@ namespace Rift::Serl
 	void JsonFormatWriter::BeginObject()
 	{
 		Scope& scope = GetScope();
-		if (!EnsureMsg(!current, "Scope must not be initialized"))
+		if (current) [[unlikely]]
 		{
+			if (!unsafe_yyjson_is_obj(current)) [[unlikely]]
+			{
+				CheckMsg(false,
+				    "Scope is already initialized but it is not an object. Is BeginObject() being "
+				    "mixed with BeginArray() in the same scope?");
+			}
 			return;
 		}
 
@@ -469,8 +522,14 @@ namespace Rift::Serl
 	void JsonFormatWriter::BeginArray(u32& size)
 	{
 		Scope& scope = GetScope();
-		if (!EnsureMsg(!current, "Scope must not be initialized"))
+		if (current) [[unlikely]]
 		{
+			if (!unsafe_yyjson_is_arr(current)) [[unlikely]]
+			{
+				CheckMsg(false,
+				    "Scope is already initialized but it is not an array. Is BeginArray() being "
+				    "mixed with BeginObject() in the same scope?");
+			}
 			return;
 		}
 
@@ -511,6 +570,15 @@ namespace Rift::Serl
 	}
 	void JsonFormatWriter::Write(StringView val)
 	{
+		if ((GetFlags() & WriteFlags_CacheStrings) > 0)
+		{
+			stringBuffer.append(val);
+			stringBuffer.push_back('\0');
+			const TChar* keyEnd = stringBuffer.end() - 1;
+
+			val = StringView{keyEnd - val.size(), keyEnd};
+		}
+
 		current = yyjson_mut_strn(doc, val.data(), val.size());
 	}
 

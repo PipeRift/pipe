@@ -89,6 +89,7 @@ namespace Rift::Serl
 		};
 		yyjson_mut_doc* doc     = nullptr;
 		yyjson_mut_val* current = nullptr;
+		StringBuffer stringBuffer;    // Stores temporal strings
 		TArray<Scope> scopeStack;
 		bool open = true;
 

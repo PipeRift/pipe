@@ -128,6 +128,10 @@ namespace Rift::Serl
 			Check(IsWriting());
 			return *writeContext;
 		}
+
+		void PushAddFlags(WriteFlags flags);
+		void PushRemoveFlags(WriteFlags flags);
+		void PopFlags();
 	};
 
 

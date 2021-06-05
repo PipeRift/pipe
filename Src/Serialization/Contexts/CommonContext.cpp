@@ -66,4 +66,28 @@ namespace Rift::Serl
 			readContext->Leave();
 		}
 	}
+
+	void CommonContext::PushAddFlags(WriteFlags flags)
+	{
+		if (IsWriting())
+		{
+			GetWrite().PushAddFlags(flags);
+		}
+	}
+
+	void CommonContext::PushRemoveFlags(WriteFlags flags)
+	{
+		if (IsWriting())
+		{
+			GetWrite().PushRemoveFlags(flags);
+		}
+	}
+
+	void CommonContext::PopFlags()
+	{
+		if (IsWriting())
+		{
+			GetWrite().PopFlags();
+		}
+	}
 }    // namespace Rift::Serl

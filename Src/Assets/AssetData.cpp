@@ -12,6 +12,7 @@ namespace Rift
 	bool AssetData::OnCreate(const AssetInfo& inInfo)
 	{
 		info = inInfo;
+
 		return PostLoad(true);
 	}
 
