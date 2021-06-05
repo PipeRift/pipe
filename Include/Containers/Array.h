@@ -312,7 +312,7 @@ namespace Rift
 		i32 RemoveMany(ArrayView items, const bool bShouldShrink = true)
 		{
 			const i32 lastSize = Size();
-			for (i32 i = 0; i < lastSize; ++i)
+			for (i32 i = 0; i < Size(); ++i)
 			{
 				if (items.Contains(Data()[i]))
 				{
