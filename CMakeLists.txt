@@ -58,7 +58,6 @@ target_link_libraries(RiftCore PUBLIC
     date::date
     fmt::fmt
     glm::glm
-    nlohmann_json
     yyjson
     robin_hood
     Taskflow

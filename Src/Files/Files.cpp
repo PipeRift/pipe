@@ -9,48 +9,6 @@
 
 namespace Rift::Files
 {
-	bool LoadJsonFile(const Path& path, Json& result)
-	{
-		ZoneScopedNC("LoadJsonFile", 0xBB45D1);
-
-		if (!Exists(path) || !IsFile(path))
-		{
-			return false;
-		}
-
-		std::ifstream file(path);
-		result = {};
-		try
-		{
-			file >> result;
-		}
-		catch (nlohmann::detail::exception& ex)
-		{
-			Log::Error("Failed to parse json asset:\n{}", ex.what());
-			return false;
-		}
-		return true;
-	}
-
-	bool SaveJsonFile(const Path& path, const Json& data, i32 indent)
-	{
-		ZoneScopedNC("SaveJsonFile", 0xBB45D1);
-
-		if (!IsFile(path))
-		{
-			return false;
-		}
-
-		std::ofstream file(path);
-		if (indent >= 0)
-			file << std::setw(indent) << data;
-		else
-			file << data;
-
-		return true;
-	}
-
-
 	bool LoadStringFile(const Path& path, String& result, sizet extraPadding)
 	{
 		ZoneScopedNC("LoadStringFile", 0xBB45D1);
@@ -87,7 +45,7 @@ namespace Rift::Files
 		}
 	}
 
-	bool SaveStringFile(const Path& path, const String& data)
+	bool SaveStringFile(const Path& path, StringView data)
 	{
 		ZoneScopedNC("SaveStringFile", 0xBB45D1);
 
@@ -188,22 +146,12 @@ namespace Rift::Files
 
 	/** String API */
 
-	bool LoadJsonFile(const String& path, Json& result)
-	{
-		return LoadJsonFile(Paths::FromString(path), result);
-	}
-
-	bool SaveJsonFile(const String& path, const Json& data, i32 indent)
-	{
-		return SaveJsonFile(Paths::FromString(path), data, indent);
-	}
-
 	bool LoadStringFile(const String& path, String& result, sizet extraPadding)
 	{
 		return LoadStringFile(Paths::FromString(path), result, extraPadding);
 	}
 
-	bool SaveStringFile(const String& path, const String& data)
+	bool SaveStringFile(const String& path, StringView data)
 	{
 		return SaveStringFile(Paths::FromString(path), data);
 	}

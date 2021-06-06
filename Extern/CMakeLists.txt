@@ -31,9 +31,6 @@ rift_target_shared_output_directory(Tracy)
 rift_target_disable_all_warnings(Tracy PRIVATE)
 set_target_properties (Tracy PROPERTIES FOLDER Extern)
 
-add_library(nlohmann_json INTERFACE)
-target_include_directories(nlohmann_json INTERFACE json)
-
 add_subdirectory(portable-file-dialogs)
 
 add_library(Bandit INTERFACE)

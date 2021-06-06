@@ -14,6 +14,11 @@ namespace Rift::Paths
 	///////////////////////////////////////////////////////////
 	// PATHS
 
+	inline CORE_API void SetCurrent(Path path)
+	{
+		fs::current_path(path);
+	}
+
 	inline CORE_API Path GetCurrent()
 	{
 		return fs::current_path();

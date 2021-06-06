@@ -6,7 +6,6 @@
 
 #include "Containers/Array.h"
 #include "Files/STDFileSystem.h"
-#include "Serialization/Json.h"
 #include "Strings/String.h"
 
 
@@ -19,11 +18,8 @@ namespace Rift::Files
 
 	/** Path API */
 
-	CORE_API bool LoadJsonFile(const Path& path, Json& result);
-	CORE_API bool SaveJsonFile(const Path& path, const Json& data, i32 indent = -1);
-
 	CORE_API bool LoadStringFile(const Path& path, String& result, sizet extraPadding = 0);
-	CORE_API bool SaveStringFile(const Path& path, const String& data);
+	CORE_API bool SaveStringFile(const Path& path, StringView data);
 
 	CORE_API void CreateFolder(const Path& path, bool bRecursive = false);
 	CORE_API bool Delete(const Path& path, bool bRemoveIfNotEmpty = true, bool bLogErrors = true);
@@ -49,10 +45,8 @@ namespace Rift::Files
 
 	/** String API */
 
-	CORE_API bool LoadJsonFile(const String& path, Json& result);
-	CORE_API bool SaveJsonFile(const String& path, const Json& data, i32 indent = -1);
 	CORE_API bool LoadStringFile(const String& path, String& result, sizet extraPadding = 0);
-	CORE_API bool SaveStringFile(const String& path, const String& data);
+	CORE_API bool SaveStringFile(const String& path, StringView data);
 
 	CORE_API bool Exists(const String& path);
 	CORE_API bool IsFolder(const String& path);
