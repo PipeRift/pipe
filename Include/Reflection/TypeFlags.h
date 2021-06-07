@@ -22,32 +22,32 @@ namespace Rift
 	};
 
 /** Custom traits go here */
-#define DEFINE_TYPE_FLAGS(type, ...)                                      \
-	template <>                                                           \
-	struct TypeFlags<type> : public Rift::BaseTypeFlags<type>             \
-	{                                                                     \
-		enum                                                              \
-		{                                                                 \
-			__VA_ARGS__                                                   \
-		};                                                                \
-	};                                                                    \
-	template <>                                                           \
-	struct TypeFlags<const type> : public Rift::BaseTypeFlags<const type> \
-	{                                                                     \
-		enum                                                              \
-		{                                                                 \
-			__VA_ARGS__                                                   \
-		};                                                                \
+#define DEFINE_TYPE_FLAGS(type, ...)                                            \
+	template <>                                                                 \
+	struct Rift::TypeFlags<type> : public Rift::BaseTypeFlags<type>             \
+	{                                                                           \
+		enum                                                                    \
+		{                                                                       \
+			__VA_ARGS__                                                         \
+		};                                                                      \
+	};                                                                          \
+	template <>                                                                 \
+	struct Rift::TypeFlags<const type> : public Rift::BaseTypeFlags<const type> \
+	{                                                                           \
+		enum                                                                    \
+		{                                                                       \
+			__VA_ARGS__                                                         \
+		};                                                                      \
 	}
 
-#define DEFINE_TEMPLATE_TYPE_FLAGS(type, ...)                       \
-	template <typename T>                                           \
-	struct TypeFlags<type<T>> : public Rift::BaseTypeFlags<type<T>> \
-	{                                                               \
-		enum                                                        \
-		{                                                           \
-			__VA_ARGS__                                             \
-		};                                                          \
+#define DEFINE_TEMPLATE_TYPE_FLAGS(type, ...)                             \
+	template <typename T>                                                 \
+	struct Rift::TypeFlags<type<T>> : public Rift::BaseTypeFlags<type<T>> \
+	{                                                                     \
+		enum                                                              \
+		{                                                                 \
+			__VA_ARGS__                                                   \
+		};                                                                \
 	}
 
 	template <typename T>
