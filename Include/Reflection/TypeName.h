@@ -30,18 +30,6 @@ namespace Rift
 	}    // namespace Refl::TypeName
 
 
-	template <typename T>
-	inline constexpr StringView GetFullTypeName()
-	{
-		const StringView raw = Refl::TypeName::GetRaw<T>();
-		StringView typeName{raw.data() + Refl::TypeName::prefixLength,
-		    raw.size() - Refl::TypeName::prefixLength - Refl::TypeName::suffixLength};
-
-		typeName = Strings::RemoveFromStart(typeName, "struct ");
-		typeName = Strings::RemoveFromStart(typeName, "class ");
-		return typeName;
-	}
-
 	inline constexpr StringView RemoveNamespace(StringView value)
 	{
 		const sizet pos = Strings::Find(value, "::", FindDirection::Back);
@@ -53,22 +41,34 @@ namespace Rift
 	}
 
 	template <typename T>
-	inline constexpr StringView GetTypeName(bool includeNamespaces = true)
+	inline consteval StringView GetFullTypeName(bool includeNamespaces = true)
 	{
-		const StringView fullName = GetFullTypeName<T>();
+		const StringView raw = Refl::TypeName::GetRaw<T>();
+		StringView typeName{raw.data() + Refl::TypeName::prefixLength,
+		    raw.size() - Refl::TypeName::prefixLength - Refl::TypeName::suffixLength};
+
+		typeName = Strings::RemoveFromStart(typeName, "struct ");
+		typeName = Strings::RemoveFromStart(typeName, "class ");
+
 		if (!includeNamespaces)
 		{
-			return RemoveNamespace(fullName);
+			return RemoveNamespace(typeName);
 		}
-		return fullName;
+		return typeName;
+	}
+
+	template <typename T>
+	inline consteval StringView GetTypeName(bool includeNamespaces = true)
+	{
+		return GetFullTypeName<T>(includeNamespaces);
 	}
 
 
-#define OVERRIDE_TYPE_NAME(type)                        \
-	template <>                                         \
-	inline constexpr StringView GetFullTypeName<type>() \
-	{                                                   \
-		return TX(#type);                               \
+#define OVERRIDE_TYPE_NAME(type)                                              \
+	template <>                                                               \
+	inline consteval StringView GetFullTypeName<type>(bool includeNamespaces) \
+	{                                                                         \
+		return TX(#type);                                                     \
 	}
 
 }    // namespace Rift

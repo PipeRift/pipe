@@ -66,12 +66,15 @@ go_bandit([]() {
 			AssertThat(GetTypeName<TAssetPtr<AssetData>>(), Equals("TAssetPtr"));
 			AssertThat(
 			    GetFullTypeName<TAssetPtr<AssetData>>(), Equals("TAssetPtr<Rift::AssetData>"));
+			AssertThat(
+			    GetFullTypeName<TAssetPtr<AssetData>>(false), Equals("TAssetPtr<AssetData>"));
 		});
 
 		describe("Containers", []() {
 			it("Can get TArray names", [&]() {
-				AssertThat(GetTypeName<TArray<bool>>(), Equals("TArray"));
-				AssertThat(GetFullTypeName<TArray<bool>>(), Equals("TArray<bool>"));
+				AssertThat(GetTypeName<TArray<AssetInfo>>(), Equals("TArray"));
+				AssertThat(GetFullTypeName<TArray<AssetInfo>>(), Equals("TArray<Rift::AssetInfo>"));
+				AssertThat(GetFullTypeName<TArray<AssetInfo>>(false), Equals("TArray<AssetInfo>"));
 			});
 
 			it("Can get TMap names", [&]() {
@@ -80,6 +83,12 @@ go_bandit([]() {
 
 				auto fullName = GetFullTypeName<TMap<u8, bool>>();
 				AssertThat(fullName, Equals("TMap<u8, bool>"));
+
+
+				auto namespaceName = GetFullTypeName<TMap<u8, AssetInfo>>();
+				AssertThat(namespaceName, Equals("TMap<u8, Rift::AssetInfo>"));
+				auto noNamespaceName = GetFullTypeName<TMap<u8, AssetInfo>>(false);
+				AssertThat(noNamespaceName, Equals("TMap<u8, AssetInfo>"));
 			});
 		});
 	});

@@ -244,25 +244,29 @@ namespace Rift
 
 
 	// Contains an static fixed string with the name of a TAssetPtr<T>
-	template <typename ItemType>
+	template <typename ItemType, bool includeNamespaces>
 	struct StaticAssetPtrName
 	{
 		static constexpr auto preffix        = TFixedString("TAssetPtr<");
 		static constexpr auto suffix         = TFixedString(">");
-		static constexpr StringView itemName = GetTypeName<ItemType>();
+		static constexpr StringView itemName = GetTypeName<ItemType>(includeNamespaces);
 		static constexpr TFixedString<itemName.size()> fixedItemName{itemName};
 
 		static constexpr auto name = preffix + fixedItemName + suffix;
 	};
 
 	template <typename T>
-	constexpr StringView GetFullTypeName() requires(IsAsset<T>())
+	consteval StringView GetFullTypeName(bool includeNamespaces = true) requires(IsAsset<T>())
 	{
-		return StaticAssetPtrName<typename T::ItemType>::name;
+		if (includeNamespaces)
+		{
+			return StaticAssetPtrName<typename T::ItemType, true>::name;
+		}
+		return StaticAssetPtrName<typename T::ItemType, false>::name;
 	}
 
 	template <typename T>
-	constexpr StringView GetTypeName() requires(IsAsset<T>())
+	consteval StringView GetTypeName(bool includeNamespaces = true) requires(IsAsset<T>())
 	{
 		return "TAssetPtr";
 	}

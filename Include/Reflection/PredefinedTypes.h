@@ -21,26 +21,26 @@ namespace Rift
 
 
 	// Contains an static fixed string with the name of a TArray<T>
-	template <typename ItemType>
+	template <typename ItemType, bool includeNamespaces>
 	struct StaticArrayName
 	{
 		static constexpr auto preffix        = TFixedString("TArray<");
 		static constexpr auto suffix         = TFixedString(">");
-		static constexpr StringView itemName = GetTypeName<ItemType>();
+		static constexpr StringView itemName = GetTypeName<ItemType>(includeNamespaces);
 		static constexpr TFixedString<itemName.size()> fixedItemName{itemName};
 
 		static constexpr auto name = preffix + fixedItemName + suffix;
 	};
 
 	// Contains an static fixed string with the name of a TAssetPtr<T>
-	template <typename KeyType, typename ValueType>
+	template <typename KeyType, typename ValueType, bool includeNamespaces>
 	struct StaticMapName
 	{
 		static constexpr auto preffix         = TFixedString("TMap<");
 		static constexpr auto separator       = TFixedString(", ");
 		static constexpr auto suffix          = TFixedString(">");
-		static constexpr StringView keyName   = GetTypeName<KeyType>();
-		static constexpr StringView valueName = GetTypeName<ValueType>();
+		static constexpr StringView keyName   = GetTypeName<KeyType>(includeNamespaces);
+		static constexpr StringView valueName = GetTypeName<ValueType>(includeNamespaces);
 		static constexpr TFixedString<keyName.size()> fixedKeyName{keyName};
 		static constexpr TFixedString<valueName.size()> fixedValueName{valueName};
 
@@ -49,25 +49,33 @@ namespace Rift
 
 
 	template <typename T>
-	constexpr StringView GetFullTypeName() requires(IsArray<T>())
+	consteval StringView GetFullTypeName(bool includeNamespaces = true) requires(IsArray<T>())
 	{
-		return StaticArrayName<typename T::ItemType>::name;
+		if (includeNamespaces)
+		{
+			return StaticArrayName<typename T::ItemType, true>::name;
+		}
+		return StaticArrayName<typename T::ItemType, false>::name;
 	}
 
 	template <typename T>
-	inline constexpr StringView GetTypeName() requires(IsArray<T>())
+	inline consteval StringView GetTypeName(bool includeNamespaces = true) requires(IsArray<T>())
 	{
 		return "TArray";
 	}
 
 	template <typename T>
-	constexpr StringView GetFullTypeName() requires(IsMap<T>())
+	consteval StringView GetFullTypeName(bool includeNamespaces = true) requires(IsMap<T>())
 	{
-		return StaticMapName<typename T::KeyType, typename T::ValueType>::name;
+		if (includeNamespaces)
+		{
+			return StaticMapName<typename T::KeyType, typename T::ValueType, true>::name;
+		}
+		return StaticMapName<typename T::KeyType, typename T::ValueType, false>::name;
 	}
 
 	template <typename T>
-	inline constexpr StringView GetTypeName() requires(IsMap<T>())
+	consteval StringView GetTypeName(bool includeNamespaces = true) requires(IsMap<T>())
 	{
 		return "TMap";
 	}
