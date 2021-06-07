@@ -54,11 +54,6 @@ set_target_properties (spdlog PROPERTIES FOLDER Extern)
 
 add_subdirectory(sparse-map)
 
-if(PLATFORM_LINUX)
-    set_target_properties(fmt PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
-    set_target_properties(yyjson PROPERTIES POSITION_INDEPENDENT_CODE ON)
-endif()
 
 
 set(TF_BUILD_TESTS OFF CACHE BOOL "Enables builds of tests")
@@ -73,3 +68,9 @@ target_include_directories(magic_enum INTERFACE magic_enum)
 add_subdirectory(utfcpp)
 
 add_subdirectory(yyjson)
+
+if(PLATFORM_LINUX)
+    set_target_properties(fmt PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    set_target_properties(yyjson PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
