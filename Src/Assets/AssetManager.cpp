@@ -46,6 +46,7 @@ namespace Rift
 				if (TPtr<AssetData> loadedAsset = GetLoadedAsset(infos[i]))
 				{
 					infos.RemoveAtSwap(i, false);
+					--i;
 					finalAssets.Add(loadedAsset);
 				}
 			}
@@ -108,6 +109,10 @@ namespace Rift
 				loadedAssets[info] = Move(newAsset);
 
 				Log::Info("Loaded asset '{}'", info.GetStrPath());
+			}
+			else
+			{
+				Log::Error("OnLoad failed on asset '{}'", info.GetStrPath());
 			}
 		}
 		return finalAssets;
