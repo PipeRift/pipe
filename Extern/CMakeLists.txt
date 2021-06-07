@@ -57,6 +57,7 @@ add_subdirectory(sparse-map)
 if(PLATFORM_LINUX)
     set_target_properties(fmt PROPERTIES POSITION_INDEPENDENT_CODE ON)
     set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    set_target_properties(yyjson PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
 

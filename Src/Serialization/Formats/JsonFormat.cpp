@@ -444,7 +444,8 @@ namespace Rift::Serl
 			stringBuffer.append(key);
 			stringBuffer.push_back('\0');
 			const TChar* keyEnd = stringBuffer.end() - 1;
-			key                 = StringView{keyEnd - key.size(), keyEnd};
+
+			key = StringView{keyEnd - key.size(), key.size()};
 		}
 
 		scopeStack.Add({key, current});
@@ -576,7 +577,7 @@ namespace Rift::Serl
 			stringBuffer.push_back('\0');
 			const TChar* keyEnd = stringBuffer.end() - 1;
 
-			val = StringView{keyEnd - val.size(), keyEnd};
+			val = StringView{keyEnd - val.size(), val.size()};
 		}
 
 		current = yyjson_mut_strn(doc, val.data(), val.size());
