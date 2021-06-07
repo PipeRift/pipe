@@ -116,8 +116,8 @@ namespace Rift
 			return t;
 		}
 	};
-
-	DEFINE_TYPE_FLAGS(Transform, HasMemberSerialize = true);
-
 	REFLECT_NATIVE_TYPE(Transform);
 }    // namespace Rift
+
+DEFINE_TYPE_FLAGS(Rift::Transform, HasMemberSerialize = true);
+

@@ -174,7 +174,6 @@ namespace Rift
 	private:
 		Name(const Id& id) : id(id) {}
 	};
-	DEFINE_TYPE_FLAGS(Name, HasMemberSerialize = true);
 
 	template <>
 	struct Hash<Name>
@@ -185,6 +184,8 @@ namespace Rift
 		}
 	};
 }    // namespace Rift
+
+DEFINE_TYPE_FLAGS(Rift::Name, HasMemberSerialize = true);
 
 
 template <>

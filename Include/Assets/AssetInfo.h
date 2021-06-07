@@ -55,7 +55,6 @@ namespace Rift
 		CORE_API void Read(Serl::ReadContext& ct);
 		CORE_API void Write(Serl::WriteContext& ct) const;
 	};
-	DEFINE_TYPE_FLAGS(AssetInfo, HasMemberSerialize = true);
 	REFLECT_NATIVE_TYPE(AssetInfo);
 
 
@@ -70,3 +69,5 @@ namespace Rift
 	};
 
 }    // namespace Rift
+
+DEFINE_TYPE_FLAGS(Rift::AssetInfo, HasMemberSerialize = true);

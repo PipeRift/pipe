@@ -1,6 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "TypeTraits.h"
+
 
 namespace Rift
 {
@@ -22,23 +24,15 @@ namespace Rift
 	};
 
 /** Custom traits go here */
-#define DEFINE_TYPE_FLAGS(type, ...)                                            \
-	template <>                                                                 \
-	struct Rift::TypeFlags<type> : public Rift::BaseTypeFlags<type>             \
-	{                                                                           \
-		enum                                                                    \
-		{                                                                       \
-			__VA_ARGS__                                                         \
-		};                                                                      \
-	};                                                                          \
-	template <>                                                                 \
-	struct Rift::TypeFlags<const type> : public Rift::BaseTypeFlags<const type> \
-	{                                                                           \
-		enum                                                                    \
-		{                                                                       \
-			__VA_ARGS__                                                         \
-		};                                                                      \
-	}
+#define DEFINE_TYPE_FLAGS(type, ...)                          \
+	template <Rift::Derived<type> T>                          \
+	struct Rift::TypeFlags<T> : public Rift::BaseTypeFlags<T> \
+	{                                                         \
+		enum                                                  \
+		{                                                     \
+			__VA_ARGS__                                       \
+		};                                                    \
+	};
 
 #define DEFINE_TEMPLATE_TYPE_FLAGS(type, ...)                             \
 	template <typename T>                                                 \
