@@ -16,7 +16,7 @@ namespace Rift
 		static String filePath;
 		if (filePath.empty())
 		{
-			TFixedString<char, PlatformMisc::GetMaxPathLength()> rawPath{};
+			TFixedString<PlatformMisc::GetMaxPathLength(), char> rawPath{};
 			if (readlink("/proc/self/exe", rawPath.data(), rawPath.size() - 1) == -1)
 			{
 				// readlink() failed. Unreachable
