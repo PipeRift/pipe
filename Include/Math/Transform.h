@@ -120,4 +120,3 @@ namespace Rift
 }    // namespace Rift
 
 DEFINE_TYPE_FLAGS(Rift::Transform, HasMemberSerialize = true);
-
