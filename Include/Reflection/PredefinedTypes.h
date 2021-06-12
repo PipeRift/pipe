@@ -26,7 +26,7 @@ namespace Rift
 	{
 		static constexpr auto preffix        = TFixedString("TArray<");
 		static constexpr auto suffix         = TFixedString(">");
-		static constexpr StringView itemName = GetTypeName<ItemType>(includeNamespaces);
+		static constexpr StringView itemName = GetFullTypeName<ItemType>(includeNamespaces);
 		static constexpr TFixedString<itemName.size()> fixedItemName{itemName};
 
 		static constexpr auto name = preffix + fixedItemName + suffix;
@@ -39,8 +39,8 @@ namespace Rift
 		static constexpr auto preffix         = TFixedString("TMap<");
 		static constexpr auto separator       = TFixedString(", ");
 		static constexpr auto suffix          = TFixedString(">");
-		static constexpr StringView keyName   = GetTypeName<KeyType>(includeNamespaces);
-		static constexpr StringView valueName = GetTypeName<ValueType>(includeNamespaces);
+		static constexpr StringView keyName   = GetFullTypeName<KeyType>(includeNamespaces);
+		static constexpr StringView valueName = GetFullTypeName<ValueType>(includeNamespaces);
 		static constexpr TFixedString<keyName.size()> fixedKeyName{keyName};
 		static constexpr TFixedString<valueName.size()> fixedValueName{valueName};
 
