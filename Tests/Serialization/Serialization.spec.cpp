@@ -31,7 +31,7 @@ struct TypeB
 {
 	bool value = false;
 };
-DEFINE_TYPE_FLAGS(TypeB, HasSingleSerialize = true);
+TYPE_FLAGS(TypeB, HasSingleSerialize = true);
 void Serialize(CommonContext& ct, TypeB& val)
 {
 	ct.BeginObject();
@@ -53,7 +53,7 @@ struct TypeC
 		ct.Next("value", value);
 	}
 };
-DEFINE_TYPE_FLAGS(TypeC, HasMemberSerialize = true);
+TYPE_FLAGS(TypeC, HasMemberSerialize = true);
 
 struct TypeD
 {
@@ -65,7 +65,7 @@ struct TypeD
 		ct.Next("value", value);
 	}
 };
-DEFINE_TYPE_FLAGS(TypeD, HasMemberSerialize = true, HasSingleSerialize = true);
+TYPE_FLAGS(TypeD, HasMemberSerialize = true, HasSingleSerialize = true);
 
 
 go_bandit([]() {

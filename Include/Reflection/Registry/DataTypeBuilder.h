@@ -167,22 +167,6 @@ namespace Rift::Refl
 #define PROP(...) TYPE_CHOOSER(PROPERTY_NO_TAGS, PROPERTY_TAGS, __VA_ARGS__)(__VA_ARGS__)
 
 
-/** Defines a class with no parent */
-#define CLASS_HEADER_ORPHAN(type, tags)                                      \
-public:                                                                      \
-	using ThisType    = type;                                                \
-	using BuilderType = Rift::Refl::TClassTypeBuilder<ThisType, void, tags>; \
-                                                                             \
-	virtual Rift::Refl::ClassType* GetClass() const                          \
-	{                                                                        \
-		return Rift::GetType<ThisType>();                                    \
-	}                                                                        \
-	virtual void SerializeReflection(Rift::Serl::CommonContext& ct)          \
-	{                                                                        \
-		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});           \
-	}
-
-
 /** Defines a Class */
 #define CLASS_HEADER_NO_TAGS(type, parent) \
 	CLASS_HEADER_TAGS(type, parent, Rift::ReflectionTags::None)
@@ -227,30 +211,13 @@ private:                                                                        
 	void __ReflSerializeProperty(Rift::Serl::CommonContext&, Rift::Refl::MetaCounter<N>)    \
 	{}
 
-
-/** Defines an struct with no parent */
-#define STRUCT_HEADER_ORPHAN(type, tags)                                      \
-public:                                                                       \
-	using ThisType    = type;                                                 \
-	using BuilderType = Rift::Refl::TStructTypeBuilder<ThisType, void, tags>; \
-                                                                              \
-	static Rift::Refl::StructType* GetType()                                  \
-	{                                                                         \
-		return Rift::GetType<ThisType>();                                     \
-	}                                                                         \
-	void SerializeReflection(Rift::Serl::CommonContext& ct)                   \
-	{                                                                         \
-		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});            \
-	}
-
-
 /** Defines an struct */
 #define STRUCT_HEADER_NO_TAGS(type, parent) \
 	STRUCT_HEADER_TAGS(type, parent, Rift::ReflectionTags::None)
 #define STRUCT_HEADER_TAGS(type, parent, tags)                                 \
 public:                                                                        \
-	using ThisType    = type;                                                  \
 	using Super       = parent;                                                \
+	using ThisType    = type;                                                  \
 	using BuilderType = Rift::Refl::TStructTypeBuilder<ThisType, Super, tags>; \
                                                                                \
 	static Rift::Refl::StructType* GetType()                                   \
@@ -289,6 +256,10 @@ private:                                                                        
 	{}                                                                                      \
                                                                                             \
 public:
+
+#define SET_TYPE_BUILDER(builder) \
+public:                           \
+	using BuilderType = builder;
 
 
 #define PROPERTY_NO_TAGS(type, name) PROPERTY_TAGS(type, name, Rift::ReflectionTags::None)

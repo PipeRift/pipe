@@ -185,7 +185,7 @@ namespace Rift
 	};
 }    // namespace Rift
 
-DEFINE_TYPE_FLAGS(Rift::Name, HasMemberSerialize = true);
+TYPE_FLAGS(Rift::Name, HasMemberSerialize = true);
 
 
 template <>

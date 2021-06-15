@@ -70,4 +70,4 @@ namespace Rift
 
 }    // namespace Rift
 
-DEFINE_TYPE_FLAGS(Rift::AssetInfo, HasMemberSerialize = true);
+TYPE_FLAGS(Rift::AssetInfo, HasMemberSerialize = true);

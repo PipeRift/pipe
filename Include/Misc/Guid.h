@@ -65,7 +65,7 @@ namespace Rift
 	/**
 	 * Implements a globally unique identifier.
 	 */
-	struct Guid
+	struct CORE_API Guid
 	{
 	public:
 		/** Default constructor. */
@@ -299,7 +299,7 @@ namespace Rift
 		/** Holds the fourth component. */
 		u32 d = 0;
 	};
-	DEFINE_TYPE_FLAGS(Guid, HasMemberSerialize = true);
+	TYPE_FLAGS(Guid, HasMemberSerialize = true);
 	REFLECT_NATIVE_TYPE(Guid);
 
 	template <>

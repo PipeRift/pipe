@@ -12,7 +12,18 @@ namespace Rift
 {
 	struct CORE_API Struct : public BaseStruct
 	{
-		STRUCT_HEADER_ORPHAN(Struct, ReflectionTags::None)
+	public:
+		using BuilderType = Rift::Refl::TStructTypeBuilder<Struct, void, ReflectionTags::None>;
+
+		static Rift::Refl::StructType* GetType()
+		{
+			return Rift::GetType<Struct>();
+		}
+		void SerializeReflection(Rift::Serl::CommonContext& ct)
+		{
+			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});
+		}
+		// STRUCT_HEADER_ORPHAN(Struct, ReflectionTags::None)
 		STRUCT_BODY(Struct, {})
 	};
 

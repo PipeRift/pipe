@@ -119,4 +119,4 @@ namespace Rift
 	REFLECT_NATIVE_TYPE(Transform);
 }    // namespace Rift
 
-DEFINE_TYPE_FLAGS(Rift::Transform, HasMemberSerialize = true);
+TYPE_FLAGS(Rift::Transform, HasMemberSerialize = true);

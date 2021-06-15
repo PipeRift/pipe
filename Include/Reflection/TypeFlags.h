@@ -10,7 +10,7 @@ namespace Rift
 
 	/** Default traits go here */
 	template <typename T>
-	struct BaseTypeFlags
+	struct DefaultTypeFlags
 	{
 		enum
 		{
@@ -23,28 +23,49 @@ namespace Rift
 		};
 	};
 
+	template <typename T>
+	struct TypeFlags : public Rift::DefaultTypeFlags<T>
+	{};
+
+
 /** Custom traits go here */
-#define DEFINE_TYPE_FLAGS(type, ...)                          \
-	template <Rift::Derived<type> T>                          \
-	struct Rift::TypeFlags<T> : public Rift::BaseTypeFlags<T> \
-	{                                                         \
-		enum                                                  \
-		{                                                     \
-			__VA_ARGS__                                       \
-		};                                                    \
+#define TYPE_FLAGS(type, ...)                                    \
+	template <Rift::Derived<type> T>                             \
+	struct Rift::TypeFlags<T> : public Rift::DefaultTypeFlags<T> \
+	{                                                            \
+		enum                                                     \
+		{                                                        \
+			__VA_ARGS__                                          \
+		};                                                       \
 	};
 
-#define DEFINE_TEMPLATE_TYPE_FLAGS(type, ...)                             \
-	template <typename T>                                                 \
-	struct Rift::TypeFlags<type<T>> : public Rift::BaseTypeFlags<type<T>> \
-	{                                                                     \
-		enum                                                              \
-		{                                                                 \
-			__VA_ARGS__                                                   \
-		};                                                                \
+#define INHERIT_TYPE_FLAGS(type, parent, ...)                  \
+	template <Rift::Derived<type> T>                           \
+	struct Rift::TypeFlags<T> : public Rift::TypeFlags<parent> \
+	{                                                          \
+		enum                                                   \
+		{                                                      \
+			__VA_ARGS__                                        \
+		};                                                     \
+	};
+
+#define TEMPLATE_TYPE_FLAGS(type, ...)                                              \
+	template <typename T>                                                           \
+	struct Rift::TypeFlags<type<T>> : public Rift::DefaultTypeFlags<type<T>> \
+	{                                                                               \
+		enum                                                                        \
+		{                                                                           \
+			__VA_ARGS__                                                             \
+		};                                                                          \
 	}
 
-	template <typename T>
-	struct TypeFlags : public BaseTypeFlags<T>
-	{};
+#define INHERIT_TEMPLATE_TYPE_FLAGS(type, parent, ...)               \
+	template <typename T>                                            \
+	struct Rift::TypeFlags<type<T>> : public Rift::TypeFlags<parent> \
+	{                                                                \
+		enum                                                         \
+		{                                                            \
+			__VA_ARGS__                                              \
+		};                                                           \
+	}
 }    // namespace Rift

@@ -32,7 +32,18 @@ namespace Rift
 
 	class CORE_API Object : public BaseObject
 	{
-		CLASS_HEADER_ORPHAN(Object, ReflectionTags::None)
+	public:
+		using BuilderType = Rift::Refl::TClassTypeBuilder<Object, void, ReflectionTags::None>;
+
+		virtual Rift::Refl::ClassType* GetClass() const
+		{
+			return Rift::GetType<Object>();
+		}
+		virtual void SerializeReflection(Rift::Serl::CommonContext& ct)
+		{
+			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});
+		}
+
 		CLASS_BODY(Object, {})
 
 	public:

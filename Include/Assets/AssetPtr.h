@@ -222,7 +222,7 @@ namespace Rift
 			cachedAsset = other.cachedAsset;
 		}
 	};
-	DEFINE_TEMPLATE_TYPE_FLAGS(TAssetPtr, HasMemberSerialize = true);
+	TEMPLATE_TYPE_FLAGS(TAssetPtr, HasMemberSerialize = true);
 
 
 	template <typename T>
