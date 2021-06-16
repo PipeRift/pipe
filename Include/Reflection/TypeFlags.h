@@ -49,14 +49,14 @@ namespace Rift
 		};                                                     \
 	};
 
-#define TEMPLATE_TYPE_FLAGS(type, ...)                                              \
-	template <typename T>                                                           \
+#define TEMPLATE_TYPE_FLAGS(type, ...)                                       \
+	template <typename T>                                                    \
 	struct Rift::TypeFlags<type<T>> : public Rift::DefaultTypeFlags<type<T>> \
-	{                                                                               \
-		enum                                                                        \
-		{                                                                           \
-			__VA_ARGS__                                                             \
-		};                                                                          \
+	{                                                                        \
+		enum                                                                 \
+		{                                                                    \
+			__VA_ARGS__                                                      \
+		};                                                                   \
 	}
 
 #define INHERIT_TEMPLATE_TYPE_FLAGS(type, parent, ...)               \
