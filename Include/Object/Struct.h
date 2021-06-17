@@ -23,7 +23,6 @@ namespace Rift
 		{
 			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});
 		}
-		// STRUCT_HEADER_ORPHAN(Struct, ReflectionTags::None)
 		STRUCT_BODY(Struct, {})
 	};
 
