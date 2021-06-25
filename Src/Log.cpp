@@ -4,11 +4,16 @@
 #include "Files/Paths.h"
 #include "Log.h"
 
+#include <spdlog/details/log_msg-inl.h>
 #include <spdlog/details/null_mutex.h>
+#include <spdlog/logger.h>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+#if PLATFORM_WINDOWS
+#	include <spdlog/details/windows_include.h>
+#endif
 
 #include <Tracy.hpp>
 
@@ -91,8 +96,9 @@ namespace Rift::Log
 		cliErrSink->set_pattern("%^[%l] %v%$");
 
 #if PLATFORM_WINDOWS
-		cliSink->set_color(spdlog::level::info, cliSink->WHITE);
-		cliErrSink->set_color(spdlog::level::warn, cliSink->YELLOW);
+		cliSink->set_color(
+		    spdlog::level::info, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+		cliErrSink->set_color(spdlog::level::warn, FOREGROUND_RED | FOREGROUND_GREEN);
 #else
 		cliSink->set_color(spdlog::level::info, cliSink->white);
 		cliErrSink->set_color(spdlog::level::warn, cliSink->yellow);
