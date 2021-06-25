@@ -48,7 +48,7 @@ namespace Rift
 				    tracy::SetThreadName(Strings::Format("Worker {}", i + 1).c_str());
 			    }
 		    });
-		auto future = RunFlow(flow);
+		auto future = Run(flow);
 		cv.notify_all();
 		future.wait();
 	}

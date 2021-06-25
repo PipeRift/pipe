@@ -61,29 +61,39 @@ namespace Rift
 		TMap& operator=(TMap&& other) noexcept = default;
 		TMap& operator=(const TMap& other) = default;
 
-		void Insert(KeyType&& key, ValueType&& value)
+		Iterator Insert(KeyType&& key, ValueType&& value)
 		{
-			map.insert({Move(key), Move(value)});
+			return map.insert({Move(key), Move(value)}).first;
 		}
 
-		void Insert(const KeyType& key, ValueType&& value)
+		Iterator Insert(const KeyType& key, ValueType&& value)
 		{
-			map.insert({key, Move(value)});
+			return map.insert({key, Move(value)}).first;
 		}
 
-		void Insert(KeyType&& key, const ValueType& value)
+		Iterator Insert(KeyType&& key, const ValueType& value)
 		{
-			map.insert({Move(key), value});
+			return map.insert({Move(key), value}).first;
 		}
 
-		void Insert(const KeyType& key, const ValueType& value)
+		Iterator Insert(const KeyType& key, const ValueType& value)
 		{
-			map.insert({key, value});
+			return map.insert({key, value}).first;
 		}
 
-		void Insert(const TPair<KeyType, ValueType>& pair)
+		Iterator Insert(const TPair<KeyType, ValueType>& pair)
 		{
-			map.insert(pair);
+			return map.insert(pair).first;
+		}
+
+		Iterator InsertDefaulted(const KeyType& key)
+		{
+			return map.insert({key, {}}).first;
+		}
+
+		Iterator InsertDefaulted(KeyType&& key)
+		{
+			return map.insert({Move(key), {}}).first;
 		}
 
 		void Append(const TMap<KeyType, ValueType>& other)

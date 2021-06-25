@@ -31,7 +31,7 @@ namespace Rift
 		CORE_API TaskSystem();
 
 		// Runs a flow in Workers thread pool
-		CORE_API std::future<void> RunFlow(TaskFlow& flow) const
+		CORE_API std::future<void> Run(TaskFlow& flow) const
 		{
 			return workerPool->run(flow);
 		}

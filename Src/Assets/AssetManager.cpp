@@ -85,7 +85,7 @@ namespace Rift
 				Log::Error("Asset '{}' has unknown asset_type '{}' ", info.GetStrPath(), typeName);
 			}
 		});
-		TaskSystem::Get().RunFlow(loadTask).wait();
+		TaskSystem::Get().Run(loadTask).wait();
 
 		// Deserialize asset instances
 		for (i32 I = 0; I < infos.Size(); ++I)
