@@ -4,6 +4,7 @@
 
 #include "PCH.h"
 
+#include "Math/Math.h"
 #include "Strings/StringView.h"
 
 #include <array>
@@ -56,6 +57,7 @@ namespace Rift
 		// exposition only
 		using storage_type = std::array<CharType, N + 1>;
 		storage_type _data{};
+		size_t _size = N;
 
 		using traits_type            = TTraits;
 		using value_type             = CharType;
@@ -86,11 +88,19 @@ namespace Rift
 		constexpr TFixedString(TFixedString const& other) noexcept
 		{
 			Details::copy(other._data.begin(), other._data.end(), _data.begin());
+			_size = other._size;
+		}
+
+		constexpr TFixedString(TStringView<value_type> other) noexcept
+		{
+			_size = Math::Min(other.size(), N);
+			Details::copy(other.begin(), other.begin() + _size, _data.begin());
 		}
 
 		constexpr TFixedString& operator=(const TFixedString& other) noexcept
 		{
 			Details::copy(other._data.begin(), other._data.end(), _data.begin());
+			_size = N;
 			return *this;
 		}
 
@@ -98,12 +108,8 @@ namespace Rift
 		constexpr TFixedString& operator=(const value_type (&array)[M]) noexcept requires(M <= N)
 		{
 			Details::copy(std::begin(array), std::end(array), _data.begin());
+			_size = M;
 			return *this;
-		}
-
-		constexpr TFixedString(TStringView<value_type> other) noexcept
-		{
-			Details::copy(other.begin(), other.end(), _data.begin());
 		}
 
 		// iterators
@@ -121,7 +127,7 @@ namespace Rift
 		}
 		[[nodiscard]] constexpr const_iterator end() const noexcept
 		{
-			return _data.end() - 1;
+			return _data.begin() + _size;
 		}
 		[[nodiscard]] constexpr const_iterator cbegin() const noexcept
 		{
@@ -159,11 +165,11 @@ namespace Rift
 		// capacity
 		[[nodiscard]] constexpr sizetype size() const noexcept
 		{
-			return N;
+			return _size;
 		}
 		[[nodiscard]] constexpr sizetype length() const noexcept
 		{
-			return N;
+			return _size;
 		}
 		[[nodiscard]] constexpr sizetype max_size() const noexcept
 		{
@@ -171,7 +177,7 @@ namespace Rift
 		}
 		[[nodiscard]] constexpr bool empty() const noexcept
 		{
-			return N == 0;
+			return N == 0 || _size == 0;
 		}
 
 		// element access
@@ -239,7 +245,7 @@ namespace Rift
 		[[nodiscard]] constexpr operator string_view_type()
 		    const noexcept    // NOLINT(google-explicit-constructor)
 		{
-			return {data(), N};
+			return {data(), size()};
 		}
 
 		template <sizetype pos = 0, sizetype count = npos>
@@ -709,7 +715,7 @@ namespace Rift
 	{
 		TFixedString<N + M, CharType, TTraits> result;
 		Details::copy(lhs.begin(), lhs.end(), result.begin());
-		Details::copy(rhs.begin(), rhs.end(), result.begin() + N);
+		Details::copy(rhs.begin(), rhs.end(), result.begin() + lhs.size());
 		return result;
 	}
 

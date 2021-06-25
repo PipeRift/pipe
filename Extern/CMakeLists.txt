@@ -39,6 +39,9 @@ target_include_directories(Bandit INTERFACE Bandit)
 add_subdirectory(date)
 rift_target_disable_all_warnings(date INTERFACE)
 
+add_subdirectory(efsw)
+rift_target_disable_all_warnings(efsw PRIVATE)
+
 add_subdirectory(fmt)
 set_target_properties (fmt PROPERTIES FOLDER Extern)
 

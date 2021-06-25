@@ -40,3 +40,6 @@
 [submodule "Extern/yyjson"]
 	path = Extern/yyjson
 	url = https://github.com/ibireme/yyjson.git
+[submodule "Extern/efsw"]
+	path = Extern/efsw
+	url = https://github.com/SpartanJ/efsw.git

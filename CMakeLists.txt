@@ -56,6 +56,7 @@ target_compile_definitions(RiftCore PRIVATE NOMINMAX)
 
 target_link_libraries(RiftCore PUBLIC
     date::date
+    efsw
     fmt::fmt
     glm::glm
     yyjson
