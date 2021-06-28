@@ -3,6 +3,8 @@
 #pragma once
 
 #include "Platform/Platform.h"
+#include "Reflection/Registry/NativeTypeBuilder.h"
+#include "Serialization/ContextsFwd.h"
 
 #include <filesystem>
 
@@ -25,7 +27,7 @@ namespace Rift
 		SkipSymlinks = i32(fs::copy_options::skip_symlinks),
 
 		DirectoriesOnly = i32(fs::copy_options::directories_only),
-		Createymlinks   = i32(fs::copy_options::create_symlinks),
+		CreateSymLinks  = i32(fs::copy_options::create_symlinks),
 		CreateHardLinks = i32(fs::copy_options::create_hard_links)
 	};
 
@@ -42,4 +44,13 @@ namespace Rift
 		one = one | other;
 		return one;
 	}
+
+
+	namespace Serl
+	{
+		void Read(Serl::ReadContext& ct, Path& value);
+		void Write(Serl::WriteContext& ct, const Path& value);
+	}    // namespace Serl
+
+	REFLECT_NATIVE_TYPE(Path);
 }    // namespace Rift
