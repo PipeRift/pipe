@@ -1,7 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Files/Paths.h"
 #include "Files/STDFileSystem.h"
+
+#include "Files/Paths.h"
 #include "Serialization/Contexts.h"
 
 
