@@ -48,8 +48,8 @@ namespace Rift
 
 	namespace Serl
 	{
-		void Read(Serl::ReadContext& ct, Path& value);
-		void Write(Serl::WriteContext& ct, const Path& value);
+		CORE_API void Read(Serl::ReadContext& ct, Path& value);
+		CORE_API void Write(Serl::WriteContext& ct, const Path& value);
 	}    // namespace Serl
 
 	REFLECT_NATIVE_TYPE(Path);
