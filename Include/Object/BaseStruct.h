@@ -13,9 +13,6 @@ namespace Rift
 
 	struct CORE_API BaseStruct
 	{
-		BaseStruct()  = default;
-		~BaseStruct() = default;
-
 		// Refl::StructType* GetType() const;
 	};
 }    // namespace Rift
