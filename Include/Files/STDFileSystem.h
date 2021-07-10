@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Misc/Hash.h"
 #include "Platform/Platform.h"
 #include "Reflection/Registry/NativeTypeBuilder.h"
 #include "Serialization/ContextsFwd.h"
@@ -15,6 +16,14 @@ namespace Rift
 
 	using Path = fs::path;
 
+	template <>
+	struct Hash<Path>
+	{
+		sizet operator()(const Path& path) const
+		{
+			return GetStringHash(path.c_str());
+		}
+	};
 
 	enum class CopyOptions
 	{

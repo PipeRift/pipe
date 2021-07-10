@@ -47,7 +47,7 @@ namespace Rift
 
 	public:
 		TMap() = default;
-		TMap(u32 defaultSize) : map{defaultSize} {}
+		TMap(u32 defaultSize) : map(defaultSize) {}
 		TMap(const TPair<const KeyType, ValueType>& item) : map{}
 		{
 			Insert(item);
@@ -155,7 +155,7 @@ namespace Rift
 
 		ValueType& FindRef(const KeyType& key)
 		{
-			ConstIterator it = FindIt(key);
+			Iterator it = FindIt(key);
 			assert(it != end() && "Key not found, can't dereference its value");
 			return it->second;
 		}
@@ -219,7 +219,7 @@ namespace Rift
 
 		i32 Size() const
 		{
-			return (i32) map.size();
+			return i32(map.size());
 		}
 
 		bool IsValidIndex(i32 index) const

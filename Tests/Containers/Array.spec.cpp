@@ -1,13 +1,12 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Memory/Arenas/BestFitArena.h>
+#include <Containers/Array.h>
 #include <bandit/bandit.h>
 
 
 using namespace snowhouse;
 using namespace bandit;
 using namespace Rift;
-using namespace Memory;
 
 template <u32 Size>
 struct TypeOfSize
