@@ -48,8 +48,10 @@ namespace Rift
 	 */
 	namespace Strings
 	{
-		CORE_API constexpr sizet Find(
-		    const StringView str, const TChar c, FindDirection direction = FindDirection::Front)
+		// BEGIN Any Char API
+		template <typename CharType>
+		constexpr sizet Find(const TStringView<CharType> str, const CharType c,
+		    FindDirection direction = FindDirection::Front)
 		{
 			if (direction == FindDirection::Front)
 			{
@@ -58,7 +60,8 @@ namespace Rift
 			return str.rfind(c);
 		}
 
-		CORE_API constexpr sizet Find(const StringView str, const StringView subStr,
+		template <typename CharType>
+		constexpr sizet Find(const TStringView<CharType> str, const TStringView<CharType> subStr,
 		    FindDirection direction = FindDirection::Front)
 		{
 			if (direction == FindDirection::Front)
@@ -68,55 +71,61 @@ namespace Rift
 			return str.rfind(subStr);
 		}
 
-		CORE_API constexpr bool Contains(
-		    const StringView str, const TChar c, FindDirection direction = FindDirection::Front)
-		{
-			return Find(str, c, direction) != StringView::npos;
-		}
-
-		CORE_API constexpr bool Contains(const StringView str, const StringView subStr,
+		template <typename CharType>
+		constexpr bool Contains(const TStringView<CharType> str, const CharType c,
 		    FindDirection direction = FindDirection::Front)
 		{
-			return Find(str, subStr, direction) != StringView::npos;
+			return Find(str, c, direction) != TStringView<CharType>::npos;
 		}
 
-		CORE_API constexpr bool Equals(const StringView str, const StringView other)
+		template <typename CharType>
+		constexpr bool Contains(const TStringView<CharType> str, const TStringView<CharType> subStr,
+		    FindDirection direction = FindDirection::Front)
+		{
+			return Find(str, subStr, direction) != TStringView<CharType>::npos;
+		}
+
+		template <typename CharType>
+		constexpr bool Equals(const TStringView<CharType> str, const TStringView<CharType> other)
 		{
 			return str.size() == other.size() && std::equal(str.begin(), str.end(), other.begin());
 		}
 
-		CORE_API constexpr bool Equals(const StringView str, const TChar c)
+		template <typename CharType>
+		constexpr bool Equals(const TStringView<CharType> str, const CharType c)
 		{
 			return str.size() == 1 && str[0] == c;
 		}
 
-		CORE_API constexpr bool StartsWith(const StringView str, const StringView subStr)
+		template <typename CharType>
+		constexpr bool StartsWith(
+		    const TStringView<CharType> str, const TStringView<CharType> subStr)
 		{
 			return str.substr(0, subStr.size()) == subStr;
 		}
 
-		CORE_API constexpr bool EndsWith(const StringView str, const StringView subStr)
+		template <typename CharType>
+		constexpr bool EndsWith(const TStringView<CharType> str, const TStringView<CharType> subStr)
 		{
 			return str.size() >= subStr.size() &&
 			       str.compare(str.size() - subStr.size(), StringView::npos, subStr) == 0;
 		}
 
-		CORE_API constexpr bool EndsWith(const StringView str, const TChar c)
+		template <typename CharType>
+		constexpr bool EndsWith(const TStringView<CharType> str, const CharType c)
 		{
 			return str.size() >= 1 && str.back() == c;
 		}
 
-		CORE_API constexpr StringView RemoveFromStart(const StringView str, sizet size)
+		template <typename CharType>
+		constexpr TStringView<CharType> RemoveFromStart(const TStringView<CharType> str, sizet size)
 		{
 			return {str.data() + size, str.size() - size};
 		}
 
-		CORE_API constexpr StringView RemoveFromEnd(const StringView str, sizet size)
-		{
-			return {str.data(), str.size() - size};
-		}
-
-		CORE_API constexpr StringView RemoveFromStart(const StringView str, const StringView subStr)
+		template <typename CharType>
+		constexpr TStringView<CharType> RemoveFromStart(
+		    const TStringView<CharType> str, const TStringView<CharType> subStr)
 		{
 			if (StartsWith(str, subStr))
 			{
@@ -125,7 +134,15 @@ namespace Rift
 			return str;
 		}
 
-		CORE_API constexpr StringView RemoveFromEnd(const StringView str, const StringView subStr)
+		template <typename CharType>
+		constexpr TStringView<CharType> RemoveFromEnd(const TStringView<CharType> str, sizet size)
+		{
+			return {str.data(), str.size() - size};
+		}
+
+		template <typename CharType>
+		constexpr TStringView<CharType> RemoveFromEnd(
+		    const TStringView<CharType> str, const TStringView<CharType> subStr)
 		{
 			if (EndsWith(str, subStr))
 			{
@@ -134,7 +151,8 @@ namespace Rift
 			return str;
 		}
 
-		CORE_API constexpr StringView FrontSubstr(StringView str, sizet size)
+		template <typename CharType>
+		constexpr TStringView<CharType> FrontSubstr(TStringView<CharType> str, sizet size)
 		{
 			if (str.size() <= size)
 			{
@@ -143,7 +161,8 @@ namespace Rift
 			return {str.data(), size};
 		}
 
-		CORE_API constexpr StringView BackSubstr(StringView str, sizet size)
+		template <typename CharType>
+		constexpr TStringView<CharType> BackSubstr(TStringView<CharType> str, sizet size)
 		{
 			if (str.size() <= size)
 			{
@@ -152,12 +171,13 @@ namespace Rift
 			return {str.data() + (str.size() - size), size};
 		}
 
-		CORE_API constexpr void Replace(
-		    StringView str, const TChar searchChar, const TChar replacementChar)
+		template <typename CharType>
+		constexpr void Replace(
+		    TStringView<CharType> str, const CharType searchChar, const CharType replacementChar)
 		{
 			for (u32 i = 0; i < str.size(); ++i)
 			{
-				TChar& c = const_cast<TChar&>(str[i]);
+				CharType& c = const_cast<CharType&>(str[i]);
 				if (c == searchChar)
 				{
 					c = replacementChar;
@@ -170,9 +190,106 @@ namespace Rift
 		{
 			return std::strlen(str);
 		}
+		// END Any Char API
+
+
+		// BEGIN TChar API
+		// Specializations to avoid requiring <TChar> on function calls
+
+		CORE_API constexpr sizet Find(
+		    const StringView str, const TChar c, FindDirection direction = FindDirection::Front)
+		{
+			return Find<TChar>(str, c, direction);
+		}
+
+		CORE_API constexpr sizet Find(const StringView str, const StringView subStr,
+		    FindDirection direction = FindDirection::Front)
+		{
+			return Find<TChar>(str, subStr, direction);
+		}
+
+		CORE_API constexpr bool Contains(
+		    const StringView str, const TChar c, FindDirection direction = FindDirection::Front)
+		{
+			return Contains<TChar>(str, c, direction);
+		}
+
+		CORE_API constexpr bool Contains(const StringView str, const StringView subStr,
+		    FindDirection direction = FindDirection::Front)
+		{
+			return Contains<TChar>(str, subStr, direction);
+		}
+
+		CORE_API constexpr bool Equals(const StringView str, const StringView other)
+		{
+			return Equals<TChar>(str, other);
+		}
+
+		CORE_API constexpr bool Equals(const StringView str, const TChar c)
+		{
+			return Equals<TChar>(str, c);
+		}
+
+		CORE_API constexpr bool StartsWith(const StringView str, const StringView subStr)
+		{
+			return StartsWith<TChar>(str, subStr);
+		}
+
+		CORE_API constexpr bool EndsWith(const StringView str, const StringView subStr)
+		{
+			return EndsWith<TChar>(str, subStr);
+		}
+
+		CORE_API constexpr bool EndsWith(const StringView str, const TChar c)
+		{
+			return EndsWith<TChar>(str, c);
+		}
+
+		CORE_API constexpr StringView RemoveFromStart(const StringView str, sizet size)
+		{
+			return RemoveFromStart<TChar>(str, size);
+		}
+
+		CORE_API constexpr StringView RemoveFromStart(const StringView str, const StringView subStr)
+		{
+			return RemoveFromStart<TChar>(str, subStr);
+		}
+
+		CORE_API constexpr StringView RemoveFromEnd(const StringView str, sizet size)
+		{
+			return RemoveFromEnd<TChar>(str, size);
+		}
+
+		CORE_API constexpr StringView RemoveFromEnd(const StringView str, const StringView subStr)
+		{
+			return RemoveFromEnd<TChar>(str, subStr);
+		}
+
+		CORE_API constexpr StringView FrontSubstr(StringView str, sizet size)
+		{
+			return FrontSubstr<TChar>(str, size);
+		}
+
+		CORE_API constexpr StringView BackSubstr(StringView str, sizet size)
+		{
+			return BackSubstr<TChar>(str, size);
+		}
+
+		CORE_API constexpr void Replace(
+		    StringView str, const TChar searchChar, const TChar replacementChar)
+		{
+			Replace<TChar>(str, searchChar, replacementChar);
+		}
+
+		CORE_API constexpr sizet Length(const TChar* str)
+		{
+			return Length<TChar>(str);
+		}
 
 		CORE_API TOptional<u32> ToU32(StringView str);
 
 		CORE_API TOptional<i32> ToI32(StringView str);
+
+		// END TChar API
 	}    // namespace Strings
 }    // namespace Rift
