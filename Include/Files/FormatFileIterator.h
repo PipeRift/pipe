@@ -41,7 +41,7 @@ namespace Rift
 			return *this;
 		}
 
-		FormatFileIterator& increment()
+		FormatFileIterator& Increment()
 		{
 			FindNext();
 			return *this;
@@ -65,6 +65,8 @@ namespace Rift
 
 	private:
 		void FindNext();
+
+		bool IsValidFile(const FileIterator& it);
 	};
 
 	template <typename FileIterator>
@@ -78,7 +80,7 @@ namespace Rift
 		fileIterator = FileIterator(path);
 
 		// Iterate to first found asset
-		if (fileIterator->path().extension() != AssetManager::assetFormat)
+		if (!IsValidFile(fileIterator))
 		{
 			FindNext();
 		}
@@ -89,14 +91,18 @@ namespace Rift
 	{
 		static const FileIterator endIt{};
 		std::error_code error;
+
+		fileIterator.increment(error);
 		// Loop until end or until we find an asset
-		while (true)
+		while (fileIterator != endIt && !IsValidFile(fileIterator))
 		{
 			fileIterator.increment(error);
-			if (fileIterator == endIt || fileIterator->path().extension() == format)
-			{
-				return;
-			}
 		}
+	}
+
+	template <typename FileIterator>
+	bool FormatFileIterator<FileIterator>::IsValidFile(const FileIterator& it)
+	{
+		return it->path().extension() == format;
 	}
 }    // namespace Rift
