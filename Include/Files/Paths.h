@@ -36,6 +36,7 @@ namespace Rift::Paths
 	}
 
 	CORE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
+	CORE_API const TChar* FindFilename(const TChar* const first, const TChar* last);
 
 	// @return root name of a path, or an empty view if missing
 	// E.g: "C:\Folder" -> "C:"
@@ -53,6 +54,8 @@ namespace Rift::Paths
 	// E.g: "/var/tmp/file.txt" -> "/var/tmp"
 	// E.g: "/var/tmp/." -> "/var/tmp"
 	CORE_API StringView GetParent(StringView path);
+
+	CORE_API StringView GetFilename(StringView path);
 
 
 	CORE_API Path ToRelative(const Path& path, const Path& parent = GetCurrent());

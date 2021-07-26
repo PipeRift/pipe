@@ -117,6 +117,18 @@ namespace Rift::Paths
 		return std::find_if_not(_FindRootNameEnd(first, last), last, IsSlash);
 	}
 
+	const TChar* FindFilename(const TChar* const first, const TChar* last)
+	{
+		// attempt to parse [first, last) as a path and return the start of filename if it exists;
+		// otherwise, last
+		const auto relativePath = FindRelativeChar(first, last);
+		while (relativePath != last && !IsSlash(last[-1]))
+		{
+			--last;
+		}
+		return last;
+	}
+
 	StringView GetRootName(const StringView path)
 	{
 		const auto first = path.data();
@@ -163,6 +175,16 @@ namespace Rift::Paths
 		}
 
 		return {first, static_cast<size_t>(last - first)};
+	}
+
+	StringView GetFilename(StringView path)
+	{
+		// attempt to parse path as a path and return the filename if it exists; otherwise, an empty
+		// view
+		const auto first    = path.data();
+		const auto last     = first + path.size();
+		const auto filename = FindFilename(first, last);
+		return StringView{filename, static_cast<sizet>(last - filename)};
 	}
 
 	Path ToRelative(const Path& path, const Path& parent)
