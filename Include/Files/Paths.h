@@ -56,6 +56,10 @@ namespace Rift::Paths
 	CORE_API StringView GetParent(StringView path);
 
 	CORE_API StringView GetFilename(StringView path);
+	inline StringView GetFilename(const String& path)
+	{
+		return GetFilename(StringView{path});
+	}
 
 
 	CORE_API Path ToRelative(const Path& path, const Path& parent = GetCurrent());

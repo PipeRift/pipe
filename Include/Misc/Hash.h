@@ -47,4 +47,30 @@ namespace Rift
 			return static_cast<sizet>(result);
 		}
 	}
+	template <typename CharType = TChar>
+	inline CORE_API constexpr sizet GetStringHash(const CharType* str, sizet size)
+	{
+		sizet i = 0;
+		// 32/64 bit architecture switch
+		if constexpr (sizeof(sizet) < 64)
+		{
+			u32 c = 0, result = 2166136261U;
+			for (sizet i = 0; i < size; ++i)
+			{
+				c      = u32(str[i]);
+				result = (result * 16777619) ^ c;
+			}
+			return static_cast<sizet>(result);
+		}
+		else
+		{
+			u64 c = 0, result = 14695981039346656037U;
+			for (sizet i = 0; i < size; ++i)
+			{
+				c      = u32(str[i]);
+				result = (result * 1099511628211) ^ c;
+			}
+			return static_cast<sizet>(result);
+		}
+	}
 }    // namespace Rift

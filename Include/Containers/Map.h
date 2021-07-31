@@ -188,23 +188,12 @@ namespace Rift
 			return 0;
 		}
 
-		/** Empty the array.
+		/** Empty the map
 		 * @param bShouldShrink false will not free memory
 		 */
-		void Empty(const bool bShouldShrink = true, i32 sizeNum = 0)
+		void Empty()
 		{
-			if (bShouldShrink)
-			{
-				map.clear();
-			}
-			else
-			{
-				map.clear_no_resize();
-				if (sizeNum > 0 && map.max_size() != sizeNum)
-				{
-					map.resize(sizeNum);
-				}
-			}
+			map.clear();
 		}
 
 		void Reserve(u32 size)

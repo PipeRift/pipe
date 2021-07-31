@@ -48,8 +48,7 @@ namespace Rift
 	using AnsiChar = PlatformTypes::AnsiChar;
 	// A wide character. Normally a signed type.
 	using WideChar = PlatformTypes::WideChar;
-	// Either AnsiChar or WideChar, depending on whether the platform supports wide characters or
-	// the requirements of the licensee.
+	// Either AnsiChar or WideChar, depending on whether the platform supports wide characters
 	using TChar = PlatformTypes::TChar;
 	// An 8-bit character containing a UTF8 (Unicode, 8-bit, variable-width) code unit.
 	using Char8 = PlatformTypes::Char8;

@@ -35,6 +35,15 @@ go_bandit([]() {
 			    Equals("SomeFolder/AnotherFolder"));
 		});
 
+		it("Can get parent path", [&]() {
+#if PLATFORM_WINDOWS
+			AssertThat(Paths::GetParent("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\SomeFolder"));
+#endif
+			AssertThat(Paths::GetParent("/var/SomeFolder"), Equals("/var"));
+			AssertThat(Paths::GetParent("/SomeFolder/AnotherFolder"), Equals("/SomeFolder"));
+			AssertThat(Paths::GetParent("/SomeFolder/SomeFile.txt"), Equals("/SomeFolder"));
+		});
+
 		it("Executable path is not empty", [&]() {
 			AssertThat(PlatformProcess::GetExecutablePath(), !Equals(""));
 		});

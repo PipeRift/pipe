@@ -6,6 +6,7 @@
 #include "Platform/Platform.h"
 #include "Reflection/Registry/NativeTypeBuilder.h"
 #include "Serialization/ContextsFwd.h"
+#include "Strings/StringView.h"
 
 #include <filesystem>
 
@@ -14,7 +15,8 @@ namespace Rift
 {
 	namespace fs = std::filesystem;
 
-	using Path = fs::path;
+	using Path     = fs::path;
+	using PathView = TStringView<Path::value_type>;
 
 	template <>
 	struct Hash<Path>
@@ -55,6 +57,11 @@ namespace Rift
 	}
 
 
+	inline PathView ToPathView(const Path& path)
+	{
+		return {path.c_str()};
+	}
+
 	namespace Serl
 	{
 		CORE_API void Read(Serl::ReadContext& ct, Path& value);
@@ -63,3 +70,15 @@ namespace Rift
 
 	REFLECT_NATIVE_TYPE(Path);
 }    // namespace Rift
+
+
+// TODO: Finish implementation of formatting of Paths
+/*template <>
+struct fmt::formatter<Rift::Path> : public fmt::formatter<Rift::PathView>
+{
+    template <typename FormatContext>
+    auto format(const Rift::Path& path, FormatContext& ctx)
+    {
+        return formatter<Rift::PathView>::format(Rift::ToPathView(path), ctx);
+    }
+};*/

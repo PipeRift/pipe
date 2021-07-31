@@ -22,7 +22,7 @@ namespace Rift
 	{
 		sizet operator()(const StringView& str) const
 		{
-			return GetStringHash(str.data());
+			return GetStringHash(str.data(), str.size());
 		}
 	};
 

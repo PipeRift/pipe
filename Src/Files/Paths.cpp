@@ -208,7 +208,7 @@ namespace Rift::Paths
 
 	String GetFilename(const Path& path)
 	{
-		return ToString(path.filename());
+		return String{GetFilename(ToString(path))};
 	}
 
 	String ToString(const Path& path)

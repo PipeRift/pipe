@@ -79,14 +79,14 @@ namespace Rift
 
 		Type& AddRef(Type&& item)
 		{
-			vector.push_back(Move(item));
-			return Data()[Size() - 1];
+			const i32 index = Add(Move(item));
+			return Data()[index];
 		}
 
 		Type& AddRef(const Type& item)
 		{
-			vector.push_back(item);
-			return Data()[Size() - 1];
+			const i32 index = Add(item);
+			return Data()[index];
 		}
 
 		i32 AddUnique(const Type& item)
@@ -99,10 +99,16 @@ namespace Rift
 			return foundIndex;
 		}
 
-		i32 AddDefaulted(u32 Amount = 0)
+		i32 AddDefaulted()
 		{
 			vector.push_back({});
 			return Size() - 1;
+		}
+
+		Type& AddDefaultedRef()
+		{
+			const i32 index = AddDefaulted();
+			return Data()[index];
 		}
 
 		void Append(const TArray<Type>& other)
@@ -137,6 +143,10 @@ namespace Rift
 		void Reserve(i32 sizeNum)
 		{
 			vector.reserve(sizeNum);
+		}
+		void ReserveMore(i32 sizeNum)
+		{
+			Reserve(Size() + sizeNum);
 		}
 		void Resize(i32 sizeNum)
 		{
@@ -503,13 +513,14 @@ namespace Rift
 		}
 
 		/** OPERATORS */
-	public:
+	public :
 		/**
 		 * Array bracket operator. Returns reference to element at give index.
 		 *
 		 * @returns Reference to indexed element.
 		 */
-		Type& operator[](i32 index)
+		Type&
+		operator[](i32 index)
 		{
 			assert(IsValidIndex(index));
 			if constexpr (IsSame<Type, bool>)
