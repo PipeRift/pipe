@@ -64,7 +64,8 @@ namespace Rift::Paths
 
 	CORE_API Path ToRelative(const Path& path, const Path& parent = GetCurrent());
 	CORE_API Path ToAbsolute(const Path& path, const Path& parent = GetCurrent());
-	CORE_API bool IsInside(const Path& base, const Path& parent);
+	CORE_API bool IsRelative(const Path& path);
+	CORE_API bool IsAbsolute(const Path& path);
 	CORE_API String GetFilename(const Path& path);
 	CORE_API String ToString(const Path& path);
 	CORE_API Path FromString(StringView pathStr);

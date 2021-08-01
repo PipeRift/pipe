@@ -201,9 +201,14 @@ namespace Rift::Paths
 		return parent / path;
 	}
 
-	bool IsInside(const Path& base, const Path& parent)
+	bool IsRelative(const Path& path)
 	{
-		return !ToRelative(base, parent).empty();
+		return path.is_relative();
+	}
+
+	bool IsAbsolute(const Path& path)
+	{
+		return path.is_absolute();
 	}
 
 	String GetFilename(const Path& path)
