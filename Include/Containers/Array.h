@@ -513,14 +513,13 @@ namespace Rift
 		}
 
 		/** OPERATORS */
-	public :
+	public:
 		/**
 		 * Array bracket operator. Returns reference to element at give index.
 		 *
 		 * @returns Reference to indexed element.
 		 */
-		Type&
-		operator[](i32 index)
+		Type& operator[](i32 index)
 		{
 			assert(IsValidIndex(index));
 			if constexpr (IsSame<Type, bool>)
