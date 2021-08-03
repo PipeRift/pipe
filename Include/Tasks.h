@@ -9,10 +9,10 @@
 namespace Rift
 {
 	using TaskFlow = tf::Taskflow;
-	using Task = tf::Task;
-	using Flow = tf::FlowBuilder;
+	using Task     = tf::Task;
+	using Flow     = tf::FlowBuilder;
 
-	using TaskLambda = std::function<void()>;
+	using TaskLambda    = std::function<void()>;
 	using SubTaskLambda = std::function<void(Flow&)>;
 
 
@@ -49,4 +49,4 @@ namespace Rift
 
 		static CORE_API TaskSystem& Get();
 	};
-}	 // namespace Rift
+}    // namespace Rift

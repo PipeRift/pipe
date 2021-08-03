@@ -331,8 +331,8 @@ namespace Rift
 		 */
 		i32 GetMillisecond() const
 		{
-			return (i32)(
-			    Chrono::floor<Chrono::milliseconds>(value) - Chrono::floor<Chrono::seconds>(value))
+			return (i32) (Chrono::floor<Chrono::milliseconds>(value) -
+			              Chrono::floor<Chrono::seconds>(value))
 			    .count();
 		}
 
@@ -378,8 +378,8 @@ namespace Rift
 		 */
 		i32 GetSecond() const
 		{
-			return (i32)(
-			    Chrono::floor<Chrono::seconds>(value) - Chrono::floor<Chrono::minutes>(value))
+			return (
+			    i32) (Chrono::floor<Chrono::seconds>(value) - Chrono::floor<Chrono::minutes>(value))
 			    .count();
 		}
 
