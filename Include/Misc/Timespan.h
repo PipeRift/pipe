@@ -167,7 +167,7 @@ namespace Rift
 		 */
 		Timespan operator*(double scalar) const
 		{
-			return Timespan(DecMicroseconds{(i64) (duration.count() * scalar)});
+			return Timespan(DecMicroseconds{(i64)(duration.count() * scalar)});
 		}
 
 		/**
@@ -178,7 +178,7 @@ namespace Rift
 		 */
 		Timespan& operator*=(double scalar)
 		{
-			duration = DecMicroseconds{(i64) (duration.count() * scalar)};
+			duration = DecMicroseconds{(i64)(duration.count() * scalar)};
 			return *this;
 		}
 
@@ -190,7 +190,7 @@ namespace Rift
 		 */
 		Timespan operator/(double scalar) const
 		{
-			return Timespan(DecMicroseconds{(i64) (duration.count() / scalar)});
+			return Timespan(DecMicroseconds{(i64)(duration.count() / scalar)});
 		}
 
 		/**
@@ -201,7 +201,7 @@ namespace Rift
 		 */
 		Timespan& operator/=(double scalar)
 		{
-			duration = DecMicroseconds{(i64) (duration.count() / scalar)};
+			duration = DecMicroseconds{(i64)(duration.count() / scalar)};
 			return *this;
 		}
 
@@ -371,7 +371,7 @@ namespace Rift
 		 */
 		i32 GetHours() const
 		{
-			return (i32) (Chrono::floor<Hours>(duration) - Chrono::floor<Days>(duration)).count();
+			return (i32)(Chrono::floor<Hours>(duration) - Chrono::floor<Days>(duration)).count();
 		}
 
 		/**
@@ -382,8 +382,7 @@ namespace Rift
 		 */
 		i32 GetMinutes() const
 		{
-			return (i32) (Chrono::floor<Minutes>(duration) - Chrono::floor<Hours>(duration))
-			    .count();
+			return (i32)(Chrono::floor<Minutes>(duration) - Chrono::floor<Hours>(duration)).count();
 		}
 
 		/**
@@ -394,7 +393,7 @@ namespace Rift
 		 */
 		i32 GetSeconds() const
 		{
-			return (i32) (Chrono::floor<Seconds>(duration) - Chrono::floor<Minutes>(duration))
+			return (i32)(Chrono::floor<Seconds>(duration) - Chrono::floor<Minutes>(duration))
 			    .count();
 		}
 
