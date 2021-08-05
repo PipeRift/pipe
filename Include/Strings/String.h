@@ -41,16 +41,16 @@ namespace Rift
 		inline String Format(StringView format, Args... args)
 		{
 			String str;
-			fmt::vformat_to(std::back_inserter(str), format,
-			    fmt::make_format_args(std::forward<Args>(args)...));
+			fmt::format_to(
+			    std::back_inserter(str), fmt::runtime(format), std::forward<Args>(args)...);
 			return Move(str);
 		}
 
 		template <typename... Args>
 		inline void FormatTo(String& buffer, StringView format, Args... args)
 		{
-			fmt::vformat_to(std::back_inserter(buffer), format,
-			    fmt::make_format_args(std::forward<Args>(args)...));
+			fmt::format_to(
+			    std::back_inserter(buffer), fmt::runtime(format), std::forward<Args>(args)...);
 		}
 
 		CORE_API void ToSentenceCase(const String& str, String& result);
