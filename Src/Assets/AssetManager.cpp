@@ -68,7 +68,7 @@ namespace Rift
 			}
 
 			// Discover asset type
-			Serl::JsonFormatReader typeReader{data.str};
+			Serl::JsonFormatReader typeReader{StringView{data.str}};
 			Serl::ReadContext& ct = typeReader;
 			ct.BeginObject();
 			StringView typeName;

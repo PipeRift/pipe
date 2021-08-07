@@ -26,9 +26,7 @@ namespace Rift::Files
 		result.reserve(sizet(file.tellg()) + extraPadding);
 		file.seekg(0, std::ios::beg);
 
-		// Improve by avoiding this copy from std::string to String
-		std::string str{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
-		result.assign(str.data(), str.size());
+		result.assign(std::istreambuf_iterator<TChar>(file), std::istreambuf_iterator<TChar>());
 
 		return !result.empty();
 	}

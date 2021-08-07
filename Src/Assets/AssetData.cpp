@@ -21,7 +21,7 @@ namespace Rift
 		info = inInfo;
 
 		// Deserialize asset
-		Serl::JsonFormatReader reader{Move(data)};
+		Serl::JsonFormatReader reader{data};
 		reader.GetContext().Serialize(*this);
 
 		return PostLoad(false);

@@ -45,30 +45,9 @@ namespace Rift::Serl
 		return memcmp(key->uni.ptr, name.data(), name.size()) == 0;
 	}
 
-	JsonFormatReader::JsonFormatReader(const String& data)
+	JsonFormatReader::JsonFormatReader(StringView data)
 	{
-		yyjson_read_err err;
-		doc = yyjson_read_opts((char*) data.data(), data.length(), 0, nullptr, &err);
-		if (!doc)
-		{
-			Log::Error("Failed to parse json: {}", err.msg);
-		}
-		root = yyjson_doc_get_root(doc);
-		PushScope(root);
-	}
-	JsonFormatReader::JsonFormatReader(String&& data)
-	{
-		insituBuffer = Move(data);
-		// Ensure there is at least 4 bytes of extra memory at the end for insitu reading.
-		if (insituBuffer.capacity() - insituBuffer.size() < 4)
-		{
-			insituBuffer.reserve(insituBuffer.size() + 4);
-		}
-
-		doc = yyjson_read_opts(
-		    insituBuffer.data(), insituBuffer.length(), YYJSON_READ_INSITU, nullptr, nullptr);
-		root = yyjson_doc_get_root(doc);
-		PushScope(root);
+		InternalInit((char*) data.data(), data.length(), false);
 	}
 
 	JsonFormatReader::JsonFormatReader(String& data)
@@ -79,9 +58,7 @@ namespace Rift::Serl
 			data.reserve(data.size() + 4);
 		}
 
-		doc  = yyjson_read_opts(data.data(), data.length(), YYJSON_READ_INSITU, nullptr, nullptr);
-		root = yyjson_doc_get_root(doc);
-		PushScope(root);
+		InternalInit(data.data(), data.length(), true);
 	}
 
 	JsonFormatReader::~JsonFormatReader()
@@ -375,6 +352,21 @@ namespace Rift::Serl
 	bool JsonFormatReader::IsArray() const
 	{
 		return yyjson_is_arr(current);
+	}
+
+	void JsonFormatReader::InternalInit(char* data, sizet size, bool insitu)
+	{
+		yyjson_read_err err;
+		yyjson_read_flag flags = insitu ? YYJSON_READ_INSITU : 0;
+
+		doc = yyjson_read_opts(data, size, flags, nullptr, &err);
+		if (!doc)
+		{
+			Log::Error("Failed to parse json: {}", err.msg);
+			return;
+		}
+		root = yyjson_doc_get_root(doc);
+		PushScope(root);
 	}
 
 	u32 JsonFormatReader::InternalBegin()
