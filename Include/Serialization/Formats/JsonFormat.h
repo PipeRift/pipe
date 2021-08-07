@@ -35,14 +35,21 @@ namespace Rift::Serl
 		 * @param data containing the constant json string
 		 * @see JsonFormatReader(String& data, bool insitu = true) for optional insitu reading
 		 */
-		JsonFormatReader(const String& data);
+		explicit JsonFormatReader(const String& data);
 		/**
 		 * Configures a JsonFormatReader to read from an string buffer
 		 * This contructor transfers the buffer and modifies it if needed to improve reading speed
 		 * slightly.
 		 * @param data containing the json string
 		 */
-		JsonFormatReader(String&& data);
+		explicit JsonFormatReader(String&& data);
+		/**
+		 * Configures a JsonFormatReader to read from an string buffer
+		 * This contructor modifies modifies the buffer if needed to improve reading speed
+		 * slightly.
+		 * @param data containing the json string
+		 */
+		explicit JsonFormatReader(String& data);
 		~JsonFormatReader();
 
 		void BeginObject();

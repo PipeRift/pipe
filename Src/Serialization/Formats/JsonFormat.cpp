@@ -60,13 +60,26 @@ namespace Rift::Serl
 	{
 		insituBuffer = Move(data);
 		// Ensure there is at least 4 bytes of extra memory at the end for insitu reading.
+		if (insituBuffer.capacity() - insituBuffer.size() < 4)
+		{
+			insituBuffer.reserve(insituBuffer.size() + 4);
+		}
+
+		doc = yyjson_read_opts(
+		    insituBuffer.data(), insituBuffer.length(), YYJSON_READ_INSITU, nullptr, nullptr);
+		root = yyjson_doc_get_root(doc);
+		PushScope(root);
+	}
+
+	JsonFormatReader::JsonFormatReader(String& data)
+	{
+		// Ensure there is at least 4 bytes of extra memory at the end for insitu reading.
 		if (data.capacity() - data.size() < 4)
 		{
 			data.reserve(data.size() + 4);
 		}
 
-		doc = yyjson_read_opts(
-		    insituBuffer.data(), insituBuffer.length(), YYJSON_READ_INSITU, nullptr, nullptr);
+		doc  = yyjson_read_opts(data.data(), data.length(), YYJSON_READ_INSITU, nullptr, nullptr);
 		root = yyjson_doc_get_root(doc);
 		PushScope(root);
 	}
