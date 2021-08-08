@@ -3,11 +3,13 @@
 
 #include "Platform/Platform.h"
 #include "Reflection/ReflectionTraits.h"
+#include "Reflection/Static/EnumType.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Formats/IFormat.h"
 #include "Serialization/SerializationTypes.h"
 #include "Strings/StringView.h"
 #include "Templates/Tuples.h"
+#include "TypeTraits.h"
 
 
 namespace Rift::Serl
@@ -153,6 +155,17 @@ namespace Rift::Serl
 		for (u32 i = 0; i < size; ++i)
 		{
 			ct.Next(val[i]);
+		}
+	}
+
+	template <typename T>
+	void Read(ReadContext& ct, T& val) requires IsEnum<T>
+	{
+		String typeStr;
+		ct.Serialize(typeStr);
+		if (std::optional<T> value = Refl::GetEnumValue<T>(typeStr))
+		{
+			val = value.value();
 		}
 	}
 }    // namespace Rift::Serl

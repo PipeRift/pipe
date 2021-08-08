@@ -44,6 +44,9 @@ namespace Rift
 	template <typename T, sizet size>
 	concept IsBigger = sizeof(T) > size;
 
+	template <typename T>
+	concept IsEnum = std::is_enum_v<T>;
+
 	template <bool Expression, typename True, typename False>
 	using SelectType = std::conditional<Expression, True, False>;
 
@@ -94,18 +97,18 @@ namespace Rift
 }    // namespace Rift
 
 #define RIFT_DECLARE_IS_TRIVIAL(T, isTrivial)                                                \
-	namespace std                                                                                                            \
-	{                                                                                                                        \
-		template <>                                                                                                          \
+	namespace std                                                                            \
+	{                                                                                        \
+		template <>                                                                          \
 		struct is_trivial<T> : public std::integral_constant<bool, isTrivial>                \
-		{};                                                                                                                  \
-		template <>                                                                                                          \
+		{};                                                                                  \
+		template <>                                                                          \
 		struct is_trivial<const T> : public std::integral_constant<bool, isTrivial>          \
-		{};                                                                                                                  \
-		template <>                                                                                                          \
+		{};                                                                                  \
+		template <>                                                                          \
 		struct is_trivial<volatile T> : public std::integral_constant<bool, isTrivial>       \
-		{};                                                                                                                  \
-		template <>                                                                                                          \
+		{};                                                                                  \
+		template <>                                                                          \
 		struct is_trivial<const volatile T> : public std::integral_constant<bool, isTrivial> \
-		{};                                                                                                                  \
+		{};                                                                                  \
 	}

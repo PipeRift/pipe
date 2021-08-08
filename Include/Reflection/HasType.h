@@ -47,13 +47,13 @@ namespace Rift
 	}
 
 	template <typename T>
-	constexpr bool HasType() requires(IsEnum<T>())
+	constexpr bool HasType() requires(IsReflectedEnum<T>())
 	{
-		return Refl::TStaticEnumInitializer<T>::enabled;
+		return true;
 	}
 
 	template <typename T>
-	constexpr bool HasType() requires(IsNative<T>())
+	constexpr bool HasType() requires(IsReflectedNative<T>())
 	{
 		return true;
 	}

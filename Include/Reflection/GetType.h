@@ -34,7 +34,7 @@ namespace Rift
 	}
 
 	template <typename T>
-	Refl::EnumType* GetType() requires(IsEnum<T>())
+	Refl::EnumType* GetType() requires(IsReflectedEnum<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 		return static_cast<Refl::EnumType*>(Refl::InternalGetType<T>());

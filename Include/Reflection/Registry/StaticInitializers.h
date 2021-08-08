@@ -38,13 +38,13 @@ namespace Rift
 
 
 	template <typename T>
-	inline constexpr bool IsEnum()
+	inline constexpr bool IsReflectedEnum()
 	{
 		return Refl::TStaticEnumInitializer<T>::enabled;
 	}
 
 	template <typename T>
-	inline constexpr bool IsNative()
+	inline constexpr bool IsReflectedNative()
 	{
 		return Refl::TStaticNativeInitializer<T>::enabled;
 	}

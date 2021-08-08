@@ -21,11 +21,11 @@ namespace Rift::Refl
 			{
 				return T::InitType();
 			}
-			else if constexpr (IsEnum<T>())
+			else if constexpr (IsReflectedEnum<T>())
 			{
 				return TStaticEnumInitializer<T>::onInit();
 			}
-			else if constexpr (IsNative<T>())
+			else if constexpr (IsReflectedNative<T>())
 			{
 				return TStaticNativeInitializer<T>::onInit();
 			}

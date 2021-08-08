@@ -444,7 +444,7 @@ namespace Rift::Serl
 
 	void JsonFormatWriter::PushScope(StringView key)
 	{
-		if ((GetFlags() & WriteFlags_CacheStrings) > 0)
+		if ((GetFlags() & WriteFlags_CacheStringKeys) > 0)
 		{
 			stringBuffer.append(key);
 			stringBuffer.push_back('\0');
@@ -576,7 +576,7 @@ namespace Rift::Serl
 	}
 	void JsonFormatWriter::Write(StringView val)
 	{
-		if ((GetFlags() & WriteFlags_CacheStrings) > 0)
+		if ((GetFlags() & WriteFlags_CacheStringValues) > 0)
 		{
 			stringBuffer.append(val);
 			stringBuffer.push_back('\0');

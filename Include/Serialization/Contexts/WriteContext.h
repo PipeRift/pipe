@@ -3,11 +3,13 @@
 
 #include "Platform/Platform.h"
 #include "Reflection/ReflectionTraits.h"
+#include "Reflection/Static/EnumType.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Formats/IFormat.h"
 #include "Serialization/SerializationTypes.h"
 #include "Strings/StringView.h"
 #include "Templates/Tuples.h"
+#include "TypeTraits.h"
 
 
 namespace Rift::Serl
@@ -182,5 +184,13 @@ namespace Rift::Serl
 		{
 			ct.Next(val[i]);
 		}
+	}
+
+	template <typename T>
+	void Write(WriteContext& ct, T& val) requires IsEnum<T>
+	{
+		ct.PushAddFlags(Serl::WriteFlags_CacheStringValues);
+		ct.Serialize(Refl::GetEnumName(type));
+		ct.PopFlags();
 	}
 }    // namespace Rift::Serl
