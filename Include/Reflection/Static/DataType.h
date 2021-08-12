@@ -6,7 +6,7 @@
 #include "Containers/Array.h"
 #include "Containers/Map.h"
 #include "CoreTypes.h"
-#include "Reflection/ReflectionTags.h"
+#include "Reflection/ReflectionFlags.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/Registry/TypeInstance.h"
 #include "Reflection/Static/Property.h"
@@ -22,12 +22,12 @@ namespace Rift::Refl
 	/** Smallest reflection type that contains all basic class or struct data */
 	class DataType : public Type
 	{
-		template <typename T, typename Parent, typename TType, ReflectionTags tags>
+		template <typename T, typename Parent, typename TType, TypeFlags flags>
 		friend struct TDataTypeBuilder;
 
 	protected:
 		Name name;
-		ReflectionTags tags = ReflectionTags::None;
+		TypeFlags flags = Type_NoFlag;
 
 		DataType* parent = nullptr;
 		TArray<DataType*> children;
@@ -50,19 +50,8 @@ namespace Rift::Refl
 		}
 
 		/** Type */
-		CORE_API const Name& GetName() const
-		{
-			return name;
-		}
-		CORE_API const String& GetSName() const
-		{
-			return GetName().ToString();
-		}
-
-		CORE_API bool HasTag(ReflectionTags tag) const
-		{
-			return (tags & tag) > 0;
-		}
+		CORE_API const Name& GetName() const;
+		CORE_API const String& GetSName() const;
 
 		CORE_API bool IsChildOf(const DataType* other) const;
 
@@ -74,16 +63,19 @@ namespace Rift::Refl
 			return IsChildOf(static_cast<DataType*>(InternalGetType<T>()));
 		}
 
-		bool IsParentOf(const DataType* other) const
+		CORE_API bool IsParentOf(const DataType* other) const
 		{
 			return other && other->IsChildOf(this);
 		}
 
+		CORE_API bool HasFlag(PropFlags flag) const;
+		CORE_API bool HasAllFlags(PropFlags inFlags) const;
+		CORE_API bool HasAnyFlags(PropFlags inFlags) const;
 
 		/** Properties */
-		const Property* FindProperty(const Name& propertyName) const;
-		void GetOwnProperties(PropertyMap& outProperties) const;
-		void GetAllProperties(PropertyMap& outProperties) const;
+		CORE_API const Property* FindProperty(const Name& propertyName) const;
+		CORE_API void GetOwnProperties(PropertyMap& outProperties) const;
+		CORE_API void GetAllProperties(PropertyMap& outProperties) const;
 
 
 	protected:

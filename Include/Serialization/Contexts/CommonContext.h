@@ -139,14 +139,14 @@ namespace Rift::Serl
 	// and Write
 	template <typename T>
 	void Read(ReadContext& ct, T& val) requires(
-	    bool(TypeFlags<T>::HasSingleSerialize&& TypeFlags<T>::HasMemberSerialize))
+	    bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
 	{
 		CommonContext commonContext{ct};
 		val.Serialize(commonContext);
 	}
 	template <typename T>
 	void Read(ReadContext& ct, T& val) requires(
-	    bool(TypeFlags<T>::HasSingleSerialize && !TypeFlags<T>::HasMemberSerialize))
+	    bool(TFlags<T>::HasSingleSerialize && !TFlags<T>::HasMemberSerialize))
 	{
 		CommonContext commonContext{ct};
 		Serialize(commonContext, val);
@@ -156,14 +156,14 @@ namespace Rift::Serl
 	// and Write
 	template <typename T>
 	void Write(WriteContext& ct, const T& val) requires(
-	    bool(TypeFlags<T>::HasSingleSerialize&& TypeFlags<T>::HasMemberSerialize))
+	    bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
 	{
 		CommonContext commonContext{ct};
 		const_cast<T&>(val).Serialize(commonContext);
 	}
 	template <typename T>
 	void Write(WriteContext& ct, const T& val) requires(
-	    bool(TypeFlags<T>::HasSingleSerialize && !TypeFlags<T>::HasMemberSerialize))
+	    bool(TFlags<T>::HasSingleSerialize && !TFlags<T>::HasMemberSerialize))
 	{
 		CommonContext commonContext{ct};
 		Serialize(commonContext, const_cast<T&>(val));

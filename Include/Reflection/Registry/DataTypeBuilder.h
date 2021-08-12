@@ -17,29 +17,24 @@
 
 namespace Rift::Refl
 {
-	template <typename T, typename Parent, typename TType,
-	    ReflectionTags tags = ReflectionTags::None>
+	template <typename T, typename Parent, typename TType, TypeFlags flags = Type_NoFlag>
 	struct TDataTypeBuilder : public TypeBuilder
 	{
 		static constexpr bool hasParent = !std::is_void_v<Parent>;
 		static_assert(!hasParent || Derived<T, Parent, false>, "Type must derive from parent.");
-		static_assert(!(tags & DetailsEdit), "Only properties can use DetailsEdit");
-		static_assert(!(tags & DetailsView), "Only properties can use DetailsView");
 
 	public:
 		TDataTypeBuilder() = default;
 		TDataTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
 
-		template <typename PropertyType, ReflectionTags propTags>
+		template <typename PropertyType, PropFlags propertyFlags>
 		void AddProperty(Name name, Property::Access* access)
 		{
-			static_assert(!(propTags & Abstract), "Properties can't be Abstract");
-
 			Type* const valueType = TTypeInstance<PropertyType>::InitType();
 
 			auto& registry = ReflectionRegistry::Get();
 			auto* const ptr =
-			    registry.AddProperty<Property>(GetType(), valueType, name, access, propTags);
+			    registry.AddProperty<Property>(GetType(), valueType, name, access, propertyFlags);
 
 			GetType()->properties.Insert(name, ptr);
 		}
@@ -67,20 +62,20 @@ namespace Rift::Refl
 			{
 				newType = &ReflectionRegistry::Get().AddType<TType>(GetId());
 			}
-			newType->id   = id;
-			newType->name = name;
-			newType->tags = tags;
+			newType->id    = id;
+			newType->name  = name;
+			newType->flags = flags;
 
 			initializedType = newType;
 			return newType;
 		}
 	};
 
-	template <typename T, typename Parent, ReflectionTags tags = ReflectionTags::None>
-	struct TClassTypeBuilder : public TDataTypeBuilder<T, Parent, ClassType, tags>
+	template <typename T, typename Parent, TypeFlags flags = Type_NoFlag>
+	struct TClassTypeBuilder : public TDataTypeBuilder<T, Parent, ClassType, flags>
 	{
 		static_assert(IsClass<T>(), "Type does not inherit Object!");
-		using Super     = TDataTypeBuilder<T, Parent, ClassType, tags>;
+		using Super     = TDataTypeBuilder<T, Parent, ClassType, flags>;
 		using BuildFunc = TFunction<void(TClassTypeBuilder& builder)>;
 		using Super::GetType;
 
@@ -113,12 +108,13 @@ namespace Rift::Refl
 	};
 
 
-	template <typename T, typename Parent, ReflectionTags tags = ReflectionTags::None>
-	struct TStructTypeBuilder : public TDataTypeBuilder<T, Parent, StructType, tags>
+	template <typename T, typename Parent, TypeFlags flags = Type_NoFlag>
+	struct TStructTypeBuilder : public TDataTypeBuilder<T, Parent, StructType, flags>
 	{
 		static_assert(IsStruct<T>(), "Type does not inherit Struct!");
+		static_assert(!(flags & Class_Abstract), "Only classes can use Class_Abstract");
 
-		using Super     = TDataTypeBuilder<T, Parent, StructType, tags>;
+		using Super     = TDataTypeBuilder<T, Parent, StructType, flags>;
 		using BuildFunc = TFunction<void(TStructTypeBuilder& builder)>;
 		using Super::GetType;
 
@@ -157,22 +153,21 @@ namespace Rift::Refl
 
 
 /** Defines a Class */
-#define CLASS_HEADER_NO_TAGS(type, parent) \
-	CLASS_HEADER_TAGS(type, parent, Rift::ReflectionTags::None)
-#define CLASS_HEADER_TAGS(type, parent, tags)                                 \
-public:                                                                       \
-	using ThisType    = type;                                                 \
-	using Super       = parent;                                               \
-	using BuilderType = Rift::Refl::TClassTypeBuilder<ThisType, Super, tags>; \
-                                                                              \
-	Rift::Refl::ClassType* GetClass() const override                          \
-	{                                                                         \
-		return Rift::GetType<ThisType>();                                     \
-	}                                                                         \
-	void SerializeReflection(Rift::Serl::CommonContext& ct) override          \
-	{                                                                         \
-		Super::SerializeReflection(ct);                                       \
-		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});            \
+#define CLASS_HEADER_NO_FLAGS(type, parent) CLASS_HEADER_FLAGS(type, parent, Type_NoFlag)
+#define CLASS_HEADER_FLAGS(type, parent, flags)                                \
+public:                                                                        \
+	using ThisType    = type;                                                  \
+	using Super       = parent;                                                \
+	using BuilderType = Rift::Refl::TClassTypeBuilder<ThisType, Super, flags>; \
+                                                                               \
+	Rift::Refl::ClassType* GetClass() const override                           \
+	{                                                                          \
+		return Rift::GetType<ThisType>();                                      \
+	}                                                                          \
+	void SerializeReflection(Rift::Serl::CommonContext& ct) override           \
+	{                                                                          \
+		Super::SerializeReflection(ct);                                        \
+		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});             \
 	}
 
 
@@ -201,22 +196,21 @@ private:                                                                        
 	{}
 
 /** Defines an struct */
-#define STRUCT_HEADER_NO_TAGS(type, parent) \
-	STRUCT_HEADER_TAGS(type, parent, Rift::ReflectionTags::None)
-#define STRUCT_HEADER_TAGS(type, parent, tags)                                 \
-public:                                                                        \
-	using Super       = parent;                                                \
-	using ThisType    = type;                                                  \
-	using BuilderType = Rift::Refl::TStructTypeBuilder<ThisType, Super, tags>; \
-                                                                               \
-	static Rift::Refl::StructType* GetType()                                   \
-	{                                                                          \
-		return Rift::GetType<ThisType>();                                      \
-	}                                                                          \
-	void SerializeReflection(Rift::Serl::CommonContext& ct)                    \
-	{                                                                          \
-		Super::SerializeReflection(ct);                                        \
-		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});             \
+#define STRUCT_HEADER_NO_FLAGS(type, parent) STRUCT_HEADER_FLAGS(type, parent, Type_NoFlag)
+#define STRUCT_HEADER_FLAGS(type, parent, flags)                                \
+public:                                                                         \
+	using Super       = parent;                                                 \
+	using ThisType    = type;                                                   \
+	using BuilderType = Rift::Refl::TStructTypeBuilder<ThisType, Super, flags>; \
+                                                                                \
+	static Rift::Refl::StructType* GetType()                                    \
+	{                                                                           \
+		return Rift::GetType<ThisType>();                                       \
+	}                                                                           \
+	void SerializeReflection(Rift::Serl::CommonContext& ct)                     \
+	{                                                                           \
+		Super::SerializeReflection(ct);                                         \
+		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});              \
 	}
 
 
@@ -251,9 +245,9 @@ public:                           \
 	using BuilderType = builder;
 
 
-#define PROPERTY_NO_TAGS(name) PROPERTY_TAGS(name, Rift::ReflectionTags::None)
-#define PROPERTY_TAGS(name, tags) __PROPERTY_IMPL(name, CAT(__refl_id_, name), tags)
-#define __PROPERTY_IMPL(name, id_name, inTags)                                                    \
+#define PROPERTY_NO_FLAGS(name) PROPERTY_FLAGS(name, Prop_NoFlag)
+#define PROPERTY_FLAGS(name, flags) __PROPERTY_IMPL(name, CAT(__refl_id_, name), flags)
+#define __PROPERTY_IMPL(name, id_name, flags)                                                     \
 	static constexpr Rift::u32 id_name =                                                          \
 	    decltype(__refl_Counter(Rift::Refl::MetaCounter<255>{}))::value;                          \
 	static constexpr Rift::Refl::MetaCounter<(id_name) + 1> __refl_Counter(                       \
@@ -263,9 +257,7 @@ public:                           \
 	{                                                                                             \
 		using PropType = decltype(name);                                                          \
 		static_assert(HasType<PropType>(), "Type is not reflected");                              \
-		static constexpr Rift::ReflectionTags tags =                                              \
-		    Rift::ReflectionTagsInitializer<inTags>::value;                                       \
-		builder.AddProperty<PropType, tags>(TX(#name), [](void* instance) {                       \
+		builder.AddProperty<PropType, flags>(TX(#name), [](void* instance) {                      \
 			return (void*) &static_cast<ThisType*>(instance)->name;                               \
 		});                                                                                       \
                                                                                                   \
@@ -275,10 +267,7 @@ public:                           \
                                                                                                   \
 	void __ReflSerializeProperty(Rift::Serl::CommonContext& ct, Rift::Refl::MetaCounter<id_name>) \
 	{                                                                                             \
-		static constexpr Rift::ReflectionTags tags =                                              \
-		    Rift::ReflectionTagsInitializer<inTags>::value;                                       \
-                                                                                                  \
-		if constexpr (!(tags & Transient))                                                        \
+		if constexpr (!(flags & Prop_Transient))                                                  \
 		{ /* Don't serialize property if Transient */                                             \
 			ct.Next(#name, name);                                                                 \
 		}                                                                                         \
@@ -295,20 +284,20 @@ public:                           \
 
 #define TYPE_INVALID(...) static_assert(false, "Invalid type macro. Missing first parameters");
 
-#define TYPE_CHOOSER(TYPE_NO_TAGS, TYPE_TAGS, type, parent, ...) \
-	REFL_GET_4TH_ARG((type, parent, __VA_ARGS__, TYPE_TAGS, TYPE_NO_TAGS, TYPE_INVALID))
+#define TYPE_CHOOSER(TYPE_NO_FLAGS, TYPE_FLAGS, type, parent, ...) \
+	REFL_GET_4TH_ARG((type, parent, __VA_ARGS__, TYPE_FLAGS, TYPE_NO_FLAGS, TYPE_INVALID))
 
-#define PROP_CHOOSER(TYPE_NO_TAGS, TYPE_TAGS, name, ...) \
-	REFL_GET_3RD_ARG((name, __VA_ARGS__, TYPE_TAGS, TYPE_NO_TAGS, TYPE_INVALID))
+#define PROP_CHOOSER(TYPE_NO_FLAGS, TYPE_FLAGS, name, ...) \
+	REFL_GET_3RD_ARG((name, __VA_ARGS__, TYPE_FLAGS, TYPE_NO_FLAGS, TYPE_INVALID))
 
 
-#define CLASS(type, parent, ...)                                                     \
-	TYPE_CHOOSER(CLASS_HEADER_NO_TAGS, CLASS_HEADER_TAGS, type, parent, __VA_ARGS__) \
+#define CLASS(type, parent, ...)                                                       \
+	TYPE_CHOOSER(CLASS_HEADER_NO_FLAGS, CLASS_HEADER_FLAGS, type, parent, __VA_ARGS__) \
 	(type, parent, __VA_ARGS__) CLASS_BODY(type, {})
 
-#define STRUCT(type, parent, ...)                                                      \
-	TYPE_CHOOSER(STRUCT_HEADER_NO_TAGS, STRUCT_HEADER_TAGS, type, parent, __VA_ARGS__) \
+#define STRUCT(type, parent, ...)                                                        \
+	TYPE_CHOOSER(STRUCT_HEADER_NO_FLAGS, STRUCT_HEADER_FLAGS, type, parent, __VA_ARGS__) \
 	(type, parent, __VA_ARGS__) STRUCT_BODY(type, {})
 
 #define PROP(name, ...) \
-	PROP_CHOOSER(PROPERTY_NO_TAGS, PROPERTY_TAGS, name, __VA_ARGS__)(name, __VA_ARGS__)
+	PROP_CHOOSER(PROPERTY_NO_FLAGS, PROPERTY_FLAGS, name, __VA_ARGS__)(name, __VA_ARGS__)

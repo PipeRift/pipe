@@ -18,7 +18,7 @@ namespace Rift::Refl
 {
 	class ClassType : public DataType
 	{
-		template <typename T, typename Parent, ReflectionTags tags>
+		template <typename T, typename Parent, TypeFlags flags>
 		friend struct TClassTypeBuilder;
 
 		using CreateFunc = TFunction<BaseObject*()>;

@@ -13,7 +13,7 @@ namespace Rift
 	struct CORE_API Struct : public BaseStruct
 	{
 	public:
-		using BuilderType = Rift::Refl::TStructTypeBuilder<Struct, void, ReflectionTags::None>;
+		using BuilderType = Rift::Refl::TStructTypeBuilder<Struct, void, Type_NoFlag>;
 
 		static Rift::Refl::StructType* GetType()
 		{

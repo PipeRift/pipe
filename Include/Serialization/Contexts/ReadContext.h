@@ -141,7 +141,7 @@ namespace Rift::Serl
 
 	template <typename T>
 	void Read(ReadContext& ct, T& val) requires(
-	    bool(TypeFlags<T>::HasMemberSerialize && !TypeFlags<T>::HasSingleSerialize))
+	    bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
 	{
 		val.Read(ct);
 	}

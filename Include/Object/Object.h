@@ -33,7 +33,7 @@ namespace Rift
 	class CORE_API Object : public BaseObject
 	{
 	public:
-		using BuilderType = Rift::Refl::TClassTypeBuilder<Object, void, ReflectionTags::None>;
+		using BuilderType = Rift::Refl::TClassTypeBuilder<Object, void, Type_NoFlag>;
 
 		virtual Rift::Refl::ClassType* GetClass() const
 		{

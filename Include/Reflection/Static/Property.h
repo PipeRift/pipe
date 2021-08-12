@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Memory/OwnPtr.h"
-#include "Reflection/ReflectionTags.h"
+#include "Reflection/ReflectionFlags.h"
 #include "Strings/Name.h"
 #include "Strings/String.h"
 
@@ -29,12 +29,12 @@ namespace Rift
 			using Access = void*(void*);
 
 		protected:
-			DataType* owner;
-			Type* type;
+			DataType* owner = nullptr;
+			Type* type      = nullptr;
 			Name name;
 
-			Access* access;
-			ReflectionTags tags;
+			Access* access  = nullptr;
+			PropFlags flags = Prop_NoFlag;
 			String displayName;
 
 
@@ -45,12 +45,12 @@ namespace Rift
 
 		protected:
 			CORE_API Property(
-			    DataType* owner, Type* type, Name name, Access* access, ReflectionTags tags)
+			    DataType* owner, Type* type, Name name, Access* access, PropFlags flags)
 			    : owner(owner)
 			    , type(type)
 			    , name(name)
 			    , access(access)
-			    , tags(tags)
+			    , flags(flags)
 			{}
 
 		public:
@@ -61,9 +61,9 @@ namespace Rift
 			CORE_API Name GetName() const;
 			CORE_API void* GetDataPtr(void* instance);
 			CORE_API const String& GetDisplayName() const;
-			CORE_API bool HasTag(ReflectionTags tag) const;
-			CORE_API bool HasAllTags(ReflectionTags inTags) const;
-			CORE_API bool HasAnyTags(ReflectionTags inTags) const;
+			CORE_API bool HasFlag(PropFlags flag) const;
+			CORE_API bool HasAllFlags(PropFlags inFlags) const;
+			CORE_API bool HasAnyFlags(PropFlags inFlags) const;
 		};
 
 
@@ -86,18 +86,6 @@ namespace Rift
 		inline const String& Property::GetDisplayName() const
 		{
 			return displayName;
-		}
-		inline bool Property::HasTag(ReflectionTags tag) const
-		{
-			return HasAnyTags(tag);
-		}
-		inline bool Property::HasAllTags(ReflectionTags inTags) const
-		{
-			return (tags & inTags) == inTags;
-		}
-		inline bool Property::HasAnyTags(ReflectionTags inTags) const
-		{
-			return (tags & inTags) > 0;
 		}
 	}    // namespace Refl
 }    // namespace Rift

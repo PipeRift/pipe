@@ -170,7 +170,7 @@ namespace Rift::Serl
 
 	template <typename T>
 	void Write(WriteContext& ct, const T& val) requires(
-	    bool(TypeFlags<T>::HasMemberSerialize && !TypeFlags<T>::HasSingleSerialize))
+	    bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
 	{
 		val.Write(ct);
 	}

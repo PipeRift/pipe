@@ -39,9 +39,9 @@ namespace Rift::Refl
 			return "Invalid";
 		}
 
-		bool HasTag(ReflectionTags tag) const
+		bool HasFlag(PropFlags flags) const
 		{
-			return prop ? prop->HasTag(tag) : false;
+			return prop ? prop->HasFlag(flags) : false;
 		}
 
 		void* GetInstance() const
