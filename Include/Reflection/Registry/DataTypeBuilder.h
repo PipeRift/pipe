@@ -31,7 +31,7 @@ namespace Rift::Refl
 		TDataTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
 
 		template <typename PropertyType, ReflectionTags propTags>
-		void AddProperty(Name name, TFunction<PropertyType*(void*)>&& access)
+		void AddProperty(Name name, Property::Access* access)
 		{
 			static_assert(!(propTags & Abstract), "Properties can't be Abstract");
 
@@ -156,17 +156,6 @@ namespace Rift::Refl
 }    // namespace Rift::Refl
 
 
-#define CLASS(type, ...)                                                     \
-	TYPE_CHOOSER(CLASS_HEADER_NO_TAGS, CLASS_HEADER_TAGS, type, __VA_ARGS__) \
-	(type, __VA_ARGS__) CLASS_BODY(type, {})
-
-#define STRUCT(type, ...)                                                      \
-	TYPE_CHOOSER(STRUCT_HEADER_NO_TAGS, STRUCT_HEADER_TAGS, type, __VA_ARGS__) \
-	(type, __VA_ARGS__) STRUCT_BODY(type, {})
-
-#define PROP(...) TYPE_CHOOSER(PROPERTY_NO_TAGS, PROPERTY_TAGS, __VA_ARGS__)(__VA_ARGS__)
-
-
 /** Defines a Class */
 #define CLASS_HEADER_NO_TAGS(type, parent) \
 	CLASS_HEADER_TAGS(type, parent, Rift::ReflectionTags::None)
@@ -262,9 +251,9 @@ public:                           \
 	using BuilderType = builder;
 
 
-#define PROPERTY_NO_TAGS(type, name) PROPERTY_TAGS(type, name, Rift::ReflectionTags::None)
-#define PROPERTY_TAGS(type, name, tags) __PROPERTY_IMPL(type, name, CAT(__refl_id_, name), tags)
-#define __PROPERTY_IMPL(type, name, id_name, inTags)                                              \
+#define PROPERTY_NO_TAGS(name) PROPERTY_TAGS(name, Rift::ReflectionTags::None)
+#define PROPERTY_TAGS(name, tags) __PROPERTY_IMPL(name, CAT(__refl_id_, name), tags)
+#define __PROPERTY_IMPL(name, id_name, inTags)                                                    \
 	static constexpr Rift::u32 id_name =                                                          \
 	    decltype(__refl_Counter(Rift::Refl::MetaCounter<255>{}))::value;                          \
 	static constexpr Rift::Refl::MetaCounter<(id_name) + 1> __refl_Counter(                       \
@@ -272,11 +261,12 @@ public:                           \
                                                                                                   \
 	static void __ReflReflectProperty(BuilderType& builder, Rift::Refl::MetaCounter<id_name>)     \
 	{                                                                                             \
-		static_assert(HasType<type>(), "Type is not reflected");                                  \
+		using PropType = decltype(name);                                                          \
+		static_assert(HasType<PropType>(), "Type is not reflected");                              \
 		static constexpr Rift::ReflectionTags tags =                                              \
 		    Rift::ReflectionTagsInitializer<inTags>::value;                                       \
-		builder.AddProperty<type, tags>(TX(#name), [](void* instance) {                           \
-			return &static_cast<ThisType*>(instance)->name;                                       \
+		builder.AddProperty<PropType, tags>(TX(#name), [](void* instance) {                       \
+			return (void*) &static_cast<ThisType*>(instance)->name;                               \
 		});                                                                                       \
                                                                                                   \
 		/* Registry next property if any */                                                       \
@@ -297,9 +287,28 @@ public:                           \
 	};
 
 
-#define __GET_4TH_ARG(arg1, arg2, arg3, arg4, ...) arg4
-#define GET_4TH_ARG(tuple) __GET_4TH_ARG tuple
+#define REFL_INTERNAL_GET_3RD_ARG(arg1, arg2, arg3, ...) arg3
+#define REFL_GET_3RD_ARG(tuple) REFL_INTERNAL_GET_3RD_ARG tuple
+
+#define REFL_INTERNAL_GET_4TH_ARG(arg1, arg2, arg3, arg4, ...) arg4
+#define REFL_GET_4TH_ARG(tuple) REFL_INTERNAL_GET_4TH_ARG tuple
 
 #define TYPE_INVALID(...) static_assert(false, "Invalid type macro. Missing first parameters");
-#define TYPE_CHOOSER(TYPE_NO_TAGS, TYPE_TAGS, ...) \
-	GET_4TH_ARG((__VA_ARGS__, TYPE_TAGS, TYPE_NO_TAGS, TYPE_INVALID))
+
+#define TYPE_CHOOSER(TYPE_NO_TAGS, TYPE_TAGS, type, parent, ...) \
+	REFL_GET_4TH_ARG((type, parent, __VA_ARGS__, TYPE_TAGS, TYPE_NO_TAGS, TYPE_INVALID))
+
+#define PROP_CHOOSER(TYPE_NO_TAGS, TYPE_TAGS, name, ...) \
+	REFL_GET_3RD_ARG((name, __VA_ARGS__, TYPE_TAGS, TYPE_NO_TAGS, TYPE_INVALID))
+
+
+#define CLASS(type, parent, ...)                                                     \
+	TYPE_CHOOSER(CLASS_HEADER_NO_TAGS, CLASS_HEADER_TAGS, type, parent, __VA_ARGS__) \
+	(type, parent, __VA_ARGS__) CLASS_BODY(type, {})
+
+#define STRUCT(type, parent, ...)                                                      \
+	TYPE_CHOOSER(STRUCT_HEADER_NO_TAGS, STRUCT_HEADER_TAGS, type, parent, __VA_ARGS__) \
+	(type, parent, __VA_ARGS__) STRUCT_BODY(type, {})
+
+#define PROP(name, ...) \
+	PROP_CHOOSER(PROPERTY_NO_TAGS, PROPERTY_TAGS, name, __VA_ARGS__)(name, __VA_ARGS__)

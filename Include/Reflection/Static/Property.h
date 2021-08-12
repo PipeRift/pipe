@@ -24,15 +24,16 @@ namespace Rift
 		{
 			friend class ReflectionRegistry;
 
+		public:
 			// Returns a pointer to the variable from an owner instance pointer
-			using Access = TFunction<void*(void*)>;
+			using Access = void*(void*);
 
 		protected:
 			DataType* owner;
 			Type* type;
 			Name name;
 
-			Access access;
+			Access* access;
 			ReflectionTags tags;
 			String displayName;
 
@@ -44,11 +45,11 @@ namespace Rift
 
 		protected:
 			CORE_API Property(
-			    DataType* owner, Type* type, Name name, Access access, ReflectionTags tags)
+			    DataType* owner, Type* type, Name name, Access* access, ReflectionTags tags)
 			    : owner(owner)
 			    , type(type)
 			    , name(name)
-			    , access(Move(access))
+			    , access(access)
 			    , tags(tags)
 			{}
 
@@ -80,7 +81,7 @@ namespace Rift
 		}
 		inline void* Property::GetDataPtr(void* instance)
 		{
-			return access(instance);
+			return access ? access(instance) : nullptr;
 		}
 		inline const String& Property::GetDisplayName() const
 		{

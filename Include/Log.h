@@ -4,7 +4,7 @@
 
 #include "PCH.h"
 
-#include "Files/Files.h"
+#include "Files/STDFileSystem.h"
 #include "Strings/String.h"
 
 #include <mutex>
@@ -68,4 +68,4 @@ namespace Rift::Log
 		}
 		Error(Strings::Format("Failed check \"{}\" at {}:{}", expr, file, line));
 	}
-};	  // namespace Rift::Log
+};    // namespace Rift::Log
