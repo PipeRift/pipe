@@ -14,37 +14,43 @@ namespace Rift
 
 	using TaskLambda    = std::function<void()>;
 	using SubTaskLambda = std::function<void(Flow&)>;
+	using ThreadPool    = tf::Executor;
 
+	enum class TaskPool : u8
+	{
+		Main,
+		Workers
+	};
 
 	struct TaskSystem
 	{
-		using ThreadPool = tf::Executor;
-
 	private:
 		// Main thread
-		std::shared_ptr<ThreadPool> mainPool;
+		ThreadPool mainPool;
 		// Worker threads
-		std::shared_ptr<ThreadPool> workerPool;
+		ThreadPool workerPool;
 
 
 	public:
 		CORE_API TaskSystem();
 
+		CORE_API ThreadPool& GetPool(TaskPool pool);
+
 		// Runs a flow in Workers thread pool
-		CORE_API std::future<void> Run(TaskFlow& flow) const
+		CORE_API std::future<void> Run(TaskFlow& flow, TaskPool pool = TaskPool::Workers)
 		{
-			return workerPool->run(flow);
+			return GetPool(pool).run(flow);
 		}
 
 		// Creates a flow in Game thread pool
-		CORE_API std::future<void> RunMainFlow(TaskFlow& flow) const
+		CORE_API std::future<void> RunMainFlow(TaskFlow& flow)
 		{
-			return mainPool->run(flow);
+			return mainPool.run(flow);
 		}
 
 		CORE_API u32 GetNumWorkerThreads() const
 		{
-			return (u32) workerPool->num_workers();
+			return (u32) workerPool.num_workers();
 		}
 
 		static CORE_API TaskSystem& Get();

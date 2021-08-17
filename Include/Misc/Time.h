@@ -19,7 +19,7 @@ namespace Rift
 		float timeDilation  = 1.f;
 
 		// Value of 1/FPS_CAP
-		float minFrameTime = 0.f;
+		float minFrameTime = 0.f;    // Uncapped
 
 
 	public:
