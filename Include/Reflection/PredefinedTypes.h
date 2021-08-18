@@ -32,7 +32,7 @@ namespace Rift
 		static constexpr auto name = preffix + fixedItemName + suffix;
 	};
 
-	// Contains an static fixed string with the name of a TAssetPtr<T>
+	// Contains an static fixed string with the name of a TMap<Key, Value>
 	template <typename KeyType, typename ValueType, bool includeNamespaces>
 	struct StaticMapName
 	{

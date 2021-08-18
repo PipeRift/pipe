@@ -1,6 +1,5 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Assets/AssetPtr.h>
 #include <Containers/Array.h>
 #include <Containers/Map.h>
 #include <Reflection/PredefinedTypes.h>
@@ -62,19 +61,11 @@ go_bandit([]() {
 			AssertThat(GetTypeName<Space::Other>(), Equals("Space::Other"));
 		});
 
-		it("Can get TAssetPtr names", [&]() {
-			AssertThat(GetTypeName<TAssetPtr<AssetData>>(), Equals("TAssetPtr"));
-			AssertThat(
-			    GetFullTypeName<TAssetPtr<AssetData>>(), Equals("TAssetPtr<Rift::AssetData>"));
-			AssertThat(
-			    GetFullTypeName<TAssetPtr<AssetData>>(false), Equals("TAssetPtr<AssetData>"));
-		});
-
 		describe("Containers", []() {
 			it("Can get TArray names", [&]() {
-				AssertThat(GetTypeName<TArray<AssetInfo>>(), Equals("TArray"));
-				AssertThat(GetFullTypeName<TArray<AssetInfo>>(), Equals("TArray<Rift::AssetInfo>"));
-				AssertThat(GetFullTypeName<TArray<AssetInfo>>(false), Equals("TArray<AssetInfo>"));
+				AssertThat(GetTypeName<TArray<Name>>(), Equals("TArray"));
+				AssertThat(GetFullTypeName<TArray<Name>>(), Equals("TArray<Rift::Name>"));
+				AssertThat(GetFullTypeName<TArray<Name>>(false), Equals("TArray<Name>"));
 			});
 
 			it("Can get TMap names", [&]() {
@@ -85,10 +76,10 @@ go_bandit([]() {
 				AssertThat(fullName, Equals("TMap<u8, bool>"));
 
 
-				auto namespaceName = GetFullTypeName<TMap<u8, AssetInfo>>();
-				AssertThat(namespaceName, Equals("TMap<u8, Rift::AssetInfo>"));
-				auto noNamespaceName = GetFullTypeName<TMap<u8, AssetInfo>>(false);
-				AssertThat(noNamespaceName, Equals("TMap<u8, AssetInfo>"));
+				auto namespaceName = GetFullTypeName<TMap<u8, Name>>();
+				AssertThat(namespaceName, Equals("TMap<u8, Rift::Name>"));
+				auto noNamespaceName = GetFullTypeName<TMap<u8, Name>>(false);
+				AssertThat(noNamespaceName, Equals("TMap<u8, Name>"));
 			});
 		});
 	});

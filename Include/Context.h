@@ -1,8 +1,6 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "Assets/AssetManager.h"
-#include "Assets/AssetPtr.h"
 #include "CoreObject.h"
 #include "Events/Broadcast.h"
 #include "Tasks.h"
@@ -15,13 +13,11 @@ namespace Rift
 		CLASS(Context, Object)
 
 	private:
-		TOwnPtr<AssetManager> assetManager;
-
 		TaskSystem tasks;
 
 
 	public:
-		Context() : Super(), assetManager{Create<AssetManager>()} {}
+		Context() : Super() {}
 
 		virtual void Construct() override
 		{
@@ -35,11 +31,6 @@ namespace Rift
 			Super::BeforeDestroy();
 			Log::Info("Context has been destroyed");
 			Log::Shutdown();
-		}
-
-		TPtr<AssetManager> GetAssetManager()
-		{
-			return assetManager;
 		}
 
 		TaskSystem& GetTasks()
@@ -71,4 +62,4 @@ namespace Rift
 		    InternalGetContext() && "Context is not initialized! Call InitializeContext<Type>().");
 		return InternalGetContext().Cast<T>();
 	}
-}	 // namespace Rift
+}    // namespace Rift
