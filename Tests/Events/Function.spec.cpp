@@ -48,7 +48,6 @@ go_bandit([]() {
 
 			TFunction<void()> func4{};
 
-			Foo foo;
 			TFunction<void()> func5{Foo::OtherStaticFunc};
 
 			AssertThat(func1 == func2, Equals(true));

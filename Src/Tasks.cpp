@@ -27,8 +27,8 @@ namespace Rift
 		TaskFlow flow;
 		std::mutex mtx;
 		std::condition_variable cv;
-		i32 currentWorker = 0;
-		const i32 workerPoolSize{workerPool.num_workers()};
+		i32 currentWorker        = 0;
+		const i32 workerPoolSize = i32(workerPool.num_workers());
 		flow.for_each_index(
 		    0, workerPoolSize, 1, [&mtx, &cv, &currentWorker, workerPoolSize](i32 i) {
 			    std::unique_lock<std::mutex> lck(mtx);

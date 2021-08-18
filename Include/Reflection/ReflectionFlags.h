@@ -24,4 +24,23 @@ namespace Rift
 		Prop_View      = 1 << 1,
 		Prop_Edit      = 1 << 2 | Prop_View    // Edit implies View too
 	};
+
+
+	// Functions used to surround macro flag values making them template safe
+	constexpr TypeFlags InitTypeFlags()
+	{
+		return Type_NoFlag;
+	}
+	constexpr TypeFlags InitTypeFlags(TypeFlags flags)
+	{
+		return flags;
+	}
+	constexpr PropFlags InitPropFlags()
+	{
+		return Prop_NoFlag;
+	}
+	constexpr PropFlags InitPropFlags(PropFlags flags)
+	{
+		return flags;
+	}
 }    // namespace Rift

@@ -272,12 +272,12 @@ namespace Rift
 	using box3_i32 = Box<i32, 3>;
 
 
-	void Read(Serl::ReadContext& ct, v2& val);
-	void Write(Serl::WriteContext& ct, v2 val);
+	CORE_API void Read(Serl::ReadContext& ct, v2& val);
+	CORE_API void Write(Serl::WriteContext& ct, v2 val);
 
-	void Read(Serl::ReadContext& ct, v2_u32& val);
-	void Write(Serl::WriteContext& ct, v2_u32 val);
+	CORE_API void Read(Serl::ReadContext& ct, v2_u32& val);
+	CORE_API void Write(Serl::WriteContext& ct, v2_u32 val);
 
-	void Read(Serl::ReadContext& ct, v3& val);
-	void Write(Serl::WriteContext& ct, const v3& val);
+	CORE_API void Read(Serl::ReadContext& ct, v3& val);
+	CORE_API void Write(Serl::WriteContext& ct, const v3& val);
 }    // namespace Rift
