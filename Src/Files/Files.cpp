@@ -52,7 +52,7 @@ namespace Rift::Files
 			return false;
 		}
 
-		std::ofstream file(path);
+		std::basic_ofstream<TChar> file(path);
 		file.write(data.data(), data.size());
 		file.close();
 		return true;
