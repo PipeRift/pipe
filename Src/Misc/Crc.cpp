@@ -6,7 +6,7 @@
 #include "Memory/Alloc.h"
 
 
-namespace Rift
+namespace Rift::Crc
 {
 	/** CRC 32 polynomial */
 	enum
@@ -14,7 +14,7 @@ namespace Rift
 		Crc32Poly = 0x04c11db7
 	};
 
-	u32 Crc::CRCTablesSB8[8][256] = {
+	u32 CRCTablesSB8[8][256] = {
 	    {0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535,
 	        0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988, 0x09b64c2b, 0x7eb17cbd,
 	        0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2, 0xf3b97148, 0x84be41de, 0x1adad47d,
@@ -312,7 +312,7 @@ namespace Rift
 	        0xb78b1a2e, 0x39041dcd, 0xf5ae1d53, 0x2c8e0fff, 0xe0240f61, 0x6eab0882, 0xa201081c,
 	        0xa8c40105, 0x646e019b, 0xeae10678, 0x264b06e6}};
 
-	u32 Crc::MemCrc32(const void* InData, i32 length, u32 CRC /*=0 */)
+	u32 MemCrc32(const void* InData, i32 length, u32 CRC /*=0 */)
 	{
 		// Based on the Slicing-by-8 implementation found here:
 		// http://slicing-by-8.sourceforge.net/
