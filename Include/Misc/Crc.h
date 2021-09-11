@@ -6,9 +6,9 @@
 #include "Platform/Platform.h"
 
 
-    /**
-	 * CRC hash generation for different types of input data
-	 **/
+/**
+ * CRC hash generation for different types of input data
+ **/
 namespace Rift::Crc
 {
 	/** generates CRC hash of the memory area */

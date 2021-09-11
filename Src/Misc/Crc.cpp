@@ -355,4 +355,4 @@ namespace Rift::Crc
 
 		return ~CRC;
 	}
-}    // namespace Rift
+}    // namespace Rift::Crc
