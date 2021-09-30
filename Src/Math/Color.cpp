@@ -382,6 +382,27 @@ namespace Rift
 		return Color(r, g, b);
 	}
 
+	Color Color::Desaturate(float desaturation) const
+	{
+		LinearColor self{*this};
+		self.Desaturate(desaturation);
+		return self.ToColor(false);
+	}
+
+	Color Color::Darken(float delta, bool relative) const
+	{
+		LinearColor self{*this};
+		self.Darken(delta, relative);
+		return self.ToColor(false);
+	}
+
+	Color Color::Lighten(float delta, bool relative) const
+	{
+		LinearColor self{*this};
+		self.Lighten(delta, relative);
+		return self.ToColor(false);
+	}
+
 	void ComputeAndFixedColorAndIntensity(
 	    const LinearColor& InLinearColor, Color& OutColor, float& OutIntensity)
 	{

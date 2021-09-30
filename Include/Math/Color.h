@@ -393,13 +393,6 @@ namespace Rift
 		explicit Color(u32 InColor)
 		{
 			DWColor() = InColor;
-
-			if (a == 0)
-			{
-				// Most of the times we pass the format 0xXXXXXX, where in theory alpha is 0.
-				// We want 255 by default
-				a = 255;
-			}
 		}
 
 		// Operators.
@@ -470,6 +463,15 @@ namespace Rift
 			return Strings::Format(TX("{:02X}{:02X}{:02X}{:02X}"), r, g, b, a);
 		}
 
+		static Color HexRGB(u32 value)
+		{
+			return {value >> 16, value >> 8, value >> 0};
+		}
+		static Color HexRGBA(u32 value)
+		{
+			return {value >> 24, value >> 16, value >> 8, value >> 0};
+		}
+
 		/**
 		 * Converts this color value to a string.
 		 *
@@ -512,6 +514,15 @@ namespace Rift
 		{
 			return (b << 24) | (g << 16) | (r << 8) | (a << 0);
 		}
+
+		Color Desaturate(float desaturation) const;
+		Color Darken(float delta, bool relative = true) const;
+		Color Lighten(float delta, bool relative = true) const;
+		Color Translucency(u8 alpha) const
+		{
+			return {r, g, b, alpha};
+		}
+
 
 		/** Some pre-initialized colors, useful for debug code */
 		static const Color White;
