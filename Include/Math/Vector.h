@@ -114,6 +114,20 @@ namespace Rift
 	public:
 		v2(const Vec<2, float>& other) : v2(*static_cast<const v2*>(&other)) {}
 
+		constexpr v2& operator*=(float other)
+		{
+			x *= other;
+			y *= other;
+			return *this;
+		}
+
+		constexpr v2& operator/=(float other)
+		{
+			x /= other;
+			y /= other;
+			return *this;
+		}
+
 		class v3 xz() const;
 		class v3 xy() const;
 	};
