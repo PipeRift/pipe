@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Math.h"
+#include "Math/Vector.h"
 #include "Matrix.h"
 #include "Reflection/Registry/NativeTypeBuilder.h"
 #include "Serialization/ContextsFwd.h"
@@ -13,18 +14,20 @@
 
 namespace Rift
 {
-	class v3;
 	class Rotator;
 
-	class Quat : public glm::qua<float, glm::highp>
+	class Quat
 	{
-		using glm::qua<float, glm::highp>::qua;
+	public:
+		float x;
+		float y;
+		float z;
+		float w;
 
 	public:
-		// Conversion from glm quaternion
-		template <glm::qualifier Q>
-		Quat(const glm::qua<float, Q>& other) : Quat(*static_cast<const Quat*>(&other))
-		{}
+		// Default constructor (uninitialized)
+		constexpr Quat() {}
+		constexpr Quat(float x, float y, float z, float w) : x{x}, y{y}, z{z}, w{w} {}
 
 		v3 Rotate(const v3& vector) const;
 		v3 Unrotate(const v3& vector) const;
@@ -63,6 +66,13 @@ namespace Rift
 		static constexpr Quat Identity()
 		{
 			return {1, 0, 0, 0};
+		}
+
+
+		template <typename T>
+		v3 operator*(const v3& v)
+		{
+			return Rotate(v);
 		}
 	};
 	REFLECT_NATIVE_TYPE(Quat);

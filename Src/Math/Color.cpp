@@ -206,27 +206,27 @@ namespace Rift
 	/**
 	 * Converts byte hue-saturation-brightness to floating point red-green-blue.
 	 */
-	LinearColor LinearColor::GetHSV(u8 H, u8 S, u8 V)
+	LinearColor LinearColor::GetHSV(u8 h, u8 s, u8 v)
 	{
-		float Brightness = V * 1.4f / 255.f;
-		Brightness *= 0.7f / (0.01f + Math::Sqrt(Brightness));
-		Brightness = Math::Clamp(Brightness, 0.f, 1.f);
+		float brightness = v * 1.4f / 255.f;
+		brightness *= 0.7f / (0.01f + Math::Sqrt(brightness));
+		brightness = Math::Clamp(brightness, 0.f, 1.f);
 
 		v3 hue;
-		if (H < 86)
+		if (h < 86)
 		{
-			hue = v3((85.f - H) / 85.f, float(H) / 85.f, 0.f);
+			hue = v3((85.f - h) / 85.f, float(h) / 85.f, 0.f);
 		}
-		else if (H < 171)
+		else if (h < 171)
 		{
-			hue = v3(0.f, (170.f - H) / 85.f, (float(H) - 85.f) / 85.f);
+			hue = v3(0.f, (170.f - h) / 85.f, (float(h) - 85.f) / 85.f);
 		}
 		else
 		{
-			hue = v3((float(H) - 170.f) / 85.f, 0.f, (255.f - H) / 84.f);
+			hue = v3((float(h) - 170.f) / 85.f, 0.f, (255.f - h) / 84.f);
 		}
 
-		const v3 colorVector = (hue + S / 255.f * (v3::One() - hue)) * Brightness;
+		const v3 colorVector = (hue + (v3::One() - hue) * (s / 255.f)) * brightness;
 		return LinearColor(colorVector.x, colorVector.y, colorVector.z, 1);
 	}
 

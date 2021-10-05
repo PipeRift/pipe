@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "TypeTraits.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/matrix.hpp>
@@ -9,17 +11,16 @@
 
 namespace Rift
 {
-	template <glm::length_t X, glm::length_t Y, typename T>
+	template <u32 X, u32 Y, Number T>
 	class Matrix : public glm::mat<X, Y, T, glm::highp>
 	{
-		using glm::mat<X, Y, T, glm::highp>::mat;
+		union
+		{
+			T data[X][Y];
+		};
 
 	public:
-		// Conversion from glm matrix
-		template <glm::qualifier Q>
-		Matrix(const glm::mat<X, Y, T, Q>& other)
-		    : Matrix(*static_cast<const Matrix<X, Y, T>*>(&other))
-		{}
+		Matrix() {}
 
 		Matrix Inverse() const
 		{

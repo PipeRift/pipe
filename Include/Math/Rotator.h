@@ -2,15 +2,13 @@
 
 #pragma once
 
-#include "Vector.h"
+#include "Math/Vector.h"
 
 
 namespace Rift
 {
 	class Rotator : public Vec<3, float>
 	{
-		using Vec<3, float>::Vec;
-
 	public:
 		float Pitch() const
 		{

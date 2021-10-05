@@ -1,10 +1,9 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
 #include "Math/Quaternion.h"
-
 #include "Math/Rotator.h"
-#include "Math/Vector.h"
 #include "Serialization/Contexts.h"
+
 
 
 namespace Rift
@@ -12,29 +11,29 @@ namespace Rift
 	v3 Quat::Rotate(const v3& v) const
 	{
 		const v3 q(x, y, z);
-		const v3 t = 2.f * glm::cross(q, v);
-		return v + (w * t) + glm::cross(q, t);
+		const v3 t = v3::Cross(q, v) * 2.f;
+		return v + (t * w) + v3::Cross(q, t);
 	}
 
 	v3 Quat::Unrotate(const v3& v) const
 	{
 		const v3 q(-x, -y, -z);    // Inverse
-		const v3 t = 2.f * glm::cross(q, v);
-		return v + (w * t) + glm::cross(q, t);
+		const v3 t = v3::Cross(q, v) * 2.f;
+		return v + (t * w) + v3::Cross(q, t);
 	}
 	v3 Quat::GetForward() const
 	{
-		return *this * v3::Forward;
+		return *this * v3::Forward();
 	}
 
 	v3 Quat::GetRight() const
 	{
-		return *this * v3::Right;
+		return *this * v3::Right();
 	}
 
 	v3 Quat::GetUp() const
 	{
-		return *this * v3::Up;
+		return *this * v3::Up();
 	}
 
 	Rotator Quat::ToRotator() const

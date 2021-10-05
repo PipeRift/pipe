@@ -7,6 +7,102 @@
 
 namespace Rift
 {
+	constexpr i32 Math::Pow(i32 value, u32 power)
+	{
+		if (power == 0)
+			return value >= 0 ? 1 : -1;
+
+		i32 result = value;
+		for (u32 i = 1; i < power; ++i)
+			result *= value;
+		return result;
+	}
+
+	constexpr i64 Math::Pow(i64 value, u32 power)
+	{
+		if (power == 0)
+			return value >= 0 ? 1 : -1;
+
+		i64 result = value;
+		for (u32 i = 1; i < power; ++i)
+			result *= value;
+		return result;
+	}
+
+	constexpr u32 Math::Pow(u32 value, u32 power)
+	{
+		if (power == 0)
+			return 1u;
+
+		u32 result = value;
+		for (u32 i = 1; i < power; ++i)
+			result *= value;
+		return result;
+	}
+
+	constexpr u64 Math::Pow(u64 value, u32 power)
+	{
+		if (power == 0)
+			return 1u;
+
+		u64 result = value;
+		for (u32 i = 1; i < power; ++i)
+			result *= value;
+		return result;
+	}
+
+	void Math::SinCos(float* scalarSin, float* scalarCos, float value)
+	{
+		// Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
+		float quotient = (INV_PI * 0.5f) * value;
+		if (value >= 0.0f)
+		{
+			quotient = float(int(quotient + 0.5f));
+		}
+		else
+		{
+			quotient = (float) ((int) (quotient - 0.5f));
+		}
+		float y = value - (2.0f * PI) * quotient;
+
+		// Map y to [-pi/2,pi/2] with sin(y) = sin(value).
+		float sign;
+		if (y > HALF_PI)
+		{
+			y    = PI - y;
+			sign = -1.0f;
+		}
+		else if (y < -HALF_PI)
+		{
+			y    = -PI - y;
+			sign = -1.0f;
+		}
+		else
+		{
+			sign = +1.0f;
+		}
+
+		float y2 = y * y;
+
+		// 11-degree minimax approximation
+		*scalarSin = (((((-2.3889859e-08f * y2 + 2.7525562e-06f) * y2 - 0.00019840874f) * y2 +
+		                   0.0083333310f) *
+		                      y2 -
+		                  0.16666667f) *
+		                     y2 +
+		                 1.0f) *
+		             y;
+
+		// 10-degree minimax approximation
+		float p =
+		    ((((-2.6051615e-07f * y2 + 2.4760495e-05f) * y2 - 0.0013888378f) * y2 + 0.041666638f) *
+		            y2 -
+		        0.5f) *
+		        y2 +
+		    1.0f;
+		*scalarCos = sign * p;
+	}
+
 	float Math::Atan2(float Y, float X)
 	{
 		// return atan2f(Y,X);
@@ -45,26 +141,5 @@ namespace Rift
 		t3 = (Y < 0.0f) ? -t3 : t3;
 
 		return t3;
-	}
-
-	v3 Math::GetSafeScaleReciprocal(const v3& scale, float tolerance /*= SMALL_NUMBER*/)
-	{
-		v3 safeReciprocalScale;
-		if (Math::Abs(scale.x) <= tolerance)
-			safeReciprocalScale.x = 0.f;
-		else
-			safeReciprocalScale.x = 1 / scale.x;
-
-		if (Math::Abs(scale.y) <= tolerance)
-			safeReciprocalScale.y = 0.f;
-		else
-			safeReciprocalScale.y = 1 / scale.y;
-
-		if (Math::Abs(scale.z) <= tolerance)
-			safeReciprocalScale.z = 0.f;
-		else
-			safeReciprocalScale.z = 1 / scale.z;
-
-		return safeReciprocalScale;
 	}
 }    // namespace Rift

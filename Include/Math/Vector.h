@@ -8,197 +8,432 @@
 #include "Reflection/Registry/NativeTypeBuilder.h"
 #include "Serialization/ContextsFwd.h"
 #include "Strings/Name.h"
-
-#include <glm/ext.hpp>
-#include <glm/fwd.hpp>
-#include <glm/geometric.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtx/norm.hpp>
+#include "TypeTraits.h"
 
 
 namespace Rift
 {
-	template <glm::length_t L, typename T>
-	class Vec : public glm::vec<L, T, glm::highp>
+	template <u32 size, Number T>
+	struct Vec
 	{
-		using glm::vec<L, T, glm::highp>::vec;
+		Vec() = delete;
+	};
+
+
+	template <Number T>
+	struct Vec<2, T>
+	{
+		using Type = T;
 
 	public:
-		template <glm::qualifier Q>
-		Vec(const glm::vec<L, T, Q>& other) : Vec(*static_cast<const Vec<L, T>*>(&other))
+		T x;
+		T y;
+
+
+	public:
+		constexpr Vec() : x{0}, y{0} {}
+		constexpr Vec(T x, T y) : x{x}, y{y} {}
+		template <typename T2>
+		explicit constexpr Vec(const Vec<2, T2>& other) requires(std::is_convertible_v<T2, T>)
+		    : x{other.x}
+		    , y{other.y}
 		{}
 
-		T Length() const
+		constexpr Vec<3, T> XY() const
 		{
-			return glm::length<L, T>(*this);
-		}
-		T LengthSqrt() const
-		{
-			return glm::length2<L, T>(*this);
+			return {x, y, T(0)};
 		}
 
-		T Distance(const Vec<L, T>& other) const
+		constexpr Vec<3, T> XZ() const
 		{
-			return glm::distance<L, T>(*this, other);
-		}
-		T DistanceSqrt(const Vec<L, T>& other) const
-		{
-			return glm::distance2<L, T>(*this, other);
+			return {x, T(0), y};
 		}
 
-		Vec Normalize() const
+		constexpr u32 Num() const
 		{
-			return glm::normalize<L, T>(*this);
+			return 2;
+		}
+
+		constexpr T Length() const
+		{
+			return Math::Sqrt(LengthSqrt());
+		}
+
+		constexpr T LengthSqrt() const
+		{
+			return x * x + y * y;
+		}
+
+		static T Distance(const Vec<2, T>& one, const Vec<2, T>& other)
+		{
+			return Math::Sqrt(DistanceSqrt(one, other));
+		}
+		static T DistanceSqrt(const Vec<2, T>& one, const Vec<2, T>& other)
+		{
+			return Math::Square(other.x - one.x) + Math::Square(other.y - one.y);
+		}
+
+		Vec& Normalize()
+		{
+			const T length = Length();
+			if (length > 0.f)
+			{
+				const float scale = Math::InvSqrt(length);
+				x *= scale;
+				y *= scale;
+			}
+			return *this;
+		}
+
+		static T Cross(const Vec& a, const Vec& b) requires(
+		    FloatingPoint<T>)    // 'cross' accepts only floating-point inputs
+		{
+			return a.x * b.y - b.x * a.y;
 		}
 
 		T* Data()
 		{
-			return glm::value_ptr(*this);
+			return &x;
 		}
 		const T* Data() const
 		{
-			return glm::value_ptr(*this);
+			return &x;
 		}
 
-		static constexpr Vec<L, T> Zero()
+		static constexpr Vec Zero()
 		{
-			return glm::zero<Vec<L, T>>();
+			return {};
 		}
-		static constexpr Vec<L, T> One()
+		static constexpr Vec One()
 		{
-			return glm::one<Vec<L, T>>();
+			return {T(1), T(1)};
 		}
 
 
-		template <typename T2>
-		constexpr Vec<L, T>& operator+=(const Vec<L, T2>& other)
+		template <Number T2>
+		constexpr Vec operator+(const Vec<2, T2>& other) const
 		{
-			for (i32 i = 0; i < L; ++i)
-			{
-				(*this)[i] += other[i];
-			}
+			return {x + other.x, y + other.y};
+		}
+		template <Number T2>
+		constexpr Vec operator-(const Vec<2, T2>& other) const
+		{
+			return {x - other.x, y - other.y};
+		}
+		template <Number T2>
+		constexpr Vec operator*(const Vec<2, T2>& other) const
+		{
+			return {x * other.x, y * other.y};
+		}
+		template <Number T2>
+		constexpr Vec operator/(const Vec<2, T2>& other) const
+		{
+			return {x / other.x, y / other.y};
+		}
+
+		template <Number T2>
+		constexpr Vec& operator+=(const Vec<2, T2>& other)
+		{
+			x += other.x;
+			y += other.y;
+			return *this;
+		}
+		template <Number T2>
+		constexpr Vec& operator-=(const Vec<2, T2>& other)
+		{
+			x -= other.x;
+			y -= other.y;
+			return *this;
+		}
+		template <Number T2>
+		constexpr Vec& operator*=(const Vec<2, T2>& other)
+		{
+			x *= other.x;
+			y *= other.y;
+			return *this;
+		}
+		template <Number T2>
+		constexpr Vec& operator/=(const Vec<2, T2>& other)
+		{
+			x /= other.x;
+			y /= other.y;
 			return *this;
 		}
 
-		template <typename T2>
-		constexpr Vec<L, T> operator+(const Vec<L, T2>& other)
+		template <Number T2>
+		constexpr Vec operator+(T2 other) const
 		{
-			Vec<L, T> result = *this;
-			result += other;
-			return result;
+			return {x + other, y + other};
+		}
+		template <Number T2>
+		constexpr Vec operator-(T2 other) const
+		{
+			return {x - other, y - other};
+		}
+		template <Number T2>
+		constexpr Vec operator*(T2 other) const
+		{
+			return {x * other, y * other};
+		}
+		template <Number T2>
+		constexpr Vec operator/(T2 other) const
+		{
+			return {x / other, y / other};
 		}
 
-		template <typename T2>
-		constexpr Vec<L, T>& operator*=(const Vec<L, T2>& other)
+		template <Number T2>
+		constexpr Vec& operator+=(T2 other)
 		{
-			for (i32 i = 0; i < L; ++i)
-			{
-				(*this)[i] *= other[i];
-			}
+			x += other;
+			y += other;
 			return *this;
 		}
-
-		template <typename T2>
-		constexpr Vec<L, T> operator*(const Vec<L, T2>& other) const
+		template <Number T2>
+		constexpr Vec& operator-=(T2 other)
 		{
-			Vec<L, T> result = *this;
-			result *= other;
-			return result;
+			x -= other;
+			y -= other;
+			return *this;
 		}
-	};
-
-	class v2 : public Vec<2, float>
-	{
-		using Vec<2, float>::Vec;
-
-	public:
-		v2(const Vec<2, float>& other) : v2(*static_cast<const v2*>(&other)) {}
-
-		constexpr v2& operator*=(float other)
+		template <Number T2>
+		constexpr Vec& operator*=(T2 other)
 		{
 			x *= other;
 			y *= other;
 			return *this;
 		}
-
-		constexpr v2& operator/=(float other)
+		template <Number T2>
+		constexpr Vec& operator/=(T2 other)
 		{
 			x /= other;
 			y /= other;
 			return *this;
 		}
 
-		class v3 xz() const;
-		class v3 xy() const;
+		bool operator==(const Vec& other) const
+		{
+			return x == other.x && y == other.y;
+		}
+
+		bool operator!=(const Vec& other) const
+		{
+			return x != other.x || y != other.y;
+		}
 	};
-	REFLECT_NATIVE_TYPE(v2);
 
 
-	using v2_u32 = Vec<2, u32>;
-	REFLECT_NATIVE_TYPE(v2_u32);
-
-
-	class v3 : public Vec<3, float>
+	template <Number T>
+	struct Vec<3, T>
 	{
-		using Vec<3, float>::Vec;
+		using Type = T;
 
 	public:
-		constexpr v3(const Vec<3, float>& other) : Vec(other) {}
+		T x;
+		T y;
+		T z;
 
-		constexpr void operator+=(const v3& other)
+
+	public:
+		constexpr Vec() : x{0}, y{0}, z{0} {}
+		constexpr Vec(T x, T y, T z) : x{x}, y{y}, z{z} {}
+		template <typename T2>
+		explicit constexpr Vec(const Vec<3, T2>& other) requires(std::is_convertible_v<T2, T>)
+		    : x{other.x}
+		    , y{other.y}
+		    , z{other.z}
+		{}
+
+		constexpr Vec<2, T> XY() const
+		{
+			return {x, y};
+		}
+		constexpr Vec<2, T> XZ() const
+		{
+			return {x, z};
+		}
+
+		T* Data()
+		{
+			return &x;
+		}
+		const T* Data() const
+		{
+			return &x;
+		}
+
+		static Vec Cross(const Vec& a, const Vec& b) requires(
+		    FloatingPoint<T>)    // 'cross' accepts only floating-point inputs
+		{
+			return {a.y * b.z - b.y * a.z, a.z * b.x - b.z * a.x, a.x * b.y - b.x * a.y};
+		}
+
+		static constexpr Vec Zero()
+		{
+			return {};
+		};
+		static constexpr Vec One()
+		{
+			return {T(1), T(1), T(1)};
+		}
+		static constexpr Vec Forward()
+		{
+			return {T(0), T(1), T(0)};
+		}
+		static constexpr Vec Right()
+		{
+			return {T(1), T(0), T(0)};
+		}
+		static constexpr Vec Up()
+		{
+			return {T(0), T(0), T(1)};
+		}
+
+		template <Number T2>
+		constexpr Vec operator+(const Vec<3, T2>& other) const
+		{
+			return {x + other.x, y + other.y, z + other.z};
+		}
+		template <Number T2>
+		constexpr Vec operator-(const Vec<3, T2>& other) const
+		{
+			return {x - other.x, y - other.y, z - other.z};
+		}
+		template <Number T2>
+		constexpr Vec operator*(const Vec<3, T2>& other) const
+		{
+			return {x * other.x, y * other.y, z * other.z};
+		}
+		template <Number T2>
+		constexpr Vec operator/(const Vec<3, T2>& other) const
+		{
+			return {x / other.x, y / other.y, z / other.z};
+		}
+
+		template <Number T2>
+		constexpr Vec& operator+=(const Vec<3, T2>& other)
 		{
 			x += other.x;
 			y += other.y;
 			z += other.z;
+			return *this;
 		}
-		constexpr v3 operator-(const v3& other)
-		{
-			return {x - other.x, y - other.y, z - other.z};
-		}
-		constexpr void operator-=(const v3& other)
+		template <Number T2>
+		constexpr Vec& operator-=(const Vec<3, T2>& other)
 		{
 			x -= other.x;
 			y -= other.y;
 			z -= other.z;
+			return *this;
+		}
+		template <Number T2>
+		constexpr Vec& operator*=(const Vec<3, T2>& other)
+		{
+			x *= other.x;
+			y *= other.y;
+			z *= other.z;
+			return *this;
+		}
+		template <Number T2>
+		constexpr Vec& operator/=(const Vec<3, T2>& other)
+		{
+			x /= other.x;
+			y /= other.y;
+			z /= other.z;
+			return *this;
 		}
 
-		constexpr v3 operator*(float other)
+		template <Number T2>
+		constexpr Vec operator+(T2 other) const
+		{
+			return {x + other, y + other, z + other};
+		}
+		template <Number T2>
+		constexpr Vec operator-(T2 other) const
+		{
+			return {x - other, y - other, z - other};
+		}
+		template <Number T2>
+		constexpr Vec operator*(T2 other) const
 		{
 			return {x * other, y * other, z * other};
 		}
-
-		constexpr v3 operator/(float other)
+		template <Number T2>
+		constexpr Vec operator/(T2 other) const
 		{
 			return {x / other, y / other, z / other};
 		}
 
-		v2 xy() const
+		template <Number T2>
+		constexpr Vec& operator+=(T2 other)
 		{
-			return v2{x, y};
+			x += other;
+			y += other;
+			z += other;
+			return *this;
 		}
-		v2 xz() const
+		template <Number T2>
+		constexpr Vec& operator-=(T2 other)
 		{
-			return v2{x, z};
+			x -= other;
+			y -= other;
+			z -= other;
+			return *this;
+		}
+		template <Number T2>
+		constexpr Vec& operator*=(T2 other)
+		{
+			x *= other;
+			y *= other;
+			z *= other;
+			return *this;
+		}
+		template <Number T2>
+		constexpr Vec& operator/=(T2 other)
+		{
+			x /= other;
+			y /= other;
+			z /= other;
+			return *this;
 		}
 
-		static constexpr v3 Zero()
+		bool operator==(const Vec& other) const
 		{
-			return Vec::Zero();
-		}
-		static constexpr v3 One()
-		{
-			return Vec::One();
+			return x == other.x && y == other.y && z == other.z;
 		}
 
-		static const v3 Forward;
-		static const v3 Right;
-		static const v3 Up;
+		bool operator!=(const Vec& other) const
+		{
+			return x != other.x || y != other.y || z != other.z;
+		}
 	};
-	REFLECT_NATIVE_TYPE(v3);
+
+	template <Number T>
+	struct Vec<4, T>
+	{
+		using Type = T;
+
+	public:
+		T x;
+		T y;
+		T z;
+		T w;
 
 
-	/** Non reflected vectors */
+	public:
+		constexpr Vec() : x{0}, y{0}, z{0}, w{0} {}
+		constexpr Vec(T x, T y, T z, T w) : x{x}, y{y}, z{z}, w{w} {}
+		template <typename T2>
+		explicit constexpr Vec(const Vec<4, T2>& other) requires(std::is_convertible_v<T2, T>)
+		    : x{other.x}
+		    , y{other.y}
+		    , z{other.z}
+		    , w{other.w}
+		{}
+	};
 
+
+	using v2 = Vec<2, float>;
+	using v3 = Vec<3, float>;
 	using v4 = Vec<4, float>;
 
 	using v2_u8 = Vec<2, u8>;
@@ -209,25 +444,30 @@ namespace Rift
 	using v3_i32 = Vec<3, i32>;
 	using v4_i32 = Vec<4, i32>;
 
+	using v2_u32 = Vec<2, u32>;
 	using v3_u32 = Vec<3, u32>;
 	using v4_u32 = Vec<4, u32>;
 
 
-	template <typename Type, u32 Dimensions>
+	/** Reflected vectors */
+	REFLECT_NATIVE_TYPE(v2);
+	REFLECT_NATIVE_TYPE(v2_u32);
+	REFLECT_NATIVE_TYPE(v3);
+
+
+	template <u32 size, Number T>
 	struct Box
 	{
-		using VectorType = glm::mat<Dimensions, 1, Type>;
-
-		VectorType min;
-		VectorType max;
+		Vec<size, T> min;
+		Vec<size, T> max;
 
 
 		Box() = default;
-		constexpr Box(VectorType min, VectorType max) : min{min}, max{max} {}
+		constexpr Box(Vec<size, T> min, Vec<size, T> max) : min{min}, max{max} {}
 
-		inline void ExtendPoint(const VectorType& point)
+		inline void ExtendPoint(const Vec<size, T>& point)
 		{
-			for (u32 i = 0; i < Dimensions; ++i)
+			for (u32 i = 0; i < size; ++i)
 			{
 				if (point[i] < min[i])
 				{
@@ -280,10 +520,10 @@ namespace Rift
 		}
 	};
 
-	using box2     = Box<float, 2>;
-	using box3     = Box<float, 3>;
-	using box2_i32 = Box<i32, 2>;
-	using box3_i32 = Box<i32, 3>;
+	using Box2     = Box<2, float>;
+	using Box3     = Box<3, float>;
+	using Box2_i32 = Box<2, i32>;
+	using Box3_i32 = Box<3, i32>;
 
 
 	CORE_API void Read(Serl::ReadContext& ct, v2& val);
@@ -294,4 +534,15 @@ namespace Rift
 
 	CORE_API void Read(Serl::ReadContext& ct, v3& val);
 	CORE_API void Write(Serl::WriteContext& ct, const v3& val);
+
+
+	namespace Vectors
+	{
+		// mathematically if you have 0 scale, it should be infinite,
+		// however, in practice if you have 0 scale, and relative transform doesn't make much sense
+		// anymore because you should be instead of showing gigantic infinite mesh
+		// also returning BIG_NUMBER causes sequential NaN issues by multiplying
+		// so we hardcode as 0
+		static v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = Math::SMALL_NUMBER);
+	}    // namespace Vectors
 }    // namespace Rift

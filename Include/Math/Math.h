@@ -7,15 +7,10 @@
 #include "TypeTraits.h"
 
 #include <cmath>
-#include <glm/exponential.hpp>
-#include <glm/gtx/integer.hpp>
-#include <glm/integer.hpp>
 
 
 namespace Rift
 {
-	class v3;
-
 	struct CORE_API Math
 	{
 		static constexpr float PI{3.14159265358979323846f};
@@ -224,21 +219,26 @@ namespace Rift
 			return std::sqrt(val);
 		}
 
+		float InvSqrt(float x)
+		{
+			return 1.f / Sqrt(x);
+		}
+
 		template <typename T>
 		static T Square(T val)
 		{
 			return val * val;
 		}
 
-		template <typename B, typename P>
-		static constexpr B Pow(B value, P power)
-		{
-			return glm::pow(value, power);
-		}
+		static constexpr i32 Pow(i32 value, u32 power);
+		static constexpr i64 Pow(i64 value, u32 power);
+		static constexpr u32 Pow(u32 value, u32 power);
+		static constexpr u64 Pow(u64 value, u32 power);
 
-		static constexpr u32 Pow(sizet value, u32 power)
+		template <FloatingPoint V, Number P>
+		static constexpr V Math::Pow(V value, P power)
 		{
-			return Pow<u32, u32>(u32(value), power);
+			return std::pow(value, power);
 		}
 
 		// Same as Max but with N arguments
@@ -281,64 +281,7 @@ namespace Rift
 			return a % b;
 		}
 
-		/**
-		 * Computes the sine and cosine of a scalar value.
-		 *
-		 * @param ScalarSin	Pointer to where the Sin result should be stored
-		 * @param ScalarCos	Pointer to where the Cos result should be stored
-		 * @param Value  input angles
-		 */
-		static void SinCos(float* ScalarSin, float* ScalarCos, float Value)
-		{
-			// Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
-			float quotient = (INV_PI * 0.5f) * Value;
-			if (Value >= 0.0f)
-			{
-				quotient = float(int(quotient + 0.5f));
-			}
-			else
-			{
-				quotient = (float) ((int) (quotient - 0.5f));
-			}
-			float y = Value - (2.0f * PI) * quotient;
-
-			// Map y to [-pi/2,pi/2] with sin(y) = sin(Value).
-			float sign;
-			if (y > HALF_PI)
-			{
-				y    = PI - y;
-				sign = -1.0f;
-			}
-			else if (y < -HALF_PI)
-			{
-				y    = -PI - y;
-				sign = -1.0f;
-			}
-			else
-			{
-				sign = +1.0f;
-			}
-
-			float y2 = y * y;
-
-			// 11-degree minimax approximation
-			*ScalarSin = (((((-2.3889859e-08f * y2 + 2.7525562e-06f) * y2 - 0.00019840874f) * y2 +
-			                   0.0083333310f) *
-			                      y2 -
-			                  0.16666667f) *
-			                     y2 +
-			                 1.0f) *
-			             y;
-
-			// 10-degree minimax approximation
-			float p = ((((-2.6051615e-07f * y2 + 2.4760495e-05f) * y2 - 0.0013888378f) * y2 +
-			               0.041666638f) *
-			                  y2 -
-			              0.5f) *
-			              y2 +
-			          1.0f;
-			*ScalarCos = sign * p;
-		}
+		static void SinCos(float* scalarSin, float* scalarCos, float value);
 
 		static float Atan2(float Y, float X);
 
@@ -383,13 +326,6 @@ namespace Rift
 		}
 #undef FASTASIN_HALF_PI
 
-		// mathematically if you have 0 scale, it should be infinite,
-		// however, in practice if you have 0 scale, and relative transform doesn't make much sense
-		// anymore because you should be instead of showing gigantic infinite mesh
-		// also returning BIG_NUMBER causes sequential NaN issues by multiplying
-		// so we hardcode as 0
-		static v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = SMALL_NUMBER);
-
 		static bool NearlyEqual(float a, float b, float tolerance = SMALL_NUMBER)
 		{
 			return Abs(b - a) <= tolerance;
@@ -397,7 +333,7 @@ namespace Rift
 
 		static const float Log(const float k)
 		{
-			return log(k);
+			return std::log(k);
 		}
 		static const float Log(const float k, float base)
 		{
@@ -406,7 +342,7 @@ namespace Rift
 
 		static const double Log(const double k)
 		{
-			return log(k);
+			return std::log(k);
 		}
 		static const double Log(const double k, double base)
 		{

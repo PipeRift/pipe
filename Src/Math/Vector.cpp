@@ -9,11 +9,6 @@
 
 namespace Rift
 {
-	const v3 v3::Forward{0.f, 1.f, 0.f};
-	const v3 v3::Right{1.f, 0.f, 0.f};
-	const v3 v3::Up{0.f, 0.f, 1.f};
-
-
 	float Rotator::ClampAxis(float angle)
 	{
 		// returns angle in the range (-360,360)
@@ -37,16 +32,6 @@ namespace Rift
 		}
 
 		return angle;
-	}
-
-	v3 v2::xz() const
-	{
-		return v3{x, 0.f, y};
-	}
-
-	v3 v2::xy() const
-	{
-		return v3{x, y, 0.f};
 	}
 
 
@@ -89,5 +74,26 @@ namespace Rift
 		ct.Next(TX("x"), val.x);
 		ct.Next(TX("y"), val.y);
 		ct.Next(TX("z"), val.z);
+	}
+
+	v3 Vectors::GetSafeScaleReciprocal(const v3& scale, float tolerance)
+	{
+		v3 safeReciprocalScale;
+		if (Math::Abs(scale.x) <= tolerance)
+			safeReciprocalScale.x = 0.f;
+		else
+			safeReciprocalScale.x = 1 / scale.x;
+
+		if (Math::Abs(scale.y) <= tolerance)
+			safeReciprocalScale.y = 0.f;
+		else
+			safeReciprocalScale.y = 1 / scale.y;
+
+		if (Math::Abs(scale.z) <= tolerance)
+			safeReciprocalScale.z = 0.f;
+		else
+			safeReciprocalScale.z = 1 / scale.z;
+
+		return safeReciprocalScale;
 	}
 }    // namespace Rift

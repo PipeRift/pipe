@@ -25,7 +25,17 @@ namespace Rift
 	concept Convertible = std::is_same_v<From, To> || std::is_convertible_v<From, To>;
 
 	template <typename T>
+	concept Number = std::is_integral_v<T> || std::is_floating_point_v<T>;
+
+	template <typename T>
 	concept Integral = std::is_integral_v<T>;
+	template <typename T>
+	concept SignedIntegral = std::is_integral_v<T>&& std::is_signed_v<T>;
+	template <typename T>
+	concept UnsignedIntegral = std::is_integral_v<T>&& std::is_unsigned_v<T>;
+
+	template <typename T>
+	concept FloatingPoint = std::is_floating_point_v<T>;
 
 	template <typename T>
 	concept IsMoveConstructible = std::is_move_constructible_v<T>;
