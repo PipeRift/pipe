@@ -49,9 +49,6 @@ add_subdirectory(robin_hood)
 
 add_subdirectory(robin-map)
 
-add_subdirectory(glm)
-rift_target_disable_all_warnings(glm INTERFACE)
-
 add_subdirectory(spdlog)
 set_target_properties (spdlog PROPERTIES FOLDER Extern)
 

@@ -56,19 +56,19 @@ namespace Rift
 
 		constexpr T Length() const
 		{
-			return Math::Sqrt(LengthSqrt());
+			return Math::Sqrt(LengthSquared());
 		}
 
-		constexpr T LengthSqrt() const
+		constexpr T LengthSquared() const
 		{
 			return x * x + y * y;
 		}
 
-		static T Distance(const Vec<2, T>& one, const Vec<2, T>& other)
+		static T Distance(const Vec& one, const Vec& other)
 		{
 			return Math::Sqrt(DistanceSqrt(one, other));
 		}
-		static T DistanceSqrt(const Vec<2, T>& one, const Vec<2, T>& other)
+		static T DistanceSqrt(const Vec& one, const Vec& other)
 		{
 			return Math::Square(other.x - one.x) + Math::Square(other.y - one.y);
 		}
@@ -86,9 +86,16 @@ namespace Rift
 		}
 
 		static T Cross(const Vec& a, const Vec& b) requires(
-		    FloatingPoint<T>)    // 'cross' accepts only floating-point inputs
+		    FloatingPoint<T>)    // 'Cross' accepts only floating-point inputs
 		{
 			return a.x * b.y - b.x * a.y;
+		}
+
+		static T Dot(const Vec& a, const Vec& b) requires(
+		    FloatingPoint<T>)    // 'Dot' accepts only floating-point inputs
+		{
+			const Vec tmp(a * b);
+			return tmp.x + tmp.y;
 		}
 
 		T* Data()
@@ -252,6 +259,57 @@ namespace Rift
 			return {x, z};
 		}
 
+		constexpr u32 Num() const
+		{
+			return 3;
+		}
+
+		constexpr T Length() const
+		{
+			return Math::Sqrt(LengthSquared());
+		}
+
+		constexpr T LengthSquared() const
+		{
+			return x * x + y * y + z * z;
+		}
+
+		static T Distance(const Vec& one, const Vec& other)
+		{
+			return Math::Sqrt(DistanceSqrt(one, other));
+		}
+		static T DistanceSqrt(const Vec& one, const Vec& other)
+		{
+			return Math::Square(other.x - one.x) + Math::Square(other.y - one.y) +
+			       Math::Square(other.z - one.z);
+		}
+
+		Vec& Normalize()
+		{
+			const T lengthSqrt = LengthSquared();
+			if (lengthSqrt > 0.f)
+			{
+				const float scale = Math::InvSqrt(lengthSqrt);
+				x *= scale;
+				y *= scale;
+				z *= scale;
+			}
+			return *this;
+		}
+
+		static Vec Cross(const Vec& a, const Vec& b) requires(
+		    FloatingPoint<T>)    // 'Cross' accepts only floating-point inputs
+		{
+			return {a.y * b.z - b.y * a.z, a.z * b.x - b.z * a.x, a.x * b.y - b.x * a.y};
+		}
+
+		static T Dot(const Vec& a, const Vec& b) requires(
+		    FloatingPoint<T>)    // 'Dot' accepts only floating-point inputs
+		{
+			const Vec tmp(a * b);
+			return tmp.x + tmp.y + tmp.z;
+		}
+
 		T* Data()
 		{
 			return &x;
@@ -259,12 +317,6 @@ namespace Rift
 		const T* Data() const
 		{
 			return &x;
-		}
-
-		static Vec Cross(const Vec& a, const Vec& b) requires(
-		    FloatingPoint<T>)    // 'cross' accepts only floating-point inputs
-		{
-			return {a.y * b.z - b.y * a.z, a.z * b.x - b.z * a.x, a.x * b.y - b.x * a.y};
 		}
 
 		static constexpr Vec Zero()
@@ -429,6 +481,18 @@ namespace Rift
 		    , z{other.z}
 		    , w{other.w}
 		{}
+
+		constexpr Vec<3, T> XYZ() const
+		{
+			return {x, y, z};
+		}
+
+		static T Dot(const Vec& a, const Vec& b) requires(
+		    FloatingPoint<T>)    // 'Dot' accepts only floating-point inputs
+		{
+			const Vec tmp(a * b);
+			return (tmp.x + tmp.y) + (tmp.z + tmp.w);
+		}
 	};
 
 

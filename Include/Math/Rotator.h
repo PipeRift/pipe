@@ -7,9 +7,12 @@
 
 namespace Rift
 {
-	class Rotator : public Vec<3, float>
+	class Rotator : public v3
 	{
 	public:
+		Rotator() {}
+		Rotator(const v3& vector) : v3{vector} {}
+
 		float Pitch() const
 		{
 			return y;

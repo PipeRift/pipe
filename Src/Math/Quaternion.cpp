@@ -23,17 +23,17 @@ namespace Rift
 	}
 	v3 Quat::GetForward() const
 	{
-		return *this * v3::Forward();
+		return Rotate(v3::Forward());
 	}
 
 	v3 Quat::GetRight() const
 	{
-		return *this * v3::Right();
+		return Rotate(v3::Right());
 	}
 
 	v3 Quat::GetUp() const
 	{
-		return *this * v3::Up();
+		return Rotate(v3::Up());
 	}
 
 	Rotator Quat::ToRotator() const
@@ -90,6 +90,23 @@ namespace Rift
 		       Math::NearlyEqual(z, other.z, tolerance) && Math::NearlyEqual(w, other.w, tolerance);
 	}
 
+	void Quat::Normalize(float tolerance)
+	{
+		const float lengthSqrt = x * x + y * y + z * z + w * w;
+		if (lengthSqrt >= tolerance)
+		{
+			const float scale = Math::InvSqrt(lengthSqrt);
+			x *= scale;
+			y *= scale;
+			z *= scale;
+			w *= scale;
+		}
+		else
+		{
+			*this = Identity();
+		}
+	}
+
 	Quat Quat::FromRotator(Rotator rotator)
 	{
 		const float DIVIDE_BY_2 = Math::DEGTORAD / 2.f;
@@ -118,9 +135,42 @@ namespace Rift
 		return FromRotator(rotator * Math::DEGTORAD);
 	}
 
+
+	Quat InternalBetween(const v3& a, const v3& b, float lengthAB)
+	{
+		float w = lengthAB + v3::Dot(a, b);
+		Quat result;
+
+		if (w >= 1e-6f * lengthAB)
+		{
+			// Axis = v3::Cross(a, b);
+			result = Quat(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x, w);
+		}
+		else
+		{
+			// A and B point in opposite directions
+			w = 0.f;
+			result =
+			    Math::Abs(a.x) > Math::Abs(a.y) ? Quat(-a.z, 0.f, a.x, w) : Quat(0.f, -a.z, a.y, w);
+		}
+		result.Normalize();
+		return result;
+	}
+
+	Quat Quat::Between(const v3& a, const v3& b)
+	{
+		const float lengthAB = Math::Sqrt(a.LengthSquared() * b.LengthSquared());
+		return InternalBetween(a, b, lengthAB);
+	}
+
+	Quat Quat::BetweenNormals(const v3& a, const v3& b)
+	{
+		return InternalBetween(a, b, 1.f);
+	}
+
 	Quat Quat::LookAt(const v3& origin, const v3& dest)
 	{
-		return glm::lookAt(origin, dest, v3::Forward);
+		return Between(origin, dest);
 	}
 
 

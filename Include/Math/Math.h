@@ -219,13 +219,13 @@ namespace Rift
 			return std::sqrt(val);
 		}
 
-		float InvSqrt(float x)
+		static float InvSqrt(float x)
 		{
 			return 1.f / Sqrt(x);
 		}
 
 		template <typename T>
-		static T Square(T val)
+		static constexpr T Square(T val)
 		{
 			return val * val;
 		}

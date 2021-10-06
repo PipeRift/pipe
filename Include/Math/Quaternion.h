@@ -4,12 +4,8 @@
 
 #include "Math.h"
 #include "Math/Vector.h"
-#include "Matrix.h"
 #include "Reflection/Registry/NativeTypeBuilder.h"
 #include "Serialization/ContextsFwd.h"
-
-#include <glm/ext/quaternion_common.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 
 namespace Rift
@@ -50,17 +46,16 @@ namespace Rift
 			return &x;
 		}
 
-		Matrix4f ToMatrix() const
-		{
-			return glm::mat4_cast<float>(*this);
-		}
-
 		bool Equals(const Quat& other, float tolerance = Math::SMALL_NUMBER) const;
+
+		void Normalize(float tolerance = Math::SMALL_NUMBER);
 
 		static Quat FromRotator(Rotator rotator);
 
 		static Quat FromRotatorRad(Rotator rotator);
 
+		static Quat Between(const v3& a, const v3& b);
+		static Quat BetweenNormals(const v3& a, const v3& b);
 		static Quat LookAt(const v3& origin, const v3& dest);
 
 		static constexpr Quat Identity()
@@ -80,8 +75,7 @@ namespace Rift
 
 	inline Quat Quat::Inverse() const
 	{
-		const auto result = glm::inverse<float, glm::highp>(*this);
-		return *static_cast<const Quat*>(&result);
+		return {-x, -y, -z, w};
 	}
 
 	void Read(Serl::ReadContext& ct, Quat& val);
