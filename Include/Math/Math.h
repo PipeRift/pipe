@@ -236,7 +236,7 @@ namespace Rift
 		static constexpr u64 Pow(u64 value, u32 power);
 
 		template <FloatingPoint V, Number P>
-		static V Math::Pow(V value, P power)
+		static constexpr V Pow(V value, P power)
 		{
 			return std::pow(value, power);
 		}
