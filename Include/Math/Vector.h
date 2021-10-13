@@ -547,7 +547,7 @@ namespace Rift
 		// Limit this bounds by another
 		inline void Cut(const Box& other)
 		{
-			for (u32 i = 0; i < Dimensions; ++i)
+			for (u32 i = 0; i < size; ++i)
 			{
 				min[i] = Math::Clamp(min[i], other.min[i], other.max[i]);
 				max[i] = Math::Clamp(max[i], other.min[i], other.max[i]);
@@ -557,7 +557,7 @@ namespace Rift
 		// Extend this bounds by another
 		inline void Extend(const Box& other)
 		{
-			for (u32 i = 0; i < Dimensions; ++i)
+			for (u32 i = 0; i < size; ++i)
 			{
 				if (other.min[i] < min[i])
 				{
@@ -573,7 +573,7 @@ namespace Rift
 		// Limit this bounds by another
 		bool Contains(const Box& other)
 		{
-			for (u32 i = 0; i < Dimensions; ++i)
+			for (u32 i = 0; i < size; ++i)
 			{
 				if (other.min[i] < min[i] || other.max[i] > max[i])
 				{

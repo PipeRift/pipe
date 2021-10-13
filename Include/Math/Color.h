@@ -465,11 +465,11 @@ namespace Rift
 
 		static Color HexRGB(u32 value)
 		{
-			return {value >> 16, value >> 8, value >> 0};
+			return {u8(value >> 16), u8(value >> 8), u8(value >> 0)};
 		}
 		static Color HexRGBA(u32 value)
 		{
-			return {value >> 24, value >> 16, value >> 8, value >> 0};
+			return {u8(value >> 24), u8(value >> 16), u8(value >> 8), u8(value >> 0)};
 		}
 
 		/**
