@@ -299,7 +299,6 @@ namespace Rift
 		/** Holds the fourth component. */
 		u32 d = 0;
 	};
-	TYPE_FLAGS(Guid, HasMemberSerialize = true);
 	REFLECT_NATIVE_TYPE(Guid);
 
 	template <>
@@ -311,3 +310,5 @@ namespace Rift
 		}
 	};
 }    // namespace Rift
+
+TYPE_FLAGS(Rift::Guid, HasMemberSerialize = true);

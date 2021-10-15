@@ -375,4 +375,49 @@ namespace Rift
 			return (value & (value - 1)) == T(0);
 		}
 	};
+
+
+	constexpr i32 Math::Pow(i32 value, u32 power)
+	{
+		if (power == 0)
+			return value >= 0 ? 1 : -1;
+
+		i32 result = value;
+		for (u32 i = 1; i < power; ++i)
+			result *= value;
+		return result;
+	}
+
+	constexpr i64 Math::Pow(i64 value, u32 power)
+	{
+		if (power == 0)
+			return value >= 0 ? 1 : -1;
+
+		i64 result = value;
+		for (u32 i = 1; i < power; ++i)
+			result *= value;
+		return result;
+	}
+
+	constexpr u32 Math::Pow(u32 value, u32 power)
+	{
+		if (power == 0)
+			return 1u;
+
+		u32 result = value;
+		for (u32 i = 1; i < power; ++i)
+			result *= value;
+		return result;
+	}
+
+	constexpr u64 Math::Pow(u64 value, u32 power)
+	{
+		if (power == 0)
+			return 1u;
+
+		u64 result = value;
+		for (u32 i = 1; i < power; ++i)
+			result *= value;
+		return result;
+	}
 }    // namespace Rift

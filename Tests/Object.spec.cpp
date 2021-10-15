@@ -28,15 +28,15 @@ go_bandit([]() {
 	describe("Object", []() {
 		describe("Pointers", []() {
 			it("Can create object", [&]() {
-				auto owner = Create<TestObject>();
+				auto owner = MakeOwned<TestObject>();
 
 				AssertThat(owner.Get(), Is().Not().EqualTo(nullptr));
 				AssertThat(owner->bConstructed, Equals(true));
 			});
 
 			it("Can create object with owner", [&]() {
-				auto owner = Create<TestObject>();
-				auto owner2 = Create<TestObject>(owner);
+				auto owner  = MakeOwned<TestObject>();
+				auto owner2 = MakeOwned<TestObject>(owner);
 
 				AssertThat(owner2->bConstructed, Equals(true));
 				AssertThat(owner2->GetOwner().IsValid(), Equals(true));

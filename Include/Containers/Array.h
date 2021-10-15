@@ -306,12 +306,12 @@ namespace Rift
 		 * Delete all items that match another provided item
 		 * @return number of deleted items
 		 */
-		i32 Remove(const Type& item, const bool bShouldShrink = true)
+		i32 Remove(const Type& item, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			(void) std::remove(vector.begin(), vector.end(), item);
 
-			if (bShouldShrink)
+			if (shouldShrink)
 			{
 				Shrink();
 			}
@@ -319,7 +319,7 @@ namespace Rift
 		}
 
 		template <typename ArrayView>    // Intended for TArrayView<T>
-		i32 RemoveMany(ArrayView items, const bool bShouldShrink = true)
+		i32 RemoveMany(ArrayView items, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			for (i32 i = 0; i < Size(); ++i)
@@ -330,7 +330,7 @@ namespace Rift
 					--i;    // Repeat same index
 				}
 			}
-			if (bShouldShrink)
+			if (shouldShrink)
 			{
 				Shrink();
 			}
@@ -402,7 +402,7 @@ namespace Rift
 		 * Delete all items that match a delegate
 		 * @return number of deleted items
 		 */
-		i32 RemoveIf(TFunction<bool(const Type&)>&& callback, const bool bShouldShrink = true)
+		i32 RemoveIf(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			// We remove from the back so that there are less elements to move when removing an
@@ -415,7 +415,7 @@ namespace Rift
 				}
 			}
 
-			if (bShouldShrink)
+			if (shouldShrink)
 			{
 				Shrink();
 			}
@@ -426,7 +426,7 @@ namespace Rift
 		 * Delete all items that match a delegate
 		 * @return number of deleted items
 		 */
-		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool bShouldShrink = true)
+		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			for (i32 i = 0; i < Size(); ++i)
@@ -438,11 +438,18 @@ namespace Rift
 				}
 			}
 
-			if (bShouldShrink)
+			if (shouldShrink)
 			{
 				Shrink();
 			}
 			return lastSize - Size();
+		}
+
+		bool RemoveLast(i32 num = 1)
+		{
+			const i32 lastSize = Size();
+			Resize(lastSize - num);
+			return lastSize - Size() > 0;
 		}
 
 		void Swap(i32 firstIndex, i32 secondIndex);

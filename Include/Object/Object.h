@@ -89,21 +89,6 @@ namespace Rift
 
 
 	template <typename T>
-	static TOwnPtr<T> Create(Refl::ClassType* objectClass, const TPtr<Object> owner = {}) requires(
-	    Derived<T, Object>)
-	{
-		return MakeOwned<T>(objectClass, owner);
-	}
-
-	template <typename T>
-	static TOwnPtr<T> Create(const TPtr<Object> owner = {}) requires(Derived<T, Object>)
-	{
-		return MakeOwned<T>(owner);
-	}
-	// END - Pointer helpers
-
-
-	template <typename T>
 	void Read(Serl::ReadContext& ct, T& value) requires(Derived<T, Object>)
 	{
 		ct.BeginObject();

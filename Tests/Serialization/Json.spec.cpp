@@ -14,10 +14,6 @@ using namespace Rift::Serl;
 
 go_bandit([]() {
 	describe("Serialization.Json", []() {
-		before_each([]() {
-			InitializeContext();
-		});
-
 		describe("Reader", [&]() {
 			it("Can create a reader", [&]() {
 				JsonFormatReader reader{""};

@@ -52,7 +52,7 @@ namespace Rift
 		 * Converts an Color which is assumed to be in sRGB space, into linear color space.
 		 * @param Color The sRGB color that needs to be converted into linear space.
 		 */
-		constexpr LinearColor(const Color& Color);
+		LinearColor(const Color& Color);
 
 		LinearColor(const v3& vector);
 

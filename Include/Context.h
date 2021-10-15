@@ -14,22 +14,23 @@ namespace Rift
 
 	private:
 		TaskSystem tasks;
+		Path logFolder{"Saved/Logs"};
 
 
 	public:
 		Context() : Super() {}
+		Context(const Path& logFolder) : Super(), logFolder{logFolder} {}
 
-		virtual void Construct() override
+		void Construct() override
 		{
 			Super::Construct();
 
 			Log::Init("Saved/Logs");    // Init logger
 		}
 
-		virtual void BeforeDestroy() override
+		void BeforeDestroy() override
 		{
 			Super::BeforeDestroy();
-			Log::Info("Context has been destroyed");
 			Log::Shutdown();
 		}
 
@@ -40,17 +41,18 @@ namespace Rift
 	};
 
 
-	CORE_API TOwnPtr<Context>& InternalGetContext();
+	CORE_API TOwnPtr<Context>& GetContextInstance();
 
 	template <typename T = Context>
-	TPtr<T> InitializeContext()
+	bool InitializeContext()
 	{
-		TOwnPtr<Context>& context = InternalGetContext();
+		TOwnPtr<Context>& context = GetContextInstance();
 		if (!context)
 		{
-			context = Create<T>();
+			context = MakeOwned<T>();
+			return context.IsValid();
 		}
-		return context.Cast<T>();
+		return false;
 	}
 
 	CORE_API void ShutdownContext();
@@ -58,8 +60,9 @@ namespace Rift
 	template <typename T = Context>
 	TPtr<T> GetContext()
 	{
-		assert(
-		    InternalGetContext() && "Context is not initialized! Call InitializeContext<Type>().");
-		return InternalGetContext().Cast<T>();
+		CheckMsg(
+		    GetContextInstance(), "Context is not initialized! Call InitializeContext<Type>().");
+		return GetContextInstance().Cast<T>();
 	}
+
 }    // namespace Rift

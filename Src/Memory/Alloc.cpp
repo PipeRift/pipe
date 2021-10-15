@@ -25,7 +25,7 @@ namespace Rift
 		void* const p = std::malloc(n);
 #elif PLATFORM_MACOS || PLATFORM_LINUX
 		void* p;
-		posix_memalign(&p, align, n);
+		(void) (posix_memalign(&p, align, n));
 #else
 		void* const p = std::aligned_alloc(align, n);
 #endif

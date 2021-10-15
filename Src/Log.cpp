@@ -3,6 +3,7 @@
 #include "Files/Files.h"
 #include "Files/Paths.h"
 #include "Log.h"
+#include "Memory/OwnPtr.h"
 
 #include <spdlog/details/log_msg-inl.h>
 #include <spdlog/details/null_mutex.h>
@@ -20,6 +21,10 @@
 
 namespace Rift::Log
 {
+	TOwnPtr<spdlog::logger> generalLogger;
+	TOwnPtr<spdlog::logger> errorLogger;
+
+
 #if TRACY_ENABLE
 	template <typename Mutex>
 	class ProfilerSink : public spdlog::sinks::base_sink<Mutex>
@@ -55,8 +60,27 @@ namespace Rift::Log
 
 	void Init(Path logFile)
 	{
-		std::vector<spdlog::sink_ptr> sinks;
-		sinks.reserve(3);
+		TArray<spdlog::sink_ptr> sinks;
+		sinks.Reserve(3);
+
+		// Sinks /////////////////////////////////////////
+		// Console
+		auto cliSink    = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+		auto cliErrSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
+		cliSink->set_pattern("%^%v%$");
+		cliErrSink->set_pattern("%^[%l] %v%$");
+#if PLATFORM_WINDOWS
+		cliSink->set_color(
+		    spdlog::level::info, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+		cliErrSink->set_color(spdlog::level::warn, FOREGROUND_RED | FOREGROUND_GREEN);
+#else
+		cliSink->set_color(spdlog::level::info, cliSink->white);
+		cliErrSink->set_color(spdlog::level::warn, cliSink->yellow);
+#endif
+		// Profiler
+#if TRACY_ENABLE
+		sinks.Add(std::make_shared<ProfilerSink_mt>());
+#endif
 
 		// File
 		if (!logFile.empty())
@@ -72,40 +96,26 @@ namespace Rift::Log
 			}
 			Files::CreateFolder(logFolder, true);
 
-			sinks.push_back(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
+			sinks.Add(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
 			    Paths::ToString(logFile).c_str(), 1048576 * 5, 3));
 		}
 
-#if TRACY_ENABLE
-		// Profiler
-		sinks.push_back(std::make_shared<ProfilerSink_mt>());
-#endif
-
-		// Console
-		generalLogger = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
-		errLogger     = std::make_shared<spdlog::logger>("Log", sinks.begin(), sinks.end());
+		// Loggers /////////////////////////////////////////
+		sinks.Add(cliSink);
+		generalLogger = MakeOwned<spdlog::logger>("Log", sinks.begin(), sinks.end());
 		generalLogger->set_pattern("%^[%D %T][%l]%$ %v");
-		errLogger->set_pattern("%^[%D %T][%t][%l]%$ %v");
 
-		auto cliSink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-		generalLogger->sinks().push_back(cliSink);
-		cliSink->set_pattern("%^%v%$");
-
-		auto cliErrSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
-		errLogger->sinks().push_back(cliErrSink);
-		cliErrSink->set_pattern("%^[%l] %v%$");
-
-#if PLATFORM_WINDOWS
-		cliSink->set_color(
-		    spdlog::level::info, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-		cliErrSink->set_color(spdlog::level::warn, FOREGROUND_RED | FOREGROUND_GREEN);
-#else
-		cliSink->set_color(spdlog::level::info, cliSink->white);
-		cliErrSink->set_color(spdlog::level::warn, cliSink->yellow);
-#endif
+		sinks.RemoveLast();
+		sinks.Add(cliErrSink);
+		errorLogger = MakeOwned<spdlog::logger>("Log", sinks.begin(), sinks.end());
+		errorLogger->set_pattern("%^[%D %T][%t][%l]%$ %v");
 	}
 
-	void Shutdown() {}
+	void Shutdown()
+	{
+		generalLogger.Delete();
+		errorLogger.Delete();
+	}
 
 	void Info(StringView msg)
 	{
@@ -114,11 +124,11 @@ namespace Rift::Log
 
 	void Warning(StringView msg)
 	{
-		errLogger->warn(msg);
+		errorLogger->warn(msg);
 	}
 
 	void Error(StringView msg)
 	{
-		errLogger->error(msg);
+		errorLogger->error(msg);
 	}
 }    // namespace Rift::Log

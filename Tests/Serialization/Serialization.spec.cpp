@@ -70,10 +70,6 @@ TYPE_FLAGS(TypeD, HasMemberSerialize = true, HasSingleSerialize = true);
 
 go_bandit([]() {
 	describe("Serialization", []() {
-		before_each([]() {
-			InitializeContext();
-		});
-
 		describe("Serializers in global scope", [&]() {
 			it("Can use custom Read()", [&]() {
 				TypeA val{};

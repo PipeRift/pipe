@@ -41,6 +41,9 @@ rift_target_disable_all_warnings(date INTERFACE)
 
 add_subdirectory(efsw)
 rift_target_disable_all_warnings(efsw PRIVATE)
+if(PLATFORM_LINUX)
+    set_target_properties(efsw PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endif()
 
 add_subdirectory(fmt)
 set_target_properties (fmt PROPERTIES FOLDER Extern)

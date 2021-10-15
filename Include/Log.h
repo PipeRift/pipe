@@ -10,19 +10,10 @@
 #include <mutex>
 
 
-namespace spdlog
-{
-	class logger;
-}
-
 namespace Rift::Log
 {
-	inline std::shared_ptr<spdlog::logger> generalLogger;
-	inline std::shared_ptr<spdlog::logger> errLogger;
-
-
 	CORE_API void Init(Path logPath = {});
-	void Shutdown();
+	CORE_API void Shutdown();
 
 	void CORE_API Info(StringView msg);
 	void CORE_API Warning(StringView msg);
