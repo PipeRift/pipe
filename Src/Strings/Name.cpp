@@ -38,7 +38,7 @@ namespace Rift
 		// Ensure no other thread is editing the table
 		std::shared_lock lock{editTableMutex};
 		const ConstIterator foundIt = table.find({hash});
-		if (foundIt != table.end())
+		if (foundIt != table.end()) [[likely]]
 		{
 			return foundIt->value;
 		}

@@ -4,7 +4,11 @@
 
 #include "Platform/Platform.h"
 
-#ifdef RIFT_ENABLE_PROFILER
+#ifndef RIFT_ENABLE_PROFILER
+#	define RIFT_ENABLE_PROFILER 0
+#endif
+
+#if RIFT_ENABLE_PROFILER
 #	include <Tracy.hpp>
 #else
 // Define empty macros in case profiler is disabled. From tracy.hpp

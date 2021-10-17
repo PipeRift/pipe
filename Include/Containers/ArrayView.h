@@ -22,6 +22,8 @@ namespace Rift
 
 		constexpr TArrayView() {}
 		constexpr TArrayView(T& value) : data{&value}, size{1} {}
+		constexpr TArrayView(T* first, T* last) : data{first}, size{i32(std::distance(first, last))}
+		{}
 		TArrayView(TArray<T>& value) : data{value.Data()}, size{value.Size()} {}
 		TArrayView(const TArrayView<T>& other) : data{other.data}, size{other.size} {}
 		TArrayView& operator=(const TArrayView<T>& other)

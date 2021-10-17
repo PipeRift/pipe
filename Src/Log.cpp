@@ -25,7 +25,7 @@ namespace Rift::Log
 	TOwnPtr<spdlog::logger> errorLogger;
 
 
-#if TRACY_ENABLE
+#if RIFT_ENABLE_PROFILER
 	template <typename Mutex>
 	class ProfilerSink : public spdlog::sinks::base_sink<Mutex>
 	{
@@ -78,7 +78,7 @@ namespace Rift::Log
 		cliErrSink->set_color(spdlog::level::warn, cliSink->yellow);
 #endif
 		// Profiler
-#if TRACY_ENABLE
+#if RIFT_ENABLE_PROFILER
 		sinks.Add(std::make_shared<ProfilerSink_mt>());
 #endif
 

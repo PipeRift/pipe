@@ -18,16 +18,19 @@ namespace Rift::Files
 			return false;
 		}
 
-		std::ifstream file(path);
-
 		// Clean string and reserve it
 		result = {};
+
+		std::ifstream file(path);
 		file.seekg(0, std::ios::end);
-		result.reserve(sizet(file.tellg()) + extraPadding);
-		file.seekg(0, std::ios::beg);
+		const sizet size = sizet(file.tellg());
+		if (size > 0)
+		{
+			result.reserve(size + extraPadding);
 
-		result.assign(std::istreambuf_iterator<TChar>(file), std::istreambuf_iterator<TChar>());
-
+			file.seekg(0, std::ios::beg);
+			result.assign(std::istreambuf_iterator<TChar>(file), std::istreambuf_iterator<TChar>());
+		}
 		return !result.empty();
 	}
 

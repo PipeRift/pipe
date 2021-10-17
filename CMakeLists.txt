@@ -72,8 +72,8 @@ target_link_libraries(RiftCore PRIVATE
     spdlog
 )
 
-set_option(RiftCore PUBLIC RIFT_ENABLE_PROFILER)
 if(RIFT_ENABLE_PROFILER)
+    set_option(RiftCore PUBLIC RIFT_ENABLE_PROFILER=1)
     target_link_libraries(RiftCore PUBLIC Tracy)
 endif()
 rift_target_shared_output_directory(RiftCore)
