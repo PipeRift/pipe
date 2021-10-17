@@ -15,6 +15,32 @@ namespace Rift::Serl
 {
 	struct CORE_API JsonFormatReader : public TFormatReader<Format::Json>
 	{
+		enum class ReadErrorCode : u32
+		{
+			InvalidParameter    = 1,
+			MemoryAllocation    = 2,
+			EmptyContent        = 3,
+			UnexpectedContent   = 4,
+			UnexpectedEnd       = 5,
+			UnexpectedCharacter = 6,
+			JsonStructure       = 7,
+			InvalidComment      = 8,
+			InvalidNumber       = 9,
+			InvalidString       = 10,
+			ErrorLiteral        = 11,
+			FileOpen            = 12,
+			FileRead            = 13
+		};
+
+		struct ReadError
+		{
+			ReadErrorCode code;
+			/** Short error message (NULL for success). */
+			const char* msg;
+			/** Error byte position for input data (0 for success). */
+			sizet pos;
+		};
+
 	private:
 		struct Scope
 		{
@@ -27,6 +53,7 @@ namespace Rift::Serl
 		yyjson_val* root    = nullptr;
 		yyjson_val* current = nullptr;
 		TArray<Scope> scopeStack;
+		ReadError error;
 
 
 	public:
@@ -67,6 +94,10 @@ namespace Rift::Serl
 		bool IsValid() const
 		{
 			return root != nullptr;
+		}
+		const ReadError& GetError() const
+		{
+			return error;
 		}
 
 	private:

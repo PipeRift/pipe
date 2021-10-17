@@ -356,17 +356,18 @@ namespace Rift::Serl
 
 	void JsonFormatReader::InternalInit(char* data, sizet size, bool insitu)
 	{
-		yyjson_read_err err;
 		yyjson_read_flag flags = insitu ? YYJSON_READ_INSITU : 0;
+		yyjson_read_err err;
 
-		doc = yyjson_read_opts(data, size, flags, nullptr, &err);
-		if (!doc)
+		if (doc = yyjson_read_opts(data, size, flags, nullptr, &err))
 		{
-			Log::Error("Failed to parse json: {}", err.msg);
-			return;
+			root = yyjson_doc_get_root(doc);
+			PushScope(root);
 		}
-		root = yyjson_doc_get_root(doc);
-		PushScope(root);
+		else
+		{
+			error = {ReadErrorCode(err.code), err.msg, err.pos};
+		}
 	}
 
 	u32 JsonFormatReader::InternalBegin()
