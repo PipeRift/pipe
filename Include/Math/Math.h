@@ -104,41 +104,141 @@ namespace Rift
 			return Rand() / (float) RAND_MAX;
 		}
 
+
+		template <typename T>
+		static constexpr bool IsPosInf(const T x)
+		{
+			return x == std::numeric_limits<T>::infinity();
+		}
+
+		template <typename T>
+		static constexpr bool IsNegInf(const T x)
+		{
+			return x == -std::numeric_limits<T>::infinity();
+		}
+
+		template <typename T>
+		static constexpr bool IsInf(const T x)
+		{
+			return IsNegInf(x) || IsPosInf(x);
+		}
+
+		template <typename T>
+		static constexpr bool IsNAN(const T x) noexcept
+		{
+			return x != x;
+		}
+
+
+		template <FloatingPoint T>
+		static constexpr T Floor(T v)
+		{
+			if constexpr (std::is_constant_evaluated())
+			{
+				if (IsNAN(v))
+				{
+					return v;
+				}
+				else if (IsInf(v))
+				{
+					return v;
+				}
+				else if (std::numeric_limits<T>::epsilon() > Abs(v))
+				{
+					return v;
+				}
+				const i64 i = static_cast<i64>(v);
+				return T(v < i ? i - 1 : i);
+			}
+			return std::floor(v);
+		}
+
+		static constexpr i32 FloorToI32(float f)
+		{
+			return i32(Floor(f));
+		}
+
+		static constexpr i64 FloorToI64(double f)
+		{
+			return i64(Floor(f));
+		}
+
+
+		template <FloatingPoint T>
+		static constexpr T Ceil(T v)
+		{
+			if constexpr (std::is_constant_evaluated())
+			{
+				if (IsNAN(v))
+				{
+					return v;
+				}
+				else if (IsInf(v))
+				{
+					return v;
+				}
+				else if (std::numeric_limits<T>::epsilon() > Abs(v))
+				{
+					return v;
+				}
+				const i64 i = static_cast<i64>(v);
+				return T(v > i ? i + 1 : i);
+			}
+			return std::ceil(v);
+		}
+		static constexpr i32 CeilToI32(float f)
+		{
+			return i32(Ceil(f));
+		}
+		static constexpr i64 CeilToI64(double f)
+		{
+			return i64(Ceil(f));
+		}
+
+
+		static float Round(float f)
+		{
+			return std::round(f);
+		}
+		static double Round(double f)
+		{
+			return std::round(f);
+		}
 		static i32 RoundToInt(float f)
 		{
-			return (i32) std::round(f);
+			return i32(Round(f));
 		}
 
 		/**
 		 * Converts a floating point number to an integer which is further from zero, "larger" in
 		 * absolute value: 0.1 becomes 1, -0.1 becomes -1
-		 * @param F		Floating point value to convert
-		 * @return		The rounded integer
+		 * @param f Floating point value to convert
+		 * @return The rounded integer
 		 */
-		static float RoundFromZero(float F)
+		static float RoundFromZero(float f)
 		{
-			return (F < 0.0f) ? FloorToFloat(F) : CeilToFloat(F);
+			return (f < 0.0f) ? Floor(f) : Ceil(f);
 		}
 
-		static double RoundFromZero(double F)
+		static double RoundFromZero(double d)
 		{
-			return (F < 0.0) ? FloorToDouble(F) : CeilToDouble(F);
+			return (d < 0.0) ? Floor(d) : Ceil(d);
 		}
 
 		/**
 		 * Converts a floating point number to an integer which is closer to zero, "smaller" in
 		 * absolute value: 0.1 becomes 0, -0.1 becomes 0
-		 * @param F		Floating point value to convert
-		 * @return		The rounded integer
+		 * @param v Floating point value to convert
+		 * @return The rounded integer
 		 */
 		static float RoundToZero(float f)
 		{
-			return (f < 0.0f) ? CeilToFloat(f) : FloorToFloat(f);
+			return (f < 0.0f) ? Ceil(f) : Floor(f);
 		}
 
 		static double RoundToZero(double d)
 		{
-			return (d < 0.0) ? CeilToDouble(d) : FloorToDouble(d);
+			return (d < 0.0) ? Ceil(d) : Floor(d);
 		}
 
 		/**
@@ -149,12 +249,12 @@ namespace Rift
 		 */
 		static float RoundToNegativeInfinity(float f)
 		{
-			return FloorToFloat(f);
+			return Floor(f);
 		}
 
 		static double RoundToNegativeInfinity(double d)
 		{
-			return FloorToDouble(d);
+			return Floor(d);
 		}
 
 		/**
@@ -165,53 +265,14 @@ namespace Rift
 		 */
 		static float RoundToPositiveInfinity(float f)
 		{
-			return CeilToFloat(f);
+			return Ceil(f);
 		}
 
 		static double RoundToPositiveInfinity(double d)
 		{
-			return CeilToDouble(d);
+			return Ceil(d);
 		}
 
-		static i32 FloorToI32(float f)
-		{
-			return i32(FloorToFloat(f));
-		}
-
-		static i64 FloorToI64(double f)
-		{
-			return i64(FloorToDouble(f));
-		}
-
-		static float FloorToFloat(float f)
-		{
-			return std::floor(f);
-		}
-
-		static double FloorToDouble(double d)
-		{
-			return std::floor(d);
-		}
-
-		static i32 CeilToI32(float f)
-		{
-			return i32(CeilToFloat(f));
-		}
-
-		static i64 CeilToI64(double f)
-		{
-			return i64(CeilToDouble(f));
-		}
-
-		static float CeilToFloat(float f)
-		{
-			return std::ceil(f);
-		}
-
-		static double CeilToDouble(double d)
-		{
-			return std::ceil(d);
-		}
 
 		template <typename T>
 		static T Sqrt(T val)
@@ -230,6 +291,7 @@ namespace Rift
 			return val * val;
 		}
 
+
 		static constexpr i32 Pow(i32 value, u32 power);
 		static constexpr i64 Pow(i64 value, u32 power);
 		static constexpr u32 Pow(u32 value, u32 power);
@@ -238,8 +300,19 @@ namespace Rift
 		template <FloatingPoint V, Number P>
 		static constexpr V Pow(V value, P power)
 		{
+			if constexpr (std::is_constant_evaluated() && Integral<P>)
+			{
+				if (power == 0)
+					return V(1);
+
+				V result = value;
+				for (P i = 1; i < power; ++i)
+					result *= value;
+				return result;
+			}
 			return std::pow(value, power);
 		}
+
 
 		// Same as Max but with N arguments
 		template <typename Type, typename... Args>
@@ -268,17 +341,22 @@ namespace Rift
 			return T(a + (b - a) * alpha);
 		}
 
-		static float Mod(float a, float b)
+		template <FloatingPoint Type>
+		static constexpr float Mod(Type a, Type b)
 		{
-			return std::fmod(a, b);
+			return a - b * Floor(a / b);
 		}
 
-		// Module for integer types only
-		template <typename Type>
-		static constexpr auto Mod(Type a, Type b)
-		    -> decltype(EnableIf<std::is_integral_v<Type>, Type>::type)
+		template <SignedIntegral Type>
+		static constexpr Type Mod(Type a, Type b)
 		{
-			return a % b;
+			return ((a % b) + b) % b;
+		}
+
+		template <UnsignedIntegral Type>
+		static constexpr Type Mod(Type a, Type b)
+		{
+			return a - b * (a / b);
 		}
 
 		static void SinCos(float* scalarSin, float* scalarCos, float value);

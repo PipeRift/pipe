@@ -6,6 +6,9 @@
 #include <Templates/Greater.h>
 #include <bandit/bandit.h>
 
+#include <cmath>
+#include <limits>
+
 
 using namespace snowhouse;
 using namespace bandit;
@@ -241,6 +244,85 @@ go_bandit([]() {
 						AssertThat(i2, Equals(0));
 					});
 				});
+			});
+		});
+
+		it("Can check Infinite", [&]() {
+			AssertThat(Math::IsInf(0.0), Equals(false));
+			AssertThat(Math::IsInf(-0.0), Equals(false));
+			AssertThat(Math::IsInf(1.0), Equals(false));
+			AssertThat(Math::IsInf(-1.0), Equals(false));
+
+			static constexpr double dInfinite = std::numeric_limits<double>::infinity();
+			AssertThat(Math::IsInf(dInfinite), Equals(true));
+			AssertThat(Math::IsInf(-dInfinite), Equals(true));
+			AssertThat(Math::IsPosInf(-dInfinite), Equals(false));
+			AssertThat(Math::IsNegInf(dInfinite), Equals(false));
+			AssertThat(Math::IsInf(std::numeric_limits<double>::max()), Equals(false));
+			AssertThat(Math::IsInf(std::numeric_limits<double>::lowest()), Equals(false));
+			AssertThat(Math::IsInf(double(Math::BIG_NUMBER)), Equals(false));
+		});
+
+		it("Can check NAN", [&]() {
+			AssertThat(Math::IsNAN(0.0), Equals(false));
+			AssertThat(Math::IsNAN(std::numeric_limits<double>::quiet_NaN()), Equals(true));
+		});
+
+		describe("Roundings", []() {
+			it("Can Floor", [&]() {
+				AssertThat(Math::Floor(0.0), Equals(std::floor(0.0)));
+				AssertThat(Math::Floor(-0.0), Equals(std::floor(-0.0)));
+				AssertThat(Math::Floor(4.2), Equals(std::floor(4.2)));
+				AssertThat(Math::Floor(4.5), Equals(std::floor(4.5)));
+				AssertThat(Math::Floor(4.7), Equals(std::floor(4.7)));
+				AssertThat(Math::Floor(5.0), Equals(std::floor(5.0)));
+				AssertThat(Math::Floor(-4.2), Equals(std::floor(-4.2)));
+				AssertThat(Math::Floor(-4.7), Equals(std::floor(-4.7)));
+				AssertThat(Math::Floor(-5.0), Equals(std::floor(-5.0)));
+				AssertThat(Math::Floor(99999999999999999 + 0.5), Equals(99999999999999999));
+
+				static constexpr double dInfinite = std::numeric_limits<double>::infinity();
+				AssertThat(Math::Floor(-dInfinite), Equals(std::floor(-dInfinite)));
+				AssertThat(Math::Floor(dInfinite), Equals(std::floor(dInfinite)));
+				AssertThat(Math::IsNAN(Math::Floor(std::numeric_limits<double>::quiet_NaN())),
+				    Equals(true));
+			});
+			it("Can Ceil", [&]() {
+				AssertThat(Math::Ceil(0.0), Equals(std::ceil(0.0)));
+				AssertThat(Math::Ceil(-0.0), Equals(std::ceil(-0.0)));
+				AssertThat(Math::Ceil(4.2), Equals(std::ceil(4.2)));
+				AssertThat(Math::Ceil(4.5), Equals(std::ceil(4.5)));
+				AssertThat(Math::Ceil(4.7), Equals(std::ceil(4.7)));
+				AssertThat(Math::Ceil(5.0), Equals(std::ceil(5.0)));
+				AssertThat(Math::Ceil(-4.2), Equals(std::ceil(-4.2)));
+				AssertThat(Math::Ceil(-4.7), Equals(std::ceil(-4.7)));
+				AssertThat(Math::Ceil(-5.0), Equals(std::ceil(-5.0)));
+				AssertThat(Math::Ceil(99999999999999999 - 0.5), Equals(99999999999999999));
+
+				static constexpr double dInfinite = std::numeric_limits<double>::infinity();
+				AssertThat(Math::Ceil(-dInfinite), Equals(std::ceil(-dInfinite)));
+				AssertThat(Math::Ceil(dInfinite), Equals(std::ceil(dInfinite)));
+				AssertThat(Math::IsNAN(Math::Ceil(std::numeric_limits<double>::quiet_NaN())),
+				    Equals(true));
+			});
+
+			it("Can Round", [&]() {
+				AssertThat(Math::Round(0.0), Equals(std::round(0.0)));
+				AssertThat(Math::Round(-0.0), Equals(std::round(-0.0)));
+				AssertThat(Math::Round(4.2), Equals(std::round(4.2)));
+				AssertThat(Math::Round(4.5), Equals(std::round(4.5)));
+				AssertThat(Math::Round(4.7), Equals(std::round(4.7)));
+				AssertThat(Math::Round(5.0), Equals(std::round(5.0)));
+				AssertThat(Math::Round(-4.2), Equals(std::round(-4.2)));
+				AssertThat(Math::Round(-4.7), Equals(std::round(-4.7)));
+				AssertThat(Math::Round(-5.0), Equals(std::round(-5.0)));
+				AssertThat(Math::Round(99999999999999999 - 0.4), Equals(99999999999999999));
+
+				static constexpr double dInfinite = std::numeric_limits<double>::infinity();
+				AssertThat(Math::Round(-dInfinite), Equals(std::round(-dInfinite)));
+				AssertThat(Math::Round(dInfinite), Equals(std::round(dInfinite)));
+				AssertThat(Math::IsNAN(Math::Round(std::numeric_limits<double>::quiet_NaN())),
+				    Equals(true));
 			});
 		});
 	});
