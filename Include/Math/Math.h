@@ -363,13 +363,6 @@ namespace Rift
 
 		static float Atan2(float Y, float X);
 
-		// Note:  We use FASTASIN_HALF_PI instead of HALF_PI inside of FastASin(), since it was the
-		// value that accompanied the minimax coefficients below. It is important to use exactly the
-		// same value in all places inside this function to ensure that FastASin(0.0f) == 0.0f. For
-		// comparison:
-		//		HALF_PI				== 1.57079632679f == 0x3fC90FDB
-		//		FASTASIN_HALF_PI	== 1.5707963050f  == 0x3fC90FDA
-#define FASTASIN_HALF_PI (1.5707963050f)
 		/**
 		 * Computes the ASin of a scalar value.
 		 *
@@ -378,6 +371,14 @@ namespace Rift
 		 */
 		static float FastAsin(float Value)
 		{
+			// Note:  We use FASTASIN_HALF_PI instead of HALF_PI inside of FastASin(), since it was
+			// the value that accompanied the minimax coefficients below. It is important to use
+			// exactly the same value in all places inside this function to ensure that
+			// FastASin(0.0f) == 0.0f. For comparison:
+			//		Half PI				== 1.57079632679f == 0x3fC90FDB
+			//		FastAsin Half PI	== 1.5707963050f  == 0x3fC90FDA
+			static constexpr float fastAsinHalfPI = 1.5707963050f;
+
 			// Clamp input to [-1,1].
 			bool nonnegative = (Value >= 0.0f);
 			float x          = Math::Abs(Value);
@@ -388,21 +389,17 @@ namespace Rift
 			}
 			float root = Math::Sqrt(omx);
 			// 7-degree minimax approximation
-			float result = ((((((-0.0012624911f * x + 0.0066700901f) * x - 0.0170881256f) * x +
-			                      0.0308918810f) *
-			                         x -
-			                     0.0501743046f) *
-			                        x +
-			                    0.0889789874f) *
-			                       x -
-			                   0.2145988016f) *
-			                   x +
-			               FASTASIN_HALF_PI;
+			// clang-format off
+			float result = ((((((-0.0012624911f * x + 0.0066700901f)
+				* x - 0.0170881256f) * x + 0.0308918810f)
+				* x - 0.0501743046f) * x + 0.0889789874f)
+				* x - 0.2145988016f) * x + fastAsinHalfPI;
+			// clang-format on
+
 			result *= root;    // acos(|x|)
 			// acos(x) = pi - acos(-x) when x < 0, asin(x) = pi/2 - acos(x)
-			return (nonnegative ? FASTASIN_HALF_PI - result : result - FASTASIN_HALF_PI);
+			return (nonnegative ? fastAsinHalfPI - result : result - fastAsinHalfPI);
 		}
-#undef FASTASIN_HALF_PI
 
 		static bool NearlyEqual(float a, float b, float tolerance = SMALL_NUMBER)
 		{
