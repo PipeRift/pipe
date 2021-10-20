@@ -41,6 +41,10 @@ namespace Rift
 	/// A 64-bit signed integer
 	using i64 = PlatformTypes::int64;
 
+	/// A 32-bit floating point number
+	using f32 = PlatformTypes::float32;
+	/// A 64-bit floating point number
+	using f64 = PlatformTypes::float64;
 
 	//  Character types
 

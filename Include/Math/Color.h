@@ -182,7 +182,7 @@ namespace Rift
 		}
 
 		// clamped in 0..1 range
-		LinearColor GetClamped(float min = 0.0f, float max = 1.0f) const
+		LinearColor Clamp(float min = 0.0f, float max = 1.0f) const
 		{
 			LinearColor ret;
 			ret.r = Math::Clamp(r, min, max);
@@ -302,10 +302,13 @@ namespace Rift
 		 * @return	Desaturated color
 		 */
 		LinearColor Desaturate(float desaturation) const;
-		LinearColor Darken(float delta, bool relative = true) const;
-		LinearColor Lighten(float delta, bool relative = true) const;
+		LinearColor Darken(float delta) const;
+		LinearColor Lighten(float delta) const;
 
-		LinearColor Translucency(float alpha) const;
+		constexpr LinearColor Translucency(float alpha) const
+		{
+			return {r, g, b, Math::Clamp(alpha, 0.f, 1.f)};
+		}
 
 		/** Computes the perceptually weighted luminance value of a color. */
 		inline float ComputeLuminance() const
@@ -422,14 +425,6 @@ namespace Rift
 			return DWColor() != other.DWColor();
 		}
 
-		void operator+=(const Color& other)
-		{
-			r = (u8) Math::Min((i32) r + (i32) other.r, 255);
-			g = (u8) Math::Min((i32) g + (i32) other.g, 255);
-			b = (u8) Math::Min((i32) b + (i32) other.b, 255);
-			a = (u8) Math::Min((i32) a + (i32) other.a, 255);
-		}
-
 		LinearColor FromRGBE() const;
 
 		/**
@@ -532,16 +527,75 @@ namespace Rift
 		}
 
 		Color Desaturate(float desaturation) const;
-		Color Darken(float delta, bool relative = true) const;
-		Color Lighten(float delta, bool relative = true) const;
-		Color Translucency(u8 alpha) const
+		constexpr Color Darken(float delta) const;
+		constexpr Color Lighten(float delta) const;
+		constexpr Color Translucency(u8 alpha) const
 		{
 			return {r, g, b, alpha};
+		}
+
+		Color operator+(const Color& other) const
+		{
+			return Color{u8(i32(r) + other.r), u8(i32(g) + other.g), u8(i32(b) + other.b),
+			    u8(i32(a) + other.a)};
+		}
+		Color& operator+=(const Color& other)
+		{
+			*this = *this + other;
+			return *this;
+		}
+
+		Color operator-(const Color& other) const
+		{
+			return Color{u8(i32(r) - other.r), u8(i32(g) - other.g), u8(i32(b) - other.b),
+			    u8(i32(a) - other.a)};
+		}
+		Color& operator-=(const Color& other)
+		{
+			*this = *this - other;
+			return *this;
+		}
+
+		Color operator*(const Color& other) const
+		{
+			return Color{u8(i32(r) * other.r), u8(i32(g) * other.g), u8(i32(b) * other.b),
+			    u8(i32(a) * other.a)};
+		}
+		Color& operator*=(const Color& other)
+		{
+			*this = *this * other;
+			return *this;
+		}
+
+		Color operator/(const Color& other) const
+		{
+			return Color{u8(i32(r) / other.r), u8(i32(g) / other.g), u8(i32(b) / other.b),
+			    u8(i32(a) / other.a)};
+		}
+		Color& operator/=(const Color& other)
+		{
+			*this = *this / other;
+			return *this;
+		}
+
+		Color operator*(float scalar) const
+		{
+			return Color{r * scalar, g * scalar, b * scalar, a * scalar};
+		}
+
+		Color& operator*=(float scalar)
+		{
+			r *= scalar;
+			g *= scalar;
+			b *= scalar;
+			a *= scalar;
+			return *this;
 		}
 
 
 		/** Some pre-initialized colors, useful for debug code */
 		static const Color White;
+		static const Color Gray;
 		static const Color Black;
 		static const Color Transparent;
 		static const Color Red;
@@ -789,6 +843,26 @@ namespace Rift
 		ret.b = (u8) Math::FloorToI32(floatb * 255.999f);
 		ret.a = (u8) Math::FloorToI32(floata * 255.999f);
 		return ret;
+	}
+
+	constexpr Color Color::Darken(float delta) const
+	{
+		Color tmp;
+		tmp.r = u8(Math::Lerp<i32>(r, Color::Black.r, delta));
+		tmp.g = u8(Math::Lerp<i32>(g, Color::Black.g, delta));
+		tmp.b = u8(Math::Lerp<i32>(b, Color::Black.b, delta));
+		tmp.a = a;
+		return tmp;
+	}
+
+	constexpr Color Color::Lighten(float delta) const
+	{
+		Color tmp;
+		tmp.r = u8(Math::Lerp<i32>(r, Color::White.r, delta));
+		tmp.g = u8(Math::Lerp<i32>(g, Color::White.g, delta));
+		tmp.b = u8(Math::Lerp<i32>(b, Color::White.b, delta));
+		tmp.a = a;
+		return tmp;
 	}
 }    // namespace Rift
 

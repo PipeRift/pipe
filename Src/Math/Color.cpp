@@ -14,7 +14,7 @@ namespace Rift
 {
 	// Common colors.
 	const LinearColor LinearColor::White{1.f, 1.f, 1.f};
-	const LinearColor LinearColor::Gray{0.5f, 0.5f, 0.5f};
+	const LinearColor LinearColor::Gray{Color::Gray};
 	const LinearColor LinearColor::Black{0.f, 0.f, 0.f};
 	const LinearColor LinearColor::Transparent{0.f, 0.f, 0.f, 0.f};
 	const LinearColor LinearColor::Red{1.f, 0.f, 0.f};
@@ -23,6 +23,7 @@ namespace Rift
 	const LinearColor LinearColor::Yellow{1.f, 1.f, 0.f};
 
 	const Color Color::White{255, 255, 255};
+	const Color Color::Gray{127, 127, 127};
 	const Color Color::Black{0, 0, 0};
 	const Color Color::Transparent{0, 0, 0, 0};
 	const Color Color::Red{255, 0, 0};
@@ -114,33 +115,14 @@ namespace Rift
 		return Math::Lerp(*this, LinearColor(Lum, Lum, Lum, 0), desaturation);
 	}
 
-	LinearColor LinearColor::Darken(float delta, bool relative) const
+	LinearColor LinearColor::Darken(float delta) const
 	{
-		LinearColor hsv = LinearRGBToHSV();
-		if (relative)
-		{
-			hsv.b *= 1.f - delta;
-			return hsv.HSVToLinearRGB();
-		}
-		hsv.b -= delta;
-		return hsv.HSVToLinearRGB();
+		return {ToColor(true).Darken(delta)};
 	}
 
-	LinearColor LinearColor::Lighten(float delta, bool relative) const
+	LinearColor LinearColor::Lighten(float delta) const
 	{
-		LinearColor hsv = LinearRGBToHSV();
-		if (relative)
-		{
-			hsv.b *= 1.f + delta;
-			return hsv.HSVToLinearRGB();
-		}
-		hsv.b += delta;
-		return hsv.HSVToLinearRGB();
-	}
-
-	LinearColor LinearColor::Translucency(float alpha) const
-	{
-		return {r, g, b, Math::Clamp(alpha, 0.f, 1.f)};
+		return {ToColor(true).Lighten(delta)};
 	}
 
 	// Convert from RGBE to float as outlined in Gregory Ward's Real Pixels article, Graphics Gems
@@ -244,20 +226,6 @@ namespace Rift
 	{
 		LinearColor self{*this};
 		self.Desaturate(desaturation);
-		return self.ToColor(false);
-	}
-
-	Color Color::Darken(float delta, bool relative) const
-	{
-		LinearColor self{*this};
-		self.Darken(delta, relative);
-		return self.ToColor(false);
-	}
-
-	Color Color::Lighten(float delta, bool relative) const
-	{
-		LinearColor self{*this};
-		self.Lighten(delta, relative);
 		return self.ToColor(false);
 	}
 

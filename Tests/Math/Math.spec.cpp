@@ -16,7 +16,7 @@ using namespace Rift;
 
 
 go_bandit([]() {
-	describe("Math", []() {
+	describe("Math.Math", []() {
 		describe("Binary Search", []() {
 			TArray<i32> bottomUp{23, 34, 50, 100, 120};
 			TArray<i32> topDown{120, 100, 50, 34, 23};

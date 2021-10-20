@@ -46,6 +46,9 @@ namespace Rift
 		using int32 = signed int;          // 32-bit signed.
 		using int64 = signed long long;    // 64-bit signed.
 
+		using float32 = float;
+		using float64 = double;
+
 		// Character types.
 		// An ANSI character - 8-bit fixed-width representation of 7-bit characters.
 		using AnsiChar = char;
