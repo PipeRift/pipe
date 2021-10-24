@@ -47,7 +47,7 @@ namespace Rift::Memory
 		static constexpr sizet minAlignment = sizeof(AllocationHeader);
 		// TODO: Support growing multiple blocks
 		HeapBlock block{};
-		TArray<Slot> freeSlots{};
+		CORE_NO_EXPORT TArray<Slot> freeSlots{};
 		bool pendingSort = false;
 		sizet freeSize   = 0;
 

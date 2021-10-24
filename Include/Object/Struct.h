@@ -27,7 +27,7 @@ namespace Rift
 	};
 
 
-	template <typename T>
+	template<typename T>
 	void Read(Serl::ReadContext& ct, T& value) requires(Derived<T, Struct>)
 	{
 		ct.BeginObject();
@@ -35,7 +35,7 @@ namespace Rift
 		value.SerializeReflection(common);
 	}
 
-	template <typename T>
+	template<typename T>
 	void Write(Serl::WriteContext& ct, const T& value) requires(Derived<T, Struct>)
 	{
 		ct.BeginObject();

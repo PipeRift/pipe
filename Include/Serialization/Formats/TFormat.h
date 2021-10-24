@@ -8,7 +8,7 @@
 
 namespace Rift::Serl
 {
-	template <Format format>
+	template<Format format>
 	struct TFormatReader : public IFormatReader
 	{
 	private:
@@ -35,7 +35,7 @@ namespace Rift::Serl
 	};
 
 
-	template <Format format>
+	template<Format format>
 	struct TFormatWriter : public IFormatWriter
 	{
 	private:

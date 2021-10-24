@@ -46,7 +46,7 @@ namespace Rift
 		}
 	};
 
-	template <>
+	template<>
 	struct Hash<NameKey>
 	{
 		sizet operator()(const NameKey& x) const
@@ -175,7 +175,7 @@ namespace Rift
 		Name(const Id& id) : id(id) {}
 	};
 
-	template <>
+	template<>
 	struct Hash<Name>
 	{
 		sizet operator()(const Name& k) const
@@ -188,10 +188,10 @@ namespace Rift
 TYPE_FLAGS(Rift::Name, HasMemberSerialize = true);
 
 
-template <>
+template<>
 struct fmt::formatter<Rift::Name> : public fmt::formatter<Rift::StringView>
 {
-	template <typename FormatContext>
+	template<typename FormatContext>
 	auto format(const Rift::Name& name, FormatContext& ctx)
 	{
 		const Rift::StringView nameStr{name.ToString()};

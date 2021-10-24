@@ -49,7 +49,7 @@ namespace Rift::Serl
 		 * Deserializes a value from an object key
 		 * This function will fail on array scopes
 		 */
-		template <typename T>
+		template<typename T>
 		void Next(StringView name, T& val)
 		{
 			if (IsWriting())
@@ -79,7 +79,7 @@ namespace Rift::Serl
 		 * Deserializes a value from the next element of an array.
 		 * This function will fail on object scopes
 		 */
-		template <typename T>
+		template<typename T>
 		void Next(T& val)
 		{
 			if (IsWriting())
@@ -93,7 +93,7 @@ namespace Rift::Serl
 		}
 
 		// Reads or Writes a type from the current scope
-		template <typename T>
+		template<typename T>
 		void Serialize(T& val)
 		{
 			if (IsWriting())
@@ -137,14 +137,14 @@ namespace Rift::Serl
 
 	// Types can be marked as single serialize, so that Serialize() will be called instead of Read
 	// and Write
-	template <typename T>
+	template<typename T>
 	void Read(ReadContext& ct, T& val) requires(
 	    bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
 	{
 		CommonContext commonContext{ct};
 		val.Serialize(commonContext);
 	}
-	template <typename T>
+	template<typename T>
 	void Read(ReadContext& ct, T& val) requires(
 	    bool(TFlags<T>::HasSingleSerialize && !TFlags<T>::HasMemberSerialize))
 	{
@@ -154,14 +154,14 @@ namespace Rift::Serl
 
 	// Types can be marked as single serialize, so that Serialize() will be called instead of Read
 	// and Write
-	template <typename T>
+	template<typename T>
 	void Write(WriteContext& ct, const T& val) requires(
 	    bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
 	{
 		CommonContext commonContext{ct};
 		const_cast<T&>(val).Serialize(commonContext);
 	}
-	template <typename T>
+	template<typename T>
 	void Write(WriteContext& ct, const T& val) requires(
 	    bool(TFlags<T>::HasSingleSerialize && !TFlags<T>::HasMemberSerialize))
 	{

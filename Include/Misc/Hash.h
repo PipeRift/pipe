@@ -7,7 +7,7 @@
 
 namespace Rift
 {
-	template <typename T>
+	template<typename T>
 	struct Hash : robin_hood::hash<T>
 	{
 		sizet operator()(const T& obj) const
@@ -24,7 +24,7 @@ namespace Rift
 	// FNV String hash
 	// Use offset and prime based on the architecture (64bit or 32bit)
 	// http://www.isthe.com/chongo/tech/comp/fnv/index.html
-	template <typename CharType = TChar>
+	template<typename CharType = TChar>
 	inline CORE_API constexpr sizet GetStringHash(const CharType* str)
 	{
 		// 32/64 bit architecture switch
@@ -47,7 +47,7 @@ namespace Rift
 			return static_cast<sizet>(result);
 		}
 	}
-	template <typename CharType = TChar>
+	template<typename CharType = TChar>
 	inline CORE_API constexpr sizet GetStringHash(const CharType* str, sizet size)
 	{
 		sizet i = 0;

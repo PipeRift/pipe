@@ -11,13 +11,13 @@
 
 namespace Rift
 {
-	template <typename CharType>
+	template<typename CharType>
 	using TStringView = std::basic_string_view<CharType, std::char_traits<CharType>>;
 
 	using StringView  = TStringView<TChar>;
 	using WStringView = TStringView<WideChar>;
 
-	template <>
+	template<>
 	struct Hash<StringView>
 	{
 		sizet operator()(const StringView& str) const
@@ -26,7 +26,7 @@ namespace Rift
 		}
 	};
 
-	template <>
+	template<>
 	struct Hash<const TChar*>
 	{
 		sizet operator()(const TChar* str) const
@@ -49,7 +49,7 @@ namespace Rift
 	namespace Strings
 	{
 		// BEGIN Any Char API
-		template <typename CharType>
+		template<typename CharType>
 		constexpr sizet Find(const TStringView<CharType> str, const CharType c,
 		    FindDirection direction = FindDirection::Front)
 		{
@@ -60,7 +60,7 @@ namespace Rift
 			return str.rfind(c);
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr sizet Find(const TStringView<CharType> str, const TStringView<CharType> subStr,
 		    FindDirection direction = FindDirection::Front)
 		{
@@ -71,59 +71,59 @@ namespace Rift
 			return str.rfind(subStr);
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr bool Contains(const TStringView<CharType> str, const CharType c,
 		    FindDirection direction = FindDirection::Front)
 		{
 			return Find(str, c, direction) != TStringView<CharType>::npos;
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr bool Contains(const TStringView<CharType> str, const TStringView<CharType> subStr,
 		    FindDirection direction = FindDirection::Front)
 		{
 			return Find(str, subStr, direction) != TStringView<CharType>::npos;
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr bool Equals(const TStringView<CharType> str, const TStringView<CharType> other)
 		{
 			return str.size() == other.size() && std::equal(str.begin(), str.end(), other.begin());
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr bool Equals(const TStringView<CharType> str, const CharType c)
 		{
 			return str.size() == 1 && str[0] == c;
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr bool StartsWith(
 		    const TStringView<CharType> str, const TStringView<CharType> subStr)
 		{
 			return str.substr(0, subStr.size()) == subStr;
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr bool EndsWith(const TStringView<CharType> str, const TStringView<CharType> subStr)
 		{
-			return str.size() >= subStr.size() &&
-			       str.compare(str.size() - subStr.size(), StringView::npos, subStr) == 0;
+			return str.size() >= subStr.size()
+			       && str.compare(str.size() - subStr.size(), StringView::npos, subStr) == 0;
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr bool EndsWith(const TStringView<CharType> str, const CharType c)
 		{
 			return str.size() >= 1 && str.back() == c;
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr TStringView<CharType> RemoveFromStart(const TStringView<CharType> str, sizet size)
 		{
 			return {str.data() + size, str.size() - size};
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr TStringView<CharType> RemoveFromStart(
 		    const TStringView<CharType> str, const TStringView<CharType> subStr)
 		{
@@ -134,13 +134,13 @@ namespace Rift
 			return str;
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr TStringView<CharType> RemoveFromEnd(const TStringView<CharType> str, sizet size)
 		{
 			return {str.data(), str.size() - size};
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr TStringView<CharType> RemoveFromEnd(
 		    const TStringView<CharType> str, const TStringView<CharType> subStr)
 		{
@@ -151,7 +151,7 @@ namespace Rift
 			return str;
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr TStringView<CharType> FrontSubstr(TStringView<CharType> str, sizet size)
 		{
 			if (str.size() <= size)
@@ -161,7 +161,7 @@ namespace Rift
 			return {str.data(), size};
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr TStringView<CharType> BackSubstr(TStringView<CharType> str, sizet size)
 		{
 			if (str.size() <= size)
@@ -171,7 +171,7 @@ namespace Rift
 			return {str.data() + (str.size() - size), size};
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr void Replace(
 		    TStringView<CharType> str, const CharType searchChar, const CharType replacementChar)
 		{
@@ -185,7 +185,7 @@ namespace Rift
 			}
 		}
 
-		template <typename CharType>
+		template<typename CharType>
 		constexpr sizet Length(const CharType* str)
 		{
 			return std::strlen(str);

@@ -9,7 +9,7 @@
 
 namespace Rift::Algorithms
 {
-	template <typename Index>
+	template<typename Index>
 	Index HeapGetLeftChildIndex(Index index)
 	{
 		return index * 2 + 1;
@@ -21,20 +21,20 @@ namespace Rift::Algorithms
 	 * @param	index Node index.
 	 * @returns	true if node is a leaf, false otherwise.
 	 */
-	template <typename Index>
+	template<typename Index>
 	bool HeapIsLeaf(Index index, Index size)
 	{
 		return HeapGetLeftChildIndex(index) >= size;
 	}
 
 	/** @return the parent index of a node at Index. */
-	template <typename Index>
+	template<typename Index>
 	Index HeapGetParentIndex(Index index)
 	{
 		return (index - 1) / 2;
 	}
 
-	template <typename T, typename Index, typename Predicate>
+	template<typename T, typename Index, typename Predicate>
 	void HeapSiftDown(T* heap, Index index, const Index count, const Predicate& predicate)
 	{
 		while (!HeapIsLeaf(index, count))
@@ -59,7 +59,7 @@ namespace Rift::Algorithms
 		}
 	}
 
-	template <typename T, typename Index, typename Predicate>
+	template<typename T, typename Index, typename Predicate>
 	Index HeapSiftUp(T* heap, Index rootIndex, Index nodeIndex, const Predicate& predicate)
 	{
 		while (nodeIndex > rootIndex)
@@ -76,7 +76,7 @@ namespace Rift::Algorithms
 		return nodeIndex;
 	}
 
-	template <typename T, typename Index, typename Predicate>
+	template<typename T, typename Index, typename Predicate>
 	void Heapify(T* first, Index size, Predicate predicate)
 	{
 		for (Index i = HeapGetParentIndex(size - 1); i >= 0; --i)
@@ -85,7 +85,7 @@ namespace Rift::Algorithms
 		}
 	}
 
-	template <typename T, typename Index, typename Predicate>
+	template<typename T, typename Index, typename Predicate>
 	void HeapSort(T* first, Index size, Predicate predicate)
 	{
 		// Reverse the predicate to build a max-heap instead of a min-heap

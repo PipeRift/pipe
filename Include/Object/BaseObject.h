@@ -15,7 +15,7 @@ namespace Rift
 	}
 	class Object;
 
-	template <typename Type>
+	template<typename Type>
 	struct TPtr;
 
 

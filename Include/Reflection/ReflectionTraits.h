@@ -12,19 +12,19 @@ namespace Rift
 {
 	struct Struct;
 
-	template <typename T>
+	template<typename T>
 	inline constexpr bool IsStruct()
 	{
 		return Derived<T, Struct>;    // && IsDefined<struct TTypeInstance<T>>();
 	}
 
-	template <typename T>
+	template<typename T>
 	inline constexpr bool IsClass()
 	{
 		return Derived<T, BaseObject, false>;    // && IsDefined<struct TTypeInstance<T>>();
 	}
 
-	template <typename T>
+	template<typename T>
 	inline constexpr bool IsArray()
 	{
 		// Check if we are dealing with a TArray
@@ -35,7 +35,7 @@ namespace Rift
 		return false;
 	}
 
-	template <typename T>
+	template<typename T>
 	inline constexpr bool IsMap()
 	{
 		// Check if we are dealing with a TAssetPtr

@@ -21,7 +21,7 @@ namespace Rift
 
 
 	// Contains an static fixed string with the name of a TArray<T>
-	template <typename ItemType, bool includeNamespaces>
+	template<typename ItemType, bool includeNamespaces>
 	struct StaticArrayName
 	{
 		static constexpr auto preffix        = TFixedString("TArray<");
@@ -33,7 +33,7 @@ namespace Rift
 	};
 
 	// Contains an static fixed string with the name of a TMap<Key, Value>
-	template <typename KeyType, typename ValueType, bool includeNamespaces>
+	template<typename KeyType, typename ValueType, bool includeNamespaces>
 	struct StaticMapName
 	{
 		static constexpr auto preffix         = TFixedString("TMap<");
@@ -48,7 +48,7 @@ namespace Rift
 	};
 
 
-	template <typename T>
+	template<typename T>
 	consteval StringView GetFullTypeName(bool includeNamespaces = true) requires(IsArray<T>())
 	{
 		if (includeNamespaces)
@@ -58,13 +58,13 @@ namespace Rift
 		return StaticArrayName<typename T::ItemType, false>::name;
 	}
 
-	template <typename T>
+	template<typename T>
 	inline consteval StringView GetTypeName(bool includeNamespaces = true) requires(IsArray<T>())
 	{
 		return "TArray";
 	}
 
-	template <typename T>
+	template<typename T>
 	consteval StringView GetFullTypeName(bool includeNamespaces = true) requires(IsMap<T>())
 	{
 		if (includeNamespaces)
@@ -74,7 +74,7 @@ namespace Rift
 		return StaticMapName<typename T::KeyType, typename T::ValueType, false>::name;
 	}
 
-	template <typename T>
+	template<typename T>
 	consteval StringView GetTypeName(bool includeNamespaces = true) requires(IsMap<T>())
 	{
 		return "TMap";

@@ -9,7 +9,7 @@
 
 namespace Rift::Refl
 {
-	template <typename T>
+	template<typename T>
 	struct TTypeInstance
 	{
 		static Type* instance;
@@ -33,11 +33,11 @@ namespace Rift::Refl
 		}
 	};
 
-	template <typename T>
+	template<typename T>
 	inline Type* TTypeInstance<T>::instance = TTypeInstance<T>::InitType();
 
 
-	template <typename T>
+	template<typename T>
 	Refl::Type* InternalGetType()
 	{
 		return TTypeInstance<T>::instance;

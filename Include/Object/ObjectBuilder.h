@@ -10,10 +10,10 @@
 
 namespace Rift
 {
-	template <typename T>
+	template<typename T>
 	struct TObjectBuilder : public TPtrBuilder<T>
 	{
-		template <typename... Args>
+		template<typename... Args>
 		static T* New(Args&&... args, const TPtr<BaseObject>& owner = {})
 		{
 			T* instance = new T(std::forward<Args>(args)...);

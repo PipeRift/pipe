@@ -27,25 +27,25 @@ namespace Rift::Memory
 
 		/* Helpers */
 
-		template <typename T>
+		template<typename T>
 		T* Allocate()
 		{
 			return static_cast<T*>(Allocate(sizeof(T), alignof(T)));
 		}
 
-		template <typename T>
+		template<typename T>
 		T* AllocateArray(u32 count)
 		{
 			return static_cast<T*>(Allocate(sizeof(T) * count, alignof(T)));
 		}
 
-		template <typename T>
+		template<typename T>
 		void Free(T* ptr)
 		{
 			Free(ptr, sizeof(T));
 		}
 
-		template <typename T>
+		template<typename T>
 		void FreeArray(T* ptr, u32 count)
 		{
 			Free(ptr, sizeof(T) * count);

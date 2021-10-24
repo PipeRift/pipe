@@ -10,7 +10,7 @@
 
 namespace Rift
 {
-	template <typename T, typename Allocator = Memory::DefaultAllocator>
+	template<typename T, typename Allocator = Memory::DefaultAllocator>
 	struct STLAllocator
 	{
 		// STD types
@@ -21,7 +21,7 @@ namespace Rift
 		using const_reference = const value_type&;
 		using pointer         = value_type*;
 		using const_pointer   = const value_type*;
-		template <typename U>
+		template<typename U>
 		struct rebind
 		{
 			typedef STLAllocator<U, Allocator> other;
@@ -32,7 +32,7 @@ namespace Rift
 
 		STLAllocator()                             = default;
 		STLAllocator(const STLAllocator&) noexcept = default;
-		template <class U>
+		template<class U>
 		STLAllocator(const STLAllocator<U>&) noexcept
 		{}
 
@@ -54,12 +54,12 @@ namespace Rift
 		using propagate_on_container_swap            = std::true_type;
 		using is_always_equal                        = std::true_type;
 
-		template <class U, class... Args>
+		template<class U, class... Args>
 		void construct(U* p, Args&&... args)
 		{
 			::new (p) U(std::forward<Args>(args)...);
 		}
-		template <class U>
+		template<class U>
 		void destroy(U* p) noexcept
 		{
 			p->~U();
@@ -74,15 +74,15 @@ namespace Rift
 
 	// Single parameter template type for pretemplated allocator arguments
 	// template<typename> typename AllocatorType
-	template <typename T>
+	template<typename T>
 	using STLDefaultAllocator = STLAllocator<T>;
 
-	template <typename T1, typename T2, typename Allocator>
+	template<typename T1, typename T2, typename Allocator>
 	bool operator==(const STLAllocator<T1, Allocator>&, const STLAllocator<T2, Allocator>&) noexcept
 	{
 		return true;
 	}
-	template <typename T1, typename T2, typename Allocator>
+	template<typename T1, typename T2, typename Allocator>
 	bool operator!=(const STLAllocator<T1, Allocator>&, const STLAllocator<T2, Allocator>&) noexcept
 	{
 		return false;

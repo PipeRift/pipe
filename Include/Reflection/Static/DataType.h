@@ -22,7 +22,7 @@ namespace Rift::Refl
 	/** Smallest reflection type that contains all basic class or struct data */
 	class DataType : public Type
 	{
-		template <typename T, typename Parent, typename TType, TypeFlags flags>
+		template<typename T, typename Parent, typename TType, TypeFlags flags>
 		friend struct TDataTypeBuilder;
 
 	protected:
@@ -55,7 +55,7 @@ namespace Rift::Refl
 
 		CORE_API bool IsChildOf(const DataType* other) const;
 
-		template <typename T>
+		template<typename T>
 		bool IsChildOf() const
 		{
 			static_assert(

@@ -4,6 +4,7 @@
 #include "Files/Paths.h"
 #include "Log.h"
 #include "Memory/OwnPtr.h"
+#include "Profiler.h"
 
 #include <spdlog/details/log_msg-inl.h>
 #include <spdlog/details/null_mutex.h>
@@ -16,8 +17,6 @@
 #	include <spdlog/details/windows_include.h>
 #endif
 
-#include <Tracy.hpp>
-
 
 namespace Rift::Log
 {
@@ -26,7 +25,7 @@ namespace Rift::Log
 
 
 #if RIFT_ENABLE_PROFILER
-	template <typename Mutex>
+	template<typename Mutex>
 	class ProfilerSink : public spdlog::sinks::base_sink<Mutex>
 	{
 		using Super = spdlog::sinks::base_sink<Mutex>;

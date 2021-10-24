@@ -8,7 +8,7 @@
 
 namespace Rift
 {
-	template <typename T>
+	template<typename T>
 	struct TArrayView
 	{
 		using Iterator             = T*;
@@ -78,7 +78,7 @@ namespace Rift
 			return false;
 		}
 
-		template <typename Callback>
+		template<typename Callback>
 		void Each(Callback cb) const
 		{
 			for (i32 i = 0; i < size; ++i)
@@ -87,7 +87,7 @@ namespace Rift
 			}
 		}
 
-		template <typename Callback>
+		template<typename Callback>
 		void EachReverse(Callback cb) const
 		{
 			for (i32 i = size - 1; i >= 0; --i)
@@ -149,7 +149,7 @@ namespace Rift
 		};
 	};
 
-	template <typename T>
+	template<typename T>
 	struct TArrayView<const T>
 	{
 		using Iterator             = T*;
@@ -210,7 +210,7 @@ namespace Rift
 			return false;
 		}
 
-		template <typename Callback>
+		template<typename Callback>
 		void Each(Callback cb) const
 		{
 			for (i32 i = 0; i < size; ++i)
@@ -219,7 +219,7 @@ namespace Rift
 			}
 		}
 
-		template <typename Callback>
+		template<typename Callback>
 		void EachReverse(Callback cb) const
 		{
 			for (i32 i = size - 1; i >= 0; --i)

@@ -17,7 +17,7 @@
 
 namespace Rift::Refl
 {
-	template <typename T, typename Parent, typename TType, TypeFlags flags = Type_NoFlag>
+	template<typename T, typename Parent, typename TType, TypeFlags flags = Type_NoFlag>
 	struct TDataTypeBuilder : public TypeBuilder
 	{
 		static constexpr bool hasParent = !std::is_void_v<Parent>;
@@ -27,7 +27,7 @@ namespace Rift::Refl
 		TDataTypeBuilder() = default;
 		TDataTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
 
-		template <typename PropertyType, PropFlags propertyFlags>
+		template<typename PropertyType, PropFlags propertyFlags>
 		void AddProperty(Name name, Property::Access* access)
 		{
 			Type* const valueType = TTypeInstance<PropertyType>::InitType();
@@ -51,7 +51,7 @@ namespace Rift::Refl
 			if constexpr (hasParent)
 			{
 				// Parent gets initialized before anything else
-				DataType* parent = (DataType*) TTypeInstance<Parent>::InitType();
+				DataType* parent = (DataType*)TTypeInstance<Parent>::InitType();
 				assert(parent);
 
 				newType = &ReflectionRegistry::Get().AddType<TType>(GetId());
@@ -71,7 +71,7 @@ namespace Rift::Refl
 		}
 	};
 
-	template <typename T, typename Parent, TypeFlags flags = Type_NoFlag>
+	template<typename T, typename Parent, TypeFlags flags = Type_NoFlag>
 	struct TClassTypeBuilder : public TDataTypeBuilder<T, Parent, ClassType, flags>
 	{
 		static_assert(IsClass<T>(), "Type does not inherit Object!");
@@ -108,7 +108,7 @@ namespace Rift::Refl
 	};
 
 
-	template <typename T, typename Parent, TypeFlags flags = Type_NoFlag>
+	template<typename T, typename Parent, TypeFlags flags = Type_NoFlag>
 	struct TStructTypeBuilder : public TDataTypeBuilder<T, Parent, StructType, flags>
 	{
 		static_assert(IsStruct<T>(), "Type does not inherit Struct!");
@@ -139,12 +139,12 @@ namespace Rift::Refl
 
 
 	// Wrap some types so we can use them at compile time
-	template <u32 N>
+	template<u32 N>
 	struct MetaCounter : MetaCounter<N - 1>
 	{
 		static constexpr u32 value = N;
 	};
-	template <>
+	template<>
 	struct MetaCounter<0>
 	{
 		static constexpr u32 value = 0;
@@ -188,10 +188,10 @@ public:                                                                         
                                                                                             \
 private:                                                                                    \
 	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>); \
-	template <Rift::u32 N>                                                                  \
+	template<Rift::u32 N>                                                                   \
 	static void __ReflReflectProperty(BuilderType&, Rift::Refl::MetaCounter<N>)             \
 	{}                                                                                      \
-	template <Rift::u32 N>                                                                  \
+	template<Rift::u32 N>                                                                   \
 	void __ReflSerializeProperty(Rift::Serl::CommonContext&, Rift::Refl::MetaCounter<N>)    \
 	{}
 
@@ -231,10 +231,10 @@ public:                                                                         
                                                                                             \
 private:                                                                                    \
 	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>); \
-	template <Rift::u32 N>                                                                  \
+	template<Rift::u32 N>                                                                   \
 	static void __ReflReflectProperty(BuilderType&, Rift::Refl::MetaCounter<N>)             \
 	{}                                                                                      \
-	template <Rift::u32 N>                                                                  \
+	template<Rift::u32 N>                                                                   \
 	void __ReflSerializeProperty(Rift::Serl::CommonContext&, Rift::Refl::MetaCounter<N>)    \
 	{}                                                                                      \
                                                                                             \
@@ -258,7 +258,7 @@ public:                           \
 		using PropType = decltype(name);                                                          \
 		static_assert(HasType<PropType>(), "Type is not reflected");                              \
 		builder.AddProperty<PropType, InitPropFlags(flags)>(TX(#name), [](void* instance) {       \
-			return (void*) &static_cast<ThisType*>(instance)->name;                               \
+			return (void*)&static_cast<ThisType*>(instance)->name;                                \
 		});                                                                                       \
                                                                                                   \
 		/* Registry next property if any */                                                       \

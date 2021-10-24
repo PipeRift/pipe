@@ -18,7 +18,7 @@ namespace Rift
 	using Path     = fs::path;
 	using PathView = TStringView<Path::value_type>;
 
-	template <>
+	template<>
 	struct Hash<Path>
 	{
 		sizet operator()(const Path& path) const

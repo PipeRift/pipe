@@ -6,7 +6,7 @@
 #include "Platform/Platform.h"
 
 
-template <typename RetType = void, typename InnerType>
+template<typename RetType = void, typename InnerType>
 RetType RunCheckCallback(InnerType&& callback)
 {
 	return callback();

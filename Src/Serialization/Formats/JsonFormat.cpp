@@ -1,8 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
-#include "Serialization/Formats/JsonFormat.h"
-
 #include "Math/Math.h"
 #include "Misc/Checks.h"
+#include "Serialization/Formats/JsonFormat.h"
 #include "Strings/String.h"
 
 #include <yyjson.h>
@@ -22,7 +21,7 @@ bool yyjson_mut_obj_add_val(
 			size_t len          = unsafe_yyjson_get_len(obj);
 			yyjson_mut_val* val = key + 1;
 			key->tag            = YYJSON_TYPE_STR | YYJSON_SUBTYPE_NONE;
-			key->tag |= (uint64_t) _key.size() << YYJSON_TAG_BIT;
+			key->tag |= (uint64_t)_key.size() << YYJSON_TAG_BIT;
 			key->uni.str = _key.data();
 			val          = _val;
 			unsafe_yyjson_set_len(obj, len + 1);
@@ -38,7 +37,7 @@ namespace Rift::Serl
 {
 	u64 GetKeyTag(sizet size)
 	{
-		return (((u64) size) << YYJSON_TAG_BIT) | YYJSON_TYPE_STR;
+		return (((u64)size) << YYJSON_TAG_BIT) | YYJSON_TYPE_STR;
 	}
 	bool CheckKey(yyjson_val* key, const StringView& name)
 	{
@@ -47,7 +46,7 @@ namespace Rift::Serl
 
 	JsonFormatReader::JsonFormatReader(StringView data)
 	{
-		InternalInit((char*) data.data(), data.length(), false);
+		InternalInit((char*)data.data(), data.length(), false);
 	}
 
 	JsonFormatReader::JsonFormatReader(String& data)
@@ -211,17 +210,10 @@ namespace Rift::Serl
 	{
 		switch (yyjson_get_subtype(current))
 		{
-			case YYJSON_SUBTYPE_UINT:
-				val = u8(unsafe_yyjson_get_uint(current));
-				break;
-			case YYJSON_SUBTYPE_SINT:
-				val = u8(unsafe_yyjson_get_sint(current));
-				break;
-			case YYJSON_SUBTYPE_REAL:
-				val = u8(unsafe_yyjson_get_real(current));
-				break;
-			default:
-				val = 0;
+			case YYJSON_SUBTYPE_UINT: val = u8(unsafe_yyjson_get_uint(current)); break;
+			case YYJSON_SUBTYPE_SINT: val = u8(unsafe_yyjson_get_sint(current)); break;
+			case YYJSON_SUBTYPE_REAL: val = u8(unsafe_yyjson_get_real(current)); break;
+			default: val = 0;
 		}
 	}
 
@@ -229,17 +221,10 @@ namespace Rift::Serl
 	{
 		switch (yyjson_get_subtype(current))
 		{
-			case YYJSON_SUBTYPE_SINT:
-				val = i32(unsafe_yyjson_get_sint(current));
-				break;
-			case YYJSON_SUBTYPE_UINT:
-				val = i32(unsafe_yyjson_get_uint(current));
-				break;
-			case YYJSON_SUBTYPE_REAL:
-				val = i32(unsafe_yyjson_get_real(current));
-				break;
-			default:
-				val = 0;
+			case YYJSON_SUBTYPE_SINT: val = i32(unsafe_yyjson_get_sint(current)); break;
+			case YYJSON_SUBTYPE_UINT: val = i32(unsafe_yyjson_get_uint(current)); break;
+			case YYJSON_SUBTYPE_REAL: val = i32(unsafe_yyjson_get_real(current)); break;
+			default: val = 0;
 		}
 	}
 
@@ -247,18 +232,13 @@ namespace Rift::Serl
 	{
 		switch (yyjson_get_subtype(current))
 		{
-			case YYJSON_SUBTYPE_UINT:
-				val = u32(unsafe_yyjson_get_uint(current));
-				break;
+			case YYJSON_SUBTYPE_UINT: val = u32(unsafe_yyjson_get_uint(current)); break;
 			case YYJSON_SUBTYPE_SINT: {
 				val = u32(Math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
 				break;
 			}
-			case YYJSON_SUBTYPE_REAL:
-				val = u32(unsafe_yyjson_get_real(current));
-				break;
-			default:
-				val = 0;
+			case YYJSON_SUBTYPE_REAL: val = u32(unsafe_yyjson_get_real(current)); break;
+			default: val = 0;
 		}
 	}
 
@@ -266,17 +246,10 @@ namespace Rift::Serl
 	{
 		switch (yyjson_get_subtype(current))
 		{
-			case YYJSON_SUBTYPE_SINT:
-				val = unsafe_yyjson_get_sint(current);
-				break;
-			case YYJSON_SUBTYPE_UINT:
-				val = i64(unsafe_yyjson_get_uint(current));
-				break;
-			case YYJSON_SUBTYPE_REAL:
-				val = i64(unsafe_yyjson_get_real(current));
-				break;
-			default:
-				val = 0;
+			case YYJSON_SUBTYPE_SINT: val = unsafe_yyjson_get_sint(current); break;
+			case YYJSON_SUBTYPE_UINT: val = i64(unsafe_yyjson_get_uint(current)); break;
+			case YYJSON_SUBTYPE_REAL: val = i64(unsafe_yyjson_get_real(current)); break;
+			default: val = 0;
 		}
 	}
 
@@ -284,17 +257,12 @@ namespace Rift::Serl
 	{
 		switch (yyjson_get_subtype(current))
 		{
-			case YYJSON_SUBTYPE_UINT:
-				val = unsafe_yyjson_get_uint(current);
-				break;
+			case YYJSON_SUBTYPE_UINT: val = unsafe_yyjson_get_uint(current); break;
 			case YYJSON_SUBTYPE_SINT:
 				val = u64(Math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
 				break;
-			case YYJSON_SUBTYPE_REAL:
-				val = u64(unsafe_yyjson_get_real(current));
-				break;
-			default:
-				val = 0;
+			case YYJSON_SUBTYPE_REAL: val = u64(unsafe_yyjson_get_real(current)); break;
+			default: val = 0;
 		}
 	}
 
@@ -302,17 +270,10 @@ namespace Rift::Serl
 	{
 		switch (yyjson_get_subtype(current))
 		{
-			case YYJSON_SUBTYPE_REAL:
-				val = float(unsafe_yyjson_get_real(current));
-				break;
-			case YYJSON_SUBTYPE_SINT:
-				val = float(unsafe_yyjson_get_sint(current));
-				break;
-			case YYJSON_SUBTYPE_UINT:
-				val = float(unsafe_yyjson_get_uint(current));
-				break;
-			default:
-				val = 0.f;
+			case YYJSON_SUBTYPE_REAL: val = float(unsafe_yyjson_get_real(current)); break;
+			case YYJSON_SUBTYPE_SINT: val = float(unsafe_yyjson_get_sint(current)); break;
+			case YYJSON_SUBTYPE_UINT: val = float(unsafe_yyjson_get_uint(current)); break;
+			default: val = 0.f;
 		}
 	}
 
@@ -320,17 +281,10 @@ namespace Rift::Serl
 	{
 		switch (yyjson_get_subtype(current))
 		{
-			case YYJSON_SUBTYPE_REAL:
-				val = unsafe_yyjson_get_real(current);
-				break;
-			case YYJSON_SUBTYPE_SINT:
-				val = unsafe_yyjson_get_sint(current);
-				break;
-			case YYJSON_SUBTYPE_UINT:
-				val = unsafe_yyjson_get_uint(current);
-				break;
-			default:
-				val = 0.f;
+			case YYJSON_SUBTYPE_REAL: val = unsafe_yyjson_get_real(current); break;
+			case YYJSON_SUBTYPE_SINT: val = double(unsafe_yyjson_get_sint(current)); break;
+			case YYJSON_SUBTYPE_UINT: val = double(unsafe_yyjson_get_uint(current)); break;
+			default: val = 0.f;
 		}
 	}
 
@@ -379,7 +333,7 @@ namespace Rift::Serl
 			return 0;
 		}
 		scope.id     = 0;
-		scope.size   = unsafe_yyjson_get_len(current);
+		scope.size   = u32(unsafe_yyjson_get_len(current));
 		scope.parent = current;
 		current      = nullptr;
 		return scope.size;
@@ -471,9 +425,7 @@ namespace Rift::Serl
 						yyjson_mut_obj_add_val(doc, scope.parent, scope.key, current);
 					}
 					break;
-				case YYJSON_TYPE_ARR:
-					yyjson_mut_arr_append(scope.parent, current);
-					break;
+				case YYJSON_TYPE_ARR: yyjson_mut_arr_append(scope.parent, current); break;
 			}
 		}
 		current = scope.parent;

@@ -22,8 +22,11 @@ namespace Rift::Dialogs
 	 * @return selected file path
 	 */
 	CORE_API Path SelectFile(StringView title, const Path& defaultPath,
-	    const TArray<FileFilter>& filters = {{"All Files", "*"}},
-	    bool alwaysShowDefaultPath        = false);
+	    const TArray<FileFilter>& filters =
+	        {
+	            {"All Files", "*"}
+    },
+	    bool alwaysShowDefaultPath = false);
 
 	/**
 	 * Selects multiple files using a system dialog.
@@ -34,8 +37,11 @@ namespace Rift::Dialogs
 	 * can decide to, for example, display last user folder (windows).
 	 */
 	CORE_API void SelectFiles(StringView title, const Path& defaultPath, TArray<Path>& outFiles,
-	    const TArray<FileFilter>& filters = {{"All Files", "*"}},
-	    bool alwaysShowDefaultPath        = false);
+	    const TArray<FileFilter>& filters =
+	        {
+	            {"All Files", "*"}
+    },
+	    bool alwaysShowDefaultPath = false);
 
 	/**
 	 * Selects a folder using a system dialog.
@@ -57,6 +63,9 @@ namespace Rift::Dialogs
 	 * @return selected file path
 	 */
 	CORE_API Path SaveFile(StringView title, const Path& defaultPath,
-	    const TArray<FileFilter>& filters = {{"All Files", "*"}},
+	    const TArray<FileFilter>& filters =
+	        {
+	            {"All Files", "*"}
+    },
 	    bool alwaysShowDefaultPath = false, bool confirmOverwrite = false);
 }    // namespace Rift::Dialogs

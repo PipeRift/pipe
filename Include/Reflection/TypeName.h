@@ -10,7 +10,7 @@ namespace Rift
 {
 	namespace Refl::TypeName
 	{
-		template <class T>
+		template<class T>
 		constexpr StringView GetRaw()
 		{
 #if defined(_MSC_VER)
@@ -40,7 +40,7 @@ namespace Rift
 		return value;
 	}
 
-	template <typename T>
+	template<typename T>
 	inline consteval StringView GetFullTypeName(bool includeNamespaces = true)
 	{
 		const StringView raw = Refl::TypeName::GetRaw<T>();
@@ -57,7 +57,7 @@ namespace Rift
 		return typeName;
 	}
 
-	template <typename T>
+	template<typename T>
 	inline consteval StringView GetTypeName(bool includeNamespaces = true)
 	{
 		return GetFullTypeName<T>(includeNamespaces);
@@ -65,7 +65,7 @@ namespace Rift
 
 
 #define OVERRIDE_TYPE_NAME(type)                                              \
-	template <>                                                               \
+	template<>                                                                \
 	inline consteval StringView GetFullTypeName<type>(bool includeNamespaces) \
 	{                                                                         \
 		return TX(#type);                                                     \

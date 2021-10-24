@@ -8,7 +8,7 @@
 
 namespace Rift
 {
-	class CORE_API Context : public Object
+	class Context : public Object
 	{
 		CLASS(Context, Object)
 
@@ -18,23 +18,23 @@ namespace Rift
 
 
 	public:
-		Context() : Super() {}
-		Context(const Path& logFolder) : Super(), logFolder{logFolder} {}
+		CORE_API Context() : Super() {}
+		CORE_API Context(const Path& logFolder) : Super(), logFolder{logFolder} {}
 
-		void Construct() override
+		CORE_API void Construct() override
 		{
 			Super::Construct();
 
 			Log::Init("Saved/Logs");    // Init logger
 		}
 
-		void BeforeDestroy() override
+		CORE_API void BeforeDestroy() override
 		{
 			Super::BeforeDestroy();
 			Log::Shutdown();
 		}
 
-		TaskSystem& GetTasks()
+		CORE_API TaskSystem& GetTasks()
 		{
 			return tasks;
 		}

@@ -16,7 +16,7 @@ namespace Rift::Serl
 {
 	struct CORE_API ReadContext
 	{
-		template <Format format>
+		template<Format format>
 		friend struct TFormatReader;
 
 		Flags flags           = Flags_None;
@@ -53,7 +53,7 @@ namespace Rift::Serl
 		 * Complexity: Ordered access O(1), Inverse order O(n)
 		 * This function won't do anything on array or uninitialized scopes
 		 */
-		template <typename T>
+		template<typename T>
 		void Next(StringView name, T& val)
 		{
 			if (EnterNext(name))
@@ -84,7 +84,7 @@ namespace Rift::Serl
 		 * Complexity: O(1)
 		 * This function won't do anything on object or uninitialized scopes
 		 */
-		template <typename T>
+		template<typename T>
 		void Next(T& val)
 		{
 			if (EnterNext())
@@ -95,7 +95,7 @@ namespace Rift::Serl
 		}
 
 		// Reads a type from the current scope
-		template <typename T>
+		template<typename T>
 		void Serialize(T& val)
 		{
 			Read(*this, val);
@@ -116,7 +116,7 @@ namespace Rift::Serl
 		}
 
 	public:
-		template <Format format>
+		template<Format format>
 		typename FormatBind<format>::Reader& GetReader() requires(HasReader<format>);
 	};
 
@@ -131,7 +131,7 @@ namespace Rift::Serl
 	CORE_API void Read(ReadContext& ct, double& val);
 	CORE_API void Read(ReadContext& ct, StringView& val);
 
-	template <typename T1, typename T2>
+	template<typename T1, typename T2>
 	void Read(ReadContext& ct, TPair<T1, T2>& val)
 	{
 		ct.BeginObject();
@@ -139,14 +139,14 @@ namespace Rift::Serl
 		ct.Next("second", val.second);
 	}
 
-	template <typename T>
+	template<typename T>
 	void Read(ReadContext& ct, T& val) requires(
 	    bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
 	{
 		val.Read(ct);
 	}
 
-	template <typename T>
+	template<typename T>
 	void Read(ReadContext& ct, T& val) requires(IsArray<T>())
 	{
 		u32 size;
@@ -158,7 +158,7 @@ namespace Rift::Serl
 		}
 	}
 
-	template <typename T>
+	template<typename T>
 	void Read(ReadContext& ct, T& val) requires IsEnum<T>
 	{
 		String typeStr;

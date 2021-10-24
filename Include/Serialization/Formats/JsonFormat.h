@@ -13,7 +13,7 @@ struct yyjson_mut_val;
 
 namespace Rift::Serl
 {
-	struct CORE_API JsonFormatReader : public TFormatReader<Format::Json>
+	struct JsonFormatReader : public TFormatReader<Format::Json>
 	{
 		enum class ReadErrorCode : u32
 		{
@@ -62,40 +62,40 @@ namespace Rift::Serl
 		 * @param data containing the constant json string
 		 * @see JsonFormatReader(String& data, bool insitu = true) for optional insitu reading
 		 */
-		explicit JsonFormatReader(StringView data);
+		CORE_API explicit JsonFormatReader(StringView data);
 		/**
 		 * Configures a JsonFormatReader to read from an string buffer
 		 * This contructor might MODIFY the buffer if needed to improve reading speed
 		 * slightly.
 		 * @param data containing the MUTABLE json string
 		 */
-		explicit JsonFormatReader(String& data);
-		~JsonFormatReader();
+		CORE_API explicit JsonFormatReader(String& data);
+		CORE_API ~JsonFormatReader();
 
-		void BeginObject();
-		void BeginArray(u32& size);
+		CORE_API void BeginObject();
+		CORE_API void BeginArray(u32& size);
 
-		bool EnterNext(StringView name);
-		bool EnterNext();
-		void Leave();
+		CORE_API bool EnterNext(StringView name);
+		CORE_API bool EnterNext();
+		CORE_API void Leave();
 
-		void Read(bool& val);
-		void Read(u8& val);
-		void Read(i32& val);
-		void Read(u32& val);
-		void Read(i64& val);
-		void Read(u64& val);
-		void Read(float& val);
-		void Read(double& val);
-		void Read(StringView& val);
+		CORE_API void Read(bool& val);
+		CORE_API void Read(u8& val);
+		CORE_API void Read(i32& val);
+		CORE_API void Read(u32& val);
+		CORE_API void Read(i64& val);
+		CORE_API void Read(u64& val);
+		CORE_API void Read(float& val);
+		CORE_API void Read(double& val);
+		CORE_API void Read(StringView& val);
 
-		bool IsObject() const;
-		bool IsArray() const;
-		bool IsValid() const
+		CORE_API bool IsObject() const;
+		CORE_API bool IsArray() const;
+		CORE_API bool IsValid() const
 		{
 			return root != nullptr;
 		}
-		const ReadError& GetError() const
+		CORE_API const ReadError& GetError() const
 		{
 			return error;
 		}
@@ -112,7 +112,7 @@ namespace Rift::Serl
 	};
 
 
-	struct CORE_API JsonFormatWriter : public TFormatWriter<Format::Json>
+	struct JsonFormatWriter : public TFormatWriter<Format::Json>
 	{
 	private:
 		struct Scope
@@ -128,34 +128,34 @@ namespace Rift::Serl
 
 
 	public:
-		JsonFormatWriter();
-		~JsonFormatWriter();
+		CORE_API JsonFormatWriter();
+		CORE_API ~JsonFormatWriter();
 
-		bool EnterNext(StringView name);
-		bool EnterNext();
-		void Leave();
+		CORE_API bool EnterNext(StringView name);
+		CORE_API bool EnterNext();
+		CORE_API void Leave();
 
-		void BeginObject();
-		void BeginArray(u32& size);
+		CORE_API void BeginObject();
+		CORE_API void BeginArray(u32& size);
 
-		void Write(bool val);
-		void Write(u8 val);
-		void Write(i32 val);
-		void Write(u32 val);
-		void Write(i64 val);
-		void Write(u64 val);
-		void Write(float val);
-		void Write(double val);
-		void Write(StringView val);
+		CORE_API void Write(bool val);
+		CORE_API void Write(u8 val);
+		CORE_API void Write(i32 val);
+		CORE_API void Write(u32 val);
+		CORE_API void Write(i64 val);
+		CORE_API void Write(u64 val);
+		CORE_API void Write(float val);
+		CORE_API void Write(double val);
+		CORE_API void Write(StringView val);
 
-		bool IsValid() const
+		CORE_API bool IsValid() const
 		{
 			return doc != nullptr;
 		}
 
-		void Close();
+		CORE_API void Close();
 
-		StringView ToString(bool pretty = true, bool ensureClosed = true);
+		CORE_API StringView ToString(bool pretty = true, bool ensureClosed = true);
 
 	private:
 		Scope& GetScope();
@@ -164,7 +164,7 @@ namespace Rift::Serl
 	};
 
 
-	template <>
+	template<>
 	struct FormatBind<Format::Json>
 	{
 		using Reader = JsonFormatReader;

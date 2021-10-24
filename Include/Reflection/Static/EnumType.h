@@ -11,19 +11,19 @@
 
 namespace Rift::Refl
 {
-	template <typename T>
+	template<typename T>
 	constexpr sizet GetEnumSize()
 	{
 		return magic_enum::enum_count<T>();
 	}
 
-	template <typename T>
+	template<typename T>
 	constexpr StringView GetEnumName(T value)
 	{
 		return magic_enum::enum_name(value);
 	}
 
-	template <typename T>
+	template<typename T>
 	constexpr std::optional<T> GetEnumValue(StringView str)
 	{
 		return magic_enum::enum_cast<T>(str);
@@ -33,7 +33,7 @@ namespace Rift::Refl
 	/** Smallest reflection type that contains all basic class or struct data */
 	class EnumType : public Type
 	{
-		template <typename T>
+		template<typename T>
 		friend struct TEnumTypeBuilder;
 
 	protected:

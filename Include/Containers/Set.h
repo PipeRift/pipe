@@ -19,7 +19,7 @@
 
 namespace Rift
 {
-	template <typename Type, typename Allocator = Memory::DefaultAllocator>
+	template<typename Type, typename Allocator = Memory::DefaultAllocator>
 	class TSet
 	{
 		// static_assert(std::is_nothrow_move_constructible<Value>::value ||
@@ -27,7 +27,7 @@ namespace Rift
 		//    "Value type must be nothrow move constructible and/or copy constructible.");
 
 	public:
-		template <typename OtherType, typename OtherAllocator>
+		template<typename OtherType, typename OtherAllocator>
 		friend class TSet;
 
 		using AllocatorType = Allocator;

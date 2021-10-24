@@ -8,7 +8,7 @@
 
 namespace Rift::Memory
 {
-	template <sizet Size>
+	template<sizet Size>
 	class CORE_API InlineBlock : BaseBlock
 	{
 	private:
@@ -23,12 +23,12 @@ namespace Rift::Memory
 		}
 		~InlineBlock() = default;
 
-		template <sizet Size2>
+		template<sizet Size2>
 		InlineBlock(const InlineBlock<Size2>& other) : InlineBlock() requires(Size >= Size2)
 		{
 			inlineData = other.inlineData;
 		}
-		template <sizet Size2>
+		template<sizet Size2>
 		InlineBlock& operator=(const InlineBlock&) requires(Size >= Size2)
 		{
 			inlineData = other.inlineData;

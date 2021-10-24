@@ -1,14 +1,14 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Containers/Set.h>
 #include <bandit/bandit.h>
+#include <Containers/Set.h>
 
 
 using namespace snowhouse;
 using namespace bandit;
 using namespace Rift;
 
-template <u32 Size>
+template<u32 Size>
 struct TypeOfSize
 {
 	static constexpr u32 size = Size;

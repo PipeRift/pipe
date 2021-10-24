@@ -414,7 +414,7 @@ namespace Rift
 		 * @return Number of days.
 		 * @see GetDays
 		 */
-		template <typename PrecisionType = float>
+		template<typename PrecisionType = float>
 		PrecisionType GetTotalDays() const
 		{
 			return Chrono::duration<PrecisionType, Days::period>(duration).count();
@@ -426,7 +426,7 @@ namespace Rift
 		 * @return Number of hours.
 		 * @see GetHours
 		 */
-		template <typename PrecisionType = float>
+		template<typename PrecisionType = float>
 		PrecisionType GetTotalHours() const
 		{
 			return Chrono::duration<PrecisionType, Hours::period>(duration).count();
@@ -438,7 +438,7 @@ namespace Rift
 		 * @return Number of microseconds.
 		 * @see GetFractionMicro
 		 */
-		template <typename PrecisionType = float>
+		template<typename PrecisionType = float>
 		PrecisionType GetTotalMicroseconds() const
 		{
 			return Chrono::duration<PrecisionType, Chrono::microseconds::period>(duration).count();
@@ -450,7 +450,7 @@ namespace Rift
 		 * @return Number of milliseconds.
 		 * @see GetFractionMilli
 		 */
-		template <typename PrecisionType = float>
+		template<typename PrecisionType = float>
 		PrecisionType GetTotalMilliseconds() const
 		{
 			return Chrono::duration<PrecisionType, Milliseconds::period>(duration).count();
@@ -462,7 +462,7 @@ namespace Rift
 		 * @return Number of minutes.
 		 * @see GetMinutes
 		 */
-		template <typename PrecisionType = float>
+		template<typename PrecisionType = float>
 		PrecisionType GetTotalMinutes() const
 		{
 			return Chrono::duration<PrecisionType, Minutes::period>(duration).count();
@@ -474,7 +474,7 @@ namespace Rift
 		 * @return Number of seconds.
 		 * @see GetSeconds
 		 */
-		template <typename PrecisionType = float>
+		template<typename PrecisionType = float>
 		PrecisionType GetTotalSeconds() const
 		{
 			return Chrono::duration<PrecisionType, Seconds::period>(duration).count();

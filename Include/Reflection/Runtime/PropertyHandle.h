@@ -21,12 +21,10 @@ namespace Rift::Refl
 
 	protected:
 		PropertyHandle(const TPtr<BaseObject>& objInstance, const Property* prop)
-		    : objInstance{objInstance}
-		    , prop{prop}
+		    : objInstance{objInstance}, prop{prop}
 		{}
 		PropertyHandle(BaseStruct* instance, const Property* prop)
-		    : structInstance{instance}
-		    , prop{prop}
+		    : structInstance{instance}, prop{prop}
 		{}
 
 	public:

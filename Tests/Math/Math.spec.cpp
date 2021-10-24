@@ -1,10 +1,10 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
+#include <bandit/bandit.h>
 #include <Containers/Array.h>
 #include <Math/Search.h>
 #include <Platform/Platform.h>
 #include <Templates/Greater.h>
-#include <bandit/bandit.h>
 
 #include <cmath>
 #include <limits>

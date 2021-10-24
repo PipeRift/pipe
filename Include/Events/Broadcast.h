@@ -10,7 +10,7 @@
 
 namespace Rift
 {
-	template <typename... Params>
+	template<typename... Params>
 	class TBroadcast
 	{
 	protected:
@@ -18,7 +18,7 @@ namespace Rift
 		using Function = TFunction<void(Params...)>;
 
 		using MethodPtr = void (*)(Params...);
-		template <typename Type>
+		template<typename Type>
 		using MemberMethodPtr = void (Type::*)(Params...);
 
 
@@ -77,7 +77,7 @@ namespace Rift
 		}
 
 		/** Binds a member function. Must be unbinded manually. */
-		template <typename Type>
+		template<typename Type>
 		EventHandle Bind(Type* instance, MemberMethodPtr<Type> method) const
 		{
 			if (instance && method)
@@ -100,7 +100,7 @@ namespace Rift
 
 		/** Binds an object's function. Gets unbinded when the objects is destroyed
 		 */
-		template <typename Type>
+		template<typename Type>
 		EventHandle Bind(TPtr<Type> instance, MemberMethodPtr<Type> method) const
 		{
 			if (instance && method)
@@ -131,7 +131,7 @@ namespace Rift
 			}) > 0;
 		}
 
-		template <typename Type>
+		template<typename Type>
 		bool Unbind(TPtr<Type> instance) const
 		{
 			if (instance) [[likely]]
@@ -143,7 +143,7 @@ namespace Rift
 			return false;
 		}
 
-		template <typename Type>
+		template<typename Type>
 		bool Unbind(Type* instance) const
 		{
 			if (instance) [[likely]]

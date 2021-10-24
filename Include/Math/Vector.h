@@ -13,14 +13,14 @@
 
 namespace Rift
 {
-	template <u32 size, Number T>
+	template<u32 size, Number T>
 	struct Vec
 	{
 		Vec() = delete;
 	};
 
 
-	template <Number T>
+	template<Number T>
 	struct Vec<2, T>
 	{
 		using Type = T;
@@ -33,10 +33,9 @@ namespace Rift
 	public:
 		constexpr Vec() : x{0}, y{0} {}
 		constexpr Vec(T x, T y) : x{x}, y{y} {}
-		template <typename T2>
+		template<typename T2>
 		explicit constexpr Vec(const Vec<2, T2>& other) requires(std::is_convertible_v<T2, T>)
-		    : x{other.x}
-		    , y{other.y}
+		    : x{T(other.x)}, y{T(other.y)}
 		{}
 
 		constexpr Vec<3, T> XY() const
@@ -117,49 +116,49 @@ namespace Rift
 		}
 
 
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator+(const Vec<2, T2>& other) const
 		{
 			return {x + other.x, y + other.y};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator-(const Vec<2, T2>& other) const
 		{
 			return {x - other.x, y - other.y};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator*(const Vec<2, T2>& other) const
 		{
 			return {x * other.x, y * other.y};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator/(const Vec<2, T2>& other) const
 		{
 			return {x / other.x, y / other.y};
 		}
 
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator+=(const Vec<2, T2>& other)
 		{
 			x += other.x;
 			y += other.y;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator-=(const Vec<2, T2>& other)
 		{
 			x -= other.x;
 			y -= other.y;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator*=(const Vec<2, T2>& other)
 		{
 			x *= other.x;
 			y *= other.y;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator/=(const Vec<2, T2>& other)
 		{
 			x /= other.x;
@@ -167,49 +166,49 @@ namespace Rift
 			return *this;
 		}
 
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator+(T2 other) const
 		{
 			return {x + other, y + other};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator-(T2 other) const
 		{
 			return {x - other, y - other};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator*(T2 other) const
 		{
 			return {x * other, y * other};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator/(T2 other) const
 		{
 			return {x / other, y / other};
 		}
 
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator+=(T2 other)
 		{
 			x += other;
 			y += other;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator-=(T2 other)
 		{
 			x -= other;
 			y -= other;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator*=(T2 other)
 		{
 			x *= other;
 			y *= other;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator/=(T2 other)
 		{
 			x /= other;
@@ -229,7 +228,7 @@ namespace Rift
 	};
 
 
-	template <Number T>
+	template<Number T>
 	struct Vec<3, T>
 	{
 		using Type = T;
@@ -243,11 +242,9 @@ namespace Rift
 	public:
 		constexpr Vec() : x{0}, y{0}, z{0} {}
 		constexpr Vec(T x, T y, T z) : x{x}, y{y}, z{z} {}
-		template <typename T2>
+		template<typename T2>
 		explicit constexpr Vec(const Vec<3, T2>& other) requires(std::is_convertible_v<T2, T>)
-		    : x{other.x}
-		    , y{other.y}
-		    , z{other.z}
+		    : x{other.x}, y{other.y}, z{other.z}
 		{}
 
 		constexpr Vec<2, T> XY() const
@@ -280,8 +277,8 @@ namespace Rift
 		}
 		static T DistanceSqrt(const Vec& one, const Vec& other)
 		{
-			return Math::Square(other.x - one.x) + Math::Square(other.y - one.y) +
-			       Math::Square(other.z - one.z);
+			return Math::Square(other.x - one.x) + Math::Square(other.y - one.y)
+			       + Math::Square(other.z - one.z);
 		}
 
 		Vec& Normalize()
@@ -340,28 +337,28 @@ namespace Rift
 			return {T(0), T(0), T(1)};
 		}
 
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator+(const Vec<3, T2>& other) const
 		{
 			return {x + other.x, y + other.y, z + other.z};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator-(const Vec<3, T2>& other) const
 		{
 			return {x - other.x, y - other.y, z - other.z};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator*(const Vec<3, T2>& other) const
 		{
 			return {x * other.x, y * other.y, z * other.z};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator/(const Vec<3, T2>& other) const
 		{
 			return {x / other.x, y / other.y, z / other.z};
 		}
 
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator+=(const Vec<3, T2>& other)
 		{
 			x += other.x;
@@ -369,7 +366,7 @@ namespace Rift
 			z += other.z;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator-=(const Vec<3, T2>& other)
 		{
 			x -= other.x;
@@ -377,7 +374,7 @@ namespace Rift
 			z -= other.z;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator*=(const Vec<3, T2>& other)
 		{
 			x *= other.x;
@@ -385,7 +382,7 @@ namespace Rift
 			z *= other.z;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator/=(const Vec<3, T2>& other)
 		{
 			x /= other.x;
@@ -394,28 +391,28 @@ namespace Rift
 			return *this;
 		}
 
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator+(T2 other) const
 		{
 			return {x + other, y + other, z + other};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator-(T2 other) const
 		{
 			return {x - other, y - other, z - other};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator*(T2 other) const
 		{
 			return {x * other, y * other, z * other};
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec operator/(T2 other) const
 		{
 			return {x / other, y / other, z / other};
 		}
 
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator+=(T2 other)
 		{
 			x += other;
@@ -423,7 +420,7 @@ namespace Rift
 			z += other;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator-=(T2 other)
 		{
 			x -= other;
@@ -431,7 +428,7 @@ namespace Rift
 			z -= other;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator*=(T2 other)
 		{
 			x *= other;
@@ -439,7 +436,7 @@ namespace Rift
 			z *= other;
 			return *this;
 		}
-		template <Number T2>
+		template<Number T2>
 		constexpr Vec& operator/=(T2 other)
 		{
 			x /= other;
@@ -459,7 +456,7 @@ namespace Rift
 		}
 	};
 
-	template <Number T>
+	template<Number T>
 	struct Vec<4, T>
 	{
 		using Type = T;
@@ -474,12 +471,9 @@ namespace Rift
 	public:
 		constexpr Vec() : x{0}, y{0}, z{0}, w{0} {}
 		constexpr Vec(T x, T y, T z, T w) : x{x}, y{y}, z{z}, w{w} {}
-		template <typename T2>
+		template<typename T2>
 		explicit constexpr Vec(const Vec<4, T2>& other) requires(std::is_convertible_v<T2, T>)
-		    : x{other.x}
-		    , y{other.y}
-		    , z{other.z}
-		    , w{other.w}
+		    : x{other.x}, y{other.y}, z{other.z}, w{other.w}
 		{}
 
 		constexpr Vec<3, T> XYZ() const
@@ -519,7 +513,7 @@ namespace Rift
 	REFLECT_NATIVE_TYPE(v3);
 
 
-	template <u32 size, Number T>
+	template<u32 size, Number T>
 	struct Box
 	{
 		Vec<size, T> min;
@@ -581,6 +575,11 @@ namespace Rift
 				}
 			}
 			return true;
+		}
+
+		constexpr v4 ToV4() const requires(size == 2)
+		{
+			return {min.x, min.y, max.x, max.y};
 		}
 	};
 

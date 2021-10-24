@@ -46,11 +46,7 @@ namespace Rift
 		protected:
 			CORE_API Property(
 			    DataType* owner, Type* type, Name name, Access* access, PropFlags flags)
-			    : owner(owner)
-			    , type(type)
-			    , name(name)
-			    , access(access)
-			    , flags(flags)
+			    : owner(owner), type(type), name(name), access(access), flags(flags)
 			{}
 
 		public:

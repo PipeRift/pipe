@@ -12,7 +12,7 @@ namespace Rift
 {
 	using FileWatchId = efsw::WatchID;
 
-	struct CORE_API FileWatcher
+	struct FileWatcher
 	{
 	protected:
 		class Listener : public efsw::FileWatchListener
@@ -22,7 +22,7 @@ namespace Rift
 		public:
 			Listener(FileWatcher& self) : self{self} {}
 
-			void handleFileAction(FileWatchId watchid, const std::string& dir,
+			CORE_API void handleFileAction(FileWatchId watchid, const std::string& dir,
 			    const std::string& filename, efsw::Action action, std::string oldFilename) override;
 		};
 		friend Listener;
@@ -35,16 +35,16 @@ namespace Rift
 
 
 	public:
-		FileWatcher() : listener{*this} {}
-		~FileWatcher();
+		CORE_API FileWatcher() : listener{*this} {}
+		CORE_API ~FileWatcher();
 
 		// Adds one extension. If there are no extensions, all are allowed
-		FileWatchId AddPath(StringView path, bool recursive = true);
-		void RemovePath(StringView path);
-		void RemovePath(FileWatchId id);
-		void Reset();
-		void AddExtension(StringView extension);
+		CORE_API FileWatchId AddPath(StringView path, bool recursive = true);
+		CORE_API void RemovePath(StringView path);
+		CORE_API void RemovePath(FileWatchId id);
+		CORE_API void Reset();
+		CORE_API void AddExtension(StringView extension);
 
-		static void StartAsync();
+		static CORE_API void StartAsync();
 	};
 }    // namespace Rift

@@ -26,7 +26,7 @@ namespace Rift::Algorithms
 	 *
 	 * Complexity: worst O(log(n)) | best O(1)
 	 */
-	template <typename T, typename Index, typename Value, typename SortPredicate = TLess<>>
+	template<typename T, typename Index, typename Value, typename SortPredicate = TLess<>>
 	Index LowerBound(
 	    T* data, Index first, Index size, const Value& value, SortPredicate sortPredicate = {})
 	{
@@ -63,7 +63,7 @@ namespace Rift::Algorithms
 	 *
 	 * Complexity: worst O(log(n)) | best O(1)
 	 */
-	template <typename T, typename Index, typename Value, typename SortPredicate = TLess<>>
+	template<typename T, typename Index, typename Value, typename SortPredicate = TLess<>>
 	Index UpperBound(
 	    T* data, Index first, Index size, const Value& value, SortPredicate sortPredicate = {})
 	{
@@ -100,7 +100,7 @@ namespace Rift::Algorithms
 	 *
 	 * Complexity: worst O(log(n)) | best O(1)
 	 */
-	template <typename T, typename Index, typename Value, typename SortPredicate = TLess<>>
+	template<typename T, typename Index, typename Value, typename SortPredicate = TLess<>>
 	Index BinarySearch(
 	    T* data, Index first, Index size, const Value& value, SortPredicate sortPredicate = {})
 	{
@@ -113,7 +113,7 @@ namespace Rift::Algorithms
 	}
 
 
-	template <typename T, typename Index, typename Value>
+	template<typename T, typename Index, typename Value>
 	Index FindSortedMax(T* data, Index first, Index size, const Value& max, bool included = false)
 	{
 		if (first == NO_INDEX || size == 0)
@@ -173,7 +173,7 @@ namespace Rift::Algorithms
 	}
 
 
-	template <typename T, typename Index, typename Value>
+	template<typename T, typename Index, typename Value>
 	Index FindSortedMin(T* data, Index first, Index size, const Value& min, bool included = false)
 	{
 		if (first == NO_INDEX || size == 0)

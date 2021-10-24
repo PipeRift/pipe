@@ -11,13 +11,13 @@
 
 namespace Rift
 {
-	template <typename T>
+	template<typename T>
 	struct TOwnPtr;
 
-	template <typename T>
+	template<typename T>
 	struct TPtrBuilder
 	{
-		template <typename... Args>
+		template<typename... Args>
 		static T* New(Args&&... args)
 		{
 			return new T(std::forward<Args>(args)...);
@@ -41,13 +41,13 @@ namespace Rift
 		}
 	};
 
-	template <typename T>
+	template<typename T>
 	struct HasCustomPtrBuilder
 	{
 	private:
-		template <typename V>
+		template<typename V>
 		static void Impl(decltype(typename V::template PtrBuilder<T>(), int()));
-		template <typename V>
+		template<typename V>
 		static bool Impl(char);
 
 	public:

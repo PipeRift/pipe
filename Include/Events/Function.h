@@ -6,10 +6,10 @@
 
 namespace Rift
 {
-	template <typename>
+	template<typename>
 	struct TFunction;    // intentionally not defined
 
-	template <typename Ret, typename... Args>
+	template<typename Ret, typename... Args>
 	struct TFunction<Ret(Args...)>
 	{
 		using Dispatcher   = Ret(void*, Args...);
@@ -21,16 +21,15 @@ namespace Rift
 
 		// Dispatch() is instantiated by the TransientFunction constructor,
 		// which will store a pointer to the function in dispatcher.
-		template <typename S>
+		template<typename S>
 		static Ret Dispatch(void* target, Args... args)
 		{
-			return (*(S*) target)(args...);
+			return (*(S*)target)(args...);
 		}
 
 		TFunction() : dispatcher(nullptr), target(nullptr) {}
-		template <typename T>
-		TFunction(T&& target) : dispatcher(&Dispatch<typename std::decay<T>::type>)
-		                      , target(&target)
+		template<typename T>
+		TFunction(T&& target) : dispatcher(&Dispatch<typename std::decay<T>::type>), target(&target)
 		{}
 
 		// Specialize for reference-to-function, to ensure that a valid pointer is stored

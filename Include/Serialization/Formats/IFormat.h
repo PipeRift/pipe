@@ -11,7 +11,7 @@ namespace Rift::Serl
 	struct IFormatReader
 	{};
 
-	enum WriteFlags
+	enum CORE_API WriteFlags
 	{
 		WriteFlags_None              = 0,
 		WriteFlags_CacheStringKeys   = 1 << 0,
@@ -26,39 +26,39 @@ namespace Rift::Serl
 		TArray<sizet> flagStack;
 
 	public:
-		void PushAddFlags(WriteFlags flags)
+		CORE_API void PushAddFlags(WriteFlags flags)
 		{
 			flagStack.Add(activeFlags);
 			activeFlags |= flags;
 		}
-		void PushRemoveFlags(WriteFlags flags)
+		CORE_API void PushRemoveFlags(WriteFlags flags)
 		{
 			flagStack.Add(activeFlags);
 			activeFlags &= ~flags;
 		}
-		void PopFlags()
+		CORE_API void PopFlags()
 		{
 			activeFlags = flagStack.Last();
 			flagStack.RemoveAt(flagStack.Size() - 1);
 		}
 
-		sizet GetFlags() const
+		CORE_API sizet GetFlags() const
 		{
 			return activeFlags;
 		}
 	};
 
 
-	template <Format format>
+	template<Format format>
 	struct FormatBind
 	{
 		using Reader = void;
 		using Writer = void;
 	};
 
-	template <Format format>
+	template<Format format>
 	concept HasReader = !IsVoid<typename FormatBind<format>::Reader>;
 
-	template <Format format>
+	template<Format format>
 	concept HasWriter = !IsVoid<typename FormatBind<format>::Writer>;
 }    // namespace Rift::Serl

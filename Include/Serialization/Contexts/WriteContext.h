@@ -16,7 +16,7 @@ namespace Rift::Serl
 {
 	struct CORE_API WriteContext
 	{
-		template <Format format>
+		template<Format format>
 		friend struct TFormatWriter;
 
 		Flags flags           = Flags_None;
@@ -49,7 +49,7 @@ namespace Rift::Serl
 		 * Finds and writes a type at key "name" of an object.
 		 * This function won't do anything on array or uninitialized scopes
 		 */
-		template <typename T>
+		template<typename T>
 		void Next(StringView name, const T& val) requires(!ShouldPassByValue<T>)
 		{
 			if (EnterNext(name))
@@ -58,7 +58,7 @@ namespace Rift::Serl
 				Leave();
 			}
 		}
-		template <typename T>
+		template<typename T>
 		void Next(StringView name, T val) requires(ShouldPassByValue<T>)
 		{
 			if (EnterNext(name))
@@ -89,7 +89,7 @@ namespace Rift::Serl
 		 * Complexity: O(1)
 		 * This function won't do anything on object or uninitialized scopes
 		 */
-		template <typename T>
+		template<typename T>
 		void Next(const T& val) requires(!ShouldPassByValue<T>)
 		{
 			if (EnterNext())
@@ -98,7 +98,7 @@ namespace Rift::Serl
 				Leave();
 			}
 		}
-		template <typename T>
+		template<typename T>
 		void Next(T val) requires(ShouldPassByValue<T>)
 		{
 			if (EnterNext())
@@ -110,12 +110,12 @@ namespace Rift::Serl
 
 
 		// Write a type into the current scope
-		template <typename T>
+		template<typename T>
 		void Serialize(const T& val) requires(!ShouldPassByValue<T>)
 		{
 			Write(*this, val);
 		}
-		template <typename T>
+		template<typename T>
 		void Serialize(T val) requires(ShouldPassByValue<T>)
 		{
 			Write(*this, val);
@@ -145,7 +145,7 @@ namespace Rift::Serl
 			writer->PopFlags();
 		}
 
-		template <Format format>
+		template<Format format>
 		typename FormatBind<format>::Writer& GetWriter() requires(HasWriter<format>);
 	};
 
@@ -160,7 +160,7 @@ namespace Rift::Serl
 	CORE_API void Write(WriteContext& ct, double val);
 	CORE_API void Write(WriteContext& ct, StringView val);
 
-	template <typename T1, typename T2>
+	template<typename T1, typename T2>
 	void Write(WriteContext& ct, TPair<T1, T2>& val)
 	{
 		ct.BeginObject();
@@ -168,14 +168,14 @@ namespace Rift::Serl
 		ct.Next("second", val.second);
 	}
 
-	template <typename T>
+	template<typename T>
 	void Write(WriteContext& ct, const T& val) requires(
 	    bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
 	{
 		val.Write(ct);
 	}
 
-	template <typename T>
+	template<typename T>
 	void Write(WriteContext& ct, const T& val) requires(IsArray<T>())
 	{
 		u32 size = val.Size();
@@ -186,7 +186,7 @@ namespace Rift::Serl
 		}
 	}
 
-	template <typename T>
+	template<typename T>
 	void Write(WriteContext& ct, T& val) requires IsEnum<T>
 	{
 		// Might not be necessary to cache string since enum name is static

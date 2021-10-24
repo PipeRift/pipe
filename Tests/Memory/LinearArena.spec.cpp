@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Memory/Arenas/LinearArena.h>
 #include <bandit/bandit.h>
+#include <Memory/Arenas/LinearArena.h>
 
 
 using namespace snowhouse;
@@ -80,7 +80,7 @@ go_bandit([]() {
 			AssertThat(p, Is().EqualTo(blockPtr));
 
 			void* p2 = arena.Allocate(sizeof(float));
-			AssertThat(p2, Is().EqualTo((Rift::u8*) blockPtr + 4));
+			AssertThat(p2, Is().EqualTo((Rift::u8*)blockPtr + 4));
 		});
 
 		it("Grows when there's not enough space", [&]() {

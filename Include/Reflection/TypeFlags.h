@@ -9,7 +9,7 @@ namespace Rift
 	/** CLASS TRAITS */
 
 	/** Default traits go here */
-	template <typename T>
+	template<typename T>
 	struct DefaultTFlags
 	{
 		enum
@@ -23,14 +23,14 @@ namespace Rift
 		};
 	};
 
-	template <typename T>
+	template<typename T>
 	struct TFlags : public Rift::DefaultTFlags<T>
 	{};
 
 
 /** Custom traits go here */
 #define TYPE_FLAGS(type, ...)                              \
-	template <Rift::Derived<type> T>                       \
+	template<Rift::Derived<type> T>                        \
 	struct Rift::TFlags<T> : public Rift::DefaultTFlags<T> \
 	{                                                      \
 		enum                                               \
@@ -40,7 +40,7 @@ namespace Rift
 	};
 
 #define INHERIT_TYPE_FLAGS(type, parent, ...)            \
-	template <Rift::Derived<type> T>                     \
+	template<Rift::Derived<type> T>                      \
 	struct Rift::TFlags<T> : public Rift::TFlags<parent> \
 	{                                                    \
 		enum                                             \
@@ -50,7 +50,7 @@ namespace Rift
 	};
 
 #define TEMPLATE_TYPE_FLAGS(type, ...)                                 \
-	template <typename T>                                              \
+	template<typename T>                                               \
 	struct Rift::TFlags<type<T>> : public Rift::DefaultTFlags<type<T>> \
 	{                                                                  \
 		enum                                                           \
@@ -60,7 +60,7 @@ namespace Rift
 	}
 
 #define INHERIT_TEMPLATE_TYPE_FLAGS(type, parent, ...)         \
-	template <typename T>                                      \
+	template<typename T>                                       \
 	struct Rift::TFlags<type<T>> : public Rift::TFlags<parent> \
 	{                                                          \
 		enum                                                   \

@@ -10,19 +10,19 @@ namespace Rift
 	// Utility for automatically setting up the pointer-sized integer type
 	//---------------------------------------------------------------------
 
-	template <typename T32BITS, typename T64BITS, int PointerSize>
+	template<typename T32BITS, typename T64BITS, int PointerSize>
 	struct SelectIntPointerType
 	{
 		// nothing here are is it an error if the partial specializations fail
 	};
 
-	template <typename T32BITS, typename T64BITS>
+	template<typename T32BITS, typename T64BITS>
 	struct SelectIntPointerType<T32BITS, T64BITS, 8>
 	{
 		typedef T64BITS TIntPointer;    // select the 64 bit type
 	};
 
-	template <typename T32BITS, typename T64BITS>
+	template<typename T32BITS, typename T64BITS>
 	struct SelectIntPointerType<T32BITS, T64BITS, 4>
 	{
 		using TIntPointer = T32BITS;    // select the 32 bit type

@@ -97,7 +97,7 @@ namespace Rift
 		 */
 		DateTime(SysTime value) : value{value} {}
 
-		template <typename Precision>
+		template<typename Precision>
 		DateTime(Chrono::time_point<SysClock, Precision> value)
 		    : value{Chrono::time_point_cast<DecMicroseconds, SysClock, Precision>(value)}
 		{}
@@ -331,8 +331,8 @@ namespace Rift
 		 */
 		i32 GetMillisecond() const
 		{
-			return (i32)(
-			    Chrono::floor<Chrono::milliseconds>(value) - Chrono::floor<Chrono::seconds>(value))
+			return (i32)(Chrono::floor<Chrono::milliseconds>(value)
+			             - Chrono::floor<Chrono::seconds>(value))
 			    .count();
 		}
 
@@ -378,8 +378,8 @@ namespace Rift
 		 */
 		i32 GetSecond() const
 		{
-			return (i32)(
-			    Chrono::floor<Chrono::seconds>(value) - Chrono::floor<Chrono::minutes>(value))
+			return (
+			    i32)(Chrono::floor<Chrono::seconds>(value) - Chrono::floor<Chrono::minutes>(value))
 			    .count();
 		}
 
@@ -655,7 +655,7 @@ namespace Rift
 		static bool Validate(
 		    i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond);
 
-		template <typename Clock, typename Precision>
+		template<typename Clock, typename Precision>
 		static DateTime CastClock(Chrono::time_point<Clock, Precision> time)
 		{
 			return {clock_cast<DecMicroseconds, Precision, SysClock, Clock>(time)};
@@ -666,7 +666,7 @@ namespace Rift
 		 * Cast to a different type of clock.
 		 * This operation may contains small precision errors.
 		 */
-		template <typename DstDuration, typename SrcDuration, typename DstClock, typename SrcClock,
+		template<typename DstDuration, typename SrcDuration, typename DstClock, typename SrcClock,
 		    typename DstTime = Chrono::time_point<DstClock, DstDuration>,
 		    typename SrcTime = Chrono::time_point<SrcClock, SrcDuration> >
 		static DstTime clock_cast(const SrcTime tp,

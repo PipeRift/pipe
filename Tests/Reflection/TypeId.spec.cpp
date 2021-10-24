@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Reflection/TypeId.h>
 #include <bandit/bandit.h>
+#include <Reflection/TypeId.h>
 
 
 using namespace snowhouse;

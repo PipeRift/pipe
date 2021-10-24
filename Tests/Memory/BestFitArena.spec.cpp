@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Memory/Arenas/BestFitArena.h>
 #include <bandit/bandit.h>
+#include <Memory/Arenas/BestFitArena.h>
 
 
 using namespace snowhouse;
@@ -9,7 +9,7 @@ using namespace bandit;
 using namespace Rift;
 using namespace Memory;
 
-template <u32 Size>
+template<u32 Size>
 struct TypeOfSize
 {
 	static constexpr u32 size = Size;
@@ -256,11 +256,11 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSlots().Size(), Equals(2));
 
 			// Slot contains the rest if the block
-			AssertThat(arena.GetFreeSlots()[0].start, Equals((u8*) p2 + 8));
+			AssertThat(arena.GetFreeSlots()[0].start, Equals((u8*)p2 + 8));
 			AssertThat(arena.GetFreeSlots()[0].GetEnd(), Equals(arena.GetBlock().GetEnd()));
 
 			// Slot contains the alignment gap
-			AssertThat(arena.GetFreeSlots()[1].start, Equals((u8*) p + 8));
+			AssertThat(arena.GetFreeSlots()[1].start, Equals((u8*)p + 8));
 			AssertThat(arena.GetFreeSlots()[1].GetEnd(), Equals(p2));
 		});
 	});

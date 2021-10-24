@@ -26,19 +26,19 @@ namespace Rift
 		static constexpr float EULER{2.71828182845904523536f};
 
 
-		template <typename Type>
+		template<typename Type>
 		static constexpr Type Max(Type a, Type b)
 		{
 			return a >= b ? a : b;
 		}
 
-		template <typename Type>
+		template<typename Type>
 		static constexpr Type Min(Type a, Type b)
 		{
 			return a <= b ? a : b;
 		}
 
-		template <typename Type>
+		template<typename Type>
 		static constexpr Type Clamp(Type a, Type min, Type max)
 		{
 			return Max(min, Min(a, max));
@@ -78,17 +78,17 @@ namespace Rift
 		}
 
 		/** Computes absolute value in a generic way */
-		template <typename Type>
+		template<typename Type>
 		static constexpr Type Abs(const Type a)
 		{
-			return (a >= (Type) 0) ? a : -a;
+			return (a >= (Type)0) ? a : -a;
 		}
 
 		/** Returns 1, 0, or -1 depending on relation of Type to 0 */
-		template <typename Type>
+		template<typename Type>
 		static constexpr Type Sign(const Type a)
 		{
-			return (a > (Type) 0) ? (Type) 1 : ((a < (Type) 0) ? (Type) -1 : (Type) 0);
+			return (a > (Type)0) ? (Type)1 : ((a < (Type)0) ? (Type)-1 : (Type)0);
 		}
 
 
@@ -101,39 +101,39 @@ namespace Rift
 		/** Returns a random float between 0 and 1, inclusive. */
 		static float Rand01()
 		{
-			return Rand() / (float) RAND_MAX;
+			return Rand() / (float)RAND_MAX;
 		}
 
 
-		template <typename T>
+		template<typename T>
 		static constexpr bool IsPosInf(const T x)
 		{
 			return x == std::numeric_limits<T>::infinity();
 		}
 
-		template <typename T>
+		template<typename T>
 		static constexpr bool IsNegInf(const T x)
 		{
 			return x == -std::numeric_limits<T>::infinity();
 		}
 
-		template <typename T>
+		template<typename T>
 		static constexpr bool IsInf(const T x)
 		{
 			return IsNegInf(x) || IsPosInf(x);
 		}
 
-		template <typename T>
+		template<typename T>
 		static constexpr bool IsNAN(const T x) noexcept
 		{
 			return x != x;
 		}
 
 
-		template <FloatingPoint T>
+		template<FloatingPoint T>
 		static constexpr T Floor(T v)
 		{
-			if constexpr (std::is_constant_evaluated())
+			if (std::is_constant_evaluated())
 			{
 				if (IsNAN(v))
 				{
@@ -164,10 +164,10 @@ namespace Rift
 		}
 
 
-		template <FloatingPoint T>
+		template<FloatingPoint T>
 		static constexpr T Ceil(T v)
 		{
-			if constexpr (std::is_constant_evaluated())
+			if (std::is_constant_evaluated())
 			{
 				if (IsNAN(v))
 				{
@@ -274,7 +274,7 @@ namespace Rift
 		}
 
 
-		template <typename T>
+		template<typename T>
 		static T Sqrt(T val)
 		{
 			return std::sqrt(val);
@@ -285,7 +285,7 @@ namespace Rift
 			return 1.f / Sqrt(x);
 		}
 
-		template <typename T>
+		template<typename T>
 		static constexpr T Square(T val)
 		{
 			return val * val;
@@ -297,10 +297,10 @@ namespace Rift
 		static constexpr u32 Pow(u32 value, u32 power);
 		static constexpr u64 Pow(u64 value, u32 power);
 
-		template <FloatingPoint V, Number P>
+		template<FloatingPoint V, Number P>
 		static constexpr V Pow(V value, P power)
 		{
-			if constexpr (std::is_constant_evaluated() && Integral<P>)
+			if (std::is_constant_evaluated() && Integral<P>)
 			{
 				if (power == 0)
 					return V(1);
@@ -315,14 +315,14 @@ namespace Rift
 
 
 		// Same as Max but with N arguments
-		template <typename Type, typename... Args>
+		template<typename Type, typename... Args>
 		static constexpr Type Max(Type a, Type b, Args... args)
 		{
 			return Max(a, Max(b, std::forward<Args>(args)...));
 		}
 
 		// Same as Min but with N arguments
-		template <typename Type, typename... Args>
+		template<typename Type, typename... Args>
 		static constexpr Type Min(Type a, Type b, Args... args)
 		{
 			return Min(a, Min(b, std::forward<Args>(args)...));
@@ -335,25 +335,25 @@ namespace Rift
 		    return (T)(A + Alpha * (B - A));
 		}*/
 
-		template <class T, class U /*, EnableIfNotPassByValue(T)*/>
+		template<class T, class U /*, EnableIfNotPassByValue(T)*/>
 		static constexpr T Lerp(const T& a, const T& b, const U& alpha)
 		{
 			return T(a + (b - a) * alpha);
 		}
 
-		template <FloatingPoint Type>
+		template<FloatingPoint Type>
 		static constexpr float Mod(Type a, Type b)
 		{
 			return a - b * Floor(a / b);
 		}
 
-		template <SignedIntegral Type>
+		template<SignedIntegral Type>
 		static constexpr Type Mod(Type a, Type b)
 		{
 			return ((a % b) + b) % b;
 		}
 
-		template <UnsignedIntegral Type>
+		template<UnsignedIntegral Type>
 		static constexpr Type Mod(Type a, Type b)
 		{
 			return a - b * (a / b);
@@ -406,28 +406,40 @@ namespace Rift
 			return Abs(b - a) <= tolerance;
 		}
 
-		static const float Log(const float k)
+		static float Log(float k)
 		{
 			return std::log(k);
 		}
-		static const float Log(const float k, float base)
+		static float Log(float k, float base)
 		{
 			return Log(k) / Log(base);
 		}
-
-		static const double Log(const double k)
+		static double Log(double k)
 		{
 			return std::log(k);
 		}
-		static const double Log(const double k, double base)
+		static double Log(double k, double base)
 		{
 			return Log(k) / Log(base);
 		}
-
-		template <Integral T>
-		static double Log(const T k)
+		template<Integral T>
+		static double Log(T k)
 		{
-			return log(k);
+			return std::log(k);
+		}
+
+		static float Log2(float k)
+		{
+			return std::log2f(k);
+		}
+		static double Log2(double k)
+		{
+			return std::log2(k);
+		}
+		template<Integral T>
+		static double Log2(T k)
+		{
+			return std::log2(double(k));
 		}
 
 		static const float Exp2(const float k)
@@ -438,13 +450,13 @@ namespace Rift
 		{
 			return std::exp2(k);
 		}
-		template <Integral T>
+		template<Integral T>
 		static const double Exp2(T k)
 		{
 			return std::exp2(k);
 		}
 
-		template <typename T>
+		template<typename T>
 		static bool IsPowerOfTwo(T value)
 		{
 			return (value & (value - 1)) == T(0);

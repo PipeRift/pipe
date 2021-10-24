@@ -12,7 +12,7 @@
 
 namespace Rift::Algorithms
 {
-	template <typename T, typename Index, typename Predicate>
+	template<typename T, typename Index, typename Predicate>
 	void Sort(T* first, Index size, Predicate predicate)
 	{
 		struct Stack
@@ -27,7 +27,9 @@ namespace Rift::Algorithms
 			return;
 		}
 
-		Stack recursionStack[32] = {{first, first + size - 1, u32(Math::Log(float(size)) * 2.f)}};
+		Stack recursionStack[32] = {
+		    {first, first + size - 1, u32(Math::Log(float(size)) * 2.f)}
+        };
 		Stack current, inner;
 
 		for (Stack* stackTop = recursionStack; stackTop >= recursionStack; --stackTop)

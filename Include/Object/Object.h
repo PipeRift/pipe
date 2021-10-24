@@ -47,7 +47,7 @@ namespace Rift
 		CLASS_BODY(Object, {})
 
 	public:
-		template <typename T>
+		template<typename T>
 		using PtrBuilder = TObjectBuilder<T>;
 
 
@@ -74,13 +74,13 @@ namespace Rift
 			SerializeReflection(ct);
 		}
 
-		template <typename T = Object>
+		template<typename T = Object>
 		TPtr<T> Self() const
 		{
 			return ownership.GetSelf().Cast<T>();
 		}
 
-		template <typename T = Object>
+		template<typename T = Object>
 		TPtr<T> GetOwner() const
 		{
 			return ownership.GetOwner().Cast<T>();
@@ -88,7 +88,7 @@ namespace Rift
 	};
 
 
-	template <typename T>
+	template<typename T>
 	void Read(Serl::ReadContext& ct, T& value) requires(Derived<T, Object>)
 	{
 		ct.BeginObject();
@@ -96,7 +96,7 @@ namespace Rift
 		value.Serialize(common);
 	}
 
-	template <typename T>
+	template<typename T>
 	void Write(Serl::WriteContext& ct, const T& value) requires(Derived<T, Object>)
 	{
 		ct.BeginObject();

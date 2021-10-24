@@ -159,14 +159,10 @@ namespace Rift
 
 			switch (Index)
 			{
-				case 0:
-					return a;
-				case 1:
-					return b;
-				case 2:
-					return c;
-				case 3:
-					return d;
+				case 0: return a;
+				case 1: return b;
+				case 2: return c;
+				case 3: return d;
 			}
 
 			return a;
@@ -185,14 +181,10 @@ namespace Rift
 
 			switch (Index)
 			{
-				case 0:
-					return a;
-				case 1:
-					return b;
-				case 2:
-					return c;
-				case 3:
-					return d;
+				case 0: return a;
+				case 1: return b;
+				case 2: return c;
+				case 3: return d;
 			}
 
 			return a;
@@ -301,7 +293,7 @@ namespace Rift
 	};
 	REFLECT_NATIVE_TYPE(Guid);
 
-	template <>
+	template<>
 	struct Hash<Guid>
 	{
 		sizet operator()(const Guid& k) const

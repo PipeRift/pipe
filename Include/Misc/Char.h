@@ -19,7 +19,7 @@ namespace Rift
 	 * Templated literal struct to allow selection of wide or ansi string literals
 	 * based on the character type provided, and not on compiler switches.
 	 */
-	template <typename T>
+	template<typename T>
 	struct TLiteral
 	{
 		static const AnsiChar Select(const AnsiChar ansi, const WideChar)
@@ -32,7 +32,7 @@ namespace Rift
 		}
 	};
 
-	template <>
+	template<>
 	struct TLiteral<WideChar>
 	{
 		static const WideChar Select(const AnsiChar, const WideChar wide)
@@ -54,7 +54,7 @@ namespace Rift
 	 * typedefs FChar and FCharAnsi for convenience.
 	 */
 
-	template <typename T, const unsigned int Size>
+	template<typename T, const unsigned int Size>
 	struct TCharHelpersBase
 	{
 		typedef T CharType;
@@ -68,7 +68,7 @@ namespace Rift
 		static const CharType ParagraphSeparator = L'\x2029';
 	};
 
-	template <typename T>
+	template<typename T>
 	struct TCharHelpersBase<T, 1>
 	{
 		using CharType = T;
@@ -80,37 +80,37 @@ namespace Rift
 		static const CharType NextLine       = '\x0085';
 	};
 
-	template <typename T, const unsigned int Size>
+	template<typename T, const unsigned int Size>
 	struct LineBreakImplementation
 	{
 		using CharType = T;
 		static inline bool IsLinebreak(CharType c)
 		{
-			return c == TCharHelpersBase<CharType, Size>::LineFeed ||
-			       c == TCharHelpersBase<CharType, Size>::VerticalTab ||
-			       c == TCharHelpersBase<CharType, Size>::FormFeed ||
-			       c == TCharHelpersBase<CharType, Size>::CarriageReturn ||
-			       c == TCharHelpersBase<CharType, Size>::NextLine ||
-			       c == TCharHelpersBase<CharType, Size>::LineSeparator ||
-			       c == TCharHelpersBase<CharType, Size>::ParagraphSeparator;
+			return c == TCharHelpersBase<CharType, Size>::LineFeed
+			       || c == TCharHelpersBase<CharType, Size>::VerticalTab
+			       || c == TCharHelpersBase<CharType, Size>::FormFeed
+			       || c == TCharHelpersBase<CharType, Size>::CarriageReturn
+			       || c == TCharHelpersBase<CharType, Size>::NextLine
+			       || c == TCharHelpersBase<CharType, Size>::LineSeparator
+			       || c == TCharHelpersBase<CharType, Size>::ParagraphSeparator;
 		}
 	};
 
-	template <typename T>
+	template<typename T>
 	struct LineBreakImplementation<T, 1>
 	{
 		using CharType = T;
 		static inline bool IsLinebreak(CharType c)
 		{
-			return c == TCharHelpersBase<CharType, 1>::LineFeed ||
-			       c == TCharHelpersBase<CharType, 1>::VerticalTab ||
-			       c == TCharHelpersBase<CharType, 1>::FormFeed ||
-			       c == TCharHelpersBase<CharType, 1>::CarriageReturn ||
-			       c == TCharHelpersBase<CharType, 1>::NextLine;
+			return c == TCharHelpersBase<CharType, 1>::LineFeed
+			       || c == TCharHelpersBase<CharType, 1>::VerticalTab
+			       || c == TCharHelpersBase<CharType, 1>::FormFeed
+			       || c == TCharHelpersBase<CharType, 1>::CarriageReturn
+			       || c == TCharHelpersBase<CharType, 1>::NextLine;
 		}
 	};
 
-	template <typename T>
+	template<typename T>
 	struct TCharHelpers : public TCharHelpersBase<T, sizeof(T)>
 	{
 		using CharType = T;
@@ -170,57 +170,57 @@ namespace Rift
 	/*-----------------------------------------------------------------------------
 	    WideChar specialized functions
 	-----------------------------------------------------------------------------*/
-	template <>
+	template<>
 	inline bool TCharHelpers<WideChar>::IsUpper(CharType c)
 	{
 		return ::iswupper(c) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<WideChar>::IsLower(CharType c)
 	{
 		return ::iswlower(c) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<WideChar>::IsAlpha(CharType c)
 	{
 		return ::iswalpha(c) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<WideChar>::IsGraph(CharType c)
 	{
 		return ::iswgraph(c) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<WideChar>::IsPrint(CharType c)
 	{
 		return ::iswprint(c) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<WideChar>::IsPunct(CharType c)
 	{
 		return ::iswpunct(c) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<WideChar>::IsAlnum(CharType c)
 	{
 		return ::iswalnum(c) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<WideChar>::IsDigit(CharType c)
 	{
 		return ::iswdigit(c) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<WideChar>::IsHexDigit(CharType c)
 	{
 		return ::iswxdigit(c) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<WideChar>::IsWhitespace(CharType c)
 	{
 		return ::iswspace(c) != 0;
 	}
-	template <>
+	template<>
 	inline i32 TCharHelpers<WideChar>::StrtoI32(const CharType* str, CharType** end, i32 radix)
 	{
 		return ::wcstol(str, end, radix);
@@ -229,57 +229,57 @@ namespace Rift
 	/*-----------------------------------------------------------------------------
 	    AnsiChar specialized functions
 	-----------------------------------------------------------------------------*/
-	template <>
+	template<>
 	inline bool TCharHelpers<AnsiChar>::IsUpper(CharType Char)
 	{
-		return ::isupper((unsigned char) Char) != 0;
+		return ::isupper((unsigned char)Char) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<AnsiChar>::IsLower(CharType Char)
 	{
-		return ::islower((unsigned char) Char) != 0;
+		return ::islower((unsigned char)Char) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<AnsiChar>::IsAlpha(CharType Char)
 	{
-		return ::isalpha((unsigned char) Char) != 0;
+		return ::isalpha((unsigned char)Char) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<AnsiChar>::IsGraph(CharType Char)
 	{
-		return ::isgraph((unsigned char) Char) != 0;
+		return ::isgraph((unsigned char)Char) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<AnsiChar>::IsPrint(CharType Char)
 	{
-		return ::isprint((unsigned char) Char) != 0;
+		return ::isprint((unsigned char)Char) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<AnsiChar>::IsPunct(CharType Char)
 	{
-		return ::ispunct((unsigned char) Char) != 0;
+		return ::ispunct((unsigned char)Char) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<AnsiChar>::IsAlnum(CharType Char)
 	{
-		return ::isalnum((unsigned char) Char) != 0;
+		return ::isalnum((unsigned char)Char) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<AnsiChar>::IsDigit(CharType Char)
 	{
-		return ::isdigit((unsigned char) Char) != 0;
+		return ::isdigit((unsigned char)Char) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<AnsiChar>::IsHexDigit(CharType Char)
 	{
-		return ::isxdigit((unsigned char) Char) != 0;
+		return ::isxdigit((unsigned char)Char) != 0;
 	}
-	template <>
+	template<>
 	inline bool TCharHelpers<AnsiChar>::IsWhitespace(CharType Char)
 	{
-		return ::isspace((unsigned char) Char) != 0;
+		return ::isspace((unsigned char)Char) != 0;
 	}
-	template <>
+	template<>
 	inline i32 TCharHelpers<AnsiChar>::StrtoI32(const CharType* str, CharType** end, i32 radix)
 	{
 		return ::strtol(str, end, radix);

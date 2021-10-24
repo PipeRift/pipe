@@ -12,7 +12,7 @@
 
 
 #define REFLECT_NATIVE_TYPE(type)                                                \
-	template <>                                                                  \
+	template<>                                                                   \
 	struct Rift::Refl::TStaticNativeInitializer<type>                            \
 	{                                                                            \
 		static constexpr bool enabled = true;                                    \
@@ -32,7 +32,7 @@ namespace Rift::Refl
 	 * Native Type Builder
 	 * Builds native types during static initialization
 	 */
-	template <typename T>
+	template<typename T>
 	struct TNativeTypeBuilder : public TypeBuilder
 	{
 	public:

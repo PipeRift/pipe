@@ -21,7 +21,7 @@ namespace Rift
 {
 	namespace Details
 	{
-		template <typename InputIterator, typename OutputIterator>
+		template<typename InputIterator, typename OutputIterator>
 		constexpr OutputIterator copy(
 		    InputIterator first, InputIterator last, OutputIterator d_first)
 		{
@@ -36,7 +36,7 @@ namespace Rift
 #endif    // CPP20_CONSTEXPR_ALGORITHMS_PRESENT
 		}
 
-		template <typename ForwardIterator, typename T>
+		template<typename ForwardIterator, typename T>
 		constexpr void fill(ForwardIterator first, ForwardIterator last, const T& value)
 		{
 #if CPP20_CONSTEXPR_ALGORITHMS_PRESENT
@@ -51,7 +51,7 @@ namespace Rift
 
 	}    // namespace Details
 
-	template <sizet N, typename CharType = TChar, typename TTraits = std::char_traits<CharType>>
+	template<sizet N, typename CharType = TChar, typename TTraits = std::char_traits<CharType>>
 	struct TFixedString
 	{
 		// exposition only
@@ -104,7 +104,7 @@ namespace Rift
 			return *this;
 		}
 
-		template <sizet M>
+		template<sizet M>
 		constexpr TFixedString& operator=(const value_type (&array)[M]) noexcept requires(M <= N)
 		{
 			Details::copy(std::begin(array), std::end(array), _data.begin());
@@ -215,10 +215,10 @@ namespace Rift
 		}
 
 	private:
-		template <sizet M>
+		template<sizet M>
 		using same_with_other_size = TFixedString<M, value_type, traits_type>;
 
-		template <sizetype pos, sizetype count, sizetype size>
+		template<sizetype pos, sizetype count, sizetype size>
 		constexpr static sizetype calculate_substr_size()
 		{
 			if constexpr (pos >= size)
@@ -229,7 +229,7 @@ namespace Rift
 			return rcount;
 		}
 
-		template <sizetype pos, sizetype count>
+		template<sizetype pos, sizetype count>
 		using substr_result_type = same_with_other_size<calculate_substr_size<pos, count, N>()>;
 
 	public:
@@ -248,7 +248,7 @@ namespace Rift
 			return {data(), size()};
 		}
 
-		template <sizetype pos = 0, sizetype count = npos>
+		template<sizetype pos = 0, sizetype count = npos>
 		[[nodiscard]] constexpr substr_result_type<pos, count> substr()
 		{
 			static_assert(pos <= N, "pos cannot be larger than size!");
@@ -258,7 +258,7 @@ namespace Rift
 			return result;
 		}
 
-		template <sizet M>
+		template<sizet M>
 		[[nodiscard]] constexpr sizetype find(
 		    const same_with_other_size<M>& str, sizetype pos = 0) const noexcept
 		{
@@ -283,7 +283,7 @@ namespace Rift
 			return sv().find(c, pos);
 		}
 
-		template <sizet M>
+		template<sizet M>
 		[[nodiscard]] constexpr sizetype rfind(
 		    const same_with_other_size<M>& str, sizetype pos = npos) const noexcept
 		{
@@ -309,7 +309,7 @@ namespace Rift
 			return sv().rfind(c, pos);
 		}
 
-		template <sizet M>
+		template<sizet M>
 		[[nodiscard]] constexpr sizetype find_first_of(
 		    const same_with_other_size<M>& str, sizetype pos = 0) const noexcept
 		{
@@ -337,7 +337,7 @@ namespace Rift
 			return sv().find_first_of(c, pos);
 		}
 
-		template <sizet M>
+		template<sizet M>
 		[[nodiscard]] constexpr sizetype find_last_of(
 		    const same_with_other_size<M>& str, sizetype pos = npos) const noexcept
 		{
@@ -366,7 +366,7 @@ namespace Rift
 			return sv().find_last_of(c, pos);
 		}
 
-		template <sizet M>
+		template<sizet M>
 		[[nodiscard]] constexpr sizetype find_first_not_of(
 		    const same_with_other_size<M>& str, sizetype pos = 0) const noexcept
 		{
@@ -395,7 +395,7 @@ namespace Rift
 			return sv().find_first_not_of(c, pos);
 		}
 
-		template <sizet M>
+		template<sizet M>
 		[[nodiscard]] constexpr sizetype find_last_not_of(
 		    const same_with_other_size<M>& str, sizetype pos = npos) const noexcept
 		{
@@ -499,7 +499,7 @@ namespace Rift
 		}
 	};
 
-	template <typename CharType, typename TTraits, sizet M1, sizet M2>
+	template<typename CharType, typename TTraits, sizet M1, sizet M2>
 	[[nodiscard]] constexpr bool operator==(const TFixedString<M1, CharType, TTraits>& lhs,
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
@@ -510,7 +510,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) == rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator==(const TFixedString<N, CharType, TTraits>& lhs,
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
@@ -519,7 +519,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) == rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator==(std::basic_string_view<CharType, TTraits> lhs,
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
@@ -530,7 +530,7 @@ namespace Rift
 
 #if CPP20_SPACESHIP_OPERATOR_PRESENT
 
-	template <typename CharType, typename TTraits, sizet M1, sizet M2>
+	template<typename CharType, typename TTraits, sizet M1, sizet M2>
 	[[nodiscard]] constexpr auto operator<=>(const TFixedString<M1, CharType, TTraits>& lhs,
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
@@ -539,7 +539,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) <=> rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr auto operator<=>(const TFixedString<N, CharType, TTraits>& lhs,
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
@@ -548,7 +548,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) <=> rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr auto operator<=>(std::basic_string_view<CharType, TTraits> lhs,
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
@@ -559,7 +559,7 @@ namespace Rift
 
 #else
 
-	template <typename CharType, typename TTraits, sizet M1, sizet M2>
+	template<typename CharType, typename TTraits, sizet M1, sizet M2>
 	[[nodiscard]] constexpr bool operator!=(const TFixedString<M1, CharType, TTraits>& lhs,
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
@@ -570,7 +570,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) != rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator!=(const TFixedString<N, CharType, TTraits>& lhs,
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
@@ -579,7 +579,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) != rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator!=(std::basic_string_view<CharType, TTraits> lhs,
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
@@ -588,7 +588,7 @@ namespace Rift
 		return lhs != static_cast<sv_type>(rhs);
 	}
 
-	template <typename CharType, typename TTraits, sizet M1, sizet M2>
+	template<typename CharType, typename TTraits, sizet M1, sizet M2>
 	[[nodiscard]] constexpr bool operator<(const TFixedString<M1, CharType, TTraits>& lhs,
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
@@ -597,7 +597,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) < rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator<(const TFixedString<N, CharType, TTraits>& lhs,
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
@@ -606,7 +606,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) < rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator<(std::basic_string_view<CharType, TTraits> lhs,
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
@@ -615,7 +615,7 @@ namespace Rift
 		return lhs < static_cast<sv_type>(rhs);
 	}
 
-	template <typename CharType, typename TTraits, sizet M1, sizet M2>
+	template<typename CharType, typename TTraits, sizet M1, sizet M2>
 	[[nodiscard]] constexpr bool operator<=(const TFixedString<M1, CharType, TTraits>& lhs,
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
@@ -624,7 +624,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) <= rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator<=(const TFixedString<N, CharType, TTraits>& lhs,
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
@@ -633,7 +633,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) <= rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator<=(std::basic_string_view<CharType, TTraits> lhs,
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
@@ -642,7 +642,7 @@ namespace Rift
 		return lhs <= static_cast<sv_type>(rhs);
 	}
 
-	template <typename CharType, typename TTraits, sizet M1, sizet M2>
+	template<typename CharType, typename TTraits, sizet M1, sizet M2>
 	[[nodiscard]] constexpr bool operator>(const TFixedString<M1, CharType, TTraits>& lhs,
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
@@ -651,7 +651,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) > rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator>(const TFixedString<N, CharType, TTraits>& lhs,
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
@@ -660,7 +660,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) > rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator>(std::basic_string_view<CharType, TTraits> lhs,
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
@@ -669,7 +669,7 @@ namespace Rift
 		return lhs > static_cast<sv_type>(rhs);
 	}
 
-	template <typename CharType, typename TTraits, sizet M1, sizet M2>
+	template<typename CharType, typename TTraits, sizet M1, sizet M2>
 	[[nodiscard]] constexpr bool operator>=(const TFixedString<M1, CharType, TTraits>& lhs,
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
@@ -678,7 +678,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) >= rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator>=(const TFixedString<N, CharType, TTraits>& lhs,
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
@@ -687,7 +687,7 @@ namespace Rift
 		return static_cast<sv_type>(lhs) >= rhs;
 	}
 
-	template <typename CharType, typename TTraits, sizet N>
+	template<typename CharType, typename TTraits, sizet N>
 	[[nodiscard]] constexpr bool operator>=(std::basic_string_view<CharType, TTraits> lhs,
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
@@ -698,17 +698,17 @@ namespace Rift
 
 #endif    // CPP20_SPACESHIP_OPERATOR_PRESENT
 
-	template <sizet N, typename CharType = TChar>
+	template<sizet N, typename CharType = TChar>
 	TFixedString(const CharType (&)[N]) -> TFixedString<N - 1, CharType>;
 
-	template <sizet N>
+	template<sizet N>
 	using FixedString = TFixedString<N, TChar>;
 
 	// template <sizet N>
 	// FixedString(const TChar (&)[N]) -> FixedString<N - 1>;
 
 
-	template <sizet N, sizet M, typename CharType, typename TTraits>
+	template<sizet N, sizet M, typename CharType, typename TTraits>
 	constexpr TFixedString<N + M, CharType, TTraits> operator+(
 	    const TFixedString<N, CharType, TTraits>& lhs,
 	    const TFixedString<M, CharType, TTraits>& rhs)
@@ -719,7 +719,40 @@ namespace Rift
 		return result;
 	}
 
-	template <sizet N, sizet M, typename CharType, typename TTraits>
+	template<sizet N, typename CharType, typename TTraits>
+	constexpr auto operator+(const TFixedString<N, CharType, TTraits>& lhs,
+	    TStringView<CharType> rhs) -> TFixedString<N + rhs.size(), CharType, TTraits>
+	{
+		TFixedString<N + rhs.size(), CharType, TTraits> result;
+		Details::copy(lhs.begin(), lhs.end(), result.begin());
+		Details::copy(rhs.begin(), rhs.end(), result.begin() + lhs.size());
+		return result;
+	}
+
+	template<sizet M, typename CharType, typename TTraits>
+	constexpr auto operator+(
+	    TStringView<CharType> lhs, const TFixedString<M, CharType, TTraits>& rhs)
+	    -> TFixedString<lhs.size() + M, CharType, TTraits>
+	{
+		TFixedString<lhs.size() + M, CharType, TTraits> result;
+		Details::copy(lhs.begin(), lhs.end(), result.begin());
+		Details::copy(rhs.begin(), rhs.end(), result.begin() + lhs.size());
+		return result;
+	}
+
+	// TODO: Make this work
+	/*
+	template<typename CharType, typename TTraits = std::char_traits<CharType>>
+	constexpr auto operator+(TStringView<CharType> lhs, TStringView<CharType> rhs)
+	    -> TFixedString<lhs.size() + rhs.size(), CharType, TTraits>
+	{
+	    TFixedString<lhs.size() + rhs.size(), CharType, TTraits> result;
+	    Details::copy(lhs.begin(), lhs.end(), result.begin());
+	    Details::copy(rhs.begin(), rhs.end(), result.begin() + lhs.size());
+	    return result;
+	}*/
+
+	template<sizet N, sizet M, typename CharType, typename TTraits>
 	constexpr TFixedString<N - 1 + M, CharType, TTraits> operator+(
 	    const CharType (&lhs)[N], const TFixedString<M, CharType, TTraits>& rhs)
 	{
@@ -727,7 +760,7 @@ namespace Rift
 		return lhs2 + rhs;
 	}
 
-	template <sizet N, sizet M, typename CharType, typename TTraits>
+	template<sizet N, sizet M, typename CharType, typename TTraits>
 	constexpr TFixedString<N + M - 1, CharType, TTraits> operator+(
 	    const TFixedString<N, CharType, TTraits>& lhs, const CharType (&rhs)[M])
 	{
@@ -737,7 +770,7 @@ namespace Rift
 
 	namespace Details
 	{
-		template <typename CharType>
+		template<typename CharType>
 		constexpr TFixedString<1, CharType> from_char(CharType ch)
 		{
 			TFixedString<1, CharType> fs;
@@ -746,21 +779,21 @@ namespace Rift
 		}
 	}    // namespace Details
 
-	template <sizet N, typename CharType, typename TTraits>
+	template<sizet N, typename CharType, typename TTraits>
 	constexpr TFixedString<N + 1, CharType, TTraits> operator+(
 	    CharType lhs, const TFixedString<N, CharType, TTraits>& rhs)
 	{
 		return Details::from_char(lhs) + rhs;
 	}
 
-	template <sizet N, typename CharType, typename TTraits>
+	template<sizet N, typename CharType, typename TTraits>
 	constexpr TFixedString<N + 1, CharType, TTraits> operator+(
 	    const TFixedString<N, CharType, TTraits>& lhs, CharType rhs)
 	{
 		return lhs + Details::from_char(rhs);
 	}
 
-	template <sizet N, typename CharType, typename TTraits>
+	template<sizet N, typename CharType, typename TTraits>
 	std::basic_ostream<CharType, TTraits>& operator<<(
 	    std::basic_ostream<CharType, TTraits>& out, const TFixedString<N, CharType, TTraits>& str)
 	{

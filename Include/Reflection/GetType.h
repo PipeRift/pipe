@@ -19,28 +19,28 @@ namespace Rift
 	}    // namespace Refl
 
 
-	template <typename T>
+	template<typename T>
 	Refl::StructType* GetType() requires(IsStruct<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 		return static_cast<Refl::StructType*>(Refl::InternalGetType<T>());
 	}
 
-	template <typename T>
+	template<typename T>
 	Refl::ClassType* GetType() requires(IsClass<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 		return static_cast<Refl::ClassType*>(Refl::InternalGetType<T>());
 	}
 
-	template <typename T>
+	template<typename T>
 	Refl::EnumType* GetType() requires(IsReflectedEnum<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 		return static_cast<Refl::EnumType*>(Refl::InternalGetType<T>());
 	}
 
-	template <typename T>
+	template<typename T>
 	Refl::Type* GetType()
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
@@ -53,7 +53,7 @@ namespace Rift
 	 * @param name of the type to find. If none, type of T will be returned
 	 * @returns the type found, if any
 	 */
-	template <typename T>
+	template<typename T>
 	Refl::Type* FindType(Name name)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
@@ -74,7 +74,7 @@ namespace Rift
 	 * Get the type of an instance.
 	 * Classes will obtain their type from inheritance.
 	 */
-	template <typename T>
+	template<typename T>
 	Refl::Type* GetType(T& instance)
 	{
 		if constexpr (IsClass<T>())
@@ -88,7 +88,7 @@ namespace Rift
 	 * Get the type from an OwnPtr.
 	 * Classes will obtain their type from inheritance.
 	 */
-	template <typename T>
+	template<typename T>
 	Refl::Type* GetType(TOwnPtr<T>& instance)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
@@ -103,7 +103,7 @@ namespace Rift
 	 * Get the type from an OwnPtr.
 	 * Classes will obtain their type from inheritance.
 	 */
-	template <typename T>
+	template<typename T>
 	Refl::Type* GetType(TPtr<T>& instance)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");

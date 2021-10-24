@@ -14,7 +14,7 @@
 
 
 #define ENUM(type)                                                             \
-	template <>                                                                \
+	template<>                                                                 \
 	struct Rift::Refl::TStaticEnumInitializer<type>                            \
 	{                                                                          \
 		static constexpr bool enabled = true;                                  \
@@ -34,7 +34,7 @@ namespace Rift::Refl
 	 * Enum Type Builder
 	 * Builds enum types during static initialization
 	 */
-	template <typename T>
+	template<typename T>
 	struct TEnumTypeBuilder : public TypeBuilder
 	{
 	public:

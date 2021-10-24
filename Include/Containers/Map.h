@@ -20,15 +20,15 @@
 
 namespace Rift
 {
-	template <typename Key, typename Value, typename Allocator = Memory::DefaultAllocator>
+	template<typename Key, typename Value, typename Allocator = Memory::DefaultAllocator>
 	class TMap
 	{
-		static_assert(std::is_nothrow_move_constructible<Value>::value ||
-		                  std::is_copy_constructible<Value>::value,
+		static_assert(std::is_nothrow_move_constructible<Value>::value
+		                  || std::is_copy_constructible<Value>::value,
 		    "Value type must be nothrow move constructible and/or copy constructible.");
 
 	public:
-		template <typename OtherKey, typename OtherValue, typename OtherAllocator>
+		template<typename OtherKey, typename OtherValue, typename OtherAllocator>
 		friend class TMap;
 
 		using KeyType       = Key;

@@ -19,25 +19,25 @@
 #include <string>
 
 
-#pragma warning(disable : 4996)
+#pragma warning(disable:4996)
 
 
 namespace Rift
 {
-	template <typename CharType, typename Allocator = STLAllocator<CharType>>
+	template<typename CharType, typename Allocator = STLAllocator<CharType>>
 	using TString = std::basic_string<CharType, std::char_traits<CharType>, Allocator>;
 	using String  = TString<TChar>;
 	using WString = TString<WideChar>;
 
 
-	template <typename CharType, typename Allocator = STLAllocator<CharType>>
+	template<typename CharType, typename Allocator = STLAllocator<CharType>>
 	using TStringBuffer = fmt::basic_memory_buffer<CharType, fmt::inline_buffer_size, Allocator>;
 	using StringBuffer  = TStringBuffer<TChar>;
 
 
 	namespace Strings
 	{
-		template <typename... Args>
+		template<typename... Args>
 		inline String Format(StringView format, Args... args)
 		{
 			String str;
@@ -46,7 +46,7 @@ namespace Rift
 			return Move(str);
 		}
 
-		template <typename... Args>
+		template<typename... Args>
 		inline void FormatTo(String& buffer, StringView format, Args... args)
 		{
 			fmt::format_to(
@@ -79,7 +79,7 @@ namespace Rift
 
 		CORE_API String ParseMemorySize(sizet size);
 
-		template <typename ToStringType, typename FromChar>
+		template<typename ToStringType, typename FromChar>
 		inline void ConvertTo(TStringView<FromChar> source, ToStringType& dest) requires(
 		    !IsSame<FromChar, typename ToStringType::value_type>)
 		{
@@ -111,7 +111,7 @@ namespace Rift
 			}
 		}
 
-		template <typename ToStringType, typename FromChar>
+		template<typename ToStringType, typename FromChar>
 		inline ToStringType Convert(TStringView<FromChar> source)
 		{
 			ToStringType dest;
@@ -120,7 +120,7 @@ namespace Rift
 		}
 
 		// Do nothing. Converting to same type
-		template <typename CharType>
+		template<typename CharType>
 		inline TStringView<CharType> Convert(TStringView<CharType> source)
 		{
 			return source;
@@ -132,7 +132,7 @@ namespace Rift
 	CORE_API void Write(Serl::WriteContext& ct, const String& val);
 
 
-	template <>
+	template<>
 	struct Hash<String>
 	{
 		sizet operator()(const String& str) const

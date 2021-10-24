@@ -10,7 +10,7 @@ namespace Rift::Refl
 	 * Base logic implementation for templated property handles.
 	 * Use TPropertyHandle instead
 	 */
-	template <typename VariableT>
+	template<typename VariableT>
 	struct TPropertyHandle : public PropertyHandle
 	{
 		using Access = std::function<VariableT*(void*)>;
@@ -23,14 +23,12 @@ namespace Rift::Refl
 		// Objects constructor
 		TPropertyHandle(
 		    const TPtr<BaseObject>& instance, const Property* prop, const Access& access)
-		    : PropertyHandle(instance, prop)
-		    , access{access}
+		    : PropertyHandle(instance, prop), access{access}
 		{}
 
 		// Structs constructor
 		TPropertyHandle(BaseStruct* instance, const Property* prop, const Access& access)
-		    : PropertyHandle(instance, prop)
-		    , access{access}
+		    : PropertyHandle(instance, prop), access{access}
 		{}
 
 		VariableT* GetValuePtr() const

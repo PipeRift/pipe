@@ -25,7 +25,7 @@ namespace Rift::Refl
 
 
 	public:
-		template <typename TType>
+		template<typename TType>
 		TType& AddType(TypeId id) requires Derived<TType, Type, false>
 		{
 			TType* ptr = new (arena.Allocate(sizeof(TType))) TType();
@@ -42,7 +42,7 @@ namespace Rift::Refl
 			return nullptr;
 		}
 
-		template <typename PropertyType, typename... Args>
+		template<typename PropertyType, typename... Args>
 		PropertyType* AddProperty(Args&&... args)
 		{
 			void* ptr = arena.Allocate(sizeof(PropertyType));

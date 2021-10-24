@@ -64,7 +64,7 @@ namespace Rift
 		}
 
 
-		template <typename T>
+		template<typename T>
 		v3 operator*(const v3& v)
 		{
 			return Rotate(v);

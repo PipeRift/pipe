@@ -11,7 +11,7 @@ namespace Rift
 	 * When we have an optional value IsSet() returns true, and GetValue() is meaningful.
 	 * Otherwise GetValue() is not meaningful.
 	 */
-	template <typename Type>
+	template<typename Type>
 	struct TOptional
 	{
 	private:
@@ -79,7 +79,7 @@ namespace Rift
 			isSet = false;
 		}
 
-		template <typename... ArgsType>
+		template<typename... ArgsType>
 		void Emplace(ArgsType&&... Args)
 		{
 			isSet = true;

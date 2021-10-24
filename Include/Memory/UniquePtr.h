@@ -5,7 +5,7 @@
 #include <memory>
 
 
-template <typename T, class D /* = default_delete<_Ty> */>
+template<typename T, class D /* = default_delete<_Ty> */>
 struct TUniquePtr
 {
 	using Pointer = std::unique_ptr<T>::pointer;
@@ -25,7 +25,7 @@ public:
 	TUniquePtr(const TUniquePtr&) = delete;
 	TUniquePtr& operator=(const TUniquePtr&) = delete;
 
-	template <class D2 = D, EnableIfT<std::is_move_assignable_v<D2>, int> = 0>
+	template<class D2 = D, EnableIfT<std::is_move_assignable_v<D2>, int> = 0>
 	TUniquePtr& operator=(TUniquePtr&& other) noexcept
 	{
 		if (Get() != other.Get())
@@ -35,7 +35,7 @@ public:
 		return *this;
 	}
 
-	template <class T2, class D2,
+	template<class T2, class D2,
 	    EnableIfT<std::conjunction_v<std::negation<std::is_array<T2>>, std::is_assignable<D&, D2>,
 	                  std::is_convertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>>,
 	        int> = 0>

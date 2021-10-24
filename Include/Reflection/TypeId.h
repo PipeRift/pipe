@@ -20,7 +20,7 @@ namespace Rift
 			constexpr TypeId() = default;
 			explicit constexpr TypeId(u64 id) : id(id) {}
 
-			template <typename T>
+			template<typename T>
 			static constexpr TypeId Get()
 			{
 				return TypeId{Rift::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
@@ -44,7 +44,7 @@ namespace Rift
 		}
 	}    // namespace Refl
 
-	template <>
+	template<>
 	struct Hash<Refl::TypeId>
 	{
 		sizet operator()(const Refl::TypeId& id) const

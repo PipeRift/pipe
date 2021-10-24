@@ -8,7 +8,7 @@
 
 namespace Rift
 {
-	template <typename FileIterator = Files::Iterator>
+	template<typename FileIterator = Files::Iterator>
 	class FormatFileIterator
 	{
 	public:
@@ -69,7 +69,7 @@ namespace Rift
 		bool IsValidFile(const FileIterator& it);
 	};
 
-	template <typename FileIterator>
+	template<typename FileIterator>
 	inline FormatFileIterator<FileIterator>::FormatFileIterator(StringView format, const Path& path)
 	    : format{format}
 	{
@@ -86,7 +86,7 @@ namespace Rift
 		}
 	}
 
-	template <typename FileIterator>
+	template<typename FileIterator>
 	inline void FormatFileIterator<FileIterator>::FindNext()
 	{
 		static const FileIterator endIt{};
@@ -100,7 +100,7 @@ namespace Rift
 		}
 	}
 
-	template <typename FileIterator>
+	template<typename FileIterator>
 	bool FormatFileIterator<FileIterator>::IsValidFile(const FileIterator& it)
 	{
 		return it->path().extension() == format;

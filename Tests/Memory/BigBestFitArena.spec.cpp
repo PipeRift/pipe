@@ -1,14 +1,14 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Memory/Arenas/BigBestFitArena.h>
 #include <bandit/bandit.h>
+#include <Memory/Arenas/BigBestFitArena.h>
 
 
 using namespace snowhouse;
 using namespace bandit;
 using namespace Rift::Memory;
 
-template <Rift::u32 Size>
+template<Rift::u32 Size>
 struct TypeOfSize
 {
 	static constexpr Rift::u32 size = Size;

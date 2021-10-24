@@ -12,7 +12,7 @@ namespace Rift::Refl
 	/** Smallest reflection type that contains all basic class or struct data */
 	class NativeType : public Type
 	{
-		template <typename T>
+		template<typename T>
 		friend struct TNativeTypeBuilder;
 
 	protected:

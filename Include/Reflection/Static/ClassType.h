@@ -10,7 +10,7 @@
 
 namespace Rift
 {
-	template <typename T>
+	template<typename T>
 	struct ObjectBuilder;
 }
 
@@ -18,7 +18,7 @@ namespace Rift::Refl
 {
 	class ClassType : public DataType
 	{
-		template <typename T, typename Parent, TypeFlags flags>
+		template<typename T, typename Parent, TypeFlags flags>
 		friend struct TClassTypeBuilder;
 
 		using CreateFunc = TFunction<BaseObject*()>;

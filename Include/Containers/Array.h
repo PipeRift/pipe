@@ -18,11 +18,11 @@
 
 namespace Rift
 {
-	template <typename Type, typename Allocator = Memory::DefaultAllocator>
+	template<typename Type, typename Allocator = Memory::DefaultAllocator>
 	class TArray
 	{
 	public:
-		template <typename OtherType, typename OtherAllocator>
+		template<typename OtherType, typename OtherAllocator>
 		friend class TArray;
 
 		using ItemType   = Type;
@@ -133,7 +133,7 @@ namespace Rift
 			}
 		}
 
-		template <typename ArrayView>    // Intended for TArrayView<T>
+		template<typename ArrayView>    // Intended for TArrayView<T>
 		void Append(ArrayView values)
 		{
 			vector.insert(vector.end(), values.begin(), values.end());
@@ -185,7 +185,7 @@ namespace Rift
 		}
 
 
-		template <typename Predicate>
+		template<typename Predicate>
 		void Sort(Predicate predicate)
 		{
 			Algorithms::Sort(Data(), Size(), predicate);
@@ -251,7 +251,7 @@ namespace Rift
 		 *
 		 * Complexity: worst O(log(n)) | best O(1)
 		 */
-		template <typename Value, typename SortPredicate = TLess<>>
+		template<typename Value, typename SortPredicate = TLess<>>
 		i32 LowerBound(const Value& value, SortPredicate sortPredicate = {}) const
 		{
 			return Algorithms::LowerBound(Data(), 0, Size(), value, sortPredicate);
@@ -268,25 +268,25 @@ namespace Rift
 		 *
 		 * Complexity: worst O(log(n)) | best O(1)
 		 */
-		template <typename Value, typename SortPredicate = TLess<>>
+		template<typename Value, typename SortPredicate = TLess<>>
 		i32 UpperBound(const Value& value, SortPredicate sortPredicate = {}) const
 		{
 			return Algorithms::UpperBound(Data(), 0, Size(), value, sortPredicate);
 		}
 
-		template <typename Value, typename SortPredicate = TLess<>>
+		template<typename Value, typename SortPredicate = TLess<>>
 		i32 FindSortedEqual(const Value& value, SortPredicate sortPredicate = {}) const
 		{
 			return Algorithms::BinarySearch(Data(), 0, Size(), value, sortPredicate);
 		}
 
-		template <typename Value>
+		template<typename Value>
 		i32 FindSortedMax(const Value& max, bool included = false) const
 		{
 			return Algorithms::FindSortedMax(Data(), 0, Size(), max, included);
 		}
 
-		template <typename Value>
+		template<typename Value>
 		i32 FindSortedMin(const Value& min, bool included = false) const
 		{
 			return Algorithms::FindSortedMin(Data(), 0, Size(), min, included);
@@ -309,7 +309,7 @@ namespace Rift
 		i32 Remove(const Type& item, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
-			(void) std::remove(vector.begin(), vector.end(), item);
+			(void)std::remove(vector.begin(), vector.end(), item);
 
 			if (shouldShrink)
 			{
@@ -318,7 +318,7 @@ namespace Rift
 			return lastSize - Size();
 		}
 
-		template <typename ArrayView>    // Intended for TArrayView<T>
+		template<typename ArrayView>    // Intended for TArrayView<T>
 		i32 RemoveMany(ArrayView items, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
@@ -474,12 +474,12 @@ namespace Rift
 
 		i32 Size() const
 		{
-			return (i32) vector.size();
+			return (i32)vector.size();
 		}
 
 		i32 MaxSize() const
 		{
-			return (i32) vector.capacity();
+			return (i32)vector.capacity();
 		}
 
 		bool IsEmpty() const
@@ -520,13 +520,14 @@ namespace Rift
 		}
 
 		/** OPERATORS */
-	public:
+	public :
 		/**
 		 * Array bracket operator. Returns reference to element at give index.
 		 *
 		 * @returns Reference to indexed element.
 		 */
-		Type& operator[](i32 index)
+		Type&
+		operator[](i32 index)
 		{
 			assert(IsValidIndex(index));
 			if constexpr (IsSame<Type, bool>)
@@ -620,11 +621,11 @@ namespace Rift
 	};
 
 
-	template <typename Type, typename Allocator>
+	template<typename Type, typename Allocator>
 	void TArray<Type, Allocator>::Swap(i32 firstIndex, i32 secondIndex)
 	{
-		if (Size() > 1 && firstIndex != secondIndex && IsValidIndex(firstIndex) &&
-		    IsValidIndex(secondIndex))
+		if (Size() > 1 && firstIndex != secondIndex && IsValidIndex(firstIndex)
+		    && IsValidIndex(secondIndex))
 		{
 			std::iter_swap(vector.begin() + firstIndex, vector.begin() + secondIndex);
 		}

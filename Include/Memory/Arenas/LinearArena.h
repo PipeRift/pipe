@@ -29,8 +29,7 @@ namespace Rift::Memory
 
 	public:
 		CORE_API LinearArena(const sizet initialSize = 0, bool allowGrowing = true)
-		    : activeBlock{initialSize}
-		    , allowGrowing{allowGrowing}
+		    : activeBlock{initialSize}, allowGrowing{allowGrowing}
 		{}
 		CORE_API ~LinearArena()
 		{

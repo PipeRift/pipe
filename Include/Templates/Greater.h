@@ -6,7 +6,7 @@
 
 namespace Rift
 {
-	template <typename T = void>
+	template<typename T = void>
 	struct TGreater
 	{
 		constexpr bool operator()(const T& A, const T& B) const
@@ -15,17 +15,17 @@ namespace Rift
 		}
 	};
 
-	template <>
+	template<>
 	struct TGreater<void>
 	{
-		template <typename T, typename U>
+		template<typename T, typename U>
 		constexpr bool operator()(T&& A, U&& B) const
 		{
 			return Forward<T>(A) > Forward<U>(B);
 		}
 	};
 
-	template <typename T = void>
+	template<typename T = void>
 	struct TGreaterEqual
 	{
 		constexpr bool operator()(const T& A, const T& B) const
@@ -34,10 +34,10 @@ namespace Rift
 		}
 	};
 
-	template <>
+	template<>
 	struct TGreaterEqual<void>
 	{
-		template <typename T, typename U>
+		template<typename T, typename U>
 		constexpr bool operator()(T&& A, U&& B) const
 		{
 			return Forward<T>(A) >= Forward<U>(B);
