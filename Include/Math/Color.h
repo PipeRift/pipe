@@ -245,18 +245,18 @@ namespace Rift
 		    return Convert<T::mode>;
 		}*/
 
-		static constexpr TColor RGB(u8 r, u8 g, u8 b, u8 a = 255)
+		static constexpr TColor FromRGB(u8 r, u8 g, u8 b, u8 a = 255)
 		{
 			const TColor<ColorMode::RGBA> color{r, g, b, a};
 			return TColor{color};
 		}
-		static constexpr TColor Hex(u32 value)
+		static constexpr TColor FromHEX(u32 value)
 		{
 			const TColor<ColorMode::RGBA> color{u8(value >> 16), u8(value >> 8), u8(value >> 0)};
 			return TColor{color};
 		}
 
-		// Same as Hex() but taking into account alpha value
+		// Same as FromHEX() but taking into account alpha value
 		static constexpr TColor HexAlpha(u32 value)
 		{
 			const TColor<ColorMode::RGBA> color{
@@ -664,63 +664,63 @@ namespace Rift
 		// Common colors
 		static constexpr TColor White()
 		{
-			return RGB(255, 255, 255);
+			return FromRGB(255, 255, 255);
 		};
 		static constexpr TColor Gray()
 		{
-			return RGB(127, 127, 127);
+			return FromRGB(127, 127, 127);
 		};
 		static constexpr TColor Black()
 		{
-			return RGB(0, 0, 0);
+			return FromRGB(0, 0, 0);
 		};
 		static constexpr TColor Transparent()
 		{
-			return RGB(0, 0, 0, 0);
+			return FromRGB(0, 0, 0, 0);
 		};
 		static constexpr TColor Red()
 		{
-			return RGB(255, 0, 0);
+			return FromRGB(255, 0, 0);
 		};
 		static constexpr TColor Green()
 		{
-			return RGB(0, 255, 0);
+			return FromRGB(0, 255, 0);
 		};
 		static constexpr TColor Blue()
 		{
-			return RGB(0, 0, 255);
+			return FromRGB(0, 0, 255);
 		};
 		static constexpr TColor Yellow()
 		{
-			return RGB(255, 255, 0);
+			return FromRGB(255, 255, 0);
 		};
 		static constexpr TColor Cyan()
 		{
-			return RGB(0, 255, 255);
+			return FromRGB(0, 255, 255);
 		};
 		static constexpr TColor Magenta()
 		{
-			return RGB(255, 0, 255);
+			return FromRGB(255, 0, 255);
 		};
 		static constexpr TColor Orange()
 		{
-			return RGB(243, 156, 18);
+			return FromRGB(243, 156, 18);
 		};
 		static constexpr TColor Purple()
 		{
-			return RGB(169, 7, 228);
+			return FromRGB(169, 7, 228);
 		};
 		static constexpr TColor Turquoise()
 		{
-			return RGB(26, 188, 156);
+			return FromRGB(26, 188, 156);
 		};
 		static constexpr TColor Silver()
 		{
-			return RGB(189, 195, 199);
+			return FromRGB(189, 195, 199);
 		};
 		static constexpr TColor Emerald()
 		{
-			return RGB(46, 204, 113);
+			return FromRGB(46, 204, 113);
 		};
 	};
 

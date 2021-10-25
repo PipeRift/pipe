@@ -55,8 +55,8 @@ go_bandit([]() {
 			it("Can Shade", [&]() {
 				AssertThat(LinearColor::White().Shade(1.0f), Equals(LinearColor::Black()));
 				AssertThat(LinearColor::White().Shade(0.5f), Equals(LinearColor::Gray()));
-				constexpr LinearColor color{Color::Hex(0x80ced7)};
-				AssertThat(color.Shade(0.5f), Equals(LinearColor{Color::Hex(0x40676B)}));
+				constexpr LinearColor color{Color::FromHEX(0x80ced7)};
+				AssertThat(color.Shade(0.5f), Equals(LinearColor{Color::FromHEX(0x40676B)}));
 			});
 
 			it("Shade doesn't change alpha", [&]() {
@@ -67,7 +67,7 @@ go_bandit([]() {
 			it("Can Tint", [&]() {
 				AssertThat(LinearColor::Black().Tint(1.0f), Equals(LinearColor::White()));
 				AssertThat(LinearColor::Black().Tint(0.5f), Equals(LinearColor::Gray()));
-				AssertThat(Color::Hex(0x80ced7).Tint(0.5f), Equals(Color::Hex(0xbfe6eb)));
+				AssertThat(Color::FromHEX(0x80ced7).Tint(0.5f), Equals(Color::FromHEX(0xbfe6eb)));
 			});
 
 			it("Tint doesn't change alpha", [&]() {
@@ -79,7 +79,7 @@ go_bandit([]() {
 			it("Can Shade", [&]() {
 				AssertThat(Color::White().Shade(1.0f), Equals(Color::Black()));
 				AssertThat(Color::White().Shade(0.5f), Equals(Color::Gray()));
-				AssertThat(Color::Hex(0x80ced7).Shade(0.5f), Equals(Color::Hex(0x40676B)));
+				AssertThat(Color::FromHEX(0x80ced7).Shade(0.5f), Equals(Color::FromHEX(0x40676B)));
 			});
 
 			it("Shade doesn't change alpha", [&]() {
@@ -89,7 +89,7 @@ go_bandit([]() {
 			it("Can Tint", [&]() {
 				AssertThat(Color::Black().Tint(1.0f), Equals(Color::White()));
 				AssertThat(Color::Black().Tint(0.5f), Equals(Color::Gray()));
-				AssertThat(Color::Hex(0x80ced7).Tint(0.5f), Equals(Color::Hex(0xbfe6eb)));
+				AssertThat(Color::FromHEX(0x80ced7).Tint(0.5f), Equals(Color::FromHEX(0xbfe6eb)));
 			});
 
 			it("Tint doesn't change alpha", [&]() {
