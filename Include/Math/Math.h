@@ -44,39 +44,6 @@ namespace Rift
 			return Max(min, Min(a, max));
 		}
 
-		static float ClampAngle(float a)
-		{
-			const float cAngle = Mod(a, 360.f);             //(-360,360)
-			return cAngle + float(cAngle < 0.f) * 360.f;    //[0, 360)
-		}
-
-		static float NormalizeAngle(float a)
-		{
-			a = ClampAngle(a);    //[0,360)
-
-			if (a > 180.f)
-				a -= 360.f;
-			return a;    //(-180, 180]
-		}
-
-		static float ClampAngle(float a, float min, float max)
-		{
-			const float maxDelta        = ClampAngle(max - min) * 0.5f;       // 0..180
-			const float rangeCenter     = ClampAngle(min + maxDelta);         // 0..360
-			const float deltaFromCenter = NormalizeAngle(a - rangeCenter);    // -180..180
-
-			// maybe clamp to nearest edge
-			if (deltaFromCenter > maxDelta)
-			{
-				return NormalizeAngle(rangeCenter + maxDelta);
-			}
-			else if (deltaFromCenter < -maxDelta)
-			{
-				return NormalizeAngle(rangeCenter - maxDelta);
-			}
-			return NormalizeAngle(a);    // Already in range
-		}
-
 		/** Computes absolute value in a generic way */
 		template<typename Type>
 		static constexpr Type Abs(const Type a)
@@ -460,6 +427,39 @@ namespace Rift
 		static bool IsPowerOfTwo(T value)
 		{
 			return (value & (value - 1)) == T(0);
+		}
+
+		static float ClampAngle(float a)
+		{
+			const float cAngle = Mod(a, 360.f);             //(-360,360)
+			return cAngle + float(cAngle < 0.f) * 360.f;    //[0, 360)
+		}
+
+		static float NormalizeAngle(float a)
+		{
+			a = ClampAngle(a);    //[0,360)
+
+			if (a > 180.f)
+				a -= 360.f;
+			return a;    //(-180, 180]
+		}
+
+		static float ClampAngle(float a, float min, float max)
+		{
+			const float maxDelta        = ClampAngle(max - min) * 0.5f;       // 0..180
+			const float rangeCenter     = ClampAngle(min + maxDelta);         // 0..360
+			const float deltaFromCenter = NormalizeAngle(a - rangeCenter);    // -180..180
+
+			// maybe clamp to nearest edge
+			if (deltaFromCenter > maxDelta)
+			{
+				return NormalizeAngle(rangeCenter + maxDelta);
+			}
+			else if (deltaFromCenter < -maxDelta)
+			{
+				return NormalizeAngle(rangeCenter - maxDelta);
+			}
+			return NormalizeAngle(a);    // Already in range
 		}
 	};
 
