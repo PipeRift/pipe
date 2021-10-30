@@ -33,7 +33,10 @@ namespace Rift
 	requires Rift::Derived<T, type>                     \
 	struct Rift::TFlags<T> : public Rift::DefaultTFlags \
 	{                                                   \
-		__VA_OPT__(enum {) __VA_ARGS__ __VA_OPT__(};)   \
+		enum                                            \
+		{                                               \
+			__VA_ARGS__                                 \
+		};                                              \
 	};
 
 #define INHERIT_TYPE_FLAGS(type, parent, ...)            \
@@ -41,20 +44,29 @@ namespace Rift
 	requires Rift::Derived<T, type>                      \
 	struct Rift::TFlags<T> : public Rift::TFlags<parent> \
 	{                                                    \
-		__VA_OPT__(enum {) __VA_ARGS__ __VA_OPT__(};)    \
+		enum                                             \
+		{                                                \
+			__VA_ARGS__                                  \
+		};                                               \
 	};
 
 #define TEMPLATE_TYPE_FLAGS(type, ...)                        \
 	template<typename T>                                      \
 	struct Rift::TFlags<type<T>> : public Rift::DefaultTFlags \
 	{                                                         \
-		__VA_OPT__(enum {) __VA_ARGS__ __VA_OPT__(};)         \
+		enum                                                  \
+		{                                                     \
+			__VA_ARGS__                                       \
+		};                                                    \
 	}
 
 #define INHERIT_TEMPLATE_TYPE_FLAGS(type, parent, ...)         \
 	template<typename T>                                       \
 	struct Rift::TFlags<type<T>> : public Rift::TFlags<parent> \
 	{                                                          \
-		__VA_OPT__(enum {) __VA_ARGS__ __VA_OPT__(};)          \
+		enum                                                   \
+		{                                                      \
+			__VA_ARGS__                                        \
+		};                                                     \
 	}
 }    // namespace Rift
