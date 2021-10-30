@@ -397,10 +397,10 @@ namespace Rift
 		{
 			if constexpr (mode == ColorMode::RGBA)
 			{
-				return {u8(Math::Clamp(i32(this->r) * scalar, 0, 255)),
-				    u8(Math::Clamp(i32(this->g) * scalar, 0, 255)),
-				    u8(Math::Clamp(i32(this->b) * scalar, 0, 255)),
-				    u8(Math::Clamp(i32(this->a) * scalar, 0, 255))};
+				return {u8(Math::Clamp(i32(scalar * this->r), 0, 255)),
+				    u8(Math::Clamp(i32(scalar * this->g), 0, 255)),
+				    u8(Math::Clamp(i32(scalar * this->b), 0, 255)),
+				    u8(Math::Clamp(i32(scalar * this->a), 0, 255))};
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
@@ -419,10 +419,10 @@ namespace Rift
 			const float invScalar = 1.0f / scalar;
 			if constexpr (mode == ColorMode::RGBA)
 			{
-				return {u8(Math::Clamp(i32(this->r) * invScalar, 0, 255)),
-				    u8(Math::Clamp(i32(this->g) * invScalar, 0, 255)),
-				    u8(Math::Clamp(i32(this->b) * invScalar, 0, 255)),
-				    u8(Math::Clamp(i32(this->a) * invScalar, 0, 255))};
+				return {u8(Math::Clamp(i32(invScalar * this->r), 0, 255)),
+				    u8(Math::Clamp(i32(invScalar * this->g), 0, 255)),
+				    u8(Math::Clamp(i32(invScalar * this->b), 0, 255)),
+				    u8(Math::Clamp(i32(invScalar * this->a), 0, 255))};
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
