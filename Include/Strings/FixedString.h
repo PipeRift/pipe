@@ -719,39 +719,6 @@ namespace Rift
 		return result;
 	}
 
-	template<sizet N, typename CharType, typename TTraits>
-	constexpr auto operator+(const TFixedString<N, CharType, TTraits>& lhs,
-	    TStringView<CharType> rhs) -> TFixedString<N + rhs.size(), CharType, TTraits>
-	{
-		TFixedString<N + rhs.size(), CharType, TTraits> result;
-		Details::copy(lhs.begin(), lhs.end(), result.begin());
-		Details::copy(rhs.begin(), rhs.end(), result.begin() + lhs.size());
-		return result;
-	}
-
-	template<sizet M, typename CharType, typename TTraits>
-	constexpr auto operator+(
-	    TStringView<CharType> lhs, const TFixedString<M, CharType, TTraits>& rhs)
-	    -> TFixedString<lhs.size() + M, CharType, TTraits>
-	{
-		TFixedString<lhs.size() + M, CharType, TTraits> result;
-		Details::copy(lhs.begin(), lhs.end(), result.begin());
-		Details::copy(rhs.begin(), rhs.end(), result.begin() + lhs.size());
-		return result;
-	}
-
-	// TODO: Make this work
-	/*
-	template<typename CharType, typename TTraits = std::char_traits<CharType>>
-	constexpr auto operator+(TStringView<CharType> lhs, TStringView<CharType> rhs)
-	    -> TFixedString<lhs.size() + rhs.size(), CharType, TTraits>
-	{
-	    TFixedString<lhs.size() + rhs.size(), CharType, TTraits> result;
-	    Details::copy(lhs.begin(), lhs.end(), result.begin());
-	    Details::copy(rhs.begin(), rhs.end(), result.begin() + lhs.size());
-	    return result;
-	}*/
-
 	template<sizet N, sizet M, typename CharType, typename TTraits>
 	constexpr TFixedString<N - 1 + M, CharType, TTraits> operator+(
 	    const CharType (&lhs)[N], const TFixedString<M, CharType, TTraits>& rhs)
