@@ -98,7 +98,7 @@ namespace Rift
 		    mode == ColorMode::Linear || mode == ColorMode::sRGB)
 		    : TColorData<mode>(r, g, b, a)
 		{}
-		constexpr TColor(float h, float s, float v, float a) requires(mode == ColorMode::HSV)
+		constexpr TColor(float h, float s, float v, float a = 1.0f) requires(mode == ColorMode::HSV)
 		    : TColorData<mode>(h, s, v, a)
 		{}
 		constexpr TColor(const v3& vector) requires(mode != ColorMode::RGBA)
