@@ -30,7 +30,7 @@ namespace Rift
 /** Custom traits go here */
 #define TYPE_FLAGS(type, ...)                           \
 	template<typename T>                                \
-	requires Derived<T, type>                           \
+	requires Rift::Derived<T, type>                     \
 	struct Rift::TFlags<T> : public Rift::DefaultTFlags \
 	{                                                   \
 		__VA_OPT__(enum {) __VA_ARGS__ __VA_OPT__(};)   \
@@ -38,7 +38,7 @@ namespace Rift
 
 #define INHERIT_TYPE_FLAGS(type, parent, ...)            \
 	template<typename T>                                 \
-	requires Derived<T, type>                            \
+	requires Rift::Derived<T, type>                      \
 	struct Rift::TFlags<T> : public Rift::TFlags<parent> \
 	{                                                    \
 		__VA_OPT__(enum {) __VA_ARGS__ __VA_OPT__(};)    \
