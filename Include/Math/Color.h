@@ -130,12 +130,12 @@ namespace Rift
 		}
 		// Conversion constructor
 		template<ColorMode otherMode>
-		explicit constexpr TColor(const TColor<otherMode>& other) requires(mode != otherMode)
+		constexpr TColor(const TColor<otherMode>& other) requires(mode != otherMode)
 		{
 			*this = other.template Convert<mode>();
 		}
 		template<ColorMode otherMode>
-		constexpr TColor& operator=(const TColor& other) requires(mode != otherMode)
+		constexpr TColor& operator=(const TColor<otherMode>& other) requires(mode != otherMode)
 		{
 			return other.template Convert<mode>();
 		}
@@ -309,15 +309,6 @@ namespace Rift
 		///////////////////////////////////////////////////
 		// Operators
 
-		auto& Component(i32 index)
-		{
-			return (&this->r)[index];
-		}
-		const auto& Component(i32 index) const
-		{
-			return (&this->r)[index];
-		}
-
 		constexpr TColor operator+(const TColor& other) const
 		{
 			if constexpr (mode == ColorMode::RGBA)
@@ -464,6 +455,15 @@ namespace Rift
 			}
 			return this->r != other.r || this->g != other.g || this->b != other.b
 			       || this->a != other.a;
+		}
+
+		constexpr auto& operator[](u32 i)
+		{
+			return (mode == ColorMode::HSV ? &this->h : &this->r)[i];
+		}
+		constexpr const auto& operator[](u32 i) const
+		{
+			return (mode == ColorMode::HSV ? &this->h : &this->r)[i];
 		}
 
 		TColor Clamp(float min = 0.f, float max = 1.f) const requires(mode != ColorMode::RGBA)

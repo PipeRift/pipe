@@ -1,8 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include "Math/Vector.h"
-
 #include "Math/Rotator.h"
+#include "Math/Vector.h"
 #include "Platform/PlatformMisc.h"
 #include "Serialization/Contexts.h"
 
@@ -95,5 +94,25 @@ namespace Rift
 			safeReciprocalScale.z = 1 / scale.z;
 
 		return safeReciprocalScale;
+	}
+
+	v2 Vectors::ClosestPointInLine(v2 a, v2 b, v2 point)
+	{
+		const v2 ab = b - a;
+
+		const float dot    = v2::Dot(a - point, ab);
+		const float length = ab.LengthSquared();
+		const float delta  = Math::Clamp(-dot / length, 0.0f, 1.0f);
+		return a + (ab * delta);
+	}
+
+	v3 Vectors::ClosestPointInLine(v3 a, v3 b, v3 point)
+	{
+		const v3 ab = b - a;
+
+		const float dot    = v3::Dot(a - point, ab);
+		const float length = ab.LengthSquared();
+		const float delta  = Math::Clamp(-dot / length, 0.f, 1.f);
+		return a + (ab * delta);
 	}
 }    // namespace Rift

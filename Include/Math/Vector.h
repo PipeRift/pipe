@@ -97,6 +97,11 @@ namespace Rift
 			return tmp.x + tmp.y;
 		}
 
+		constexpr Vec Floor() const
+		{
+			return {Math::Floor(x), Math::Floor(y)};
+		}
+
 		T* Data()
 		{
 			return &x;
@@ -225,6 +230,15 @@ namespace Rift
 		{
 			return x != other.x || y != other.y;
 		}
+
+		constexpr T& operator[](u32 i)
+		{
+			return (&this->x)[i];
+		}
+		constexpr const T& operator[](u32 i) const
+		{
+			return (&this->x)[i];
+		}
 	};
 
 
@@ -305,6 +319,11 @@ namespace Rift
 		{
 			const Vec tmp(a * b);
 			return tmp.x + tmp.y + tmp.z;
+		}
+
+		constexpr Vec Floor() const
+		{
+			return {Math::Floor(x), Math::Floor(y), Math::Floor(z)};
 		}
 
 		T* Data()
@@ -454,6 +473,15 @@ namespace Rift
 		{
 			return x != other.x || y != other.y || z != other.z;
 		}
+
+		constexpr T& operator[](u32 i)
+		{
+			return (&this->x)[i];
+		}
+		constexpr const T& operator[](u32 i) const
+		{
+			return (&this->x)[i];
+		}
 	};
 
 	template<Number T>
@@ -487,6 +515,38 @@ namespace Rift
 			const Vec tmp(a * b);
 			return (tmp.x + tmp.y) + (tmp.z + tmp.w);
 		}
+
+		constexpr Vec Floor() const
+		{
+			return {Math::Floor(x), Math::Floor(y), Math::Floor(z), Math::Floor(w)};
+		}
+
+		T* Data()
+		{
+			return &x;
+		}
+		const T* Data() const
+		{
+			return &x;
+		}
+
+		static constexpr Vec Zero()
+		{
+			return {};
+		};
+		static constexpr Vec One()
+		{
+			return {T(1), T(1), T(1), T(1)};
+		}
+
+		constexpr T& operator[](u32 i)
+		{
+			return (&this->x)[i];
+		}
+		constexpr const T& operator[](u32 i) const
+		{
+			return (&this->x)[i];
+		}
 	};
 
 
@@ -514,79 +574,173 @@ namespace Rift
 
 
 	template<u32 size, Number T>
-	struct Box
+	struct TAABB
 	{
+		static_assert(size >= 2 && size <= 4, "AABB size must be between 2 and 4");
 		Vec<size, T> min;
 		Vec<size, T> max;
 
 
-		Box() = default;
-		constexpr Box(Vec<size, T> min, Vec<size, T> max) : min{min}, max{max} {}
+		TAABB() = default;
+		constexpr TAABB(Vec<size, T> min, Vec<size, T> max) : min{min}, max{max} {}
 
-		inline void ExtendPoint(const Vec<size, T>& point)
-		{
-			for (u32 i = 0; i < size; ++i)
-			{
-				if (point[i] < min[i])
-				{
-					min[i] = point[i];
-				}
-				if (point[i] > max[i])
-				{
-					max[i] = point[i];
-				}
-			}
-		}
 
-		// Limit this bounds by another
-		inline void Cut(const Box& other)
+		// Limit this AABB by another AABB
+		void Cut(const TAABB& other)
 		{
 			for (u32 i = 0; i < size; ++i)
 			{
 				min[i] = Math::Clamp(min[i], other.min[i], other.max[i]);
+			}
+			for (u32 i = 0; i < size; ++i)
+			{
 				max[i] = Math::Clamp(max[i], other.min[i], other.max[i]);
 			}
 		}
 
-		// Extend this bounds by another
-		inline void Extend(const Box& other)
+		void Add(const Vec<size, T>& point)
+		{
+			for (u32 i = 0; i < size; ++i)
+			{
+				if (point[i] < min[i])
+					min[i] = point[i];
+			}
+			for (u32 i = 0; i < size; ++i)
+			{
+				if (point[i] > max[i])
+					max[i] = point[i];
+			}
+		}
+		void Add(const TAABB& other)
 		{
 			for (u32 i = 0; i < size; ++i)
 			{
 				if (other.min[i] < min[i])
-				{
 					min[i] = other.min[i];
-				}
+			}
+			for (u32 i = 0; i < size; ++i)
+			{
 				if (other.max[i] > max[i])
-				{
 					max[i] = other.max[i];
-				}
 			}
 		}
 
-		// Limit this bounds by another
-		bool Contains(const Box& other)
+		void Expand(T amount)
 		{
 			for (u32 i = 0; i < size; ++i)
 			{
-				if (other.min[i] < min[i] || other.max[i] > max[i])
-				{
-					return false;
-				}
+				min[i] -= amount;
 			}
-			return true;
+			for (u32 i = 0; i < size; ++i)
+			{
+				max[i] += amount;
+			}
 		}
+		void Expand(const Vec<size, T>& amount)
+		{
+			for (u32 i = 0; i < size; ++i)
+			{
+				min[i] -= amount[i];
+			}
+			for (u32 i = 0; i < size; ++i)
+			{
+				max[i] += amount[i];
+			}
+		}
+
+		constexpr bool Contains(const Vec<size, T>& p) const
+		{
+			if constexpr (size == 2)
+				return (p.x >= min.x && p.y >= min.y) && (p.x < max.x && p.y < max.y);
+			else if constexpr (size == 3)
+				return (p.x >= min.x && p.y >= min.y && p.z >= min.z)
+				       && (p.x < max.x && p.y < max.y && p.z < max.z);
+			else if constexpr (size == 4)
+				return (p.x >= min.x && p.y >= min.y && p.z >= min.z && p.w >= min.w)
+				       && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
+		}
+		constexpr bool Contains(const TAABB& r) const requires(size == 2)
+		{
+			if constexpr (size == 2)
+				return (r.min.x >= min.x && r.min.y >= min.y)
+				       && (r.max.x <= max.x && r.max.y <= max.y);
+			else if constexpr (size == 3)
+				return (r.min.x >= min.x && r.min.y >= min.y && r.min.z >= min.z)
+				       && (r.max.x <= max.x && r.max.y <= max.y && r.max.z <= max.z);
+			else if constexpr (size == 4)
+				return (r.min.x >= min.x && r.min.y >= min.y && r.min.z >= min.z
+				           && r.min.w >= min.w)
+				       && (r.max.x <= max.x && r.max.y <= max.y && r.max.z <= max.z
+				           && r.max.w <= max.w);
+		}
+		constexpr bool Overlaps(const Vec<size, T>& p) const
+		{
+			if constexpr (size == 2)
+				return (p.x > min.x && p.y > min.y) && (p.x < max.x && p.y < max.y);
+			else if constexpr (size == 3)
+				return (p.x > min.x && p.y > min.y && p.z > min.z)
+				       && (p.x < max.x && p.y < max.y && p.z < max.z);
+			else if constexpr (size == 4)
+				return (p.x > min.x && p.y > min.y && p.z > min.z && p.w > min.w)
+				       && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
+		}
+		constexpr bool Overlaps(const TAABB& r) const
+		{
+			if constexpr (size == 2)
+				return (r.min.x < max.x && r.min.y < max.y) && (r.max.x > min.x && r.max.y > min.y);
+			else if constexpr (size == 3)
+				return (r.min.x < max.x && r.min.y < max.y && r.min.z < max.z)
+				       && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z);
+			else if constexpr (size == 4)
+				return (r.min.x < max.x && r.min.y < max.y && r.min.z < max.z && r.min.w < max.w)
+				       && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z
+				           && r.max.w > min.w);
+		}
+
+		constexpr Vec<size, T> GetSize() const
+		{
+			return max - min;
+		}
+
+		constexpr Vec<size, T> GetCenter() const
+		{
+			return min + (max - min) * 0.5f;
+		}
+
 
 		constexpr v4 ToV4() const requires(size == 2)
 		{
 			return {min.x, min.y, max.x, max.y};
 		}
+
+		static constexpr TAABB Zero()
+		{
+			return {};
+		}
+
+		constexpr bool IsInverted() const
+		{
+			if constexpr (size == 2)
+				return min.x > max.x || min.y > max.y;
+			else if constexpr (size == 3)
+				return min.x > max.x || min.y > max.y || min.z > max.z;
+			else if constexpr (size == 4)
+				return min.x > max.x || min.y > max.y || min.z > max.z || min.w > max.w;
+		}
 	};
 
-	using Box2     = Box<2, float>;
-	using Box3     = Box<3, float>;
-	using Box2_i32 = Box<2, i32>;
-	using Box3_i32 = Box<3, i32>;
+	template<typename Type>
+	using TRect = TAABB<2, Type>;
+
+	template<typename Type>
+	using TBox = TAABB<3, Type>;
+
+	using Rect  = TRect<float>;
+	using Box   = TBox<float>;
+	using Recti = TRect<i32>;
+	using Boxi  = TBox<i32>;
+	using Rectu = TRect<u32>;
+	using Boxu  = TBox<u32>;
 
 
 	CORE_API void Read(Serl::ReadContext& ct, v2& val);
@@ -602,10 +756,11 @@ namespace Rift
 	namespace Vectors
 	{
 		// mathematically if you have 0 scale, it should be infinite,
-		// however, in practice if you have 0 scale, and relative transform doesn't make much sense
-		// anymore because you should be instead of showing gigantic infinite mesh
-		// also returning BIG_NUMBER causes sequential NaN issues by multiplying
-		// so we hardcode as 0
-		static v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = Math::SMALL_NUMBER);
+		// however, in practice if you have 0 scale, and relative transform doesn't make much
+		// sense anymore because you should be instead of showing gigantic infinite mesh also
+		// returning BIG_NUMBER causes sequential NaN issues by multiplying so we hardcode as 0
+		CORE_API v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = Math::SMALL_NUMBER);
+		CORE_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
+		CORE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
 	}    // namespace Vectors
 }    // namespace Rift
