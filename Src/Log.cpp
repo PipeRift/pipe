@@ -6,7 +6,7 @@
 #include "Memory/OwnPtr.h"
 #include "Profiler.h"
 
-#include <spdlog/details/log_msg-inl.h>
+#include <spdlog/details/log_msg.h>
 #include <spdlog/details/null_mutex.h>
 #include <spdlog/logger.h>
 #include <spdlog/sinks/base_sink.h>

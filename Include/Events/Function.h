@@ -38,7 +38,7 @@ namespace Rift
 			static_assert(sizeof(void*) == sizeof(function),
 			    "It is not allowed to pass functions by reference. Use explicit function pointers: "
 			    "i.e. foo(function) -> foo(&function)");
-			target = static_cast<void*>(function);
+			target = reinterpret_cast<void*>(function);
 		}
 
 		Ret operator()(Args... args) const
