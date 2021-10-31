@@ -13,8 +13,8 @@ namespace Rift
 		if (HMODULE Handle = GetModuleHandle(TEXT("ntdll.dll")))
 		{
 			using EnabledFunction = BOOLEAN(NTAPI*)();
-			EnabledFunction RtlAreLongPathsEnabled =
-			    (EnabledFunction)(void*) GetProcAddress(Handle, "RtlAreLongPathsEnabled");
+			auto RtlAreLongPathsEnabled =
+			    (EnabledFunction)(void*)GetProcAddress(Handle, "RtlAreLongPathsEnabled");
 
 			return RtlAreLongPathsEnabled != nullptr && RtlAreLongPathsEnabled();
 		}

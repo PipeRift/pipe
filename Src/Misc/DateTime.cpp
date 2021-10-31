@@ -28,8 +28,8 @@ namespace Rift
 			Log::Warning("Created invalid date format.");
 		}
 
-		value = SysTime{SysDays(Year{year} / month / day) + Hours{hour} + Minutes{minute} +
-		                Seconds{second} + Milliseconds{millisecond}};
+		value = SysTime{SysDays(Year{year} / month / day) + Hours{hour} + Minutes{minute}
+		                + Seconds{second} + Milliseconds{millisecond}};
 	}
 
 
@@ -44,7 +44,7 @@ namespace Rift
 
 	u32 DateTime::GetDay() const
 	{
-		return (u32) GetDateComponents().day();
+		return (u32)GetDateComponents().day();
 	}
 
 	EDayOfWeek DateTime::GetDayOfWeek() const
@@ -81,12 +81,12 @@ namespace Rift
 
 	u32 DateTime::GetMonth() const
 	{
-		return (u32) YearMonthDay{Chrono::floor<Days>(value)}.month();
+		return (u32)YearMonthDay{Chrono::floor<Days>(value)}.month();
 	}
 
 	i32 DateTime::GetYear() const
 	{
-		return (i32) GetDateComponents().year();
+		return (i32)GetDateComponents().year();
 	}
 
 	String DateTime::ToHttpDate() const
@@ -96,67 +96,29 @@ namespace Rift
 
 		switch (GetDayOfWeek())
 		{
-			case EDayOfWeek::Monday:
-				DayStr = TX("Mon");
-				break;
-			case EDayOfWeek::Tuesday:
-				DayStr = TX("Tue");
-				break;
-			case EDayOfWeek::Wednesday:
-				DayStr = TX("Wed");
-				break;
-			case EDayOfWeek::Thursday:
-				DayStr = TX("Thu");
-				break;
-			case EDayOfWeek::Friday:
-				DayStr = TX("Fri");
-				break;
-			case EDayOfWeek::Saturday:
-				DayStr = TX("Sat");
-				break;
-			case EDayOfWeek::Sunday:
-				DayStr = TX("Sun");
-				break;
+			case EDayOfWeek::Monday: DayStr = TX("Mon"); break;
+			case EDayOfWeek::Tuesday: DayStr = TX("Tue"); break;
+			case EDayOfWeek::Wednesday: DayStr = TX("Wed"); break;
+			case EDayOfWeek::Thursday: DayStr = TX("Thu"); break;
+			case EDayOfWeek::Friday: DayStr = TX("Fri"); break;
+			case EDayOfWeek::Saturday: DayStr = TX("Sat"); break;
+			case EDayOfWeek::Sunday: DayStr = TX("Sun"); break;
 		}
 
 		switch (GetMonthOfYear())
 		{
-			case EMonthOfYear::January:
-				MonthStr = TX("Jan");
-				break;
-			case EMonthOfYear::February:
-				MonthStr = TX("Feb");
-				break;
-			case EMonthOfYear::March:
-				MonthStr = TX("Mar");
-				break;
-			case EMonthOfYear::April:
-				MonthStr = TX("Apr");
-				break;
-			case EMonthOfYear::May:
-				MonthStr = TX("May");
-				break;
-			case EMonthOfYear::June:
-				MonthStr = TX("Jun");
-				break;
-			case EMonthOfYear::July:
-				MonthStr = TX("Jul");
-				break;
-			case EMonthOfYear::August:
-				MonthStr = TX("Aug");
-				break;
-			case EMonthOfYear::September:
-				MonthStr = TX("Sep");
-				break;
-			case EMonthOfYear::October:
-				MonthStr = TX("Oct");
-				break;
-			case EMonthOfYear::November:
-				MonthStr = TX("Nov");
-				break;
-			case EMonthOfYear::December:
-				MonthStr = TX("Dec");
-				break;
+			case EMonthOfYear::January: MonthStr = TX("Jan"); break;
+			case EMonthOfYear::February: MonthStr = TX("Feb"); break;
+			case EMonthOfYear::March: MonthStr = TX("Mar"); break;
+			case EMonthOfYear::April: MonthStr = TX("Apr"); break;
+			case EMonthOfYear::May: MonthStr = TX("May"); break;
+			case EMonthOfYear::June: MonthStr = TX("Jun"); break;
+			case EMonthOfYear::July: MonthStr = TX("Jul"); break;
+			case EMonthOfYear::August: MonthStr = TX("Aug"); break;
+			case EMonthOfYear::September: MonthStr = TX("Sep"); break;
+			case EMonthOfYear::October: MonthStr = TX("Oct"); break;
+			case EMonthOfYear::November: MonthStr = TX("Nov"); break;
+			case EMonthOfYear::December: MonthStr = TX("Dec"); break;
 		}
 
 		return Strings::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(),
@@ -189,44 +151,25 @@ namespace Rift
 				{
 					switch (*format)
 					{
-						case TX('a'):
-							result += IsMorning() ? TX("am") : TX("pm");
-							break;
-						case TX('A'):
-							result += IsMorning() ? TX("AM") : TX("PM");
-							break;
-						case TX('d'):
-							Strings::FormatTo(result, TX("{:02i}"), GetDay());
-							break;
+						case TX('a'): result += IsMorning() ? TX("am") : TX("pm"); break;
+						case TX('A'): result += IsMorning() ? TX("AM") : TX("PM"); break;
+						case TX('d'): Strings::FormatTo(result, TX("{:02i}"), GetDay()); break;
 						case TX('D'):
 							Strings::FormatTo(result, TX("{:03i}"), GetDayOfYear());
 							break;
-						case TX('m'):
-							Strings::FormatTo(result, TX("{:02i}"), GetMonth());
-							break;
+						case TX('m'): Strings::FormatTo(result, TX("{:02i}"), GetMonth()); break;
 						case TX('y'):
 							Strings::FormatTo(result, TX("{:02i}"), GetYear() % 100);
 							break;
-						case TX('Y'):
-							Strings::FormatTo(result, TX("{:04i}"), GetYear());
-							break;
-						case TX('h'):
-							Strings::FormatTo(result, TX("{:02i}"), GetHour12());
-							break;
-						case TX('H'):
-							Strings::FormatTo(result, TX("{:02i}"), GetHour());
-							break;
-						case TX('M'):
-							Strings::FormatTo(result, TX("{:02i}"), GetMinute());
-							break;
-						case TX('S'):
-							Strings::FormatTo(result, TX("{:02i}"), GetSecond());
-							break;
+						case TX('Y'): Strings::FormatTo(result, TX("{:04i}"), GetYear()); break;
+						case TX('h'): Strings::FormatTo(result, TX("{:02i}"), GetHour12()); break;
+						case TX('H'): Strings::FormatTo(result, TX("{:02i}"), GetHour()); break;
+						case TX('M'): Strings::FormatTo(result, TX("{:02i}"), GetMinute()); break;
+						case TX('S'): Strings::FormatTo(result, TX("{:02i}"), GetSecond()); break;
 						case TX('s'):
 							Strings::FormatTo(result, TX("{:03i}"), GetMillisecond());
 							break;
-						default:
-							result += *format;
+						default: result += *format;
 					}
 				}
 				else
@@ -279,7 +222,7 @@ namespace Rift
 
 	bool DateTime::Parse(const String& dateTimeString, DateTime& OutDateTime)
 	{
-		String fixedString = dateTimeString;
+		const String& fixedString = dateTimeString;
 		// first replace -, : and . with space
 		Strings::Replace(fixedString, '-', ' ');
 		Strings::Replace(fixedString, ':', ' ');
@@ -447,9 +390,9 @@ namespace Rift
 	bool DateTime::Validate(
 	    i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond)
 	{
-		return (Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) && (Day >= 1) &&
-		       (Day <= DaysInMonth(Year, Month)) && (Hour >= 0) && (Hour <= 23) && (Minute >= 0) &&
-		       (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0) &&
-		       (Millisecond <= 999);
+		return (Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) && (Day >= 1)
+		       && (Day <= DaysInMonth(Year, Month)) && (Hour >= 0) && (Hour <= 23) && (Minute >= 0)
+		       && (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0)
+		       && (Millisecond <= 999);
 	}
 }    // namespace Rift

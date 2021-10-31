@@ -25,12 +25,12 @@ void* operator new[](std::size_t n) noexcept(false)
 
 void* operator new(std::size_t n, const std::nothrow_t& tag) noexcept
 {
-	(void) (tag);
+	(void)(tag);
 	return Rift::Alloc(n);
 }
 void* operator new[](std::size_t n, const std::nothrow_t& tag) noexcept
 {
-	(void) (tag);
+	(void)(tag);
 	return Rift::Alloc(n);
 }
 
@@ -38,12 +38,12 @@ void* operator new[](std::size_t n, const std::nothrow_t& tag) noexcept
 
 void operator delete(void* p, std::size_t n) noexcept
 {
-	(void) (n);
+	(void)(n);
 	Rift::Free(p);
 };
 void operator delete[](void* p, std::size_t n) noexcept
 {
-	(void) (n);
+	(void)(n);
 	Rift::Free(p);
 };
 
@@ -53,24 +53,24 @@ void operator delete[](void* p, std::size_t n) noexcept
 
 void operator delete(void* p, std::align_val_t align) noexcept
 {
-	(void) (align);
+	(void)(align);
 	Rift::Free(p);
 }
 void operator delete[](void* p, std::align_val_t align) noexcept
 {
-	(void) (align);
+	(void)(align);
 	Rift::Free(p);
 }
 void operator delete(void* p, std::size_t n, std::align_val_t align) noexcept
 {
-	(void) (n);
-	(void) (align);
+	(void)(n);
+	(void)(align);
 	Rift::Free(p);
 };
 void operator delete[](void* p, std::size_t n, std::align_val_t align) noexcept
 {
-	(void) (n);
-	(void) (align);
+	(void)(n);
+	(void)(align);
 	Rift::Free(p);
 };
 

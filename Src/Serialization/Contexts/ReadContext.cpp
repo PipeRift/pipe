@@ -8,24 +8,22 @@
 
 namespace Rift::Serl
 {
-#define READER_SWITCH(func)                 \
-	switch (format)                         \
-	{                                       \
-		case Format::Json:                  \
-			GetReader<Format::Json>().func; \
+#define READER_SWITCH(func)                                \
+	switch (format)                                        \
+	{                                                      \
+		case Format::Json: GetReader<Format::Json>().func; \
 	}
 
-#define RETURN_READER_SWITCH(func, def)            \
-	switch (format)                                \
-	{                                              \
-		case Format::Json:                         \
-			return GetReader<Format::Json>().func; \
-	}                                              \
+#define RETURN_READER_SWITCH(func, def)                           \
+	switch (format)                                               \
+	{                                                             \
+		case Format::Json: return GetReader<Format::Json>().func; \
+	}                                                             \
 	return def
 
 
 	// UNCHECKED helper returning a Reader from a format
-	template <Format inFormat>
+	template<Format inFormat>
 	typename FormatBind<inFormat>::Reader& ReadContext::GetReader() requires(HasReader<inFormat>)
 	{
 		Check(format == inFormat);
@@ -33,13 +31,12 @@ namespace Rift::Serl
 	}
 
 	// Read a value directly from the format reader.
-	template <typename T>
+	template<typename T>
 	void ReadFromFormat(ReadContext& ct, T& val)
 	{
 		switch (ct.format)
 		{
-			case Format::Json:
-				ct.GetReader<Format::Json>().Read(val);
+			case Format::Json: ct.GetReader<Format::Json>().Read(val);
 		}
 	}
 

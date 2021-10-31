@@ -32,7 +32,7 @@ namespace Rift::Strings
 			static const Regex spaceCamelCase(TX("([a-zA-Z])(?=[A-Z0-9])"));
 
 			result    = String{std::regex_replace(str.c_str(), spaceCamelCase, TX("$& ")).c_str()};
-			result[0] = (char) ::toupper(result[0]);
+			result[0] = (char)::toupper(result[0]);
 		}
 		else
 		{

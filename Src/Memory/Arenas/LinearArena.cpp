@@ -17,7 +17,7 @@ namespace Rift::Memory
 			Grow(Math::Max(activeBlock.GetSize(), size));
 		}
 
-		void* const ptr = (u8*) (activeBlock.GetData()) + usedBlockSize;
+		void* const ptr = (u8*)(activeBlock.GetData()) + usedBlockSize;
 		usedBlockSize += size;
 		return ptr;
 	}
@@ -29,7 +29,7 @@ namespace Rift::Memory
 			return Allocate(size);    // Allocate without alignment
 		}
 
-		void* currentPtr    = (u8*) (activeBlock.GetData()) + usedBlockSize;
+		void* currentPtr    = (u8*)(activeBlock.GetData()) + usedBlockSize;
 		const sizet padding = GetAlignmentPadding(currentPtr, alignment);
 
 		// Not enough space in current block?
@@ -49,7 +49,7 @@ namespace Rift::Memory
 		}
 
 		usedBlockSize += size + padding;
-		return (u8*) (currentPtr) + padding;
+		return (u8*)(currentPtr) + padding;
 	}
 
 	void LinearArena::Reset()

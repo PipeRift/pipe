@@ -326,7 +326,7 @@ namespace Rift
 			return a - b * (a / b);
 		}
 
-		static void SinCos(float* scalarSin, float* scalarCos, float value);
+		static void SinCos(float value, float& outSin, float& outCos);
 
 		static float Atan2(float Y, float X);
 

@@ -57,22 +57,22 @@ namespace Rift
 			RotatorFromQuat.Pitch() = -90.f;
 			RotatorFromQuat.Yaw()   = Math::Atan2(YawY, YawX) * Math::RADTODEG;
 			RotatorFromQuat.Roll()  = Rotator::NormalizeAxis(
-                -RotatorFromQuat.Yaw() - (2.f * Math::Atan2(x, w) * Math::RADTODEG));
+			     -RotatorFromQuat.Yaw() - (2.f * Math::Atan2(x, w) * Math::RADTODEG));
 		}
 		else if (SingularityTest > SINGULARITY_THRESHOLD)
 		{
 			RotatorFromQuat.Pitch() = 90.f;
 			RotatorFromQuat.Yaw()   = Math::Atan2(YawY, YawX) * Math::RADTODEG;
 			RotatorFromQuat.Roll()  = Rotator::NormalizeAxis(
-                RotatorFromQuat.Yaw() - (2.f * Math::Atan2(x, w) * Math::RADTODEG));
+			     RotatorFromQuat.Yaw() - (2.f * Math::Atan2(x, w) * Math::RADTODEG));
 		}
 		else
 		{
 			RotatorFromQuat.Pitch() = Math::FastAsin(2.f * (SingularityTest)) * Math::RADTODEG;
 			RotatorFromQuat.Yaw()   = Math::Atan2(YawY, YawX) * Math::RADTODEG;
 			RotatorFromQuat.Roll()  = Math::Atan2(-2.f * (w * x + y * z),
-                                         (1.f - 2.f * (Math::Square(x) + Math::Square(y)))) *
-			                         Math::RADTODEG;
+			                              (1.f - 2.f * (Math::Square(x) + Math::Square(y))))
+			                         * Math::RADTODEG;
 		}
 
 		return RotatorFromQuat;
@@ -85,9 +85,9 @@ namespace Rift
 
 	bool Quat::Equals(const Quat& other, float tolerance) const
 	{
-		return Math::NearlyEqual(x, other.x, tolerance) &&
-		       Math::NearlyEqual(y, other.y, tolerance) &&
-		       Math::NearlyEqual(z, other.z, tolerance) && Math::NearlyEqual(w, other.w, tolerance);
+		return Math::NearlyEqual(x, other.x, tolerance) && Math::NearlyEqual(y, other.y, tolerance)
+		       && Math::NearlyEqual(z, other.z, tolerance)
+		       && Math::NearlyEqual(w, other.w, tolerance);
 	}
 
 	void Quat::Normalize(float tolerance)
@@ -113,9 +113,9 @@ namespace Rift
 		float SP, SY, SR;
 		float CP, CY, CR;
 
-		Math::SinCos(&SP, &CP, rotator.Pitch() * DIVIDE_BY_2);
-		Math::SinCos(&SY, &CY, rotator.Yaw() * DIVIDE_BY_2);
-		Math::SinCos(&SR, &CR, rotator.Roll() * DIVIDE_BY_2);
+		Math::SinCos(rotator.Pitch() * DIVIDE_BY_2, SP, CP);
+		Math::SinCos(rotator.Yaw() * DIVIDE_BY_2, SY, CY);
+		Math::SinCos(rotator.Roll() * DIVIDE_BY_2, SR, CR);
 
 		Quat RotationQuat{CR * CP * CY + SR * SP * SY, CR * SP * SY - SR * CP * CY,
 		    -CR * SP * CY - SR * CP * SY, CR * CP * SY - SR * SP * CY};

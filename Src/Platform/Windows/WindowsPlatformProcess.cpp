@@ -10,7 +10,7 @@
 
 namespace Rift
 {
-	template <typename StringType, typename TStringGetterFunc>
+	template<typename StringType, typename TStringGetterFunc>
 	StringType GetStringFromWindowsAPI(TStringGetterFunc stringGetter, int initialSize = MAX_PATH)
 	{
 		if (initialSize <= 0)
@@ -40,14 +40,13 @@ namespace Rift
 
 	StringView WindowsPlatformProcess::GetExecutableFile()
 	{
-		static const String filePath =
-		    GetStringFromWindowsAPI<String>([](TChar* buffer, sizet size) {
+		static const auto filePath = GetStringFromWindowsAPI<String>([](TChar* buffer, sizet size) {
 #	if PLATFORM_TCHAR_IS_WCHAR
-			    return GetModuleFileNameW(nullptr, buffer, u32(size));
+			return GetModuleFileNameW(nullptr, buffer, u32(size));
 #	else
-			    return GetModuleFileNameA(nullptr, buffer, u32(size));
+			return GetModuleFileNameA(nullptr, buffer, u32(size));
 #	endif
-		    });
+		});
 		return filePath;
 	}
 

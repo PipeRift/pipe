@@ -45,8 +45,9 @@ namespace Rift::Memory
 
 		Slot& slot = freeSlots[slotIndex];
 
-		u8* const ptr = slot.start + GetAlignmentPaddingWithHeader(
-		                                 slot.start, alignment, sizeof(AllocationHeader));
+		u8* const ptr =
+		    slot.start
+		    + GetAlignmentPaddingWithHeader(slot.start, alignment, sizeof(AllocationHeader));
 
 		auto* const header = GetHeader(ptr);
 		header->end        = ptr + size;

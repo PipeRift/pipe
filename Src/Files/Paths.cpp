@@ -15,7 +15,7 @@ namespace Rift::Paths
 	}
 
 #if PLATFORM_WINDOWS
-	bool _HasDriveLetterPrefix(const TChar* const first, const TChar* const last)
+	bool HasDriveLetterPrefix(const TChar* const first, const TChar* const last)
 	{
 		// test if [first, last) has a prefix of the form X:
 		if (last - first >= 2 && FChar::ToUpper(first[0]) >= 'A' && FChar::ToUpper(first[0]) <= 'Z')
@@ -26,7 +26,7 @@ namespace Rift::Paths
 	}
 #endif
 
-	const TChar* _FindRootNameEnd(const TChar* const first, const TChar* const last)
+	const TChar* FindRootNameEnd(const TChar* const first, const TChar* const last)
 	{
 		const sizet len = last - first;
 #if PLATFORM_WINDOWS
@@ -63,7 +63,7 @@ namespace Rift::Paths
 			return first;
 		}
 
-		if (_HasDriveLetterPrefix(first, last))
+		if (HasDriveLetterPrefix(first, last))
 		{    // check for X: first because it's the most common root-name
 			return first + 2;
 		}
@@ -77,7 +77,7 @@ namespace Rift::Paths
 		// $ means anything other than a slash, including potentially the end of the input
 		if (len >= 4 && IsSlash(first[3]) && (len == 4 || !IsSlash(first[4]))    // \xx\$
 		    && ((IsSlash(first[1]) && (first[2] == L'?' || first[2] == L'.'))    // \\?\$ or \\.\$
-		           || (first[1] == L'?' && first[2] == L'?')))
+		        || (first[1] == L'?' && first[2] == L'?')))
 		{    // \??\$
 			return first + 3;
 		}
@@ -91,8 +91,8 @@ namespace Rift::Paths
 		return first;
 #else
 		// TODO: Make sure this works
-		if (len > 2 && IsSlash(first[0]) && IsSlash(first[1]) && !IsSlash(first[2]) &&
-		    std::isprint(first[2]))
+		if (len > 2 && IsSlash(first[0]) && IsSlash(first[1]) && !IsSlash(first[2])
+		    && std::isprint(first[2]))
 		{
 			const TChar* c = first + 3;
 			while (c <= last)
@@ -114,7 +114,7 @@ namespace Rift::Paths
 	const TChar* FindRelativeChar(const TChar* const first, const TChar* const last)
 	{
 		// attempt to parse [first, last) as a path and return the start of relative-path
-		return std::find_if_not(_FindRootNameEnd(first, last), last, IsSlash);
+		return std::find_if_not(FindRootNameEnd(first, last), last, IsSlash);
 	}
 
 	const TChar* FindFilename(const TChar* const first, const TChar* last)
@@ -133,7 +133,7 @@ namespace Rift::Paths
 	{
 		const auto first = path.data();
 		const auto last  = first + path.size();
-		return {first, static_cast<size_t>(_FindRootNameEnd(first, last) - first)};
+		return {first, static_cast<size_t>(FindRootNameEnd(first, last) - first)};
 	}
 
 	StringView GetRoot(const StringView path)

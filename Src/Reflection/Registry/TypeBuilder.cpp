@@ -5,10 +5,12 @@
 #include "Reflection/Registry/Registry.h"
 #include "Reflection/TypeId.h"
 
+#include <utility>
+
 
 namespace Rift::Refl
 {
-	TypeBuilder::TypeBuilder(TypeId id, Name name) : id{id}, name{name} {}
+	TypeBuilder::TypeBuilder(TypeId id, Name name) : id{id}, name{std::move(name)} {}
 
 	void TypeBuilder::Initialize()
 	{

@@ -6,20 +6,17 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Rift
+namespace Rift::Serl
 {
-	namespace Serl
+	void Read(Serl::ReadContext& ct, Path& value)
 	{
-		void Read(Serl::ReadContext& ct, Path& value)
-		{
-			String str;
-			ct.Serialize(str);
-			value = Paths::FromString(str);
-		}
+		String str;
+		ct.Serialize(str);
+		value = Paths::FromString(str);
+	}
 
-		void Write(Serl::WriteContext& ct, const Path& value)
-		{
-			ct.Serialize(Paths::ToString(value));
-		}
-	}    // namespace Serl
-}    // namespace Rift
+	void Write(Serl::WriteContext& ct, const Path& value)
+	{
+		ct.Serialize(Paths::ToString(value));
+	}
+}    // namespace Rift::Serl

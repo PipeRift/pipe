@@ -15,8 +15,8 @@ namespace Rift::Dialogs
 		rawFilters.reserve(filters.Size() * 2);
 		for (const FileFilter& filter : filters)
 		{
-			rawFilters.push_back(std::string(filter.first));
-			rawFilters.push_back(std::string(filter.second));
+			rawFilters.emplace_back(filter.first);
+			rawFilters.emplace_back(filter.second);
 		}
 		return Move(rawFilters);
 	}

@@ -8,24 +8,22 @@
 
 namespace Rift::Serl
 {
-#define WRITER_SWITCH(func)                 \
-	switch (format)                         \
-	{                                       \
-		case Format::Json:                  \
-			GetWriter<Format::Json>().func; \
+#define WRITER_SWITCH(func)                                \
+	switch (format)                                        \
+	{                                                      \
+		case Format::Json: GetWriter<Format::Json>().func; \
 	}
 
-#define RETURN_WRITER_SWITCH(func, def)            \
-	switch (format)                                \
-	{                                              \
-		case Format::Json:                         \
-			return GetWriter<Format::Json>().func; \
-	}                                              \
+#define RETURN_WRITER_SWITCH(func, def)                           \
+	switch (format)                                               \
+	{                                                             \
+		case Format::Json: return GetWriter<Format::Json>().func; \
+	}                                                             \
 	return def
 
 
 	// UNCHECKED helper returning a Writer from a format
-	template <Format inFormat>
+	template<Format inFormat>
 	typename FormatBind<inFormat>::Writer& WriteContext::GetWriter() requires(HasWriter<inFormat>)
 	{
 		Check(format == inFormat);
@@ -33,22 +31,20 @@ namespace Rift::Serl
 	}
 
 	// Write a value directly from the format reader.
-	template <typename T>
+	template<typename T>
 	void WriteFromFormat(WriteContext& ct, const T& val) requires(!ShouldPassByValue<T>)
 	{
 		switch (ct.format)
 		{
-			case Format::Json:
-				ct.GetWriter<Format::Json>().Write(val);
+			case Format::Json: ct.GetWriter<Format::Json>().Write(val);
 		}
 	}
-	template <typename T>
+	template<typename T>
 	void WriteFromFormat(WriteContext& ct, T val) requires(ShouldPassByValue<T>)
 	{
 		switch (ct.format)
 		{
-			case Format::Json:
-				ct.GetWriter<Format::Json>().Write(val);
+			case Format::Json: ct.GetWriter<Format::Json>().Write(val);
 		}
 	}
 

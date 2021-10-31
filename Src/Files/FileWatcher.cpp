@@ -17,7 +17,7 @@ namespace Rift
 		if (self.allowedExtensions.Size())
 		{
 			bool validExtension = false;
-			for (auto extension : self.allowedExtensions)
+			for (const auto& extension : self.allowedExtensions)
 			{
 				validExtension |= Strings::EndsWith(filename, extension);
 			}
@@ -45,8 +45,7 @@ namespace Rift
 				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Moved from ("
 				          << oldFilename << ")" << std::endl;
 				break;
-			default:
-				std::cout << "Should never happen!" << std::endl;
+			default: std::cout << "Should never happen!" << std::endl;
 		}
 	}
 

@@ -31,9 +31,7 @@ namespace Rift
 			{
 				switch (*format)
 				{
-					case TX('d'):
-						Strings::FormatTo(result, TX("{}"), Math::Abs(GetDays()));
-						break;
+					case TX('d'): Strings::FormatTo(result, TX("{}"), Math::Abs(GetDays())); break;
 					case TX('D'):
 						Strings::FormatTo(result, TX("{:08i}"), Math::Abs(GetDays()));
 						break;
@@ -58,8 +56,7 @@ namespace Rift
 					case TX('n'):
 						Strings::FormatTo(result, TX("{:09i}"), Math::Abs(GetFractionNano()));
 						break;
-					default:
-						result += *format;
+					default: result += *format;
 				}
 			}
 			else
@@ -82,8 +79,8 @@ namespace Rift
 		// @todo gmp: implement stricter FTimespan parsing; this implementation is too forgiving
 
 		// get string tokens
-		const bool HasFractional = Strings::Contains(TimespanString, TX('.')) ||
-		                           Strings::Contains(TimespanString, TX(','));
+		const bool HasFractional = Strings::Contains(TimespanString, TX('.'))
+		                           || Strings::Contains(TimespanString, TX(','));
 		String TokenString = TimespanString;
 		Strings::Replace(TokenString, TX('.'), TX(':'));
 		Strings::Replace(TokenString, TX(','), TX(':'));
@@ -168,8 +165,8 @@ namespace Rift
 	void Timespan::Assign(i32 days, i32 hours, i32 minutes, i32 seconds, i32 fractionNano)
 	{
 		duration = Chrono::floor<DecMicroseconds>(
-		    Days{days} + Chrono::hours{hours} + Chrono::minutes{minutes} +
-		    Chrono::seconds{seconds} + Chrono::nanoseconds{fractionNano});
+		    Days{days} + Chrono::hours{hours} + Chrono::minutes{minutes} + Chrono::seconds{seconds}
+		    + Chrono::nanoseconds{fractionNano});
 	}
 
 	Timespan Timespan::FromHours(i32 hours)

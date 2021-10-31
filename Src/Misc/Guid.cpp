@@ -6,7 +6,7 @@
 #include "Platform/PlatformMisc.h"
 #include "Serialization/Contexts.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 
 namespace Rift
@@ -57,8 +57,7 @@ namespace Rift
 
 			case EGuidFormats::UniqueObjectGuid:
 				return Strings::Format(TX("{:08X}-{:08X}-{:08X}-{:08X}"), a, b, c, d);
-			default:
-				return Strings::Format(TX("{:08X}{:08X}{:08X}{:08X}"), a, b, c, d);
+			default: return Strings::Format(TX("{:08X}{:08X}{:08X}{:08X}"), a, b, c, d);
 		}
 	}
 
@@ -122,8 +121,8 @@ namespace Rift
 		}
 		else if (Format == EGuidFormats::DigitsWithHyphens)
 		{
-			if ((GuidString[8] != TX('-')) || (GuidString[13] != TX('-')) ||
-			    (GuidString[18] != TX('-')) || (GuidString[23] != TX('-')))
+			if ((GuidString[8] != TX('-')) || (GuidString[13] != TX('-'))
+			    || (GuidString[18] != TX('-')) || (GuidString[23] != TX('-')))
 			{
 				return false;
 			}
@@ -136,9 +135,9 @@ namespace Rift
 		}
 		else if (Format == EGuidFormats::DigitsWithHyphensInBraces)
 		{
-			if ((GuidString[0] != TX('{')) || (GuidString[9] != TX('-')) ||
-			    (GuidString[14] != TX('-')) || (GuidString[19] != TX('-')) ||
-			    (GuidString[24] != TX('-')) || (GuidString[37] != TX('}')))
+			if ((GuidString[0] != TX('{')) || (GuidString[9] != TX('-'))
+			    || (GuidString[14] != TX('-')) || (GuidString[19] != TX('-'))
+			    || (GuidString[24] != TX('-')) || (GuidString[37] != TX('}')))
 			{
 				return false;
 			}
@@ -151,9 +150,9 @@ namespace Rift
 		}
 		else if (Format == EGuidFormats::DigitsWithHyphensInParentheses)
 		{
-			if ((GuidString[0] != TX('(')) || (GuidString[9] != TX('-')) ||
-			    (GuidString[14] != TX('-')) || (GuidString[19] != TX('-')) ||
-			    (GuidString[24] != TX('-')) || (GuidString[37] != TX(')')))
+			if ((GuidString[0] != TX('(')) || (GuidString[9] != TX('-'))
+			    || (GuidString[14] != TX('-')) || (GuidString[19] != TX('-'))
+			    || (GuidString[24] != TX('-')) || (GuidString[37] != TX(')')))
 			{
 				return false;
 			}
@@ -166,24 +165,24 @@ namespace Rift
 		}
 		else if (Format == EGuidFormats::HexValuesInBraces)
 		{
-			if ((GuidString[0] != TX('{')) || (GuidString[1] != TX('0')) ||
-			    (GuidString[2] != TX('x')) || (GuidString[11] != TX(',')) ||
-			    (GuidString[12] != TX('0')) || (GuidString[13] != TX('x')) ||
-			    (GuidString[18] != TX(',')) || (GuidString[19] != TX('0')) ||
-			    (GuidString[20] != TX('x')) || (GuidString[25] != TX(',')) ||
-			    (GuidString[26] != TX('{')) || (GuidString[27] != TX('0')) ||
-			    (GuidString[28] != TX('x')) || (GuidString[31] != TX(',')) ||
-			    (GuidString[32] != TX('0')) || (GuidString[33] != TX('x')) ||
-			    (GuidString[36] != TX(',')) || (GuidString[37] != TX('0')) ||
-			    (GuidString[38] != TX('x')) || (GuidString[41] != TX(',')) ||
-			    (GuidString[42] != TX('0')) || (GuidString[43] != TX('x')) ||
-			    (GuidString[46] != TX(',')) || (GuidString[47] != TX('0')) ||
-			    (GuidString[48] != TX('x')) || (GuidString[51] != TX(',')) ||
-			    (GuidString[52] != TX('0')) || (GuidString[53] != TX('x')) ||
-			    (GuidString[56] != TX(',')) || (GuidString[57] != TX('0')) ||
-			    (GuidString[58] != TX('x')) || (GuidString[61] != TX(',')) ||
-			    (GuidString[62] != TX('0')) || (GuidString[63] != TX('x')) ||
-			    (GuidString[66] != TX('}')) || (GuidString[67] != TX('}')))
+			if ((GuidString[0] != TX('{')) || (GuidString[1] != TX('0'))
+			    || (GuidString[2] != TX('x')) || (GuidString[11] != TX(','))
+			    || (GuidString[12] != TX('0')) || (GuidString[13] != TX('x'))
+			    || (GuidString[18] != TX(',')) || (GuidString[19] != TX('0'))
+			    || (GuidString[20] != TX('x')) || (GuidString[25] != TX(','))
+			    || (GuidString[26] != TX('{')) || (GuidString[27] != TX('0'))
+			    || (GuidString[28] != TX('x')) || (GuidString[31] != TX(','))
+			    || (GuidString[32] != TX('0')) || (GuidString[33] != TX('x'))
+			    || (GuidString[36] != TX(',')) || (GuidString[37] != TX('0'))
+			    || (GuidString[38] != TX('x')) || (GuidString[41] != TX(','))
+			    || (GuidString[42] != TX('0')) || (GuidString[43] != TX('x'))
+			    || (GuidString[46] != TX(',')) || (GuidString[47] != TX('0'))
+			    || (GuidString[48] != TX('x')) || (GuidString[51] != TX(','))
+			    || (GuidString[52] != TX('0')) || (GuidString[53] != TX('x'))
+			    || (GuidString[56] != TX(',')) || (GuidString[57] != TX('0'))
+			    || (GuidString[58] != TX('x')) || (GuidString[61] != TX(','))
+			    || (GuidString[62] != TX('0')) || (GuidString[63] != TX('x'))
+			    || (GuidString[66] != TX('}')) || (GuidString[67] != TX('}')))
 			{
 				return false;
 			}
@@ -202,8 +201,8 @@ namespace Rift
 		}
 		else if (Format == EGuidFormats::UniqueObjectGuid)
 		{
-			if ((GuidString[8] != TX('-')) || (GuidString[17] != TX('-')) ||
-			    (GuidString[26] != TX('-')))
+			if ((GuidString[8] != TX('-')) || (GuidString[17] != TX('-'))
+			    || (GuidString[26] != TX('-')))
 			{
 				return false;
 			}
@@ -214,9 +213,9 @@ namespace Rift
 			NormalizedGuidString += GuidString.substr(27, 8);
 		}
 
-		for (i32 Index = 0; Index < (i32) NormalizedGuidString.size(); ++Index)
+		for (char Index : NormalizedGuidString)
 		{
-			if (!FChar::IsHexDigit(NormalizedGuidString[Index]))
+			if (!FChar::IsHexDigit(Index))
 			{
 				return false;
 			}

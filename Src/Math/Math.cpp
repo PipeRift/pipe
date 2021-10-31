@@ -7,7 +7,7 @@
 
 namespace Rift
 {
-	void Math::SinCos(float* scalarSin, float* scalarCos, float value)
+	void Math::SinCos(float value, float& outSin, float& outCos)
 	{
 		// Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
 		float quotient = (INV_PI * 0.5f) * value;
@@ -17,7 +17,7 @@ namespace Rift
 		}
 		else
 		{
-			quotient = (float) ((int) (quotient - 0.5f));
+			quotient = (float)((int)(quotient - 0.5f));
 		}
 		float y = value - (2.0f * PI) * quotient;
 
@@ -41,22 +41,22 @@ namespace Rift
 		float y2 = y * y;
 
 		// 11-degree minimax approximation
-		*scalarSin = (((((-2.3889859e-08f * y2 + 2.7525562e-06f) * y2 - 0.00019840874f) * y2 +
-		                   0.0083333310f) *
-		                      y2 -
-		                  0.16666667f) *
-		                     y2 +
-		                 1.0f) *
-		             y;
+		outSin =
+		    (((((-2.3889859e-08f * y2 + 2.7525562e-06f) * y2 - 0.00019840874f) * y2 + 0.0083333310f)
+		             * y2
+		         - 0.16666667f)
+		            * y2
+		        + 1.0f)
+		    * y;
 
 		// 10-degree minimax approximation
 		float p =
-		    ((((-2.6051615e-07f * y2 + 2.4760495e-05f) * y2 - 0.0013888378f) * y2 + 0.041666638f) *
-		            y2 -
-		        0.5f) *
-		        y2 +
-		    1.0f;
-		*scalarCos = sign * p;
+		    ((((-2.6051615e-07f * y2 + 2.4760495e-05f) * y2 - 0.0013888378f) * y2 + 0.041666638f)
+		            * y2
+		        - 0.5f)
+		        * y2
+		    + 1.0f;
+		outCos = sign * p;
 	}
 
 	float Math::Atan2(float Y, float X)
