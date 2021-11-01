@@ -445,7 +445,7 @@ namespace Rift
 				return DWColor() == other.DWColor();
 			}
 			return this->r == other.r && this->g == other.g && this->b == other.b
-			       && this->a == other.a;
+			    && this->a == other.a;
 		}
 		constexpr bool operator!=(const TColor& other) const
 		{
@@ -454,7 +454,7 @@ namespace Rift
 				return DWColor() == other.DWColor();
 			}
 			return this->r != other.r || this->g != other.g || this->b != other.b
-			       || this->a != other.a;
+			    || this->a != other.a;
 		}
 
 		constexpr auto& operator[](u32 i)
@@ -477,9 +477,9 @@ namespace Rift
 		    requires(mode != ColorMode::RGBA)
 		{
 			return Math::Abs(this->r - other.r) < Tolerance
-			       && Math::Abs(this->g - other.g) < Tolerance
-			       && Math::Abs(this->b - other.b) < Tolerance
-			       && Math::Abs(this->a - other.a) < Tolerance;
+			    && Math::Abs(this->g - other.g) < Tolerance
+			    && Math::Abs(this->b - other.b) < Tolerance
+			    && Math::Abs(this->a - other.a) < Tolerance;
 		}
 
 		constexpr v3_u8 ToV3() const requires(mode == ColorMode::RGBA)
@@ -612,8 +612,8 @@ namespace Rift
 		bool IsAlmostBlack() const
 		{
 			return Math::Square(this->r) < Math::SMALLER_NUMBER
-			       && Math::Square(this->g) < Math::SMALLER_NUMBER
-			       && Math::Square(this->b) < Math::SMALLER_NUMBER;
+			    && Math::Square(this->g) < Math::SMALLER_NUMBER
+			    && Math::Square(this->b) < Math::SMALLER_NUMBER;
 		}
 
 		/**
@@ -769,9 +769,9 @@ namespace Rift
 
 		// Approximate Planckian locus in CIE 1960 UCS
 		const float u = (0.860117757f + 1.54118254e-4f * temp + 1.28641212e-7f * temp * temp)
-		                / (1.0f + 8.42420235e-4f * temp + 7.08145163e-7f * temp * temp);
+		              / (1.0f + 8.42420235e-4f * temp + 7.08145163e-7f * temp * temp);
 		const float v = (0.317398726f + 4.22806245e-5f * temp + 4.20481691e-8f * temp * temp)
-		                / (1.0f - 2.89741816e-5f * temp + 1.61456053e-7f * temp * temp);
+		              / (1.0f - 2.89741816e-5f * temp + 1.61456053e-7f * temp * temp);
 
 		const float invDiv = 1.f / (2.f * u - 8.f * v + 4.f);
 		const float x      = 3.0f * u * invDiv;

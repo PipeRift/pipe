@@ -391,8 +391,8 @@ namespace Rift
 	    i32 Year, i32 Month, i32 Day, i32 Hour, i32 Minute, i32 Second, i32 Millisecond)
 	{
 		return (Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) && (Day >= 1)
-		       && (Day <= DaysInMonth(Year, Month)) && (Hour >= 0) && (Hour <= 23) && (Minute >= 0)
-		       && (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0)
-		       && (Millisecond <= 999);
+		    && (Day <= DaysInMonth(Year, Month)) && (Hour >= 0) && (Hour <= 23) && (Minute >= 0)
+		    && (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0)
+		    && (Millisecond <= 999);
 	}
 }    // namespace Rift

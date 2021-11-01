@@ -72,7 +72,7 @@ namespace Rift
 			RotatorFromQuat.Yaw()   = Math::Atan2(YawY, YawX) * Math::RADTODEG;
 			RotatorFromQuat.Roll()  = Math::Atan2(-2.f * (w * x + y * z),
 			                              (1.f - 2.f * (Math::Square(x) + Math::Square(y))))
-			                         * Math::RADTODEG;
+			                       * Math::RADTODEG;
 		}
 
 		return RotatorFromQuat;
@@ -86,8 +86,7 @@ namespace Rift
 	bool Quat::Equals(const Quat& other, float tolerance) const
 	{
 		return Math::NearlyEqual(x, other.x, tolerance) && Math::NearlyEqual(y, other.y, tolerance)
-		       && Math::NearlyEqual(z, other.z, tolerance)
-		       && Math::NearlyEqual(w, other.w, tolerance);
+		    && Math::NearlyEqual(z, other.z, tolerance) && Math::NearlyEqual(w, other.w, tolerance);
 	}
 
 	void Quat::Normalize(float tolerance)

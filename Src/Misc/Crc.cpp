@@ -340,9 +340,9 @@ namespace Rift::Crc
 				u32 V1 = *Data4++ ^ CRC;
 				u32 V2 = *Data4++;
 				CRC    = CRCTablesSB8[7][V1 & 0xFF] ^ CRCTablesSB8[6][(V1 >> 8) & 0xFF]
-				      ^ CRCTablesSB8[5][(V1 >> 16) & 0xFF] ^ CRCTablesSB8[4][V1 >> 24]
-				      ^ CRCTablesSB8[3][V2 & 0xFF] ^ CRCTablesSB8[2][(V2 >> 8) & 0xFF]
-				      ^ CRCTablesSB8[1][(V2 >> 16) & 0xFF] ^ CRCTablesSB8[0][V2 >> 24];
+				    ^ CRCTablesSB8[5][(V1 >> 16) & 0xFF] ^ CRCTablesSB8[4][V1 >> 24]
+				    ^ CRCTablesSB8[3][V2 & 0xFF] ^ CRCTablesSB8[2][(V2 >> 8) & 0xFF]
+				    ^ CRCTablesSB8[1][(V2 >> 16) & 0xFF] ^ CRCTablesSB8[0][V2 >> 24];
 			}
 			Data = (const u8*)Data4;
 

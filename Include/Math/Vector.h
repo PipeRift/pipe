@@ -292,7 +292,7 @@ namespace Rift
 		static T DistanceSqrt(const Vec& one, const Vec& other)
 		{
 			return Math::Square(other.x - one.x) + Math::Square(other.y - one.y)
-			       + Math::Square(other.z - one.z);
+			     + Math::Square(other.z - one.z);
 		}
 
 		Vec& Normalize()
@@ -654,24 +654,24 @@ namespace Rift
 				return (p.x >= min.x && p.y >= min.y) && (p.x < max.x && p.y < max.y);
 			else if constexpr (size == 3)
 				return (p.x >= min.x && p.y >= min.y && p.z >= min.z)
-				       && (p.x < max.x && p.y < max.y && p.z < max.z);
+				    && (p.x < max.x && p.y < max.y && p.z < max.z);
 			else if constexpr (size == 4)
 				return (p.x >= min.x && p.y >= min.y && p.z >= min.z && p.w >= min.w)
-				       && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
+				    && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
 		}
 		constexpr bool Contains(const TAABB& r) const requires(size == 2)
 		{
 			if constexpr (size == 2)
 				return (r.min.x >= min.x && r.min.y >= min.y)
-				       && (r.max.x <= max.x && r.max.y <= max.y);
+				    && (r.max.x <= max.x && r.max.y <= max.y);
 			else if constexpr (size == 3)
 				return (r.min.x >= min.x && r.min.y >= min.y && r.min.z >= min.z)
-				       && (r.max.x <= max.x && r.max.y <= max.y && r.max.z <= max.z);
+				    && (r.max.x <= max.x && r.max.y <= max.y && r.max.z <= max.z);
 			else if constexpr (size == 4)
 				return (r.min.x >= min.x && r.min.y >= min.y && r.min.z >= min.z
 				           && r.min.w >= min.w)
-				       && (r.max.x <= max.x && r.max.y <= max.y && r.max.z <= max.z
-				           && r.max.w <= max.w);
+				    && (r.max.x <= max.x && r.max.y <= max.y && r.max.z <= max.z
+				        && r.max.w <= max.w);
 		}
 		constexpr bool Overlaps(const Vec<size, T>& p) const
 		{
@@ -679,10 +679,10 @@ namespace Rift
 				return (p.x > min.x && p.y > min.y) && (p.x < max.x && p.y < max.y);
 			else if constexpr (size == 3)
 				return (p.x > min.x && p.y > min.y && p.z > min.z)
-				       && (p.x < max.x && p.y < max.y && p.z < max.z);
+				    && (p.x < max.x && p.y < max.y && p.z < max.z);
 			else if constexpr (size == 4)
 				return (p.x > min.x && p.y > min.y && p.z > min.z && p.w > min.w)
-				       && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
+				    && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
 		}
 		constexpr bool Overlaps(const TAABB& r) const
 		{
@@ -690,11 +690,10 @@ namespace Rift
 				return (r.min.x < max.x && r.min.y < max.y) && (r.max.x > min.x && r.max.y > min.y);
 			else if constexpr (size == 3)
 				return (r.min.x < max.x && r.min.y < max.y && r.min.z < max.z)
-				       && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z);
+				    && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z);
 			else if constexpr (size == 4)
 				return (r.min.x < max.x && r.min.y < max.y && r.min.z < max.z && r.min.w < max.w)
-				       && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z
-				           && r.max.w > min.w);
+				    && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z && r.max.w > min.w);
 		}
 
 		constexpr Vec<size, T> GetSize() const

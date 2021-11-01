@@ -87,12 +87,12 @@ namespace Rift
 		static inline bool IsLinebreak(CharType c)
 		{
 			return c == TCharHelpersBase<CharType, Size>::LineFeed
-			       || c == TCharHelpersBase<CharType, Size>::VerticalTab
-			       || c == TCharHelpersBase<CharType, Size>::FormFeed
-			       || c == TCharHelpersBase<CharType, Size>::CarriageReturn
-			       || c == TCharHelpersBase<CharType, Size>::NextLine
-			       || c == TCharHelpersBase<CharType, Size>::LineSeparator
-			       || c == TCharHelpersBase<CharType, Size>::ParagraphSeparator;
+			    || c == TCharHelpersBase<CharType, Size>::VerticalTab
+			    || c == TCharHelpersBase<CharType, Size>::FormFeed
+			    || c == TCharHelpersBase<CharType, Size>::CarriageReturn
+			    || c == TCharHelpersBase<CharType, Size>::NextLine
+			    || c == TCharHelpersBase<CharType, Size>::LineSeparator
+			    || c == TCharHelpersBase<CharType, Size>::ParagraphSeparator;
 		}
 	};
 
@@ -103,10 +103,10 @@ namespace Rift
 		static inline bool IsLinebreak(CharType c)
 		{
 			return c == TCharHelpersBase<CharType, 1>::LineFeed
-			       || c == TCharHelpersBase<CharType, 1>::VerticalTab
-			       || c == TCharHelpersBase<CharType, 1>::FormFeed
-			       || c == TCharHelpersBase<CharType, 1>::CarriageReturn
-			       || c == TCharHelpersBase<CharType, 1>::NextLine;
+			    || c == TCharHelpersBase<CharType, 1>::VerticalTab
+			    || c == TCharHelpersBase<CharType, 1>::FormFeed
+			    || c == TCharHelpersBase<CharType, 1>::CarriageReturn
+			    || c == TCharHelpersBase<CharType, 1>::NextLine;
 		}
 	};
 

@@ -80,7 +80,7 @@ namespace Rift
 
 		// get string tokens
 		const bool HasFractional = Strings::Contains(TimespanString, TX('.'))
-		                           || Strings::Contains(TimespanString, TX(','));
+		                        || Strings::Contains(TimespanString, TX(','));
 		String TokenString = TimespanString;
 		Strings::Replace(TokenString, TX('.'), TX(':'));
 		Strings::Replace(TokenString, TX(','), TX(':'));

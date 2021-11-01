@@ -108,7 +108,7 @@ namespace Rift
 		constexpr bool EndsWith(const TStringView<CharType> str, const TStringView<CharType> subStr)
 		{
 			return str.size() >= subStr.size()
-			       && str.compare(str.size() - subStr.size(), StringView::npos, subStr) == 0;
+			    && str.compare(str.size() - subStr.size(), StringView::npos, subStr) == 0;
 		}
 
 		template<typename CharType>

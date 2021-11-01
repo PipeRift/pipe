@@ -46,8 +46,8 @@ namespace Rift::Algorithms
 			if (rightChildIndex < index)
 			{
 				minChildIndex = predicate(heap[leftChildIndex], heap[rightChildIndex])
-				                    ? leftChildIndex
-				                    : rightChildIndex;
+				                  ? leftChildIndex
+				                  : rightChildIndex;
 			}
 			if (!predicate(heap[minChildIndex], heap[index]))
 			{
