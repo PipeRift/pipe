@@ -15,7 +15,7 @@ namespace Rift
 	{
 		static constexpr float PI{3.14159265358979323846f};
 		static constexpr float HALF_PI  = PI * 0.5f;
-		static constexpr float INV_PI   = 1 / PI;
+		static constexpr float INV_PI   = 1.f / PI;
 		static constexpr float RADTODEG = 180.f / PI;
 		static constexpr float DEGTORAD = PI / 180.f;
 
