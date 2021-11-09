@@ -44,6 +44,10 @@ namespace Rift
 		TArray(u32 defaultSize) : vector(defaultSize) {}
 		TArray(u32 defaultSize, const Type& defaultValue) : vector(defaultSize, defaultValue) {}
 		TArray(std::initializer_list<Type> initList) : vector{initList} {}
+		TArray(const Type* data, i32 sizeNum)
+		{
+			Assign(data, sizeNum);
+		}
 
 		TArray(TArray<Type>&& other)
 		{
@@ -139,7 +143,6 @@ namespace Rift
 			vector.insert(vector.end(), values.begin(), values.end());
 		}
 
-
 		void Reserve(i32 sizeNum)
 		{
 			vector.reserve(sizeNum);
@@ -156,6 +159,11 @@ namespace Rift
 		void Assign(i32 sizeNum, const Type& value)
 		{
 			vector.assign(sizeNum, value);
+		}
+
+		void Assign(const Type* data, i32 sizeNum)
+		{
+			vector.assign(data, data + sizeNum);
 		}
 
 		void AssignAll(const Type& value)
@@ -238,6 +246,43 @@ namespace Rift
 		{
 			Iterator it = FindIt(Move(cb));
 			return it != end() ? &*it : nullptr;
+		}
+
+		i32 FindOrAdd(const Type& item) const
+		{
+			const i32 found = FindIndex(item);
+			if (found != NO_INDEX)
+			{
+				return found;
+			}
+			return Add(item);
+		}
+
+		/** Finds or adds an element in a sorted array.
+		 * Much more efficient that FindOrAdd.
+		 * NOTE: Undefined behavior on unsorted arrays!
+		 * @param item to find or add
+		 * @param sortPredicate used to sort the array
+		 * @param insertSorted when true(default) inserts element sorted
+		 */
+		template<typename SortPredicate = TLess<Type>>
+		i32 FindOrAddSorted(
+		    const Type& item, SortPredicate sortPredicate = {}, bool insertSorted = true)
+		{
+			const i32 index = LowerBound(item, sortPredicate);
+			if (index != NO_INDEX)
+			{
+				if (!sortPredicate(item, Data()[index]))    // Equal check, found element
+				{
+					return index;
+				}
+				else if (insertSorted)
+				{
+					Insert(index, item);
+					return index;
+				}
+			}
+			return Add(item);
 		}
 
 		/**
@@ -474,7 +519,15 @@ namespace Rift
 
 		i32 Size() const
 		{
-			return (i32)vector.size();
+			return i32(vector.size());
+		}
+
+		// Return the size of the data used in bytes
+		i32 GetDataSize()
+		    const    // std::vector<bool> doesn't guarantee that this function is accurate
+		    requires(!IsSame<Type, bool>)
+		{
+			return Size() * sizeof(Type);
 		}
 
 		i32 MaxSize() const
@@ -527,14 +580,9 @@ namespace Rift
 		 * @returns Reference to indexed element.
 		 */
 		Type&
-		operator[](i32 index)
+		operator[](i32 index) requires(!IsSame<Type, bool>)
 		{
 			assert(IsValidIndex(index));
-			if constexpr (IsSame<Type, bool>)
-			{
-				// std::vector of bool can't access Data()
-				return vector.operator[](index);
-			}
 			return Data()[index];
 		}
 
@@ -545,15 +593,24 @@ namespace Rift
 		 *
 		 * @returns Reference to indexed element.
 		 */
-		const Type& operator[](i32 index) const
+		const Type& operator[](i32 index) const requires(!IsSame<Type, bool>)
 		{
 			assert(IsValidIndex(index));
-			if constexpr (IsSame<Type, bool>)
-			{
-				// std::vector of bool can't access Data()
-				return vector.operator[](index);
-			}
 			return Data()[index];
+		}
+
+		typename VectorType::reference operator[](i32 index) requires(IsSame<Type, bool>)
+		{
+			assert(IsValidIndex(index));
+			// std::vector of bool can't access Data()
+			return vector.operator[](index);
+		}
+		typename VectorType::const_reference operator[](i32 index) const
+		    requires(IsSame<Type, bool>)
+		{
+			assert(IsValidIndex(index));
+			// std::vector of bool can't access Data()
+			return vector.operator[](index);
 		}
 
 		Iterator begin()

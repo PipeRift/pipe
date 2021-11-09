@@ -77,6 +77,18 @@ go_bandit([]() {
 			AssertThat(data2.Data(), !Equals(nullptr));
 		});
 
+		it("Can Add", [&]() {
+			TArray<i32> data0{};
+			data0.Add(34);
+			AssertThat(data0.Size(), Equals(1));
+			AssertThat(data0[0], Equals(34));
+
+			TArray<i32> data1{67};
+			data1.Add(34);
+			AssertThat(data1.Size(), Equals(2));
+			AssertThat(data1[1], Equals(34));
+		});
+
 		it("Can RemoveIf", [&]() {
 			TArray<i32> data{1, 4, 5, 6};
 
@@ -101,6 +113,42 @@ go_bandit([]() {
 			AssertThat(data.Size(), Equals(2));
 			AssertThat(data[0], Equals(5));
 			AssertThat(data[1], Equals(4));
+		});
+
+		it("Can Sort", [&]() {
+			TArray<i32> data0{34, 1, 5};
+			data0.Sort();    // Default sort is less
+			AssertThat(data0[0], Equals(1));
+			AssertThat(data0[1], Equals(5));
+			AssertThat(data0[2], Equals(34));
+
+			TArray<i32> data1{34, 1, 5};
+			data1.Sort(TGreater<i32>{});
+			AssertThat(data1[0], Equals(34));
+			AssertThat(data1[1], Equals(5));
+			AssertThat(data1[2], Equals(1));
+		});
+
+		it("Can find in FindOrAddSorted", [&]() {
+			TArray<i32> data{1, 5, 5, 34};
+
+			AssertThat(data.FindOrAddSorted(1), Equals(0));
+			AssertThat(data.FindOrAddSorted(5), Equals(1));
+			AssertThat(data.FindOrAddSorted(34), Equals(3));
+			AssertThat(data.Size(), Equals(4));
+		});
+
+		it("Can add in FindOrAddSorted", [&]() {
+			TArray<i32> data{1, 5, 5, 34};
+
+			AssertThat(data.FindOrAddSorted(2), Equals(1));
+			AssertThat(data.Size(), Equals(5));
+
+			AssertThat(data.FindOrAddSorted(6), Equals(4));
+			AssertThat(data.Size(), Equals(6));
+
+			AssertThat(data.FindOrAddSorted(36), Equals(6));
+			AssertThat(data.Size(), Equals(7));
 		});
 	});
 });
