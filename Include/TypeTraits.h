@@ -37,16 +37,17 @@ namespace Rift
 	template <typename T>
 	concept FloatingPoint = std::is_floating_point_v<T>;
 
+	template<typename T>
+	concept IsCopyConstructible = std::is_copy_constructible_v<T>;
+	template<typename T>
+	concept IsCopyAssignable = std::is_copy_assignable_v<T>;
 	template <typename T>
 	concept IsMoveConstructible = std::is_move_constructible_v<T>;
-	template <typename T>
-	concept IsMoveAssignable = std::is_move_constructible_v<T>;
+	template<typename T>
+	concept IsMoveAssignable = std::is_move_assignable_v<T>;
 
-	template <bool B, typename T = void>
-	using EnableIf = std::enable_if<B, T>;
-
-	template <bool B, typename T = void>
-	using EnableIfT = std::enable_if_t<B, T>;
+	template<typename T>
+	concept IsEmpty = std::is_empty_v<T>;
 
 	template <typename T, sizet size>
 	concept IsSmaller = sizeof(T) < size;

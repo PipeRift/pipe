@@ -30,7 +30,7 @@ namespace Rift
 /** Custom traits go here */
 #define TYPE_FLAGS(type, ...)                           \
 	template<typename T>                                \
-	requires Rift::Derived<T, type>                     \
+		requires Rift::Derived<T, type>                 \
 	struct Rift::TFlags<T> : public Rift::DefaultTFlags \
 	{                                                   \
 		enum                                            \
@@ -41,7 +41,7 @@ namespace Rift
 
 #define INHERIT_TYPE_FLAGS(type, parent, ...)            \
 	template<typename T>                                 \
-	requires Rift::Derived<T, type>                      \
+		requires Rift::Derived<T, type>                  \
 	struct Rift::TFlags<T> : public Rift::TFlags<parent> \
 	{                                                    \
 		enum                                             \

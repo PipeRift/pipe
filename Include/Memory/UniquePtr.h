@@ -25,8 +25,8 @@ public:
 	TUniquePtr(const TUniquePtr&) = delete;
 	TUniquePtr& operator=(const TUniquePtr&) = delete;
 
-	template<class D2 = D, EnableIfT<std::is_move_assignable_v<D2>, int> = 0>
-	TUniquePtr& operator=(TUniquePtr&& other) noexcept
+	template<class D2 = D>
+	TUniquePtr& operator=(TUniquePtr&& other) noexcept requires(IsMoveAssignable<D2>)
 	{
 		if (Get() != other.Get())
 		{
@@ -35,11 +35,11 @@ public:
 		return *this;
 	}
 
-	template<class T2, class D2,
-	    EnableIfT<std::conjunction_v<std::negation<std::is_array<T2>>, std::is_assignable<D&, D2>,
-	                  std::is_convertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>>,
-	        int> = 0>
-	TUniquePtr& operator=(TUniquePtr<T2, D2>&& other) noexcept
+	template<class T2, class D2>
+
+	TUniquePtr& operator=(TUniquePtr<T2, D2>&& other) noexcept requires(
+	    !std::is_array<
+	        T2> && std::is_assignable<D&, D2> && IsConvertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>)
 	{
 		ptr = Move(other.ptr);
 		return *this;
