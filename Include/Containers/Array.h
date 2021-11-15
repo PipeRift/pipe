@@ -10,10 +10,12 @@
 #include "Memory/STLAllocator.h"
 #include "Platform/Platform.h"
 #include "Templates/Less.h"
+#include "Templates/Tuples.h"
 #include "TypeTraits.h"
 
 #include <cassert>
 #include <vector>
+
 
 
 namespace Rift
@@ -264,9 +266,10 @@ namespace Rift
 		 * @param item to find or add
 		 * @param sortPredicate used to sort the array
 		 * @param insertSorted when true(default) inserts element sorted
+		 * @return index, added
 		 */
 		template<typename SortPredicate = TLess<Type>>
-		i32 FindOrAddSorted(
+		TPair<i32, bool> FindOrAddSorted(
 		    const Type& item, SortPredicate sortPredicate = {}, bool insertSorted = true)
 		{
 			const i32 index = LowerBound(item, sortPredicate);
@@ -274,15 +277,15 @@ namespace Rift
 			{
 				if (!sortPredicate(item, Data()[index]))    // Equal check, found element
 				{
-					return index;
+					return {index, false};
 				}
 				else if (insertSorted)
 				{
 					Insert(index, item);
-					return index;
+					return {index, true};
 				}
 			}
-			return Add(item);
+			return {Add(item), true};
 		}
 
 		/**

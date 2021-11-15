@@ -21,7 +21,7 @@ namespace Rift
 			explicit constexpr TypeId(u64 id) : id(id) {}
 
 			template<typename T>
-			static constexpr TypeId Get()
+			static consteval TypeId Get()
 			{
 				return TypeId{Rift::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
 			}

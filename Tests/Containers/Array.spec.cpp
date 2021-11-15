@@ -132,22 +132,22 @@ go_bandit([]() {
 		it("Can find in FindOrAddSorted", [&]() {
 			TArray<i32> data{1, 5, 5, 34};
 
-			AssertThat(data.FindOrAddSorted(1), Equals(0));
-			AssertThat(data.FindOrAddSorted(5), Equals(1));
-			AssertThat(data.FindOrAddSorted(34), Equals(3));
+			AssertThat(data.FindOrAddSorted(1).first, Equals(0));
+			AssertThat(data.FindOrAddSorted(5).first, Equals(1));
+			AssertThat(data.FindOrAddSorted(34).first, Equals(3));
 			AssertThat(data.Size(), Equals(4));
 		});
 
 		it("Can add in FindOrAddSorted", [&]() {
 			TArray<i32> data{1, 5, 5, 34};
 
-			AssertThat(data.FindOrAddSorted(2), Equals(1));
+			AssertThat(data.FindOrAddSorted(2).first, Equals(1));
 			AssertThat(data.Size(), Equals(5));
 
-			AssertThat(data.FindOrAddSorted(6), Equals(4));
+			AssertThat(data.FindOrAddSorted(6).first, Equals(4));
 			AssertThat(data.Size(), Equals(6));
 
-			AssertThat(data.FindOrAddSorted(36), Equals(6));
+			AssertThat(data.FindOrAddSorted(36).first, Equals(6));
 			AssertThat(data.Size(), Equals(7));
 		});
 	});
