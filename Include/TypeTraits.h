@@ -47,7 +47,10 @@ namespace Rift
 	concept IsMoveAssignable = std::is_move_assignable_v<T>;
 
 	template<typename T>
-	concept IsEmpty = std::is_empty_v<T>;
+	constexpr bool IsEmpty()
+	{
+		return std::is_empty_v<T>;
+	}
 
 	template <typename T, sizet size>
 	concept IsSmaller = sizeof(T) < size;
