@@ -105,6 +105,9 @@ namespace Rift
 	public:
 		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
 	};
+
+	template<typename T>
+	using UnderlyingType = typename std::underlying_type<T>::type;
 }    // namespace Rift
 
 #define RIFT_DECLARE_IS_TRIVIAL(T, isTrivial)                                                \

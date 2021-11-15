@@ -4,6 +4,7 @@
 #include "PCH.h"
 
 #include "Containers/Array.h"
+#include "Misc/Checks.h"
 
 
 namespace Rift
