@@ -117,6 +117,30 @@ namespace Rift
 			return Data()[index];
 		}
 
+		template<typename SortPredicate = TLess<Type>>
+		i32 AddSorted(Type&& item, SortPredicate sortPredicate = {})
+		{
+			const i32 index = LowerBound(item, sortPredicate);
+			if (index != NO_INDEX)
+			{
+				Insert(index, Move(item));
+				return index;
+			}
+			return Add(Move(item));
+		}
+
+		template<typename SortPredicate = TLess<Type>>
+		i32 AddSorted(const Type& item, SortPredicate sortPredicate = {})
+		{
+			const i32 index = LowerBound(item, sortPredicate);
+			if (index != NO_INDEX)
+			{
+				Insert(index, item);
+				return index;
+			}
+			return Add(item);
+		}
+
 		void Append(const TArray<Type>& other)
 		{
 			if (other.Size() > 0)
@@ -286,6 +310,26 @@ namespace Rift
 				}
 			}
 			return {Add(item), true};
+		}
+
+		template<typename SortPredicate = TLess<Type>>
+		TPair<i32, bool> FindOrAddSorted(
+		    Type&& item, SortPredicate sortPredicate = {}, bool insertSorted = true)
+		{
+			const i32 index = LowerBound(item, sortPredicate);
+			if (index != NO_INDEX)
+			{
+				if (!sortPredicate(item, Data()[index]))    // Equal check, found element
+				{
+					return {index, false};
+				}
+				else if (insertSorted)
+				{
+					Insert(index, Move(item));
+					return {index, true};
+				}
+			}
+			return {Add(Move(item)), true};
 		}
 
 		/**

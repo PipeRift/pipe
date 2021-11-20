@@ -515,7 +515,26 @@ namespace Rift
 		{
 			return IsType<T>() ? static_cast<T*>(value) : nullptr;
 		}
+		template<typename T>
+		const T* Get() const
+		{
+			return IsType<T>() ? static_cast<const T*>(value) : nullptr;
+		}
+		template<typename T>
+		T* GetUnsafe()
+		{
+			return static_cast<T*>(value);
+		}
+		template<typename T>
+		const T* GetUnsafe() const
+		{
+			return static_cast<const T*>(value);
+		}
 		void* Get()
+		{
+			return value;
+		}
+		const void* Get() const
 		{
 			return value;
 		}

@@ -6,7 +6,7 @@
 
 namespace Rift
 {
-	struct EventHandle
+	struct CORE_API EventHandle
 	{
 	private:
 		static u64 counter;
