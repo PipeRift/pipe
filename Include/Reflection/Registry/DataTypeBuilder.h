@@ -17,7 +17,7 @@
 
 namespace Rift::Refl
 {
-	template<typename T, typename Parent, typename TType, TypeFlags flags = Type_NoFlag>
+	template<typename T, typename Parent, TypeFlags flags, typename TType>
 	struct TDataTypeBuilder : public TypeBuilder
 	{
 		static constexpr bool hasParent = !std::is_void_v<Parent>;
@@ -71,11 +71,11 @@ namespace Rift::Refl
 		}
 	};
 
-	template<typename T, typename Parent, TypeFlags flags = Type_NoFlag>
-	struct TClassTypeBuilder : public TDataTypeBuilder<T, Parent, ClassType, flags>
+	template<typename T, typename Parent, TypeFlags flags = Type_NoFlag, typename TType = ClassType>
+	struct TClassTypeBuilder : public TDataTypeBuilder<T, Parent, flags, TType>
 	{
 		static_assert(IsClass<T>(), "Type does not inherit Object!");
-		using Super     = TDataTypeBuilder<T, Parent, ClassType, flags>;
+		using Super     = TDataTypeBuilder<T, Parent, flags, TType>;
 		using BuildFunc = TFunction<void(TClassTypeBuilder& builder)>;
 		using Super::GetType;
 
@@ -108,13 +108,14 @@ namespace Rift::Refl
 	};
 
 
-	template<typename T, typename Parent, TypeFlags flags = Type_NoFlag>
-	struct TStructTypeBuilder : public TDataTypeBuilder<T, Parent, StructType, flags>
+	template<typename T, typename Parent, TypeFlags flags = Type_NoFlag,
+	    typename TType = StructType>
+	struct TStructTypeBuilder : public TDataTypeBuilder<T, Parent, flags, TType>
 	{
 		static_assert(IsStruct<T>(), "Type does not inherit Struct!");
 		static_assert(!(flags & Class_Abstract), "Only classes can use Class_Abstract");
 
-		using Super     = TDataTypeBuilder<T, Parent, StructType, flags>;
+		using Super     = TDataTypeBuilder<T, Parent, flags, TType>;
 		using BuildFunc = TFunction<void(TStructTypeBuilder& builder)>;
 		using Super::GetType;
 
@@ -194,6 +195,7 @@ private:                                                                        
 	template<Rift::u32 N>                                                                   \
 	void __ReflSerializeProperty(Rift::Serl::CommonContext&, Rift::Refl::MetaCounter<N>)    \
 	{}
+
 
 /** Defines an struct */
 #define STRUCT_HEADER_NO_FLAGS(type, parent) STRUCT_HEADER_FLAGS(type, parent, Type_NoFlag)

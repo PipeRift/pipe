@@ -3,9 +3,9 @@
 #include "Memory/OwnPtr.h"
 
 
-namespace Rift::Impl
+namespace Rift
 {
-	void OwnPtr::Delete()
+	void BaseOwnPtr::Delete()
 	{
 		if (!counter)
 		{
@@ -47,7 +47,7 @@ namespace Rift::Impl
 		return false;
 	}
 
-	Ptr::Ptr(const OwnPtr& owner)
+	Ptr::Ptr(const BaseOwnPtr& owner)
 	{
 		value   = owner.value;
 		counter = owner.counter;

@@ -104,3 +104,9 @@ namespace Rift
 #		define UNIQUE_FUNCTION_ID __PRETTY_FUNCTION__
 #	endif
 #endif
+
+#if BUILD_RELEASE
+#	define DEBUG_PLATFORM_BREAK()
+#else
+#	define DEBUG_PLATFORM_BREAK() PLATFORM_BREAK()
+#endif

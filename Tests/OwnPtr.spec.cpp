@@ -261,6 +261,54 @@ go_bandit([]() {
 			AssertThat(Rift::HasCustomPtrBuilder<EmptyStruct>::value, Equals(false));
 			AssertThat(Rift::HasCustomPtrBuilder<MockStruct>::value, Equals(true));
 		});
+
+		describe("Typeless pointer", []() {
+			it("Can convert to OwnPtr from TOwnPtr", [&]() {
+				TOwnPtr<EmptyStruct> typedPtr = MakeOwned<EmptyStruct>();
+				AssertThat(typedPtr.IsValid(), Equals(true));
+
+				EmptyStruct* data = typedPtr.Get();
+
+				OwnPtr ptr = Move(typedPtr);
+				AssertThat(typedPtr.IsValid(), Equals(false));
+				AssertThat(ptr.IsValid(), Equals(true));
+				AssertThat(ptr.Get(), Equals(data));
+				AssertThat(ptr.Get<EmptyStruct>(), Equals(data));
+			});
+
+			it("Can convert to TOwnPtr from OwnPtr", [&]() {
+				OwnPtr ptr = MakeOwned<EmptyStruct>();
+				AssertThat(ptr.IsValid(), Equals(true));
+				EmptyStruct* data = ptr.Get<EmptyStruct>();
+
+				TOwnPtr<EmptyStruct> typedPtr = Move(ptr);
+				AssertThat(ptr.IsValid(), Equals(false));
+				AssertThat(typedPtr.IsValid(), Equals(true));
+				AssertThat(typedPtr.Get(), Equals(data));
+			});
+
+			it("Can move", [&]() {
+				OwnPtr ptr1 = MakeOwned<EmptyStruct>();
+				AssertThat(ptr1.IsValid(), Equals(true));
+				AssertThat(ptr1.GetType(), Equals(Refl::TypeId::Get<EmptyStruct>()));
+				EmptyStruct* data = ptr1.Get<EmptyStruct>();
+
+				OwnPtr ptr2 = Move(ptr1);
+				AssertThat(ptr1.IsValid(), Equals(false));
+				AssertThat(ptr1.Get<EmptyStruct>(), Equals(nullptr));
+				AssertThat(ptr1.GetType(), Equals(Refl::TypeId::None()));
+
+				AssertThat(ptr2.IsValid(), Equals(true));
+				AssertThat(ptr2.Get<EmptyStruct>(), Equals(data));
+				AssertThat(ptr2.GetType(), Equals(Refl::TypeId::Get<EmptyStruct>()));
+			});
+
+			it("Cant retrive invalid types", [&]() {
+				OwnPtr ptr = MakeOwned<EmptyStruct>();
+				AssertThat(ptr.Get<EmptyStruct>(), !Equals(nullptr));
+				AssertThat(ptr.Get<MockStruct>(), Equals(nullptr));
+			});
+		});
 	});
 });
 

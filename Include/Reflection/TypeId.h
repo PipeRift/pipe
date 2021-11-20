@@ -20,20 +20,29 @@ namespace Rift
 			constexpr TypeId() = default;
 			explicit constexpr TypeId(u64 id) : id(id) {}
 
+			constexpr u64 GetId() const
+			{
+				return id;
+			}
+
+			constexpr auto operator==(const TypeId& other) const
+			{
+				return id == other.id;
+			}
+			constexpr auto operator<=>(const TypeId& other) const
+			{
+				return id <=> other.id;
+			}
+
 			template<typename T>
 			static consteval TypeId Get()
 			{
 				return TypeId{Rift::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
 			}
 
-			constexpr u64 GetId() const
+			static consteval TypeId None()
 			{
-				return id;
-			}
-
-			bool operator==(const TypeId& other) const
-			{
-				return id == other.id;
+				return TypeId{};
 			}
 		};
 

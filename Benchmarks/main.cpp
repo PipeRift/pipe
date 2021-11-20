@@ -5,8 +5,10 @@
 
 // Benches
 #include "Arenas.bench.h"
+#include "Lookups.bench.h"
 
 int main()
 {
 	RunArenasBenchmarks();
+	RunLookupsBenchmarks();
 }

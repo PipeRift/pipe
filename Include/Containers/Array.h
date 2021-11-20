@@ -547,6 +547,10 @@ namespace Rift
 		{
 			return index >= 0 && index < Size();
 		}
+		bool IsValidIndex(u32 index) const
+		{
+			return index < u32(Size());
+		}
 
 		Type& First()
 		{

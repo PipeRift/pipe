@@ -5,6 +5,7 @@
 #include "PCH.h"
 
 #include "Memory/PtrBuilder.h"
+#include "Misc/Checks.h"
 #include "Misc/Utility.h"
 #include "TypeTraits.h"
 
@@ -14,7 +15,7 @@
 
 namespace Rift
 {
-	namespace Impl
+	namespace Internal
 	{
 		// TODO: Use pool arena for counters
 		using Deleter = void(void*);
@@ -31,110 +32,123 @@ namespace Rift
 				return deleter != nullptr;
 			}
 		};
+	}    // namespace Internal
 
-		struct Ptr;
 
-		struct CORE_API OwnPtr
+	struct CORE_API BaseOwnPtr
+	{
+		friend struct Ptr;
+
+	protected:
+		void* value                       = nullptr;
+		Internal::PtrWeakCounter* counter = nullptr;
+
+
+	public:
+		BaseOwnPtr(BaseOwnPtr&& other)
 		{
-			friend Ptr;
+			MoveFrom(Move(other));
+		}
+		BaseOwnPtr& operator=(BaseOwnPtr&& other)
+		{
+			Delete();
+			MoveFrom(Move(other));
+		}
+		~BaseOwnPtr()
+		{
+			Delete();
+		}
 
-		protected:
-			void* value             = nullptr;
-			PtrWeakCounter* counter = nullptr;
+		bool IsValid() const
+		{
+			return counter != nullptr;
+		}
 
-
-		public:
-			~OwnPtr()
-			{
-				Delete();
-			}
-
-			bool IsValid() const
-			{
-				return counter != nullptr;
-			}
-
-			operator bool() const
-			{
-				return IsValid();
-			};
-
-			const PtrWeakCounter* GetCounter() const
-			{
-				return counter;
-			}
-
-			void Delete();
-
-
-		protected:
-			OwnPtr() = default;
-			OwnPtr(void* value, Deleter& deleter) : value{value}
-			{
-				if (value)
-				{
-					counter = new PtrWeakCounter(deleter);
-				}
-			}
-
-
-			void MoveFrom(OwnPtr&& other)
-			{
-				value         = other.value;
-				counter       = other.counter;
-				other.value   = nullptr;
-				other.counter = nullptr;
-			}
+		operator bool() const
+		{
+			return IsValid();
 		};
 
-
-		struct CORE_API Ptr
+		const Internal::PtrWeakCounter* GetCounter() const
 		{
-		protected:
-			void* value             = nullptr;
-			PtrWeakCounter* counter = nullptr;
+			return counter;
+		}
+
+		void Delete();
 
 
-		public:
-			~Ptr()
+	protected:
+		BaseOwnPtr() = default;
+		// Initialization from parent
+		BaseOwnPtr(void* value, Internal::Deleter& deleter) : value{value}
+		{
+			if (value)
 			{
-				Reset();
+				counter = new Internal::PtrWeakCounter(deleter);
 			}
+		}
 
-			void Reset();
-			bool IsValid() const;
 
-			operator bool() const
-			{
-				return IsValid();
-			};
+		void MoveFrom(BaseOwnPtr&& other)
+		{
+			value         = other.value;
+			counter       = other.counter;
+			other.value   = nullptr;
+			other.counter = nullptr;
+		}
+	};
 
-			const PtrWeakCounter* GetCounter() const
-			{
-				return counter;
-			}
 
-			Ptr& operator=(TYPE_OF_NULLPTR)
-			{
-				Reset();
-				return *this;
-			};
+	struct CORE_API Ptr
+	{
+	protected:
+		void* value                       = nullptr;
+		Internal::PtrWeakCounter* counter = nullptr;
 
-		protected:
-			Ptr() = default;
-			Ptr(const OwnPtr& owner);
-			Ptr(const Ptr& other);
-			Ptr(Ptr&& other) noexcept;
 
-			void MoveFrom(Ptr&& other);
-			void CopyFrom(const Ptr& other);
+	public:
+		~Ptr()
+		{
+			Reset();
+		}
 
-		private:
-			void __ResetNoCheck(const bool bIsSet);
+		void Reset();
+		bool IsValid() const;
+
+		operator bool() const
+		{
+			return IsValid();
 		};
-	}    // namespace Impl
+
+		const Internal::PtrWeakCounter* GetCounter() const
+		{
+			return counter;
+		}
+
+		Ptr& operator=(TYPE_OF_NULLPTR)
+		{
+			Reset();
+			return *this;
+		};
+
+	protected:
+		Ptr() = default;
+		Ptr(const BaseOwnPtr& owner);
+		Ptr(const Ptr& other);
+		Ptr(Ptr&& other) noexcept;
+
+		void MoveFrom(Ptr&& other);
+		void CopyFrom(const Ptr& other);
+
+	private:
+		void __ResetNoCheck(const bool bIsSet);
+	};
 
 
+	///////////////////////////////////////////////////
+	// Templated Pointer types
+
+	struct OwnPtr;
 	template<typename T>
 	struct TPtr;
 
@@ -144,9 +158,9 @@ namespace Rift
 	 * Contains an unique instance of T that is kept automatically removed on owner destruction.
 	 */
 	template<typename T>
-	struct TOwnPtr : public Impl::OwnPtr
+	struct TOwnPtr : public BaseOwnPtr
 	{
-		using Super = Impl::OwnPtr;
+		using Super = BaseOwnPtr;
 
 		template<typename T2>
 		friend struct TOwnPtr;
@@ -159,7 +173,7 @@ namespace Rift
 
 	public:
 		TOwnPtr() = default;
-		explicit TOwnPtr(T* value, Impl::Deleter& deleter)
+		explicit TOwnPtr(T* value, Internal::Deleter& deleter)
 		    : Super(value, deleter)
 #if BUILD_DEBUG
 		    , instance(value)
@@ -168,42 +182,44 @@ namespace Rift
 
 		TOwnPtr(TOwnPtr&& other) noexcept
 		{
-#if BUILD_DEBUG
-			instance       = reinterpret_cast<T*>(other.instance);
-			other.instance = nullptr;
-#endif
 			MoveFrom(Move(other));
+		}
+		TOwnPtr(OwnPtr&& other)
+		{
+			CheckMsg(other.IsType<T>(), "Type doesn't match!");
+			Super::MoveFrom(Move(other));
+#if BUILD_DEBUG
+			instance = static_cast<T*>(value);
+#endif
 		}
 
 		TOwnPtr& operator=(TOwnPtr&& other) noexcept
 		{
 			Delete();
-#if BUILD_DEBUG
-			instance       = other.instance;
-			other.instance = nullptr;
-#endif
 			MoveFrom(Move(other));
 			return *this;
+		}
+
+		TOwnPtr& operator=(OwnPtr&& other)
+		{
+			CheckMsg(other.IsType<T>(), "Type doesn't match!");
+			Delete();
+			Super::MoveFrom(Move(other));
+#if BUILD_DEBUG
+			instance = static_cast<T*>(value);
+#endif
 		}
 
 		/** Templates for down-casting */
 		template<typename T2>
 		TOwnPtr(TOwnPtr<T2>&& other) requires Derived<T2, T>
 		{
-#if BUILD_DEBUG
-			instance       = reinterpret_cast<T*>(other.instance);
-			other.instance = nullptr;
-#endif
 			MoveFrom(Move(other));
 		}
 		template<typename T2>
 		TOwnPtr& operator=(TOwnPtr<T2>&& other) requires Derived<T2, T>
 		{
 			Delete();
-#if BUILD_DEBUG
-			instance       = other.instance;
-			other.instance = nullptr;
-#endif
 			MoveFrom(Move(other));
 			return *this;
 		}
@@ -229,10 +245,6 @@ namespace Rift
 			{
 				TOwnPtr<T2> newPtr{};
 				newPtr.MoveFrom(Move(*this));
-#if BUILD_DEBUG
-				newPtr.instance = static_cast<T2*>(instance);
-				instance        = nullptr;
-#endif
 				return newPtr;
 			}
 			return {};
@@ -317,6 +329,19 @@ namespace Rift
 			Builder::PostNew(ptr);
 			return Move(ptr);
 		}
+
+	private :
+
+		template<typename T2>
+		void
+		MoveFrom(TOwnPtr<T2>&& other)
+		{
+			Super::MoveFrom(Move(other));
+#if BUILD_DEBUG
+			instance       = static_cast<T*>(value);
+			other.instance = nullptr;
+#endif
+		}
 	};
 
 
@@ -326,12 +351,12 @@ namespace Rift
 	 * invalidated.
 	 */
 	template<typename T>
-	struct TPtr : public Impl::Ptr
+	struct TPtr : public Ptr
 	{
 		template<typename T2>
 		friend struct TPtr;
 
-		using Super = Impl::Ptr;
+		using Super = Ptr;
 
 		TPtr() = default;
 		TPtr(const TPtr& other) : Super(other) {}
@@ -439,6 +464,78 @@ namespace Rift
 		bool operator!=(const TPtr<T2>& other) const
 		{
 			return value != other.GetUnsafe();
+		}
+	};
+
+
+	///////////////////////////////////////////////////
+	// Non-templated Pointer types
+
+	struct CORE_API OwnPtr : public BaseOwnPtr
+	{
+		using Super = BaseOwnPtr;
+
+	private:
+		Refl::TypeId typeId;
+
+
+	public:
+		constexpr OwnPtr() = default;
+		template<typename T>
+		OwnPtr(TOwnPtr<T>&& other)
+		{
+			MoveFrom(Move(other));
+			typeId = Refl::TypeId::Get<T>();
+		}
+		OwnPtr(OwnPtr&& other)
+		{
+			MoveFrom(Move(other));
+			typeId       = Move(other.typeId);
+			other.typeId = Refl::TypeId::None();
+		}
+
+		template<typename T>
+		OwnPtr& operator=(TOwnPtr<T>&& other)
+		{
+			Delete();
+			MoveFrom(Move(other));
+			typeId = Refl::TypeId::Get<T>();
+		}
+
+		OwnPtr& operator=(OwnPtr&& other)
+		{
+			Delete();
+			MoveFrom(Move(other));
+			typeId       = Move(other.typeId);
+			other.typeId = Refl::TypeId::None();
+		}
+
+		template<typename T>
+		T* Get()
+		{
+			return IsType<T>() ? static_cast<T*>(value) : nullptr;
+		}
+		void* Get()
+		{
+			return value;
+		}
+
+		template<typename T>
+		TPtr<T> AsPtr() const
+		{
+			return TPtr<T>{*this};
+		}
+
+
+		Refl::TypeId GetType() const
+		{
+			return typeId;
+		}
+
+		template<typename T>
+		bool IsType() const
+		{
+			return typeId == Refl::TypeId::Get<T>();
 		}
 	};
 

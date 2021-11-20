@@ -22,7 +22,7 @@ namespace Rift::Refl
 	/** Smallest reflection type that contains all basic class or struct data */
 	class DataType : public Type
 	{
-		template<typename T, typename Parent, typename TType, TypeFlags flags>
+		template<typename T, typename Parent, TypeFlags flags, typename TType>
 		friend struct TDataTypeBuilder;
 
 	protected:
