@@ -21,5 +21,10 @@ namespace Rift::Refl
 	public:
 		Type(const Type&) = delete;
 		Type& operator=(const Type&) = delete;
+
+		TypeId GetId() const
+		{
+			return id;
+		}
 	};
 }    // namespace Rift::Refl

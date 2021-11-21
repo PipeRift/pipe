@@ -500,6 +500,7 @@ namespace Rift
 			Delete();
 			MoveFrom(Move(other));
 			typeId = Refl::TypeId::Get<T>();
+			return *this;
 		}
 
 		OwnPtr& operator=(OwnPtr&& other)
@@ -508,6 +509,7 @@ namespace Rift
 			MoveFrom(Move(other));
 			typeId       = Move(other.typeId);
 			other.typeId = Refl::TypeId::None();
+			return *this;
 		}
 
 		template<typename T>
