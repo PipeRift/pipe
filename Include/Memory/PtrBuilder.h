@@ -20,7 +20,7 @@ namespace Rift
 		template<typename... Args>
 		static T* New(Args&&... args)
 		{
-			return new T(std::forward<Args>(args)...);
+			return new T(Forward<Args>(args)...);
 		}
 		static void PostNew(TOwnPtr<T>& ptr) {}
 		static void Delete(void* rawPtr)
