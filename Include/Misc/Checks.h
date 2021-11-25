@@ -9,7 +9,6 @@
 
 namespace Rift::Checks
 {
-
 	template<typename RetType = void, typename InnerType>
 	RetType RunCheckCallback(InnerType&& callback)
 	{
@@ -35,7 +34,6 @@ namespace Rift::Checks
 		}
 		FailedCheckError(msg.c_str(), msg.size());
 	}
-
 }    // namespace Rift::Checks
 
 
