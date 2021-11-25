@@ -1,6 +1,8 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
+#include "Misc/Checks.h"
+
 #include <type_traits>
 
 
@@ -43,7 +45,7 @@ namespace Rift
 
 		Ret operator()(Args... args) const
 		{
-			assert(IsBound() && "Can't call an unbound TFunction.");
+			Check(IsBound() && "Can't call an unbound TFunction.");
 			return dispatcher(target, args...);
 		}
 

@@ -3,10 +3,12 @@
 #include "Memory/Alloc.h"
 
 #include "Math/Math.h"
+#include "Misc/Checks.h"
 #include "Profiler.h"
 
 #include <cstdlib>
 #include <memory>
+
 
 
 namespace Rift
@@ -49,7 +51,7 @@ namespace Rift
 
 	sizet GetAlignmentPadding(const void* ptr, sizet align)
 	{
-		assert(Math::IsPowerOfTwo(align));
+		Check(Math::IsPowerOfTwo(align));
 		return -reinterpret_cast<ssizet>(ptr) & (align - 1);
 	}
 

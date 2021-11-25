@@ -6,6 +6,8 @@
 #include "Log.h"
 #include "Profiler.h"
 
+#include <fstream>
+
 
 namespace Rift::Files
 {

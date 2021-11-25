@@ -4,6 +4,7 @@
 #include "PCH.h"
 
 #include <memory>
+#include <taskflow/taskflow.hpp>
 
 
 namespace Rift
@@ -50,7 +51,7 @@ namespace Rift
 
 		CORE_API u32 GetNumWorkerThreads() const
 		{
-			return (u32) workerPool.num_workers();
+			return (u32)workerPool.num_workers();
 		}
 
 		static CORE_API TaskSystem& Get();

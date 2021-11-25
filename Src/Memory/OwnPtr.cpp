@@ -115,4 +115,4 @@ namespace Rift
 		counter = nullptr;
 		value   = nullptr;
 	}
-}    // namespace Rift::Impl
+}    // namespace Rift

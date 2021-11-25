@@ -1,6 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #include "Serialization/Formats/JsonFormat.h"
 
+#include "Log.h"
 #include "Math/Math.h"
 #include "Misc/Checks.h"
 #include "Strings/String.h"

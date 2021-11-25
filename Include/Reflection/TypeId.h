@@ -5,6 +5,8 @@
 
 #include "Misc/Hash.h"
 
+#include <iostream>
+
 
 namespace Rift
 {

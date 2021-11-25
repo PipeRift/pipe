@@ -100,5 +100,5 @@ void RunLookupsBenchmarks()
 	}*/
 
 	// Give some time to the profiler to send data
-	std::this_thread::sleep_for(std::chrono::seconds(3));
+	// std::this_thread::sleep_for(std::chrono::seconds(3));
 }

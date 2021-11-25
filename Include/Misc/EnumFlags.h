@@ -51,4 +51,4 @@ namespace Rift::EnumOperators
 	{
 		value &= ~flags;
 	}
-}
+}    // namespace Rift::EnumOperators

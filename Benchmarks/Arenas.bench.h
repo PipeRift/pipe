@@ -5,10 +5,11 @@
 using namespace ankerl;
 
 #include <Memory/Alloc.h>
-#include <Memory/Arenas/LinearArena.h>
 #include <Memory/Arenas/BestFitArena.h>
 #include <Memory/Arenas/BigBestFitArena.h>
+#include <Memory/Arenas/LinearArena.h>
 #include <Misc/Chrono.h>
+
 
 
 void RunArenasBenchmarks()
@@ -52,8 +53,8 @@ void RunArenasBenchmarks()
 		ankerl::nanobench::Bench consecutiveFree;
 		consecutiveFree.title("Consecutive free")
 		    .performanceCounters(true)
-			.epochs(1)
-			.epochIterations(50000);
+		    .epochs(1)
+		    .epochIterations(50000);
 
 		{
 			Rift::TArray<void*> allocated;
@@ -159,7 +160,7 @@ void RunArenasBenchmarks()
 		ankerl::nanobench::Bench randomSequence;
 		randomSequence.title("Alloc/Free random sequence")
 		    .performanceCounters(true)
-			.epochs(1)
+		    .epochs(1)
 		    .epochIterations(50000);
 
 		{
@@ -271,5 +272,5 @@ void RunArenasBenchmarks()
 	}*/
 
 	// Give some time to the profiler to send data
-	std::this_thread::sleep_for(std::chrono::seconds(3));
+	// std::this_thread::sleep_for(std::chrono::seconds(3));
 }
