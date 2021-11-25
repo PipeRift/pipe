@@ -10,7 +10,6 @@
 #include <memory>
 
 
-
 namespace Rift
 {
 	void* Alloc(sizet n)
