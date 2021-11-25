@@ -10,7 +10,7 @@
 namespace Rift
 {
 	template<typename T>
-	struct TArrayView
+	struct TSpan
 	{
 		using Iterator             = T*;
 		using ConstIterator        = const T*;
@@ -21,13 +21,15 @@ namespace Rift
 		T* const data  = nullptr;
 		const i32 size = 0;
 
-		constexpr TArrayView() {}
-		constexpr TArrayView(T& value) : data{&value}, size{1} {}
-		constexpr TArrayView(T* first, T* last) : data{first}, size{i32(std::distance(first, last))}
+		constexpr TSpan() {}
+		constexpr TSpan(T& value) : data{&value}, size{1} {}
+		constexpr TSpan(T* first, T* last) : data{first}, size{i32(std::distance(first, last))} {}
+		TSpan(TArray<T>& value) : data{value.Data()}, size{value.Size()} {}
+		TSpan(TArray<T>& value, u32 firstN)
+		    : data{value.Data()}, size{Math::Min(value.Size(), firstN)}
 		{}
-		TArrayView(TArray<T>& value) : data{value.Data()}, size{value.Size()} {}
-		TArrayView(const TArrayView<T>& other) : data{other.data}, size{other.size} {}
-		TArrayView& operator=(const TArrayView<T>& other)
+		TSpan(const TSpan<T>& other) : data{other.data}, size{other.size} {}
+		TSpan& operator=(const TSpan<T>& other)
 		{
 			data = other.data;
 			size = other.size;
@@ -151,7 +153,7 @@ namespace Rift
 	};
 
 	template<typename T>
-	struct TArrayView<const T>
+	struct TSpan<const T>
 	{
 		using Iterator             = T*;
 		using ConstIterator        = const T*;
@@ -162,11 +164,11 @@ namespace Rift
 		const T* const data = nullptr;
 		const i32 size      = 0;
 
-		constexpr TArrayView() {}
-		constexpr TArrayView(const T& value) : data{&value}, size{1} {}
-		TArrayView(const TArray<T>& value) : data{value.Data()}, size{value.Size()} {}
-		TArrayView(const TArrayView<T>& other) : data{other.data}, size{other.size} {}
-		TArrayView& operator=(const TArrayView<T>& other)
+		constexpr TSpan() {}
+		constexpr TSpan(const T& value) : data{&value}, size{1} {}
+		TSpan(const TArray<T>& value) : data{value.Data()}, size{value.Size()} {}
+		TSpan(const TSpan<T>& other) : data{other.data}, size{other.size} {}
+		TSpan& operator=(const TSpan<T>& other)
 		{
 			data = other.data;
 			size = other.size;

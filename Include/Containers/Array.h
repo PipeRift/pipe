@@ -17,7 +17,6 @@
 #include <vector>
 
 
-
 namespace Rift
 {
 	template<typename Type, typename Allocator = Memory::DefaultAllocator>
@@ -163,8 +162,8 @@ namespace Rift
 			}
 		}
 
-		template<typename ArrayView>    // Intended for TArrayView<T>
-		void Append(ArrayView values)
+		template<typename Container>    // Intended for TSpan<T>
+		void Append(Container values)
 		{
 			vector.insert(vector.end(), values.begin(), values.end());
 		}
@@ -410,8 +409,8 @@ namespace Rift
 			return lastSize - Size();
 		}
 
-		template<typename ArrayView>    // Intended for TArrayView<T>
-		i32 RemoveMany(ArrayView items, const bool shouldShrink = true)
+		template<typename Container>    // Intended for TSpan<T>
+		i32 RemoveMany(Container items, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			for (i32 i = 0; i < Size(); ++i)
