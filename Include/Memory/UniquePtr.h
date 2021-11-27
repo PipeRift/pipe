@@ -1,3 +1,4 @@
+// Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
 #include "PCH.h"
@@ -19,13 +20,6 @@ namespace Rift
 	public:
 		constexpr TUniquePtr() noexcept = default;
 		explicit constexpr TUniquePtr(Pointer p) noexcept : ptr(p) {}
-		constexpr TUniquePtr(nullptr_t) noexcept : ptr(nullptr) {}
-		TUniquePtr& operator=(nullptr_t) noexcept
-		{
-			Reset();
-			return *this;
-		}
-
 		TUniquePtr(const TUniquePtr&) = delete;
 		TUniquePtr& operator=(const TUniquePtr&) = delete;
 

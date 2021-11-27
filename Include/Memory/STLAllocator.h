@@ -5,7 +5,10 @@
 
 #include "Memory/Alloc.h"
 #include "Memory/Allocators/DefaultAllocator.h"
+#include "Misc/Utility.h"
 #include "TypeTraits.h"
+
+#include <memory>
 
 
 namespace Rift
@@ -24,7 +27,7 @@ namespace Rift
 		template<typename U>
 		struct rebind
 		{
-			typedef STLAllocator<U, Allocator> other;
+			using other = STLAllocator<U, Allocator>;
 		};
 
 		Allocator allocator{};
@@ -57,7 +60,7 @@ namespace Rift
 		template<class U, class... Args>
 		void construct(U* p, Args&&... args)
 		{
-			::new (p) U(std::forward<Args>(args)...);
+			::new (p) U(Forward<Args>(args)...);
 		}
 		template<class U>
 		void destroy(U* p) noexcept
@@ -65,9 +68,9 @@ namespace Rift
 			p->~U();
 		}
 
-		size_type max_size() const noexcept
+		static constexpr size_type max_size() noexcept
 		{
-			return (PTRDIFF_MAX / sizeof(T));
+			return std::numeric_limits<size_type>::max() / sizeof(T);
 		}
 	};
 

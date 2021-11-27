@@ -51,6 +51,6 @@ namespace Rift
 		static bool Impl(char);
 
 	public:
-		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
+		static constexpr bool value = std::is_void<decltype(Impl<T>(0))>::value;
 	};
 }    // namespace Rift

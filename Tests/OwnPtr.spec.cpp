@@ -1,7 +1,7 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 
-#include <Memory/OwnPtr.h>
 #include <bandit/bandit.h>
+#include <Memory/OwnPtr.h>
 
 
 using namespace snowhouse;
@@ -9,13 +9,13 @@ using namespace bandit;
 using namespace Rift;
 
 
-template <typename T>
+template<typename T>
 struct TestPtrBuilder : Rift::TPtrBuilder<T>
 {
-	template <typename... Args>
+	template<typename... Args>
 	static T* New(Args&&... args)
 	{
-		T* ptr = new T(std::forward<Args>(args)...);
+		T* ptr          = new T(Forward<Args>(args)...);
 		ptr->bCalledNew = true;
 		return ptr;
 	}
@@ -33,7 +33,7 @@ struct EmptyStruct
 
 struct MockStruct
 {
-	template <typename T>
+	template<typename T>
 	using PtrBuilder = TestPtrBuilder<T>;
 
 	bool bCalledNew = false;
@@ -110,7 +110,7 @@ go_bandit([]() {
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				auto* raw                  = owner.GetUnsafe();
 				TPtr<EmptyStruct> ptr      = owner;
-				TPtr<EmptyStruct> ptr2    = ptr;
+				TPtr<EmptyStruct> ptr2     = ptr;
 
 				AssertThat(ptr2.IsValid(), Equals(true));
 				AssertThat(ptr.Get(), Equals(raw));
@@ -144,7 +144,7 @@ go_bandit([]() {
 
 		describe("Comparisons", []() {
 			it("Owner can equal Owner", [&]() {
-				auto owner = MakeOwned<EmptyStruct>();
+				auto owner  = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
 				TOwnPtr<EmptyStruct> ownerEmpty;
 
@@ -160,7 +160,7 @@ go_bandit([]() {
 			});
 
 			it("Owner can equal Weak", [&]() {
-				auto owner = MakeOwned<EmptyStruct>();
+				auto owner  = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
 				auto weak   = owner.AsPtr();
 				TOwnPtr<EmptyStruct> ownerEmpty;
@@ -178,7 +178,7 @@ go_bandit([]() {
 			});
 
 			it("Weak can equal Weak", [&]() {
-				auto owner = MakeOwned<EmptyStruct>();
+				auto owner  = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
 				auto weak   = owner.AsPtr();
 				auto weak2  = owner2.AsPtr();
@@ -196,7 +196,7 @@ go_bandit([]() {
 			});
 
 			it("Weak can equal Owner", [&]() {
-				auto owner = MakeOwned<EmptyStruct>();
+				auto owner  = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
 				auto weak   = owner.AsPtr();
 				auto weak2  = owner2.AsPtr();
@@ -217,7 +217,7 @@ go_bandit([]() {
 
 		describe("Counter", []() {
 			it("Adds weaks", [&]() {
-				auto owner = MakeOwned<EmptyStruct>();
+				auto owner          = MakeOwned<EmptyStruct>();
 				const auto* counter = owner.GetCounter();
 				AssertThat(counter->weakCount, Equals(0u));
 
@@ -226,7 +226,7 @@ go_bandit([]() {
 			});
 
 			it("Removes weaks", [&]() {
-				auto owner = MakeOwned<EmptyStruct>();
+				auto owner          = MakeOwned<EmptyStruct>();
 				const auto* counter = owner.GetCounter();
 				{
 					auto weak = owner.AsPtr();
@@ -279,7 +279,7 @@ go_bandit([]() {
 			it("Can convert to TOwnPtr from OwnPtr", [&]() {
 				OwnPtr ptr = MakeOwned<EmptyStruct>();
 				AssertThat(ptr.IsValid(), Equals(true));
-				EmptyStruct* data = ptr.Get<EmptyStruct>();
+				auto* data = ptr.Get<EmptyStruct>();
 
 				TOwnPtr<EmptyStruct> typedPtr = Move(ptr);
 				AssertThat(ptr.IsValid(), Equals(false));
@@ -291,7 +291,7 @@ go_bandit([]() {
 				OwnPtr ptr1 = MakeOwned<EmptyStruct>();
 				AssertThat(ptr1.IsValid(), Equals(true));
 				AssertThat(ptr1.GetType(), Equals(Refl::TypeId::Get<EmptyStruct>()));
-				EmptyStruct* data = ptr1.Get<EmptyStruct>();
+				auto* data = ptr1.Get<EmptyStruct>();
 
 				OwnPtr ptr2 = Move(ptr1);
 				AssertThat(ptr1.IsValid(), Equals(false));

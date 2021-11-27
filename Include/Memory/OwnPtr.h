@@ -184,14 +184,7 @@ namespace Rift
 		{
 			MoveFrom(Move(other));
 		}
-		TOwnPtr(OwnPtr&& other)
-		{
-			CheckMsg(other.IsType<T>(), "Type doesn't match!");
-			Super::MoveFrom(Move(other));
-#if BUILD_DEBUG
-			instance = static_cast<T*>(value);
-#endif
-		}
+		TOwnPtr(OwnPtr&& other);
 
 		TOwnPtr& operator=(TOwnPtr&& other) noexcept
 		{
@@ -200,15 +193,7 @@ namespace Rift
 			return *this;
 		}
 
-		TOwnPtr& operator=(OwnPtr&& other)
-		{
-			CheckMsg(other.IsType<T>(), "Type doesn't match!");
-			Delete();
-			Super::MoveFrom(Move(other));
-#if BUILD_DEBUG
-			instance = static_cast<T*>(value);
-#endif
-		}
+		TOwnPtr& operator=(OwnPtr&& other);
 
 		/** Templates for down-casting */
 		template<typename T2>
@@ -559,6 +544,28 @@ namespace Rift
 			return typeId == Refl::TypeId::Get<T>();
 		}
 	};
+
+
+	template<typename T>
+	inline TOwnPtr<T>::TOwnPtr(OwnPtr&& other)
+	{
+		CheckMsg(other.IsType<T>(), "Type doesn't match!");
+		Super::MoveFrom(Move(other));
+#if BUILD_DEBUG
+		instance = static_cast<T*>(value);
+#endif
+	}
+
+	template<typename T>
+	inline TOwnPtr<T>& TOwnPtr<T>::operator=(OwnPtr&& other)
+	{
+		CheckMsg(other.IsType<T>(), "Type doesn't match!");
+		Delete();
+		Super::MoveFrom(Move(other));
+#if BUILD_DEBUG
+		instance = static_cast<T*>(value);
+#endif
+	}
 
 
 	template<typename T, typename... Args>

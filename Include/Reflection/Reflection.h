@@ -7,6 +7,7 @@
 #include "Reflection/HasType.h"
 #include "Reflection/PredefinedTypes.h"
 #include "Reflection/ReflectionFlags.h"
+#include "Reflection/ReflectionTraits.h"
 #include "Reflection/Registry/DataTypeBuilder.h"
 #include "Reflection/Registry/EnumTypeBuilder.h"
 #include "Reflection/Registry/NativeTypeBuilder.h"

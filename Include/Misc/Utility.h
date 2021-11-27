@@ -2,15 +2,13 @@
 
 #pragma once
 
-#include "PCH.h"
-
-#include "TypeTraits.h"
+#include <type_traits>
 
 
 namespace Rift
 {
 	template<typename T>
-	constexpr void Swap(T& a, T& b) noexcept requires(IsMoveConstructible<T>&& IsMoveAssignable<T>)
+	constexpr void Swap(T& a, T& b) noexcept
 	{
 		std::swap(a, b);
 	}
