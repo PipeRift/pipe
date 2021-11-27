@@ -5,6 +5,7 @@
 
 #include "Misc/Hash.h"
 
+#include <compare>
 #include <iostream>
 
 
