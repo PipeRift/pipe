@@ -30,7 +30,7 @@ namespace Rift
 	{
 		if (counter)
 		{
-			__ResetNoCheck(counter->IsSet());
+			ResetNoCheck(counter->IsSet());
 		}
 	}
 
@@ -42,7 +42,7 @@ namespace Rift
 			{
 				return true;
 			}
-			const_cast<Ptr*>(this)->__ResetNoCheck(false);
+			const_cast<Ptr*>(this)->ResetNoCheck(false);
 		}
 		return false;
 	}
@@ -101,7 +101,7 @@ namespace Rift
 		}
 	}
 
-	void Ptr::__ResetNoCheck(const bool isSet)
+	void Ptr::ResetNoCheck(const bool isSet)
 	{
 		// counter check is reducing one and then checking
 		if (!isSet && counter->weakCount <= 1)

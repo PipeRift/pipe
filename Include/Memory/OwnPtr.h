@@ -45,14 +45,15 @@ namespace Rift
 
 
 	public:
-		BaseOwnPtr(BaseOwnPtr&& other)
+		BaseOwnPtr(BaseOwnPtr&& other) noexcept
 		{
 			MoveFrom(Move(other));
 		}
-		BaseOwnPtr& operator=(BaseOwnPtr&& other)
+		BaseOwnPtr& operator=(BaseOwnPtr&& other) noexcept
 		{
 			Delete();
 			MoveFrom(Move(other));
+			return *this;
 		}
 		~BaseOwnPtr()
 		{
@@ -141,7 +142,7 @@ namespace Rift
 		void CopyFrom(const Ptr& other);
 
 	private:
-		void __ResetNoCheck(const bool bIsSet);
+		void ResetNoCheck(const bool bIsSet);
 	};
 
 
