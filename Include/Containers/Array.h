@@ -212,6 +212,19 @@ namespace Rift
 			}
 		}
 
+		template<typename Container>    // Intended for TSpan<T>
+		void InsertRange(i32 index, Container values)
+		{
+			if (IsValidIndex(index))
+			{
+				vector.insert(vector.begin() + index, values.begin(), values.end());
+			}
+			else
+			{
+				Append(values);
+			}
+		}
+
 		void InsertDefaulted(i32 index, i32 count = 1)
 		{
 			Insert(index, {}, count);
