@@ -37,6 +37,24 @@ namespace Rift
 		using type = Type;
 	};
 
+	template<typename... T>
+	struct TJoinList;
+
+	template<typename ListType, typename... ATypes, typename... BTypes>
+	struct TJoinList<TTypeList<ATypes...>, TTypeList<BTypes...>>
+	{
+		using Type = TTypeList<ATypes..., BTypes...>;
+	};
+
+	template<typename ListType, typename... ATypes, typename... BTypes>
+	struct TJoinList<TTypeList<ATypes...>, BTypes...>
+	{
+		using Type = TTypeList<ATypes..., BTypes...>;
+	};
+
+	template<typename... T>
+	using JoinList = TJoinList<T...>;
+
 
 	/**
 	 * @brief Helper type.
