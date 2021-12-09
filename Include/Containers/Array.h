@@ -441,6 +441,14 @@ namespace Rift
 			return lastSize - Size();
 		}
 
+		// Removes an item assuming the array is sorted
+		template<typename SortPredicate = TLess<>>
+		i32 RemoveSorted(
+		    const Type& item, SortPredicate sortPredicate = {}, const bool shouldShrink = true)
+		{
+			return i32(RemoveAt(FindSortedEqual(item, sortPredicate)));
+		}
+
 		/**
 		 * Delete item at index
 		 * @return true if removed
