@@ -121,10 +121,10 @@ namespace Rift
 		}
 
 		// Returns index of next set bit in array (wraps around)
-		i32 GetNextSet(u32 index) const;
+		i32 GetNextSet(i32 index) const;
 
 		// @return index of previous set bit in array (wraps around)
-		i32 GetPreviousSet(u32 index) const;
+		i32 GetPreviousSet(i32 index) const;
 
 		// @return the number of bits in this bit array
 		u32 Size() const
@@ -226,9 +226,9 @@ namespace Rift
 	}
 
 	template<typename Allocator>
-	i32 TBitArray<Allocator>::GetNextSet(u32 index) const
+	i32 TBitArray<Allocator>::GetNextSet(i32 index) const
 	{
-		u32 i;
+		i32 i;
 		for (i = index + 1; i < numBits; ++i)
 		{
 			if (IsSet(i))
@@ -244,12 +244,12 @@ namespace Rift
 	}
 
 	template<typename Allocator>
-	i32 TBitArray<Allocator>::GetPreviousSet(u32 index) const
+	i32 TBitArray<Allocator>::GetPreviousSet(i32 index) const
 	{
-		u32 i;
+		i32 i;
 		if (index != 0)
 		{
-			for (i = index - 1; i > 0; i--)
+			for (i = index - 1; i > 0; --i)
 			{
 				if (IsSet(i))
 					return i;

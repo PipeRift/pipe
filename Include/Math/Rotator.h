@@ -7,9 +7,8 @@
 
 namespace Rift
 {
-	class Rotator : public v3
+	struct Rotator : public v3
 	{
-	public:
 		Rotator() {}
 		Rotator(const v3& vector) : v3{vector} {}
 
