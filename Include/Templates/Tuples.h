@@ -13,4 +13,25 @@ namespace Rift
 
 	template<typename... T>
 	using TTuple = std::tuple<T...>;
+
+
+	namespace Internal
+	{
+		template<typename T, typename Tuple>
+		struct TTupleContains;
+
+		template<typename T, typename... Us>
+		struct TTupleContains<T, const TTuple<Us...>> : std::disjunction<std::is_same<T, Us>...>
+		{};
+
+		template<typename T, typename... Us>
+		struct TTupleContains<T, TTuple<Us...>> : std::disjunction<std::is_same<T, Us>...>
+		{};
+	}    // namespace Internal
+
+	template<typename T, typename Tuple>
+	constexpr bool Contains()
+	{
+		return Internal::TTupleContains<T, Tuple>::value;
+	}
 }    // namespace Rift
