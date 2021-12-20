@@ -40,13 +40,13 @@ namespace Rift
 	template<typename... T>
 	struct TJoinList;
 
-	template<typename ListType, typename... ATypes, typename... BTypes>
+	template<typename... ATypes, typename... BTypes>
 	struct TJoinList<TTypeList<ATypes...>, TTypeList<BTypes...>>
 	{
 		using Type = TTypeList<ATypes..., BTypes...>;
 	};
 
-	template<typename ListType, typename... ATypes, typename... BTypes>
+	template<typename... ATypes, typename... BTypes>
 	struct TJoinList<TTypeList<ATypes...>, BTypes...>
 	{
 		using Type = TTypeList<ATypes..., BTypes...>;

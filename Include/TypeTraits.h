@@ -116,6 +116,20 @@ namespace Rift
 	using Mut = std::remove_const_t<T>;
 	template<typename T>
 	using Const = std::add_const_t<T>;
+
+
+	template<typename T, typename Reference>
+	struct TCopyConst
+	{
+		using type = T;
+	};
+	template<typename T, typename Reference>
+	struct TCopyConst<T, const Reference>
+	{
+		using type = const T;
+	};
+	template<typename T, typename Reference>
+	using CopyConst = typename TCopyConst<T, Reference>::type;
 }    // namespace Rift
 
 #define RIFT_DECLARE_IS_TRIVIAL(T, isTrivial)                                                \
