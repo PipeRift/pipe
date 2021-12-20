@@ -11,7 +11,6 @@ using namespace ankerl;
 #include <Misc/Chrono.h>
 
 
-
 void RunArenasBenchmarks()
 {
 	{
@@ -23,21 +22,21 @@ void RunArenasBenchmarks()
 
 		{
 			consecutiveAlloc.relative(true).run("OS (malloc)", [&] {
-				Rift::Alloc(16);
+				ankerl::nanobench::doNotOptimizeAway(Rift::Alloc(16));
 			});
 		}
 
 		{
 			Rift::Memory::LinearArena arena{100 * 1024 * 1024};
 			consecutiveAlloc.run("LinearArena", [&] {
-				arena.Allocate(16);
+				ankerl::nanobench::doNotOptimizeAway(arena.Allocate(16));
 			});
 		}
 
 		{
 			Rift::Memory::BestFitArena arena{10 * 1024 * 1024};
 			consecutiveAlloc.run("BestFitArena", [&] {
-				arena.Allocate(16);
+				ankerl::nanobench::doNotOptimizeAway(arena.Allocate(16));
 			});
 		}
 
@@ -85,7 +84,7 @@ void RunArenasBenchmarks()
 			}
 
 			Rift::i32 i = 0;
-			consecutiveFree.run("LinearArena", [&] {
+			consecutiveFree.run("BestFitArena", [&] {
 				arena.Free(allocated[i], 16);
 				++i;
 			});
@@ -105,7 +104,7 @@ void RunArenasBenchmarks()
 			}
 
 			Rift::i32 i = 0;
-			consecutiveFree.run("LinearArena", [&] {
+			consecutiveFree.run("BigBestFitArena", [&] {
 				arena.Free(allocated[i], 16);
 				++i;
 			});
@@ -130,6 +129,9 @@ void RunArenasBenchmarks()
 				Rift::Free(p);
 				void* p3 = Rift::Alloc(8);
 				Rift::Free(p3);
+				ankerl::nanobench::doNotOptimizeAway(p);
+				ankerl::nanobench::doNotOptimizeAway(p2);
+				ankerl::nanobench::doNotOptimizeAway(p3);
 			});
 		}
 
@@ -141,6 +143,9 @@ void RunArenasBenchmarks()
 				arena.Free(p, 16);
 				void* p3 = arena.Allocate(8);
 				arena.Free(p3, 8);
+				ankerl::nanobench::doNotOptimizeAway(p);
+				ankerl::nanobench::doNotOptimizeAway(p2);
+				ankerl::nanobench::doNotOptimizeAway(p3);
 			});
 		}
 
@@ -152,6 +157,9 @@ void RunArenasBenchmarks()
 				arena.Free(p, 16);
 				void* p3 = arena.Allocate(8);
 				arena.Free(p3, 8);
+				ankerl::nanobench::doNotOptimizeAway(p);
+				ankerl::nanobench::doNotOptimizeAway(p2);
+				ankerl::nanobench::doNotOptimizeAway(p3);
 			});
 		}
 	}
@@ -173,11 +181,19 @@ void RunArenasBenchmarks()
 
 			ankerl::nanobench::Rng rng(122);
 			randomSequence.relative(true).run("OS (malloc)", [&] {
-				void* p  = Rift::Alloc(16);
-				void* p2 = Rift::Alloc(21);
-				Rift::Free(p);
-				void* p3 = Rift::Alloc(8);
-				Rift::Free(p3);
+				if (rng() & 1U)
+				{
+					void* ptr = Rift::Alloc(16);
+					ankerl::nanobench::doNotOptimizeAway(ptr);
+					allocated.Add(ptr);
+				}
+				else
+				{
+					Rift::u32 index = rng.bounded(allocated.Size());
+					void* toRemove  = allocated[index];
+					Rift::Free(toRemove);
+					allocated.RemoveAtSwapUnsafe(index, false);
+				}
 			});
 
 			for (void* p : allocated)
@@ -199,7 +215,9 @@ void RunArenasBenchmarks()
 			randomSequence.run("BestFitArena", [&] {
 				if (rng() & 1U)
 				{
-					allocated.Add(arena.Allocate(16));
+					void* ptr = arena.Allocate(16);
+					ankerl::nanobench::doNotOptimizeAway(ptr);
+					allocated.Add(ptr);
 				}
 				else
 				{
@@ -229,7 +247,9 @@ void RunArenasBenchmarks()
 			randomSequence.run("BigBestFitArena", [&] {
 				if (rng() & 1U)
 				{
-					allocated.Add(arena.Allocate(16));
+					void* ptr = arena.Allocate(16);
+					ankerl::nanobench::doNotOptimizeAway(ptr);
+					allocated.Add(ptr);
 				}
 				else
 				{
