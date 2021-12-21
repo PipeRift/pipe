@@ -286,6 +286,20 @@ namespace Rift
 			return it != end() ? &*it : nullptr;
 		}
 
+		Type& FindRef(const Type& item) const
+		{
+			Iterator it = FindIt(item);
+			Check(it);
+			return *it;
+		}
+
+		Type& FindRef(TFunction<bool(const Type&)> cb) const
+		{
+			Iterator it = FindIt(Move(cb));
+			Check(it);
+			return *it;
+		}
+
 		i32 FindOrAdd(const Type& item) const
 		{
 			const i32 found = FindIndex(item);
