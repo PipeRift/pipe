@@ -289,14 +289,14 @@ namespace Rift
 		Type& FindRef(const Type& item) const
 		{
 			Iterator it = FindIt(item);
-			Check(it);
+			Check(it != end());
 			return *it;
 		}
 
 		Type& FindRef(TFunction<bool(const Type&)> cb) const
 		{
 			Iterator it = FindIt(Move(cb));
-			Check(it);
+			Check(it != end());
 			return *it;
 		}
 
