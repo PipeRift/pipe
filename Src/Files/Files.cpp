@@ -132,11 +132,18 @@ namespace Rift::Files
 
 	bool Copy(const Path& origin, const Path& destination, CopyOptions options)
 	{
-		if (ExistsAsFolder(origin))
+		if (IsFolder(origin) && ExistsAsFolder(origin))
 		{
 			const auto stdOptions = static_cast<fs::copy_options>(*(options));
 			std::error_code err;
 			fs::copy(origin, destination, stdOptions, err);
+			return !err;
+		}
+		else if (IsFile(origin) && ExistsAsFile(origin))
+		{
+			const auto stdOptions = static_cast<fs::copy_options>(*(options));
+			std::error_code err;
+			fs::copy_file(origin, destination, stdOptions, err);
 			return !err;
 		}
 		return false;
@@ -144,13 +151,14 @@ namespace Rift::Files
 
 	bool Move(const Path& origin, const Path& destination)
 	{
-		if (ExistsAsFolder(origin))
-		{
-			std::error_code err;
-			fs::rename(origin, destination, err);
-			return !err;
-		}
-		return false;
+		return Rename(origin, destination);
+	}
+
+	bool Rename(const Path& origin, const Path& destination)
+	{
+		std::error_code err;
+		fs::rename(origin, destination, err);
+		return !err;
 	}
 
 

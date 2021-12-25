@@ -29,6 +29,7 @@ namespace Rift
 
 	enum class CopyOptions
 	{
+		None         = i32(fs::copy_options::none),
 		SkipExisting = i32(fs::copy_options::skip_existing),
 		Overwrite =
 		    i32(fs::copy_options::overwrite_existing) | i32(fs::copy_options::update_existing),

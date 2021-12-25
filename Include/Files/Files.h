@@ -41,6 +41,7 @@ namespace Rift::Files
 	CORE_API bool Copy(const Path& origin, const Path& destination,
 	    CopyOptions options = CopyOptions::Overwrite | CopyOptions::Recursive);
 	CORE_API bool Move(const Path& origin, const Path& destination);
+	CORE_API bool Rename(const Path& origin, const Path& destination);
 
 
 	/** String API */
