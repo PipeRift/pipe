@@ -8,21 +8,21 @@ namespace Rift
 {
 	enum TypeFlags
 	{
-		Type_NoFlag    = 0,
-		Type_Transient = 1 << 0,    // All transients are the same flag
+		Type_NoFlag        = 0,
+		Type_NotSerialized = 1 << 0,    // All "NotSerialized" share the same flag value
 
-		Struct_Transient = 1 << 0,
+		Struct_NotSerialized = 1 << 0,
 
-		Class_Transient = 1 << 0,
-		Class_Abstract  = 1 << 1
+		Class_NotSerialized = 1 << 0,
+		Class_Abstract      = 1 << 1
 	};
 
 	enum PropFlags
 	{
-		Prop_NoFlag    = 0,
-		Prop_Transient = 1 << 0,
-		Prop_View      = 1 << 1,
-		Prop_Edit      = 1 << 2 | Prop_View    // Edit implies View too
+		Prop_NoFlag        = 0,
+		Prop_NotSerialized = 1 << 0,
+		Prop_View          = 1 << 1,
+		Prop_Edit          = 1 << 2 | Prop_View    // Edit implies View too
 	};
 
 

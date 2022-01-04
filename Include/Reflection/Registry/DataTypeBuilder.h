@@ -167,8 +167,11 @@ public:                                                                         
 	}                                                                                         \
 	void SerializeReflection(Rift::Serl::CommonContext& ct) override                          \
 	{                                                                                         \
-		Super::SerializeReflection(ct);                                                       \
-		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});                            \
+		if constexpr (!(InitPropFlags(flags) & Class_NotSerialized))                          \
+		{                                                                                     \
+			Super::SerializeReflection(ct);                                                   \
+			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});                        \
+		}                                                                                     \
 	}
 
 
@@ -211,8 +214,11 @@ public:                                                                         
 	}                                                                                          \
 	void SerializeReflection(Rift::Serl::CommonContext& ct)                                    \
 	{                                                                                          \
-		Super::SerializeReflection(ct);                                                        \
-		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});                             \
+		if constexpr (!(InitPropFlags(flags) & Struct_NotSerialized))                          \
+		{                                                                                      \
+			Super::SerializeReflection(ct);                                                    \
+			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});                         \
+		}                                                                                      \
 	}
 
 
@@ -269,7 +275,7 @@ public:                           \
                                                                                                   \
 	void __ReflSerializeProperty(Rift::Serl::CommonContext& ct, Rift::Refl::MetaCounter<id_name>) \
 	{                                                                                             \
-		if constexpr (!(InitPropFlags(flags) & Prop_Transient))                                   \
+		if constexpr (!(InitPropFlags(flags) & Prop_NotSerialized))                               \
 		{ /* Don't serialize property if Transient */                                             \
 			ct.Next(#name, name);                                                                 \
 		}                                                                                         \
