@@ -167,7 +167,7 @@ public:                                                                         
 	}                                                                                         \
 	void SerializeReflection(Rift::Serl::CommonContext& ct) override                          \
 	{                                                                                         \
-		if constexpr (!(InitPropFlags(flags) & Class_NotSerialized))                          \
+		if constexpr (!(InitTypeFlags(flags) & Class_NotSerialized))                          \
 		{                                                                                     \
 			Super::SerializeReflection(ct);                                                   \
 			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});                        \
@@ -214,7 +214,7 @@ public:                                                                         
 	}                                                                                          \
 	void SerializeReflection(Rift::Serl::CommonContext& ct)                                    \
 	{                                                                                          \
-		if constexpr (!(InitPropFlags(flags) & Struct_NotSerialized))                          \
+		if constexpr (!(InitTypeFlags(flags) & Struct_NotSerialized))                          \
 		{                                                                                      \
 			Super::SerializeReflection(ct);                                                    \
 			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});                         \
