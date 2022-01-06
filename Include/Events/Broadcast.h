@@ -41,7 +41,9 @@ namespace Rift
 
 
 	public:
-		TBroadcast() = default;
+		TBroadcast()                           = default;
+		explicit TBroadcast(const TBroadcast&) = default;
+		TBroadcast(TBroadcast&&)               = default;
 
 		/** Broadcast to all binded functions */
 		void Broadcast(const Params&... params)
