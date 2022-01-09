@@ -185,7 +185,7 @@ namespace Rift
 		{
 			MoveFrom(Move(other));
 		}
-		TOwnPtr(OwnPtr&& other);
+		TOwnPtr(OwnPtr&& other) noexcept;
 
 		TOwnPtr& operator=(TOwnPtr&& other) noexcept
 		{
@@ -194,16 +194,16 @@ namespace Rift
 			return *this;
 		}
 
-		TOwnPtr& operator=(OwnPtr&& other);
+		TOwnPtr& operator=(OwnPtr&& other) noexcept;
 
 		/** Templates for down-casting */
 		template<typename T2>
-		TOwnPtr(TOwnPtr<T2>&& other) requires Derived<T2, T>
+		TOwnPtr(TOwnPtr<T2>&& other) noexcept requires Derived<T2, T>
 		{
 			MoveFrom(Move(other));
 		}
 		template<typename T2>
-		TOwnPtr& operator=(TOwnPtr<T2>&& other) requires Derived<T2, T>
+		TOwnPtr& operator=(TOwnPtr<T2>&& other) noexcept requires Derived<T2, T>
 		{
 			Delete();
 			MoveFrom(Move(other));
@@ -372,7 +372,7 @@ namespace Rift
 		{}
 
 		template<typename T2>
-		TPtr(TPtr<T2>&& other) requires Derived<T2, T> : Super(Move(other))
+		TPtr(TPtr<T2>&& other) noexcept requires Derived<T2, T> : Super(Move(other))
 		{}
 
 		template<typename T2>
@@ -383,7 +383,7 @@ namespace Rift
 		}
 
 		template<typename T2>
-		TPtr& operator=(TPtr<T2>&& other) requires Derived<T2, T>
+		TPtr& operator=(TPtr<T2>&& other) noexcept requires Derived<T2, T>
 		{
 			MoveFrom(Move(other));
 			return *this;
@@ -468,12 +468,12 @@ namespace Rift
 	public:
 		constexpr OwnPtr() = default;
 		template<typename T>
-		OwnPtr(TOwnPtr<T>&& other)
+		OwnPtr(TOwnPtr<T>&& other) noexcept
 		{
 			MoveFrom(Move(other));
 			typeId = Refl::TypeId::Get<T>();
 		}
-		OwnPtr(OwnPtr&& other)
+		OwnPtr(OwnPtr&& other) noexcept
 		{
 			MoveFrom(Move(other));
 			typeId       = Move(other.typeId);
@@ -481,7 +481,7 @@ namespace Rift
 		}
 
 		template<typename T>
-		OwnPtr& operator=(TOwnPtr<T>&& other)
+		OwnPtr& operator=(TOwnPtr<T>&& other) noexcept
 		{
 			Delete();
 			MoveFrom(Move(other));
@@ -489,7 +489,7 @@ namespace Rift
 			return *this;
 		}
 
-		OwnPtr& operator=(OwnPtr&& other)
+		OwnPtr& operator=(OwnPtr&& other) noexcept
 		{
 			Delete();
 			MoveFrom(Move(other));
@@ -548,7 +548,7 @@ namespace Rift
 
 
 	template<typename T>
-	inline TOwnPtr<T>::TOwnPtr(OwnPtr&& other)
+	inline TOwnPtr<T>::TOwnPtr(OwnPtr&& other) noexcept
 	{
 		CheckMsg(other.IsType<T>(), "Type doesn't match!");
 		Super::MoveFrom(Move(other));
@@ -558,7 +558,7 @@ namespace Rift
 	}
 
 	template<typename T>
-	inline TOwnPtr<T>& TOwnPtr<T>::operator=(OwnPtr&& other)
+	inline TOwnPtr<T>& TOwnPtr<T>::operator=(OwnPtr&& other) noexcept
 	{
 		CheckMsg(other.IsType<T>(), "Type doesn't match!");
 		Delete();
