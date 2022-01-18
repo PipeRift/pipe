@@ -183,9 +183,16 @@ namespace Rift
 			return k.GetId();
 		}
 	};
-}    // namespace Rift
 
-TYPE_FLAGS(Rift::Name, HasMemberSerialize = true);
+	template<>
+	struct TFlags<Name> : public DefaultTFlags
+	{
+		enum
+		{
+			HasMemberSerialize = true
+		};
+	};
+}    // namespace Rift
 
 
 template<>

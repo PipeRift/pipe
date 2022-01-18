@@ -301,6 +301,13 @@ namespace Rift
 			return Crc::MemCrc32(&k, sizeof(Guid));
 		}
 	};
-}    // namespace Rift
 
-TYPE_FLAGS(Rift::Guid, HasMemberSerialize = true);
+	template<>
+	struct TFlags<Guid> : public DefaultTFlags
+	{
+		enum
+		{
+			HasMemberSerialize = true
+		};
+	};
+}    // namespace Rift

@@ -27,16 +27,26 @@ void Write(WriteContext& ct, const TypeA& val)
 	ct.Next("value", val.value);
 }
 
+
 struct TypeB
 {
 	bool value = false;
 };
-TYPE_FLAGS(TypeB, HasSingleSerialize = true);
+template<>
+struct Rift::TFlags<TypeB> : public Rift::DefaultTFlags
+{
+	enum
+	{
+		HasSingleSerialize = true
+	};
+};
+
 void Serialize(CommonContext& ct, TypeB& val)
 {
 	ct.BeginObject();
 	ct.Next("value", val.value);
 }
+
 
 struct TypeC
 {
@@ -53,7 +63,15 @@ struct TypeC
 		ct.Next("value", value);
 	}
 };
-TYPE_FLAGS(TypeC, HasMemberSerialize = true);
+template<>
+struct Rift::TFlags<TypeC> : public Rift::DefaultTFlags
+{
+	enum
+	{
+		HasMemberSerialize = true
+	};
+};
+
 
 struct TypeD
 {
@@ -65,7 +83,15 @@ struct TypeD
 		ct.Next("value", value);
 	}
 };
-TYPE_FLAGS(TypeD, HasMemberSerialize = true, HasSingleSerialize = true);
+template<>
+struct Rift::TFlags<TypeD> : public Rift::DefaultTFlags
+{
+	enum
+	{
+		HasMemberSerialize = true,
+		HasSingleSerialize = true
+	};
+};
 
 
 go_bandit([]() {

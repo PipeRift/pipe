@@ -22,15 +22,14 @@ namespace Rift
 		};
 	};
 
-	template<typename>
+	template<typename...>
 	struct TFlags : public Rift::DefaultTFlags
 	{};
 
 
 /** Custom traits go here */
 #define TYPE_FLAGS(type, ...)                           \
-	template<typename T>                                \
-		requires Rift::Derived<T, type>                 \
+	template<Rift::Derived<type> T>                     \
 	struct Rift::TFlags<T> : public Rift::DefaultTFlags \
 	{                                                   \
 		enum                                            \
