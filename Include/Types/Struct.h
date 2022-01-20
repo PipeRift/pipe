@@ -1,16 +1,15 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "PCH.h"
-
 #include "BaseStruct.h"
+#include "Export.h"
 #include "Reflection/Reflection.h"
 #include "Serialization/Contexts.h"
 
 
 namespace Rift
 {
-	struct CORE_API Struct : public BaseStruct
+	struct Struct : public BaseStruct
 	{
 	public:
 		using BuilderType = Rift::Refl::TStructTypeBuilder<Struct, void, Type_NoFlag>;

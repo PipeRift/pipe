@@ -1,16 +1,16 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "CoreObject.h"
 #include "Events/Broadcast.h"
 #include "Tasks.h"
+#include "Types/Class.h"
 
 
 namespace Rift
 {
-	class Context : public Object
+	class Context : public Class
 	{
-		CLASS(Context, Object)
+		CLASS(Context, Class)
 
 	private:
 		TaskSystem tasks;
@@ -43,7 +43,7 @@ namespace Rift
 
 	CORE_API TOwnPtr<Context>& GetContextInstance();
 
-	template <typename T = Context>
+	template<typename T = Context>
 	bool InitializeContext()
 	{
 		TOwnPtr<Context>& context = GetContextInstance();
@@ -57,7 +57,7 @@ namespace Rift
 
 	CORE_API void ShutdownContext();
 
-	template <typename T = Context>
+	template<typename T = Context>
 	TPtr<T> GetContext()
 	{
 		CheckMsg(

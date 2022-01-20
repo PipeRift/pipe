@@ -74,7 +74,7 @@ namespace Rift::Refl
 	template<typename T, typename Parent, TypeFlags flags = Type_NoFlag, typename TType = ClassType>
 	struct TClassTypeBuilder : public TDataTypeBuilder<T, Parent, flags, TType>
 	{
-		static_assert(IsClass<T>(), "Type does not inherit Object!");
+		static_assert(IsClass<T>(), "Type does not inherit Class!");
 		using Super     = TDataTypeBuilder<T, Parent, flags, TType>;
 		using BuildFunc = TFunction<void(TClassTypeBuilder& builder)>;
 		using Super::GetType;
@@ -92,9 +92,9 @@ namespace Rift::Refl
 			auto* type = Super::Build();
 
 			GetType()->onCreate = []() {
-				if constexpr (IsSame<T, BaseObject>)
+				if constexpr (IsSame<T, BaseClass>)
 				{
-					return nullptr;    // Can't create instances of BaseObject
+					return nullptr;    // Can't create instances of BaseClass
 				}
 				return new T();
 			};

@@ -4,14 +4,14 @@
 #include "PCH.h"
 
 #include "Events/Function.h"
-#include "Object/BaseObject.h"
 #include "Reflection/Static/DataType.h"
+#include "Types/BaseClass.h"
 
 
 namespace Rift
 {
 	template<typename T>
-	struct ObjectBuilder;
+	struct ClassBuilder;
 }
 
 namespace Rift::Refl
@@ -21,13 +21,13 @@ namespace Rift::Refl
 		template<typename T, typename Parent, TypeFlags flags, typename TType>
 		friend struct TClassTypeBuilder;
 
-		using CreateFunc = TFunction<BaseObject*()>;
+		using CreateFunc = TFunction<BaseClass*()>;
 
 		CreateFunc onCreate;
 
 
 	public:
-		CORE_API BaseObject* CreateInstance();
+		CORE_API BaseClass* CreateInstance();
 
 		CORE_API ClassType* GetParent() const
 		{

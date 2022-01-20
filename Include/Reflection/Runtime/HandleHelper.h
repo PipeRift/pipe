@@ -2,8 +2,8 @@
 #pragma once
 
 #include "CoreTypes.h"
-#include "Object/BaseObject.h"
 #include "Reflection/Runtime/ClassHandle.h"
+#include "Types/BaseClass.h"
 
 
 namespace Rift::Refl
@@ -12,7 +12,7 @@ namespace Rift::Refl
 	{
 	public:
 		// #TODO: Move to TClass
-		static std::shared_ptr<ClassHandle> CreateClassHandle(const TPtr<BaseObject>& instance)
+		static std::shared_ptr<ClassHandle> CreateClassHandle(const TPtr<BaseClass>& instance)
 		{
 			return std::make_shared<ClassHandle>(instance);
 		}

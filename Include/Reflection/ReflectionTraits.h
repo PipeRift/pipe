@@ -3,8 +3,8 @@
 
 #include "Containers/Array.h"
 #include "Containers/Map.h"
-#include "Object/BaseObject.h"
 #include "Reflection/Registry/TypeBuilder.h"
+#include "Types/BaseClass.h"
 #include "TypeTraits.h"
 
 
@@ -21,7 +21,7 @@ namespace Rift
 	template<typename T>
 	inline constexpr bool IsClass()
 	{
-		return Derived<T, BaseObject, false>;    // && IsDefined<struct TTypeInstance<T>>();
+		return Derived<T, BaseClass, false>;    // && IsDefined<struct TTypeInstance<T>>();
 	}
 
 	template<typename T>

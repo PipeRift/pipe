@@ -3,10 +3,10 @@
 
 #include "CoreTypes.h"
 #include "Memory/OwnPtr.h"
-#include "Object/BaseObject.h"
-#include "Object/BaseStruct.h"
 #include "Reflection/Static/Property.h"
 #include "Strings/String.h"
+#include "Types/BaseClass.h"
+#include "Types/BaseStruct.h"
 
 
 namespace Rift::Refl
@@ -15,12 +15,12 @@ namespace Rift::Refl
 	{
 	protected:
 		BaseStruct* const structInstance = nullptr;
-		TPtr<BaseObject> objInstance;
+		TPtr<BaseClass> objInstance;
 		const Property* const prop = nullptr;
 
 
 	protected:
-		PropertyHandle(const TPtr<BaseObject>& objInstance, const Property* prop)
+		PropertyHandle(const TPtr<BaseClass>& objInstance, const Property* prop)
 		    : objInstance{objInstance}, prop{prop}
 		{}
 		PropertyHandle(BaseStruct* instance, const Property* prop)

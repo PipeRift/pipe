@@ -1,11 +1,11 @@
 // Copyright 2015-2021 Piperift - All rights reserved
 #pragma once
 
-#include "CoreObject.h"
 #include "CoreTypes.h"
 #include "EventHandle.h"
 #include "Function.h"
 #include "Log.h"
+#include "Types/Class.h"
 
 
 namespace Rift
@@ -33,7 +33,7 @@ namespace Rift
 		};
 		struct PtrListener : public BaseListener
 		{
-			TPtr<Object> instance;
+			TPtr<Class> instance;
 		};
 
 		mutable TArray<RawListener> rawListeners{};

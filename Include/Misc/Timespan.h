@@ -592,9 +592,6 @@ namespace Rift
 			return {DecMicroseconds::zero()};
 		}
 
-	public:
-		friend class UObject;
-
 	protected:
 		/**
 		 * Assign the specified components to this time span.

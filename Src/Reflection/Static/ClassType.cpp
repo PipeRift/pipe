@@ -2,12 +2,12 @@
 
 #include "Reflection/Static/ClassType.h"
 
-#include "Object/ObjectBuilder.h"
+#include "Types/ClassBuilder.h"
 
 
 namespace Rift::Refl
 {
-	BaseObject* ClassType::CreateInstance()
+	BaseClass* ClassType::CreateInstance()
 	{
 		if (onCreate)
 		{

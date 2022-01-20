@@ -13,19 +13,19 @@ namespace Rift
 	{
 		class ClassType;
 	}
-	class Object;
+	class Class;
 
 	template<typename Type>
 	struct TPtr;
 
 
-	class CORE_API BaseObject : public BaseStruct
+	class CORE_API BaseClass : public BaseStruct
 	{
 	protected:
-		BaseObject() = default;
+		BaseClass() = default;
 
 	public:
-		virtual ~BaseObject() = default;
+		virtual ~BaseClass() = default;
 
 		void StartDestroy()
 		{
@@ -33,7 +33,7 @@ namespace Rift
 		}
 
 		Refl::ClassType* GetClass() const;
-		TPtr<Object> Self() const;
+		TPtr<Class> Self() const;
 
 	protected:
 		virtual void BeforeDestroy() {}

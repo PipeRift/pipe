@@ -11,10 +11,10 @@
 namespace Rift
 {
 	template<typename T>
-	struct TObjectBuilder : public TPtrBuilder<T>
+	struct TClassBuilder : public TPtrBuilder<T>
 	{
 		template<typename... Args>
-		static T* New(Args&&... args, const TPtr<BaseObject>& owner = {})
+		static T* New(Args&&... args, const TPtr<BaseClass>& owner = {})
 		{
 			T* instance = new T(std::forward<Args>(args)...);
 			instance->SetOwner(owner);
@@ -22,7 +22,7 @@ namespace Rift
 		}
 
 		// Allow creation of classes using reflection
-		static T* New(Refl::ClassType* objClass, TPtr<BaseObject> owner = {})
+		static T* New(Refl::ClassType* objClass, TPtr<BaseClass> owner = {})
 		{
 			if (objClass)
 			{

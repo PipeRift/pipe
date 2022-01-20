@@ -4,8 +4,8 @@
 
 #include "PCH.h"
 
-#include "Object/BaseObject.h"
 #include "Reflection/ReflectionTraits.h"
+#include "Types/BaseClass.h"
 #include "TypeTraits.h"
 
 

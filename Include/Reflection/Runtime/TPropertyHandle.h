@@ -20,9 +20,8 @@ namespace Rift::Refl
 
 	public:
 		// TPropertyHandle() : PropertyHandle({}, nullptr) {}
-		// Objects constructor
-		TPropertyHandle(
-		    const TPtr<BaseObject>& instance, const Property* prop, const Access& access)
+		// Classs constructor
+		TPropertyHandle(const TPtr<BaseClass>& instance, const Property* prop, const Access& access)
 		    : PropertyHandle(instance, prop), access{access}
 		{}
 
