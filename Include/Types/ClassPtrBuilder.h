@@ -22,11 +22,11 @@ namespace Rift
 		}
 
 		// Allow creation of classes using reflection
-		static T* New(Refl::ClassType* objClass, TPtr<BaseClass> owner = {})
+		static T* New(Refl::ClassType* type, TPtr<BaseClass> owner = {})
 		{
-			if (objClass)
+			if (type)
 			{
-				if (T* instance = dynamic_cast<T*>(objClass->Create()))
+				if (T* instance = dynamic_cast<T*>(type->New()))
 				{
 					instance->SetOwner(owner);
 					return instance;

@@ -80,8 +80,7 @@ namespace Rift
 		CORE_API String ParseMemorySize(sizet size);
 
 		template<typename ToStringType, typename FromChar>
-		inline void ConvertTo(TStringView<FromChar> source, ToStringType& dest) requires(
-		    !IsSame<FromChar, typename ToStringType::value_type>)
+		inline void ConvertTo(TStringView<FromChar> source, ToStringType& dest)
 		{
 			using ToChar = typename ToStringType::value_type;
 			static_assert(
@@ -89,7 +88,11 @@ namespace Rift
 			static_assert(
 			    std::is_integral_v<ToChar>, "ToChar is not integral (so it is not a char)");
 
-			if constexpr (sizeof(FromChar) == 1 && sizeof(ToChar) == 2)
+			if constexpr (IsSame<FromChar, ToChar>)
+			{
+				dest = source;
+			}
+			else if constexpr (sizeof(FromChar) == 1 && sizeof(ToChar) == 2)
 			{
 				utf8::utf8to16(source.begin(), source.end(), std::back_inserter(dest));
 			}
@@ -107,8 +110,16 @@ namespace Rift
 			}
 			else
 			{
-				// static_assert(false, "Unknown char conversion types");
+				// TODO: Find a way to assert at compile time except on the previous cases
+				// static_assert(false, "Unknown char conversion");
 			}
+		}
+
+		// Help FromChar deduction
+		template<typename ToStringType, typename FromChar>
+		inline void ConvertTo(const TString<FromChar>& source, ToStringType& dest)
+		{
+			ConvertTo(TStringView<FromChar>{source}, dest);
 		}
 
 		template<typename ToStringType, typename FromChar>
@@ -116,14 +127,14 @@ namespace Rift
 		{
 			ToStringType dest;
 			ConvertTo(source, dest);
-			return dest;
+			return Move(dest);
 		}
 
-		// Do nothing. Converting to same type
-		template<typename CharType>
-		inline TStringView<CharType> Convert(TStringView<CharType> source)
+		// Help FromChar deduction
+		template<typename ToStringType, typename FromChar>
+		inline ToStringType Convert(const TString<FromChar>& source)
 		{
-			return source;
+			return Move(Convert<ToStringType>(TStringView<FromChar>{source}));
 		}
 	};    // namespace Strings
 

@@ -47,7 +47,7 @@ namespace Rift::Strings
 
 	void RemoveFromEnd(String& str, sizet size)
 	{
-		str.erase(str.size() - 1 - size, str.size() - 1);
+		str.resize(str.size() - size);
 	}
 
 	i32 Split(const String& str, TArray<String>& tokens, const TChar delim)

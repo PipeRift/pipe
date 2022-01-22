@@ -27,7 +27,7 @@ namespace Rift::Refl
 			delete defaultValue;
 		}
 
-		BaseClass* New() const;
+		CORE_API BaseClass* New() const;
 
 		CORE_API ClassType* GetParent() const
 		{
