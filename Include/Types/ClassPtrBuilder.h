@@ -11,7 +11,7 @@
 namespace Rift
 {
 	template<typename T>
-	struct TClassBuilder : public TPtrBuilder<T>
+	struct TClassPtrBuilder : public TPtrBuilder<T>
 	{
 		template<typename... Args>
 		static T* New(Args&&... args, const TPtr<BaseClass>& owner = {})
@@ -26,7 +26,7 @@ namespace Rift
 		{
 			if (objClass)
 			{
-				if (T* instance = dynamic_cast<T*>(objClass->CreateInstance()))
+				if (T* instance = dynamic_cast<T*>(objClass->Create()))
 				{
 					instance->SetOwner(owner);
 					return instance;

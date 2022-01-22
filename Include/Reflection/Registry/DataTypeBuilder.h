@@ -91,7 +91,7 @@ namespace Rift::Refl
 		{
 			auto* type = Super::Build();
 
-			GetType()->onCreate = []() {
+			GetType()->onNew = []() {
 				if constexpr (IsSame<T, BaseClass>)
 				{
 					return nullptr;    // Can't create instances of BaseClass

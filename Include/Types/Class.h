@@ -2,7 +2,7 @@
 #pragma once
 
 #include "BaseClass.h"
-#include "ClassBuilder.h"
+#include "ClassPtrBuilder.h"
 #include "Log.h"
 #include "Reflection/Reflection.h"
 #include "Serialization/Contexts.h"
@@ -48,7 +48,7 @@ namespace Rift
 
 	public:
 		template<typename T>
-		using PtrBuilder = TClassBuilder<T>;
+		using PtrBuilder = TClassPtrBuilder<T>;
 
 
 	private:

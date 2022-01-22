@@ -2,16 +2,16 @@
 
 #include "Reflection/Static/ClassType.h"
 
-#include "Types/ClassBuilder.h"
+#include "Misc/Checks.h"
 
 
 namespace Rift::Refl
 {
-	BaseClass* ClassType::CreateInstance()
+	BaseClass* ClassType::New() const
 	{
-		if (onCreate)
+		if (Ensure(onNew))
 		{
-			return onCreate();
+			return onNew();
 		}
 		return {};
 	}

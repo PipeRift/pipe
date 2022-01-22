@@ -8,12 +8,6 @@
 #include "Types/BaseClass.h"
 
 
-namespace Rift
-{
-	template<typename T>
-	struct ClassBuilder;
-}
-
 namespace Rift::Refl
 {
 	class ClassType : public DataType
@@ -23,11 +17,17 @@ namespace Rift::Refl
 
 		using CreateFunc = TFunction<BaseClass*()>;
 
-		CreateFunc onCreate;
+		CreateFunc onNew;
+		mutable BaseClass* defaultValue;
 
 
 	public:
-		CORE_API BaseClass* CreateInstance();
+		~ClassType()
+		{
+			delete defaultValue;
+		}
+
+		BaseClass* New() const;
 
 		CORE_API ClassType* GetParent() const
 		{
@@ -49,6 +49,23 @@ namespace Rift::Refl
 		CORE_API bool IsA(ClassType* other) const
 		{
 			return this == other;
+		}
+
+
+		CORE_API BaseClass* GetDefaultPtr() const
+		{
+			if (!defaultValue)
+			{
+				defaultValue = New();
+			}
+			return defaultValue;
+		}
+
+		template<typename T>
+		T& GetDefault() const requires(IsClass<T>())
+		{
+			Check(T::GetType() == this);
+			return *GetDefaultPtr();
 		}
 	};
 }    // namespace Rift::Refl
