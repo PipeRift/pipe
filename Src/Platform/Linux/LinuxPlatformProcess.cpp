@@ -1,4 +1,4 @@
-// Copyright 2015-2021 Piperift - All rights reserved
+// Copyright 2015-2022 Piperift - All rights reserved
 
 #if PLATFORM_LINUX
 #	include "Platform/Linux/LinuxPlatformProcess.h"

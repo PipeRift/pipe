@@ -1,4 +1,4 @@
-// Copyright 2015-2021 Piperift - All rights reserved
+// Copyright 2015-2022 Piperift - All rights reserved
 
 #include "Tasks.h"
 
@@ -29,20 +29,20 @@ namespace Rift
 		std::condition_variable cv;
 		i32 currentWorker        = 0;
 		const i32 workerPoolSize = i32(workerPool.num_workers());
-		flow.for_each_index(
-		    0, workerPoolSize, 1, [&mtx, &cv, &currentWorker, workerPoolSize](i32 i) {
-			    std::unique_lock<std::mutex> lck(mtx);
-			    ++currentWorker;
-			    cv.notify_all();
-			    while (workerPoolSize != currentWorker)
-			    {
-				    cv.wait(lck);
-			    }
-			    {
-				    // Name each worker thread in the debugger
-				    tracy::SetThreadName(Strings::Format("Worker {}", i + 1).c_str());
-			    }
-		    });
+		flow.for_each_index(0, workerPoolSize, 1,
+		    [&mtx, &cv, &currentWorker, workerPoolSize](i32 i) {
+			std::unique_lock<std::mutex> lck(mtx);
+			++currentWorker;
+			cv.notify_all();
+			while (workerPoolSize != currentWorker)
+			{
+				cv.wait(lck);
+			}
+			{
+				// Name each worker thread in the debugger
+				tracy::SetThreadName(Strings::Format("Worker {}", i + 1).c_str());
+			}
+		});
 		auto future = Run(flow, TaskPool::Workers);
 		cv.notify_all();
 		future.wait();
@@ -52,10 +52,8 @@ namespace Rift
 	{
 		switch (pool)
 		{
-			case TaskPool::Workers:
-				return workerPool;
-			case TaskPool::Main:
-				return mainPool;
+			case TaskPool::Workers: return workerPool;
+			case TaskPool::Main: return mainPool;
 		}
 		CheckMsg(false, "Requested an invalid pool");
 		static ThreadPool invalidPool{0};

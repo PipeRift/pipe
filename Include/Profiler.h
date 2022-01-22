@@ -1,4 +1,4 @@
-// Copyright 2015-2021 Piperift - All rights reserved
+// Copyright 2015-2022 Piperift - All rights reserved
 
 #pragma once
 
@@ -47,7 +47,7 @@
 #	define TracySharedLockableN(type, varname, desc) type varname;
 #	define LockableBase(type) type
 #	define SharedLockableBase(type) type
-#	define LockMark(x) (void) x;
+#	define LockMark(x) (void)x;
 #	define LockableName(x, y, z) ;
 
 #	define TracyPlot(x, y)

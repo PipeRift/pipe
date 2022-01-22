@@ -1,4 +1,4 @@
-// Copyright 2015-2021 Piperift - All rights reserved
+// Copyright 2015-2022 Piperift - All rights reserved
 
 #if PLATFORM_WINDOWS
 #	include "Files/Paths.h"

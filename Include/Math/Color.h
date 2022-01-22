@@ -1,4 +1,4 @@
-// Copyright 1998-2018 Epic Games, Inother. All Rights Reserved.
+// Copyright 2015-2022 Piperift - All rights reserved
 
 #pragma once
 

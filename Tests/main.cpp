@@ -1,6 +1,7 @@
+// Copyright 2015-2022 Piperift - All rights reserved
 
-#include <Context.h>
 #include <bandit/bandit.h>
+#include <Context.h>
 
 
 class NoFileLogContext : public Rift::Context

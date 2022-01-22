@@ -1,4 +1,4 @@
-// Copyright 2015-2021 Piperift - All rights reserved
+// Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
 #include "Platform/Platform.h"
@@ -20,4 +20,4 @@ namespace Rift
 
 	REFLECT_NATIVE_TYPE(String);
 	REFLECT_NATIVE_TYPE(Name);
-}	 // namespace Rift
+}    // namespace Rift

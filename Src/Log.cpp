@@ -1,8 +1,9 @@
-// Copyright 2015-2021 Piperift - All rights reserved
+// Copyright 2015-2022 Piperift - All rights reserved
+
+#include "Log.h"
 
 #include "Files/Files.h"
 #include "Files/Paths.h"
-#include "Log.h"
 #include "Memory/OwnPtr.h"
 #include "Profiler.h"
 
@@ -13,6 +14,7 @@
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+
 #if PLATFORM_WINDOWS
 #	include <spdlog/details/windows_include.h>
 #endif
