@@ -57,33 +57,36 @@ namespace Rift::Refl
 		GetOwnProperties(outProperties);
 	}
 
-	bool DataType::HasFlag(PropFlags flag) const
+	bool DataType::HasFlag(TypeFlags flag) const
 	{
 		return HasAnyFlags(flag);
 	}
 
-	bool DataType::HasAllFlags(PropFlags inFlags) const
+	bool DataType::HasAllFlags(TypeFlags inFlags) const
 	{
 		return (flags & inFlags) == inFlags;
 	}
 
-	bool DataType::HasAnyFlags(PropFlags inFlags) const
+	bool DataType::HasAnyFlags(TypeFlags inFlags) const
 	{
 		return (flags & inFlags) > 0;
 	}
 
-	void DataType::__GetAllChildren(TArray<DataType*>& outChildren)
+	const TArray<DataType*>& DataType::GetChildren() const
 	{
-		// Yes, we loop two times children, but
-		// also do one single allocation in each recursion
-		outChildren.Append(children);
+		return children;
+	}
+	void DataType::GetChildrenDeep(TArray<DataType*>& outChildren) const
+	{
+		outChildren.Reserve(outChildren.Size() + children.Size());
 		for (auto* const child : children)
 		{
-			child->__GetAllChildren(outChildren);
+			outChildren.Add(child);
+			child->GetChildrenDeep(outChildren);
 		}
 	}
 
-	DataType* DataType::__FindChild(const Name& className) const
+	DataType* DataType::FindChild(const Name& className) const
 	{
 		if (className.IsNone())
 			return nullptr;
@@ -94,7 +97,7 @@ namespace Rift::Refl
 			{
 				return child;
 			}
-			else if (DataType* found = child->__FindChild(className))
+			else if (DataType* found = child->FindChild(className))
 			{
 				return found;
 			}

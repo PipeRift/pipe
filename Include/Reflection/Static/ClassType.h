@@ -34,16 +34,22 @@ namespace Rift::Refl
 			return static_cast<ClassType*>(parent);
 		}
 
-		CORE_API void GetAllChildren(TArray<ClassType*>& outChildren)
+		CORE_API const TArray<ClassType*>& GetChildren() const
 		{
 			// Classes only have Class children. It is safe to reinterpret_cast.
-			__GetAllChildren(reinterpret_cast<TArray<DataType*>&>(outChildren));
+			return reinterpret_cast<const TArray<ClassType*>&>(DataType::GetChildren());
+		}
+
+		CORE_API void GetChildrenDeep(TArray<ClassType*>& outChildren) const
+		{
+			// Classes only have Class children. It is safe to reinterpret_cast.
+			DataType::GetChildrenDeep(reinterpret_cast<TArray<DataType*>&>(outChildren));
 		}
 
 		CORE_API ClassType* FindChild(const Name& className) const
 		{
 			// Classes only have Class children. It is safe to static_cast.
-			return static_cast<ClassType*>(__FindChild(className));
+			return static_cast<ClassType*>(DataType::FindChild(className));
 		}
 
 		CORE_API bool IsA(ClassType* other) const
@@ -65,6 +71,7 @@ namespace Rift::Refl
 		T& GetDefault() const requires(IsClass<T>())
 		{
 			Check(T::GetType() == this);
+			CheckMsg(!HasFlag(Class_Abstract), "Tried to get default from an abstract class");
 			return *GetDefaultPtr();
 		}
 	};

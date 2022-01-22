@@ -19,6 +19,7 @@ namespace Rift
 		TPtr<BaseClass> self;
 		TPtr<BaseClass> owner;
 
+
 		CORE_API const TPtr<BaseClass>& GetSelf() const
 		{
 			return self;
@@ -35,7 +36,12 @@ namespace Rift
 	public:
 		using BuilderType = Rift::Refl::TClassTypeBuilder<Class, void, Type_NoFlag>;
 
-		virtual Rift::Refl::ClassType* GetClass() const
+
+		static Rift::Refl::ClassType* GetStaticType()
+		{
+			return Rift::GetType<Class>();
+		}
+		virtual Rift::Refl::ClassType* GetType() const
 		{
 			return Rift::GetType<Class>();
 		}

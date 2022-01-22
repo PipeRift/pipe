@@ -9,9 +9,9 @@
 
 namespace Rift
 {
-	Refl::ClassType* BaseClass::GetClass() const
+	Refl::ClassType* BaseClass::GetType() const
 	{
-		return static_cast<const Class*>(this)->GetClass();
+		return static_cast<const Class*>(this)->GetType();
 	}
 
 	TPtr<Class> BaseClass::Self() const

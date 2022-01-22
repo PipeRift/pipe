@@ -9,10 +9,10 @@ namespace Rift::Refl
 {
 	BaseClass* ClassType::New() const
 	{
-		if (Ensure(onNew))
+		if (Ensure(onNew && !HasFlag(Class_Abstract)))
 		{
 			return onNew();
 		}
-		return {};
+		return nullptr;
 	}
 }    // namespace Rift::Refl

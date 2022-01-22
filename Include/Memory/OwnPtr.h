@@ -534,7 +534,7 @@ namespace Rift
 		}
 
 
-		Refl::TypeId GetType() const
+		Refl::TypeId GetTypeId() const
 		{
 			return typeId;
 		}

@@ -67,9 +67,9 @@ namespace Rift::Refl
 			return other && other->IsChildOf(this);
 		}
 
-		CORE_API bool HasFlag(PropFlags flag) const;
-		CORE_API bool HasAllFlags(PropFlags inFlags) const;
-		CORE_API bool HasAnyFlags(PropFlags inFlags) const;
+		CORE_API bool HasFlag(TypeFlags flag) const;
+		CORE_API bool HasAllFlags(TypeFlags inFlags) const;
+		CORE_API bool HasAnyFlags(TypeFlags inFlags) const;
 
 		/** Properties */
 		CORE_API const Property* FindProperty(const Name& propertyName) const;
@@ -77,8 +77,8 @@ namespace Rift::Refl
 		CORE_API void GetAllProperties(PropertyMap& outProperties) const;
 
 
-	protected:
-		void __GetAllChildren(TArray<DataType*>& outChildren);
-		DataType* __FindChild(const Name& className) const;
+		CORE_API const TArray<DataType*>& GetChildren() const;
+		CORE_API void GetChildrenDeep(TArray<DataType*>& outChildren) const;
+		CORE_API DataType* FindChild(const Name& className) const;
 	};
 }    // namespace Rift::Refl

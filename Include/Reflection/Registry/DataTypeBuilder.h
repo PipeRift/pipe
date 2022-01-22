@@ -161,7 +161,11 @@ public:                                                                         
 	using Super       = parent;                                                               \
 	using BuilderType = Rift::Refl::TClassTypeBuilder<ThisType, Super, InitTypeFlags(flags)>; \
                                                                                               \
-	Rift::Refl::ClassType* GetClass() const override                                          \
+	static Rift::Refl::ClassType* GetStaticType()                                             \
+	{                                                                                         \
+		return Rift::GetType<ThisType>();                                                     \
+	}                                                                                         \
+	Rift::Refl::ClassType* GetType() const override                                           \
 	{                                                                                         \
 		return Rift::GetType<ThisType>();                                                     \
 	}                                                                                         \
@@ -208,7 +212,7 @@ public:                                                                         
 	using ThisType    = type;                                                                  \
 	using BuilderType = Rift::Refl::TStructTypeBuilder<ThisType, Super, InitTypeFlags(flags)>; \
                                                                                                \
-	static Rift::Refl::StructType* GetType()                                                   \
+	static Rift::Refl::StructType* GetStaticType()                                             \
 	{                                                                                          \
 		return Rift::GetType<ThisType>();                                                      \
 	}                                                                                          \

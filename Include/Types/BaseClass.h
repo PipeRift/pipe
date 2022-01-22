@@ -32,7 +32,7 @@ namespace Rift
 			BeforeDestroy();
 		}
 
-		Refl::ClassType* GetClass() const;
+		Refl::ClassType* GetType() const;
 		TPtr<Class> Self() const;
 
 	protected:

@@ -14,7 +14,7 @@ namespace Rift
 	public:
 		using BuilderType = Rift::Refl::TStructTypeBuilder<Struct, void, Type_NoFlag>;
 
-		static Rift::Refl::StructType* GetType()
+		static Rift::Refl::StructType* GetStaticType()
 		{
 			return Rift::GetType<Struct>();
 		}
