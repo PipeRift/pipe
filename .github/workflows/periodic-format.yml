@@ -15,7 +15,7 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
-      
+
     - name: Init Submodules
       uses: snickerbockers/submodules-init@v4
 
@@ -27,7 +27,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       run: cmake -S ${{github.workspace}} -B ${{github.workspace}}/Build -DCMAKE_BUILD_TYPE=$BUILD_TYPE
-  
+
     - name: Format
       shell: bash
       run: cmake --build Build --config $BUILD_TYPE --target ClangFormat

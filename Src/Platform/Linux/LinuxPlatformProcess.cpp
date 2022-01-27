@@ -23,7 +23,7 @@ namespace Rift
 				return {};
 			}
 
-			filePath = Strings::Convert(
+			filePath = Strings::Convert<String>(
 			    TStringView<char>{rawPath.data(), Strings::Length(rawPath.data())});
 		}
 		return filePath;
