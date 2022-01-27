@@ -8,6 +8,7 @@
 #include "CoreTypes.h"
 #include "Reflection/ReflectionFlags.h"
 #include "Reflection/ReflectionTraits.h"
+#include "Reflection/Registry/TypeInstance.h"
 #include "Reflection/Static/Property.h"
 #include "Reflection/Static/Type.h"
 #include "Strings/String.h"
