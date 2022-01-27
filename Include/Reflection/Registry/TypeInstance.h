@@ -14,32 +14,29 @@ namespace Rift::Refl
 	{
 		static Type* instance;
 
-
 		static Type* InitType()
 		{
 			if constexpr (IsClass<T>() || IsStruct<T>())
 			{
-				return T::InitType();
+				instance = T::InitType();
 			}
 			else if constexpr (IsReflectedEnum<T>())
 			{
-				return TStaticEnumInitializer<T>::onInit();
+				instance = TStaticEnumInitializer<T>::onInit();
 			}
 			else if constexpr (IsReflectedNative<T>())
 			{
-				return TStaticNativeInitializer<T>::onInit();
+				instance = TStaticNativeInitializer<T>::onInit();
 			}
-			return nullptr;
+			return instance;
+		}
+
+		static Refl::Type* GetType()
+		{
+			return instance;
 		}
 	};
 
 	template<typename T>
 	inline Type* TTypeInstance<T>::instance = TTypeInstance<T>::InitType();
-
-
-	template<typename T>
-	Refl::Type* InternalGetType()
-	{
-		return TTypeInstance<T>::instance;
-	}
 }    // namespace Rift::Refl

@@ -59,7 +59,7 @@ namespace Rift::Refl
 		{
 			static_assert(
 			    IsStruct<T>() || IsClass<T>(), "IsChildOf only valid with Structs or Classes.");
-			return IsChildOf(static_cast<DataType*>(InternalGetType<T>()));
+			return IsChildOf(static_cast<DataType*>(TTypeInstance<T>::GetType()));
 		}
 
 		CORE_API bool IsParentOf(const DataType* other) const

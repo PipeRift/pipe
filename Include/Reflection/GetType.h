@@ -23,28 +23,28 @@ namespace Rift
 	Refl::StructType* GetType() requires(IsStruct<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<Refl::StructType*>(Refl::InternalGetType<T>());
+		return static_cast<Refl::StructType*>(Refl::TTypeInstance<T>::GetType());
 	}
 
 	template<typename T>
 	Refl::ClassType* GetType() requires(IsClass<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<Refl::ClassType*>(Refl::InternalGetType<T>());
+		return static_cast<Refl::ClassType*>(Refl::TTypeInstance<T>::GetType());
 	}
 
 	template<typename T>
 	Refl::EnumType* GetType() requires(IsReflectedEnum<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<Refl::EnumType*>(Refl::InternalGetType<T>());
+		return static_cast<Refl::EnumType*>(Refl::TTypeInstance<T>::GetType());
 	}
 
 	template<typename T>
 	Refl::Type* GetType()
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return Refl::InternalGetType<T>();
+		return Refl::TTypeInstance<T>::GetType();
 	}
 
 	/**
