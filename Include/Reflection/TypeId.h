@@ -5,7 +5,6 @@
 
 #include "Misc/Hash.h"
 
-#include <compare>
 #include <iostream>
 
 
@@ -32,9 +31,21 @@ namespace Rift
 			{
 				return id == other.id;
 			}
-			constexpr auto operator<=>(const TypeId& other) const
+			constexpr auto operator<(const TypeId& other) const
 			{
-				return id <=> other.id;
+				return id < other.id;
+			}
+			constexpr auto operator>(const TypeId& other) const
+			{
+				return id > other.id;
+			}
+			constexpr auto operator<=(const TypeId& other) const
+			{
+				return id <= other.id;
+			}
+			constexpr auto operator>=(const TypeId& other) const
+			{
+				return id >= other.id;
 			}
 
 			template<typename T>

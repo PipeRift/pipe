@@ -13,6 +13,47 @@
 
 namespace Rift::Memory
 {
+	bool operator==(const BigBestFitArena::Slot& a, sizet b)
+	{
+		return a.GetSize() == b;
+	}
+	bool operator<(const BigBestFitArena::Slot& a, sizet b)
+	{
+		return a.GetSize() < b;
+	}
+	bool operator>(const BigBestFitArena::Slot& a, sizet b)
+	{
+		return a.GetSize() > b;
+	}
+	bool operator<=(const BigBestFitArena::Slot& a, sizet b)
+	{
+		return a.GetSize() <= b;
+	}
+	bool operator>=(const BigBestFitArena::Slot& a, sizet b)
+	{
+		return a.GetSize() >= b;
+	}
+	bool operator==(sizet a, const BigBestFitArena::Slot& b)
+	{
+		return a == b.GetSize();
+	}
+	bool operator<(sizet a, const BigBestFitArena::Slot& b)
+	{
+		return a < b.GetSize();
+	}
+	bool operator>(sizet a, const BigBestFitArena::Slot& b)
+	{
+		return a > b.GetSize();
+	}
+	bool operator<=(sizet a, const BigBestFitArena::Slot& b)
+	{
+		return a <= b.GetSize();
+	}
+	bool operator>=(sizet a, const BigBestFitArena::Slot& b)
+	{
+		return a >= b.GetSize();
+	}
+
 	BigBestFitArena::BigBestFitArena(const sizet initialSize)
 	{
 		assert(initialSize > 0);

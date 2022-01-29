@@ -7,8 +7,6 @@
 #include "Memory/Arenas/IArena.h"
 #include "Memory/Blocks/HeapBlock.h"
 
-#include <compare>
-
 
 namespace Rift::Memory
 {
@@ -25,21 +23,27 @@ namespace Rift::Memory
 			u8* start;
 			u8* end;
 
-			auto operator<=>(const Slot& other) const
-			{
-				return sizet(end - start) <=> sizet(other.end - other.start);
-			}
-			auto operator<=>(sizet other) const
-			{
-				return sizet(end - start) <=> other;
-			}
+			sizet GetSize() const { return sizet(end - start); }
+
 			auto operator==(const Slot& other) const
 			{
 				return sizet(end - start) == sizet(other.end - other.start);
 			}
-			auto operator==(sizet other) const
+			auto operator<(const Slot& other) const
 			{
-				return sizet(end - start) == other;
+				return sizet(end - start) < sizet(other.end - other.start);
+			}
+			auto operator>(const Slot& other) const
+			{
+				return sizet(end - start) > sizet(other.end - other.start);
+			}
+			auto operator<=(const Slot& other) const
+			{
+				return sizet(end - start) <= sizet(other.end - other.start);
+			}
+			auto operator>=(const Slot& other) const
+			{
+				return sizet(end - start) >= sizet(other.end - other.start);
 			}
 		};
 
