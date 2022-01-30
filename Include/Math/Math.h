@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Misc/Utility.h"
 #include "Platform/Macros.h"
 #include "Platform/Platform.h"
 #include "TypeTraits.h"
@@ -285,14 +286,14 @@ namespace Rift
 		template<typename Type, typename... Args>
 		static constexpr Type Max(Type a, Type b, Args... args)
 		{
-			return Max(a, Max(b, std::forward<Args>(args)...));
+			return Max(a, Max(b, Forward<Args>(args)...));
 		}
 
 		// Same as Min but with N arguments
 		template<typename Type, typename... Args>
 		static constexpr Type Min(Type a, Type b, Args... args)
 		{
-			return Min(a, Min(b, std::forward<Args>(args)...));
+			return Min(a, Min(b, Forward<Args>(args)...));
 		}
 
 
