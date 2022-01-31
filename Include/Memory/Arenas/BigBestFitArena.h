@@ -23,7 +23,10 @@ namespace Rift::Memory
 			u8* start;
 			u8* end;
 
-			sizet GetSize() const { return sizet(end - start); }
+			sizet GetSize() const
+			{
+				return sizet(end - start);
+			}
 
 			auto operator==(const Slot& other) const
 			{
