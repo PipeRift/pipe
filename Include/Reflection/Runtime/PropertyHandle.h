@@ -14,17 +14,13 @@ namespace Rift::Refl
 	struct PropertyHandle
 	{
 	protected:
-		BaseStruct* const structInstance = nullptr;
-		TPtr<BaseClass> objInstance;
+		void* const container      = nullptr;
 		const Property* const prop = nullptr;
 
 
 	protected:
-		PropertyHandle(const TPtr<BaseClass>& objInstance, const Property* prop)
-		    : objInstance{objInstance}, prop{prop}
-		{}
-		PropertyHandle(BaseStruct* instance, const Property* prop)
-		    : structInstance{instance}, prop{prop}
+		PropertyHandle(Class* container, const Property* prop) : container{container}, prop{prop} {}
+		PropertyHandle(Struct* container, const Property* prop) : container{container}, prop{prop}
 		{}
 
 	public:
@@ -42,31 +38,20 @@ namespace Rift::Refl
 			return prop ? prop->HasFlag(flags) : false;
 		}
 
-		void* GetInstance() const
+		void* GetContainer() const
 		{
-			if (UsesTOwnPtr())
-			{
-				return *objInstance;
-			}
-			return structInstance;
+			return container;
 		}
 
 		bool IsValid() const
 		{
-			return prop != nullptr && (UsesTOwnPtr() || structInstance);
+			return prop && container;
 		}
 
-		bool UsesTOwnPtr() const
+		void* GetValuePtr() const
 		{
-			return objInstance.IsValid();
+			return prop->GetValuePtr(container);
 		}
-
-		virtual ClassType* GetTypeDefinedWidgetClass()
-		{
-			return nullptr;
-		}
-
-		virtual void* GetRawValuePtr() const = 0;
 
 		operator bool() const
 		{

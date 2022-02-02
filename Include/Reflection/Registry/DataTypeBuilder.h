@@ -36,7 +36,7 @@ namespace Rift::Refl
 			auto* const ptr =
 			    registry.AddProperty<Property>(GetType(), valueType, name, access, propertyFlags);
 
-			GetType()->properties.Insert(name, ptr);
+			GetType()->properties.Add(ptr);
 		}
 
 		TType* GetType() const

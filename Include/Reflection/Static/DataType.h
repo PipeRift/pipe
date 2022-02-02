@@ -16,9 +16,6 @@
 
 namespace Rift::Refl
 {
-	using PropertyMap = TMap<Name, Property*>;
-
-
 	/** Smallest reflection type that contains all basic class or struct data */
 	class DataType : public Type
 	{
@@ -32,20 +29,20 @@ namespace Rift::Refl
 		DataType* parent = nullptr;
 		TArray<DataType*> children;
 
-		PropertyMap properties{};
+		TArray<Property*> properties;
 
 
 	protected:
-		DataType() = default;
+		DataType(TypeCategory category) : Type(category | TypeCategory::Data) {}
 
 	public:
 		DataType(const DataType&) = delete;
 		DataType& operator=(const DataType&) = delete;
 		virtual ~DataType()
 		{
-			for (auto& it : properties)
+			for (Property* prop : properties)
 			{
-				delete it.second;
+				delete prop;
 			}
 		}
 
@@ -74,8 +71,8 @@ namespace Rift::Refl
 
 		/** Properties */
 		CORE_API const Property* FindProperty(const Name& propertyName) const;
-		CORE_API void GetOwnProperties(PropertyMap& outProperties) const;
-		CORE_API void GetAllProperties(PropertyMap& outProperties) const;
+		CORE_API const TArray<Property*>& GetSelfProperties() const;
+		CORE_API void GetProperties(TArray<Property*>& outProperties) const;
 
 
 		CORE_API const TArray<DataType*>& GetChildren() const;

@@ -35,26 +35,24 @@ namespace Rift::Refl
 
 	const Property* DataType::FindProperty(const Name& propertyName) const
 	{
-		const auto* prop = properties.Find(propertyName);
+		const auto* prop = properties.Find([propertyName](Property* prop) {
+			return prop->GetName() == propertyName;
+		});
 		return prop ? *prop : nullptr;
 	}
 
-	void DataType::GetOwnProperties(PropertyMap& outProperties) const
+	const TArray<Property*>& DataType::GetSelfProperties() const
 	{
-		outProperties.Resize(outProperties.Size() + properties.Size());
-		for (const auto& prop : properties)
-		{
-			outProperties.Insert(prop.first, prop.second);
-		}
+		return properties;
 	}
 
-	void DataType::GetAllProperties(PropertyMap& outProperties) const
+	void DataType::GetProperties(TArray<Property*>& outProperties) const
 	{
 		if (parent)
 		{
-			parent->GetAllProperties(outProperties);
+			parent->GetProperties(outProperties);
 		}
-		GetOwnProperties(outProperties);
+		outProperties.Append(GetSelfProperties());
 	}
 
 	bool DataType::HasFlag(TypeFlags flag) const

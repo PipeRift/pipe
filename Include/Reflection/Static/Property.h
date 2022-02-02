@@ -48,7 +48,7 @@ namespace Rift::Refl
 		CORE_API DataType* GetOwner() const;
 		CORE_API Type* GetType() const;
 		CORE_API Name GetName() const;
-		CORE_API void* GetDataPtr(void* instance);
+		CORE_API void* GetDataPtr(void* container);
 		CORE_API const String& GetDisplayName() const;
 		CORE_API bool HasFlag(PropFlags flag) const;
 		CORE_API bool HasAllFlags(PropFlags inFlags) const;
@@ -68,9 +68,9 @@ namespace Rift::Refl
 	{
 		return name;
 	}
-	inline void* Property::GetDataPtr(void* instance)
+	inline void* Property::GetDataPtr(void* container)
 	{
-		return access ? access(instance) : nullptr;
+		return access ? access(container) : nullptr;
 	}
 	inline const String& Property::GetDisplayName() const
 	{

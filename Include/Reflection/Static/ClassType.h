@@ -22,6 +22,7 @@ namespace Rift::Refl
 
 
 	public:
+		ClassType() : DataType(TypeCategory::Class) {}
 		~ClassType()
 		{
 			delete defaultValue;

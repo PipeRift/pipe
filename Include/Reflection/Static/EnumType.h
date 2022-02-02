@@ -41,6 +41,6 @@ namespace Rift::Refl
 
 
 	public:
-		CORE_API EnumType() = default;
+		CORE_API EnumType() : Type(TypeCategory::Enum) {}
 	};
 }    // namespace Rift::Refl

@@ -19,6 +19,6 @@ namespace Rift::Refl
 		Name name;
 
 	public:
-		CORE_API NativeType() = default;
+		CORE_API NativeType() : Type(TypeCategory::Native) {}
 	};
 }    // namespace Rift::Refl

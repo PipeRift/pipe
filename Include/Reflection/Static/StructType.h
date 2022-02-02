@@ -11,6 +11,8 @@ namespace Rift::Refl
 	class StructType : public DataType
 	{
 	public:
+		StructType() : DataType(TypeCategory::Struct) {}
+
 		// NOTE: Most of the class comparison functions do actually
 		// call Type to reduce complexity and code duplication.
 		//
