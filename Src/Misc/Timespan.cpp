@@ -159,7 +159,7 @@ namespace Rift
 	}
 
 
-	/* FTimespan implementation
+	/* Timespan implementation
 	 *****************************************************************************/
 
 	void Timespan::Assign(i32 days, i32 hours, i32 minutes, i32 seconds, i32 fractionNano)

@@ -31,7 +31,7 @@ namespace Rift
 	 *
 	 * @see DateTime
 	 */
-	struct Timespan
+	struct CORE_API Timespan
 	{
 	private:
 		/** The time span value in 100 nanoseconds resolution. */
