@@ -6,7 +6,7 @@
 
 #include "Containers/Array.h"
 #include "Math.h"
-#include "Reflection/Static/NativeType.h"
+#include "Reflection/NativeType.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Contexts.h"
 #include "Strings/FixedString.h"

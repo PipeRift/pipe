@@ -3,7 +3,7 @@
 
 #include "PCH.h"
 
-#include "Reflection/Static/Type.h"
+#include "Reflection/Type.h"
 #include "Strings/Name.h"
 
 

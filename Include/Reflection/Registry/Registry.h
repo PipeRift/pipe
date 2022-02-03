@@ -5,7 +5,7 @@
 
 #include "Containers/Map.h"
 #include "Memory/Arenas/LinearArena.h"
-#include "Reflection/Static/Type.h"
+#include "Reflection/Type.h"
 #include "Reflection/TypeId.h"
 #include "TypeTraits.h"
 

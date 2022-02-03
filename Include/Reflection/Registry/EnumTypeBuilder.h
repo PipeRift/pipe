@@ -4,13 +4,14 @@
 #include "PCH.h"
 
 #include "Events/Function.h"
+#include "Reflection/EnumType.h"
 #include "Reflection/Registry/Registry.h"
 #include "Reflection/Registry/StaticInitializers.h"
 #include "Reflection/Registry/TypeBuilder.h"
-#include "Reflection/Static/EnumType.h"
 #include "Reflection/TypeId.h"
 #include "Strings/Name.h"
 #include "TypeTraits.h"
+
 
 
 #define ENUM(type)                                                             \

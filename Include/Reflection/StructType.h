@@ -3,7 +3,7 @@
 
 #include "PCH.h"
 
-#include "Reflection/Static/DataType.h"
+#include "Reflection/DataType.h"
 
 
 namespace Rift::Refl

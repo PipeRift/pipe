@@ -24,19 +24,21 @@ namespace Rift
 
 namespace Rift::Strings
 {
-	void ToSentenceCase(const String& str, String& result)
+	String ToSentenceCase(const String& value)
 	{
-		if (!str.empty())
+		if (!value.empty())
 		{
 			// static const std::regex wordToCapital("\b[a-z]");
 			static const Regex spaceCamelCase(TX("([a-zA-Z])(?=[A-Z0-9])"));
 
-			result    = String{std::regex_replace(str.c_str(), spaceCamelCase, TX("$& ")).c_str()};
-			result[0] = (char)::toupper(result[0]);
+			auto result = std::regex_replace(value, spaceCamelCase, TX("$& "));
+			result[0]   = TCharHelpers<char>::ToUpper(result[0]);
+
+			return Strings::Convert<String>(result);
 		}
 		else
 		{
-			result = TX("");
+			return TX("");
 		}
 	}
 

@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 #include "Events/Function.h"
-#include "Reflection/Static/DataType.h"
+#include "Reflection/DataType.h"
 #include "Types/BaseClass.h"
 
 

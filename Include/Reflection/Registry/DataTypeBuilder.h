@@ -5,14 +5,15 @@
 
 #include "Containers/Array.h"
 #include "Events/Function.h"
+#include "Reflection/ClassType.h"
 #include "Reflection/Registry/Registry.h"
 #include "Reflection/Registry/TypeBuilder.h"
-#include "Reflection/Static/ClassType.h"
-#include "Reflection/Static/StructType.h"
+#include "Reflection/StructType.h"
 #include "Reflection/TypeId.h"
 #include "Serialization/Contexts.h"
 #include "Strings/Name.h"
 #include "TypeTraits.h"
+
 
 
 namespace Rift::Refl

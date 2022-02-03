@@ -1,12 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Reflection/Static/Type.h"
+#include "Reflection/Type.h"
 
-#include "Reflection/Static/ClassType.h"
-#include "Reflection/Static/DataType.h"
-#include "Reflection/Static/EnumType.h"
-#include "Reflection/Static/NativeType.h"
-#include "Reflection/Static/StructType.h"
+#include "Reflection/ClassType.h"
+#include "Reflection/DataType.h"
+#include "Reflection/EnumType.h"
+#include "Reflection/NativeType.h"
+#include "Reflection/StructType.h"
 
 
 namespace Rift::Refl

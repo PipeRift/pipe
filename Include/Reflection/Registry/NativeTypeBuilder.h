@@ -3,12 +3,13 @@
 
 #include "PCH.h"
 
+#include "Reflection/NativeType.h"
 #include "Reflection/Registry/Registry.h"
 #include "Reflection/Registry/StaticInitializers.h"
 #include "Reflection/Registry/TypeBuilder.h"
-#include "Reflection/Static/NativeType.h"
 #include "Reflection/TypeId.h"
 #include "Strings/Name.h"
+
 
 
 #define REFLECT_NATIVE_TYPE(type)                                                \

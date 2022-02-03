@@ -8,9 +8,12 @@
 
 namespace Rift::Refl
 {
+	// NOTE: Legacy class pending a rework
 	class ClassHandle
 	{
-		const TPtr<BaseClass> instance;
+		Class* instance = nullptr;
+		ClassType* type = nullptr;
+
 
 	public:
 		ClassHandle()                   = delete;
@@ -18,8 +21,7 @@ namespace Rift::Refl
 		ClassHandle(const ClassHandle&) = default;
 		ClassHandle& operator=(ClassHandle&&) = default;
 		ClassHandle& operator=(const ClassHandle&) = default;
-		virtual ~ClassHandle()                     = default;
 
-		ClassHandle(const TPtr<BaseClass>& instance) : instance(instance) {}
+		ClassHandle(Class& instance) : instance(*instance) {}
 	};
 }    // namespace Rift::Refl

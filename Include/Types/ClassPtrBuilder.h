@@ -3,9 +3,10 @@
 
 #include "Log.h"
 #include "Memory/PtrBuilder.h"
+#include "Reflection/ClassType.h"
 #include "Reflection/ReflectionTraits.h"
-#include "Reflection/Static/ClassType.h"
 #include "Reflection/TypeName.h"
+
 
 
 namespace Rift

@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 #include "Reflection/Registry/StaticInitializers.h"
-#include "Reflection/Static/Type.h"
+#include "Reflection/Type.h"
 
 
 namespace Rift::Refl

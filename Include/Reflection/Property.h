@@ -40,7 +40,9 @@ namespace Rift::Refl
 	protected:
 		CORE_API Property(DataType* owner, Type* type, Name name, Access* access, PropFlags flags)
 		    : owner(owner), type(type), name(name), access(access), flags(flags)
-		{}
+		{
+			displayName = Strings::ToSentenceCase(name.ToString());
+		}
 
 	public:
 		CORE_API virtual ~Property() = default;
@@ -48,8 +50,8 @@ namespace Rift::Refl
 		CORE_API DataType* GetOwner() const;
 		CORE_API Type* GetType() const;
 		CORE_API Name GetName() const;
-		CORE_API void* GetDataPtr(void* container);
-		CORE_API const String& GetDisplayName() const;
+		CORE_API void* GetDataPtr(void* container) const;
+		CORE_API StringView GetDisplayName() const;
 		CORE_API bool HasFlag(PropFlags flag) const;
 		CORE_API bool HasAllFlags(PropFlags inFlags) const;
 		CORE_API bool HasAnyFlags(PropFlags inFlags) const;
@@ -68,11 +70,11 @@ namespace Rift::Refl
 	{
 		return name;
 	}
-	inline void* Property::GetDataPtr(void* container)
+	inline void* Property::GetDataPtr(void* container) const
 	{
 		return access ? access(container) : nullptr;
 	}
-	inline const String& Property::GetDisplayName() const
+	inline StringView Property::GetDisplayName() const
 	{
 		return displayName;
 	}

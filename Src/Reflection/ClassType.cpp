@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Reflection/Static/ClassType.h"
+#include "Reflection/ClassType.h"
 
 #include "Misc/Checks.h"
 

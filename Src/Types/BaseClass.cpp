@@ -2,9 +2,10 @@
 
 #include "Types/BaseClass.h"
 
+#include "Reflection/ClassType.h"
 #include "Reflection/Reflection.h"
-#include "Reflection/Static/ClassType.h"
 #include "Types/Class.h"
+
 
 
 namespace Rift

@@ -53,7 +53,7 @@ namespace Rift
 			    std::back_inserter(buffer), fmt::runtime(format), std::forward<Args>(args)...);
 		}
 
-		CORE_API void ToSentenceCase(const String& str, String& result);
+		CORE_API String ToSentenceCase(const String& value);
 
 		/**
 		 * Breaks up a delimited string into elements of a string array.
