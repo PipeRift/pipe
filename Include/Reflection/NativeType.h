@@ -4,7 +4,6 @@
 #include "PCH.h"
 
 #include "Reflection/Type.h"
-#include "Strings/Name.h"
 
 
 namespace Rift::Refl
@@ -14,9 +13,6 @@ namespace Rift::Refl
 	{
 		template<typename T>
 		friend struct TNativeTypeBuilder;
-
-	protected:
-		Name name;
 
 	public:
 		CORE_API NativeType() : Type(TypeCategory::Native) {}

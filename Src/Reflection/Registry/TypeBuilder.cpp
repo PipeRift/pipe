@@ -10,7 +10,7 @@
 
 namespace Rift::Refl
 {
-	TypeBuilder::TypeBuilder(TypeId id, Name name) : id{id}, name{std::move(name)} {}
+	TypeBuilder::TypeBuilder(TypeId id, StringView name) : id{id}, name{name} {}
 
 	void TypeBuilder::Initialize()
 	{
@@ -32,7 +32,7 @@ namespace Rift::Refl
 	{
 		return id;
 	}
-	Name TypeBuilder::GetName() const
+	StringView TypeBuilder::GetName() const
 	{
 		return name;
 	}

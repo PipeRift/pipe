@@ -5,6 +5,15 @@
 
 namespace Rift::Refl
 {
+	Type* ReflectionRegistry::FindType(TypeId id) const
+	{
+		if (Type* const* foundTypePtr = idToTypes.Find(id))
+		{
+			return *foundTypePtr;
+		}
+		return nullptr;
+	}
+
 	ReflectionRegistry& ReflectionRegistry::Get()
 	{
 		static ReflectionRegistry instance{};

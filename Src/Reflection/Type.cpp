@@ -11,6 +11,11 @@
 
 namespace Rift::Refl
 {
+	StringView Type::GetName() const
+	{
+		return name;
+	}
+
 	NativeType* Type::AsNative()
 	{
 		return HasFlag(category, TypeCategory::Native) ? static_cast<NativeType*>(this) : nullptr;

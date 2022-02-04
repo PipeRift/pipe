@@ -15,7 +15,6 @@
 #include "TypeTraits.h"
 
 
-
 namespace Rift::Refl
 {
 	template<typename T, typename Parent, TypeFlags flags, typename TType>
@@ -25,8 +24,7 @@ namespace Rift::Refl
 		static_assert(!hasParent || Derived<T, Parent, false>, "Type must derive from parent.");
 
 	public:
-		TDataTypeBuilder() = default;
-		TDataTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
+		TDataTypeBuilder() : TypeBuilder(TypeId::Get<T>(), GetTypeName<T>(false)) {}
 
 		template<typename PropertyType, PropFlags propertyFlags>
 		void AddProperty(Name name, Property::Access* access)
@@ -85,7 +83,6 @@ namespace Rift::Refl
 
 	public:
 		TClassTypeBuilder() = default;
-		TClassTypeBuilder(Name name) : Super(name) {}
 
 	protected:
 		Type* Build() override
@@ -125,7 +122,6 @@ namespace Rift::Refl
 
 	public:
 		TStructTypeBuilder() = default;
-		TStructTypeBuilder(Name name) : Super(name) {}
 
 	protected:
 		Type* Build() override
@@ -180,11 +176,11 @@ public:                                                                         
 	}
 
 
-#define CLASS_BODY(type, buildCode)                                                         \
+#define CLASS_BODY(buildCode)                                                               \
 public:                                                                                     \
 	static Rift::Refl::ClassType* InitType()                                                \
 	{                                                                                       \
-		BuilderType builder{Rift::Name{TX(#type)}};                                         \
+		BuilderType builder{};                                                              \
 		builder.onBuild = [](auto& builder) {                                               \
 			__ReflReflectProperty(builder, Rift::Refl::MetaCounter<0>{});                   \
 			{                                                                               \
@@ -227,11 +223,11 @@ public:                                                                         
 	}
 
 
-#define STRUCT_BODY(type, buildCode)                                                        \
+#define STRUCT_BODY(buildCode)                                                              \
 public:                                                                                     \
 	static Rift::Refl::StructType* InitType()                                               \
 	{                                                                                       \
-		BuilderType builder{Rift::Name{TX(#type)}};                                         \
+		BuilderType builder{};                                                              \
 		builder.onBuild = [](auto& builder) {                                               \
 			__ReflReflectProperty(builder, Rift::Refl::MetaCounter<0>{});                   \
 			{                                                                               \
@@ -306,11 +302,11 @@ public:                           \
 
 #define CLASS(type, parent, ...)                                                       \
 	TYPE_CHOOSER(CLASS_HEADER_NO_FLAGS, CLASS_HEADER_FLAGS, type, parent, __VA_ARGS__) \
-	(type, parent, __VA_ARGS__) CLASS_BODY(type, {})
+	(type, parent, __VA_ARGS__) CLASS_BODY({})
 
 #define STRUCT(type, parent, ...)                                                        \
 	TYPE_CHOOSER(STRUCT_HEADER_NO_FLAGS, STRUCT_HEADER_FLAGS, type, parent, __VA_ARGS__) \
-	(type, parent, __VA_ARGS__) STRUCT_BODY(type, {})
+	(type, parent, __VA_ARGS__) STRUCT_BODY({})
 
 #define PROP(name, ...) \
 	PROP_CHOOSER(PROPERTY_NO_FLAGS, PROPERTY_FLAGS, name, __VA_ARGS__)(name, __VA_ARGS__)

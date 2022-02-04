@@ -14,7 +14,6 @@
 #include "Strings/String.h"
 
 
-
 namespace Rift::Refl
 {
 	/** Smallest reflection type that contains all basic class or struct data */
@@ -24,7 +23,6 @@ namespace Rift::Refl
 		friend struct TDataTypeBuilder;
 
 	protected:
-		Name name;
 		TypeFlags flags = Type_NoFlag;
 
 		DataType* parent = nullptr;
@@ -48,8 +46,6 @@ namespace Rift::Refl
 		}
 
 		/** Type */
-		CORE_API const Name& GetName() const;
-		CORE_API const String& GetSName() const;
 
 		CORE_API bool IsChildOf(const DataType* other) const;
 

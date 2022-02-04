@@ -11,19 +11,18 @@
 #include "Strings/Name.h"
 
 
-
-#define REFLECT_NATIVE_TYPE(type)                                                \
-	template<>                                                                   \
-	struct Rift::Refl::TStaticNativeInitializer<type>                            \
-	{                                                                            \
-		static constexpr bool enabled = true;                                    \
-		static const Rift::TFunction<Rift::Refl::NativeType*()> onInit;          \
-	};                                                                           \
-	inline const Rift::TFunction<Rift::Refl::NativeType*()>                      \
-	    Rift::Refl::TStaticNativeInitializer<type>::onInit = []() {              \
-		    Rift::Refl::TNativeTypeBuilder<type> builder{Rift::Name{TX(#type)}}; \
-		    builder.Initialize();                                                \
-		    return builder.GetType();                                            \
+#define REFLECT_NATIVE_TYPE(type)                                       \
+	template<>                                                          \
+	struct Rift::Refl::TStaticNativeInitializer<type>                   \
+	{                                                                   \
+		static constexpr bool enabled = true;                           \
+		static const Rift::TFunction<Rift::Refl::NativeType*()> onInit; \
+	};                                                                  \
+	inline const Rift::TFunction<Rift::Refl::NativeType*()>             \
+	    Rift::Refl::TStaticNativeInitializer<type>::onInit = []() {     \
+		    Rift::Refl::TNativeTypeBuilder<type> builder{};             \
+		    builder.Initialize();                                       \
+		    return builder.GetType();                                   \
 	    };
 
 
@@ -37,8 +36,7 @@ namespace Rift::Refl
 	struct TNativeTypeBuilder : public TypeBuilder
 	{
 	public:
-		TNativeTypeBuilder() = default;
-		TNativeTypeBuilder(Name name) : TypeBuilder(TypeId::Get<T>(), name) {}
+		TNativeTypeBuilder() : TypeBuilder(TypeId::Get<T>(), GetTypeName<T>(false)) {}
 
 		NativeType* GetType() const
 		{

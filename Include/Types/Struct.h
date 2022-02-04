@@ -22,7 +22,7 @@ namespace Rift
 		{
 			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});
 		}
-		STRUCT_BODY(Struct, {})
+		STRUCT_BODY({})
 	};
 
 

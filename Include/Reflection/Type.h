@@ -5,6 +5,7 @@
 
 #include "Misc/EnumFlags.h"
 #include "Reflection/TypeId.h"
+#include "Strings/StringView.h"
 
 
 namespace Rift::Refl
@@ -27,6 +28,7 @@ namespace Rift::Refl
 	protected:
 		TypeId id;
 		TypeCategory category = TypeCategory::None;
+		StringView name;
 
 
 	protected:
@@ -40,6 +42,7 @@ namespace Rift::Refl
 		{
 			return id;
 		}
+		StringView GetName() const;
 
 		class NativeType* AsNative();
 		class EnumType* AsEnum();

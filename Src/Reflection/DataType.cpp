@@ -7,15 +7,6 @@
 
 namespace Rift::Refl
 {
-	const Name& DataType::GetName() const
-	{
-		return name;
-	}
-
-	const String& DataType::GetSName() const
-	{
-		return GetName().ToString();
-	}
 
 	bool DataType::IsChildOf(const DataType* other) const
 	{

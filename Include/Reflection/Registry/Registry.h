@@ -33,14 +33,6 @@ namespace Rift::Refl
 			return *ptr;
 		}
 
-		CORE_API Type* FindType(TypeId id) const
-		{
-			if (Type* const* foundTypePtr = idToTypes.Find(id))
-			{
-				return *foundTypePtr;
-			}
-			return nullptr;
-		}
 
 		template<typename PropertyType, typename... Args>
 		PropertyType* AddProperty(Args&&... args)
@@ -48,6 +40,8 @@ namespace Rift::Refl
 			void* ptr = arena.Allocate(sizeof(PropertyType));
 			return new (ptr) PropertyType(std::forward<Args>(args)...);
 		}
+
+		CORE_API Type* FindType(TypeId id) const;
 
 		static CORE_API ReflectionRegistry& Get();
 	};

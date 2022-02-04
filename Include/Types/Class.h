@@ -50,7 +50,7 @@ namespace Rift
 			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});
 		}
 
-		CLASS_BODY(Class, {})
+		CLASS_BODY({})
 
 	public:
 		template<typename T>

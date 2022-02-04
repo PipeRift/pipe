@@ -17,19 +17,19 @@ namespace Rift::Refl
 	{
 	protected:
 		TypeId id;
-		Name name;
+		StringView name;
 		Type* initializedType = nullptr;
 
 
 	public:
 		CORE_API TypeBuilder() = default;
-		CORE_API TypeBuilder(TypeId id, Name name);
+		CORE_API TypeBuilder(TypeId id, StringView name);
 		CORE_API virtual ~TypeBuilder() {}
 
 		CORE_API void Initialize();
 
 		CORE_API TypeId GetId() const;
-		CORE_API Name GetName() const;
+		CORE_API StringView GetName() const;
 
 	protected:
 		CORE_API virtual Type* Build() = 0;
