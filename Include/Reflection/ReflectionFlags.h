@@ -11,10 +11,13 @@ namespace Rift
 		Type_NoFlag        = 0,
 		Type_NotSerialized = 1 << 0,    // All "NotSerialized" share the same flag value
 
-		Struct_NotSerialized = 1 << 0,
+		Enum_NotSerialized = Type_NotSerialized | (1 << 1),
+		Enum_Flags         = 1 << 2,
 
-		Class_NotSerialized = 1 << 0,
-		Class_Abstract      = 1 << 1
+		Struct_NotSerialized = Type_NotSerialized | (1 << 3),
+
+		Class_NotSerialized = Type_NotSerialized | (1 << 4),
+		Class_Abstract      = 1 << 5
 	};
 
 	enum PropFlags
@@ -22,7 +25,7 @@ namespace Rift
 		Prop_NoFlag        = 0,
 		Prop_NotSerialized = 1 << 0,
 		Prop_View          = 1 << 1,
-		Prop_Edit          = 1 << 2 | Prop_View    // Edit implies View too
+		Prop_Edit          = 1 << 2 | Prop_View
 	};
 
 

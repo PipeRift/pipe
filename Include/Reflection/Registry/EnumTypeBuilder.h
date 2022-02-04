@@ -52,6 +52,22 @@ namespace Rift::Refl
 
 			newType.id   = id;
 			newType.name = name;
+
+			const auto entries = magic_enum::enum_entries<T>();
+
+			newType.valueSize = sizeof(T);
+			newType.values.Resize(entries.size() * newType.valueSize);
+			for (u32 i = 0; i < entries.size(); ++i)
+			{
+				// Copy value into the correct entry index
+				memcpy(newType.GetValuePtrByIndex(i), &entries[i].first, newType.valueSize);
+			}
+
+			newType.names.Reserve(entries.size());
+			for (const auto& entry : entries)
+			{
+				newType.names.Add(Name{entry.second});
+			}
 			return &newType;
 		}
 	};

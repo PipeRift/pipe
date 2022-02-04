@@ -1,5 +1,5 @@
-// Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
+// Copyright 2015-2022 Piperift - All rights reserved
 
 #include "PCH.h"
 
@@ -17,6 +17,19 @@ namespace Rift::Refl
 		return magic_enum::enum_count<T>();
 	}
 
+
+	template<typename T>
+	constexpr std::optional<T> GetEnumValue(StringView str)
+	{
+		return magic_enum::enum_cast<T>(str);
+	}
+
+	template<typename T>
+	constexpr auto GetEnumValues()
+	{
+		return magic_enum::enum_values<T>();
+	}
+
 	template<typename T>
 	constexpr StringView GetEnumName(T value)
 	{
@@ -24,9 +37,9 @@ namespace Rift::Refl
 	}
 
 	template<typename T>
-	constexpr std::optional<T> GetEnumValue(StringView str)
+	constexpr auto GetEnumNames()
 	{
-		return magic_enum::enum_cast<T>(str);
+		return magic_enum::enum_names<T>();
 	}
 
 
@@ -37,10 +50,86 @@ namespace Rift::Refl
 		friend struct TEnumTypeBuilder;
 
 	protected:
-		Name name;
+		u32 valueSize = 0;
+		// Values contains all values sequentially (according to valueSize)
+		TArray<u8> values;
+		TArray<Name> names;
 
 
 	public:
 		CORE_API EnumType() : Type(TypeCategory::Enum) {}
+
+
+		template<Integral T>
+		void SetValue(void* data, T value) const
+		{
+			Check(sizeof(T) >= valueSize);
+			memcpy(data, &data, valueSize);
+		}
+		void SetValue(void* data, Name name) const
+		{
+			i32 index = names.FindIndex(name);
+			if (index != NO_INDEX)
+			{
+				SetValueFromIndex(data, index);
+			}
+		}
+
+		template<Integral T>
+		T GetValue(void* data) const
+		{
+			Check(sizeof(T) >= valueSize);
+			return *reinterpret_cast<T*>(data);
+		}
+
+		Name GetName(void* data) const
+		{
+			const i32 index = GetIndexFromValue(data);
+			return index != NO_INDEX ? GetNameByIndex(index) : Name::None();
+		}
+
+		i32 GetIndexFromValue(void* data) const
+		{
+			for (i32 i = 0; i < Size(); ++i)
+			{
+				const void* valuePtr = GetValuePtrByIndex(i);
+				if (memcmp(data, valuePtr, valueSize) == 0)
+				{
+					// Value matches
+					return i;
+				}
+			}
+			return NO_INDEX;
+		}
+		void SetValueFromIndex(void* data, i32 index) const
+		{
+			const void* valuePtr = GetValuePtrByIndex(index);
+			memcpy(data, valuePtr, valueSize);
+		}
+
+		template<Integral T>
+		const T& GetValueByIndex(i32 index) const
+		{
+			return *reinterpret_cast<T*>(GetValueByIndex();
+		}
+		Name GetNameByIndex(i32 index) const
+		{
+			return names[index];
+		}
+
+		// Intentionally unsafe function. Do not modify the value!
+		void* GetValuePtrByIndex(i32 index)
+		{
+			return (void*)(values.Data() + (index * valueSize));
+		}
+		const void* GetValuePtrByIndex(i32 index) const
+		{
+			return (void*)(values.Data() + (index * valueSize));
+		}
+
+		i32 Size() const
+		{
+			return names.Size();
+		}
 	};
 }    // namespace Rift::Refl
