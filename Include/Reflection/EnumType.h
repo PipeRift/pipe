@@ -110,7 +110,7 @@ namespace Rift::Refl
 		template<Integral T>
 		const T& GetValueByIndex(i32 index) const
 		{
-			return *reinterpret_cast<T*>(GetValueByIndex());
+			return *reinterpret_cast<T*>(GetValuePtrByIndex(index));
 		}
 		Name GetNameByIndex(i32 index) const
 		{
