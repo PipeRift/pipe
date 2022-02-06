@@ -29,8 +29,8 @@ namespace Rift
 		{};
 	}    // namespace Internal
 
-	template<typename T, typename Tuple>
-	constexpr bool Contains()
+	template<typename Tuple, typename T>
+	constexpr bool TupleContains()
 	{
 		return Internal::TTupleContains<T, Tuple>::value;
 	}

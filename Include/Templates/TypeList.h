@@ -63,4 +63,26 @@ namespace Rift
 	 */
 	template<std::size_t index, typename List>
 	using TTypeListIndex = typename TTypeListIterator<index, List>::type;
+
+
+	namespace Internal
+	{
+		template<typename T, typename List>
+		struct TTypeListContains;
+
+		template<typename T, typename... Us>
+		struct TTypeListContains<T, const TTypeList<Us...>>
+		    : std::disjunction<std::is_same<T, Us>...>
+		{};
+
+		template<typename T, typename... Us>
+		struct TTypeListContains<T, TTypeList<Us...>> : std::disjunction<std::is_same<T, Us>...>
+		{};
+	}    // namespace Internal
+
+	template<typename List, typename T>
+	constexpr bool Contains()
+	{
+		return Internal::TTypeListContains<T, List>::value;
+	}
 }    // namespace Rift
