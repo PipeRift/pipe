@@ -81,7 +81,7 @@ namespace Rift
 	}    // namespace Internal
 
 	template<typename List, typename T>
-	constexpr bool Contains()
+	constexpr bool ListContains()
 	{
 		return Internal::TTypeListContains<T, List>::value;
 	}
