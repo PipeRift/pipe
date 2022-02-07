@@ -168,6 +168,12 @@ namespace Rift
 			vector.insert(vector.end(), values.begin(), values.end());
 		}
 
+		template<typename It>
+		void Append(const It& beginIt, const It& endIt)
+		{
+			vector.insert(vector.end(), beginIt, endIt);
+		}
+
 		void Reserve(i32 sizeNum)
 		{
 			vector.reserve(sizeNum);
