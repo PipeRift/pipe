@@ -507,8 +507,11 @@ namespace Rift
 		{
 			if (IsValidIndex(index))
 			{
-				return RemoveAtSwapUnsafe(index, shouldShrink);
+				return RemoveAtSwapUnsafe(index);
 			}
+
+			if (shouldShrink)
+				Shrink();
 			return false;
 		}
 
@@ -518,14 +521,12 @@ namespace Rift
 		 * Unsafe version. Doesn't make sure index is valid!
 		 * @return true if removed
 		 */
-		bool RemoveAtSwapUnsafe(i32 index, const bool shouldShrink = true)
+		bool RemoveAtSwapUnsafe(i32 index)
 		{
 			const i32 lastSize = Size();
 			Swap(index, lastSize - 1);
 			vector.pop_back();
 
-			if (shouldShrink)
-				Shrink();
 
 			return lastSize - Size() > 0;
 		}
@@ -565,7 +566,7 @@ namespace Rift
 			{
 				if (callback(Data()[i]))
 				{
-					RemoveAtSwapUnsafe(i, false);
+					RemoveAtSwapUnsafe(i);
 					--i;    // We removed one item, so we iterate the same index
 				}
 			}

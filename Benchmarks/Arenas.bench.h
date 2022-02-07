@@ -192,7 +192,7 @@ void RunArenasBenchmarks()
 					Rift::u32 index = rng.bounded(allocated.Size());
 					void* toRemove  = allocated[index];
 					Rift::Free(toRemove);
-					allocated.RemoveAtSwapUnsafe(index, false);
+					allocated.RemoveAtSwapUnsafe(index);
 				}
 			});
 
@@ -224,7 +224,7 @@ void RunArenasBenchmarks()
 					Rift::u32 index = rng.bounded(allocated.Size());
 					void* toRemove  = allocated[index];
 					arena.Free(toRemove, 16);
-					allocated.RemoveAtSwapUnsafe(index, false);
+					allocated.RemoveAtSwapUnsafe(index);
 				}
 			});
 
@@ -256,7 +256,7 @@ void RunArenasBenchmarks()
 					Rift::u32 index = rng.bounded(allocated.Size());
 					void* toRemove  = allocated[index];
 					arena.Free(toRemove, 16);
-					allocated.RemoveAtSwapUnsafe(index, false);
+					allocated.RemoveAtSwapUnsafe(index);
 				}
 			});
 

@@ -24,12 +24,29 @@ namespace Rift
 		constexpr TSpan() {}
 		constexpr TSpan(T& value) : data{&value}, size{1} {}
 		constexpr TSpan(T* first, T* last) : data{first}, size{i32(std::distance(first, last))} {}
+
 		TSpan(TArray<T>& value) : data{value.Data()}, size{value.Size()} {}
-		TSpan(TArray<T>& value, u32 firstN)
+		TSpan(TArray<Mut<T>>& value) requires(IsSame<T, const T>)
+		    : data{value.Data()}, size{value.Size()}
+		{}
+		TSpan(TArray<T>& value, i32 firstN)
 		    : data{value.Data()}, size{Math::Min(value.Size(), firstN)}
 		{}
+		TSpan(TArray<Mut<T>>& value, i32 firstN) requires(IsSame<T, const T>)
+		    : data{value.Data()}, size{Math::Min(value.Size(), firstN)}
+		{}
+
 		TSpan(const TSpan<T>& other) : data{other.data}, size{other.size} {}
 		TSpan& operator=(const TSpan<T>& other)
+		{
+			data = other.data;
+			size = other.size;
+			return *this;
+		}
+		TSpan(const TSpan<Mut<T>>& other) requires(IsSame<T, const T>)
+		    : data{other.data}, size{other.size}
+		{}
+		TSpan& operator=(const TSpan<Mut<T>>& other) requires(IsSame<T, const T>)
 		{
 			data = other.data;
 			size = other.size;

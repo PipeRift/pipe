@@ -202,7 +202,7 @@ namespace Rift::Memory
 			Slot& previous   = freeSlots[previousSlot];
 			previous.size    = next.GetEnd() - previous.start;
 
-			freeSlots.RemoveAtSwapUnsafe(nextSlot, false);
+			freeSlots.RemoveAtSwapUnsafe(nextSlot);
 		}
 		else if (previousSlot != NO_INDEX)
 		{
