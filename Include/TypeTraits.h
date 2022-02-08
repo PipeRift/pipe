@@ -117,6 +117,11 @@ namespace Rift
 	template<typename T>
 	using Const = std::add_const_t<T>;
 
+	template<typename T>
+	concept IsConst = std::is_const_v<T>;
+	template<typename T>
+	concept IsMutable = !std::is_const_v<T>;
+
 
 	template<typename T, typename Reference>
 	struct TCopyConst
