@@ -24,7 +24,7 @@ namespace Rift::Refl
 		static_assert(!hasParent || Derived<T, Parent, false>, "Type must derive from parent.");
 
 	public:
-		TDataTypeBuilder() : TypeBuilder(TypeId::Get<T>(), GetTypeName<T>(false)) {}
+		TDataTypeBuilder() : TypeBuilder(GetTypeId<T>(), GetTypeName<T>(false)) {}
 
 		template<typename PropertyType, PropFlags propertyFlags>
 		void AddProperty(Name name, Property::Access* access)

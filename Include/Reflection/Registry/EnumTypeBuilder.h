@@ -38,7 +38,7 @@ namespace Rift::Refl
 	struct TEnumTypeBuilder : public TypeBuilder
 	{
 	public:
-		TEnumTypeBuilder() : TypeBuilder(TypeId::Get<T>(), GetTypeName<T>(false)) {}
+		TEnumTypeBuilder() : TypeBuilder(GetTypeId<T>(), GetTypeName<T>(false)) {}
 
 		EnumType* GetType() const
 		{

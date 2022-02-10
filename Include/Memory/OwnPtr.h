@@ -471,7 +471,7 @@ namespace Rift
 		OwnPtr(TOwnPtr<T>&& other) noexcept
 		{
 			MoveFrom(Move(other));
-			typeId = Refl::TypeId::Get<T>();
+			typeId = GetTypeId<T>();
 		}
 		OwnPtr(OwnPtr&& other) noexcept
 		{
@@ -485,7 +485,7 @@ namespace Rift
 		{
 			Delete();
 			MoveFrom(Move(other));
-			typeId = Refl::TypeId::Get<T>();
+			typeId = GetTypeId<T>();
 			return *this;
 		}
 
@@ -534,7 +534,7 @@ namespace Rift
 		}
 
 
-		Refl::TypeId GetTypeId() const
+		Refl::TypeId GetId() const
 		{
 			return typeId;
 		}
@@ -542,7 +542,7 @@ namespace Rift
 		template<typename T>
 		bool IsType() const
 		{
-			return typeId == Refl::TypeId::Get<T>();
+			return typeId == GetTypeId<T>();
 		}
 	};
 

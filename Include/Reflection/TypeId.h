@@ -48,12 +48,6 @@ namespace Rift
 				return id >= other.id;
 			}
 
-			template<typename T>
-			static consteval TypeId Get()
-			{
-				return TypeId{Rift::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
-			}
-
 			static consteval TypeId None()
 			{
 				return TypeId{};
@@ -66,6 +60,12 @@ namespace Rift
 			return stream;
 		}
 	}    // namespace Refl
+
+	template<typename T>
+	inline consteval Refl::TypeId GetTypeId()
+	{
+		return Refl::TypeId{Rift::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
+	}
 
 	template<>
 	struct Hash<Refl::TypeId>

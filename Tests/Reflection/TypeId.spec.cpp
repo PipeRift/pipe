@@ -17,7 +17,7 @@ go_bandit([]() {
 	describe("Reflection.TypeId", []() {
 		it("Different types don't share an id", [&]() {
 			static constexpr TypeId ids[]{
-			    TypeId::Get<u8>(), TypeId::Get<u16>(), TypeId::Get<i32>(), TypeId::Get<One>()};
+			    GetTypeId<u8>(), GetTypeId<u16>(), GetTypeId<i32>(), GetTypeId<One>()};
 			static constexpr u32 numIds = sizeof(ids) / sizeof(TypeId);
 
 			// Check that no id matches the other

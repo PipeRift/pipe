@@ -36,7 +36,7 @@ namespace Rift::Refl
 	struct TNativeTypeBuilder : public TypeBuilder
 	{
 	public:
-		TNativeTypeBuilder() : TypeBuilder(TypeId::Get<T>(), GetTypeName<T>(false)) {}
+		TNativeTypeBuilder() : TypeBuilder(GetTypeId<T>(), GetTypeName<T>(false)) {}
 
 		NativeType* GetType() const
 		{

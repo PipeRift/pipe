@@ -290,17 +290,17 @@ go_bandit([]() {
 			it("Can move", [&]() {
 				OwnPtr ptr1 = MakeOwned<EmptyStruct>();
 				AssertThat(ptr1.IsValid(), Equals(true));
-				AssertThat(ptr1.GetTypeId(), Equals(Refl::TypeId::Get<EmptyStruct>()));
+				AssertThat(ptr1.GetId(), Equals(GetTypeId<EmptyStruct>()));
 				auto* data = ptr1.Get<EmptyStruct>();
 
 				OwnPtr ptr2 = Move(ptr1);
 				AssertThat(ptr1.IsValid(), Equals(false));
 				AssertThat(ptr1.Get<EmptyStruct>(), Equals(nullptr));
-				AssertThat(ptr1.GetTypeId(), Equals(Refl::TypeId::None()));
+				AssertThat(ptr1.GetId(), Equals(Refl::TypeId::None()));
 
 				AssertThat(ptr2.IsValid(), Equals(true));
 				AssertThat(ptr2.Get<EmptyStruct>(), Equals(data));
-				AssertThat(ptr2.GetTypeId(), Equals(Refl::TypeId::Get<EmptyStruct>()));
+				AssertThat(ptr2.GetId(), Equals(GetTypeId<EmptyStruct>()));
 			});
 
 			it("Cant retrive invalid types", [&]() {
