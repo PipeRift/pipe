@@ -13,7 +13,7 @@ namespace Rift::Files
 {
 	bool LoadStringFile(const Path& path, String& result, sizet extraPadding)
 	{
-		ZoneScopedNC("LoadStringFile", 0xBB45D1);
+		ZoneScoped;
 
 		if (!Exists(path) || !IsFile(path))
 		{

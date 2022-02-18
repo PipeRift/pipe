@@ -19,7 +19,6 @@ namespace Rift
 		// STD types
 		using value_type      = T;
 		using size_type       = sizet;
-		using difference_type = std::ptrdiff_t;
 		using reference       = value_type&;
 		using const_reference = const value_type&;
 		using pointer         = value_type*;
@@ -35,7 +34,7 @@ namespace Rift
 
 		STLAllocator()                             = default;
 		STLAllocator(const STLAllocator&) noexcept = default;
-		template<class U>
+		template<typename U>
 		STLAllocator(const STLAllocator<U>&) noexcept
 		{}
 
@@ -57,12 +56,12 @@ namespace Rift
 		using propagate_on_container_swap            = std::true_type;
 		using is_always_equal                        = std::true_type;
 
-		template<class U, class... Args>
+		template<typename U, typename... Args>
 		void construct(U* p, Args&&... args)
 		{
-			::new (p) U(Forward<Args>(args)...);
+			::new (static_cast<void*>(p)) U(Forward<Args>(args)...);
 		}
-		template<class U>
+		template<typename U>
 		void destroy(U* p) noexcept
 		{
 			p->~U();

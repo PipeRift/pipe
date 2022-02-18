@@ -15,7 +15,9 @@ namespace Rift
 	void* Alloc(sizet n)
 	{
 		void* const p = std::malloc(n);
-		TracyAllocS(p, n, 8);
+		// FIX: Profiler reports alloc gets called frequently twice with the same pointer. Seems
+		// related to allocators
+		// TracyAllocS(p, n, 12);
 		return p;
 	}
 
@@ -30,21 +32,21 @@ namespace Rift
 #else
 		void* const p = std::aligned_alloc(align, n);
 #endif
-		TracyAllocS(p, n, 8);
+		// TracyAllocS(p, n, 8);
 		return p;
 	}
 
 	void* Realloc(void* old, sizet size)
 	{
-		TracyFreeS(old, 8);
+		// TracyFreeS(old, 8);
 		void* const p = std::realloc(old, size);
-		TracyAllocS(p, size, 8);
+		// TracyAllocS(p, size, 8);
 		return p;
 	}
 
 	void Free(void* p)
 	{
-		TracyFreeS(p, 8);
+		// TracyFreeS(p, 8);
 		std::free(p);
 	}
 
