@@ -61,18 +61,15 @@ namespace Rift
 	template<typename T>
 	concept IsEnum = std::is_enum_v<T>;
 
-	template<bool Expression, typename True, typename False>
-	using SelectType = std::conditional<Expression, True, False>;
-
 	template<typename T>
 	concept ShouldPassByValue = sizeof(T) <= sizeof(sizet) && std::is_copy_constructible_v<T>;
 
-	template<bool useT, typename T, typename F>
-	using Select = typename std::conditional<useT, T, F>::type;
+	template<bool UseT, typename T, typename F>
+	using Select = typename std::conditional<UseT, T, F>::type;
 
 
 	template<typename T>
-	struct HasType
+	struct HasTypeMember
 	{
 	private:
 		template<typename V>
@@ -85,7 +82,7 @@ namespace Rift
 	};
 
 	template<typename T>
-	struct HasItemType
+	struct HasItemTypeMember
 	{
 	private:
 		template<typename V>
@@ -98,7 +95,7 @@ namespace Rift
 	};
 
 	template<typename T>
-	struct HasKeyType
+	struct HasKeyTypeMember
 	{
 	private:
 		template<typename V>
@@ -111,7 +108,7 @@ namespace Rift
 	};
 
 	template<typename T>
-	struct HasValueType
+	struct HasValueTypeMember
 	{
 	private:
 		template<typename V>

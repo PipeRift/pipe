@@ -28,7 +28,7 @@ namespace Rift
 	inline constexpr bool IsArray()
 	{
 		// Check if we are dealing with a TArray
-		if constexpr (HasItemType<T>::value)
+		if constexpr (HasItemTypeMember<T>::value)
 		{
 			return IsSame<TArray<typename T::ItemType>, T>;
 		}
@@ -39,7 +39,7 @@ namespace Rift
 	inline constexpr bool IsMap()
 	{
 		// Check if we are dealing with a TAssetPtr
-		if constexpr (HasKeyType<T>::value && HasValueType<T>::value)
+		if constexpr (HasKeyTypeMember<T>::value && HasValueTypeMember<T>::value)
 		{
 			return IsSame<
 			    TMap<typename T::KeyType, typename T::ValueType, typename T::AllocatorType>, T>;
