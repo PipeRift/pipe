@@ -70,6 +70,20 @@ namespace Rift
 	template<bool useT, typename T, typename F>
 	using Select = typename std::conditional<useT, T, F>::type;
 
+
+	template<typename T>
+	struct HasType
+	{
+	private:
+		template<typename V>
+		static void Impl(decltype(typename V::Type(), int()));
+		template<typename V>
+		static bool Impl(char);
+
+	public:
+		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
+	};
+
 	template<typename T>
 	struct HasItemType
 	{
