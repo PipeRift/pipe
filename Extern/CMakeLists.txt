@@ -30,6 +30,7 @@ rift_target_shared_output_directory(Tracy)
 # target_compile_definitions(Tracy PRIVATE TRACY_TIMER_QPC=1)
 rift_target_disable_all_warnings(Tracy PRIVATE)
 set_target_properties (Tracy PROPERTIES FOLDER Extern)
+rift_target_enable_CPP20(Tracy)
 
 add_subdirectory(portable-file-dialogs)
 
