@@ -5,7 +5,7 @@
 
 namespace Rift::Memory
 {
-	void* LinearArena::Allocate(const sizet size)
+	void* LinearArena::Allocate(sizet size)
 	{
 		if (usedBlockSize + size > activeBlock.GetSize())
 		{
@@ -22,7 +22,7 @@ namespace Rift::Memory
 		return ptr;
 	}
 
-	void* LinearArena::Allocate(const sizet size, const sizet alignment)
+	void* LinearArena::Allocate(sizet size, sizet alignment)
 	{
 		if (alignment == 0)
 		{

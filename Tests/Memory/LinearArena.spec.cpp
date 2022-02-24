@@ -87,8 +87,8 @@ go_bandit([]() {
 			LinearArena arena{16};
 
 			void* block = *arena.GetBlock();
-			void* p     = arena.Allocate(sizeof(float*));    // 8 bytes
-			void* p2    = arena.Allocate(sizeof(float));     // 4 bytes
+			arena.Allocate(sizeof(float*));    // 8 bytes
+			arena.Allocate(sizeof(float));     // 4 bytes
 			AssertThat(arena.GetUsedBlockSize(), Is().EqualTo(12));
 			AssertThat(arena.GetBlockSize(), Is().EqualTo(16));
 

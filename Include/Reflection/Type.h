@@ -28,7 +28,11 @@ namespace Rift::Refl
 	protected:
 		TypeId id;
 		TypeCategory category = TypeCategory::None;
+
+#pragma warning(push)
+#pragma warning(disable:4251)
 		StringView name;
+#pragma warning(pop)
 
 
 	protected:

@@ -34,8 +34,11 @@ namespace Rift
 	struct CORE_API Timespan
 	{
 	private:
+#pragma warning(push)
+#pragma warning(disable:4251)
 		/** The time span value in 100 nanoseconds resolution. */
 		DecMicroseconds duration{};
+#pragma warning(pop)
 
 
 	public:

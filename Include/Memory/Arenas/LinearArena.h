@@ -40,8 +40,8 @@ namespace Rift::Memory
 		LinearArena& operator=(const LinearArena&) = delete;
 		CORE_API LinearArena& operator=(LinearArena&&) = default;
 
-		CORE_API void* Allocate(const sizet size);
-		CORE_API void* Allocate(const sizet size, const sizet alignment);
+		CORE_API void* Allocate(sizet size);
+		CORE_API void* Allocate(sizet size, sizet alignment);
 
 		CORE_API void Free(void* ptr, sizet size) {}
 

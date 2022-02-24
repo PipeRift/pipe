@@ -81,8 +81,11 @@ namespace Rift
 		/** Holds the cumulative days per month in a non-leap year. */
 		static const i32 DaysToMonth[];
 
+#pragma warning(push)
+#pragma warning(disable:4251)
 		/** Holds the ticks in 100 nanoseconds resolution since January 1, 0001 A.D. */
 		SysTime value{};
+#pragma warning(pop)
 
 
 	public:

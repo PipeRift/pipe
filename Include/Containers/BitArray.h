@@ -14,7 +14,7 @@ namespace Rift
 
 	private:
 		/** The number of bits in this array */
-		u32 numBits;
+		i32 numBits;
 		/** The array of u32s containing the bits */
 		ArrayType bits;
 
@@ -22,7 +22,7 @@ namespace Rift
 	public:
 		/** Constructors */
 		TBitArray() : numBits(0) {}
-		TBitArray(u32 newSize) : numBits(newSize), bits{((numBits - 1) >> 5) + 1} {}
+		TBitArray(i32 newSize) : numBits(newSize), bits{((numBits - 1) >> 5) + 1} {}
 		TBitArray(TBitArray&& other) noexcept
 		{
 			numBits       = other.numBits;
@@ -127,12 +127,12 @@ namespace Rift
 		i32 GetPreviousSet(i32 index) const;
 
 		// @return the number of bits in this bit array
-		u32 Size() const
+		i32 Size() const
 		{
 			return numBits;
 		}
 		// @return the number of bits reserved on the buffer
-		u32 MaxSize() const
+		i32 MaxSize() const
 		{
 			return bits.MaxSize() * sizeof(i32) * 8;
 		}

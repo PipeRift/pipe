@@ -10,9 +10,9 @@
 
 namespace Rift
 {
-	class Rotator;
+	struct Rotator;
 
-	class Quat
+	struct Quat
 	{
 	public:
 		float x;

@@ -96,7 +96,11 @@ namespace Rift
 		static const Id noneId;
 		Id id = noneId;
 #if BUILD_DEBUG
+
+#	pragma warning(push)
+#	pragma warning(disable:4251)
 		StringView value;    // Only used for debugging purposes
+#	pragma warning(pop)
 #endif
 
 

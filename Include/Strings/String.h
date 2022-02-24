@@ -18,6 +18,7 @@
 #include <string>
 
 
+#pragma warning(push)
 #pragma warning(disable:4996)
 
 
@@ -153,3 +154,5 @@ namespace Rift
 
 	OVERRIDE_TYPE_NAME(String)
 }    // namespace Rift
+
+#pragma warning(pop)
