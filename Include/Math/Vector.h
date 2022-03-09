@@ -72,6 +72,12 @@ namespace Rift
 			return Math::Square(other.x - one.x) + Math::Square(other.y - one.y);
 		}
 
+		bool Equals(const Vec& other, float tolerance = Math::SMALL_NUMBER) const
+		{
+			return Math::NearlyEqual(x, other.x, tolerance)
+			    && Math::NearlyEqual(y, other.y, tolerance);
+		}
+
 		Vec& Normalize()
 		{
 			const T length = Length();
@@ -295,6 +301,13 @@ namespace Rift
 			     + Math::Square(other.z - one.z);
 		}
 
+		bool Equals(const Vec& other, float tolerance = Math::SMALL_NUMBER) const
+		{
+			return Math::NearlyEqual(x, other.x, tolerance)
+			    && Math::NearlyEqual(y, other.y, tolerance)
+			    && Math::NearlyEqual(z, other.z, tolerance);
+		}
+
 		Vec& Normalize()
 		{
 			const T lengthSqrt = LengthSquared();
@@ -507,6 +520,14 @@ namespace Rift
 		constexpr Vec<3, T> XYZ() const
 		{
 			return {x, y, z};
+		}
+
+		bool Equals(const Vec& other, float tolerance = Math::SMALL_NUMBER) const
+		{
+			return Math::NearlyEqual(x, other.x, tolerance)
+			    && Math::NearlyEqual(y, other.y, tolerance)
+			    && Math::NearlyEqual(z, other.z, tolerance)
+			    && Math::NearlyEqual(w, other.w, tolerance);
 		}
 
 		static T Dot(const Vec& a, const Vec& b) requires(
