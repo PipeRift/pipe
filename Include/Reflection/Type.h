@@ -14,12 +14,13 @@ namespace Rift::Refl
 
 	enum class TypeCategory : u8
 	{
-		None   = 1 << 0,
-		Native = 1 << 1,
-		Enum   = 1 << 2,
-		Data   = 1 << 3,
-		Struct = 1 << 4,
-		Class  = 1 << 5,
+		None   = 0,
+		Native = 1 << 0,
+		Enum   = 1 << 1,
+		Data   = 1 << 2,
+		Struct = 1 << 3,
+		Class  = 1 << 4,
+		All    = Native | Enum | Data | Struct | Class
 	};
 
 	/** Smallest reflection type */
@@ -48,6 +49,10 @@ namespace Rift::Refl
 		}
 		StringView GetName() const;
 
+		TypeCategory GetCategory() const
+		{
+			return category;
+		}
 		class NativeType* AsNative();
 		class EnumType* AsEnum();
 		class DataType* AsData();

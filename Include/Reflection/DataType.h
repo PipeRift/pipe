@@ -71,7 +71,10 @@ namespace Rift::Refl
 		CORE_API const TArray<Property*>& GetSelfProperties() const;
 		CORE_API void GetProperties(TArray<Property*>& outProperties) const;
 
-
+		CORE_API DataType* GetParent() const
+		{
+			return parent;
+		}
 		CORE_API const TArray<DataType*>& GetChildren() const;
 		CORE_API void GetChildrenDeep(TArray<DataType*>& outChildren) const;
 		CORE_API DataType* FindChild(const Name& className) const;

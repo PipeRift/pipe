@@ -5,6 +5,8 @@
 
 #include "Misc/Hash.h"
 
+#include <fmt/format.h>
+
 #include <iostream>
 
 
@@ -77,3 +79,14 @@ namespace Rift
 		}
 	};
 }    // namespace Rift
+
+
+template<>
+struct fmt::formatter<Rift::Refl::TypeId> : public fmt::formatter<Rift::u64>
+{
+	template<typename FormatContext>
+	auto format(const Rift::Refl::TypeId& typeId, FormatContext& ctx)
+	{
+		return formatter<Rift::u64>::format(typeId.GetId(), ctx);
+	}
+};

@@ -23,6 +23,8 @@ namespace Rift::Refl
 		// We map all classes by name in case we need to find them
 		TMap<TypeId, Type*> idToTypes{};
 
+		using ConstIterator = TMap<TypeId, Type*>::ConstIterator;
+
 
 	public:
 		template<typename TType>
@@ -42,6 +44,17 @@ namespace Rift::Refl
 		}
 
 		CORE_API Type* FindType(TypeId id) const;
+
+
+		CORE_API ConstIterator begin() const
+		{
+			return idToTypes.begin();
+		}
+		CORE_API ConstIterator end() const
+		{
+			return idToTypes.end();
+		}
+
 
 		static CORE_API ReflectionRegistry& Get();
 	};

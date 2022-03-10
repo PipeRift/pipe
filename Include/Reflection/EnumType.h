@@ -3,6 +3,7 @@
 
 #include "PCH.h"
 
+#include "Misc/EnumFlags.h"
 #include "Reflection/Type.h"
 #include "Strings/Name.h"
 
@@ -40,6 +41,24 @@ namespace Rift::Refl
 	constexpr auto GetEnumNames()
 	{
 		return magic_enum::enum_names<T>();
+	}
+
+	template<typename T>
+	constexpr void GetEnumFlagName(T value, String& outName)
+	{
+		bool hasAny = false;
+		for (auto v : GetEnumValues<T>())
+		{
+			if (*v != 0 && HasFlag(value, v))
+			{
+				Strings::FormatTo(outName, "{} | ", GetEnumName(v));
+				hasAny = true;
+			}
+		}
+		if (hasAny)
+		{
+			Strings::RemoveFromEnd(outName, 3);
+		}
 	}
 
 
