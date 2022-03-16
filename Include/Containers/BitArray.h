@@ -140,7 +140,7 @@ namespace Rift
 		/** @return true if index is contained on the bit array */
 		bool IsValidIndex(u32 index) const
 		{
-			return index >= 0 && index < Size();
+			return index < u32(Size());
 		}
 
 		/** @return true if a bit is set */

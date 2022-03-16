@@ -182,9 +182,13 @@ namespace Rift
 		{
 			Reserve(Size() + sizeNum);
 		}
-		void Resize(i32 sizeNum)
+		constexpr void Resize(i32 sizeNum)
 		{
 			vector.resize(sizeNum);
+		}
+		constexpr void Resize(i32 sizeNum, const Type& value)
+		{
+			vector.resize(sizeNum, value);
 		}
 
 		void Assign(i32 sizeNum, const Type& value)
