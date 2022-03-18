@@ -441,14 +441,7 @@ namespace Rift
 		 */
 		i32 Remove(const Type& item, const bool shouldShrink = true)
 		{
-			const i32 lastSize = Size();
-			(void)std::remove(vector.begin(), vector.end(), item);
-
-			if (shouldShrink)
-			{
-				Shrink();
-			}
-			return lastSize - Size();
+			return RemoveAt(FindIndex(item), shouldShrink);
 		}
 
 		template<typename Container>    // Intended for TSpan<T>
