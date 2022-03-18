@@ -430,6 +430,11 @@ namespace Rift
 			return FindIt(Move(cb)) != vector.end();
 		}
 
+		bool ContainsSorted(const Type& item) const
+		{
+			return FindSortedEqual(item) != NO_INDEX;
+		}
+
 		/**
 		 * Delete all items that match another provided item
 		 * @return number of deleted items
