@@ -90,11 +90,14 @@ namespace Rift::Refl
 			auto* type = Super::Build();
 
 			GetType()->onNew = []() {
-				if constexpr (IsSame<T, BaseClass>)
+				if constexpr (IsAbstract<T> || IsSame<T, BaseClass>)
 				{
-					return nullptr;    // Can't create instances of BaseClass
+					return nullptr;    // Can't create instances of abstract classes or BaseClass
 				}
-				return new T();
+				else
+				{
+					return new T();
+				}
 			};
 
 			if (onBuild)
