@@ -44,15 +44,15 @@ namespace Rift
 	CORE_API TOwnPtr<Context>& GetContextInstance();
 
 	template<typename T = Context>
-	bool InitializeContext()
+	TPtr<T> InitializeContext()
 	{
 		TOwnPtr<Context>& context = GetContextInstance();
 		if (!context)
 		{
 			context = MakeOwned<T>();
-			return context.IsValid();
+			return context.Cast<T>();
 		}
-		return false;
+		return {};
 	}
 
 	CORE_API void ShutdownContext();
