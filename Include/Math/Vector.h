@@ -5,7 +5,7 @@
 #include "PCH.h"
 
 #include "Math.h"
-#include "Reflection/Registry/NativeTypeBuilder.h"
+#include "Reflection/Builders/NativeTypeBuilder.h"
 #include "Serialization/ContextsFwd.h"
 #include "Strings/Name.h"
 #include "TypeTraits.h"

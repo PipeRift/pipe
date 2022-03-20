@@ -3,10 +3,10 @@
 
 #include "PCH.h"
 
+#include "Reflection/Builders/StaticInitializers.h"
+#include "Reflection/Builders/TypeBuilder.h"
 #include "Reflection/NativeType.h"
-#include "Reflection/Registry/Registry.h"
-#include "Reflection/Registry/StaticInitializers.h"
-#include "Reflection/Registry/TypeBuilder.h"
+#include "Reflection/Registry.h"
 #include "Reflection/TypeId.h"
 #include "Strings/Name.h"
 

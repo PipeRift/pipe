@@ -5,7 +5,7 @@
 #include "PCH.h"
 
 #include "Misc/Crc.h"
-#include "Reflection/Registry/NativeTypeBuilder.h"
+#include "Reflection/Builders/NativeTypeBuilder.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/ContextsFwd.h"
 #include "Strings/Name.h"

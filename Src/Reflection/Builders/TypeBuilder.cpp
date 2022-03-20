@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Reflection/Registry/TypeBuilder.h"
+#include "Reflection/Builders/TypeBuilder.h"
 
-#include "Reflection/Registry/Registry.h"
+#include "Reflection/Registry.h"
 #include "Reflection/TypeId.h"
 
 #include <utility>

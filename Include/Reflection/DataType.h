@@ -6,12 +6,13 @@
 #include "Containers/Array.h"
 #include "Containers/Map.h"
 #include "CoreTypes.h"
+#include "Reflection/Builders/TypeInstance.h"
 #include "Reflection/Property.h"
 #include "Reflection/ReflectionFlags.h"
 #include "Reflection/ReflectionTraits.h"
-#include "Reflection/Registry/TypeInstance.h"
 #include "Reflection/Type.h"
 #include "Strings/String.h"
+
 
 
 namespace Rift::Refl

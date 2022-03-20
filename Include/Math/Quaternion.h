@@ -4,7 +4,7 @@
 
 #include "Math.h"
 #include "Math/Vector.h"
-#include "Reflection/Registry/NativeTypeBuilder.h"
+#include "Reflection/Builders/NativeTypeBuilder.h"
 #include "Serialization/ContextsFwd.h"
 
 

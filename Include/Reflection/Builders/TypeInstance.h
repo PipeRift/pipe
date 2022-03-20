@@ -3,7 +3,7 @@
 
 #include "PCH.h"
 
-#include "Reflection/Registry/StaticInitializers.h"
+#include "Reflection/Builders/StaticInitializers.h"
 #include "Reflection/Type.h"
 
 

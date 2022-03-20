@@ -3,9 +3,10 @@
 
 #include "PCH.h"
 
+#include "Reflection/Builders/StaticInitializers.h"
+#include "Reflection/Builders/TypeBuilder.h"
 #include "Reflection/ReflectionTraits.h"
-#include "Reflection/Registry/StaticInitializers.h"
-#include "Reflection/Registry/TypeBuilder.h"
+
 
 
 namespace Rift

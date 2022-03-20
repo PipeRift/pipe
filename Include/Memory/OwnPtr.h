@@ -227,7 +227,7 @@ namespace Rift
 		TOwnPtr<T2> Transfer()
 		{
 			// If can be casted statically or dynamically
-			if (IsValid() && (Convertible<T2, T> || dynamic_cast<T2*>(GetUnsafe()) != nullptr))
+			if (IsValid() && (Convertible<T, T2> || dynamic_cast<T2*>(GetUnsafe()) != nullptr))
 			{
 				TOwnPtr<T2> newPtr{};
 				newPtr.MoveFrom(Move(*this));
@@ -243,12 +243,9 @@ namespace Rift
 			{
 				return TPtr<T2>{*this};
 			}
-			else if (IsValid() && dynamic_cast<T2*>(GetUnsafe()) != nullptr)
-			{
-				TPtr<T> ptr{*this};
-				return ptr.template Cast<T2>();
-			}
-			return {};
+
+			TPtr<T> ptr{*this};
+			return ptr.template Cast<T2>();
 		}
 
 		TPtr<T> AsPtr() const
@@ -402,7 +399,7 @@ namespace Rift
 		template<typename T2>
 		TPtr<T2> Cast() const
 		{
-			if (IsValid() && (Convertible<T2, T> || dynamic_cast<T2*>(GetUnsafe()) == nullptr))
+			if (IsValid() && (Convertible<T, T2> || dynamic_cast<T2*>(GetUnsafe()) != nullptr))
 			{
 				TPtr<T2> ptr{};
 				ptr.CopyFrom(*this);
