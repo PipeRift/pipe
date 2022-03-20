@@ -7,7 +7,6 @@
 
 namespace Rift::Refl
 {
-
 	bool DataType::IsChildOf(const DataType* other) const
 	{
 		if (!other || !parent)

@@ -4,6 +4,7 @@
 #include "PCH.h"
 
 #include "Reflection/Builders/StaticInitializers.h"
+#include "Reflection/ReflectionTraits.h"
 #include "Reflection/Type.h"
 
 

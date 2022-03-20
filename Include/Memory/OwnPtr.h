@@ -7,10 +7,12 @@
 #include "Memory/PtrBuilder.h"
 #include "Misc/Checks.h"
 #include "Misc/Utility.h"
+#include "Reflection/TypeId.h"
 #include "TypeTraits.h"
 
 #include <atomic>
 #include <memory>
+
 
 
 namespace Rift

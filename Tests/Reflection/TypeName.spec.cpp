@@ -5,7 +5,9 @@
 #include <Containers/Map.h>
 #include <Reflection/PredefinedTypes.h>
 #include <Reflection/TypeName.h>
+#include <Strings/Name.h>
 #include <Strings/String.h>
+
 
 
 using namespace snowhouse;

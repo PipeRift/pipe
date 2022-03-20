@@ -3,6 +3,7 @@
 
 #include "Memory/OwnPtr.h"
 #include "Reflection/ReflectionFlags.h"
+#include "Reflection/Type.h"
 #include "Strings/Name.h"
 #include "Strings/String.h"
 
