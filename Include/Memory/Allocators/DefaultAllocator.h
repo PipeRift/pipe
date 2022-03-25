@@ -8,22 +8,23 @@
 
 namespace Rift::Memory
 {
-	class CORE_API DefaultAllocator : public IAllocator
+	template<typename T>
+	class TDefaultAllocator : public IAllocator
 	{
 	public:
-		DefaultAllocator()          = default;
-		virtual ~DefaultAllocator() = default;
+		template<typename U>
+		using Rebind = TDefaultAllocator<U>;
 
-		void* Allocate(const sizet size)
+		T* Allocate(const sizet count)
 		{
-			return Rift::Alloc(size);
+			return static_cast<T*>(Rift::Alloc(count * sizeof(T)));
 		}
-		void* Allocate(const sizet size, const sizet align)
+		T* Allocate(const sizet count, const sizet align)
 		{
-			return Rift::Alloc(size, align);
+			return static_cast<T*>(Rift::Alloc(count * sizeof(T), align));
 		}
 
-		void Free(void* ptr)
+		void Free(T* ptr)
 		{
 			Rift::Free(ptr);
 		}

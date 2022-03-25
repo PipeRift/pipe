@@ -13,7 +13,7 @@
 
 namespace Rift
 {
-	template<typename T, typename Allocator = Memory::DefaultAllocator>
+	template<typename T, typename Allocator = Memory::TDefaultAllocator<T>>
 	struct STLAllocator
 	{
 		// STD types
@@ -26,7 +26,7 @@ namespace Rift
 		template<typename U>
 		struct rebind
 		{
-			using other = STLAllocator<U, Allocator>;
+			using other = STLAllocator<U, typename Allocator::Rebind<U>>;
 		};
 
 		Allocator allocator{};
@@ -40,7 +40,7 @@ namespace Rift
 
 		pointer allocate(size_type count)
 		{
-			return static_cast<pointer>(allocator.Allocate(count * sizeof(T)));
+			return static_cast<pointer>(allocator.Allocate(count));
 		}
 		pointer allocate(size_type count, const void*)
 		{

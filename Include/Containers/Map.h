@@ -20,7 +20,8 @@
 
 namespace Rift
 {
-	template<typename Key, typename Value, typename Allocator = Memory::DefaultAllocator>
+	template<typename Key, typename Value,
+	    typename Allocator = Memory::TDefaultAllocator<TPair<Key, Value>>>
 	class TMap
 	{
 		static_assert(std::is_nothrow_move_constructible<Value>::value
@@ -35,7 +36,7 @@ namespace Rift
 		using ValueType     = Value;
 		using AllocatorType = Allocator;
 		using HashMapType   = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>,
-            std::equal_to<KeyType>, STLAllocator<std::pair<Key, Value>, Allocator>>;
+            std::equal_to<KeyType>, STLAllocator<TPair<Key, Value>, Allocator>>;
 
 		using Iterator      = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;

@@ -19,7 +19,7 @@
 
 namespace Rift
 {
-	template<typename Type, typename Allocator = Memory::DefaultAllocator>
+	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>
 	class TSet
 	{
 		// static_assert(std::is_nothrow_move_constructible<Value>::value ||

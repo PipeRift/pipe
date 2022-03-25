@@ -7,7 +7,7 @@
 
 namespace Rift
 {
-	template<typename Allocator = Memory::DefaultAllocator>
+	template<typename Allocator = Memory::TDefaultAllocator<u32>>
 	class TBitArray
 	{
 		using ArrayType = TArray<u32, Allocator>;

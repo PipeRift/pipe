@@ -9,11 +9,11 @@
 
 namespace Rift::Memory
 {
-	class CORE_API HeapArena : public IArena
+	class CORE_API NativeArena : public IArena
 	{
 	public:
-		HeapArena()          = default;
-		virtual ~HeapArena() = default;
+		NativeArena()          = default;
+		virtual ~NativeArena() = default;
 
 		void* Allocate(const sizet size)
 		{
