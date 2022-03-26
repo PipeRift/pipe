@@ -26,7 +26,7 @@ namespace Rift
 		template<typename U>
 		struct rebind
 		{
-			using other = STLAllocator<U, typename Allocator::Rebind<U>>;
+			using other = STLAllocator<U, typename Allocator::template Rebind<U>>;
 		};
 
 		Allocator allocator{};

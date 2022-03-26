@@ -15,6 +15,7 @@ namespace Rift::Memory
 		template<typename U>
 		using Rebind = TDefaultAllocator<U>;
 
+
 		T* Allocate(const sizet count)
 		{
 			return static_cast<T*>(Rift::Alloc(count * sizeof(T)));
