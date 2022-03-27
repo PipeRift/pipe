@@ -9,6 +9,21 @@
 #include <yyjson.h>
 
 
+static void* yyjson_malloc(void* ctx, Rift::sizet size)
+{
+	return Rift::Alloc(size);
+}
+static void* yyjson_realloc(void* ctx, void* ptr, Rift::sizet size)
+{
+	return Rift::Realloc(ptr, size);
+}
+static void yyjson_free(void* ctx, void* ptr)
+{
+	Rift::Free(ptr);
+}
+yyjson_alc yyjsonAllocator = {yyjson_malloc, yyjson_realloc, yyjson_free, nullptr};
+
+
 bool yyjson_mut_obj_add_val(
     yyjson_mut_doc* doc, yyjson_mut_val* obj, Rift::StringView _key, yyjson_mut_val* _val)
 {
@@ -315,7 +330,7 @@ namespace Rift::Serl
 		yyjson_read_flag flags = insitu ? YYJSON_READ_INSITU : 0;
 		yyjson_read_err err;
 
-		if (doc = yyjson_read_opts(data, size, flags, nullptr, &err))
+		if (doc = yyjson_read_opts(data, size, flags, &yyjsonAllocator, &err))
 		{
 			root = yyjson_doc_get_root(doc);
 			PushScope(root);
@@ -567,6 +582,6 @@ namespace Rift::Serl
 		}
 		yyjson_write_flag flags = pretty ? YYJSON_WRITE_PRETTY : 0;
 		sizet size;
-		return {yyjson_mut_write(doc, flags, &size), size};
+		return {yyjson_mut_write_opts(doc, flags, &yyjsonAllocator, &size, nullptr), size};
 	}
 }    // namespace Rift::Serl
