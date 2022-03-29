@@ -418,14 +418,12 @@ namespace Rift::Serl
 	{
 		if ((GetFlags() & WriteFlags_CacheStringKeys) > 0)
 		{
-			stringBuffer.append(key);
-			stringBuffer.push_back('\0');
-			const TChar* keyEnd = stringBuffer.end() - 1;
-
-			key = StringView{keyEnd - key.size(), key.size()};
+			scopeStack.Add({yyjson_mut_strncpy(doc, key.data(), key.size()), current});
 		}
-
-		scopeStack.Add({key, current});
+		else
+		{
+			scopeStack.Add({yyjson_mut_strn(doc, key.data(), key.size()), current});
+		}
 		current = nullptr;    // New scope
 	}
 
@@ -437,9 +435,9 @@ namespace Rift::Serl
 			switch (yyjson_mut_get_type(scope.parent))
 			{
 				case YYJSON_TYPE_OBJ:
-					if (!scope.key.empty())
+					if (scope.key)
 					{
-						yyjson_mut_obj_add_val(doc, scope.parent, scope.key, current);
+						yyjson_mut_obj_add(scope.parent, scope.key, current);
 					}
 					break;
 				case YYJSON_TYPE_ARR: yyjson_mut_arr_append(scope.parent, current); break;
@@ -548,14 +546,12 @@ namespace Rift::Serl
 	{
 		if ((GetFlags() & WriteFlags_CacheStringValues) > 0)
 		{
-			stringBuffer.append(val);
-			stringBuffer.push_back('\0');
-			const TChar* keyEnd = stringBuffer.end() - 1;
-
-			val = StringView{keyEnd - val.size(), val.size()};
+			current = yyjson_mut_strncpy(doc, val.data(), val.size());
 		}
-
-		current = yyjson_mut_strn(doc, val.data(), val.size());
+		else
+		{
+			current = yyjson_mut_strn(doc, val.data(), val.size());
+		}
 	}
 
 	void JsonFormatWriter::Close()

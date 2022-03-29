@@ -117,12 +117,11 @@ namespace Rift::Serl
 	private:
 		struct Scope
 		{
-			StringView key;
+			yyjson_mut_val* key    = nullptr;
 			yyjson_mut_val* parent = nullptr;
 		};
 		yyjson_mut_doc* doc     = nullptr;
 		yyjson_mut_val* current = nullptr;
-		StringBuffer stringBuffer;    // Stores temporal string keys and values
 		TArray<Scope> scopeStack;
 		bool open = true;
 
