@@ -12,6 +12,8 @@ namespace Rift
 		static StringView GetExecutableFile();
 		static StringView GetExecutablePath();
 		static StringView GetBasePath();
+
+		static void ShowFolder(StringView path);
 	};
 
 	using PlatformProcess = WindowsPlatformProcess;

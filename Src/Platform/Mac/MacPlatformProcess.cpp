@@ -8,6 +8,8 @@
 #	include "Files/Paths.h"
 
 #	include <mach-o/dyld.h>
+#	include <mach/thread_act.h>
+#	include <mach/thread_policy.h>
 
 
 namespace Rift
@@ -39,5 +41,41 @@ namespace Rift
 	{
 		return GetExecutablePath();
 	}
+
+	void MacPlatformProcess::ShowFolder(StringView path)
+	{
+		if (!Files::Exists(path))
+		{
+			return;
+		}
+
+		CFStringRef CFPath = CFStringCreateWithBytes(kCFAllocatorDefault, (const uint8*)path.data(),
+		    path.size() * sizeof(TCHAR),
+		    sizeof(TCHAR) == 4 ? kCFStringEncodingUTF32LE : kCFStringEncodingUnicode, false);
+
+		extern void MainThreadCall(dispatch_block_t Block, NSString * WaitMode, bool const bWait);
+		if (Files::IsFolder(path))
+		{
+			MainThreadCall(
+			    ^{
+				  [[NSWorkspace sharedWorkspace] selectFile:nil
+				                   inFileViewerRootedAtPath:(NSString*)CFPath];
+				  CFRelease(CFPath);
+			    },
+			    NSDefaultRunLoopMode, false);
+		}
+		else if (Files::IsFile(path))
+		{
+			MainThreadCall(
+			    ^{
+				  NSString* Directory = [(NSString*)CFPath stringByDeletingLastPathComponent];
+				  [[NSWorkspace sharedWorkspace] selectFile:(NSString*)CFPath
+				                   inFileViewerRootedAtPath:Directory];
+				  CFRelease(CFPath);
+			    },
+			    NSDefaultRunLoopMode, false);
+		}
+	}
+}
 }    // namespace Rift
 #endif

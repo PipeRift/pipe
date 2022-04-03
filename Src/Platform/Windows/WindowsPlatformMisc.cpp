@@ -21,7 +21,7 @@ namespace Rift
 		return false;
 	}
 
-	static u32 GetMaxPathLength()
+	u32 WindowsPlatformMisc::GetMaxPathLength()
 	{
 		static const u32 maxPath = AreLongPathsEnabled() ? 32767 : MAX_PATH;
 		return maxPath;

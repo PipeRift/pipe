@@ -15,5 +15,7 @@ namespace Rift
 		{
 			return false;
 		}
+
+		static void ShowFolder(StringView path);
 	};
 }    // namespace Rift

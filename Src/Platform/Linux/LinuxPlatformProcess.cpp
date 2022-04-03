@@ -9,12 +9,13 @@
 
 #	include <unistd.h>
 
+
 namespace Rift
 {
 	StringView LinuxPlatformProcess::GetExecutableFile()
 	{
-		static String filePath;
-		if (filePath.empty())
+		static String path;
+		if (path.empty())
 		{
 			TFixedString<PlatformMisc::GetMaxPathLength(), char> rawPath{};
 			if (readlink("/proc/self/exe", rawPath.data(), rawPath.size() - 1) == -1)
@@ -23,10 +24,10 @@ namespace Rift
 				return {};
 			}
 
-			filePath = Strings::Convert<String>(
+			path = Strings::Convert<String>(
 			    TStringView<char>{rawPath.data(), Strings::Length(rawPath.data())});
 		}
-		return filePath;
+		return path;
 	}
 	StringView LinuxPlatformProcess::GetExecutablePath()
 	{
@@ -36,6 +37,27 @@ namespace Rift
 	StringView LinuxPlatformProcess::GetBasePath()
 	{
 		return GetExecutablePath();
+	}
+
+	void LinuxPlatformProcess::ShowFolder(StringView path)
+	{
+		if (!Files::Exists(path))
+		{
+			return;
+		}
+
+		if (!Files::IsFolder(path))
+		{
+			path = Paths::GetParent(path);
+		}
+		String fullPath = path;
+
+		// launch file manager
+		pid_t pid = fork();
+		if (pid == 0)
+		{
+			exit(execl("/usr/bin/xdg-open", "xdg-open", fullPath.data(), (char*)0));
+		}
 	}
 }    // namespace Rift
 #endif

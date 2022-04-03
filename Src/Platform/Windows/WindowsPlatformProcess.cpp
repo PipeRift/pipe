@@ -2,6 +2,7 @@
 
 #if PLATFORM_WINDOWS
 #	include "Files/Paths.h"
+#	include "Files/Files.h"
 #	include "Platform/Windows/WindowsPlatformProcess.h"
 #	include "Strings/String.h"
 
@@ -58,6 +59,27 @@ namespace Rift
 	StringView WindowsPlatformProcess::GetBasePath()
 	{
 		return GetExecutablePath();
+	}
+
+
+	void WindowsPlatformProcess::ShowFolder(StringView path)
+	{
+		if (!Files::Exists(path))
+		{
+			return;
+		}
+
+		if (Files::IsFolder(path))
+		{
+			const String fullPath{path};
+			::ShellExecuteA(nullptr, "explore", fullPath.data(), nullptr, nullptr, SW_SHOWNORMAL);
+		}
+		else if (Files::IsFile(path))
+		{
+			String parameters = Strings::Format("/select,{}", path);
+			::ShellExecuteA(
+			    nullptr, "open", "explorer.exe", parameters.data(), nullptr, SW_SHOWNORMAL);
+		}
 	}
 }    // namespace Rift
 #endif
