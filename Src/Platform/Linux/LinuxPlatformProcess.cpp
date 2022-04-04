@@ -51,7 +51,7 @@ namespace Rift
 		{
 			path = Paths::GetParent(path);
 		}
-		String fullPath = path;
+		String fullPath{path};
 
 		// launch file manager
 		pid_t pid = fork();

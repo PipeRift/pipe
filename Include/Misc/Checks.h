@@ -71,3 +71,6 @@ namespace Rift::Checks
 #	define Check(expression) CheckImpl(expression, "")
 #	define CheckMsg(expression, format, ...) CheckImpl(expression, format, ##__VA_ARGS__)
 #endif
+
+
+#define NotImplemented CheckMsg(false, "Not Implemented")

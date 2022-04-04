@@ -51,30 +51,8 @@ namespace Rift
 			return;
 		}
 
-		CFStringRef cdPath = CFStringCreateWithBytes(kCFAllocatorDefault, (const u8*)path.data(),
-		    path.size() * sizeof(TChar),
-		    sizeof(TChar) == 4 ? kCFStringEncodingUTF32LE : kCFStringEncodingUnicode, false);
-
-		// clang-format off
-		extern void MainThreadCall(dispatch_block_t Block, NSString * WaitMode, bool const bWait);
-		if (Files::IsFolder(path))
-		{
-			MainThreadCall(^{
-				  [[NSWorkspace sharedWorkspace] selectFile:nil inFileViewerRootedAtPath:(NSString*)cfPath];
-				  CFRelease(cfPath);
-			    },
-			    NSDefaultRunLoopMode, false);
-		}
-		else if (Files::IsFile(path))
-		{
-			MainThreadCall(^{
-				  NSString* directory = [(NSString*)cfPath stringByDeletingLastPathComponent];
-				  [[NSWorkspace sharedWorkspace] selectFile:(NSString*)cfPath inFileViewerRootedAtPath:directory];
-				  CFRelease(cfPath);
-			    },
-			    NSDefaultRunLoopMode, false);
-		}
-		// clang-format on
+		NotImplemented;
+		return;
 	}
 }
 }    // namespace Rift
