@@ -54,6 +54,5 @@ namespace Rift
 		NotImplemented;
 		return;
 	}
-}
 }    // namespace Rift
 #endif
