@@ -6,6 +6,7 @@
 #	include "Strings/String.h"
 #	include "Strings/FixedString.h"
 #	include "Files/Paths.h"
+#	include "Files/Files.h"
 
 #	include <unistd.h>
 
