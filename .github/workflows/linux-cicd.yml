@@ -22,9 +22,6 @@ jobs:
             os: ubuntu-20.04
             cxx: g++-10
             cc: gcc-10
-    env:
-      CC: ${{ matrix.cc }}
-      CXX: ${{ matrix.cxx }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -56,16 +53,11 @@ jobs:
           path: Build
           key: linux-${{ matrix.compiler }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
 
-      - name: Configure and Build
-        uses: lukka/run-cmake@v3.3
-        id: runcmake
-        with:
-          cmakeGenerator: 'Ninja'
-          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
-          cmakeListsTxtPath: 'CMakeLists.txt'
-          cmakeBuildType: ${{ matrix.build-type }}
-          buildWithCMakeArgs: --config ${{ matrix.build-type }}
-          buildDirectory: 'Build'
+      - name: Configure
+        run: cmake -S . -B Build -G=Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build-type }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+
+      - name: Build
+        run: cmake --build Build --config ${{ matrix.build-type }}
 
       - uses: actions/upload-artifact@v2
         # Only clang artifacts are stored
