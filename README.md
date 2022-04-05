@@ -1,6 +1,6 @@
 # Rift Core
 
-[![release](https://img.shields.io/github/release/PipeRift/rift-core?labelColor=394047)](https://github.com/PipeRift/rift/releases) ![license](https://img.shields.io/github/license/PipeRift/rift-core?labelColor=394047) [![Code Quality](https://app.codacy.com/project/badge/Grade/bcaa8bb47ec442b282e56990d668f681)](https://www.codacy.com/gh/PipeRift/rift-core/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=PipeRift/rift-core&amp;utm_campaign=Badge_Grade)
+[![release](https://img.shields.io/github/release/PipeRift/rift-core?labelColor=394047)](https://github.com/PipeRift/rift/releases) [![build](https://github.com/PipeRift/rift-core/actions/workflows/build.yml/badge.svg)](https://github.com/PipeRift/rift-core/actions/workflows/build.yml) ![license](https://img.shields.io/github/license/PipeRift/rift-core?labelColor=394047) [![Code Quality](https://app.codacy.com/project/badge/Grade/bcaa8bb47ec442b282e56990d668f681)](https://www.codacy.com/gh/PipeRift/rift-core/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=PipeRift/rift-core&amp;utm_campaign=Badge_Grade)
 
 **Rift-Core** is a cross-platform utility library used as the foundation for [Rift](https://github.com/piperift/rift).
 
@@ -43,8 +43,7 @@ Some of this features are:
 - Improved Logging (including to file)
 
 ## Software Quality
-
-[![Windows](https://img.shields.io/github/workflow/status/piperift/rift-core/windows-cicd?label=Windows)](https://github.com/PipeRift/rift-core/actions/workflows/windows-cicd.yml) [![Linux](https://img.shields.io/github/workflow/status/piperift/rift-core/linux-cicd?label=Linux)](https://github.com/PipeRift/rift-core/actions/workflows/linux-cicd.yml) [![MacOS](https://img.shields.io/github/workflow/status/piperift/rift-core/macos-cicd?label=MacOS)](https://github.com/PipeRift/rift-core/actions/workflows/macos-cicd.yml)
+[![build](https://github.com/PipeRift/rift-core/actions/workflows/build.yml/badge.svg)](https://github.com/PipeRift/rift-core/actions/workflows/build.yml)
 
 The project's code is validated for the following platforms and compilers:
 

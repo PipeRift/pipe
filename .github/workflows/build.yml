@@ -55,14 +55,14 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         if: ${{ matrix.compiler == 'cl' }}
 
-      - name: Cache LLVM and Clang
+      - name: Cache Clang
         if: ${{ matrix.compiler == 'clang' }}
         id: cache-llvm
         uses: actions/cache@v2
         with:
           path: ${{ runner.temp }}/llvm
           key: llvm-14.0-${{ matrix.os-name }}
-      - name: Install LLVM and Clang
+      - name: Install Clang
         if: ${{ matrix.compiler == 'clang' }}
         uses: KyleMayes/install-llvm-action@v1
         with:
