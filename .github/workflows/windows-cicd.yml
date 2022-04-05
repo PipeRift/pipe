@@ -54,12 +54,6 @@ jobs:
           path: Build
           key: windows-${{ matrix.compiler }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
 
-      - name: Set compiler
-        shell: bash
-        env:
-          CC: ${{ matrix.cc }}
-          CXX: ${{ matrix.cxx }}
-
       - name: Configure and Build
         uses: lukka/run-cmake@v3.3
         id: runcmake
@@ -71,6 +65,9 @@ jobs:
           cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
           buildWithCMakeArgs: --config ${{ matrix.build-type }}
           buildDirectory: 'Build'
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
 
       - uses: actions/upload-artifact@v2
         # Only clang artifacts are stored
