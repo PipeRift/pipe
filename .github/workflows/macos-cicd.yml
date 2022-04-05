@@ -57,7 +57,8 @@ jobs:
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           cmakeListsTxtPath: 'CMakeLists.txt'
           cmakeBuildType: ${{ matrix.build-type }}
-          buildWithCMakeArgs: --config ${{ matrix.build-type }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          buildWithCMakeArgs: --config ${{ matrix.build-type }}
           buildDirectory: 'Build'
 
       - uses: actions/upload-artifact@v2
