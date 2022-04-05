@@ -22,7 +22,9 @@ jobs:
             os: ubuntu-20.04
             cxx: g++-10
             cc: gcc-10
-
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -64,9 +66,6 @@ jobs:
           cmakeBuildType: ${{ matrix.build-type }}
           buildWithCMakeArgs: --config ${{ matrix.build-type }}
           buildDirectory: 'Build'
-        env:
-          CC: ${{ matrix.cc }}
-          CXX: ${{ matrix.cxx }}
 
       - uses: actions/upload-artifact@v2
         # Only clang artifacts are stored

@@ -17,7 +17,9 @@ jobs:
             os: macos-latest
             cxx: clang++
             cc: clang
-
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -59,9 +61,6 @@ jobs:
           cmakeBuildType: ${{ matrix.build-type }}
           buildWithCMakeArgs: --config ${{ matrix.build-type }}
           buildDirectory: 'Build'
-        env:
-          CC: ${{ matrix.cc }}
-          CXX: ${{ matrix.cxx }}
 
       - uses: actions/upload-artifact@v2
         # Only clang artifacts are stored

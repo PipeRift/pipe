@@ -22,7 +22,9 @@ jobs:
             os: windows-latest
             cxx: clang-cl
             cc: clang-cl
-
+    env:
+      CC: ${{ matrix.cc }}
+      CXX: ${{ matrix.cxx }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -65,9 +67,6 @@ jobs:
           cmakeAppendedArgs: -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
           buildWithCMakeArgs: --config ${{ matrix.build-type }}
           buildDirectory: 'Build'
-        env:
-          CC: ${{ matrix.cc }}
-          CXX: ${{ matrix.cxx }}
 
       - uses: actions/upload-artifact@v2
         # Only clang artifacts are stored
