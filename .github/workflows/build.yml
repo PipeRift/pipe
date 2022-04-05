@@ -1,0 +1,79 @@
+name: windows-cicd
+
+on: [push, pull_request]
+
+jobs:
+  Build:
+    name: ${{ matrix.os-name }} (${{ matrix.compiler }}, ${{ matrix.config }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
+        config: [Release, Debug]
+        include:
+          - name: windows-msvc
+            os: windows-latest
+            os-name: windows
+            compiler: msvc
+            cxx: cl
+            cc: cl
+          - name: windows-clang
+            os: windows-latest
+            os-name: windows
+            compiler: clang
+            cxx: clang-cl
+            cc: clang-cl
+          - name: linux-clang
+            os: ubuntu-latest
+            os-name: linux
+            compiler: clang
+            cxx: clang++
+            cc: clang
+          - name: linux-gcc
+            os: ubuntu-latest
+            os-name: linux
+            compiler: gcc
+            cxx: g++-10
+            cc: gcc-10
+          - name: macos-clang
+            os: macos-latest
+            os-name: macos
+            compiler: clang
+            cxx: clang++
+            cc: clang
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Init Submodules
+        uses: snickerbockers/submodules-init@v4
+
+      - name: Get CMake
+        uses: lukka/get-cmake@latest
+
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: ${{ matrix.compiler == 'cl' }}
+
+      - name: Cache Build
+        uses: actions/cache@v2
+        with:
+          path: Build
+          key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
+
+      - name: Configure
+        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+
+      - name: Build
+        run: cmake --build Build --config ${{ matrix.config }}
+
+      - uses: actions/upload-artifact@v2
+        # Only clang artifacts are stored
+        if: ${{ matrix.compiler == 'clang' && matrix.config == 'Release' }}
+        with:
+          name: ${{ matrix.os-name }}-${{ matrix.compiler }}-build
+          path: Build/Bin
+
+      - name: Run Tests
+        working-directory: ./Build
+        run: ctest --output-on-failure -j2 -C ${{ matrix.config }}
