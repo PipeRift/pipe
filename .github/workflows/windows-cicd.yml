@@ -54,6 +54,12 @@ jobs:
           path: Build
           key: windows-${{ matrix.compiler }}-${{ matrix.build-type }}-build-${{ secrets.VCACHE}}
 
+      - name: Set compiler
+        shell: bash
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+
       - name: Configure and Build
         uses: lukka/run-cmake@v3.3
         id: runcmake
