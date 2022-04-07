@@ -656,14 +656,10 @@ namespace Rift
 			return vector.back();
 		}
 
-		Type* Data() requires(!IsSame<Type, bool>)    // std::vector of bool can't access Data()
-		{
-			return vector.data();
-		}
-		const Type* Data() const
+		Type* Data() const
 		    requires(!IsSame<Type, bool>)    // std::vector of bool can't access Data()
 		{
-			return vector.data();
+			return const_cast<Type*>(vector.data());
 		}
 
 		/** OPERATORS */
