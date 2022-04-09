@@ -14,7 +14,6 @@
 #include "Reflection/ReflectionTraits.h"
 
 
-
 /**
  * There are 2 types of reflected data structures:
  *

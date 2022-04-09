@@ -9,7 +9,6 @@
 #include <Strings/String.h>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace Rift;

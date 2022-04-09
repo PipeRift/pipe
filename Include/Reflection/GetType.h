@@ -9,7 +9,6 @@
 #include "Reflection/ReflectionTraits.h"
 
 
-
 namespace Rift
 {
 	namespace Refl

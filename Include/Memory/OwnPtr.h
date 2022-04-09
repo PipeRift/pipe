@@ -14,7 +14,6 @@
 #include <memory>
 
 
-
 namespace Rift
 {
 	namespace Internal

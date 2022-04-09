@@ -7,7 +7,6 @@
 #include "Types/Class.h"
 
 
-
 namespace Rift
 {
 	Refl::ClassType* BaseClass::GetType() const

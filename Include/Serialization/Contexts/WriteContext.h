@@ -12,7 +12,6 @@
 #include "TypeTraits.h"
 
 
-
 namespace Rift::Serl
 {
 	struct CORE_API WriteContext

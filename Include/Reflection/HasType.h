@@ -8,7 +8,6 @@
 #include "Reflection/ReflectionTraits.h"
 
 
-
 namespace Rift
 {
 	template<typename T>

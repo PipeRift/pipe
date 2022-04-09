@@ -14,7 +14,6 @@
 #include "Strings/String.h"
 
 
-
 namespace Rift::Refl
 {
 	/** Smallest reflection type that contains all basic class or struct data */
