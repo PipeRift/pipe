@@ -17,33 +17,27 @@ namespace Rift::Refl
 	 */
 	class Property
 	{
-		friend class ReflectionRegistry;
+		template<typename T, typename Parent, TypeFlags flags, typename TType>
+		friend struct TDataTypeBuilder;
 
 	public:
 		// Returns a pointer to the variable from an owner instance pointer
-		using Access = void*(void*);
+		using AccessFunc = void*(void*);
 
 	protected:
 		DataType* owner = nullptr;
 		Type* type      = nullptr;
 		Name name;
 
-		Access* access  = nullptr;
-		PropFlags flags = Prop_NoFlag;
+		AccessFunc* access = nullptr;
+		PropFlags flags    = Prop_NoFlag;
 		String displayName;
 
 
 	public:
-		Property()                = delete;
+		CORE_API Property()       = default;
 		Property(Property&&)      = delete;
 		Property(const Property&) = delete;
-
-	protected:
-		CORE_API Property(DataType* owner, Type* type, Name name, Access* access, PropFlags flags)
-		    : owner(owner), type(type), name(name), access(access), flags(flags)
-		{
-			displayName = Strings::ToSentenceCase(name.ToString());
-		}
 
 	public:
 		CORE_API virtual ~Property() = default;

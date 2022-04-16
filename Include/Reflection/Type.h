@@ -29,6 +29,7 @@ namespace Rift::Refl
 	protected:
 		TypeId id;
 		TypeCategory category = TypeCategory::None;
+		sizet size            = 0;
 
 #pragma warning(push)
 #pragma warning(disable:4251)

@@ -25,7 +25,10 @@ namespace Rift
 		Prop_NoFlag        = 0,
 		Prop_NotSerialized = 1 << 0,
 		Prop_View          = 1 << 1,
-		Prop_Edit          = 1 << 2 | Prop_View
+		Prop_Edit          = 1 << 2 | Prop_View,
+
+		// Internal use only
+		Prop_Array = 1 << 3    // Assigned automatically when a property is an array
 	};
 
 

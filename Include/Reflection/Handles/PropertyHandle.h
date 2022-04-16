@@ -3,6 +3,7 @@
 
 #include "CoreTypes.h"
 #include "Memory/OwnPtr.h"
+#include "Reflection/ArrayProperty.h"
 #include "Reflection/Property.h"
 #include "Strings/String.h"
 #include "Types/BaseClass.h"
@@ -36,6 +37,16 @@ namespace Rift::Refl
 		{
 			return property;
 		}
+
+		const ArrayProperty* GetArrayProperty() const
+		{
+			if (property.HasFlag(Prop_Array))
+			{
+				return static_cast<const ArrayProperty*>(&property);
+			}
+			return nullptr;
+		}
+
 		StringView GetDisplayName() const
 		{
 			return property.GetDisplayName();

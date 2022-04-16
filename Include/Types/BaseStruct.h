@@ -3,6 +3,8 @@
 
 #include "PCH.h"
 
+#include "Serialization/ContextsFwd.h"
+
 
 namespace Rift
 {
@@ -13,6 +15,7 @@ namespace Rift
 
 	struct CORE_API BaseStruct
 	{
+		void SerializeReflection(Rift::Serl::CommonContext& ct) {}
 		// Refl::StructType* GetType() const;
 	};
 }    // namespace Rift

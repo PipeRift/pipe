@@ -4,6 +4,7 @@
 #include "PCH.h"
 
 #include "BaseStruct.h"
+#include "Serialization/ContextsFwd.h"
 #include "TypeTraits.h"
 
 
@@ -34,6 +35,8 @@ namespace Rift
 
 		Refl::ClassType* GetType() const;
 		TPtr<Class> Self() const;
+
+		void SerializeReflection(Rift::Serl::CommonContext& ct) {}
 
 	protected:
 		virtual void BeforeDestroy() {}

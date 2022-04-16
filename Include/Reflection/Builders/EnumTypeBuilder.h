@@ -50,6 +50,7 @@ namespace Rift::Refl
 		{
 			EnumType& newType = ReflectionRegistry::Get().AddType<EnumType>(GetId());
 
+			newType.size = sizeof(T);
 			newType.id   = id;
 			newType.name = name;
 

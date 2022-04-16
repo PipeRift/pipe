@@ -34,6 +34,7 @@ namespace Rift
 	class CORE_API Class : public BaseClass
 	{
 	public:
+		using Super       = BaseClass;
 		using BuilderType = Rift::Refl::TClassTypeBuilder<Class, void, Type_NoFlag>;
 
 
@@ -41,16 +42,16 @@ namespace Rift
 		{
 			return Rift::GetType<Class>();
 		}
+		static constexpr TypeFlags GetStaticFlags()
+		{
+			return Type_NoFlag;
+		}
 		virtual Rift::Refl::ClassType* GetType() const
 		{
 			return Rift::GetType<Class>();
 		}
-		virtual void SerializeReflection(Rift::Serl::CommonContext& ct)
-		{
-			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});
-		}
 
-		CLASS_BODY({})
+		REFLECTION_BODY({})
 
 	public:
 		template<typename T>

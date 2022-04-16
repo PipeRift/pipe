@@ -12,17 +12,18 @@ namespace Rift
 	struct Struct : public BaseStruct
 	{
 	public:
+		using Super       = BaseStruct;
 		using BuilderType = Rift::Refl::TStructTypeBuilder<Struct, void, Type_NoFlag>;
 
 		static Rift::Refl::StructType* GetStaticType()
 		{
 			return Rift::GetType<Struct>();
 		}
-		void SerializeReflection(Rift::Serl::CommonContext& ct)
+		static constexpr TypeFlags GetStaticFlags()
 		{
-			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});
+			return Type_NoFlag;
 		}
-		STRUCT_BODY({})
+		REFLECTION_BODY({})
 	};
 
 

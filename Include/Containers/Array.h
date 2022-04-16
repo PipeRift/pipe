@@ -20,11 +20,11 @@
 namespace Rift
 {
 	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>
-	class TArray
+	struct TArray
 	{
 	public:
 		template<typename OtherType, typename OtherAllocator>
-		friend class TArray;
+		friend struct TArray;
 
 		using ItemType   = Type;
 		using VectorType = std::vector<Type, STLAllocator<Type, Allocator>>;

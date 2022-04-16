@@ -48,6 +48,7 @@ namespace Rift::Refl
 		{
 			NativeType& newType = ReflectionRegistry::Get().AddType<NativeType>(GetId());
 
+			newType.size = sizeof(T);
 			newType.id   = id;
 			newType.name = name;
 			return &newType;
