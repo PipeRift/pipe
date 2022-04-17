@@ -29,15 +29,15 @@ namespace Rift::Refl
 		TDataTypeBuilder() : TypeBuilder(GetTypeId<T>(), GetTypeName<T>(false)) {}
 
 		template<typename U>
-		void AddProperty(Name name, Property::AccessFunc* access, PropFlags flags)
+		void AddProperty(Name name, Property::AccessFunc* access, PropFlags propFlags)
 		{
 			auto& registry = ReflectionRegistry::Get();
 			Type* type;
 			Property* property;
 			if constexpr (IsArray<U>())
 			{
-				flags           = flags | Prop_Array;
-				type            = TTypeInstance<U::ItemType>::InitType();
+				propFlags       = propFlags | Prop_Array;
+				type            = TTypeInstance<typename U::ItemType>::InitType();
 				auto* arrayProp = registry.AddProperty<ArrayProperty>();
 
 				arrayProp->getData = [](void* data) {
@@ -51,7 +51,7 @@ namespace Rift::Refl
 				};
 				arrayProp->addItem = [](void* data, void* item) {
 					if (item)
-						static_cast<U*>(data)->Add(*static_cast<U::ItemType*>(item));
+						static_cast<U*>(data)->Add(*static_cast<typename U::ItemType*>(item));
 					else
 						static_cast<U*>(data)->Add({});
 				};
@@ -73,7 +73,7 @@ namespace Rift::Refl
 			property->type        = type;
 			property->name        = name;
 			property->access      = access;
-			property->flags       = flags;
+			property->flags       = propFlags;
 			property->displayName = Strings::ToSentenceCase(name.ToString());
 			GetType()->properties.Add(property);
 		}
