@@ -50,7 +50,10 @@ namespace Rift::Refl
 					return (void*)(static_cast<U*>(data)->Data() + index);
 				};
 				arrayProp->addItem = [](void* data, void* item) {
-					static_cast<U*>(data)->Add(*static_cast<U::ItemType*>(item));
+					if (item)
+						static_cast<U*>(data)->Add(*static_cast<U::ItemType*>(item));
+					else
+						static_cast<U*>(data)->Add({});
 				};
 				arrayProp->removeItem = [](void* data, i32 index) {
 					static_cast<U*>(data)->RemoveAt(index);
