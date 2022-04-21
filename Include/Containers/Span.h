@@ -24,6 +24,7 @@ namespace Rift
 		constexpr TSpan() {}
 		constexpr TSpan(T& value) : data{&value}, size{1} {}
 		constexpr TSpan(T* first, T* last) : data{first}, size{i32(std::distance(first, last))} {}
+		constexpr TSpan(T* data, i32 size) : data{data}, size{size} {}
 
 		template<sizet N>
 		constexpr TSpan(T (&value)[N]) : data{value}, size{N}

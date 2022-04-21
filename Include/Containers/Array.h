@@ -528,8 +528,6 @@ namespace Rift
 			const i32 lastSize = Size();
 			Swap(index, lastSize - 1);
 			vector.pop_back();
-
-
 			return lastSize - Size() > 0;
 		}
 
