@@ -49,6 +49,10 @@ namespace Rift
 		{
 			Assign(data, sizeNum);
 		}
+		TArray(const Type* first, const Type* last)
+		{
+			Assign(first, std::distance(first, last));
+		}
 
 		TArray(TArray<Type>&& other)
 		{
