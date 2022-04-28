@@ -225,83 +225,111 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(u8& val)
 	{
-		switch (yyjson_get_subtype(current))
+		if (!current) [[unlikely]]
+		{
+			val = 0u;    // Default to 0
+			return;
+		}
+		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_UINT: val = u8(unsafe_yyjson_get_uint(current)); break;
 			case YYJSON_SUBTYPE_SINT: val = u8(unsafe_yyjson_get_sint(current)); break;
 			case YYJSON_SUBTYPE_REAL: val = u8(unsafe_yyjson_get_real(current)); break;
-			default: val = 0;
 		}
 	}
 
 	void JsonFormatReader::Read(i32& val)
 	{
-		switch (yyjson_get_subtype(current))
+		if (!current) [[unlikely]]
+		{
+			val = 0;    // Default to 0
+			return;
+		}
+		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_SINT: val = i32(unsafe_yyjson_get_sint(current)); break;
 			case YYJSON_SUBTYPE_UINT: val = i32(unsafe_yyjson_get_uint(current)); break;
 			case YYJSON_SUBTYPE_REAL: val = i32(unsafe_yyjson_get_real(current)); break;
-			default: val = 0;
 		}
 	}
 
 	void JsonFormatReader::Read(u32& val)
 	{
-		switch (yyjson_get_subtype(current))
+		if (!current) [[unlikely]]
+		{
+			val = 0u;    // Default to 0
+			return;
+		}
+		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_UINT: val = u32(unsafe_yyjson_get_uint(current)); break;
-			case YYJSON_SUBTYPE_SINT: {
+			case YYJSON_SUBTYPE_SINT:
 				val = u32(Math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
 				break;
-			}
+
 			case YYJSON_SUBTYPE_REAL: val = u32(unsafe_yyjson_get_real(current)); break;
-			default: val = 0;
 		}
 	}
 
 	void JsonFormatReader::Read(i64& val)
 	{
-		switch (yyjson_get_subtype(current))
+		if (!current) [[unlikely]]
+		{
+			val = 0;    // Default to 0
+			return;
+		}
+		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_SINT: val = unsafe_yyjson_get_sint(current); break;
 			case YYJSON_SUBTYPE_UINT: val = i64(unsafe_yyjson_get_uint(current)); break;
 			case YYJSON_SUBTYPE_REAL: val = i64(unsafe_yyjson_get_real(current)); break;
-			default: val = 0;
 		}
 	}
 
 	void JsonFormatReader::Read(u64& val)
 	{
-		switch (yyjson_get_subtype(current))
+		if (!current) [[unlikely]]
+		{
+			val = 0u;    // Default to 0
+			return;
+		}
+		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_UINT: val = unsafe_yyjson_get_uint(current); break;
 			case YYJSON_SUBTYPE_SINT:
 				val = u64(Math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
 				break;
 			case YYJSON_SUBTYPE_REAL: val = u64(unsafe_yyjson_get_real(current)); break;
-			default: val = 0;
 		}
 	}
 
 	void JsonFormatReader::Read(float& val)
 	{
-		switch (yyjson_get_subtype(current))
+		if (!current) [[unlikely]]
+		{
+			val = 0.f;    // Default to 0
+			return;
+		}
+		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_REAL: val = float(unsafe_yyjson_get_real(current)); break;
 			case YYJSON_SUBTYPE_SINT: val = float(unsafe_yyjson_get_sint(current)); break;
 			case YYJSON_SUBTYPE_UINT: val = float(unsafe_yyjson_get_uint(current)); break;
-			default: val = 0.f;
 		}
 	}
 
 	void JsonFormatReader::Read(double& val)
 	{
-		switch (yyjson_get_subtype(current))
+		if (!current) [[unlikely]]
+		{
+			val = 0;    // Default to 0
+			return;
+		}
+		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_REAL: val = unsafe_yyjson_get_real(current); break;
 			case YYJSON_SUBTYPE_SINT: val = double(unsafe_yyjson_get_sint(current)); break;
 			case YYJSON_SUBTYPE_UINT: val = double(unsafe_yyjson_get_uint(current)); break;
-			default: val = 0.f;
 		}
 	}
 
