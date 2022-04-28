@@ -225,7 +225,7 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(u8& val)
 	{
-		if (!current) [[unlikely]]
+		if (!yyjson_is_num(current)) [[unlikely]]
 		{
 			val = 0u;    // Default to 0
 			return;
@@ -240,7 +240,7 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(i32& val)
 	{
-		if (!current) [[unlikely]]
+		if (!yyjson_is_num(current)) [[unlikely]]
 		{
 			val = 0;    // Default to 0
 			return;
@@ -255,7 +255,7 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(u32& val)
 	{
-		if (!current) [[unlikely]]
+		if (!yyjson_is_num(current)) [[unlikely]]
 		{
 			val = 0u;    // Default to 0
 			return;
@@ -273,7 +273,7 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(i64& val)
 	{
-		if (!current) [[unlikely]]
+		if (!yyjson_is_num(current)) [[unlikely]]
 		{
 			val = 0;    // Default to 0
 			return;
@@ -288,7 +288,7 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(u64& val)
 	{
-		if (!current) [[unlikely]]
+		if (!yyjson_is_num(current)) [[unlikely]]
 		{
 			val = 0u;    // Default to 0
 			return;
@@ -305,7 +305,7 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(float& val)
 	{
-		if (!current) [[unlikely]]
+		if (!yyjson_is_num(current)) [[unlikely]]
 		{
 			val = 0.f;    // Default to 0
 			return;
@@ -320,7 +320,7 @@ namespace Rift::Serl
 
 	void JsonFormatReader::Read(double& val)
 	{
-		if (!current) [[unlikely]]
+		if (!yyjson_is_num(current)) [[unlikely]]
 		{
 			val = 0;    // Default to 0
 			return;
