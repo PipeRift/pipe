@@ -34,7 +34,7 @@ namespace Rift
 		float r, g, b, a;
 
 	protected:
-		constexpr TColorData() : r(0.f), g(0.f), b(0.f), a(0.f) {}
+		constexpr TColorData() : r(0.f), g(0.f), b(0.f), a(1.f) {}
 		constexpr TColorData(float r, float g, float b, float a) : r(r), g(g), b(b), a(a) {}
 	};
 
@@ -54,7 +54,7 @@ namespace Rift
 #pragma warning(default:4201)
 
 	protected:
-		constexpr TColorData() : r(0), g(0), b(0), a(0){};
+		constexpr TColorData() : r(0), g(0), b(0), a(255){};
 		constexpr TColorData(u8 r, u8 g, u8 b, u8 a) : r(r), g(g), b(b), a(a) {}
 	};
 
@@ -64,7 +64,7 @@ namespace Rift
 		float h, s, v, a;
 
 	protected:
-		constexpr TColorData() : h(0.f), s(0.f), v(0.f), a(0.f) {}
+		constexpr TColorData() : h(0.f), s(0.f), v(0.f), a(1.f) {}
 		constexpr TColorData(float h, float s, float v, float a) : h(h), s(s), v(v), a(a) {}
 	};
 
@@ -108,9 +108,13 @@ namespace Rift
 		    : TColorData<mode>(vector.x, vector.y, vector.z, vector.w)
 		{}
 
-
-		constexpr TColor(const TColor& other) : TColorData<mode>(other.r, other.g, other.b, other.a)
+		constexpr TColor(const TColor& other) requires(mode != ColorMode::HSV)
+		    : TColorData<mode>(other.r, other.g, other.b, other.a)
 		{}
+		constexpr TColor(const TColor& other) requires(mode == ColorMode::HSV)
+		    : TColorData<mode>(other.h, other.s, other.v, other.a)
+		{}
+
 		constexpr TColor& operator=(const TColor& other)
 		{
 			if constexpr (mode == ColorMode::HSV)
@@ -457,13 +461,27 @@ namespace Rift
 			    || this->a != other.a;
 		}
 
+		constexpr auto* Data()
+		{
+			if constexpr (mode == ColorMode::HSV)
+				return &h;
+			else
+				return &r;
+		}
+		constexpr const auto* Data() const
+		{
+			if constexpr (mode == ColorMode::HSV)
+				return &h;
+			else
+				return &r;
+		}
 		constexpr auto& operator[](u32 i)
 		{
-			return (mode == ColorMode::HSV ? &this->h : &this->r)[i];
+			return Data()[i];
 		}
 		constexpr const auto& operator[](u32 i) const
 		{
-			return (mode == ColorMode::HSV ? &this->h : &this->r)[i];
+			return Data()[i];
 		}
 
 		TColor Clamp(float min = 0.f, float max = 1.f) const requires(mode != ColorMode::RGBA)
