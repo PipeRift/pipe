@@ -464,16 +464,16 @@ namespace Rift
 		constexpr auto* Data()
 		{
 			if constexpr (mode == ColorMode::HSV)
-				return &h;
+				return &this->h;
 			else
-				return &r;
+				return &this->r;
 		}
 		constexpr const auto* Data() const
 		{
 			if constexpr (mode == ColorMode::HSV)
-				return &h;
+				return &this->h;
 			else
-				return &r;
+				return &this->r;
 		}
 		constexpr auto& operator[](u32 i)
 		{
