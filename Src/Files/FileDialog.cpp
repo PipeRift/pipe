@@ -12,7 +12,7 @@ namespace Rift::Dialogs
 	std::vector<std::string> ParseFilters(const TArray<FileFilter>& filters)
 	{
 		std::vector<std::string> rawFilters;
-		rawFilters.reserve(filters.Size() * 2);
+		rawFilters.reserve(sizet(filters.Size()) * 2);
 		for (const FileFilter& filter : filters)
 		{
 			rawFilters.emplace_back(filter.first);
