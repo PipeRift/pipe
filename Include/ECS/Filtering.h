@@ -8,16 +8,17 @@
 namespace Rift::ECS
 {
 	/** Remove ids containing a component from 'ids'. Does not guarantee order. */
-	CORE_API void RemoveIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	CORE_API void ExcludeIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids containing a component from 'ids'. Guarantees order. */
-	CORE_API void RemoveIfStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	CORE_API void ExcludeIfStable(
+	    const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids NOT containing a component from 'ids'. Does not guarantee order. */
-	CORE_API void RemoveIfNot(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	CORE_API void ExcludeIfNot(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids NOT containing a component from 'ids'. Guarantees order. */
-	CORE_API void RemoveIfNotStable(
+	CORE_API void ExcludeIfNotStable(
 	    const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 
@@ -77,18 +78,18 @@ namespace Rift::ECS
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
-	 * @see RemoveIfStable(), RemoveIfNot()
+	 * @see ExcludeIfStable(), ExcludeIfNot()
 	 */
 	template<typename C, typename AccessType>
-	void RemoveIf(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	void ExcludeIf(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIf(&access.template AssurePool<const C>(), ids, shouldShrink);
+		ExcludeIf(&access.template AssurePool<const C>(), ids, shouldShrink);
 	}
 	template<typename... C, typename AccessType>
-	void RemoveIf(const AccessType& access, TArray<Id>& ids,
+	void ExcludeIf(const AccessType& access, TArray<Id>& ids,
 	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
 	{
-		(RemoveIf<C>(access, ids, shouldShrink), ...);
+		(ExcludeIf<C>(access, ids, shouldShrink), ...);
 	}
 
 	/**
@@ -97,18 +98,18 @@ namespace Rift::ECS
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
-	 * @see RemoveIf(), RemoveIfNotStable()
+	 * @see ExcludeIf(), ExcludeIfNotStable()
 	 */
 	template<typename C, typename AccessType>
-	void RemoveIfStable(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	void ExcludeIfStable(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIfStable(&access.template AssurePool<const C>(), ids, shouldShrink);
+		ExcludeIfStable(&access.template AssurePool<const C>(), ids, shouldShrink);
 	}
 	template<typename... C, typename AccessType>
-	void RemoveIfStable(const AccessType& access, TArray<Id>& ids,
+	void ExcludeIfStable(const AccessType& access, TArray<Id>& ids,
 	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
 	{
-		(RemoveIfStable<C>(access, ids, shouldShrink), ...);
+		(ExcludeIfStable<C>(access, ids, shouldShrink), ...);
 	}
 
 	/**
@@ -117,19 +118,19 @@ namespace Rift::ECS
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
-	 * @see RemoveIfNotStable(), RemoveIf()
+	 * @see ExcludeIfNotStable(), ExcludeIf()
 	 */
 	template<typename C, typename AccessType>
-	void RemoveIfNot(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	void ExcludeIfNot(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIfNot(&access.template AssurePool<const C>(), ids, shouldShrink);
+		ExcludeIfNot(&access.template AssurePool<const C>(), ids, shouldShrink);
 	}
 
 	template<typename... C, typename AccessType>
-	void RemoveIfNot(const AccessType& access, TArray<Id>& ids,
+	void ExcludeIfNot(const AccessType& access, TArray<Id>& ids,
 	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
 	{
-		(RemoveIfNot<C>(access, ids, shouldShrink), ...);
+		(ExcludeIfNot<C>(access, ids, shouldShrink), ...);
 	}
 
 	/**
@@ -138,19 +139,19 @@ namespace Rift::ECS
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
-	 * @see RemoveIfNot(), RemoveIfStable()
+	 * @see ExcludeIfNot(), ExcludeIfStable()
 	 */
 	template<typename C, typename AccessType>
-	void RemoveIfNotStable(
+	void ExcludeIfNotStable(
 	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		RemoveIfNotStable(&access.template AssurePool<const C>(), ids, shouldShrink);
+		ExcludeIfNotStable(&access.template AssurePool<const C>(), ids, shouldShrink);
 	}
 	template<typename... C, typename AccessType>
-	void RemoveIfNotStable(const AccessType& access, TArray<Id>& ids,
+	void ExcludeIfNotStable(const AccessType& access, TArray<Id>& ids,
 	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
 	{
-		(RemoveIfNotStable<C>(access, ids, shouldShrink), ...);
+		(ExcludeIfNotStable<C>(access, ids, shouldShrink), ...);
 	}
 
 

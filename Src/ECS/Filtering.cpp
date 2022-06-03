@@ -5,7 +5,7 @@
 
 namespace Rift::ECS
 {
-	void RemoveIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ZoneScoped;
 		for (i32 i = ids.Size() - 1; i >= 0; --i)
@@ -21,17 +21,17 @@ namespace Rift::ECS
 		}
 	}
 
-	void RemoveIfStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIfStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ZoneScoped;
-		ids.RemoveIf(
+		ids.ExcludeIf(
 		    [pool](Id id) {
 			return pool->Has(id);
 		    },
 		    shouldShrink);
 	}
 
-	void RemoveIfNot(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIfNot(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ZoneScoped;
 		for (i32 i = ids.Size() - 1; i >= 0; --i)
@@ -47,10 +47,10 @@ namespace Rift::ECS
 		}
 	}
 
-	void RemoveIfNotStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIfNotStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ZoneScoped;
-		ids.RemoveIf(
+		ids.ExcludeIf(
 		    [pool](Id id) {
 			return !pool->Has(id);
 		    },
@@ -77,7 +77,7 @@ namespace Rift::ECS
 		GetIf(pools.First(), source, results);
 		for (i32 i = 1; i < pools.Size(); ++i)
 		{
-			RemoveIfNot(pools[i], results, false);
+			ExcludeIfNot(pools[i], results, false);
 		}
 	}
 
@@ -127,7 +127,7 @@ namespace Rift::ECS
 	{
 		ZoneScoped;
 		results.ReserveMore(Math::Min(i32(pool->Size()), source.Size()));
-		source.RemoveIf(
+		source.ExcludeIf(
 		    [pool, &results](Id id) {
 			if (pool->Has(id))
 			{
@@ -164,7 +164,7 @@ namespace Rift::ECS
 	{
 		ZoneScoped;
 		results.ReserveMore(Math::Min(i32(pool->Size()), source.Size()));
-		source.RemoveIf(
+		source.ExcludeIf(
 		    [pool, &results](Id id) {
 			if (!pool->Has(id))
 			{
@@ -207,7 +207,7 @@ namespace Rift::ECS
 
 		for (const Pool* pool : pools)
 		{
-			RemoveIfNot(pool, ids, false);
+			ExcludeIfNot(pool, ids, false);
 		}
 	}
 

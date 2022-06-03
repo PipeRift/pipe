@@ -128,7 +128,7 @@ namespace Rift
 				return false;
 			}
 
-			return rawListeners.RemoveIfSwap([handle](const auto& listener) {
+			return rawListeners.ExcludeIfSwap([handle](const auto& listener) {
 				return listener.id == handle.Id();
 			}) > 0;
 		}
@@ -138,7 +138,7 @@ namespace Rift
 		{
 			if (instance) [[likely]]
 			{
-				return ptrListeners.RemoveIfSwap([instance](const auto& listener) {
+				return ptrListeners.ExcludeIfSwap([instance](const auto& listener) {
 					return !listener.instance || listener.instance == instance;
 				}) > 0;
 			}
@@ -150,7 +150,7 @@ namespace Rift
 		{
 			if (instance) [[likely]]
 			{
-				return rawListeners.RemoveIfSwap([instance](const auto& listener) {
+				return rawListeners.ExcludeIfSwap([instance](const auto& listener) {
 					return listener.instance == instance;
 				}) > 0;
 			}

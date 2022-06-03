@@ -63,10 +63,10 @@ namespace Rift::Files
 		return true;
 	}
 
-	bool Delete(const Path& path, bool bRemoveIfNotEmpty, bool bLogErrors)
+	bool Delete(const Path& path, bool bExcludeIfNotEmpty, bool bLogErrors)
 	{
 		std::error_code err;
-		if (bRemoveIfNotEmpty)
+		if (bExcludeIfNotEmpty)
 		{
 			fs::remove_all(path, err);
 		}

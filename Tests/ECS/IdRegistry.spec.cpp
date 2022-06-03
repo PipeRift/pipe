@@ -4,7 +4,6 @@
 #include <ECS/IdRegistry.h>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace Rift;

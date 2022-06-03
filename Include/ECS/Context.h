@@ -9,7 +9,6 @@
 #include <Strings/Name.h>
 
 
-
 namespace Rift::ECS
 {
 	struct CORE_API SortLessStatics

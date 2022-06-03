@@ -19,7 +19,6 @@ namespace Rift
 		Refl::TypeId typeId = Refl::TypeId::None();
 		AccessMode mode     = AccessMode::Read;
 
-
 		constexpr TypeAccess() = default;
 		constexpr TypeAccess(Refl::TypeId typeId, AccessMode mode) : typeId{typeId}, mode{mode} {}
 	};

@@ -22,7 +22,7 @@ namespace Rift::Files
 	CORE_API bool SaveStringFile(const Path& path, StringView data);
 
 	CORE_API void CreateFolder(const Path& path, bool bRecursive = false);
-	CORE_API bool Delete(const Path& path, bool bRemoveIfNotEmpty = true, bool bLogErrors = true);
+	CORE_API bool Delete(const Path& path, bool bExcludeIfNotEmpty = true, bool bLogErrors = true);
 
 	CORE_API Iterator CreateIterator(const Path& path);
 	CORE_API RecursiveIterator CreateRecursiveIterator(const Path& path);

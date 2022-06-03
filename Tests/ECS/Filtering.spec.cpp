@@ -96,12 +96,12 @@ go_bandit([]() {
 			});
 		});
 
-		describe("RemoveIf", [&]() {
+		describe("ExcludeIf", [&]() {
 			it("Removes ids containing component", [&]() {
 				TAccess<Type, TypeTwo, TypeThree> access{ctx};
 				TArray<ECS::Id> typeIds = ECS::ListAny<Type>(access);
 
-				ECS::RemoveIf<TypeThree>(access, typeIds);
+				ECS::ExcludeIf<TypeThree>(access, typeIds);
 				AssertThat(typeIds.Contains(id1), Is().True());
 				AssertThat(typeIds.Contains(id2), Is().False());
 				AssertThat(typeIds.Contains(id3), Is().False());
@@ -111,7 +111,7 @@ go_bandit([]() {
 				TAccess<Type, TypeTwo, TypeThree> access{ctx};
 				TArray<ECS::Id> typeIds = ECS::ListAny<Type>(access);
 
-				ECS::RemoveIfNot<TypeThree>(access, typeIds);
+				ECS::ExcludeIfNot<TypeThree>(access, typeIds);
 				AssertThat(typeIds.Contains(id1), Is().False());
 				AssertThat(typeIds.Contains(id2), Is().True());
 				AssertThat(typeIds.Contains(id3), Is().False());
@@ -121,7 +121,7 @@ go_bandit([]() {
 				TAccess<Type, TypeTwo, TypeThree> access{ctx};
 				TArray<ECS::Id> typeIds = ECS::ListAny<Type, TypeTwo, TypeThree>(access);
 
-				ECS::RemoveIf<TypeTwo, TypeThree>(access, typeIds);
+				ECS::ExcludeIf<TypeTwo, TypeThree>(access, typeIds);
 				AssertThat(typeIds.Contains(id1), Is().True());
 				AssertThat(typeIds.Contains(id2), Is().False());
 				AssertThat(typeIds.Contains(id3), Is().False());
@@ -186,11 +186,11 @@ go_bandit([]() {
 			AssertThat(ids2.Contains(id1), Is().True());
 
 			TArray<ECS::Id> ids3 = ECS::ListAny<Type>(ctx);
-			ECS::RemoveIf<TypeThree>(ctx, ids3);
+			ECS::ExcludeIf<TypeThree>(ctx, ids3);
 			AssertThat(ids3.Contains(id1), Is().True());
 
 			TArray<ECS::Id> ids4 = ECS::ListAny<Type>(ctx);
-			ECS::RemoveIfNot<TypeThree>(ctx, ids4);
+			ECS::ExcludeIfNot<TypeThree>(ctx, ids4);
 			AssertThat(ids4.Contains(id1), Is().False());
 		});
 	});

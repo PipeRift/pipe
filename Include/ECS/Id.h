@@ -79,14 +79,11 @@ namespace Rift::ECS
 		constexpr auto mask = IdTraits<Id>::versionMask << IdTraits<Id>::indexShift;
 		return IdTraits<Id>::Version((IdTraits<Id>::Entity(id) & mask) >> IdTraits<Id>::indexShift);
 	}
-}    // namespace Rift::ECS
 
-REFLECT_NATIVE_TYPE(Rift::ECS::Id);
-
-namespace Rift
-{
 	constexpr bool IsNone(ECS::Id id)
 	{
 		return ECS::GetVersion(id) == ECS::GetVersion(ECS::NoId);
 	}
-};    // namespace Rift
+}    // namespace Rift::ECS
+
+REFLECT_NATIVE_TYPE(Rift::ECS::Id);
