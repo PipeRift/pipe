@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "Misc/Hash.h"
-#include "Platform/Platform.h"
+#include "Core/Hash.h"
+#include "Core/Platform.h"
 #include "Templates/Optional.h"
 
 #include <string_view>

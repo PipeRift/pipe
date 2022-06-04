@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 #include "Core/Array.h"
-#include "Misc/Checks.h"
+#include "Core/Checks.h"
 
 
 namespace Pipe::Core

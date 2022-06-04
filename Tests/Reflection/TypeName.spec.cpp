@@ -2,12 +2,12 @@
 
 #include <bandit/bandit.h>
 #include <Core/Array.h>
+#include <Core/Guid.h>
 #include <Core/Map.h>
 #include <Core/Name.h>
 #include <Core/String.h>
 #include <Reflection/PredefinedTypes.h>
 #include <Reflection/TypeName.h>
-
 
 
 using namespace snowhouse;
@@ -65,9 +65,9 @@ go_bandit([]() {
 
 		describe("Containers", []() {
 			it("Can get TArray names", [&]() {
-				AssertThat(GetTypeName<TArray<Name>>(), Equals("TArray"));
-				AssertThat(GetFullTypeName<TArray<Name>>(), Equals("TArray<Pipe::Name>"));
-				AssertThat(GetFullTypeName<TArray<Name>>(false), Equals("TArray<Name>"));
+				AssertThat(GetTypeName<TArray<Guid>>(), Equals("TArray"));
+				AssertThat(GetFullTypeName<TArray<Guid>>(), Equals("TArray<Pipe::Core::Guid>"));
+				AssertThat(GetFullTypeName<TArray<Guid>>(false), Equals("TArray<Guid>"));
 			});
 
 			it("Can get TMap names", [&]() {
@@ -78,10 +78,10 @@ go_bandit([]() {
 				AssertThat(fullName, Equals("TMap<u8, bool>"));
 
 
-				auto namespaceName = GetFullTypeName<TMap<u8, Name>>();
-				AssertThat(namespaceName, Equals("TMap<u8, Pipe::Name>"));
-				auto noNamespaceName = GetFullTypeName<TMap<u8, Name>>(false);
-				AssertThat(noNamespaceName, Equals("TMap<u8, Name>"));
+				auto namespaceName = GetFullTypeName<TMap<u8, Guid>>();
+				AssertThat(namespaceName, Equals("TMap<u8, Pipe::Core::Guid>"));
+				auto noNamespaceName = GetFullTypeName<TMap<u8, Guid>>(false);
+				AssertThat(noNamespaceName, Equals("TMap<u8, Guid>"));
 			});
 		});
 	});

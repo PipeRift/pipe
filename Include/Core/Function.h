@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Misc/Checks.h"
+#include "Core/Checks.h"
 
 #include <type_traits>
 

@@ -3,8 +3,8 @@
 
 #include "PCH.h"
 
-#include "Misc/Hash.h"
-#include "Misc/Utility.h"
+#include "Core/Hash.h"
+#include "Core/Utility.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/ContextsFwd.h"
 #include "String.h"
@@ -201,7 +201,9 @@ namespace Pipe::Core
 namespace Pipe
 {
 	using namespace Pipe::Core;
-}
+
+	OVERRIDE_TYPE_NAME(Name)
+}    // namespace Pipe
 
 
 template<>

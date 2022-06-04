@@ -3,9 +3,9 @@
 #include "Math/Bezier.h"
 
 
-namespace Pipe::Bezier
+namespace Pipe::Math
 {
-	v2 EvaluateCubic(v2 p0, v2 p1, v2 p2, v2 p3, float t)
+	v2 EvaluateCubicBezier(v2 p0, v2 p1, v2 p2, v2 p3, float t)
 	{
 		// B(t) = (1-t)**3 p0 + 3(1 - t)**2 t p1 + 3(1-t)t**2 p2 + t**3 p3
 		const float u  = 1.0f - t;
@@ -16,4 +16,4 @@ namespace Pipe::Bezier
 		return {b0 * p0.x + b1 * p1.x + b2 * p2.x + b3 * p3.x,
 		    b0 * p0.y + b1 * p1.y + b2 * p2.y + b3 * p3.y};
 	}
-}    // namespace Pipe::Bezier
+}    // namespace Pipe::Math

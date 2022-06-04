@@ -2,10 +2,11 @@
 
 #include "Core/String.h"
 
+#include "Core/Char.h"
 #include "Core/Regex.h"
 #include "Math/Math.h"
-#include "Misc/Char.h"
 #include "Serialization/Contexts.h"
+
 
 namespace Pipe
 {

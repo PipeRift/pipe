@@ -14,8 +14,7 @@
 #include "Vector.h"
 
 
-
-namespace Pipe
+namespace Pipe::Math
 {
 	/**
 	 * Different color space representations supported
@@ -754,10 +753,6 @@ namespace Pipe
 	using sRGBColor   = TColor<ColorMode::sRGB>;
 	using HSVColor    = TColor<ColorMode::HSV>;
 	using Color       = TColor<ColorMode::RGBA>;
-	REFLECT_NATIVE_TYPE(LinearColor)
-	REFLECT_NATIVE_TYPE(sRGBColor)
-	REFLECT_NATIVE_TYPE(HSVColor)
-	REFLECT_NATIVE_TYPE(Color)
 
 
 	/** Computes a brightness and a fixed point color from a floating point color. */
@@ -889,4 +884,9 @@ namespace Pipe
 			return color.DWColor();
 		}
 	};
-}    // namespace Pipe
+}    // namespace Pipe::Math
+
+REFLECT_NATIVE_TYPE(Pipe::LinearColor)
+REFLECT_NATIVE_TYPE(Pipe::sRGBColor)
+REFLECT_NATIVE_TYPE(Pipe::HSVColor)
+REFLECT_NATIVE_TYPE(Pipe::Color)

@@ -3,8 +3,8 @@
 
 #include "Files/Paths.h"
 
-#include "Misc/Char.h"
-#include "Platform/PlatformProcess.h"
+#include "Core/Char.h"
+#include "Core/PlatformProcess.h"
 
 
 namespace Pipe::Files

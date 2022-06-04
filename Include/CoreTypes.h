@@ -2,9 +2,10 @@
 #pragma once
 
 #include "Core/Name.h"
+#include "Core/Platform.h"
 #include "Core/String.h"
-#include "Platform/Platform.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
+
 
 
 namespace Pipe

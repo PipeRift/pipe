@@ -3,7 +3,7 @@
 
 #include "PCH.h"
 
-#include "Misc/Hash.h"
+#include "Core/Hash.h"
 
 #include <fmt/format.h>
 

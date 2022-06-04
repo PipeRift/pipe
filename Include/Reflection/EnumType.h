@@ -3,11 +3,12 @@
 
 #include "PCH.h"
 
+#include "Core/EnumFlags.h"
 #include "Core/Name.h"
-#include "Misc/EnumFlags.h"
 #include "Reflection/Type.h"
 
 #include <magic_enum.hpp>
+
 
 
 namespace Pipe::Refl

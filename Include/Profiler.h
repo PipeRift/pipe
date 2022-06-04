@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Platform/Platform.h"
+#include "Core/Platform.h"
 
 #ifndef RIFT_ENABLE_PROFILER
 #	define RIFT_ENABLE_PROFILER 0

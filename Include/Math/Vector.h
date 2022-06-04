@@ -11,7 +11,7 @@
 #include "TypeTraits.h"
 
 
-namespace Pipe
+namespace Pipe::Math
 {
 	template<u32 size, Number T>
 	struct Vec
@@ -588,12 +588,6 @@ namespace Pipe
 	using v4_u32 = Vec<4, u32>;
 
 
-	/** Reflected vectors */
-	REFLECT_NATIVE_TYPE(v2);
-	REFLECT_NATIVE_TYPE(v2_u32);
-	REFLECT_NATIVE_TYPE(v3);
-
-
 	template<u32 size, Number T>
 	struct TAABB
 	{
@@ -783,4 +777,13 @@ namespace Pipe
 		CORE_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
 		CORE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
 	}    // namespace Vectors
-}    // namespace Pipe
+}    // namespace Pipe::Math
+
+namespace Pipe
+{
+	using namespace Pipe::Math;
+}
+
+REFLECT_NATIVE_TYPE(Pipe::v2);
+REFLECT_NATIVE_TYPE(Pipe::v2_u32);
+REFLECT_NATIVE_TYPE(Pipe::v3);

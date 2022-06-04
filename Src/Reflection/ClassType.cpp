@@ -2,7 +2,7 @@
 
 #include "Reflection/ClassType.h"
 
-#include "Misc/Checks.h"
+#include "Core/Checks.h"
 
 
 namespace Pipe::Refl

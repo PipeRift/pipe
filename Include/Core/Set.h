@@ -4,11 +4,11 @@
 
 #include "PCH.h"
 
+#include "Core/Hash.h"
+#include "Core/Platform.h"
+#include "Core/Utility.h"
 #include "Math/Math.h"
 #include "Memory/STLAllocator.h"
-#include "Misc/Hash.h"
-#include "Misc/Utility.h"
-#include "Platform/Platform.h"
 #include "Templates/Tuples.h"
 
 #include <tsl/sparse_set.h>

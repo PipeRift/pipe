@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Platform/Platform.h"
+#include "Core/Platform.h"
 
 #include <regex>
 

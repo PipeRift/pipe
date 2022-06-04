@@ -5,16 +5,17 @@
 #include "PCH.h"
 
 #include "Core/Function.h"
-#include "Math/Search.h"
-#include "Math/Sorting.h"
+#include "Core/Platform.h"
+#include "Core/Search.h"
+#include "Core/Sorting.h"
 #include "Memory/STLAllocator.h"
-#include "Platform/Platform.h"
 #include "Templates/Less.h"
 #include "Templates/Tuples.h"
 #include "TypeTraits.h"
 
 #include <cassert>
 #include <vector>
+
 
 
 namespace Pipe::Core
@@ -248,12 +249,12 @@ namespace Pipe::Core
 		template<typename Predicate>
 		void Sort(Predicate predicate)
 		{
-			Algorithms::Sort(Data(), Size(), predicate);
+			Pipe::Sort(Data(), Size(), predicate);
 		}
 
 		void Sort()
 		{
-			Algorithms::Sort(Data(), Size(), TLess<Type>());
+			Pipe::Sort(Data(), Size(), TLess<Type>());
 		}
 
 		Iterator FindIt(const Type& item) const
@@ -386,7 +387,7 @@ namespace Pipe::Core
 		template<typename Value, typename SortPredicate = TLess<>>
 		i32 LowerBound(const Value& value, SortPredicate sortPredicate = {}) const
 		{
-			return Algorithms::LowerBound(Data(), 0, Size(), value, sortPredicate);
+			return Pipe::LowerBound(Data(), 0, Size(), value, sortPredicate);
 		}
 
 		/**
@@ -403,25 +404,25 @@ namespace Pipe::Core
 		template<typename Value, typename SortPredicate = TLess<>>
 		i32 UpperBound(const Value& value, SortPredicate sortPredicate = {}) const
 		{
-			return Algorithms::UpperBound(Data(), 0, Size(), value, sortPredicate);
+			return Pipe::UpperBound(Data(), 0, Size(), value, sortPredicate);
 		}
 
 		template<typename Value, typename SortPredicate = TLess<>>
 		i32 FindSortedEqual(const Value& value, SortPredicate sortPredicate = {}) const
 		{
-			return Algorithms::BinarySearch(Data(), 0, Size(), value, sortPredicate);
+			return Pipe::BinarySearch(Data(), 0, Size(), value, sortPredicate);
 		}
 
 		template<typename Value>
 		i32 FindSortedMax(const Value& max, bool included = false) const
 		{
-			return Algorithms::FindSortedMax(Data(), 0, Size(), max, included);
+			return Pipe::FindSortedMax(Data(), 0, Size(), max, included);
 		}
 
 		template<typename Value>
 		i32 FindSortedMin(const Value& min, bool included = false) const
 		{
-			return Algorithms::FindSortedMin(Data(), 0, Size(), min, included);
+			return Pipe::FindSortedMin(Data(), 0, Size(), min, included);
 		}
 
 		bool Contains(const Type& item) const

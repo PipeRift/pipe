@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/Platform.h"
 #include "Core/StringView.h"
-#include "Platform/Platform.h"
 #include "Reflection/EnumType.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/TypeFlags.h"
@@ -10,6 +10,7 @@
 #include "Serialization/SerializationTypes.h"
 #include "Templates/Tuples.h"
 #include "TypeTraits.h"
+
 
 
 namespace Pipe::Serl

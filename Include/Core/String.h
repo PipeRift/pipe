@@ -4,10 +4,10 @@
 
 
 #include "Core/Array.h"
+#include "Core/Hash.h"
+#include "Core/Platform.h"
 #include "Core/StringView.h"
-#include "Misc/Hash.h"
-#include "Misc/Utility.h"
-#include "Platform/Platform.h"
+#include "Core/Utility.h"
 #include "Reflection/TypeName.h"
 #include "Serialization/ContextsFwd.h"
 
@@ -152,10 +152,11 @@ namespace Pipe::Core
 namespace Pipe
 {
 	using namespace Pipe::Core;
+
 	CORE_API void Read(Pipe::ReadContext& ct, Pipe::String& val);
 	CORE_API void Write(Pipe::WriteContext& ct, const Pipe::String& val);
+	OVERRIDE_TYPE_NAME(String)
 }    // namespace Pipe
 
-OVERRIDE_TYPE_NAME(Pipe::String)
 
 #pragma warning(pop)
