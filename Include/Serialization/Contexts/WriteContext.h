@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/StringView.h"
 #include "Platform/Platform.h"
 #include "Reflection/EnumType.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Formats/IFormat.h"
 #include "Serialization/SerializationTypes.h"
-#include "Strings/StringView.h"
 #include "Templates/Tuples.h"
 #include "TypeTraits.h"
 
@@ -195,3 +195,8 @@ namespace Pipe::Serl
 		ct.PopFlags();
 	}
 }    // namespace Pipe::Serl
+
+namespace Pipe
+{
+	using namespace Pipe::Serl;
+}

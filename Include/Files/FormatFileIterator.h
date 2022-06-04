@@ -1,9 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/String.h"
 #include "Files/Files.h"
 #include "Log.h"
-#include "Strings/String.h"
 
 
 namespace Pipe::Files

@@ -3,9 +3,9 @@
 
 #include "PCH.h"
 
+#include "Core/StringView.h"
 #include "Misc/EnumFlags.h"
 #include "Reflection/TypeId.h"
-#include "Strings/StringView.h"
 
 
 namespace Pipe::Refl

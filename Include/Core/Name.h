@@ -15,7 +15,7 @@
 #include <shared_mutex>
 
 
-namespace Pipe
+namespace Pipe::Core
 {
 	struct Name;
 
@@ -196,7 +196,12 @@ namespace Pipe
 			HasMemberSerialize = true
 		};
 	};
-}    // namespace Pipe
+}    // namespace Pipe::Core
+
+namespace Pipe
+{
+	using namespace Pipe::Core;
+}
 
 
 template<>

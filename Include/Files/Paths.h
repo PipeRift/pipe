@@ -2,11 +2,11 @@
 
 #pragma once
 
+#include "Core/String.h"
+#include "Core/StringView.h"
 #include "Export.h"
 #include "Files/STDFileSystem.h"
 #include "Platform/Platform.h"
-#include "Strings/String.h"
-#include "Strings/StringView.h"
 
 
 namespace Pipe::Files

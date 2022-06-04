@@ -1,11 +1,11 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Containers/Array.h"
+#include "Core/Array.h"
 #include "Platform/Platform.h"
 
 
-namespace Pipe::Containers
+namespace Pipe::Core
 {
 	template<typename Allocator = Memory::TDefaultAllocator<u32>>
 	class TBitArray
@@ -268,9 +268,9 @@ namespace Pipe::Containers
 
 
 	using BitArray = TBitArray<>;
-}    // namespace Pipe::Containers
+}    // namespace Pipe::Core
 
 namespace Pipe
 {
-	using namespace Pipe::Containers;
+	using namespace Pipe::Core;
 }

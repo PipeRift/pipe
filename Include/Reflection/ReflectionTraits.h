@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Containers/Array.h"
-#include "Containers/Map.h"
+#include "Core/Array.h"
+#include "Core/Map.h"
 //#include "Reflection/Builders/TypeBuilder.h"
 #include "Reflection/BaseClass.h"
 #include "TypeTraits.h"

@@ -3,7 +3,7 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
+#include "Core/Array.h"
 #include "Memory/Arenas/IArena.h"
 #include "Memory/Blocks/HeapBlock.h"
 

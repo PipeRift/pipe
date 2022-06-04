@@ -4,7 +4,7 @@
 #include "CoreTypes.h"
 
 
-namespace Pipe
+namespace Pipe::Core
 {
 	struct CORE_API EventHandle
 	{
@@ -45,4 +45,9 @@ namespace Pipe
 			return IsValid();
 		}
 	};
-}    // namespace Pipe
+}    // namespace Pipe::Core
+
+namespace Pipe
+{
+	using namespace Pipe::Core;
+}

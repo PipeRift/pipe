@@ -3,13 +3,13 @@
 #pragma once
 
 
-#include "Containers/Array.h"
+#include "Core/Array.h"
+#include "Core/StringView.h"
 #include "Misc/Hash.h"
 #include "Misc/Utility.h"
 #include "Platform/Platform.h"
 #include "Reflection/TypeName.h"
 #include "Serialization/ContextsFwd.h"
-#include "Strings/StringView.h"
 
 #include <fmt/chrono.h>
 #include <fmt/format.h>
@@ -22,7 +22,7 @@
 #pragma warning(disable:4996)
 
 
-namespace Pipe
+namespace Pipe::Core
 {
 	template<typename CharType, typename Allocator = STLAllocator<CharType>>
 	using TString = std::basic_string<CharType, std::char_traits<CharType>, Allocator>;
@@ -139,10 +139,6 @@ namespace Pipe
 	};    // namespace Strings
 
 
-	CORE_API void Read(Serl::ReadContext& ct, String& val);
-	CORE_API void Write(Serl::WriteContext& ct, const String& val);
-
-
 	template<>
 	struct Hash<String>
 	{
@@ -151,6 +147,13 @@ namespace Pipe
 			return GetStringHash(str.data());
 		}
 	};
+}    // namespace Pipe::Core
+
+namespace Pipe
+{
+	using namespace Pipe::Core;
+	CORE_API void Read(Pipe::ReadContext& ct, Pipe::String& val);
+	CORE_API void Write(Pipe::WriteContext& ct, const Pipe::String& val);
 }    // namespace Pipe
 
 OVERRIDE_TYPE_NAME(Pipe::String)

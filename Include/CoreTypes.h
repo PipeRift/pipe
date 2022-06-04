@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/Name.h"
+#include "Core/String.h"
 #include "Platform/Platform.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
-#include "Strings/Name.h"
-#include "Strings/String.h"
 
 
 namespace Pipe

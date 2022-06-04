@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Strings/Name.h"
+#include "Core/Name.h"
 
 #include "Serialization/Contexts.h"
 

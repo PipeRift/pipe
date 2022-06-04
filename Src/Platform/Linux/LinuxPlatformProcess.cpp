@@ -3,8 +3,8 @@
 #if PLATFORM_LINUX
 #	include "Platform/Linux/LinuxPlatformProcess.h"
 #	include "Platform/PlatformMisc.h"
-#	include "Strings/String.h"
-#	include "Strings/FixedString.h"
+#	include "Core/String.h"
+#	include "Core/FixedString.h"
 #	include "Files/Paths.h"
 #	include "Files/Files.h"
 

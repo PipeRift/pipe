@@ -5,14 +5,15 @@
 #include "ECS/Id.h"
 #include "ECS/SparseSet.h"
 
-#include <Containers/BitArray.h>
-#include <Containers/Map.h>
-#include <Containers/Set.h>
-#include <Containers/Span.h>
-#include <Events/Broadcast.h>
+#include <Core/BitArray.h>
+#include <Core/Broadcast.h>
+#include <Core/Map.h>
+#include <Core/Set.h>
+#include <Core/Span.h>
 #include <Memory/OwnPtr.h>
 #include <Memory/STLAllocator.h>
 #include <TypeTraits.h>
+
 
 
 namespace Pipe::ECS

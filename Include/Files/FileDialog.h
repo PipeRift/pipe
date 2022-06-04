@@ -4,8 +4,8 @@
 
 #include "PCH.h"
 
+#include "Core/String.h"
 #include "Files/Files.h"
-#include "Strings/String.h"
 #include "Templates/Tuples.h"
 
 

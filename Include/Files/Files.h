@@ -4,9 +4,10 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
+#include "Core/Array.h"
+#include "Core/String.h"
 #include "Files/STDFileSystem.h"
-#include "Strings/String.h"
+
 
 
 namespace Pipe::Files

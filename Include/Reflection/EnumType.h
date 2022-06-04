@@ -3,9 +3,9 @@
 
 #include "PCH.h"
 
+#include "Core/Name.h"
 #include "Misc/EnumFlags.h"
 #include "Reflection/Type.h"
-#include "Strings/Name.h"
 
 #include <magic_enum.hpp>
 

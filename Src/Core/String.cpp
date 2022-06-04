@@ -1,28 +1,27 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Strings/String.h"
+#include "Core/String.h"
 
+#include "Core/Regex.h"
 #include "Math/Math.h"
 #include "Misc/Char.h"
 #include "Serialization/Contexts.h"
-#include "Strings/Regex.h"
-
 
 namespace Pipe
 {
-	void Read(Serl::ReadContext& ct, String& val)
+	void Read(Pipe::ReadContext& ct, Pipe::String& val)
 	{
-		StringView view;
+		Pipe::StringView view;
 		ct.Serialize(view);
 		val = view;
 	}
-	void Write(Serl::WriteContext& ct, const String& val)
+	void Write(Pipe::WriteContext& ct, const Pipe::String& val)
 	{
-		ct.Serialize(StringView{val});
+		ct.Serialize(Pipe::StringView{val});
 	}
-};    // namespace Pipe
+}    // namespace Pipe
 
-namespace Pipe::Strings
+namespace Pipe::Core::Strings
 {
 	String ToSentenceCase(const String& value)
 	{
@@ -34,7 +33,7 @@ namespace Pipe::Strings
 			auto result = std::regex_replace(value, spaceCamelCase, TX("$& "));
 			result[0]   = TCharHelpers<char>::ToUpper(result[0]);
 
-			return Strings::Convert<String>(result);
+			return Convert<String>(result);
 		}
 		else
 		{
@@ -139,4 +138,4 @@ namespace Pipe::Strings
 
 		return Format("{}{}", sizeStr, sizes[scale]);
 	}
-}    // namespace Pipe::Strings
+}    // namespace Pipe::Core::Strings

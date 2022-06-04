@@ -1,12 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Containers/Array.h>
-#include <Containers/Map.h>
+#include <Core/Array.h>
+#include <Core/Map.h>
+#include <Core/Name.h>
+#include <Core/String.h>
 #include <Reflection/PredefinedTypes.h>
 #include <Reflection/TypeName.h>
-#include <Strings/Name.h>
-#include <Strings/String.h>
+
 
 
 using namespace snowhouse;

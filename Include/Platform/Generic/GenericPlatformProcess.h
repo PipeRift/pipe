@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/StringView.h"
 #include "Export.h"
-#include "Strings/StringView.h"
 
 
 namespace Pipe

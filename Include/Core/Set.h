@@ -17,7 +17,7 @@
 #include <type_traits>
 
 
-namespace Pipe::Containers
+namespace Pipe::Core
 {
 	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>
 	class TSet
@@ -237,9 +237,9 @@ namespace Pipe::Containers
 			set = Move(other.set);
 		}
 	};
-}    // namespace Pipe::Containers
+}    // namespace Pipe::Core
 
 namespace Pipe
 {
-	using namespace Pipe::Containers;
+	using namespace Pipe::Core;
 }

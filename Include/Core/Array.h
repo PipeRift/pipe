@@ -4,7 +4,7 @@
 
 #include "PCH.h"
 
-#include "Events/Function.h"
+#include "Core/Function.h"
 #include "Math/Search.h"
 #include "Math/Sorting.h"
 #include "Memory/STLAllocator.h"
@@ -17,7 +17,7 @@
 #include <vector>
 
 
-namespace Pipe::Containers
+namespace Pipe::Core
 {
 	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>
 	struct TArray
@@ -779,9 +779,9 @@ namespace Pipe::Containers
 			std::iter_swap(vector.begin() + firstIndex, vector.begin() + secondIndex);
 		}
 	}
-}    // namespace Pipe::Containers
+}    // namespace Pipe::Core
 
 namespace Pipe
 {
-	using namespace Pipe::Containers;
+	using namespace Pipe::Core;
 }

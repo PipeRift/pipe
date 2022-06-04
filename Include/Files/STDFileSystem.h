@@ -2,11 +2,11 @@
 
 #pragma once
 
+#include "Core/StringView.h"
 #include "Misc/Hash.h"
 #include "Platform/Platform.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
 #include "Serialization/ContextsFwd.h"
-#include "Strings/StringView.h"
 
 #include <filesystem>
 
@@ -73,8 +73,8 @@ namespace Pipe
 
 REFLECT_NATIVE_TYPE(Pipe::Path);
 
-CORE_API void Read(Pipe::Serl::ReadContext& ct, Pipe::Path& value);
-CORE_API void Write(Pipe::Serl::WriteContext& ct, const Pipe::Path& value);
+CORE_API void Read(Pipe::ReadContext& ct, Pipe::Path& value);
+CORE_API void Write(Pipe::WriteContext& ct, const Pipe::Path& value);
 
 
 // TODO: Finish implementation of formatting of Paths

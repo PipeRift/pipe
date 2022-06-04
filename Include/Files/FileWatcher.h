@@ -2,8 +2,8 @@
 
 #pragma once
 
+#include "Core/FixedString.h"
 #include "Files/Paths.h"
-#include "Strings/FixedString.h"
 
 #include <efsw/efsw.hpp>
 

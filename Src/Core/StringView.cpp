@@ -1,11 +1,11 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Strings/StringView.h"
+#include "Core/StringView.h"
 
 #include <charconv>
 
 
-namespace Pipe::Strings
+namespace Pipe::Core::Strings
 {
 	TOptional<u32> ToU32(StringView str)
 	{
@@ -26,4 +26,4 @@ namespace Pipe::Strings
 		}
 		return {};
 	}
-}    // namespace Pipe::Strings
+}    // namespace Pipe::Core::Strings

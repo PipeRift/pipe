@@ -3,11 +3,11 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
+#include "Core/Array.h"
 #include "Misc/Checks.h"
 
 
-namespace Pipe::Containers
+namespace Pipe::Core
 {
 	template<typename T>
 	struct TSpan
@@ -167,9 +167,9 @@ namespace Pipe::Containers
 			return rend();
 		};
 	};
-}    // namespace Pipe::Containers
+}    // namespace Pipe::Core
 
 namespace Pipe
 {
-	using namespace Pipe::Containers;
+	using namespace Pipe::Core;
 }

@@ -4,8 +4,8 @@
 
 #include "PCH.h"
 
+#include "Core/StringView.h"
 #include "Math/Math.h"
-#include "Strings/StringView.h"
 
 #include <array>
 #include <iterator>
@@ -17,7 +17,7 @@
 #define CPP20_CONSTEXPR_ALGORITHMS_PRESENT (__cpp_lib_constexpr_algorithms)
 
 
-namespace Pipe
+namespace Pipe::Core
 {
 	namespace Details
 	{
@@ -767,4 +767,9 @@ namespace Pipe
 		out << str.data();
 		return out;
 	}
-}    // namespace Pipe
+}    // namespace Pipe::Core
+
+namespace Pipe
+{
+	using namespace Pipe::Core;
+}

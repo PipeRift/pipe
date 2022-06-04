@@ -97,24 +97,25 @@ namespace Pipe::Refl
 	};
 
 
-	template<typename T>
-	void Read(Serl::ReadContext& ct, T& value) requires(Derived<T, Class>)
-	{
-		ct.BeginObject();
-		Serl::CommonContext common{ct};
-		value.Serialize(common);
-	}
-
-	template<typename T>
-	void Write(Serl::WriteContext& ct, const T& value) requires(Derived<T, Class>)
-	{
-		ct.BeginObject();
-		Serl::CommonContext common{ct};
-		const_cast<T&>(value).Serialize(common);
-	}
 }    // namespace Pipe::Refl
 
 namespace Pipe
 {
 	using namespace Pipe::Refl;
+}
+
+template<typename T>
+void Read(Pipe::ReadContext& ct, T& value) requires(Pipe::Derived<T, Pipe::Class>)
+{
+	ct.BeginObject();
+	Pipe::CommonContext common{ct};
+	value.Serialize(common);
+}
+
+template<typename T>
+void Write(Pipe::WriteContext& ct, const T& value) requires(Pipe::Derived<T, Pipe::Class>)
+{
+	ct.BeginObject();
+	Pipe::CommonContext common{ct};
+	const_cast<T&>(value).Serialize(common);
 }

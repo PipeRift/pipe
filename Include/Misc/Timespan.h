@@ -4,9 +4,9 @@
 
 #include "PCH.h"
 
+#include "Core/String.h"
 #include "Math/Math.h"
 #include "Misc/Chrono.h"
-#include "Strings/String.h"
 
 #include <ratio>
 

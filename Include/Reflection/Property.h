@@ -1,11 +1,11 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/Name.h"
+#include "Core/String.h"
 #include "Memory/OwnPtr.h"
 #include "Reflection/ReflectionFlags.h"
 #include "Reflection/Type.h"
-#include "Strings/Name.h"
-#include "Strings/String.h"
 
 
 namespace Pipe::Refl

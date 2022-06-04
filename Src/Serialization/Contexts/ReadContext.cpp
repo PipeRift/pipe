@@ -2,6 +2,7 @@
 
 #include "Serialization/Contexts/ReadContext.h"
 
+#include "Core/String.h"
 #include "Misc/Checks.h"
 #include "Serialization/Formats/JsonFormat.h"
 

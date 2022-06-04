@@ -4,12 +4,12 @@
 
 #include "PCH.h"
 
+#include "Core/FixedString.h"
+#include "Core/StringView.h"
 #include "Memory/STLAllocator.h"
 #include "Misc/Hash.h"
 #include "Misc/Utility.h"
 #include "Platform/Platform.h"
-#include "Strings/FixedString.h"
-#include "Strings/StringView.h"
 #include "Templates/Tuples.h"
 
 #include <tsl/sparse_map.h>
@@ -18,7 +18,7 @@
 #include <type_traits>
 
 
-namespace Pipe::Containers
+namespace Pipe::Core
 {
 	template<typename Key, typename Value,
 	    typename Allocator = Memory::TDefaultAllocator<TPair<Key, Value>>>
@@ -284,9 +284,9 @@ namespace Pipe::Containers
 			map = Move(other.map);
 		}
 	};
-}    // namespace Pipe::Containers
+}    // namespace Pipe::Core
 
 namespace Pipe
 {
-	using namespace Pipe::Containers;
+	using namespace Pipe::Core;
 }

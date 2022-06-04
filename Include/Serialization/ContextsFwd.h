@@ -8,3 +8,8 @@ namespace Pipe::Serl
 	struct ReadContext;
 	struct WriteContext;
 }    // namespace Pipe::Serl
+
+namespace Pipe
+{
+	using namespace Pipe::Serl;
+}

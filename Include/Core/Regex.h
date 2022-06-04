@@ -7,7 +7,12 @@
 #include <regex>
 
 
-namespace Pipe
+namespace Pipe::Core
 {
 	using Regex = std::basic_regex<TChar>;
+}
+
+namespace Pipe
+{
+	using namespace Pipe::Core;
 }

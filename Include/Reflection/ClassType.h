@@ -3,7 +3,7 @@
 
 #include "PCH.h"
 
-#include "Events/Function.h"
+#include "Core/Function.h"
 #include "Reflection/BaseClass.h"
 #include "Reflection/DataType.h"
 

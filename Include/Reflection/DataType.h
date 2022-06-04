@@ -3,15 +3,16 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
-#include "Containers/Map.h"
+#include "Core/Array.h"
+#include "Core/Map.h"
+#include "Core/String.h"
 #include "CoreTypes.h"
 #include "Reflection/Builders/TypeInstance.h"
 #include "Reflection/Property.h"
 #include "Reflection/ReflectionFlags.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/Type.h"
-#include "Strings/String.h"
+
 
 
 namespace Pipe::Refl

@@ -4,14 +4,15 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
+#include "Core/Array.h"
+#include "Core/FixedString.h"
+#include "Core/String.h"
 #include "Math.h"
 #include "Reflection/NativeType.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Contexts.h"
-#include "Strings/FixedString.h"
-#include "Strings/String.h"
 #include "Vector.h"
+
 
 
 namespace Pipe

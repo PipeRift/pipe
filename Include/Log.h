@@ -2,8 +2,8 @@
 
 #pragma once
 
+#include "Core/String.h"
 #include "Files/STDFileSystem.h"
-#include "Strings/String.h"
 
 #include <mutex>
 

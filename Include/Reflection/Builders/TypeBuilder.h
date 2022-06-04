@@ -3,8 +3,8 @@
 
 #include "PCH.h"
 
+#include "Core/Name.h"
 #include "Reflection/Type.h"
-#include "Strings/Name.h"
 #include "TypeTraits.h"
 
 

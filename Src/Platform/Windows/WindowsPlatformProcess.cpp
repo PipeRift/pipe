@@ -4,7 +4,7 @@
 #	include "Files/Paths.h"
 #	include "Files/Files.h"
 #	include "Platform/Windows/WindowsPlatformProcess.h"
-#	include "Strings/String.h"
+#	include "Core/String.h"
 
 #	include <Windows.h>
 

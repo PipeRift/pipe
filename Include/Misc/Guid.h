@@ -4,11 +4,11 @@
 
 #include "PCH.h"
 
+#include "Core/Name.h"
 #include "Misc/Crc.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/ContextsFwd.h"
-#include "Strings/Name.h"
 
 
 namespace Pipe

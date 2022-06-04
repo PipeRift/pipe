@@ -169,3 +169,8 @@ namespace Pipe::Serl
 		Serialize(commonContext, const_cast<T&>(val));
 	}
 }    // namespace Pipe::Serl
+
+namespace Pipe
+{
+	using namespace Pipe::Serl;
+}

@@ -5,8 +5,8 @@
 #include "ECS/IdRegistry.h"
 #include "ECS/Pool.h"
 
+#include <Core/Name.h>
 #include <Memory/UniquePtr.h>
-#include <Strings/Name.h>
 
 
 namespace Pipe::ECS

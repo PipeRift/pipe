@@ -3,8 +3,9 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
-#include "Events/Function.h"
+#include "Core/Array.h"
+#include "Core/Function.h"
+#include "Core/Name.h"
 #include "Reflection/ArrayProperty.h"
 #include "Reflection/Builders/TypeBuilder.h"
 #include "Reflection/ClassType.h"
@@ -13,7 +14,6 @@
 #include "Reflection/StructType.h"
 #include "Reflection/TypeId.h"
 #include "Serialization/Contexts.h"
-#include "Strings/Name.h"
 #include "TypeTraits.h"
 
 

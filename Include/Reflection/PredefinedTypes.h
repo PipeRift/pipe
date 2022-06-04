@@ -1,9 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/FixedString.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/TypeName.h"
-#include "Strings/FixedString.h"
 
 
 OVERRIDE_TYPE_NAME(Pipe::u8)
