@@ -6,7 +6,6 @@
 #include "Log.h"
 
 
-
 namespace Pipe
 {
 	/* DateTime constants

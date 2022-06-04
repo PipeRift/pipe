@@ -1,16 +1,16 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Core/Checks.h"
 #include "Files/FileWatcher.h"
 
+#include "Core/Checks.h"
 
 
 namespace Pipe::Files
 {
-	efsw::FileWatcher Watcher::fileWatcher{};
+	efsw::FileWatcher FileWatcher::fileWatcher{};
 
 
-	void Watcher::Listener::handleFileAction(WatchId watchid, const std::string& dir,
+	void FileWatcher::Listener::handleFileAction(FileWatchId watchid, const std::string& dir,
 	    const std::string& filename, efsw::Action action, std::string oldFilename)
 	{
 		// NOTE: Just for testing
@@ -49,44 +49,44 @@ namespace Pipe::Files
 		}
 	}
 
-	Watcher::~Watcher()
+	FileWatcher::~FileWatcher()
 	{
 		Reset();
 	}
 
-	void Watcher::StartAsync()
+	void FileWatcher::StartAsync()
 	{
 		fileWatcher.watch();
 	}
 
-	WatchId Watcher::AddPath(StringView path, bool recursive)
+	FileWatchId FileWatcher::AddPath(StringView path, bool recursive)
 	{
-		WatchId id = fileWatcher.addWatch(std::string{path}, &listener, recursive);
+		FileWatchId id = fileWatcher.addWatch(std::string{path}, &listener, recursive);
 		watches.Add(id);
 		return id;
 	}
 
-	void Watcher::RemovePath(StringView path)
+	void FileWatcher::RemovePath(StringView path)
 	{
 		fileWatcher.removeWatch(std::string{path});
 	}
 
-	void Watcher::RemovePath(WatchId id)
+	void FileWatcher::RemovePath(FileWatchId id)
 	{
 		fileWatcher.removeWatch(id);
 		watches.Remove(id);
 	}
 
-	void Watcher::Reset()
+	void FileWatcher::Reset()
 	{
-		for (WatchId id : watches)
+		for (FileWatchId id : watches)
 		{
 			fileWatcher.removeWatch(id);
 		}
 		watches.Empty();
 	}
 
-	void Watcher::AddExtension(StringView extension)
+	void FileWatcher::AddExtension(StringView extension)
 	{
 		if (EnsureMsg(extension.size() <= 7, "A filtered extension can't be longer than 8 chars"))
 		{

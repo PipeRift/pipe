@@ -10,7 +10,6 @@
 #include <limits>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace Pipe;

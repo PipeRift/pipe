@@ -69,12 +69,15 @@ namespace Pipe::Files
 namespace Pipe
 {
 	using namespace Pipe::Files;
-}
+
+	namespace Serl
+	{
+		CORE_API void Read(Pipe::ReadContext& ct, Pipe::Path& value);
+		CORE_API void Write(Pipe::WriteContext& ct, const Pipe::Path& value);
+	}    // namespace Serl
+}    // namespace Pipe
 
 REFLECT_NATIVE_TYPE(Pipe::Path);
-
-CORE_API void Read(Pipe::ReadContext& ct, Pipe::Path& value);
-CORE_API void Write(Pipe::WriteContext& ct, const Pipe::Path& value);
 
 
 // TODO: Finish implementation of formatting of Paths

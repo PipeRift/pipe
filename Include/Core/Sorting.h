@@ -10,7 +10,6 @@
 #include "Profiler.h"
 
 
-
 namespace Pipe::Core
 {
 	template<typename T, typename Index, typename Predicate>

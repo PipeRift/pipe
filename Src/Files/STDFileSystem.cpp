@@ -6,14 +6,17 @@
 #include "Serialization/Contexts.h"
 
 
-void Read(Pipe::ReadContext& ct, Pipe::Path& value)
+namespace Pipe::Serl
 {
-	Pipe::String str;
-	ct.Serialize(str);
-	value = Pipe::FromString(str);
-}
+	void Read(Pipe::ReadContext& ct, Pipe::Path& value)
+	{
+		Pipe::String str;
+		ct.Serialize(str);
+		value = Pipe::FromString(str);
+	}
 
-void Write(Pipe::WriteContext& ct, const Pipe::Path& value)
-{
-	ct.Serialize(Pipe::ToString(value));
-}
+	void Write(Pipe::WriteContext& ct, const Pipe::Path& value)
+	{
+		ct.Serialize(Pipe::ToString(value));
+	}
+}    // namespace Pipe::Serl

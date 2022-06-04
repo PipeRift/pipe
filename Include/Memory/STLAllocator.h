@@ -11,7 +11,6 @@
 #include <memory>
 
 
-
 namespace Pipe
 {
 	template<typename T, typename Allocator = Memory::TDefaultAllocator<T>>

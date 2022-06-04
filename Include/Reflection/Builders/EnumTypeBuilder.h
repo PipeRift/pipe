@@ -13,7 +13,6 @@
 #include "TypeTraits.h"
 
 
-
 #define ENUM(type)                                                    \
 	template<>                                                        \
 	struct Pipe::Refl::TStaticEnumInitializer<type>                   \

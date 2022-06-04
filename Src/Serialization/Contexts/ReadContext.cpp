@@ -7,7 +7,6 @@
 #include "Serialization/Formats/JsonFormat.h"
 
 
-
 namespace Pipe::Serl
 {
 #define READER_SWITCH(func)                                \

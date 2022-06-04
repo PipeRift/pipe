@@ -4,6 +4,7 @@
 #include "BaseStruct.h"
 #include "Export.h"
 #include "Reflection/Reflection.h"
+#include "Reflection/ReflectionTraits.h"
 #include "Serialization/Contexts.h"
 
 
@@ -30,20 +31,23 @@ namespace Pipe::Refl
 namespace Pipe
 {
 	using namespace Pipe::Refl;
-}
 
-template<typename T>
-void Read(Pipe::ReadContext& ct, T& value) requires(Derived<T, Pipe::Struct>)
-{
-	ct.BeginObject();
-	Pipe::CommonContext common{ct};
-	value.SerializeReflection(common);
-}
+	namespace Serl
+	{
+		template<typename T>
+		void Read(Pipe::ReadContext& ct, T& value) requires(Pipe::IsStruct<T>())
+		{
+			ct.BeginObject();
+			Pipe::CommonContext common{ct};
+			value.SerializeReflection(common);
+		}
 
-template<typename T>
-void Write(Pipe::WriteContext& ct, const T& value) requires(Derived<T, Pipe::Struct>)
-{
-	ct.BeginObject();
-	Pipe::CommonContext common{ct};
-	const_cast<T&>(value).SerializeReflection(common);
-}
+		template<typename T>
+		void Write(Pipe::WriteContext& ct, const T& value) requires(Pipe::IsStruct<T>())
+		{
+			ct.BeginObject();
+			Pipe::CommonContext common{ct};
+			const_cast<T&>(value).SerializeReflection(common);
+		}
+	}    // namespace Serl
+}    // namespace Pipe

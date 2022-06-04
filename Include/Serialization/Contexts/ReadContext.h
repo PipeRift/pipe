@@ -12,7 +12,6 @@
 #include "TypeTraits.h"
 
 
-
 namespace Pipe::Serl
 {
 	struct CORE_API ReadContext
@@ -162,11 +161,14 @@ namespace Pipe::Serl
 	template<typename T>
 	void Read(ReadContext& ct, T& val) requires IsEnum<T>
 	{
-		String typeStr;
-		ct.Serialize(typeStr);
-		if (std::optional<T> value = Refl::GetEnumValue<T>(typeStr))
+		if constexpr (GetEnumSize<T>() > 0)
 		{
-			val = value.value();
+			String typeStr;
+			ct.Serialize(typeStr);
+			if (std::optional<T> value = Refl::GetEnumValue<T>(typeStr))
+			{
+				val = value.value();
+			}
 		}
 	}
 }    // namespace Pipe::Serl

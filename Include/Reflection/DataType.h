@@ -14,7 +14,6 @@
 #include "Reflection/Type.h"
 
 
-
 namespace Pipe::Refl
 {
 	/** Smallest reflection type that contains all basic class or struct data */

@@ -11,7 +11,6 @@
 #include "Templates/Greater.h"
 
 
-
 namespace Pipe::Memory
 {
 	bool operator==(const BigBestFitArena::Slot& a, sizet b)

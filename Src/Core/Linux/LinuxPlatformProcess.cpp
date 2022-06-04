@@ -32,7 +32,7 @@ namespace Pipe::Core
 	}
 	StringView LinuxPlatformProcess::GetExecutablePath()
 	{
-		return Paths::GetParent(GetExecutableFile());
+		return GetParent(GetExecutableFile());
 	}
 
 	StringView LinuxPlatformProcess::GetBasePath()
@@ -49,7 +49,7 @@ namespace Pipe::Core
 
 		if (!Files::IsFolder(path))
 		{
-			path = Paths::GetParent(path);
+			path = GetParent(path);
 		}
 		String fullPath{path};
 

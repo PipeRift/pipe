@@ -5,7 +5,6 @@
 #include <Files/Paths.h>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace Pipe;

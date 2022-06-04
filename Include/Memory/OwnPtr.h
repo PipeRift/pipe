@@ -14,7 +14,6 @@
 #include <memory>
 
 
-
 namespace Pipe
 {
 	namespace Internal

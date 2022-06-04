@@ -36,7 +36,7 @@ namespace Pipe::Core
 	}
 	StringView MacPlatformProcess::GetExecutablePath()
 	{
-		return Paths::GetParent(GetExecutableFile());
+		return GetParent(GetExecutableFile());
 	}
 
 	StringView MacPlatformProcess::GetBasePath()

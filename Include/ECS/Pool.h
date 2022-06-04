@@ -15,7 +15,6 @@
 #include <TypeTraits.h>
 
 
-
 namespace Pipe::ECS
 {
 	struct Context;

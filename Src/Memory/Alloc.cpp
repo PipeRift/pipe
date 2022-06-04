@@ -10,7 +10,6 @@
 #include <memory>
 
 
-
 namespace Pipe
 {
 	void* Alloc(sizet n)

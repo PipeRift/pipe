@@ -10,7 +10,6 @@
 #include <magic_enum.hpp>
 
 
-
 namespace Pipe::Refl
 {
 	template<typename T>

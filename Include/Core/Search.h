@@ -13,7 +13,6 @@
 #include "Templates/Optional.h"
 
 
-
 namespace Pipe::Core
 {
 	/**

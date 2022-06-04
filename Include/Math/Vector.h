@@ -757,16 +757,6 @@ namespace Pipe::Math
 	using Boxu  = TBox<u32>;
 
 
-	CORE_API void Read(Serl::ReadContext& ct, v2& val);
-	CORE_API void Write(Serl::WriteContext& ct, v2 val);
-
-	CORE_API void Read(Serl::ReadContext& ct, v2_u32& val);
-	CORE_API void Write(Serl::WriteContext& ct, v2_u32 val);
-
-	CORE_API void Read(Serl::ReadContext& ct, v3& val);
-	CORE_API void Write(Serl::WriteContext& ct, const v3& val);
-
-
 	namespace Vectors
 	{
 		// mathematically if you have 0 scale, it should be infinite,
@@ -777,12 +767,22 @@ namespace Pipe::Math
 		CORE_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
 		CORE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
 	}    // namespace Vectors
+
+	CORE_API void Read(Serl::ReadContext& ct, v2& val);
+	CORE_API void Write(Serl::WriteContext& ct, v2 val);
+
+	CORE_API void Read(Serl::ReadContext& ct, v2_u32& val);
+	CORE_API void Write(Serl::WriteContext& ct, v2_u32 val);
+
+	CORE_API void Read(Serl::ReadContext& ct, v3& val);
+	CORE_API void Write(Serl::WriteContext& ct, const v3& val);
 }    // namespace Pipe::Math
 
 namespace Pipe
 {
 	using namespace Pipe::Math;
-}
+
+}    // namespace Pipe
 
 REFLECT_NATIVE_TYPE(Pipe::v2);
 REFLECT_NATIVE_TYPE(Pipe::v2_u32);

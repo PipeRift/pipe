@@ -17,7 +17,6 @@
 #include <vector>
 
 
-
 namespace Pipe::Core
 {
 	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>

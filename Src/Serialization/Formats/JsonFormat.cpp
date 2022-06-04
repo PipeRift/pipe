@@ -9,7 +9,6 @@
 #include <yyjson.h>
 
 
-
 static void* yyjson_malloc(void* ctx, Pipe::sizet size)
 {
 	return Pipe::Alloc(size);

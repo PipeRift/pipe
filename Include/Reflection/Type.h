@@ -8,7 +8,6 @@
 #include "Reflection/TypeId.h"
 
 
-
 namespace Pipe::Refl
 {
 	using namespace EnumOperators;

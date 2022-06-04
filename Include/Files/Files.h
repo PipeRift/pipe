@@ -9,7 +9,6 @@
 #include "Files/STDFileSystem.h"
 
 
-
 namespace Pipe::Files
 {
 	using Iterator          = fs::directory_iterator;

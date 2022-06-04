@@ -268,37 +268,37 @@ public:                                                                         
 		return Pipe::InitTypeFlags(flags);                                                 \
 	}
 
-#define PROPERTY_NO_FLAGS(name) PROPERTY_FLAGS(name, Prop_NoFlag)
+#define PROPERTY_NO_FLAGS(name) PROPERTY_FLAGS(name, Pipe::Prop_NoFlag)
 #define PROPERTY_FLAGS(name, flags) __PROPERTY_IMPL(name, CAT(__refl_id_, name), flags)
-#define __PROPERTY_IMPL(name, id_name, flags)                                                     \
-	static constexpr Pipe::u32 id_name =                                                          \
-	    decltype(__refl_Counter(Pipe::Refl::MetaCounter<255>{}))::value;                          \
-	static constexpr Pipe::Refl::MetaCounter<(id_name) + 1> __refl_Counter(                       \
-	    Pipe::Refl::MetaCounter<(id_name) + 1>);                                                  \
-                                                                                                  \
-	static void __ReflReflectProperty(BuilderType& builder, Pipe::Refl::MetaCounter<id_name>)     \
-	{                                                                                             \
-		using PropType = decltype(name);                                                          \
-		static_assert(HasType<PropType>(), "Type is not reflected");                              \
-		builder.AddProperty<PropType>(                                                            \
-		    TX(#name),                                                                            \
-		    [](void* instance) {                                                                  \
-			return (void*)&static_cast<ThisType*>(instance)->name;                                \
-		    },                                                                                    \
-		    InitPropFlags(flags));                                                                \
-                                                                                                  \
-		/* Registry next property if any */                                                       \
-		__ReflReflectProperty(builder, Pipe::Refl::MetaCounter<(id_name) + 1>{});                 \
-	};                                                                                            \
-                                                                                                  \
-	void __ReflSerializeProperty(Pipe::Serl::CommonContext& ct, Pipe::Refl::MetaCounter<id_name>) \
-	{                                                                                             \
-		if constexpr (!(InitPropFlags(flags) & Pipe::Prop_NotSerialized))                         \
-		{ /* Don't serialize property if Transient */                                             \
-			ct.Next(#name, name);                                                                 \
-		}                                                                                         \
-		/* Serialize next property if any */                                                      \
-		__ReflSerializeProperty(ct, Pipe::Refl::MetaCounter<(id_name) + 1>{});                    \
+#define __PROPERTY_IMPL(name, id_name, flags)                                           \
+	static constexpr Pipe::u32 id_name =                                                \
+	    decltype(__refl_Counter(Pipe::MetaCounter<255>{}))::value;                      \
+	static constexpr Pipe::MetaCounter<(id_name) + 1> __refl_Counter(                   \
+	    Pipe::MetaCounter<(id_name) + 1>);                                              \
+                                                                                        \
+	static void __ReflReflectProperty(BuilderType& builder, Pipe::MetaCounter<id_name>) \
+	{                                                                                   \
+		using PropType = decltype(name);                                                \
+		static_assert(Pipe::HasType<PropType>(), "Type is not reflected");              \
+		builder.AddProperty<PropType>(                                                  \
+		    TX(#name),                                                                  \
+		    [](void* instance) {                                                        \
+			return (void*)&static_cast<ThisType*>(instance)->name;                      \
+		    },                                                                          \
+		    InitPropFlags(flags));                                                      \
+                                                                                        \
+		/* Registry next property if any */                                             \
+		__ReflReflectProperty(builder, Pipe::MetaCounter<(id_name) + 1>{});             \
+	};                                                                                  \
+                                                                                        \
+	void __ReflSerializeProperty(Pipe::CommonContext& ct, Pipe::MetaCounter<id_name>)   \
+	{                                                                                   \
+		if constexpr (!(InitPropFlags(flags) & Pipe::Prop_NotSerialized))               \
+		{ /* Don't serialize property if Transient */                                   \
+			ct.Next(#name, name);                                                       \
+		}                                                                               \
+		/* Serialize next property if any */                                            \
+		__ReflSerializeProperty(ct, Pipe::MetaCounter<(id_name) + 1>{});                \
 	};
 
 
