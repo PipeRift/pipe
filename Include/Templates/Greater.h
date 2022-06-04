@@ -4,7 +4,7 @@
 #include "Misc/Utility.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename T = void>
 	struct TGreater
@@ -43,4 +43,4 @@ namespace Rift
 			return Forward<T>(A) >= Forward<U>(B);
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe

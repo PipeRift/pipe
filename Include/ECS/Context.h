@@ -9,7 +9,7 @@
 #include <Strings/Name.h>
 
 
-namespace Rift::ECS
+namespace Pipe::ECS
 {
 	struct CORE_API SortLessStatics
 	{
@@ -426,4 +426,4 @@ namespace Rift::ECS
 		instance.pool = Move(MakeOwned<TPool<Mut<T>>>(self));
 		return Move(instance);
 	}
-}    // namespace Rift::ECS
+}    // namespace Pipe::ECS

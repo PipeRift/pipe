@@ -13,7 +13,7 @@
 #endif
 
 
-namespace Rift
+namespace Pipe
 {
 	/////////////////////////////////////////////////////////////
 	// Define platform types as global types
@@ -80,7 +80,7 @@ namespace Rift
 
 
 	constexpr i32 NO_INDEX = -1;
-}    // namespace Rift
+}    // namespace Pipe
 
 #if !defined(TX)
 #	if PLATFORM_TCHAR_IS_WCHAR

@@ -5,7 +5,7 @@
 #include <charconv>
 
 
-namespace Rift::Strings
+namespace Pipe::Strings
 {
 	TOptional<u32> ToU32(StringView str)
 	{
@@ -26,4 +26,4 @@ namespace Rift::Strings
 		}
 		return {};
 	}
-}    // namespace Rift::Strings
+}    // namespace Pipe::Strings

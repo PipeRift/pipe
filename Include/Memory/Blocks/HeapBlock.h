@@ -7,7 +7,7 @@
 #include "Memory/Blocks/Block.h"
 
 
-namespace Rift::Memory
+namespace Pipe::Memory
 {
 	class CORE_API HeapBlock : public Block
 	{
@@ -81,12 +81,12 @@ namespace Rift::Memory
 	inline void HeapBlock::Allocate(sizet newSize)
 	{
 		size = newSize;
-		data = Rift::Alloc(newSize);
+		data = Pipe::Alloc(newSize);
 	}
 	inline void HeapBlock::Free()
 	{
-		Rift::Free(data);
+		Pipe::Free(data);
 		data = nullptr;
 		size = 0;
 	}
-}    // namespace Rift::Memory
+}    // namespace Pipe::Memory

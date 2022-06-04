@@ -8,7 +8,7 @@
 #include "Reflection/ReflectionTraits.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename T>
 	struct HasTypeBuilderDefine
@@ -63,4 +63,4 @@ namespace Rift
 	{
 		return HasType<typename T::ItemType>();
 	}
-}    // namespace Rift
+}    // namespace Pipe

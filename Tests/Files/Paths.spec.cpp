@@ -7,45 +7,45 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
 
 
 go_bandit([]() {
 	describe("Files.Paths", []() {
 		it("Can get root name and path", [&]() {
 #if PLATFORM_WINDOWS
-			AssertThat(Paths::GetRootName("F:\\SomeFolder\\AnotherFolder"), Equals("F:"));
-			AssertThat(Paths::GetRoot("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\"));
+			AssertThat(Pipe::GetRootPathName("F:\\SomeFolder\\AnotherFolder"), Equals("F:"));
+			AssertThat(Pipe::GetRootPath("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\"));
 #elif PLATFORM_LINUX
-			AssertThat(Paths::GetRootName("/var/SomeFolder/AnotherFolder"), Equals(""));
-			AssertThat(Paths::GetRoot("/var/SomeFolder/AnotherFolder"), Equals("/"));
+			AssertThat(Pipe::GetRootPathName("/var/SomeFolder/AnotherFolder"), Equals(""));
+			AssertThat(Pipe::GetRootPath("/var/SomeFolder/AnotherFolder"), Equals("/"));
 #endif
-			AssertThat(Paths::GetRootName("/AnotherFolder"), Equals(""));
-			AssertThat(Paths::GetRoot("/AnotherFolder"), Equals("/"));
+			AssertThat(Pipe::GetRootPathName("/AnotherFolder"), Equals(""));
+			AssertThat(Pipe::GetRootPath("/AnotherFolder"), Equals("/"));
 		});
 
 		it("Can get relative path", [&]() {
 #if PLATFORM_WINDOWS
-			AssertThat(Paths::GetRelative("F:\\SomeFolder\\AnotherFolder"),
+			AssertThat(Pipe::GetRelativePath("F:\\SomeFolder\\AnotherFolder"),
 			    Equals("SomeFolder\\AnotherFolder"));
 #endif
-			AssertThat(Paths::GetRelative("/var/SomeFolder/AnotherFolder"),
+			AssertThat(Pipe::GetRelativePath("/var/SomeFolder/AnotherFolder"),
 			    Equals("var/SomeFolder/AnotherFolder"));
-			AssertThat(Paths::GetRelative("/SomeFolder/AnotherFolder"),
+			AssertThat(Pipe::GetRelativePath("/SomeFolder/AnotherFolder"),
 			    Equals("SomeFolder/AnotherFolder"));
 		});
 
 		it("Can get parent path", [&]() {
 #if PLATFORM_WINDOWS
-			AssertThat(Paths::GetParent("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\SomeFolder"));
+			AssertThat(
+			    Pipe::GetParentPath("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\SomeFolder"));
 #endif
-			AssertThat(Paths::GetParent("/var/SomeFolder"), Equals("/var"));
-			AssertThat(Paths::GetParent("/SomeFolder/AnotherFolder"), Equals("/SomeFolder"));
-			AssertThat(Paths::GetParent("/SomeFolder/SomeFile.txt"), Equals("/SomeFolder"));
+			AssertThat(Pipe::GetParentPath("/var/SomeFolder"), Equals("/var"));
+			AssertThat(Pipe::GetParentPath("/SomeFolder/AnotherFolder"), Equals("/SomeFolder"));
+			AssertThat(Pipe::GetParentPath("/SomeFolder/SomeFile.txt"), Equals("/SomeFolder"));
 		});
 
 		it("Executable path is not empty", [&]() {
-			AssertThat(PlatformProcess::GetExecutablePath(), !Equals(""));
+			AssertThat(Pipe::PlatformProcess::GetExecutablePath(), !Equals(""));
 		});
 	});
 });

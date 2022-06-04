@@ -5,12 +5,12 @@
 #include "Misc/Checks.h"
 
 
-namespace Rift
+namespace Pipe::Files
 {
-	efsw::FileWatcher FileWatcher::fileWatcher{};
+	efsw::FileWatcher Watcher::fileWatcher{};
 
 
-	void FileWatcher::Listener::handleFileAction(FileWatchId watchid, const std::string& dir,
+	void Watcher::Listener::handleFileAction(WatchId watchid, const std::string& dir,
 	    const std::string& filename, efsw::Action action, std::string oldFilename)
 	{
 		// NOTE: Just for testing
@@ -49,48 +49,48 @@ namespace Rift
 		}
 	}
 
-	FileWatcher::~FileWatcher()
+	Watcher::~Watcher()
 	{
 		Reset();
 	}
 
-	void FileWatcher::StartAsync()
+	void Watcher::StartAsync()
 	{
 		fileWatcher.watch();
 	}
 
-	FileWatchId FileWatcher::AddPath(StringView path, bool recursive)
+	WatchId Watcher::AddPath(StringView path, bool recursive)
 	{
-		FileWatchId id = fileWatcher.addWatch(std::string{path}, &listener, recursive);
+		WatchId id = fileWatcher.addWatch(std::string{path}, &listener, recursive);
 		watches.Add(id);
 		return id;
 	}
 
-	void FileWatcher::RemovePath(StringView path)
+	void Watcher::RemovePath(StringView path)
 	{
 		fileWatcher.removeWatch(std::string{path});
 	}
 
-	void FileWatcher::RemovePath(FileWatchId id)
+	void Watcher::RemovePath(WatchId id)
 	{
 		fileWatcher.removeWatch(id);
 		watches.Remove(id);
 	}
 
-	void FileWatcher::Reset()
+	void Watcher::Reset()
 	{
-		for (FileWatchId id : watches)
+		for (WatchId id : watches)
 		{
 			fileWatcher.removeWatch(id);
 		}
 		watches.Empty();
 	}
 
-	void FileWatcher::AddExtension(StringView extension)
+	void Watcher::AddExtension(StringView extension)
 	{
 		if (EnsureMsg(extension.size() <= 7, "A filtered extension can't be longer than 8 chars"))
 		{
 			allowedExtensions.AddUnique(extension);
 		}
 	}
-}    // namespace Rift
+}    // namespace Pipe::Files

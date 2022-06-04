@@ -17,7 +17,7 @@
 #include "TypeTraits.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	template<typename T, typename Parent, TypeFlags flags, typename TType>
 	struct TDataTypeBuilder : public TypeBuilder
@@ -191,37 +191,37 @@ namespace Rift::Refl
 	{
 		static constexpr u32 value = 0;
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl
 
 
 /** Defines a Class */
-#define CLASS_HEADER_NO_FLAGS(type, parent) CLASS_HEADER_FLAGS(type, parent, Type_NoFlag)
+#define CLASS_HEADER_NO_FLAGS(type, parent) CLASS_HEADER_FLAGS(type, parent, Pipe::Type_NoFlag)
 #define CLASS_HEADER_FLAGS(type, parent, flags)                                           \
 public:                                                                                   \
 	using ThisType    = type;                                                             \
 	using Super       = parent;                                                           \
-	using BuilderType = Rift::Refl::TClassTypeBuilder<ThisType, Super, GetStaticFlags()>; \
+	using BuilderType = Pipe::Refl::TClassTypeBuilder<ThisType, Super, GetStaticFlags()>; \
                                                                                           \
-	static Rift::Refl::ClassType* GetStaticType()                                         \
+	static Pipe::Refl::ClassType* GetStaticType()                                         \
 	{                                                                                     \
-		return Rift::GetType<ThisType>();                                                 \
+		return Pipe::GetType<ThisType>();                                                 \
 	}                                                                                     \
-	static constexpr TypeFlags GetStaticFlags()                                           \
+	static constexpr Pipe::TypeFlags GetStaticFlags()                                     \
 	{                                                                                     \
-		return InitTypeFlags(flags);                                                      \
+		return Pipe::InitTypeFlags(flags);                                                \
 	}                                                                                     \
-	Rift::Refl::ClassType* GetType() const override                                       \
+	Pipe::Refl::ClassType* GetType() const override                                       \
 	{                                                                                     \
-		return Rift::GetType<ThisType>();                                                 \
+		return Pipe::GetType<ThisType>();                                                 \
 	}
 
 #define REFLECTION_BODY(buildCode)                                                          \
 public:                                                                                     \
-	static Rift::Refl::Type* InitType()                                                     \
+	static Pipe::Refl::Type* InitType()                                                     \
 	{                                                                                       \
 		BuilderType builder{};                                                              \
 		builder.onBuild = [](auto& builder) {                                               \
-			__ReflReflectProperty(builder, Rift::Refl::MetaCounter<0>{});                   \
+			__ReflReflectProperty(builder, Pipe::Refl::MetaCounter<0>{});                   \
 			{                                                                               \
 				buildCode                                                                   \
 			}                                                                               \
@@ -230,53 +230,53 @@ public:                                                                         
 		return builder.GetType();                                                           \
 	}                                                                                       \
                                                                                             \
-	void SerializeReflection(Rift::Serl::CommonContext& ct)                                 \
+	void SerializeReflection(Pipe::Serl::CommonContext& ct)                                 \
 	{                                                                                       \
-		if constexpr (!(GetStaticFlags() & Type_NotSerialized))                             \
+		if constexpr (!(GetStaticFlags() & Pipe::Type_NotSerialized))                       \
 		{                                                                                   \
 			Super::SerializeReflection(ct);                                                 \
-			__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<0>{});                      \
+			__ReflSerializeProperty(ct, Pipe::Refl::MetaCounter<0>{});                      \
 		}                                                                                   \
 	}                                                                                       \
                                                                                             \
 private:                                                                                    \
-	static constexpr Rift::Refl::MetaCounter<0> __refl_Counter(Rift::Refl::MetaCounter<0>); \
-	template<Rift::u32 N>                                                                   \
-	static void __ReflReflectProperty(BuilderType&, Rift::Refl::MetaCounter<N>)             \
+	static constexpr Pipe::Refl::MetaCounter<0> __refl_Counter(Pipe::Refl::MetaCounter<0>); \
+	template<Pipe::u32 N>                                                                   \
+	static void __ReflReflectProperty(BuilderType&, Pipe::Refl::MetaCounter<N>)             \
 	{}                                                                                      \
-	template<Rift::u32 N>                                                                   \
-	void __ReflSerializeProperty(Rift::Serl::CommonContext&, Rift::Refl::MetaCounter<N>)    \
+	template<Pipe::u32 N>                                                                   \
+	void __ReflSerializeProperty(Pipe::Serl::CommonContext&, Pipe::Refl::MetaCounter<N>)    \
 	{}                                                                                      \
                                                                                             \
 public:
 
 
 /** Defines an struct */
-#define STRUCT_HEADER_NO_FLAGS(type, parent) STRUCT_HEADER_FLAGS(type, parent, Type_NoFlag)
+#define STRUCT_HEADER_NO_FLAGS(type, parent) STRUCT_HEADER_FLAGS(type, parent, Pipe::Type_NoFlag)
 #define STRUCT_HEADER_FLAGS(type, parent, flags)                                           \
 public:                                                                                    \
 	using Super       = parent;                                                            \
 	using ThisType    = type;                                                              \
-	using BuilderType = Rift::Refl::TStructTypeBuilder<ThisType, Super, GetStaticFlags()>; \
+	using BuilderType = Pipe::Refl::TStructTypeBuilder<ThisType, Super, GetStaticFlags()>; \
                                                                                            \
-	static Rift::Refl::StructType* GetStaticType()                                         \
+	static Pipe::Refl::StructType* GetStaticType()                                         \
 	{                                                                                      \
-		return Rift::GetType<ThisType>();                                                  \
+		return Pipe::GetType<ThisType>();                                                  \
 	}                                                                                      \
-	static constexpr TypeFlags GetStaticFlags()                                            \
+	static constexpr Pipe::TypeFlags GetStaticFlags()                                      \
 	{                                                                                      \
-		return InitTypeFlags(flags);                                                       \
+		return Pipe::InitTypeFlags(flags);                                                 \
 	}
 
 #define PROPERTY_NO_FLAGS(name) PROPERTY_FLAGS(name, Prop_NoFlag)
 #define PROPERTY_FLAGS(name, flags) __PROPERTY_IMPL(name, CAT(__refl_id_, name), flags)
 #define __PROPERTY_IMPL(name, id_name, flags)                                                     \
-	static constexpr Rift::u32 id_name =                                                          \
-	    decltype(__refl_Counter(Rift::Refl::MetaCounter<255>{}))::value;                          \
-	static constexpr Rift::Refl::MetaCounter<(id_name) + 1> __refl_Counter(                       \
-	    Rift::Refl::MetaCounter<(id_name) + 1>);                                                  \
+	static constexpr Pipe::u32 id_name =                                                          \
+	    decltype(__refl_Counter(Pipe::Refl::MetaCounter<255>{}))::value;                          \
+	static constexpr Pipe::Refl::MetaCounter<(id_name) + 1> __refl_Counter(                       \
+	    Pipe::Refl::MetaCounter<(id_name) + 1>);                                                  \
                                                                                                   \
-	static void __ReflReflectProperty(BuilderType& builder, Rift::Refl::MetaCounter<id_name>)     \
+	static void __ReflReflectProperty(BuilderType& builder, Pipe::Refl::MetaCounter<id_name>)     \
 	{                                                                                             \
 		using PropType = decltype(name);                                                          \
 		static_assert(HasType<PropType>(), "Type is not reflected");                              \
@@ -288,17 +288,17 @@ public:                                                                         
 		    InitPropFlags(flags));                                                                \
                                                                                                   \
 		/* Registry next property if any */                                                       \
-		__ReflReflectProperty(builder, Rift::Refl::MetaCounter<(id_name) + 1>{});                 \
+		__ReflReflectProperty(builder, Pipe::Refl::MetaCounter<(id_name) + 1>{});                 \
 	};                                                                                            \
                                                                                                   \
-	void __ReflSerializeProperty(Rift::Serl::CommonContext& ct, Rift::Refl::MetaCounter<id_name>) \
+	void __ReflSerializeProperty(Pipe::Serl::CommonContext& ct, Pipe::Refl::MetaCounter<id_name>) \
 	{                                                                                             \
-		if constexpr (!(InitPropFlags(flags) & Prop_NotSerialized))                               \
+		if constexpr (!(InitPropFlags(flags) & Pipe::Prop_NotSerialized))                         \
 		{ /* Don't serialize property if Transient */                                             \
 			ct.Next(#name, name);                                                                 \
 		}                                                                                         \
 		/* Serialize next property if any */                                                      \
-		__ReflSerializeProperty(ct, Rift::Refl::MetaCounter<(id_name) + 1>{});                    \
+		__ReflSerializeProperty(ct, Pipe::Refl::MetaCounter<(id_name) + 1>{});                    \
 	};
 
 

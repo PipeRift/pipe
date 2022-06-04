@@ -6,7 +6,7 @@
 #include <magic_enum.hpp>
 
 
-namespace Rift::EnumOperators
+namespace Pipe::EnumOperators
 {
 	// Bitwise operators: ~, |, &, ^, |=, &=, ^=
 	using namespace magic_enum::bitwise_operators;
@@ -53,4 +53,4 @@ namespace Rift::EnumOperators
 	{
 		value &= ~flags;
 	}
-}    // namespace Rift::EnumOperators
+}    // namespace Pipe::EnumOperators

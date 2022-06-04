@@ -5,10 +5,10 @@
 #include "Log.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	void GenericPlatformProcess::ShowFolder(StringView path)
 	{
 		Log::Error("ShowFolder not implemented on this platform");
 	}
-}    // namespace Rift
+}    // namespace Pipe

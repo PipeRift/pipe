@@ -7,7 +7,7 @@
 #include <fmt/format.h>
 
 
-namespace Rift::Checks
+namespace Pipe::Checks
 {
 	template<typename RetType = void, typename InnerType>
 	RetType RunCheckCallback(InnerType&& callback)
@@ -34,7 +34,7 @@ namespace Rift::Checks
 		}
 		FailedCheckError(msg.c_str(), msg.size());
 	}
-}    // namespace Rift::Checks
+}    // namespace Pipe::Checks
 
 
 #define EnsureImpl(capture, always, expression, ...)                                        \
@@ -43,7 +43,7 @@ namespace Rift::Checks
 		if (!executed || always)                                                            \
 		{                                                                                   \
 			executed = true;                                                                \
-			Rift::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
+			Pipe::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
 			return true;                                                                    \
 		}                                                                                   \
 		return false;                                                                       \
@@ -63,7 +63,7 @@ namespace Rift::Checks
 #		define CheckImpl(expression, ...)                                                      \
 			if (!(expression)) [[unlikely]]                                                     \
 			{                                                                                   \
-				Rift::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
+				Pipe::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
 				DEBUG_PLATFORM_BREAK();                                                         \
 			}
 #	endif

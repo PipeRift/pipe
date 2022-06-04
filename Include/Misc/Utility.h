@@ -5,7 +5,7 @@
 #include <type_traits>
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename T>
 	constexpr void Swap(T& a, T& b) noexcept
@@ -53,4 +53,4 @@ namespace Rift
 			return predicate(Forward<T>(B), Forward<T>(A));
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe

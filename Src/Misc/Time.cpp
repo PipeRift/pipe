@@ -7,7 +7,7 @@
 #include <thread>
 
 
-namespace Rift
+namespace Pipe
 {
 	void FrameTime::Tick()
 	{
@@ -34,4 +34,4 @@ namespace Rift
 			std::this_thread::sleep_for(sleepPeriod);
 		}
 	}
-}    // namespace Rift
+}    // namespace Pipe

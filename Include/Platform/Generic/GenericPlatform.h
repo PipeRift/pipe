@@ -4,7 +4,7 @@
 #include "Export.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	//---------------------------------------------------------------------
 	// Utility for automatically setting up the pointer-sized integer type
@@ -92,7 +92,7 @@ namespace Rift
 		using TYPE_OF_NULL    = int32;
 		using TYPE_OF_NULLPTR = decltype(nullptr);
 	};
-}    // namespace Rift
+}    // namespace Pipe
 
 
 #ifndef PLATFORM_TCHAR_IS_WCHAR

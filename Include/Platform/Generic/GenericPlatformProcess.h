@@ -5,7 +5,7 @@
 #include "Strings/StringView.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	struct CORE_API GenericPlatformProcess
 	{
@@ -18,4 +18,4 @@ namespace Rift
 
 		static void ShowFolder(StringView path);
 	};
-}    // namespace Rift
+}    // namespace Pipe

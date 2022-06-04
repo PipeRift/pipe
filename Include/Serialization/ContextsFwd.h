@@ -2,9 +2,9 @@
 #pragma once
 
 // Forward declarations of all contexts
-namespace Rift::Serl
+namespace Pipe::Serl
 {
 	struct CommonContext;
 	struct ReadContext;
 	struct WriteContext;
-}    // namespace Rift::Serl
+}    // namespace Pipe::Serl

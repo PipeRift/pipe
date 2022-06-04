@@ -7,7 +7,7 @@
 #include "Types/Class.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	Refl::ClassType* BaseClass::GetType() const
 	{
@@ -18,4 +18,4 @@ namespace Rift
 	{
 		return static_cast<const Class*>(this)->Self();
 	}
-}    // namespace Rift
+}    // namespace Pipe

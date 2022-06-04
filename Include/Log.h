@@ -8,7 +8,7 @@
 #include <mutex>
 
 
-namespace Rift::Log
+namespace Pipe::Log
 {
 	CORE_API void Init(Path logPath = {});
 	CORE_API void Shutdown();
@@ -43,4 +43,4 @@ namespace Rift::Log
 			Error(Strings::Format(format, std::forward<Args>(args)...));
 		}
 	}
-};    // namespace Rift::Log
+};    // namespace Pipe::Log

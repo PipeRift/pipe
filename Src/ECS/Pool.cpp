@@ -3,7 +3,7 @@
 #include "ECS/Pool.h"
 
 
-namespace Rift::ECS
+namespace Pipe::ECS
 {
 	i32 GetSmallestPool(TSpan<const Pool*> pools)
 	{
@@ -20,4 +20,4 @@ namespace Rift::ECS
 		}
 		return minIndex;
 	}
-}    // namespace Rift::ECS
+}    // namespace Pipe::ECS

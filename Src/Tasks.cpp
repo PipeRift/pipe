@@ -13,7 +13,7 @@
 #include <mutex>
 
 
-namespace Rift
+namespace Pipe
 {
 	TaskSystem::TaskSystem()
 	    : mainPool{Math::Min(1u, std::thread::hardware_concurrency())}
@@ -64,4 +64,4 @@ namespace Rift
 	{
 		return GetContext()->GetTasks();
 	}
-}    // namespace Rift
+}    // namespace Pipe

@@ -7,7 +7,7 @@
 #include <Containers/Span.h>
 
 
-namespace Rift::ECS
+namespace Pipe::ECS
 {
 	struct CORE_API IdRegistry
 	{
@@ -64,4 +64,4 @@ namespace Rift::ECS
 			}
 		}
 	};
-}    // namespace Rift::ECS
+}    // namespace Pipe::ECS

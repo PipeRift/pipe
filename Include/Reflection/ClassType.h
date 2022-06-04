@@ -8,7 +8,7 @@
 #include "Types/BaseClass.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	class ClassType : public DataType
 	{
@@ -76,4 +76,4 @@ namespace Rift::Refl
 			return *GetDefaultPtr();
 		}
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

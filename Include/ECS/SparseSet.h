@@ -22,7 +22,7 @@
 //#include "fwd.hpp"
 
 
-namespace Rift::ECS
+namespace Pipe::ECS
 {
 	enum class DeletionPolicy : u8
 	{
@@ -968,4 +968,4 @@ namespace Rift::ECS
 	};
 
 
-}    // namespace Rift::ECS
+}    // namespace Pipe::ECS

@@ -6,7 +6,7 @@
 #include "Events/Function.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	namespace Refl
 	{
@@ -48,4 +48,4 @@ namespace Rift
 	{
 		return Refl::TStaticNativeInitializer<T>::enabled;
 	}
-}    // namespace Rift
+}    // namespace Pipe

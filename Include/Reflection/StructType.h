@@ -6,7 +6,7 @@
 #include "Reflection/DataType.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	class StructType : public DataType
 	{
@@ -44,4 +44,4 @@ namespace Rift::Refl
 			return this == other;
 		}
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

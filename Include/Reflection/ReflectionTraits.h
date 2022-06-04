@@ -8,14 +8,14 @@
 #include "TypeTraits.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	struct Struct;
 
 	template<typename T>
 	inline constexpr bool IsStruct()
 	{
-		return Derived<T, Struct>;    // && IsDefined<struct TTypeInstance<T>>();
+		return Derived<T, Pipe::Struct>;    // && IsDefined<struct TTypeInstance<T>>();
 	}
 
 	template<typename T>
@@ -46,4 +46,4 @@ namespace Rift
 		}
 		return false;
 	}
-}    // namespace Rift
+}    // namespace Pipe

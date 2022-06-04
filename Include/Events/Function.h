@@ -6,7 +6,7 @@
 #include <type_traits>
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename>
 	struct TFunction;    // intentionally not defined
@@ -69,4 +69,4 @@ namespace Rift
 			return dispatcher != other.dispatcher || target != other.target;
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe

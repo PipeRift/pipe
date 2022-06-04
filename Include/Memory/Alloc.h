@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	CORE_API void* Alloc(sizet n);
 	CORE_API void* Alloc(sizet n, sizet align);
@@ -17,4 +17,4 @@ namespace Rift
 	CORE_API sizet GetAlignmentPadding(const void* p, sizet align);
 
 	CORE_API sizet GetAlignmentPaddingWithHeader(const void* ptr, sizet align, sizet headerSize);
-}    // namespace Rift
+}    // namespace Pipe

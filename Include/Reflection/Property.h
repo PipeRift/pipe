@@ -8,7 +8,7 @@
 #include "Strings/String.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	class DataType;
 
@@ -73,4 +73,4 @@ namespace Rift::Refl
 	{
 		return displayName;
 	}
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

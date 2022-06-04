@@ -10,19 +10,19 @@
 
 namespace Pipe::Files
 {
-	using WatchId = efsw::WatchID;
+	using FileWatchId = efsw::WatchID;
 
-	struct Watcher
+	struct FileWatcher
 	{
 	protected:
 		class Listener : public efsw::FileWatchListener
 		{
-			Watcher& self;
+			FileWatcher& self;
 
 		public:
-			Listener(Watcher& self) : self{self} {}
+			Listener(FileWatcher& self) : self{self} {}
 
-			CORE_API void handleFileAction(WatchId watchid, const std::string& dir,
+			CORE_API void handleFileAction(FileWatchId watchid, const std::string& dir,
 			    const std::string& filename, efsw::Action action, std::string oldFilename) override;
 		};
 		friend Listener;
@@ -30,18 +30,18 @@ namespace Pipe::Files
 		static efsw::FileWatcher fileWatcher;
 
 		TArray<FixedString<7>> allowedExtensions;
-		TArray<WatchId> watches;
+		TArray<FileWatchId> watches;
 		Listener listener;
 
 
 	public:
-		CORE_API Watcher() : listener{*this} {}
-		CORE_API ~Watcher();
+		CORE_API FileWatcher() : listener{*this} {}
+		CORE_API ~FileWatcher();
 
 		// Adds one extension. If there are no extensions, all are allowed
-		CORE_API WatchId AddPath(StringView path, bool recursive = true);
+		CORE_API FileWatchId AddPath(StringView path, bool recursive = true);
 		CORE_API void RemovePath(StringView path);
-		CORE_API void RemovePath(WatchId id);
+		CORE_API void RemovePath(FileWatchId id);
 		CORE_API void Reset();
 		CORE_API void AddExtension(StringView extension);
 

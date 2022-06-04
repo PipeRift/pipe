@@ -7,7 +7,7 @@
 #include <Containers/Set.h>
 
 using namespace ankerl;
-using namespace Rift;
+using namespace Pipe;
 
 
 void RunLookupsBenchmarks()
@@ -19,7 +19,7 @@ void RunLookupsBenchmarks()
 		    .performanceCounters(true)
 		    .epochs(1)
 		    .epochIterations(count)
-		    .maxEpochTime(Rift::Seconds{15});
+		    .maxEpochTime(Pipe::Seconds{15});
 
 		{
 			TArray<u64> data;

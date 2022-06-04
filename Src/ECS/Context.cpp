@@ -3,7 +3,7 @@
 #include "ECS/Context.h"
 
 
-namespace Rift::ECS
+namespace Pipe::ECS
 {
 	Context::Context()
 	{
@@ -94,4 +94,4 @@ namespace Rift::ECS
 		// TODO: Move statics
 		// TODO: Cache pools
 	}
-}    // namespace Rift::ECS
+}    // namespace Pipe::ECS

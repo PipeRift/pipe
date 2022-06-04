@@ -6,7 +6,7 @@
 #include "TypeTraits.h"
 
 
-namespace Rift::Serl
+namespace Pipe::Serl
 {
 	struct IFormatReader
 	{};
@@ -61,4 +61,4 @@ namespace Rift::Serl
 
 	template<Format format>
 	concept HasWriter = !IsVoid<typename FormatBind<format>::Writer>;
-}    // namespace Rift::Serl
+}    // namespace Pipe::Serl

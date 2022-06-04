@@ -9,7 +9,7 @@
 #include <string_view>
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename CharType>
 	using TStringView = std::basic_string_view<CharType, std::char_traits<CharType>>;
@@ -292,4 +292,4 @@ namespace Rift
 
 		// END TChar API
 	}    // namespace Strings
-}    // namespace Rift
+}    // namespace Pipe

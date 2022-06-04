@@ -5,7 +5,7 @@
 #include "Misc/Utility.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	/**
 	 * When we have an optional value IsSet() returns true, and GetValue() is meaningful.
@@ -144,4 +144,4 @@ namespace Rift
 			return IsSet() ? value : defaultValue;
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe

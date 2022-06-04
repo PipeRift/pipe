@@ -8,7 +8,7 @@
 #include <chrono>
 
 
-namespace Rift
+namespace Pipe
 {
 	namespace Chrono = std::chrono;
 
@@ -80,4 +80,4 @@ namespace Rift
 	constexpr const WeekDay Fri = date::fri;
 	constexpr const WeekDay Sat = date::sat;
 	constexpr const WeekDay Sun = date::sun;
-}    // namespace Rift
+}    // namespace Pipe

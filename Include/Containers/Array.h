@@ -17,7 +17,7 @@
 #include <vector>
 
 
-namespace Rift
+namespace Pipe::Containers
 {
 	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>
 	struct TArray
@@ -779,4 +779,9 @@ namespace Rift
 			std::iter_swap(vector.begin() + firstIndex, vector.begin() + secondIndex);
 		}
 	}
-}    // namespace Rift
+}    // namespace Pipe::Containers
+
+namespace Pipe
+{
+	using namespace Pipe::Containers;
+}

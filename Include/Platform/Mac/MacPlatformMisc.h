@@ -4,7 +4,7 @@
 #include "Platform/Generic/GenericPlatformMisc.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	struct MacPlatformMisc : public GenericPlatformMisc
 	{
@@ -15,4 +15,4 @@ namespace Rift
 	};
 
 	using PlatformMisc = MacPlatformMisc;
-}    // namespace Rift
+}    // namespace Pipe

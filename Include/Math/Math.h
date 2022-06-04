@@ -10,7 +10,7 @@
 #include <cmath>
 
 
-namespace Rift
+namespace Pipe
 {
 	struct CORE_API Math
 	{
@@ -508,4 +508,4 @@ namespace Rift
 			result *= value;
 		return result;
 	}
-}    // namespace Rift
+}    // namespace Pipe

@@ -6,7 +6,7 @@
 #include <cstddef>
 
 
-namespace Rift
+namespace Pipe
 {
 	/**
 	 * Windows specific types
@@ -17,7 +17,7 @@ namespace Rift
 	};
 
 	using PlatformTypes = WindowsPlatformTypes;
-}    // namespace Rift
+}    // namespace Pipe
 
 #define FORCEINLINE __forceinline     /* Force code to be inline */
 #define NOINLINE __declspec(noinline) /* Force code to not be inlined */

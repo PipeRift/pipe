@@ -7,7 +7,7 @@
 #include "Misc/Checks.h"
 
 
-namespace Rift
+namespace Pipe::Containers
 {
 	template<typename T>
 	struct TSpan
@@ -167,4 +167,9 @@ namespace Rift
 			return rend();
 		};
 	};
-}    // namespace Rift
+}    // namespace Pipe::Containers
+
+namespace Pipe
+{
+	using namespace Pipe::Containers;
+}

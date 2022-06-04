@@ -3,7 +3,7 @@
 #include "ECS/IdRegistry.h"
 
 
-namespace Rift::ECS
+namespace Pipe::ECS
 {
 	Id IdRegistry::Create()
 	{
@@ -83,4 +83,4 @@ namespace Rift::ECS
 		const Index index = GetIndex(id);
 		return entities.IsValidIndex(index) && entities[index] == id;
 	}
-}    // namespace Rift::ECS
+}    // namespace Pipe::ECS

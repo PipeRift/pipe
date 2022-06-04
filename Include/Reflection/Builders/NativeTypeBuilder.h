@@ -13,20 +13,20 @@
 
 #define REFLECT_NATIVE_TYPE(type)                                       \
 	template<>                                                          \
-	struct Rift::Refl::TStaticNativeInitializer<type>                   \
+	struct Pipe::Refl::TStaticNativeInitializer<type>                   \
 	{                                                                   \
 		static constexpr bool enabled = true;                           \
-		static const Rift::TFunction<Rift::Refl::NativeType*()> onInit; \
+		static const Pipe::TFunction<Pipe::Refl::NativeType*()> onInit; \
 	};                                                                  \
-	inline const Rift::TFunction<Rift::Refl::NativeType*()>             \
-	    Rift::Refl::TStaticNativeInitializer<type>::onInit = []() {     \
-		    Rift::Refl::TNativeTypeBuilder<type> builder{};             \
+	inline const Pipe::TFunction<Pipe::Refl::NativeType*()>             \
+	    Pipe::Refl::TStaticNativeInitializer<type>::onInit = []() {     \
+		    Pipe::Refl::TNativeTypeBuilder<type> builder{};             \
 		    builder.Initialize();                                       \
 		    return builder.GetType();                                   \
 	    };
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	/**
 	 * Native Type Builder
@@ -54,4 +54,4 @@ namespace Rift::Refl
 			return &newType;
 		}
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

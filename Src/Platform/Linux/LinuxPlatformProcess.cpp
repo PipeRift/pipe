@@ -11,7 +11,7 @@
 #	include <unistd.h>
 
 
-namespace Rift
+namespace Pipe
 {
 	StringView LinuxPlatformProcess::GetExecutableFile()
 	{
@@ -60,5 +60,5 @@ namespace Rift
 			exit(execl("/usr/bin/xdg-open", "xdg-open", fullPath.data(), (char*)0));
 		}
 	}
-}    // namespace Rift
+}    // namespace Pipe
 #endif

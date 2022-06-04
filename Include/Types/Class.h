@@ -8,7 +8,7 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	class Context;
 
@@ -35,20 +35,20 @@ namespace Rift
 	{
 	public:
 		using Super       = BaseClass;
-		using BuilderType = Rift::Refl::TClassTypeBuilder<Class, void, Type_NoFlag>;
+		using BuilderType = Pipe::Refl::TClassTypeBuilder<Class, void, Type_NoFlag>;
 
 
-		static Rift::Refl::ClassType* GetStaticType()
+		static Pipe::Refl::ClassType* GetStaticType()
 		{
-			return Rift::GetType<Class>();
+			return Pipe::GetType<Class>();
 		}
 		static constexpr TypeFlags GetStaticFlags()
 		{
 			return Type_NoFlag;
 		}
-		virtual Rift::Refl::ClassType* GetType() const
+		virtual Pipe::Refl::ClassType* GetType() const
 		{
-			return Rift::GetType<Class>();
+			return Pipe::GetType<Class>();
 		}
 
 		REFLECTION_BODY({})
@@ -110,4 +110,4 @@ namespace Rift
 		Serl::CommonContext common{ct};
 		const_cast<T&>(value).Serialize(common);
 	}
-}    // namespace Rift
+}    // namespace Pipe

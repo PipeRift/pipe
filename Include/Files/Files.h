@@ -9,7 +9,7 @@
 #include "Strings/String.h"
 
 
-namespace Rift::Files
+namespace Pipe::Files
 {
 	using Iterator          = fs::directory_iterator;
 	using RecursiveIterator = fs::recursive_directory_iterator;
@@ -52,4 +52,9 @@ namespace Rift::Files
 	CORE_API bool Exists(const String& path);
 	CORE_API bool IsFolder(const String& path);
 	CORE_API bool IsFile(const String& path);
-}    // namespace Rift::Files
+}    // namespace Pipe::Files
+
+namespace Pipe
+{
+	using namespace Pipe::Files;
+}

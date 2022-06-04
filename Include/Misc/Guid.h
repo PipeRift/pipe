@@ -11,7 +11,7 @@
 #include "Strings/Name.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	/**
 	 * Enumerates known GUID formats.
@@ -310,4 +310,4 @@ namespace Rift
 			HasMemberSerialize = true
 		};
 	};
-}    // namespace Rift
+}    // namespace Pipe

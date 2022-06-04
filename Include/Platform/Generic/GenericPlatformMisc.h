@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	/**
 	 * Generic types for almost all compilers and platforms
@@ -18,4 +18,4 @@ namespace Rift
 			return 128;
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe

@@ -8,7 +8,7 @@
 #include "Types/Class.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename... Params>
 	class TBroadcast
@@ -173,4 +173,4 @@ namespace Rift
 			Broadcast(Forward<Params>(params)...);
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe

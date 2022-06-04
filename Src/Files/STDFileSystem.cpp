@@ -6,17 +6,17 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Rift::Serl
+namespace Pipe::Serl
 {
 	void Read(Serl::ReadContext& ct, Path& value)
 	{
 		String str;
 		ct.Serialize(str);
-		value = Paths::FromString(str);
+		value = FromString(str);
 	}
 
 	void Write(Serl::WriteContext& ct, const Path& value)
 	{
-		ct.Serialize(Paths::ToString(value));
+		ct.Serialize(ToString(value));
 	}
-}    // namespace Rift::Serl
+}    // namespace Pipe::Serl

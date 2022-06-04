@@ -15,7 +15,7 @@
 #include <shared_mutex>
 
 
-namespace Rift
+namespace Pipe
 {
 	struct Name;
 
@@ -196,16 +196,16 @@ namespace Rift
 			HasMemberSerialize = true
 		};
 	};
-}    // namespace Rift
+}    // namespace Pipe
 
 
 template<>
-struct fmt::formatter<Rift::Name> : public fmt::formatter<Rift::StringView>
+struct fmt::formatter<Pipe::Name> : public fmt::formatter<Pipe::StringView>
 {
 	template<typename FormatContext>
-	auto format(const Rift::Name& name, FormatContext& ctx)
+	auto format(const Pipe::Name& name, FormatContext& ctx)
 	{
-		const Rift::StringView nameStr{name.ToString()};
-		return formatter<Rift::StringView>::format(nameStr, ctx);
+		const Pipe::StringView nameStr{name.ToString()};
+		return formatter<Pipe::StringView>::format(nameStr, ctx);
 	}
 };

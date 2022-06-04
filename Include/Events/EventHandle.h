@@ -4,7 +4,7 @@
 #include "CoreTypes.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	struct CORE_API EventHandle
 	{
@@ -45,4 +45,4 @@ namespace Rift
 			return IsValid();
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe

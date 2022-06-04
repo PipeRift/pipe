@@ -10,7 +10,7 @@
 #include <iostream>
 
 
-namespace Rift
+namespace Pipe
 {
 	namespace Refl
 	{
@@ -66,7 +66,7 @@ namespace Rift
 	template<typename T>
 	inline consteval Refl::TypeId GetTypeId()
 	{
-		return Refl::TypeId{Rift::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
+		return Refl::TypeId{Pipe::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
 	}
 
 	template<>
@@ -78,15 +78,15 @@ namespace Rift
 			return hasher(id.GetId());
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe
 
 
 template<>
-struct fmt::formatter<Rift::Refl::TypeId> : public fmt::formatter<Rift::u64>
+struct fmt::formatter<Pipe::Refl::TypeId> : public fmt::formatter<Pipe::u64>
 {
 	template<typename FormatContext>
-	auto format(const Rift::Refl::TypeId& typeId, FormatContext& ctx)
+	auto format(const Pipe::Refl::TypeId& typeId, FormatContext& ctx)
 	{
-		return formatter<Rift::u64>::format(typeId.GetId(), ctx);
+		return formatter<Pipe::u64>::format(typeId.GetId(), ctx);
 	}
 };

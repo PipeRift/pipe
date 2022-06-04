@@ -7,7 +7,7 @@
 #include <robin_hood.h>
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename T>
 	struct Hash : robin_hood::hash<T>
@@ -75,4 +75,4 @@ namespace Rift
 			return static_cast<sizet>(result);
 		}
 	}
-}    // namespace Rift
+}    // namespace Pipe

@@ -9,7 +9,7 @@
 #include <cstdio>
 
 
-namespace Rift
+namespace Pipe
 {
 	/* Guid interface
 	 *****************************************************************************/
@@ -231,4 +231,4 @@ namespace Rift
 
 		return true;
 	}
-}    // namespace Rift
+}    // namespace Pipe

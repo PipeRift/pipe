@@ -14,7 +14,7 @@
 #include "Vector.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	/**
 	 * Different color space representations supported
@@ -888,4 +888,4 @@ namespace Rift
 			return color.DWColor();
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe

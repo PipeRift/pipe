@@ -4,7 +4,7 @@
 #include "Platform/Generic/GenericPlatformMisc.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	/**
 	 * Windows specific types
@@ -15,4 +15,4 @@ namespace Rift
 	};
 
 	using PlatformMisc = WindowsPlatformMisc;
-}    // namespace Rift
+}    // namespace Pipe

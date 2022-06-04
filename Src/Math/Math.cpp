@@ -5,7 +5,7 @@
 #include "Math/Vector.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	void Math::SinCos(float value, float& outSin, float& outCos)
 	{
@@ -98,4 +98,4 @@ namespace Rift
 
 		return t3;
 	}
-}    // namespace Rift
+}    // namespace Pipe

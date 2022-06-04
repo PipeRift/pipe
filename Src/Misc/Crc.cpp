@@ -6,7 +6,7 @@
 #include "Memory/Alloc.h"
 
 
-namespace Rift::Crc
+namespace Pipe::Crc
 {
 	/** CRC 32 polynomial */
 	enum
@@ -356,4 +356,4 @@ namespace Rift::Crc
 
 		return ~CRC;
 	}
-}    // namespace Rift::Crc
+}    // namespace Pipe::Crc

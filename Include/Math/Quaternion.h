@@ -8,7 +8,7 @@
 #include "Serialization/ContextsFwd.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	struct Rotator;
 
@@ -80,4 +80,4 @@ namespace Rift
 
 	void Read(Serl::ReadContext& ct, Quat& val);
 	void Write(Serl::WriteContext& ct, const Quat& val);
-}    // namespace Rift
+}    // namespace Pipe

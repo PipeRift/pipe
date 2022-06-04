@@ -11,7 +11,7 @@
 #include <ratio>
 
 
-namespace Rift
+namespace Pipe
 {
 	/**
 	 * Implements a time span.
@@ -627,4 +627,4 @@ namespace Rift
 	{
 		return Timespan.operator*(Scalar);
 	}
-}    // namespace Rift
+}    // namespace Pipe

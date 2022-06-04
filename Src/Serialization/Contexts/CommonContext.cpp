@@ -5,7 +5,7 @@
 #include "Misc/Checks.h"
 
 
-namespace Rift::Serl
+namespace Pipe::Serl
 {
 	void CommonContext::BeginObject()
 	{
@@ -90,4 +90,4 @@ namespace Rift::Serl
 			GetWrite().PopFlags();
 		}
 	}
-}    // namespace Rift::Serl
+}    // namespace Pipe::Serl

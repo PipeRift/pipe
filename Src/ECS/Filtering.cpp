@@ -3,7 +3,7 @@
 #include "ECS/Filtering.h"
 
 
-namespace Rift::ECS
+namespace Pipe::ECS
 {
 	void ExcludeIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
@@ -260,4 +260,4 @@ namespace Rift::ECS
 		ids.Empty();
 		ids.Append(idsSet.begin(), idsSet.end());
 	}
-}    // namespace Rift::ECS
+}    // namespace Pipe::ECS

@@ -14,7 +14,7 @@
 #include <memory>
 
 
-namespace Rift
+namespace Pipe
 {
 	namespace Internal
 	{
@@ -579,4 +579,4 @@ namespace Rift
 	//	using Elem = std::remove_extent_t<T>;
 	//	return {Builder::NewArray(size)};
 	//}
-}    // namespace Rift
+}    // namespace Pipe

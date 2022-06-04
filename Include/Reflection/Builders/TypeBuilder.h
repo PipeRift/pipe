@@ -8,7 +8,7 @@
 #include "TypeTraits.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	struct TypeId;
 
@@ -34,4 +34,4 @@ namespace Rift::Refl
 	protected:
 		CORE_API virtual Type* Build() = 0;
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

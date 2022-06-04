@@ -8,7 +8,7 @@
 #include "TypeTraits.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	namespace Refl
 	{
@@ -36,9 +36,9 @@ namespace Rift
 		Refl::ClassType* GetType() const;
 		TPtr<Class> Self() const;
 
-		void SerializeReflection(Rift::Serl::CommonContext& ct) {}
+		void SerializeReflection(Pipe::Serl::CommonContext& ct) {}
 
 	protected:
 		virtual void BeforeDestroy() {}
 	};
-}    // namespace Rift
+}    // namespace Pipe

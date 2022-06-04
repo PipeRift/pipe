@@ -18,30 +18,30 @@ void RunArenasBenchmarks()
 		consecutiveAlloc.title("Consecutive allocations")
 		    .performanceCounters(true)
 		    .minEpochIterations(50000)
-		    .maxEpochTime(Rift::Seconds{1});
+		    .maxEpochTime(Pipe::Seconds{1});
 
 		{
 			consecutiveAlloc.relative(true).run("OS (malloc)", [&] {
-				ankerl::nanobench::doNotOptimizeAway(Rift::Alloc(16));
+				ankerl::nanobench::doNotOptimizeAway(Pipe::Alloc(16));
 			});
 		}
 
 		{
-			Rift::Memory::LinearArena arena{100 * 1024 * 1024};
+			Pipe::Memory::LinearArena arena{100 * 1024 * 1024};
 			consecutiveAlloc.run("LinearArena", [&] {
 				ankerl::nanobench::doNotOptimizeAway(arena.Allocate(16));
 			});
 		}
 
 		{
-			Rift::Memory::BestFitArena arena{10 * 1024 * 1024};
+			Pipe::Memory::BestFitArena arena{10 * 1024 * 1024};
 			consecutiveAlloc.run("BestFitArena", [&] {
 				ankerl::nanobench::doNotOptimizeAway(arena.Allocate(16));
 			});
 		}
 
 		{
-			Rift::Memory::BestFitArena arena{10 * 1024 * 1024};
+			Pipe::Memory::BestFitArena arena{10 * 1024 * 1024};
 			consecutiveAlloc.run("BigBestFitArena", [&] {
 				arena.Allocate(16);
 			});
@@ -56,34 +56,34 @@ void RunArenasBenchmarks()
 		    .epochIterations(50000);
 
 		{
-			Rift::TArray<void*> allocated;
+			Pipe::TArray<void*> allocated;
 			allocated.Reserve(50000);
-			for (Rift::u32 i = 0; i < 50000; ++i)
+			for (Pipe::u32 i = 0; i < 50000; ++i)
 			{
-				allocated.Add(Rift::Alloc(16));
+				allocated.Add(Pipe::Alloc(16));
 			}
 
-			Rift::i32 i = 0;
+			Pipe::i32 i = 0;
 			consecutiveFree.relative(true).run("OS (malloc)", [&] {
-				Rift::Free(allocated[i]);
+				Pipe::Free(allocated[i]);
 				++i;
 			});
 			for (; i < allocated.Size(); ++i)
 			{
-				Rift::Free(allocated[i]);
+				Pipe::Free(allocated[i]);
 			}
 		}
 
 		{
-			Rift::Memory::BestFitArena arena{100 * 1024 * 1024};
-			Rift::TArray<void*> allocated;
+			Pipe::Memory::BestFitArena arena{100 * 1024 * 1024};
+			Pipe::TArray<void*> allocated;
 			allocated.Reserve(50000);
-			for (Rift::u32 i = 0; i < 50000; ++i)
+			for (Pipe::u32 i = 0; i < 50000; ++i)
 			{
 				allocated.Add(arena.Allocate(16));
 			}
 
-			Rift::i32 i = 0;
+			Pipe::i32 i = 0;
 			consecutiveFree.run("BestFitArena", [&] {
 				arena.Free(allocated[i], 16);
 				++i;
@@ -95,15 +95,15 @@ void RunArenasBenchmarks()
 		}
 
 		{
-			Rift::Memory::BigBestFitArena arena{100 * 1024 * 1024};
-			Rift::TArray<void*> allocated;
+			Pipe::Memory::BigBestFitArena arena{100 * 1024 * 1024};
+			Pipe::TArray<void*> allocated;
 			allocated.Reserve(50000);
-			for (Rift::u32 i = 0; i < 50000; ++i)
+			for (Pipe::u32 i = 0; i < 50000; ++i)
 			{
 				allocated.Add(arena.Allocate(16));
 			}
 
-			Rift::i32 i = 0;
+			Pipe::i32 i = 0;
 			consecutiveFree.run("BigBestFitArena", [&] {
 				arena.Free(allocated[i], 16);
 				++i;
@@ -120,15 +120,15 @@ void RunArenasBenchmarks()
 		allocSequence.title("Alloc/Free sequence")
 		    .performanceCounters(true)
 		    .minEpochIterations(50000)
-		    .maxEpochTime(Rift::Seconds{1});
+		    .maxEpochTime(Pipe::Seconds{1});
 
 		{
 			allocSequence.relative(true).run("OS (malloc)", [&] {
-				void* p  = Rift::Alloc(16);
-				void* p2 = Rift::Alloc(21);
-				Rift::Free(p);
-				void* p3 = Rift::Alloc(8);
-				Rift::Free(p3);
+				void* p  = Pipe::Alloc(16);
+				void* p2 = Pipe::Alloc(21);
+				Pipe::Free(p);
+				void* p3 = Pipe::Alloc(8);
+				Pipe::Free(p3);
 				ankerl::nanobench::doNotOptimizeAway(p);
 				ankerl::nanobench::doNotOptimizeAway(p2);
 				ankerl::nanobench::doNotOptimizeAway(p3);
@@ -136,7 +136,7 @@ void RunArenasBenchmarks()
 		}
 
 		{
-			Rift::Memory::BestFitArena arena{100 * 1024 * 1024};
+			Pipe::Memory::BestFitArena arena{100 * 1024 * 1024};
 			allocSequence.run("BestFitArena", [&] {
 				void* p  = arena.Allocate(16);
 				void* p2 = arena.Allocate(21);
@@ -150,7 +150,7 @@ void RunArenasBenchmarks()
 		}
 
 		{
-			Rift::Memory::BigBestFitArena arena{100 * 1024 * 1024};
+			Pipe::Memory::BigBestFitArena arena{100 * 1024 * 1024};
 			allocSequence.run("BigBestFitArena", [&] {
 				void* p  = arena.Allocate(16);
 				void* p2 = arena.Allocate(21);
@@ -172,41 +172,41 @@ void RunArenasBenchmarks()
 		    .epochIterations(50000);
 
 		{
-			Rift::TArray<void*> allocated;
+			Pipe::TArray<void*> allocated;
 			allocated.Reserve(50000);
-			for (Rift::u32 i = 0; i < 25000; ++i)
+			for (Pipe::u32 i = 0; i < 25000; ++i)
 			{
-				allocated.Add(Rift::Alloc(16));
+				allocated.Add(Pipe::Alloc(16));
 			}
 
 			ankerl::nanobench::Rng rng(122);
 			randomSequence.relative(true).run("OS (malloc)", [&] {
 				if (rng() & 1U)
 				{
-					void* ptr = Rift::Alloc(16);
+					void* ptr = Pipe::Alloc(16);
 					ankerl::nanobench::doNotOptimizeAway(ptr);
 					allocated.Add(ptr);
 				}
 				else
 				{
-					Rift::u32 index = rng.bounded(allocated.Size());
+					Pipe::u32 index = rng.bounded(allocated.Size());
 					void* toRemove  = allocated[index];
-					Rift::Free(toRemove);
+					Pipe::Free(toRemove);
 					allocated.RemoveAtSwapUnsafe(index);
 				}
 			});
 
 			for (void* p : allocated)
 			{
-				Rift::Free(p);
+				Pipe::Free(p);
 			}
 		}
 
 		{
-			Rift::Memory::BestFitArena arena{100 * 1024 * 1024};
-			Rift::TArray<void*> allocated;
+			Pipe::Memory::BestFitArena arena{100 * 1024 * 1024};
+			Pipe::TArray<void*> allocated;
 			allocated.Reserve(50000);
-			for (Rift::u32 i = 0; i < 25000; ++i)
+			for (Pipe::u32 i = 0; i < 25000; ++i)
 			{
 				allocated.Add(arena.Allocate(16));
 			}
@@ -221,7 +221,7 @@ void RunArenasBenchmarks()
 				}
 				else
 				{
-					Rift::u32 index = rng.bounded(allocated.Size());
+					Pipe::u32 index = rng.bounded(allocated.Size());
 					void* toRemove  = allocated[index];
 					arena.Free(toRemove, 16);
 					allocated.RemoveAtSwapUnsafe(index);
@@ -235,10 +235,10 @@ void RunArenasBenchmarks()
 		}
 
 		{
-			Rift::Memory::BigBestFitArena arena{100 * 1024 * 1024};
-			Rift::TArray<void*> allocated;
+			Pipe::Memory::BigBestFitArena arena{100 * 1024 * 1024};
+			Pipe::TArray<void*> allocated;
 			allocated.Reserve(50000);
-			for (Rift::u32 i = 0; i < 25000; ++i)
+			for (Pipe::u32 i = 0; i < 25000; ++i)
 			{
 				allocated.Add(arena.Allocate(16));
 			}
@@ -253,7 +253,7 @@ void RunArenasBenchmarks()
 				}
 				else
 				{
-					Rift::u32 index = rng.bounded(allocated.Size());
+					Pipe::u32 index = rng.bounded(allocated.Size());
 					void* toRemove  = allocated[index];
 					arena.Free(toRemove, 16);
 					allocated.RemoveAtSwapUnsafe(index);
@@ -272,7 +272,7 @@ void RunArenasBenchmarks()
 	    complexity1.title("Complexity BigBestFitArena (Alloc)");
 	    for (auto size : {64U, 256U, 1024U, 4096U, 16384U, 65536U, 262144U})
 	    {
-	        Rift::Memory::BigBestFitArena arena{(16 + 8) * size};
+	        Pipe::Memory::BigBestFitArena arena{(16 + 8) * size};
 	        complexity1.complexityN(size).run([&] {
 	            arena.Allocate(16);
 	        });
@@ -283,7 +283,7 @@ void RunArenasBenchmarks()
 	    complexity2.title("Complexity BestFitArena (Alloc)");
 	    for (auto size : {64U, 256U, 1024U, 4096U, 16384U, 65536U, 262144U})
 	    {
-	        Rift::Memory::BestFitArena arena{16 * size};
+	        Pipe::Memory::BestFitArena arena{16 * size};
 	        complexity2.complexityN(size).run([&] {
 	            arena.Allocate(16);
 	        });

@@ -6,7 +6,7 @@
 #include "DateTime.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	struct CORE_API FrameTime
 	{
@@ -44,4 +44,4 @@ namespace Rift
 			return deltaTime;
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe

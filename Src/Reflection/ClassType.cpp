@@ -5,7 +5,7 @@
 #include "Misc/Checks.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	BaseClass* ClassType::New() const
 	{
@@ -15,4 +15,4 @@ namespace Rift::Refl
 		}
 		return nullptr;
 	}
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

@@ -9,7 +9,7 @@
 #	include <Windows.h>
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename StringType, typename TStringGetterFunc>
 	StringType GetStringFromWindowsAPI(TStringGetterFunc stringGetter, int initialSize = MAX_PATH)
@@ -53,7 +53,7 @@ namespace Rift
 
 	StringView WindowsPlatformProcess::GetExecutablePath()
 	{
-		return Paths::GetParent(GetExecutableFile());
+		return GetParentPath(GetExecutableFile());
 	}
 
 	StringView WindowsPlatformProcess::GetBasePath()
@@ -81,5 +81,5 @@ namespace Rift
 			    nullptr, "open", "explorer.exe", parameters.data(), nullptr, SW_SHOWNORMAL);
 		}
 	}
-}    // namespace Rift
+}    // namespace Pipe
 #endif

@@ -17,7 +17,7 @@
 #include <type_traits>
 
 
-namespace Rift
+namespace Pipe::Containers
 {
 	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>
 	class TSet
@@ -237,4 +237,9 @@ namespace Rift
 			set = Move(other.set);
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe::Containers
+
+namespace Pipe
+{
+	using namespace Pipe::Containers;
+}

@@ -9,7 +9,7 @@
 #include <locale>
 
 
-namespace Rift
+namespace Pipe
 {
 	/*-----------------------------------------------------------------------------
 	    Character type functions.
@@ -284,4 +284,4 @@ namespace Rift
 	{
 		return ::strtol(str, end, radix);
 	}
-}    // namespace Rift
+}    // namespace Pipe

@@ -9,7 +9,7 @@
 #include "TypeTraits.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename T>
 	struct TOwnPtr;
@@ -53,4 +53,4 @@ namespace Rift
 	public:
 		static constexpr bool value = std::is_void<decltype(Impl<T>(0))>::value;
 	};
-}    // namespace Rift
+}    // namespace Pipe

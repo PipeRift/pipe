@@ -6,7 +6,7 @@
 #include <Templates/TypeList.h>
 
 
-namespace Rift
+namespace Pipe
 {
 	enum class AccessMode : u8
 	{
@@ -297,4 +297,4 @@ namespace Rift
 			return 0;
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe

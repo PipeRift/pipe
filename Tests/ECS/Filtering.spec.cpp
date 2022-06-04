@@ -9,8 +9,8 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
-using namespace Rift::ECS;
+using namespace Pipe;
+using namespace Pipe::ECS;
 
 namespace snowhouse
 {

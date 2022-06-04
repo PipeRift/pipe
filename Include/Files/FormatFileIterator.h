@@ -6,7 +6,7 @@
 #include "Strings/String.h"
 
 
-namespace Rift
+namespace Pipe::Files
 {
 	template<typename FileIterator = Files::Iterator>
 	class FormatFileIterator
@@ -105,4 +105,9 @@ namespace Rift
 	{
 		return it->path().extension() == format;
 	}
-}    // namespace Rift
+}    // namespace Pipe::Files
+
+namespace Pipe
+{
+	using namespace Pipe::Files;
+}

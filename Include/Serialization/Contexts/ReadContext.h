@@ -12,7 +12,7 @@
 #include "TypeTraits.h"
 
 
-namespace Rift::Serl
+namespace Pipe::Serl
 {
 	struct CORE_API ReadContext
 	{
@@ -168,4 +168,4 @@ namespace Rift::Serl
 			val = value.value();
 		}
 	}
-}    // namespace Rift::Serl
+}    // namespace Pipe::Serl

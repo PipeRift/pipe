@@ -5,11 +5,11 @@
 #include "Misc/DateTime.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	u64 PlatformTime::Cycles64()
 	{
 		return Chrono::floor<Chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch())
 		    .count();
 	}
-}    // namespace Rift
+}    // namespace Pipe

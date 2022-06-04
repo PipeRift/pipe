@@ -10,7 +10,7 @@
 
 /** SIZE SELECTORS */
 
-namespace Rift
+namespace Pipe
 {
 	template<typename T>
 	concept IsVoid = std::is_void_v<T>;
@@ -149,7 +149,7 @@ namespace Rift
 	};
 	template<typename T, typename Reference>
 	using CopyConst = typename TCopyConst<T, Reference>::type;
-}    // namespace Rift
+}    // namespace Pipe
 
 #define RIFT_DECLARE_IS_TRIVIAL(T, isTrivial)                                                \
 	namespace std                                                                            \

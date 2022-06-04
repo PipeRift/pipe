@@ -2,7 +2,7 @@
 
 #include "Events/EventHandle.h"
 
-namespace Rift
+namespace Pipe
 {
 	u64 EventHandle::counter{0};
 }

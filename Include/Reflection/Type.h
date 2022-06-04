@@ -8,7 +8,7 @@
 #include "Strings/StringView.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	using namespace EnumOperators;
 
@@ -60,4 +60,4 @@ namespace Rift::Refl
 		class StructType* AsStruct();
 		class ClassType* AsClass();
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

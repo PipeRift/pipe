@@ -5,7 +5,7 @@
 #include "Platform/Platform.h"
 
 
-namespace Rift
+namespace Pipe::Containers
 {
 	template<typename Allocator = Memory::TDefaultAllocator<u32>>
 	class TBitArray
@@ -268,4 +268,9 @@ namespace Rift
 
 
 	using BitArray = TBitArray<>;
-}    // namespace Rift
+}    // namespace Pipe::Containers
+
+namespace Pipe
+{
+	using namespace Pipe::Containers;
+}

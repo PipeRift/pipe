@@ -6,7 +6,7 @@
 #include "Strings/FixedString.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	OVERRIDE_TYPE_NAME(u8)
 	OVERRIDE_TYPE_NAME(u16)
@@ -79,4 +79,4 @@ namespace Rift
 	{
 		return "TMap";
 	}
-}    // namespace Rift
+}    // namespace Pipe

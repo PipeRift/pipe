@@ -3,10 +3,10 @@
 #include "Log.h"
 
 
-namespace Rift::Checks
+namespace Pipe::Checks
 {
 	void FailedCheckError(const char* msg, sizet size)
 	{
 		Log::Error(StringView{msg, size});
 	}
-}    // namespace Rift::Checks
+}    // namespace Pipe::Checks

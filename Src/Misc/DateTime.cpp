@@ -6,7 +6,7 @@
 #include "Misc/Char.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	/* DateTime constants
 	 *****************************************************************************/
@@ -395,4 +395,4 @@ namespace Rift
 		    && (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0)
 		    && (Millisecond <= 999);
 	}
-}    // namespace Rift
+}    // namespace Pipe

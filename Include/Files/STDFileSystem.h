@@ -11,7 +11,7 @@
 #include <filesystem>
 
 
-namespace Rift
+namespace Pipe
 {
 	namespace fs = std::filesystem;
 
@@ -70,16 +70,16 @@ namespace Rift
 	}    // namespace Serl
 
 	REFLECT_NATIVE_TYPE(Path);
-}    // namespace Rift
+}    // namespace Pipe
 
 
 // TODO: Finish implementation of formatting of Paths
 /*template <>
-struct fmt::formatter<Rift::Path> : public fmt::formatter<Rift::PathView>
+struct fmt::formatter<Pipe::Path> : public fmt::formatter<Pipe::PathView>
 {
     template <typename FormatContext>
-    auto format(const Rift::Path& path, FormatContext& ctx)
+    auto format(const Pipe::Path& path, FormatContext& ctx)
     {
-        return formatter<Rift::PathView>::format(Rift::ToPathView(path), ctx);
+        return formatter<Pipe::PathView>::format(Pipe::ToPathView(path), ctx);
     }
 };*/

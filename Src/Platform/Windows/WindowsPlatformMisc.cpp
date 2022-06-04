@@ -6,7 +6,7 @@
 #	include <Windows.h>
 
 
-namespace Rift
+namespace Pipe
 {
 	bool AreLongPathsEnabled()
 	{
@@ -26,5 +26,5 @@ namespace Rift
 		static const u32 maxPath = AreLongPathsEnabled() ? 32767 : MAX_PATH;
 		return maxPath;
 	}
-}    // namespace Rift
+}    // namespace Pipe
 #endif

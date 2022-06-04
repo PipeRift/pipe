@@ -11,7 +11,7 @@
 #include "TypeTraits.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	template<u32 size, Number T>
 	struct Vec
@@ -783,4 +783,4 @@ namespace Rift
 		CORE_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
 		CORE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
 	}    // namespace Vectors
-}    // namespace Rift
+}    // namespace Pipe

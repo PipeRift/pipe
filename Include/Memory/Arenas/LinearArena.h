@@ -10,7 +10,7 @@
 #include "Misc/Utility.h"
 
 
-namespace Rift::Memory
+namespace Pipe::Memory
 {
 	/**
 	 * LinearArena holds memory linearly in a block of memory.
@@ -70,4 +70,4 @@ namespace Rift::Memory
 			return discardedBlocks;
 		}
 	};
-}    // namespace Rift::Memory
+}    // namespace Pipe::Memory

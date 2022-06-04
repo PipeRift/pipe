@@ -6,7 +6,7 @@
 #include "Memory/Allocators/IAllocator.h"
 
 
-namespace Rift::Memory
+namespace Pipe::Memory
 {
 	template<typename T>
 	class TDefaultAllocator : public IAllocator
@@ -18,16 +18,16 @@ namespace Rift::Memory
 
 		T* Allocate(const sizet count)
 		{
-			return static_cast<T*>(Rift::Alloc(count * sizeof(T)));
+			return static_cast<T*>(Pipe::Alloc(count * sizeof(T)));
 		}
 		T* Allocate(const sizet count, const sizet align)
 		{
-			return static_cast<T*>(Rift::Alloc(count * sizeof(T), align));
+			return static_cast<T*>(Pipe::Alloc(count * sizeof(T), align));
 		}
 
 		void Free(T* ptr)
 		{
-			Rift::Free(ptr);
+			Pipe::Free(ptr);
 		}
 	};
-}    // namespace Rift::Memory
+}    // namespace Pipe::Memory

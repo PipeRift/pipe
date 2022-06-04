@@ -10,7 +10,7 @@
 #include "Profiler.h"
 
 
-namespace Rift::Algorithms
+namespace Pipe::Algorithms
 {
 	template<typename T, typename Index, typename Predicate>
 	void Sort(T* first, Index size, Predicate predicate)
@@ -122,4 +122,4 @@ namespace Rift::Algorithms
 			}
 		}
 	}
-}    // namespace Rift::Algorithms
+}    // namespace Pipe::Algorithms

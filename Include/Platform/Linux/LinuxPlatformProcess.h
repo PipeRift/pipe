@@ -5,7 +5,7 @@
 #include "Platform/Generic/GenericPlatformProcess.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	struct CORE_API LinuxPlatformProcess : public GenericPlatformProcess
 	{
@@ -17,4 +17,4 @@ namespace Rift
 	};
 
 	using PlatformProcess = LinuxPlatformProcess;
-}    // namespace Rift
+}    // namespace Pipe

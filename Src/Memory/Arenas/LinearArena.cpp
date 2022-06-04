@@ -3,7 +3,7 @@
 #include "Memory/Arenas/LinearArena.h"
 
 
-namespace Rift::Memory
+namespace Pipe::Memory
 {
 	void* LinearArena::Allocate(sizet size)
 	{
@@ -75,4 +75,4 @@ namespace Rift::Memory
 			usedBlockSize = 0;
 		}
 	}
-}    // namespace Rift::Memory
+}    // namespace Pipe::Memory

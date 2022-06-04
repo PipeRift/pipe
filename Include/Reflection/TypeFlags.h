@@ -4,7 +4,7 @@
 #include "TypeTraits.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	/** CLASS TRAITS */
 
@@ -23,14 +23,14 @@ namespace Rift
 	};
 
 	template<typename...>
-	struct TFlags : public Rift::DefaultTFlags
+	struct TFlags : public Pipe::DefaultTFlags
 	{};
 
 
 /** Custom traits go here */
 #define TYPE_FLAGS(type, ...)                           \
-	template<Rift::Derived<type> T>                     \
-	struct Rift::TFlags<T> : public Rift::DefaultTFlags \
+	template<Pipe::Derived<type> T>                     \
+	struct Pipe::TFlags<T> : public Pipe::DefaultTFlags \
 	{                                                   \
 		enum                                            \
 		{                                               \
@@ -40,8 +40,8 @@ namespace Rift
 
 #define INHERIT_TYPE_FLAGS(type, parent, ...)            \
 	template<typename T>                                 \
-		requires Rift::Derived<T, type>                  \
-	struct Rift::TFlags<T> : public Rift::TFlags<parent> \
+		requires Pipe::Derived<T, type>                  \
+	struct Pipe::TFlags<T> : public Pipe::TFlags<parent> \
 	{                                                    \
 		enum                                             \
 		{                                                \
@@ -51,7 +51,7 @@ namespace Rift
 
 #define TEMPLATE_TYPE_FLAGS(type, ...)                        \
 	template<typename T>                                      \
-	struct Rift::TFlags<type<T>> : public Rift::DefaultTFlags \
+	struct Pipe::TFlags<type<T>> : public Pipe::DefaultTFlags \
 	{                                                         \
 		enum                                                  \
 		{                                                     \
@@ -61,11 +61,11 @@ namespace Rift
 
 #define INHERIT_TEMPLATE_TYPE_FLAGS(type, parent, ...)         \
 	template<typename T>                                       \
-	struct Rift::TFlags<type<T>> : public Rift::TFlags<parent> \
+	struct Pipe::TFlags<type<T>> : public Pipe::TFlags<parent> \
 	{                                                          \
 		enum                                                   \
 		{                                                      \
 			__VA_ARGS__                                        \
 		};                                                     \
 	}
-}    // namespace Rift
+}    // namespace Pipe

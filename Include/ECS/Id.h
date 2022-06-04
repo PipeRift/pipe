@@ -7,7 +7,7 @@
 #include <Templates/TypeList.h>
 
 
-namespace Rift::ECS
+namespace Pipe::ECS
 {
 	enum class Id : u32
 	{};
@@ -84,6 +84,6 @@ namespace Rift::ECS
 	{
 		return ECS::GetVersion(id) == ECS::GetVersion(ECS::NoId);
 	}
-}    // namespace Rift::ECS
+}    // namespace Pipe::ECS
 
-REFLECT_NATIVE_TYPE(Rift::ECS::Id);
+REFLECT_NATIVE_TYPE(Pipe::ECS::Id);

@@ -11,7 +11,7 @@
 #include <memory>
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename T, typename Allocator = Memory::TDefaultAllocator<T>>
 	struct STLAllocator
@@ -89,4 +89,4 @@ namespace Rift
 	{
 		return false;
 	}
-}    // namespace Rift
+}    // namespace Pipe

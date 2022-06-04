@@ -7,7 +7,7 @@
 #include <regex>
 
 
-namespace Rift
+namespace Pipe
 {
 	using Regex = std::basic_regex<TChar>;
 }

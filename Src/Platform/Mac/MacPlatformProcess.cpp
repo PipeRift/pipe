@@ -14,7 +14,7 @@
 #	include <libproc.h>
 
 
-namespace Rift
+namespace Pipe
 {
 	StringView MacPlatformProcess::GetExecutableFile()
 	{
@@ -54,5 +54,5 @@ namespace Rift
 		NotImplemented;
 		return;
 	}
-}    // namespace Rift
+}    // namespace Pipe
 #endif

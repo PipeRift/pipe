@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace Rift::Memory
+namespace Pipe::Memory
 {
 	class CORE_API IAllocator
 	{
@@ -27,4 +27,4 @@ namespace Rift::Memory
 
 		void Free(T* ptr) {}
 	};
-}    // namespace Rift::Memory
+}    // namespace Pipe::Memory

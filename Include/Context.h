@@ -6,7 +6,7 @@
 #include "Types/Class.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	class Context : public Class
 	{
@@ -65,4 +65,4 @@ namespace Rift
 		return GetContextInstance().Cast<T>();
 	}
 
-}    // namespace Rift
+}    // namespace Pipe

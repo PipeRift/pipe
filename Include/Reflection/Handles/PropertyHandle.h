@@ -10,7 +10,7 @@
 #include "Types/BaseStruct.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	struct PropertyHandle
 	{
@@ -77,4 +77,4 @@ namespace Rift::Refl
 			return IsValid();
 		}
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

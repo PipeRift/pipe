@@ -10,7 +10,7 @@
 #include <chrono>
 
 
-namespace Rift
+namespace Pipe
 {
 	struct CORE_API PlatformTime
 	{
@@ -20,4 +20,4 @@ namespace Rift
 		}
 		static u64 Cycles64();
 	};
-}    // namespace Rift
+}    // namespace Pipe

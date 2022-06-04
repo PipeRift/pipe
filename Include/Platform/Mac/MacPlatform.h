@@ -9,7 +9,7 @@
 #define PLATFORM_MACOS_USE_CHAR16 0
 
 
-namespace Rift
+namespace Pipe
 {
 	/**
 	 * Mac specific types
@@ -28,7 +28,7 @@ namespace Rift
 	};
 
 	using PlatformTypes = MacPlatformTypes;
-}    // namespace Rift
+}    // namespace Pipe
 
 #if BUILD_DEBUG
 #	define FORCEINLINE inline /* Don't force code to be inline */

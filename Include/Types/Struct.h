@@ -7,17 +7,17 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	struct Struct : public BaseStruct
 	{
 	public:
 		using Super       = BaseStruct;
-		using BuilderType = Rift::Refl::TStructTypeBuilder<Struct, void, Type_NoFlag>;
+		using BuilderType = Pipe::Refl::TStructTypeBuilder<Struct, void, Type_NoFlag>;
 
-		static Rift::Refl::StructType* GetStaticType()
+		static Pipe::Refl::StructType* GetStaticType()
 		{
-			return Rift::GetType<Struct>();
+			return Pipe::GetType<Struct>();
 		}
 		static constexpr TypeFlags GetStaticFlags()
 		{
@@ -28,7 +28,7 @@ namespace Rift
 
 
 	template<typename T>
-	void Read(Serl::ReadContext& ct, T& value) requires(Derived<T, Struct>)
+	void Read(Serl::ReadContext& ct, T& value) requires(Derived<T, Pipe::Struct>)
 	{
 		ct.BeginObject();
 		Serl::CommonContext common{ct};
@@ -36,10 +36,10 @@ namespace Rift
 	}
 
 	template<typename T>
-	void Write(Serl::WriteContext& ct, const T& value) requires(Derived<T, Struct>)
+	void Write(Serl::WriteContext& ct, const T& value) requires(Derived<T, Pipe::Struct>)
 	{
 		ct.BeginObject();
 		Serl::CommonContext common{ct};
 		const_cast<T&>(value).SerializeReflection(common);
 	}
-}    // namespace Rift
+}    // namespace Pipe

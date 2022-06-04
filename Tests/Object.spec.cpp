@@ -6,7 +6,7 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
+using namespace Pipe;
 
 
 class TestClass : public Class

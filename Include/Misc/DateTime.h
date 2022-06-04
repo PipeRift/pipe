@@ -10,7 +10,7 @@
 #include "Platform/PlatformTime.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	/**
 	 * Enumerates the days of the week in 7-day calendars.
@@ -704,4 +704,4 @@ namespace Rift
 	private:
 		friend struct Z_Construct_UScriptStruct_FDateTime_Statics;
 	};
-}    // namespace Rift
+}    // namespace Pipe

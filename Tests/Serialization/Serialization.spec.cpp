@@ -8,8 +8,8 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
-using namespace Rift::Serl;
+using namespace Pipe;
+using namespace Pipe::Serl;
 
 
 struct TypeA
@@ -33,7 +33,7 @@ struct TypeB
 	bool value = false;
 };
 template<>
-struct Rift::TFlags<TypeB> : public Rift::DefaultTFlags
+struct Pipe::TFlags<TypeB> : public Pipe::DefaultTFlags
 {
 	enum
 	{
@@ -64,7 +64,7 @@ struct TypeC
 	}
 };
 template<>
-struct Rift::TFlags<TypeC> : public Rift::DefaultTFlags
+struct Pipe::TFlags<TypeC> : public Pipe::DefaultTFlags
 {
 	enum
 	{
@@ -84,7 +84,7 @@ struct TypeD
 	}
 };
 template<>
-struct Rift::TFlags<TypeD> : public Rift::DefaultTFlags
+struct Pipe::TFlags<TypeD> : public Pipe::DefaultTFlags
 {
 	enum
 	{

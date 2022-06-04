@@ -6,7 +6,7 @@
 #include "Reflection/Type.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	/** Smallest reflection type that contains all basic class or struct data */
 	class NativeType : public Type
@@ -17,4 +17,4 @@ namespace Rift::Refl
 	public:
 		CORE_API NativeType() : Type(TypeCategory::Native) {}
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

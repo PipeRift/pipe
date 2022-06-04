@@ -6,7 +6,7 @@
 #include "Strings/StringView.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	namespace Refl::TypeName
 	{
@@ -71,4 +71,4 @@ namespace Rift
 		return TX(#type);                                                     \
 	}
 
-}    // namespace Rift
+}    // namespace Pipe

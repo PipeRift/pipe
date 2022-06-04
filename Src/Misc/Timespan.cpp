@@ -3,7 +3,7 @@
 #include "Misc/Timespan.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	/* FTimespan interface
 	 *****************************************************************************/
@@ -183,4 +183,4 @@ namespace Rift
 	{
 		return Timespan{0, 0, seconds};
 	}
-}    // namespace Rift
+}    // namespace Pipe

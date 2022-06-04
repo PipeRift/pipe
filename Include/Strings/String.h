@@ -22,7 +22,7 @@
 #pragma warning(disable:4996)
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename CharType, typename Allocator = STLAllocator<CharType>>
 	using TString = std::basic_string<CharType, std::char_traits<CharType>, Allocator>;
@@ -153,6 +153,6 @@ namespace Rift
 	};
 
 	OVERRIDE_TYPE_NAME(String)
-}    // namespace Rift
+}    // namespace Pipe
 
 #pragma warning(pop)

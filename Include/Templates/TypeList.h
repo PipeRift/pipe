@@ -6,7 +6,7 @@
 #include <utility>
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename... Type>
 	struct TTypeList
@@ -85,4 +85,4 @@ namespace Rift
 	{
 		return Internal::TTypeListContains<T, List>::value;
 	}
-}    // namespace Rift
+}    // namespace Pipe

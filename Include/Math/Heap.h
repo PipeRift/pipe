@@ -7,7 +7,7 @@
 #include "Misc/Utility.h"
 
 
-namespace Rift::Algorithms
+namespace Pipe::Algorithms
 {
 	template<typename Index>
 	Index HeapGetLeftChildIndex(Index index)
@@ -100,4 +100,4 @@ namespace Rift::Algorithms
 			HeapSiftDown(first, Index(0), i, reversePredicate);
 		}
 	}
-}    // namespace Rift::Algorithms
+}    // namespace Pipe::Algorithms

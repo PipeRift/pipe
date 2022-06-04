@@ -6,7 +6,7 @@
 #include <utility>
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename T1, typename T2>
 	using TPair = std::pair<T1, T2>;
@@ -34,4 +34,4 @@ namespace Rift
 	{
 		return Internal::TTupleContains<T, Tuple>::value;
 	}
-}    // namespace Rift
+}    // namespace Pipe

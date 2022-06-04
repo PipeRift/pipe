@@ -7,7 +7,7 @@
 #include "Strings/String.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	REFLECT_NATIVE_TYPE(bool);
 	REFLECT_NATIVE_TYPE(u8);
@@ -20,4 +20,4 @@ namespace Rift
 
 	REFLECT_NATIVE_TYPE(String);
 	REFLECT_NATIVE_TYPE(Name);
-}    // namespace Rift
+}    // namespace Pipe

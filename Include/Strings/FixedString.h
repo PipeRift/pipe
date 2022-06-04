@@ -17,7 +17,7 @@
 #define CPP20_CONSTEXPR_ALGORITHMS_PRESENT (__cpp_lib_constexpr_algorithms)
 
 
-namespace Rift
+namespace Pipe
 {
 	namespace Details
 	{
@@ -767,4 +767,4 @@ namespace Rift
 		out << str.data();
 		return out;
 	}
-}    // namespace Rift
+}    // namespace Pipe

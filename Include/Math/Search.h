@@ -13,7 +13,7 @@
 #include "Templates/Optional.h"
 
 
-namespace Rift::Algorithms
+namespace Pipe::Algorithms
 {
 	/**
 	 * Finds the position of the first element in a sorted range that has a value
@@ -231,4 +231,4 @@ namespace Rift::Algorithms
 		// If first and last values are equal, we can just compare one value
 		return firstV > min || (included && firstV == min) ? first : NO_INDEX;
 	}
-}    // namespace Rift::Algorithms
+}    // namespace Pipe::Algorithms

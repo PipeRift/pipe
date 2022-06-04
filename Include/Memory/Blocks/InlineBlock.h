@@ -6,7 +6,7 @@
 #include "Memory/Blocks/Block.h"
 
 
-namespace Rift::Memory
+namespace Pipe::Memory
 {
 	template<sizet Size>
 	class CORE_API InlineBlock : BaseBlock
@@ -40,4 +40,4 @@ namespace Rift::Memory
 		void Allocate(sizet) {}
 		void Free() {}
 	};
-}    // namespace Rift::Memory
+}    // namespace Pipe::Memory

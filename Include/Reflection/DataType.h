@@ -14,7 +14,7 @@
 #include "Strings/String.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	/** Smallest reflection type that contains all basic class or struct data */
 	class DataType : public Type
@@ -79,4 +79,4 @@ namespace Rift::Refl
 		CORE_API void GetChildrenDeep(TArray<DataType*>& outChildren) const;
 		CORE_API DataType* FindChild(const Name& className) const;
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

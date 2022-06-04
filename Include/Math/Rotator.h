@@ -5,7 +5,7 @@
 #include "Math/Vector.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	struct Rotator : public v3
 	{
@@ -54,4 +54,4 @@ namespace Rift
 		 */
 		static float NormalizeAxis(float Angle);
 	};
-}    // namespace Rift
+}    // namespace Pipe

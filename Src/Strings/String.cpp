@@ -8,7 +8,7 @@
 #include "Strings/Regex.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	void Read(Serl::ReadContext& ct, String& val)
 	{
@@ -20,9 +20,9 @@ namespace Rift
 	{
 		ct.Serialize(StringView{val});
 	}
-};    // namespace Rift
+};    // namespace Pipe
 
-namespace Rift::Strings
+namespace Pipe::Strings
 {
 	String ToSentenceCase(const String& value)
 	{
@@ -139,4 +139,4 @@ namespace Rift::Strings
 
 		return Format("{}{}", sizeStr, sizes[scale]);
 	}
-}    // namespace Rift::Strings
+}    // namespace Pipe::Strings

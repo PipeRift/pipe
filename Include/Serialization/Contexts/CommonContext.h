@@ -9,7 +9,7 @@
 #include "Serialization/SerializationTypes.h"
 
 
-namespace Rift::Serl
+namespace Pipe::Serl
 {
 	struct CORE_API CommonContext
 	{
@@ -168,4 +168,4 @@ namespace Rift::Serl
 		CommonContext commonContext{ct};
 		Serialize(commonContext, const_cast<T&>(val));
 	}
-}    // namespace Rift::Serl
+}    // namespace Pipe::Serl

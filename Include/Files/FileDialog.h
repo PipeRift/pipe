@@ -9,9 +9,9 @@
 #include "Templates/Tuples.h"
 
 
-namespace Rift::Dialogs
+namespace Pipe::Files
 {
-	using FileFilter = TPair<StringView, StringView>;
+	using DialogFileFilter = TPair<StringView, StringView>;
 
 	/**
 	 * Selects a file using a system dialog.
@@ -21,8 +21,8 @@ namespace Rift::Dialogs
 	 * can decide to, for example, display last user folder (windows).
 	 * @return selected file path
 	 */
-	CORE_API Path SelectFile(StringView title, const Path& defaultPath,
-	    const TArray<FileFilter>& filters =
+	CORE_API Path SelectFileDialog(StringView title, const Path& defaultPath,
+	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}
     },
@@ -36,8 +36,9 @@ namespace Rift::Dialogs
 	 * @param alwaysShowDefaultPath if true dialog will open to default path. Else, the system
 	 * can decide to, for example, display last user folder (windows).
 	 */
-	CORE_API void SelectFiles(StringView title, const Path& defaultPath, TArray<Path>& outFiles,
-	    const TArray<FileFilter>& filters =
+	CORE_API void SelectFilesDialog(StringView title, const Path& defaultPath,
+	    TArray<Path>& outFiles,
+	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}
     },
@@ -51,7 +52,7 @@ namespace Rift::Dialogs
 	 * can decide to, for example, display last user folder (windows).
 	 * @return selected folder path
 	 */
-	CORE_API Path SelectFolder(
+	CORE_API Path SelectFolderDialog(
 	    StringView title, const Path& defaultPath, bool alwaysShowDefaultPath = false);
 
 	/**
@@ -62,10 +63,15 @@ namespace Rift::Dialogs
 	 * can decide to, for example, display last user folder (windows).
 	 * @return selected file path
 	 */
-	CORE_API Path SaveFile(StringView title, const Path& defaultPath,
-	    const TArray<FileFilter>& filters =
+	CORE_API Path SaveFileDialog(StringView title, const Path& defaultPath,
+	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}
     },
 	    bool alwaysShowDefaultPath = false, bool confirmOverwrite = false);
-}    // namespace Rift::Dialogs
+}    // namespace Pipe::Files
+
+namespace Pipe
+{
+	using namespace Pipe::Files;
+}

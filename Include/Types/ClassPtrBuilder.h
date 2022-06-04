@@ -8,7 +8,7 @@
 #include "Reflection/TypeName.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	template<typename T>
 	struct TClassPtrBuilder : public TPtrBuilder<T>
@@ -51,4 +51,4 @@ namespace Rift
 		static T* NewArray(sizet size)                        = delete;
 		static void PostNewArray(TOwnPtr<T>& ptr, sizet size) = delete;
 	};
-}    // namespace Rift
+}    // namespace Pipe

@@ -6,7 +6,7 @@
 #include "Serialization/ContextsFwd.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	namespace Refl
 	{
@@ -15,7 +15,7 @@ namespace Rift
 
 	struct CORE_API BaseStruct
 	{
-		void SerializeReflection(Rift::Serl::CommonContext& ct) {}
+		void SerializeReflection(Pipe::Serl::CommonContext& ct) {}
 		// Refl::StructType* GetType() const;
 	};
-}    // namespace Rift
+}    // namespace Pipe

@@ -4,7 +4,7 @@
 #include "Platform/Platform.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	enum TypeFlags
 	{
@@ -49,4 +49,4 @@ namespace Rift
 	{
 		return flags;
 	}
-}    // namespace Rift
+}    // namespace Pipe

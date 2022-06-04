@@ -5,7 +5,7 @@
 #include "Platform/Generic/GenericPlatformProcess.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	struct CORE_API MacPlatformProcess : public GenericPlatformProcess
 	{
@@ -17,4 +17,4 @@ namespace Rift
 	};
 
 	using PlatformProcess = MacPlatformProcess;
-}    // namespace Rift
+}    // namespace Pipe

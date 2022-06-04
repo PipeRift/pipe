@@ -10,7 +10,7 @@
 #include "TypeTraits.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	class ReflectionRegistry
 	{
@@ -58,4 +58,4 @@ namespace Rift::Refl
 
 		static CORE_API ReflectionRegistry& Get();
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

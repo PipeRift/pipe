@@ -9,7 +9,7 @@
 #include "Reflection/ReflectionTraits.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	namespace Refl
 	{
@@ -113,4 +113,4 @@ namespace Rift
 		}
 		return GetType<T>();
 	}
-}    // namespace Rift
+}    // namespace Pipe

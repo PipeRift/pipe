@@ -6,7 +6,7 @@
 #include "Serialization/Formats/JsonFormat.h"
 
 
-namespace Rift::Serl
+namespace Pipe::Serl
 {
 #define READER_SWITCH(func)                                \
 	switch (format)                                        \
@@ -111,4 +111,4 @@ namespace Rift::Serl
 	{
 		ReadFromFormat(ct, val);
 	}
-}    // namespace Rift::Serl
+}    // namespace Pipe::Serl

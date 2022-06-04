@@ -6,7 +6,7 @@
 #define PLATFORM_LINUX_USE_CHAR16 0
 
 
-namespace Rift
+namespace Pipe
 {
 	/**
 	 * Linux specific types
@@ -23,7 +23,7 @@ namespace Rift
 	};
 
 	using PlatformTypes = LinuxPlatformTypes;
-}    // namespace Rift
+}    // namespace Pipe
 
 #if BUILD_DEBUG
 #	define FORCEINLINE inline

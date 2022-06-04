@@ -20,7 +20,7 @@
 #endif
 
 
-namespace Rift::Log
+namespace Pipe::Log
 {
 	TOwnPtr<spdlog::logger> generalLogger;
 	TOwnPtr<spdlog::logger> errorLogger;
@@ -98,7 +98,7 @@ namespace Rift::Log
 			Files::CreateFolder(logFolder, true);
 
 			sinks.Add(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-			    Paths::ToString(logFile).c_str(), 1048576 * 5, 3));
+			    ToString(logFile).c_str(), 1048576 * 5, 3));
 		}
 
 		// Loggers /////////////////////////////////////////
@@ -132,4 +132,4 @@ namespace Rift::Log
 	{
 		errorLogger->error(msg);
 	}
-}    // namespace Rift::Log
+}    // namespace Pipe::Log

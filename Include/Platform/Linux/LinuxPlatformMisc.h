@@ -6,7 +6,7 @@
 #include <linux/limits.h>
 
 
-namespace Rift
+namespace Pipe
 {
 	struct LinuxPlatformMisc : public GenericPlatformMisc
 	{
@@ -17,4 +17,4 @@ namespace Rift
 	};
 
 	using PlatformMisc = LinuxPlatformMisc;
-}    // namespace Rift
+}    // namespace Pipe

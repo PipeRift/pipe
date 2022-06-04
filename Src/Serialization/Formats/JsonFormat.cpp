@@ -9,23 +9,23 @@
 #include <yyjson.h>
 
 
-static void* yyjson_malloc(void* ctx, Rift::sizet size)
+static void* yyjson_malloc(void* ctx, Pipe::sizet size)
 {
-	return Rift::Alloc(size);
+	return Pipe::Alloc(size);
 }
-static void* yyjson_realloc(void* ctx, void* ptr, Rift::sizet size)
+static void* yyjson_realloc(void* ctx, void* ptr, Pipe::sizet size)
 {
-	return Rift::Realloc(ptr, size);
+	return Pipe::Realloc(ptr, size);
 }
 static void yyjson_free(void* ctx, void* ptr)
 {
-	Rift::Free(ptr);
+	Pipe::Free(ptr);
 }
 yyjson_alc yyjsonAllocator = {yyjson_malloc, yyjson_realloc, yyjson_free, nullptr};
 
 
 bool yyjson_mut_obj_add_val(
-    yyjson_mut_doc* doc, yyjson_mut_val* obj, Rift::StringView _key, yyjson_mut_val* _val)
+    yyjson_mut_doc* doc, yyjson_mut_val* obj, Pipe::StringView _key, yyjson_mut_val* _val)
 {
 	if (yyjson_unlikely(!_val))
 		return false;
@@ -50,7 +50,7 @@ bool yyjson_mut_obj_add_val(
 }
 
 
-namespace Rift::Serl
+namespace Pipe::Serl
 {
 	u64 GetKeyTag(sizet size)
 	{
@@ -608,4 +608,4 @@ namespace Rift::Serl
 		sizet size;
 		return {yyjson_mut_write_opts(doc, flags, &yyjsonAllocator, &size, nullptr), size};
 	}
-}    // namespace Rift::Serl
+}    // namespace Pipe::Serl

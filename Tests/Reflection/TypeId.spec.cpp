@@ -6,8 +6,8 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
-using namespace Rift::Refl;
+using namespace Pipe;
+using namespace Pipe::Refl;
 
 struct One
 {};

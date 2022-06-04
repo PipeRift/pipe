@@ -8,7 +8,7 @@
 #include "Platform/PlatformTime.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	void GenericPlatformMisc::CreateGuid(Guid& guid)
 	{
@@ -32,4 +32,4 @@ namespace Rift
 		guid = Guid(randBits | (sequentialBits << 16), estimatedCurrentDateTime.GetTicks() >> 32,
 		    estimatedCurrentDateTime.GetTicks() & 0xffffffff, PlatformTime::Cycles());
 	}
-}    // namespace Rift
+}    // namespace Pipe

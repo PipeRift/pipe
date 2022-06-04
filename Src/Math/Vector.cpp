@@ -7,7 +7,7 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Rift
+namespace Pipe
 {
 	float Rotator::ClampAxis(float angle)
 	{
@@ -116,4 +116,4 @@ namespace Rift
 		const float delta  = Math::Clamp(-dot / length, 0.f, 1.f);
 		return a + (ab * delta);
 	}
-}    // namespace Rift
+}    // namespace Pipe

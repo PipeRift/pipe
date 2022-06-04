@@ -12,7 +12,7 @@
 #include "TypeTraits.h"
 
 
-namespace Rift::Serl
+namespace Pipe::Serl
 {
 	struct CORE_API WriteContext
 	{
@@ -194,4 +194,4 @@ namespace Rift::Serl
 		ct.Serialize(Refl::GetEnumName(val));
 		ct.PopFlags();
 	}
-}    // namespace Rift::Serl
+}    // namespace Pipe::Serl

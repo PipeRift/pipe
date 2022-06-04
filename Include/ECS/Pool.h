@@ -15,7 +15,7 @@
 #include <TypeTraits.h>
 
 
-namespace Rift::ECS
+namespace Pipe::ECS
 {
 	struct Context;
 
@@ -830,4 +830,4 @@ namespace Rift::ECS
 
 
 	i32 GetSmallestPool(TSpan<const Pool*> pools);
-}    // namespace Rift::ECS
+}    // namespace Pipe::ECS

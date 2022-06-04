@@ -7,22 +7,22 @@
 #include <portable-file-dialogs.h>
 
 
-namespace Rift::Dialogs
+namespace Pipe::Files
 {
-	std::vector<std::string> ParseFilters(const TArray<FileFilter>& filters)
+	std::vector<std::string> ParseFilters(const TArray<DialogFileFilter>& filters)
 	{
 		std::vector<std::string> rawFilters;
 		rawFilters.reserve(sizet(filters.Size()) * 2);
-		for (const FileFilter& filter : filters)
+		for (const DialogFileFilter& filter : filters)
 		{
 			rawFilters.emplace_back(filter.first);
 			rawFilters.emplace_back(filter.second);
 		}
-		return Move(rawFilters);
+		return Pipe::Move(rawFilters);
 	}
 
-	Path SelectFile(StringView title, const Path& defaultPath, const TArray<FileFilter>& filters,
-	    bool alwaysShowDefaultPath)
+	Path SelectFileDialog(StringView title, const Path& defaultPath,
+	    const TArray<DialogFileFilter>& filters, bool alwaysShowDefaultPath)
 	{
 		pfd::opt options{};
 		if (alwaysShowDefaultPath)
@@ -40,8 +40,8 @@ namespace Rift::Dialogs
 		return {};
 	}
 
-	void SelectFiles(StringView title, const Path& defaultPath, TArray<Path>& outFiles,
-	    const TArray<FileFilter>& filters, bool alwaysShowDefaultPath)
+	void SelectFilesDialog(StringView title, const Path& defaultPath, TArray<Path>& outFiles,
+	    const TArray<DialogFileFilter>& filters, bool alwaysShowDefaultPath)
 	{
 		pfd::opt options = pfd::opt::multiselect;
 		if (alwaysShowDefaultPath)
@@ -59,7 +59,7 @@ namespace Rift::Dialogs
 		}
 	}
 
-	Path SelectFolder(StringView title, const Path& defaultPath, bool alwaysShowDefaultPath)
+	Path SelectFolderDialog(StringView title, const Path& defaultPath, bool alwaysShowDefaultPath)
 	{
 		pfd::opt options{};
 		if (alwaysShowDefaultPath)
@@ -70,8 +70,8 @@ namespace Rift::Dialogs
 		return Path{dialog.result()};
 	}
 
-	Path SaveFile(StringView title, const Path& defaultPath, const TArray<FileFilter>& filters,
-	    bool alwaysShowDefaultPath, bool confirmOverwrite)
+	Path SaveFileDialog(StringView title, const Path& defaultPath,
+	    const TArray<DialogFileFilter>& filters, bool alwaysShowDefaultPath, bool confirmOverwrite)
 	{
 		pfd::opt options{};
 		if (alwaysShowDefaultPath)
@@ -84,4 +84,4 @@ namespace Rift::Dialogs
 		path.replace_extension("rf");
 		return path;
 	}
-}    // namespace Rift::Dialogs
+}    // namespace Pipe::Files

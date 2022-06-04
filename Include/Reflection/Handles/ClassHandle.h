@@ -6,7 +6,7 @@
 #include "Reflection/TPropertyHandle.h"
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	// NOTE: Legacy class pending a rework
 	class ClassHandle
@@ -24,4 +24,4 @@ namespace Rift::Refl
 
 		ClassHandle(Class& instance) : instance(*instance) {}
 	};
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

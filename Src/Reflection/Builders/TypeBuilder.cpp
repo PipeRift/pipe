@@ -8,7 +8,7 @@
 #include <utility>
 
 
-namespace Rift::Refl
+namespace Pipe::Refl
 {
 	TypeBuilder::TypeBuilder(TypeId id, StringView name) : id{id}, name{name} {}
 
@@ -36,4 +36,4 @@ namespace Rift::Refl
 	{
 		return name;
 	}
-}    // namespace Rift::Refl
+}    // namespace Pipe::Refl

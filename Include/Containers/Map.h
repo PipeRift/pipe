@@ -18,7 +18,7 @@
 #include <type_traits>
 
 
-namespace Rift
+namespace Pipe::Containers
 {
 	template<typename Key, typename Value,
 	    typename Allocator = Memory::TDefaultAllocator<TPair<Key, Value>>>
@@ -284,4 +284,9 @@ namespace Rift
 			map = Move(other.map);
 		}
 	};
-}    // namespace Rift
+}    // namespace Pipe::Containers
+
+namespace Pipe
+{
+	using namespace Pipe::Containers;
+}
