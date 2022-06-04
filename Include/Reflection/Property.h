@@ -74,3 +74,8 @@ namespace Pipe::Refl
 		return displayName;
 	}
 }    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

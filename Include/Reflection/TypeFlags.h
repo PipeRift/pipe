@@ -4,7 +4,7 @@
 #include "TypeTraits.h"
 
 
-namespace Pipe
+namespace Pipe::Refl
 {
 	/** CLASS TRAITS */
 
@@ -23,8 +23,14 @@ namespace Pipe
 	};
 
 	template<typename...>
-	struct TFlags : public Pipe::DefaultTFlags
+	struct TFlags : public DefaultTFlags
 	{};
+}    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}
 
 
 /** Custom traits go here */
@@ -68,4 +74,3 @@ namespace Pipe
 			__VA_ARGS__                                        \
 		};                                                     \
 	}
-}    // namespace Pipe

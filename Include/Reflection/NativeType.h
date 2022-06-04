@@ -18,3 +18,8 @@ namespace Pipe::Refl
 		CORE_API NativeType() : Type(TypeCategory::Native) {}
 	};
 }    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

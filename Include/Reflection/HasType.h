@@ -64,3 +64,8 @@ namespace Pipe
 		return HasType<typename T::ItemType>();
 	}
 }    // namespace Pipe
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

@@ -6,20 +6,19 @@
 #include "Strings/FixedString.h"
 
 
-namespace Pipe
+OVERRIDE_TYPE_NAME(Pipe::u8)
+OVERRIDE_TYPE_NAME(Pipe::u16)
+OVERRIDE_TYPE_NAME(Pipe::u32)
+OVERRIDE_TYPE_NAME(Pipe::u64)
+OVERRIDE_TYPE_NAME(Pipe::i8)
+OVERRIDE_TYPE_NAME(Pipe::i16)
+OVERRIDE_TYPE_NAME(Pipe::i32)
+OVERRIDE_TYPE_NAME(Pipe::i64)
+OVERRIDE_TYPE_NAME(Pipe::TChar)
+OVERRIDE_TYPE_NAME(Pipe::StringView)
+
+namespace Pipe::Refl
 {
-	OVERRIDE_TYPE_NAME(u8)
-	OVERRIDE_TYPE_NAME(u16)
-	OVERRIDE_TYPE_NAME(u32)
-	OVERRIDE_TYPE_NAME(u64)
-	OVERRIDE_TYPE_NAME(i8)
-	OVERRIDE_TYPE_NAME(i16)
-	OVERRIDE_TYPE_NAME(i32)
-	OVERRIDE_TYPE_NAME(i64)
-	OVERRIDE_TYPE_NAME(TChar)
-	OVERRIDE_TYPE_NAME(StringView)
-
-
 	// Contains an static fixed string with the name of a TArray<T>
 	template<typename ItemType, bool includeNamespaces>
 	struct StaticArrayName
@@ -79,4 +78,11 @@ namespace Pipe
 	{
 		return "TMap";
 	}
-}    // namespace Pipe
+
+}    // namespace Pipe::Refl
+
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Types/BaseClass.h"
+#include "Reflection/BaseClass.h"
 
+#include "Reflection/Class.h"
 #include "Reflection/ClassType.h"
 #include "Reflection/Reflection.h"
-#include "Types/Class.h"
 
 
-namespace Pipe
+namespace Pipe::Refl
 {
 	Refl::ClassType* BaseClass::GetType() const
 	{
@@ -18,4 +18,4 @@ namespace Pipe
 	{
 		return static_cast<const Class*>(this)->Self();
 	}
-}    // namespace Pipe
+}    // namespace Pipe::Refl

@@ -4,10 +4,10 @@
 #include "CoreTypes.h"
 #include "Memory/OwnPtr.h"
 #include "Reflection/ArrayProperty.h"
+#include "Reflection/BaseClass.h"
+#include "Reflection/BaseStruct.h"
 #include "Reflection/Property.h"
 #include "Strings/String.h"
-#include "Types/BaseClass.h"
-#include "Types/BaseStruct.h"
 
 
 namespace Pipe::Refl

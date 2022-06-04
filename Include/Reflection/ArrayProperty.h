@@ -68,3 +68,8 @@ namespace Pipe::Refl
 		empty(container);
 	}
 }    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

@@ -2,8 +2,9 @@
 #pragma once
 
 #include "Events/Broadcast.h"
+#include "Reflection/Class.h"
 #include "Tasks.h"
-#include "Types/Class.h"
+
 
 
 namespace Pipe

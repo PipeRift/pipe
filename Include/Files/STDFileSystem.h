@@ -11,7 +11,7 @@
 #include <filesystem>
 
 
-namespace Pipe
+namespace Pipe::Files
 {
 	namespace fs = std::filesystem;
 
@@ -63,14 +63,18 @@ namespace Pipe
 		return {path.c_str()};
 	}
 
-	namespace Serl
-	{
-		CORE_API void Read(Serl::ReadContext& ct, Path& value);
-		CORE_API void Write(Serl::WriteContext& ct, const Path& value);
-	}    // namespace Serl
 
-	REFLECT_NATIVE_TYPE(Path);
-}    // namespace Pipe
+}    // namespace Pipe::Files
+
+namespace Pipe
+{
+	using namespace Pipe::Files;
+}
+
+REFLECT_NATIVE_TYPE(Pipe::Path);
+
+CORE_API void Read(Pipe::Serl::ReadContext& ct, Pipe::Path& value);
+CORE_API void Write(Pipe::Serl::WriteContext& ct, const Pipe::Path& value);
 
 
 // TODO: Finish implementation of formatting of Paths

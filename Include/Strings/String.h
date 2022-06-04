@@ -151,8 +151,8 @@ namespace Pipe
 			return GetStringHash(str.data());
 		}
 	};
-
-	OVERRIDE_TYPE_NAME(String)
 }    // namespace Pipe
+
+OVERRIDE_TYPE_NAME(Pipe::String)
 
 #pragma warning(pop)

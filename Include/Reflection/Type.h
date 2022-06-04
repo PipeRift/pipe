@@ -61,3 +61,8 @@ namespace Pipe::Refl
 		class ClassType* AsClass();
 	};
 }    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

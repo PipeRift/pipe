@@ -80,3 +80,8 @@ namespace Pipe::Refl
 		CORE_API DataType* FindChild(const Name& className) const;
 	};
 }    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

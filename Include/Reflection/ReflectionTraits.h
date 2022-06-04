@@ -4,18 +4,18 @@
 #include "Containers/Array.h"
 #include "Containers/Map.h"
 //#include "Reflection/Builders/TypeBuilder.h"
-#include "Types/BaseClass.h"
+#include "Reflection/BaseClass.h"
 #include "TypeTraits.h"
 
 
-namespace Pipe
+namespace Pipe::Refl
 {
 	struct Struct;
 
 	template<typename T>
 	inline constexpr bool IsStruct()
 	{
-		return Derived<T, Pipe::Struct>;    // && IsDefined<struct TTypeInstance<T>>();
+		return Derived<T, Struct>;    // && IsDefined<struct TTypeInstance<T>>();
 	}
 
 	template<typename T>
@@ -46,4 +46,9 @@ namespace Pipe
 		}
 		return false;
 	}
-}    // namespace Pipe
+}    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

@@ -114,3 +114,8 @@ namespace Pipe
 		return GetType<T>();
 	}
 }    // namespace Pipe
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

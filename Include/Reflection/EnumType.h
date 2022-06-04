@@ -152,3 +152,8 @@ namespace Pipe::Refl
 		}
 	};
 }    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

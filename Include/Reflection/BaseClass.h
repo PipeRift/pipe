@@ -7,17 +7,16 @@
 #include "Serialization/ContextsFwd.h"
 #include "TypeTraits.h"
 
-
 namespace Pipe
 {
-	namespace Refl
-	{
-		class ClassType;
-	}
-	class Class;
-
 	template<typename Type>
 	struct TPtr;
+}
+
+namespace Pipe::Refl
+{
+	class ClassType;
+	class Class;
 
 
 	class CORE_API BaseClass : public BaseStruct
@@ -41,4 +40,9 @@ namespace Pipe
 	protected:
 		virtual void BeforeDestroy() {}
 	};
-}    // namespace Pipe
+}    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

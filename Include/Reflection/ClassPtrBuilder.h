@@ -8,7 +8,7 @@
 #include "Reflection/TypeName.h"
 
 
-namespace Pipe
+namespace Pipe::Refl
 {
 	template<typename T>
 	struct TClassPtrBuilder : public TPtrBuilder<T>
@@ -51,4 +51,9 @@ namespace Pipe
 		static T* NewArray(sizet size)                        = delete;
 		static void PostNewArray(TOwnPtr<T>& ptr, sizet size) = delete;
 	};
-}    // namespace Pipe
+}    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

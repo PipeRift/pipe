@@ -7,7 +7,7 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Pipe
+namespace Pipe::Refl
 {
 	struct Struct : public BaseStruct
 	{
@@ -42,4 +42,9 @@ namespace Pipe
 		Serl::CommonContext common{ct};
 		const_cast<T&>(value).SerializeReflection(common);
 	}
-}    // namespace Pipe
+}    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

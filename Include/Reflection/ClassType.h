@@ -4,8 +4,8 @@
 #include "PCH.h"
 
 #include "Events/Function.h"
+#include "Reflection/BaseClass.h"
 #include "Reflection/DataType.h"
-#include "Types/BaseClass.h"
 
 
 namespace Pipe::Refl
@@ -77,3 +77,8 @@ namespace Pipe::Refl
 		}
 	};
 }    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

@@ -10,58 +10,55 @@
 #include <iostream>
 
 
-namespace Pipe
+namespace Pipe::Refl
 {
-	namespace Refl
+	struct CORE_API TypeId
 	{
-		struct CORE_API TypeId
+	protected:
+		u64 id = 0;
+
+
+	public:
+		constexpr TypeId() = default;
+		explicit constexpr TypeId(u64 id) : id(id) {}
+
+		constexpr u64 GetId() const
 		{
-		protected:
-			u64 id = 0;
-
-
-		public:
-			constexpr TypeId() = default;
-			explicit constexpr TypeId(u64 id) : id(id) {}
-
-			constexpr u64 GetId() const
-			{
-				return id;
-			}
-
-			constexpr auto operator==(const TypeId& other) const
-			{
-				return id == other.id;
-			}
-			constexpr auto operator<(const TypeId& other) const
-			{
-				return id < other.id;
-			}
-			constexpr auto operator>(const TypeId& other) const
-			{
-				return id > other.id;
-			}
-			constexpr auto operator<=(const TypeId& other) const
-			{
-				return id <= other.id;
-			}
-			constexpr auto operator>=(const TypeId& other) const
-			{
-				return id >= other.id;
-			}
-
-			static consteval TypeId None()
-			{
-				return TypeId{};
-			}
-		};
-
-		inline std::ostream& operator<<(std::ostream& stream, TypeId typeId)
-		{
-			stream << "TypeId(id=" << typeId.GetId() << ")";
-			return stream;
+			return id;
 		}
-	}    // namespace Refl
+
+		constexpr auto operator==(const TypeId& other) const
+		{
+			return id == other.id;
+		}
+		constexpr auto operator<(const TypeId& other) const
+		{
+			return id < other.id;
+		}
+		constexpr auto operator>(const TypeId& other) const
+		{
+			return id > other.id;
+		}
+		constexpr auto operator<=(const TypeId& other) const
+		{
+			return id <= other.id;
+		}
+		constexpr auto operator>=(const TypeId& other) const
+		{
+			return id >= other.id;
+		}
+
+		static consteval TypeId None()
+		{
+			return TypeId{};
+		}
+	};
+
+	inline std::ostream& operator<<(std::ostream& stream, TypeId typeId)
+	{
+		stream << "TypeId(id=" << typeId.GetId() << ")";
+		return stream;
+	}
 
 	template<typename T>
 	inline consteval Refl::TypeId GetTypeId()
@@ -78,7 +75,12 @@ namespace Pipe
 			return hasher(id.GetId());
 		}
 	};
-}    // namespace Pipe
+}    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}
 
 
 template<>

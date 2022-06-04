@@ -5,7 +5,7 @@
 #include "EventHandle.h"
 #include "Function.h"
 #include "Log.h"
-#include "Types/Class.h"
+#include "Reflection/Class.h"
 
 
 namespace Pipe

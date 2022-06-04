@@ -6,9 +6,9 @@
 #include "Strings/StringView.h"
 
 
-namespace Pipe
+namespace Pipe::Refl
 {
-	namespace Refl::TypeName
+	namespace TypeName
 	{
 		template<class T>
 		constexpr StringView GetRaw()
@@ -27,7 +27,7 @@ namespace Pipe
 		constexpr sizet suffixLength = testedRawName.size() - prefixLength - testNameLength;
 		static_assert(
 		    prefixLength != StringView::npos, "Can't extract typename from function signature");
-	}    // namespace Refl::TypeName
+	}    // namespace TypeName
 
 
 	inline constexpr StringView RemoveNamespace(StringView value)
@@ -62,13 +62,16 @@ namespace Pipe
 	{
 		return GetFullTypeName<T>(includeNamespaces);
 	}
+}    // namespace Pipe::Refl
 
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}
 
-#define OVERRIDE_TYPE_NAME(type)                                              \
-	template<>                                                                \
-	inline consteval StringView GetFullTypeName<type>(bool includeNamespaces) \
-	{                                                                         \
-		return TX(#type);                                                     \
+#define OVERRIDE_TYPE_NAME(type)                                                                \
+	template<>                                                                                  \
+	inline consteval Pipe::StringView Pipe::Refl::GetFullTypeName<type>(bool includeNamespaces) \
+	{                                                                                           \
+		return TX(#type);                                                                       \
 	}
-
-}    // namespace Pipe

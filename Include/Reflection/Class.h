@@ -11,8 +11,10 @@
 namespace Pipe
 {
 	class Context;
+}
 
-
+namespace Pipe::Refl
+{
 	// For shared export purposes, we separate pointers from the exported Class
 	struct ClassOwnership
 	{
@@ -110,4 +112,9 @@ namespace Pipe
 		Serl::CommonContext common{ct};
 		const_cast<T&>(value).Serialize(common);
 	}
-}    // namespace Pipe
+}    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}

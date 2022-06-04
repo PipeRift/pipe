@@ -59,3 +59,8 @@ namespace Pipe::Refl
 		static CORE_API ReflectionRegistry& Get();
 	};
 }    // namespace Pipe::Refl
+
+namespace Pipe
+{
+	using namespace Pipe::Refl;
+}
