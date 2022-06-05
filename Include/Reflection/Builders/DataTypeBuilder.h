@@ -283,7 +283,7 @@ public:                                                                         
 		    [](void* instance) {                                                                  \
 			return (void*)&static_cast<ThisType*>(instance)->name;                                \
 		    },                                                                                    \
-		    InitPropFlags(flags));                                                                \
+		    p::InitPropFlags(flags));                                                             \
                                                                                                   \
 		/* Registry next property if any */                                                       \
 		__ReflReflectProperty(builder, p::MetaCounter<(id_name) + 1>{});                          \
@@ -291,7 +291,7 @@ public:                                                                         
                                                                                                   \
 	void __ReflSerializeProperty(p::CommonContext& ct, p::MetaCounter<id_name>)                   \
 	{                                                                                             \
-		if constexpr (!(InitPropFlags(flags) & p::Prop_NotSerialized))                            \
+		if constexpr (!(p::InitPropFlags(flags) & p::Prop_NotSerialized))                         \
 		{ /* Don't serialize property if Transient */                                             \
 			ct.Next(#name, name);                                                                 \
 		}                                                                                         \
