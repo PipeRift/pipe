@@ -180,7 +180,7 @@ namespace pipe::core
 	};
 
 	template<>
-	struct Hash<Name>
+	struct pipe::Hash<Name>
 	{
 		sizet operator()(const Name& k) const
 		{
@@ -189,7 +189,7 @@ namespace pipe::core
 	};
 
 	template<>
-	struct TFlags<Name> : public DefaultTFlags
+	struct pipe::TFlags<Name> : public DefaultTFlags
 	{
 		enum
 		{

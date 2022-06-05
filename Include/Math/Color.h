@@ -868,7 +868,7 @@ namespace pipe::Math
 
 
 	template<ColorMode mode>
-	struct Hash<TColor<mode>>
+	struct pipe::Hash<TColor<mode>>
 	{
 		sizet operator()(const TColor<mode>& color) const
 		{
@@ -877,7 +877,7 @@ namespace pipe::Math
 	};
 
 	template<>
-	struct Hash<TColor<ColorMode::RGBA>>
+	struct pipe::Hash<TColor<ColorMode::RGBA>>
 	{
 		sizet operator()(const TColor<ColorMode::RGBA>& color) const
 		{

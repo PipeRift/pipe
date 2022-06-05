@@ -18,7 +18,7 @@ namespace pipe::core
 	using WStringView = TStringView<WideChar>;
 
 	template<>
-	struct Hash<StringView>
+	struct pipe::Hash<StringView>
 	{
 		sizet operator()(const StringView& str) const
 		{
@@ -27,7 +27,7 @@ namespace pipe::core
 	};
 
 	template<>
-	struct Hash<const TChar*>
+	struct pipe::Hash<const TChar*>
 	{
 		sizet operator()(const TChar* str) const
 		{

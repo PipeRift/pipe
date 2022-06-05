@@ -19,7 +19,7 @@ namespace pipe::Files
 	using PathView = TStringView<Path::value_type>;
 
 	template<>
-	struct Hash<Path>
+	struct pipe::Hash<Path>
 	{
 		sizet operator()(const Path& path) const
 		{

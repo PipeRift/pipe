@@ -1,5 +1,5 @@
 # CMake version
-cmake_minimum_required (VERSION 3.16)
+cmake_minimum_required (VERSION 3.18)
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -13,15 +13,15 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 project(Pipe VERSION 0.1 LANGUAGES CXX)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    set(RIFTCORE_IS_PROJECT ON)
+    set(PIPE_IS_PROJECT ON)
 else()
-    set(RIFTCORE_IS_PROJECT OFF)
+    set(PIPE_IS_PROJECT OFF)
 endif()
-option(RIFT_BUILD_SHARED "Build shared libraries" ON)
-option(RIFT_CORE_BUILD_TESTS "Build Pipe tests" ${RIFTCORE_IS_PROJECT})
-option(RIFT_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
-option(RIFT_BUILD_WARNINGS "Enable compiler warnings" OFF)
-option(RIFT_ENABLE_CLANG_TOOLS "Enable clang-tidy and clang-format" ${RIFTCORE_IS_PROJECT})
+option(PIPE_BUILD_SHARED "Build shared libraries" ON)
+option(PIPE_BUILD_TESTS "Build Pipe tests" ${PIPE_IS_PROJECT})
+option(PIPE_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
+option(PIPE_BUILD_WARNINGS "Enable compiler warnings" OFF)
+option(PIPE_ENABLE_CLANG_TOOLS "Enable clang-tidy and clang-format" ${PIPE_IS_PROJECT})
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Export commands for Clangd
@@ -40,7 +40,7 @@ add_subdirectory(Extern)
 ################################################################################
 #   Pipe (compiled) library
 
-if (RIFT_BUILD_SHARED)
+if (PIPE_BUILD_SHARED)
     add_library(Pipe SHARED)
 else()
     add_library(Pipe STATIC)
@@ -87,14 +87,14 @@ rift_target_enable_CPP20(Pipe)
 ################################################################################
 #   Core Tests (compiled) executable
 
-if(BUILD_TESTING AND RIFT_CORE_BUILD_TESTS)
+if(BUILD_TESTING AND PIPE_BUILD_TESTS)
     include (CTest)
     add_subdirectory(Tests)
     add_subdirectory(Benchmarks)
 endif()
 
 
-if(RIFT_ENABLE_CLANG_TOOLS)
+if(PIPE_ENABLE_CLANG_TOOLS)
     include(CMake/CheckClangTools.cmake)
 
     # Additional targets to perform clang-format/clang-tidy

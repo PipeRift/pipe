@@ -67,7 +67,7 @@ namespace pipe::refl
 	}
 
 	template<>
-	struct Hash<refl::TypeId>
+	struct pipe::Hash<refl::TypeId>
 	{
 		sizet operator()(const refl::TypeId& id) const
 		{
