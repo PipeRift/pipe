@@ -44,6 +44,11 @@ namespace p
 
 #define PLATFORM_BREAK() __asm__("int $3")
 
+#if (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 6))
+#	define DISABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize off")
+#	define ENABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize on")
+#endif
+
 #if PLATFORM_MACOS_USE_CHAR16
 #	undef PLATFORM_TCHAR_IS_CHAR16
 #	define PLATFORM_TCHAR_IS_CHAR16 1

@@ -147,7 +147,7 @@ namespace p::ecs
 			}
 
 		private:
-			Value* const* chunks;
+			Value* const* chunks = nullptr;
 			difference_type index;
 		};
 
@@ -168,6 +168,8 @@ namespace p::ecs
 
 
 	public:
+		TPoolData() = default;
+
 		T* Get(sizet index) const
 		{
 			return chunks[GetChunk(index)] + GetOffset(index);
@@ -332,10 +334,11 @@ namespace p::ecs
 
 
 	template<typename T, typename Allocator>
-		requires(IsEmpty<T>())
+		requires(IsEmpty<T>)
 	struct TPoolData<T, Allocator>
 	{
 	public:
+		TPoolData() = default;
 		T* Get(sizet index) const
 		{
 			return nullptr;
@@ -466,13 +469,13 @@ namespace p::ecs
 
 
 	public:
-		TPool(Context& ast) : Pool(ast, DeletionPolicy::InPlace) {}
+		TPool(Context& ast) : Pool(ast, DeletionPolicy::InPlace), data{} {}
 		~TPool() override
 		{
 			Reset();
 		}
 
-		void Add(Id id, const T&) requires(IsEmpty<T>())
+		void Add(Id id, const T&) requires(IsEmpty<T>)
 		{
 			if (Has(id))
 			{
@@ -483,7 +486,7 @@ namespace p::ecs
 			OnAdded({id});
 		}
 
-		T& Add(Id id, const T& v) requires(!IsEmpty<T>())
+		T& Add(Id id, const T& v) requires(!IsEmpty<T>)
 		{
 			if (Has(id))
 			{
@@ -508,7 +511,7 @@ namespace p::ecs
 			}
 			return value;
 		}
-		T& Add(Id id, T&& v = {}) requires(!IsEmpty<T>())
+		T& Add(Id id, T&& v = {}) requires(!IsEmpty<T>)
 		{
 			if (Has(id))
 			{
@@ -557,7 +560,7 @@ namespace p::ecs
 						// Ignore reference value since we can only move
 						Get(id) = Move(T{});
 					}
-					else if constexpr (!IsEmpty<T>())
+					else if constexpr (!IsEmpty<T>)
 					{
 						Get(id) = value;
 					}
@@ -596,7 +599,7 @@ namespace p::ecs
 						// Ignore reference value since we can only move
 						Get(id) = Move(T{});
 					}
-					else if constexpr (!IsEmpty<T>())
+					else if constexpr (!IsEmpty<T>)
 					{
 						Get(id) = *from;
 					}
@@ -619,7 +622,7 @@ namespace p::ecs
 			OnAdded(ids);
 		}
 
-		T& GetOrAdd(const Id id) requires(!IsEmpty<T>())
+		T& GetOrAdd(const Id id) requires(!IsEmpty<T>)
 		{
 			return Has(id) ? Get(id) : Add(id);
 		}
@@ -694,13 +697,13 @@ namespace p::ecs
 			}
 		}
 
-		T& Get(Id id) requires(!IsEmpty<T>())
+		T& Get(Id id) requires(!IsEmpty<T>)
 		{
 			Check(Has(id));
 			return *data.Get(set.Index(id));
 		}
 
-		const T& Get(Id id) const requires(!IsEmpty<T>())
+		const T& Get(Id id) const requires(!IsEmpty<T>)
 		{
 			Check(Has(id));
 			return *data.Get(set.Index(id));
@@ -724,7 +727,7 @@ namespace p::ecs
 		TOwnPtr<Pool> Clone() override
 		{
 			auto newPool = MakeOwned<TPool<T>>(*context);
-			if constexpr (IsEmpty<T>())
+			if constexpr (IsEmpty<T>)
 			{
 				newPool->Add(set.begin(), set.end(), {});
 			}

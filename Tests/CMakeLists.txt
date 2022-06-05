@@ -1,5 +1,5 @@
 
-file(GLOB_RECURSE TESTS_SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.h)
+file(GLOB_RECURSE TESTS_SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.h *.hpp)
 
 add_executable(PipeTests ${TESTS_SOURCE_FILES})
 add_executable(Pipe::Tests ALIAS PipeTests)

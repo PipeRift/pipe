@@ -9,11 +9,11 @@ using namespace bandit;
 using namespace p;
 
 
-struct TypeA
+struct ATypeA
 {
 	bool value = false;
 };
-struct TypeB
+struct ATypeB
 {};
 
 
@@ -24,26 +24,26 @@ go_bandit([]() {
 			ecs::Id id = origin.Create();
 
 			bool calledAdd = false;
-			origin.OnAdd<TypeA>().Bind([&calledAdd, &origin](ecs::Context& ast, auto ids) {
+			origin.OnAdd<ATypeA>().Bind([&calledAdd, &origin](ecs::Context& ast, auto ids) {
 				AssertThat(&origin, Equals(&ast));
 				calledAdd = true;
 			});
-			origin.Add<TypeA>(id);
+			origin.Add<ATypeA>(id);
 			AssertThat(calledAdd, Equals(true));
 
 			ecs::Context target{origin};
 			AssertThat(origin.IsValid(id), Equals(true));
-			AssertThat(origin.Has<TypeA>(id), Equals(true));
+			AssertThat(origin.Has<ATypeA>(id), Equals(true));
 
 			AssertThat(target.IsValid(id), Equals(true));
-			AssertThat(target.Has<TypeA>(id), Equals(true));
+			AssertThat(target.Has<ATypeA>(id), Equals(true));
 
 			calledAdd = false;
-			target.OnAdd<TypeB>().Bind([&calledAdd, &target](ecs::Context& ast, auto ids) {
+			target.OnAdd<ATypeB>().Bind([&calledAdd, &target](ecs::Context& ast, auto ids) {
 				AssertThat(&target, Equals(&ast));
 				calledAdd = true;
 			});
-			target.Add<TypeB>(id);
+			target.Add<ATypeB>(id);
 			AssertThat(calledAdd, Equals(true));
 		});
 
@@ -52,31 +52,31 @@ go_bandit([]() {
 			ecs::Id id = origin.Create();
 
 			bool calledAdd = false;
-			origin.OnAdd<TypeA>().Bind([&calledAdd, &origin](ecs::Context& ast, auto ids) {
+			origin.OnAdd<ATypeA>().Bind([&calledAdd, &origin](ecs::Context& ast, auto ids) {
 				AssertThat(&origin, Equals(&ast));
 				calledAdd = true;
 			});
-			origin.Add<TypeA>(id);
+			origin.Add<ATypeA>(id);
 			AssertThat(calledAdd, Equals(true));
 
 			ecs::Context target{Move(origin)};
 			AssertThat(origin.IsValid(id), Equals(false));
 
 			AssertThat(target.IsValid(id), Equals(true));
-			AssertThat(target.Has<TypeA>(id), Equals(true));
+			AssertThat(target.Has<ATypeA>(id), Equals(true));
 
 			calledAdd = false;
-			target.OnAdd<TypeB>().Bind([&calledAdd, &target](ecs::Context& ast, auto ids) {
+			target.OnAdd<ATypeB>().Bind([&calledAdd, &target](ecs::Context& ast, auto ids) {
 				AssertThat(&target, Equals(&ast));
 				calledAdd = true;
 			});
-			target.Add<TypeB>(id);
+			target.Add<ATypeB>(id);
 			AssertThat(calledAdd, Equals(true));
 		});
 
 		it("Can assure pool", [&]() {
 			ecs::Context origin;
-			ecs::TPool<TypeA>& pool = origin.AssurePool<TypeA>();
+			ecs::TPool<ATypeA>& pool = origin.AssurePool<ATypeA>();
 			AssertThat(&origin, Equals(&pool.GetContext()));
 		});
 	});

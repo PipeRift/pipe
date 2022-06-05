@@ -40,6 +40,11 @@ namespace p
 
 #define PLATFORM_BREAK() __asm__ volatile("int $0x03")
 
+#if (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 6))
+#	define DISABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize off")
+#	define ENABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize on")
+#endif
+
 #if PLATFORM_LINUX_USE_CHAR16
 #	undef PLATFORM_TCHAR_IS_CHAR16
 #	define PLATFORM_TCHAR_IS_CHAR16 1

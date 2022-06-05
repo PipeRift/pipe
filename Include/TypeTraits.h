@@ -50,10 +50,7 @@ namespace p
 	concept IsAbstract = std::is_abstract_v<T>;
 
 	template<typename T>
-	constexpr bool IsEmpty()
-	{
-		return std::is_empty_v<T>;
-	}
+	concept IsEmpty = std::is_empty_v<T>;
 
 	template<typename T, sizet size>
 	concept IsSmaller = sizeof(T) < size;
