@@ -10,7 +10,7 @@
 #include <memory>
 
 
-namespace pipe
+namespace p
 {
 	void* Alloc(sizet n)
 	{
@@ -61,4 +61,4 @@ namespace pipe
 		// Get padding with the header as an offset
 		return headerSize + GetAlignmentPadding(static_cast<const u8*>(ptr) + headerSize, align);
 	}
-}    // namespace pipe
+}    // namespace p

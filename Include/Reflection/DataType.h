@@ -14,7 +14,7 @@
 #include "Reflection/Type.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	/** Smallest reflection type that contains all basic class or struct data */
 	class DataType : public Type
@@ -79,9 +79,9 @@ namespace pipe::refl
 		CORE_API void GetChildrenDeep(TArray<DataType*>& outChildren) const;
 		CORE_API DataType* FindChild(const Name& className) const;
 	};
-}    // namespace pipe::refl
+}    // namespace p::refl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::refl;
+	using namespace p::refl;
 }

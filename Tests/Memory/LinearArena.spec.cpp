@@ -6,7 +6,7 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace pipe::Memory;
+using namespace p::Memory;
 
 
 go_bandit([]() {
@@ -80,7 +80,7 @@ go_bandit([]() {
 			AssertThat(p, Is().EqualTo(blockPtr));
 
 			void* p2 = arena.Allocate(sizeof(float));
-			AssertThat(p2, Is().EqualTo((pipe::u8*)blockPtr + 4));
+			AssertThat(p2, Is().EqualTo((p::u8*)blockPtr + 4));
 		});
 
 		it("Grows when there's not enough space", [&]() {
@@ -107,11 +107,11 @@ go_bandit([]() {
 
 			// When padding is not 0 (last ptr is not aligned)
 			void* p = arena.Allocate(sizeof(float), 8);
-			AssertThat(pipe::GetAlignmentPadding(p, 8), Is().EqualTo(0));
+			AssertThat(p::GetAlignmentPadding(p, 8), Is().EqualTo(0));
 
 			// When padding is 0 (last ptr is aligned)
 			void* p2 = arena.Allocate(sizeof(float), 16);
-			AssertThat(pipe::GetAlignmentPadding(p2, 16), Is().EqualTo(0));
+			AssertThat(p::GetAlignmentPadding(p2, 16), Is().EqualTo(0));
 		});
 
 		it("Grow and allocate with alignment", [&]() {
@@ -124,7 +124,7 @@ go_bandit([]() {
 			// Enough memory available, but not if we align it.
 			// Must grow a new block
 			void* p = arena.Allocate(sizeof(float), 8);
-			AssertThat(pipe::GetAlignmentPadding(p, 8), Is().EqualTo(0));
+			AssertThat(p::GetAlignmentPadding(p, 8), Is().EqualTo(0));
 
 			void* secondBlock = *arena.GetBlock();
 			AssertThat(firstBlock, Is().Not().EqualTo(secondBlock));

@@ -12,7 +12,7 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace pipe;
+using namespace p;
 
 
 go_bandit([]() {

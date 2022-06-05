@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace pipe::core
+namespace p::core
 {
 	struct Guid;
 
@@ -27,9 +27,9 @@ namespace pipe::core
 			return u32(GetCycles64());
 		}
 	};
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

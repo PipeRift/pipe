@@ -3,10 +3,10 @@
 #include "Log.h"
 
 
-namespace pipe::core::Checks
+namespace p::core::Checks
 {
 	void FailedCheckError(const char* msg, sizet size)
 	{
 		Log::Error(StringView{msg, size});
 	}
-}    // namespace pipe::core::Checks
+}    // namespace p::core::Checks

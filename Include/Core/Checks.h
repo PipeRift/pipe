@@ -7,7 +7,7 @@
 #include <fmt/format.h>
 
 
-namespace pipe::core::Checks
+namespace p::core::Checks
 {
 	template<typename RetType = void, typename InnerType>
 	RetType RunCheckCallback(InnerType&& callback)
@@ -34,27 +34,27 @@ namespace pipe::core::Checks
 		}
 		FailedCheckError(msg.c_str(), msg.size());
 	}
-}    // namespace pipe::core::Checks
+}    // namespace p::core::Checks
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }
 
 
-#define EnsureImpl(capture, always, expression, ...)                                        \
-	(LIKELY(!!(expression)) || (pipe::Checks::RunCheckCallback<bool>([capture]() {          \
-		static bool executed = false;                                                       \
-		if (!executed || always)                                                            \
-		{                                                                                   \
-			executed = true;                                                                \
-			pipe::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
-			return true;                                                                    \
-		}                                                                                   \
-		return false;                                                                       \
-	}) && ([capture]() {                                                                    \
-		DEBUG_PLATFORM_BREAK();                                                             \
-		return false;                                                                       \
+#define EnsureImpl(capture, always, expression, ...)                                     \
+	(LIKELY(!!(expression)) || (p::Checks::RunCheckCallback<bool>([capture]() {          \
+		static bool executed = false;                                                    \
+		if (!executed || always)                                                         \
+		{                                                                                \
+			executed = true;                                                             \
+			p::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
+			return true;                                                                 \
+		}                                                                                \
+		return false;                                                                    \
+	}) && ([capture]() {                                                                 \
+		DEBUG_PLATFORM_BREAK();                                                          \
+		return false;                                                                    \
 	}())))
 
 
@@ -65,11 +65,11 @@ namespace pipe
 #	if BUILD_RELEASE
 #		define CheckImpl(expression, ...)
 #	else
-#		define CheckImpl(expression, ...)                                                      \
-			if (!(expression)) [[unlikely]]                                                     \
-			{                                                                                   \
-				pipe::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
-				DEBUG_PLATFORM_BREAK();                                                         \
+#		define CheckImpl(expression, ...)                                                   \
+			if (!(expression)) [[unlikely]]                                                  \
+			{                                                                                \
+				p::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
+				DEBUG_PLATFORM_BREAK();                                                      \
 			}
 #	endif
 

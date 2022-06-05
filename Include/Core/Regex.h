@@ -7,12 +7,12 @@
 #include <regex>
 
 
-namespace pipe::core
+namespace p::core
 {
 	using Regex = std::basic_regex<TChar>;
 }
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

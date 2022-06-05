@@ -11,7 +11,7 @@
 #include "TypeTraits.h"
 
 
-namespace pipe::math
+namespace p::math
 {
 	template<u32 size, Number T>
 	struct Vec
@@ -776,14 +776,14 @@ namespace pipe::math
 
 	CORE_API void Read(serl::ReadContext& ct, v3& val);
 	CORE_API void Write(serl::WriteContext& ct, const v3& val);
-}    // namespace pipe::math
+}    // namespace p::math
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::math;
+	using namespace p::math;
 
-}    // namespace pipe
+}    // namespace p
 
-REFLECT_NATIVE_TYPE(pipe::v2);
-REFLECT_NATIVE_TYPE(pipe::v2_u32);
-REFLECT_NATIVE_TYPE(pipe::v3);
+REFLECT_NATIVE_TYPE(p::v2);
+REFLECT_NATIVE_TYPE(p::v2_u32);
+REFLECT_NATIVE_TYPE(p::v3);

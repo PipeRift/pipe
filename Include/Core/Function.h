@@ -6,7 +6,7 @@
 #include <type_traits>
 
 
-namespace pipe::core
+namespace p::core
 {
 	template<typename>
 	struct TFunction;    // intentionally not defined
@@ -69,9 +69,9 @@ namespace pipe::core
 			return dispatcher != other.dispatcher || target != other.target;
 		}
 	};
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

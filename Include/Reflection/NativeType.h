@@ -6,7 +6,7 @@
 #include "Reflection/Type.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	/** Smallest reflection type that contains all basic class or struct data */
 	class NativeType : public Type
@@ -17,9 +17,9 @@ namespace pipe::refl
 	public:
 		CORE_API NativeType() : Type(TypeCategory::Native) {}
 	};
-}    // namespace pipe::refl
+}    // namespace p::refl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::refl;
+	using namespace p::refl;
 }

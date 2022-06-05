@@ -4,7 +4,7 @@
 #include "Core/Utility.h"
 
 
-namespace pipe
+namespace p
 {
 	template<typename T = void>
 	struct TGreater
@@ -43,4 +43,4 @@ namespace pipe
 			return Forward<T>(A) >= Forward<U>(B);
 		}
 	};
-}    // namespace pipe
+}    // namespace p

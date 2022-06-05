@@ -7,7 +7,7 @@
 #include <taskflow/taskflow.hpp>
 
 
-namespace pipe
+namespace p
 {
 	using TaskFlow = tf::Taskflow;
 	using Task     = tf::Task;
@@ -56,4 +56,4 @@ namespace pipe
 
 		static CORE_API TaskSystem& Get();
 	};
-}    // namespace pipe
+}    // namespace p

@@ -5,7 +5,7 @@
 #include "Core/Checks.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	BaseClass* ClassType::New() const
 	{
@@ -15,4 +15,4 @@ namespace pipe::refl
 		}
 		return nullptr;
 	}
-}    // namespace pipe::refl
+}    // namespace p::refl

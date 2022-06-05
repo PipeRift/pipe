@@ -11,7 +11,7 @@
 #include <memory>
 
 
-namespace pipe
+namespace p
 {
 	template<typename T, typename Allocator = Memory::TDefaultAllocator<T>>
 	struct STLAllocator
@@ -89,4 +89,4 @@ namespace pipe
 	{
 		return false;
 	}
-}    // namespace pipe
+}    // namespace p

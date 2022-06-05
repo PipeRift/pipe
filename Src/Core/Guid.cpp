@@ -9,7 +9,7 @@
 #include <cstdio>
 
 
-namespace pipe
+namespace p
 {
 	/* Guid interface
 	 *****************************************************************************/
@@ -231,4 +231,4 @@ namespace pipe
 
 		return true;
 	}
-}    // namespace pipe
+}    // namespace p

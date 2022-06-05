@@ -7,7 +7,7 @@
 #include <thread>
 
 
-namespace pipe
+namespace p
 {
 	void FrameTime::Tick()
 	{
@@ -34,4 +34,4 @@ namespace pipe
 			std::this_thread::sleep_for(sleepPeriod);
 		}
 	}
-}    // namespace pipe
+}    // namespace p

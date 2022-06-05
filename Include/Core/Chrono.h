@@ -8,7 +8,7 @@
 #include <chrono>
 
 
-namespace pipe::core
+namespace p::core
 {
 	namespace Chrono = std::chrono;
 
@@ -80,9 +80,9 @@ namespace pipe::core
 	constexpr const WeekDay Fri = date::fri;
 	constexpr const WeekDay Sat = date::sat;
 	constexpr const WeekDay Sun = date::sun;
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

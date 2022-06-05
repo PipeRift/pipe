@@ -6,7 +6,7 @@
 #include "Memory/Blocks/Block.h"
 
 
-namespace pipe::Memory
+namespace p::Memory
 {
 	template<sizet Size>
 	class CORE_API InlineBlock : BaseBlock
@@ -40,4 +40,4 @@ namespace pipe::Memory
 		void Allocate(sizet) {}
 		void Free() {}
 	};
-}    // namespace pipe::Memory
+}    // namespace p::Memory

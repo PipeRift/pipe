@@ -6,7 +6,7 @@
 #include "DateTime.h"
 
 
-namespace pipe::math
+namespace p::math
 {
 	struct CORE_API FrameTime
 	{
@@ -44,9 +44,9 @@ namespace pipe::math
 			return deltaTime;
 		}
 	};
-}    // namespace pipe::math
+}    // namespace p::math
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::math;
+	using namespace p::math;
 }

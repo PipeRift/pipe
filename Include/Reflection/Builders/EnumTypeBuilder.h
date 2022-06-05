@@ -13,22 +13,22 @@
 #include "TypeTraits.h"
 
 
-#define ENUM(type)                                                    \
-	template<>                                                        \
-	struct pipe::refl::TStaticEnumInitializer<type>                   \
-	{                                                                 \
-		static constexpr bool enabled = true;                         \
-		static const pipe::TFunction<pipe::refl::EnumType*()> onInit; \
-	};                                                                \
-	inline const pipe::TFunction<pipe::refl::EnumType*()>             \
-	    pipe::refl::TStaticEnumInitializer<type>::onInit = []() {     \
-		    pipe::refl::TEnumTypeBuilder<type> builder{};             \
-		    builder.Initialize();                                     \
-		    return builder.GetType();                                 \
+#define ENUM(type)                                              \
+	template<>                                                  \
+	struct p::refl::TStaticEnumInitializer<type>                \
+	{                                                           \
+		static constexpr bool enabled = true;                   \
+		static const p::TFunction<p::refl::EnumType*()> onInit; \
+	};                                                          \
+	inline const p::TFunction<p::refl::EnumType*()>             \
+	    p::refl::TStaticEnumInitializer<type>::onInit = []() {  \
+		    p::refl::TEnumTypeBuilder<type> builder{};          \
+		    builder.Initialize();                               \
+		    return builder.GetType();                           \
 	    };
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	/**
 	 * Enum Type Builder
@@ -72,4 +72,4 @@ namespace pipe::refl
 			return &newType;
 		}
 	};
-}    // namespace pipe::refl
+}    // namespace p::refl

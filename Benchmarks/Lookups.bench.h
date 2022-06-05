@@ -7,7 +7,7 @@
 #include <Core/Set.h>
 
 using namespace ankerl;
-using namespace pipe;
+using namespace p;
 
 
 void RunLookupsBenchmarks()
@@ -19,7 +19,7 @@ void RunLookupsBenchmarks()
 		    .performanceCounters(true)
 		    .epochs(1)
 		    .epochIterations(count)
-		    .maxEpochTime(pipe::Seconds{15});
+		    .maxEpochTime(p::Seconds{15});
 
 		{
 			TArray<u64> data;

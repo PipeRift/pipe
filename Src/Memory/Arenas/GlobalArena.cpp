@@ -3,7 +3,7 @@
 #include "Memory/Arenas/GlobalArena.h"
 
 
-namespace pipe::Memory
+namespace p::Memory
 {
 	static BigBestFitArena globalArena{1024 * 1024};    // 1MB initial block size
 
@@ -12,4 +12,4 @@ namespace pipe::Memory
 	{
 		return globalArena;
 	}
-};    // namespace pipe::Memory
+};    // namespace p::Memory

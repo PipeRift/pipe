@@ -2,7 +2,7 @@
 
 #include "Core/EventHandle.h"
 
-namespace pipe
+namespace p
 {
 	u64 EventHandle::counter{0};
 }

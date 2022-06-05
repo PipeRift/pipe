@@ -6,7 +6,7 @@
 #include "Log.h"
 
 
-namespace pipe
+namespace p
 {
 	/* DateTime constants
 	 *****************************************************************************/
@@ -395,4 +395,4 @@ namespace pipe
 		    && (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0)
 		    && (Millisecond <= 999);
 	}
-}    // namespace pipe
+}    // namespace p

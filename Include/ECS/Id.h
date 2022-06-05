@@ -7,7 +7,7 @@
 #include <Templates/TypeList.h>
 
 
-namespace pipe::ecs
+namespace p::ecs
 {
 	enum class Id : u32
 	{};
@@ -84,6 +84,6 @@ namespace pipe::ecs
 	{
 		return ecs::GetVersion(id) == ecs::GetVersion(ecs::NoId);
 	}
-}    // namespace pipe::ecs
+}    // namespace p::ecs
 
-REFLECT_NATIVE_TYPE(pipe::ecs::Id);
+REFLECT_NATIVE_TYPE(p::ecs::Id);

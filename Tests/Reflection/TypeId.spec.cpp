@@ -6,8 +6,8 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace pipe;
-using namespace pipe::refl;
+using namespace p;
+using namespace p::refl;
 
 struct One
 {};

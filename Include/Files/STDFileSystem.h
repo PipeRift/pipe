@@ -11,7 +11,7 @@
 #include <filesystem>
 
 
-namespace pipe::files
+namespace p::files
 {
 	namespace fs = std::filesystem;
 
@@ -54,12 +54,12 @@ namespace pipe::files
 		return {path.c_str()};
 	}
 
-}    // namespace pipe::files
+}    // namespace p::files
 
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::files;
+	using namespace p::files;
 
 
 	template<>
@@ -73,21 +73,21 @@ namespace pipe
 
 	namespace serl
 	{
-		CORE_API void Read(pipe::ReadContext& ct, pipe::Path& value);
-		CORE_API void Write(pipe::WriteContext& ct, const pipe::Path& value);
+		CORE_API void Read(p::ReadContext& ct, p::Path& value);
+		CORE_API void Write(p::WriteContext& ct, const p::Path& value);
 	}    // namespace serl
-}    // namespace pipe
+}    // namespace p
 
-REFLECT_NATIVE_TYPE(pipe::Path);
+REFLECT_NATIVE_TYPE(p::Path);
 
 
 // TODO: Finish implementation of formatting of Paths
 /*template <>
-struct fmt::formatter<pipe::Path> : public fmt::formatter<pipe::PathView>
+struct fmt::formatter<p::Path> : public fmt::formatter<p::PathView>
 {
     template <typename FormatContext>
-    auto format(const pipe::Path& path, FormatContext& ctx)
+    auto format(const p::Path& path, FormatContext& ctx)
     {
-        return formatter<pipe::PathView>::format(pipe::ToPathView(path), ctx);
+        return formatter<p::PathView>::format(p::ToPathView(path), ctx);
     }
 };*/

@@ -5,7 +5,7 @@
 #include "Core/Checks.h"
 
 
-namespace pipe::files
+namespace p::files
 {
 	efsw::FileWatcher FileWatcher::fileWatcher{};
 
@@ -93,4 +93,4 @@ namespace pipe::files
 			allowedExtensions.AddUnique(extension);
 		}
 	}
-}    // namespace pipe::files
+}    // namespace p::files

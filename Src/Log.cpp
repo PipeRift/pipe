@@ -20,7 +20,7 @@
 #endif
 
 
-namespace pipe::Log
+namespace p::Log
 {
 	TOwnPtr<spdlog::logger> generalLogger;
 	TOwnPtr<spdlog::logger> errorLogger;
@@ -132,4 +132,4 @@ namespace pipe::Log
 	{
 		errorLogger->error(msg);
 	}
-}    // namespace pipe::Log
+}    // namespace p::Log

@@ -14,7 +14,7 @@
 #include <memory>
 
 
-namespace pipe
+namespace p
 {
 	namespace Internal
 	{
@@ -579,4 +579,4 @@ namespace pipe
 	//	using Elem = std::remove_extent_t<T>;
 	//	return {Builder::NewArray(size)};
 	//}
-}    // namespace pipe
+}    // namespace p

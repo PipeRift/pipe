@@ -3,7 +3,7 @@
 #include "Memory/OwnPtr.h"
 
 
-namespace pipe
+namespace p
 {
 	void BaseOwnPtr::Delete()
 	{
@@ -115,4 +115,4 @@ namespace pipe
 		counter = nullptr;
 		value   = nullptr;
 	}
-}    // namespace pipe
+}    // namespace p

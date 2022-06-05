@@ -12,7 +12,7 @@
 #include "TypeTraits.h"
 
 
-namespace pipe::serl
+namespace p::serl
 {
 	struct CORE_API ReadContext
 	{
@@ -171,9 +171,9 @@ namespace pipe::serl
 			}
 		}
 	}
-}    // namespace pipe::serl
+}    // namespace p::serl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::serl;
+	using namespace p::serl;
 }

@@ -9,7 +9,7 @@
 #	include <Windows.h>
 
 
-namespace pipe::core
+namespace p::core
 {
 	template<typename StringType, typename TStringGetterFunc>
 	StringType GetStringFromWindowsAPI(TStringGetterFunc stringGetter, int initialSize = MAX_PATH)
@@ -81,5 +81,5 @@ namespace pipe::core
 			    nullptr, "open", "explorer.exe", parameters.data(), nullptr, SW_SHOWNORMAL);
 		}
 	}
-}    // namespace pipe::core
+}    // namespace p::core
 #endif

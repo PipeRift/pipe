@@ -6,7 +6,7 @@
 #include "Core/StringView.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	namespace TypeName
 	{
@@ -62,16 +62,16 @@ namespace pipe::refl
 	{
 		return GetFullTypeName<T>(includeNamespaces);
 	}
-}    // namespace pipe::refl
+}    // namespace p::refl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::refl;
+	using namespace p::refl;
 }
 
-#define OVERRIDE_TYPE_NAME(type)                                                                \
-	template<>                                                                                  \
-	inline consteval pipe::StringView pipe::refl::GetFullTypeName<type>(bool includeNamespaces) \
-	{                                                                                           \
-		return TX(#type);                                                                       \
+#define OVERRIDE_TYPE_NAME(type)                                                          \
+	template<>                                                                            \
+	inline consteval p::StringView p::refl::GetFullTypeName<type>(bool includeNamespaces) \
+	{                                                                                     \
+		return TX(#type);                                                                 \
 	}

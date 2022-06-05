@@ -8,7 +8,7 @@
 #include <mutex>
 
 
-namespace pipe::Log
+namespace p::Log
 {
 	CORE_API void Init(Path logPath = {});
 	CORE_API void Shutdown();
@@ -43,4 +43,4 @@ namespace pipe::Log
 			Error(Strings::Format(format, std::forward<Args>(args)...));
 		}
 	}
-};    // namespace pipe::Log
+};    // namespace p::Log

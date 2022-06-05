@@ -7,13 +7,13 @@
 #include "Serialization/ContextsFwd.h"
 #include "TypeTraits.h"
 
-namespace pipe
+namespace p
 {
 	template<typename Type>
 	struct TPtr;
 }
 
-namespace pipe::refl
+namespace p::refl
 {
 	class ClassType;
 	class Class;
@@ -35,14 +35,14 @@ namespace pipe::refl
 		refl::ClassType* GetType() const;
 		TPtr<Class> Self() const;
 
-		void SerializeReflection(pipe::serl::CommonContext& ct) {}
+		void SerializeReflection(p::serl::CommonContext& ct) {}
 
 	protected:
 		virtual void BeforeDestroy() {}
 	};
-}    // namespace pipe::refl
+}    // namespace p::refl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::refl;
+	using namespace p::refl;
 }

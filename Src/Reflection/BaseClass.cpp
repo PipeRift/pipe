@@ -7,7 +7,7 @@
 #include "Reflection/Reflection.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	refl::ClassType* BaseClass::GetType() const
 	{
@@ -18,4 +18,4 @@ namespace pipe::refl
 	{
 		return static_cast<const Class*>(this)->Self();
 	}
-}    // namespace pipe::refl
+}    // namespace p::refl

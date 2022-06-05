@@ -6,7 +6,7 @@
 #include "Tasks.h"
 
 
-namespace pipe
+namespace p
 {
 	class Context : public Class
 	{
@@ -65,4 +65,4 @@ namespace pipe
 		return GetContextInstance().Cast<T>();
 	}
 
-}    // namespace pipe
+}    // namespace p

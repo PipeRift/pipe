@@ -9,23 +9,23 @@
 #include <yyjson.h>
 
 
-static void* yyjson_malloc(void* ctx, pipe::sizet size)
+static void* yyjson_malloc(void* ctx, p::sizet size)
 {
-	return pipe::Alloc(size);
+	return p::Alloc(size);
 }
-static void* yyjson_realloc(void* ctx, void* ptr, pipe::sizet size)
+static void* yyjson_realloc(void* ctx, void* ptr, p::sizet size)
 {
-	return pipe::Realloc(ptr, size);
+	return p::Realloc(ptr, size);
 }
 static void yyjson_free(void* ctx, void* ptr)
 {
-	pipe::Free(ptr);
+	p::Free(ptr);
 }
 yyjson_alc yyjsonAllocator = {yyjson_malloc, yyjson_realloc, yyjson_free, nullptr};
 
 
 bool yyjson_mut_obj_add_val(
-    yyjson_mut_doc* doc, yyjson_mut_val* obj, pipe::StringView _key, yyjson_mut_val* _val)
+    yyjson_mut_doc* doc, yyjson_mut_val* obj, p::StringView _key, yyjson_mut_val* _val)
 {
 	if (yyjson_unlikely(!_val))
 		return false;
@@ -50,7 +50,7 @@ bool yyjson_mut_obj_add_val(
 }
 
 
-namespace pipe::serl
+namespace p::serl
 {
 	u64 GetKeyTag(sizet size)
 	{
@@ -608,4 +608,4 @@ namespace pipe::serl
 		sizet size;
 		return {yyjson_mut_write_opts(doc, flags, &yyjsonAllocator, &size, nullptr), size};
 	}
-}    // namespace pipe::serl
+}    // namespace p::serl

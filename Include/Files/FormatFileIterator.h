@@ -6,7 +6,7 @@
 #include "Log.h"
 
 
-namespace pipe::files
+namespace p::files
 {
 	template<typename FileIterator = files::Iterator>
 	class FormatFileIterator
@@ -105,9 +105,9 @@ namespace pipe::files
 	{
 		return it->path().extension() == format;
 	}
-}    // namespace pipe::files
+}    // namespace p::files
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::files;
+	using namespace p::files;
 }

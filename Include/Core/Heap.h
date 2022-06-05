@@ -7,7 +7,7 @@
 #include "Core/Utility.h"
 
 
-namespace pipe::core
+namespace p::core
 {
 	template<typename Index>
 	Index HeapGetLeftChildIndex(Index index)
@@ -100,9 +100,9 @@ namespace pipe::core
 			HeapSiftDown(first, Index(0), i, reversePredicate);
 		}
 	}
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

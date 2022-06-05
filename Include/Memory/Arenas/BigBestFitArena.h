@@ -8,7 +8,7 @@
 #include "Memory/Blocks/HeapBlock.h"
 
 
-namespace pipe::Memory
+namespace p::Memory
 {
 	class CORE_API BigBestFitArena : public IArena
 	{
@@ -137,4 +137,4 @@ namespace pipe::Memory
 	{
 	    return sizet(one.end - one.start) == other;
 	}*/
-}    // namespace pipe::Memory
+}    // namespace p::Memory

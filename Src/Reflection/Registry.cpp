@@ -3,7 +3,7 @@
 #include "Reflection/Registry.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	Type* ReflectionRegistry::FindType(TypeId id) const
 	{
@@ -19,4 +19,4 @@ namespace pipe::refl
 		static ReflectionRegistry instance{};
 		return instance;
 	}
-}    // namespace pipe::refl
+}    // namespace p::refl

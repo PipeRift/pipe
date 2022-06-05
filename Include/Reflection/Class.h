@@ -8,12 +8,12 @@
 #include "Serialization/Contexts.h"
 
 
-namespace pipe
+namespace p
 {
 	class Context;
 }
 
-namespace pipe::refl
+namespace p::refl
 {
 	// For shared export purposes, we separate pointers from the exported Class
 	struct ClassOwnership
@@ -37,20 +37,20 @@ namespace pipe::refl
 	{
 	public:
 		using Super       = BaseClass;
-		using BuilderType = pipe::refl::TClassTypeBuilder<Class, void, Type_NoFlag>;
+		using BuilderType = p::refl::TClassTypeBuilder<Class, void, Type_NoFlag>;
 
 
-		static pipe::refl::ClassType* GetStaticType()
+		static p::refl::ClassType* GetStaticType()
 		{
-			return pipe::GetType<Class>();
+			return p::GetType<Class>();
 		}
 		static constexpr TypeFlags GetStaticFlags()
 		{
 			return Type_NoFlag;
 		}
-		virtual pipe::refl::ClassType* GetType() const
+		virtual p::refl::ClassType* GetType() const
 		{
-			return pipe::GetType<Class>();
+			return p::GetType<Class>();
 		}
 
 		REFLECTION_BODY({})
@@ -97,25 +97,25 @@ namespace pipe::refl
 	};
 
 
-}    // namespace pipe::refl
+}    // namespace p::refl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::refl;
+	using namespace p::refl;
 }
 
 template<typename T>
-void Read(pipe::ReadContext& ct, T& value) requires(pipe::Derived<T, pipe::Class>)
+void Read(p::ReadContext& ct, T& value) requires(p::Derived<T, p::Class>)
 {
 	ct.BeginObject();
-	pipe::CommonContext common{ct};
+	p::CommonContext common{ct};
 	value.Serialize(common);
 }
 
 template<typename T>
-void Write(pipe::WriteContext& ct, const T& value) requires(pipe::Derived<T, pipe::Class>)
+void Write(p::WriteContext& ct, const T& value) requires(p::Derived<T, p::Class>)
 {
 	ct.BeginObject();
-	pipe::CommonContext common{ct};
+	p::CommonContext common{ct};
 	const_cast<T&>(value).Serialize(common);
 }

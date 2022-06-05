@@ -6,7 +6,7 @@
 #include "Memory/Allocators/IAllocator.h"
 
 
-namespace pipe::Memory
+namespace p::Memory
 {
 	template<typename T>
 	class TDefaultAllocator : public IAllocator
@@ -18,16 +18,16 @@ namespace pipe::Memory
 
 		T* Allocate(const sizet count)
 		{
-			return static_cast<T*>(pipe::Alloc(count * sizeof(T)));
+			return static_cast<T*>(p::Alloc(count * sizeof(T)));
 		}
 		T* Allocate(const sizet count, const sizet align)
 		{
-			return static_cast<T*>(pipe::Alloc(count * sizeof(T), align));
+			return static_cast<T*>(p::Alloc(count * sizeof(T), align));
 		}
 
 		void Free(T* ptr)
 		{
-			pipe::Free(ptr);
+			p::Free(ptr);
 		}
 	};
-}    // namespace pipe::Memory
+}    // namespace p::Memory

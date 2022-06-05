@@ -11,7 +11,7 @@
 #	include <unistd.h>
 
 
-namespace pipe::core
+namespace p::core
 {
 	StringView LinuxPlatformProcess::GetExecutableFile()
 	{
@@ -60,5 +60,5 @@ namespace pipe::core
 			exit(execl("/usr/bin/xdg-open", "xdg-open", fullPath.data(), (char*)0));
 		}
 	}
-}    // namespace pipe::core
+}    // namespace p::core
 #endif

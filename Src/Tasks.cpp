@@ -13,7 +13,7 @@
 #include <mutex>
 
 
-namespace pipe
+namespace p
 {
 	TaskSystem::TaskSystem()
 	    : mainPool{math::Min(1u, std::thread::hardware_concurrency())}
@@ -64,4 +64,4 @@ namespace pipe
 	{
 		return GetContext()->GetTasks();
 	}
-}    // namespace pipe
+}    // namespace p

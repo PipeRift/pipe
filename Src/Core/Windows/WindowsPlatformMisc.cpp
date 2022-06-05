@@ -6,7 +6,7 @@
 #	include <Windows.h>
 
 
-namespace pipe::core
+namespace p::core
 {
 	bool AreLongPathsEnabled()
 	{
@@ -26,5 +26,5 @@ namespace pipe::core
 		static const u32 maxPath = AreLongPathsEnabled() ? 32767 : MAX_PATH;
 		return maxPath;
 	}
-}    // namespace pipe::core
+}    // namespace p::core
 #endif

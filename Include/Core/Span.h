@@ -7,7 +7,7 @@
 #include "Core/Checks.h"
 
 
-namespace pipe::core
+namespace p::core
 {
 	template<typename T>
 	struct TSpan
@@ -167,9 +167,9 @@ namespace pipe::core
 			return rend();
 		};
 	};
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

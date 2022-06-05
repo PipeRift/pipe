@@ -12,7 +12,7 @@
 #include "TypeTraits.h"
 
 
-namespace pipe::serl
+namespace p::serl
 {
 	struct CORE_API WriteContext
 	{
@@ -197,9 +197,9 @@ namespace pipe::serl
 			ct.PopFlags();
 		}
 	}
-}    // namespace pipe::serl
+}    // namespace p::serl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::serl;
+	using namespace p::serl;
 }

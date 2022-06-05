@@ -9,7 +9,7 @@
 #include "Reflection/ReflectionTraits.h"
 
 
-namespace pipe
+namespace p
 {
 	namespace refl
 	{
@@ -113,9 +113,9 @@ namespace pipe
 		}
 		return GetType<T>();
 	}
-}    // namespace pipe
+}    // namespace p
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::refl;
+	using namespace p::refl;
 }

@@ -6,7 +6,7 @@
 #include <Templates/TypeList.h>
 
 
-namespace pipe
+namespace p
 {
 	enum class AccessMode : u8
 	{
@@ -297,4 +297,4 @@ namespace pipe
 			return 0;
 		}
 	};
-}    // namespace pipe
+}    // namespace p

@@ -9,7 +9,7 @@
 #define PLATFORM_MACOS_USE_CHAR16 0
 
 
-namespace pipe::core
+namespace p::core
 {
 	/**
 	 * Mac specific types
@@ -28,11 +28,11 @@ namespace pipe::core
 	};
 
 	using PlatformTypes = MacPlatformTypes;
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }
 
 #if BUILD_DEBUG

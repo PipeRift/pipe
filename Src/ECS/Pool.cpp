@@ -3,7 +3,7 @@
 #include "ECS/Pool.h"
 
 
-namespace pipe::ecs
+namespace p::ecs
 {
 	i32 GetSmallestPool(TSpan<const Pool*> pools)
 	{
@@ -20,4 +20,4 @@ namespace pipe::ecs
 		}
 		return minIndex;
 	}
-}    // namespace pipe::ecs
+}    // namespace p::ecs

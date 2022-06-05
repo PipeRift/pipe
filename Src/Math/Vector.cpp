@@ -7,7 +7,7 @@
 #include "Serialization/Contexts.h"
 
 
-namespace pipe::math
+namespace p::math
 {
 	float Rotator::ClampAxis(float angle)
 	{
@@ -116,4 +116,4 @@ namespace pipe::math
 		const float delta  = math::Clamp(-dot / length, 0.f, 1.f);
 		return a + (ab * delta);
 	}
-}    // namespace pipe::math
+}    // namespace p::math

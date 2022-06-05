@@ -8,7 +8,7 @@
 #include "Serialization/ContextsFwd.h"
 
 
-namespace pipe::math
+namespace p::math
 {
 	struct Rotator;
 
@@ -78,11 +78,11 @@ namespace pipe::math
 
 	void Read(serl::ReadContext& ct, Quat& val);
 	void Write(serl::WriteContext& ct, const Quat& val);
-}    // namespace pipe::math
+}    // namespace p::math
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::math;
+	using namespace p::math;
 }
 
-REFLECT_NATIVE_TYPE(pipe::Quat);
+REFLECT_NATIVE_TYPE(p::Quat);

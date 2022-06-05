@@ -8,7 +8,7 @@
 #include "Reflection/TypeId.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	using namespace EnumOperators;
 
@@ -60,9 +60,9 @@ namespace pipe::refl
 		class StructType* AsStruct();
 		class ClassType* AsClass();
 	};
-}    // namespace pipe::refl
+}    // namespace p::refl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::refl;
+	using namespace p::refl;
 }

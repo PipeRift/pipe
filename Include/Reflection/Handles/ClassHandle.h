@@ -6,7 +6,7 @@
 #include "Reflection/TPropertyHandle.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	// NOTE: Legacy class pending a rework
 	class ClassHandle
@@ -24,4 +24,4 @@ namespace pipe::refl
 
 		ClassHandle(Class& instance) : instance(*instance) {}
 	};
-}    // namespace pipe::refl
+}    // namespace p::refl

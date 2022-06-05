@@ -11,7 +11,7 @@
 #include "Serialization/ContextsFwd.h"
 
 
-namespace pipe::core
+namespace p::core
 {
 	/**
 	 * Enumerates known GUID formats.
@@ -291,11 +291,11 @@ namespace pipe::core
 		/** Holds the fourth component. */
 		u32 d = 0;
 	};
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 
 
 	template<>
@@ -315,6 +315,6 @@ namespace pipe
 			HasMemberSerialize = true
 		};
 	};
-}    // namespace pipe
+}    // namespace p
 
-REFLECT_NATIVE_TYPE(pipe::Guid);
+REFLECT_NATIVE_TYPE(p::Guid);

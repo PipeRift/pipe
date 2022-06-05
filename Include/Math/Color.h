@@ -14,7 +14,7 @@
 #include "Vector.h"
 
 
-namespace pipe::math
+namespace p::math
 {
 	/**
 	 * Different color space representations supported
@@ -865,12 +865,12 @@ namespace pipe::math
 		ct.Next("v", color.v);
 		ct.Next("a", color.a);
 	}
-}    // namespace pipe::math
+}    // namespace p::math
 
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::math;
+	using namespace p::math;
 
 	template<ColorMode mode>
 	struct Hash<TColor<mode>>
@@ -889,10 +889,10 @@ namespace pipe
 			return color.DWColor();
 		}
 	};
-}    // namespace pipe
+}    // namespace p
 
 
-REFLECT_NATIVE_TYPE(pipe::LinearColor)
-REFLECT_NATIVE_TYPE(pipe::sRGBColor)
-REFLECT_NATIVE_TYPE(pipe::HSVColor)
-REFLECT_NATIVE_TYPE(pipe::Color)
+REFLECT_NATIVE_TYPE(p::LinearColor)
+REFLECT_NATIVE_TYPE(p::sRGBColor)
+REFLECT_NATIVE_TYPE(p::HSVColor)
+REFLECT_NATIVE_TYPE(p::Color)

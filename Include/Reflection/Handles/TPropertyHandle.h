@@ -4,7 +4,7 @@
 #include "Reflection/Handles/PropertyHandle.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	template<typename U>
 	struct TPropertyHandle : public PropertyHandle
@@ -60,4 +60,4 @@ namespace pipe::refl
 			return *Get();
 		}
 	};
-}    // namespace pipe::refl
+}    // namespace p::refl

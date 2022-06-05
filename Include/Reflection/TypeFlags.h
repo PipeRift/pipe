@@ -4,7 +4,7 @@
 #include "TypeTraits.h"
 
 
-namespace pipe
+namespace p
 {
 	/** CLASS TRAITS */
 
@@ -25,47 +25,47 @@ namespace pipe
 	template<typename...>
 	struct TFlags : public DefaultTFlags
 	{};
-}    // namespace pipe
+}    // namespace p
 
 
 /** Custom traits go here */
-#define TYPE_FLAGS(type, ...)                           \
-	template<pipe::Derived<type> T>                     \
-	struct pipe::TFlags<T> : public pipe::DefaultTFlags \
+#define TYPE_FLAGS(type, ...)                     \
+	template<p::Derived<type> T>                  \
+	struct p::TFlags<T> : public p::DefaultTFlags \
+	{                                             \
+		enum                                      \
+		{                                         \
+			__VA_ARGS__                           \
+		};                                        \
+	};
+
+#define INHERIT_TYPE_FLAGS(type, parent, ...)      \
+	template<typename T>                           \
+		requires p::Derived<T, type>               \
+	struct p::TFlags<T> : public p::TFlags<parent> \
+	{                                              \
+		enum                                       \
+		{                                          \
+			__VA_ARGS__                            \
+		};                                         \
+	};
+
+#define TEMPLATE_TYPE_FLAGS(type, ...)                  \
+	template<typename T>                                \
+	struct p::TFlags<type<T>> : public p::DefaultTFlags \
 	{                                                   \
 		enum                                            \
 		{                                               \
 			__VA_ARGS__                                 \
 		};                                              \
-	};
+	}
 
-#define INHERIT_TYPE_FLAGS(type, parent, ...)            \
+#define INHERIT_TEMPLATE_TYPE_FLAGS(type, parent, ...)   \
 	template<typename T>                                 \
-		requires pipe::Derived<T, type>                  \
-	struct pipe::TFlags<T> : public pipe::TFlags<parent> \
+	struct p::TFlags<type<T>> : public p::TFlags<parent> \
 	{                                                    \
 		enum                                             \
 		{                                                \
 			__VA_ARGS__                                  \
 		};                                               \
-	};
-
-#define TEMPLATE_TYPE_FLAGS(type, ...)                        \
-	template<typename T>                                      \
-	struct pipe::TFlags<type<T>> : public pipe::DefaultTFlags \
-	{                                                         \
-		enum                                                  \
-		{                                                     \
-			__VA_ARGS__                                       \
-		};                                                    \
-	}
-
-#define INHERIT_TEMPLATE_TYPE_FLAGS(type, parent, ...)         \
-	template<typename T>                                       \
-	struct pipe::TFlags<type<T>> : public pipe::TFlags<parent> \
-	{                                                          \
-		enum                                                   \
-		{                                                      \
-			__VA_ARGS__                                        \
-		};                                                     \
 	}

@@ -18,7 +18,7 @@
 #include <type_traits>
 
 
-namespace pipe::core
+namespace p::core
 {
 	template<typename Key, typename Value,
 	    typename Allocator = Memory::TDefaultAllocator<TPair<Key, Value>>>
@@ -284,9 +284,9 @@ namespace pipe::core
 			map = Move(other.map);
 		}
 	};
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

@@ -5,7 +5,7 @@
 #include "Core/Platform.h"
 
 
-namespace pipe::core
+namespace p::core
 {
 	template<typename Allocator = Memory::TDefaultAllocator<u32>>
 	class TBitArray
@@ -268,9 +268,9 @@ namespace pipe::core
 
 
 	using BitArray = TBitArray<>;
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

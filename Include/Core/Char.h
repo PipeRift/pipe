@@ -9,7 +9,7 @@
 #include <locale>
 
 
-namespace pipe::core
+namespace p::core
 {
 	/*-----------------------------------------------------------------------------
 	    Character type functions.
@@ -284,9 +284,9 @@ namespace pipe::core
 	{
 		return ::strtol(str, end, radix);
 	}
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

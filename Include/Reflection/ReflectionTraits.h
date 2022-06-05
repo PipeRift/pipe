@@ -8,7 +8,7 @@
 #include "TypeTraits.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	struct Struct;
 
@@ -46,9 +46,9 @@ namespace pipe::refl
 		}
 		return false;
 	}
-}    // namespace pipe::refl
+}    // namespace p::refl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::refl;
+	using namespace p::refl;
 }

@@ -10,7 +10,7 @@
 #include "Profiler.h"
 
 
-namespace pipe::core
+namespace p::core
 {
 	template<typename T, typename Index, typename Predicate>
 	void Sort(T* first, Index size, Predicate predicate)
@@ -122,9 +122,9 @@ namespace pipe::core
 			}
 		}
 	}
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

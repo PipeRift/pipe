@@ -6,7 +6,7 @@
 #include "BaseBlock.h"
 
 
-namespace pipe::Memory
+namespace p::Memory
 {
 	/** This is a memory Block interface.
 	 * It serves the single purpose of documenting a Block's interface.
@@ -24,4 +24,4 @@ namespace pipe::Memory
 		// Free the block of memory
 		void Free() {}
 	};
-}    // namespace pipe::Memory
+}    // namespace p::Memory

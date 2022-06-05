@@ -15,7 +15,7 @@
 #include <shared_mutex>
 
 
-namespace pipe::core
+namespace p::core
 {
 	struct Name;
 
@@ -45,11 +45,11 @@ namespace pipe::core
 			return hash == other.hash;
 		}
 	};
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 
 
 	template<>
@@ -60,9 +60,9 @@ namespace pipe
 			return x.hash;
 		}
 	};
-}    // namespace pipe
+}    // namespace p
 
-namespace pipe::core
+namespace p::core
 {
 	/** Global table storing all names */
 	class NameTable
@@ -187,11 +187,11 @@ namespace pipe::core
 		Name(const Id& id) : id(id) {}
 	};
 
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 
 
 	template<>
@@ -213,16 +213,16 @@ namespace pipe
 	};
 
 	OVERRIDE_TYPE_NAME(Name)
-}    // namespace pipe
+}    // namespace p
 
 
 template<>
-struct fmt::formatter<pipe::Name> : public fmt::formatter<pipe::StringView>
+struct fmt::formatter<p::Name> : public fmt::formatter<p::StringView>
 {
 	template<typename FormatContext>
-	auto format(const pipe::Name& name, FormatContext& ctx)
+	auto format(const p::Name& name, FormatContext& ctx)
 	{
-		const pipe::StringView nameStr{name.ToString()};
-		return formatter<pipe::StringView>::format(nameStr, ctx);
+		const p::StringView nameStr{name.ToString()};
+		return formatter<p::StringView>::format(nameStr, ctx);
 	}
 };

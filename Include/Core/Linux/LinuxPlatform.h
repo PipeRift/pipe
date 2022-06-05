@@ -6,7 +6,7 @@
 #define PLATFORM_LINUX_USE_CHAR16 0
 
 
-namespace pipe::core
+namespace p::core
 {
 	/**
 	 * Linux specific types
@@ -23,11 +23,11 @@ namespace pipe::core
 	};
 
 	using PlatformTypes = LinuxPlatformTypes;
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }
 
 

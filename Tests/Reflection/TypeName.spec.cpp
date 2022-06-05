@@ -12,8 +12,8 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace pipe;
-using namespace pipe::refl;
+using namespace p;
+using namespace p::refl;
 
 
 struct AnStruct
@@ -66,7 +66,7 @@ go_bandit([]() {
 		describe("Containers", []() {
 			it("Can get TArray names", [&]() {
 				AssertThat(GetTypeName<TArray<Guid>>(), Equals("TArray"));
-				AssertThat(GetFullTypeName<TArray<Guid>>(), Equals("TArray<pipe::core::Guid>"));
+				AssertThat(GetFullTypeName<TArray<Guid>>(), Equals("TArray<p::core::Guid>"));
 				AssertThat(GetFullTypeName<TArray<Guid>>(false), Equals("TArray<Guid>"));
 			});
 
@@ -79,7 +79,7 @@ go_bandit([]() {
 
 
 				auto namespaceName = GetFullTypeName<TMap<u8, Guid>>();
-				AssertThat(namespaceName, Equals("TMap<u8, pipe::core::Guid>"));
+				AssertThat(namespaceName, Equals("TMap<u8, p::core::Guid>"));
 				auto noNamespaceName = GetFullTypeName<TMap<u8, Guid>>(false);
 				AssertThat(noNamespaceName, Equals("TMap<u8, Guid>"));
 			});

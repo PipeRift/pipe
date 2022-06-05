@@ -9,7 +9,7 @@
 #include "Reflection/StructType.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	StringView Type::GetName() const
 	{
@@ -36,4 +36,4 @@ namespace pipe::refl
 	{
 		return HasFlag(category, TypeCategory::Class) ? static_cast<ClassType*>(this) : nullptr;
 	}
-}    // namespace pipe::refl
+}    // namespace p::refl

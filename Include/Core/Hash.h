@@ -7,7 +7,7 @@
 #include <robin_hood.h>
 
 
-namespace pipe::core
+namespace p::core
 {
 	inline CORE_API sizet HashBytes(void const* ptr, sizet const len) noexcept
 	{
@@ -66,9 +66,9 @@ namespace pipe::core
 			return static_cast<sizet>(result);
 		}
 	}
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
 	template<typename T>
 	struct Hash : robin_hood::hash<T>
@@ -80,5 +80,5 @@ namespace pipe
 	};
 
 
-	using namespace pipe::core;
-}    // namespace pipe
+	using namespace p::core;
+}    // namespace p

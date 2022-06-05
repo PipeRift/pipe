@@ -11,22 +11,22 @@
 #include "Reflection/TypeId.h"
 
 
-#define REFLECT_NATIVE_TYPE(type)                                       \
-	template<>                                                          \
-	struct pipe::refl::TStaticNativeInitializer<type>                   \
-	{                                                                   \
-		static constexpr bool enabled = true;                           \
-		static const pipe::TFunction<pipe::refl::NativeType*()> onInit; \
-	};                                                                  \
-	inline const pipe::TFunction<pipe::refl::NativeType*()>             \
-	    pipe::refl::TStaticNativeInitializer<type>::onInit = []() {     \
-		    pipe::refl::TNativeTypeBuilder<type> builder{};             \
-		    builder.Initialize();                                       \
-		    return builder.GetType();                                   \
+#define REFLECT_NATIVE_TYPE(type)                                 \
+	template<>                                                    \
+	struct p::refl::TStaticNativeInitializer<type>                \
+	{                                                             \
+		static constexpr bool enabled = true;                     \
+		static const p::TFunction<p::refl::NativeType*()> onInit; \
+	};                                                            \
+	inline const p::TFunction<p::refl::NativeType*()>             \
+	    p::refl::TStaticNativeInitializer<type>::onInit = []() {  \
+		    p::refl::TNativeTypeBuilder<type> builder{};          \
+		    builder.Initialize();                                 \
+		    return builder.GetType();                             \
 	    };
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	/**
 	 * Native Type Builder
@@ -54,4 +54,4 @@ namespace pipe::refl
 			return &newType;
 		}
 	};
-}    // namespace pipe::refl
+}    // namespace p::refl

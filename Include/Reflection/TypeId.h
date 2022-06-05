@@ -10,7 +10,7 @@
 #include <iostream>
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	struct CORE_API TypeId
 	{
@@ -63,13 +63,13 @@ namespace pipe::refl
 	template<typename T>
 	inline consteval refl::TypeId GetTypeId()
 	{
-		return refl::TypeId{pipe::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
+		return refl::TypeId{p::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
 	}
-}    // namespace pipe::refl
+}    // namespace p::refl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::refl;
+	using namespace p::refl;
 
 	template<>
 	struct Hash<refl::TypeId>
@@ -80,15 +80,15 @@ namespace pipe
 			return hasher(id.GetId());
 		}
 	};
-}    // namespace pipe
+}    // namespace p
 
 
 template<>
-struct fmt::formatter<pipe::refl::TypeId> : public fmt::formatter<pipe::u64>
+struct fmt::formatter<p::refl::TypeId> : public fmt::formatter<p::u64>
 {
 	template<typename FormatContext>
-	auto format(const pipe::refl::TypeId& typeId, FormatContext& ctx)
+	auto format(const p::refl::TypeId& typeId, FormatContext& ctx)
 	{
-		return formatter<pipe::u64>::format(typeId.GetId(), ctx);
+		return formatter<p::u64>::format(typeId.GetId(), ctx);
 	}
 };

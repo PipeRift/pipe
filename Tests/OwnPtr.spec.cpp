@@ -6,11 +6,11 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace pipe;
+using namespace p;
 
 
 template<typename T>
-struct TestPtrBuilder : pipe::TPtrBuilder<T>
+struct TestPtrBuilder : p::TPtrBuilder<T>
 {
 	template<typename... Args>
 	static T* New(Args&&... args)
@@ -258,8 +258,8 @@ go_bandit([]() {
 
 
 		it("Can detect custom PtrBuilders", [&]() {
-			AssertThat(pipe::HasCustomPtrBuilder<EmptyStruct>::value, Equals(false));
-			AssertThat(pipe::HasCustomPtrBuilder<MockStruct>::value, Equals(true));
+			AssertThat(p::HasCustomPtrBuilder<EmptyStruct>::value, Equals(false));
+			AssertThat(p::HasCustomPtrBuilder<MockStruct>::value, Equals(true));
 		});
 
 		describe("Typeless pointer", []() {

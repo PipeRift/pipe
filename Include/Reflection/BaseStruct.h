@@ -6,18 +6,18 @@
 #include "Serialization/ContextsFwd.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	class StructType;
 
 	struct CORE_API BaseStruct
 	{
-		void SerializeReflection(pipe::serl::CommonContext& ct) {}
+		void SerializeReflection(p::serl::CommonContext& ct) {}
 		// refl::StructType* GetType() const;
 	};
-}    // namespace pipe::refl
+}    // namespace p::refl
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::refl;
+	using namespace p::refl;
 }

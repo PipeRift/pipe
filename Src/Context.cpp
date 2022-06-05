@@ -3,7 +3,7 @@
 #include "Context.h"
 
 
-namespace pipe
+namespace p
 {
 	TOwnPtr<Context> globalInstance;
 
@@ -20,4 +20,4 @@ namespace pipe
 			globalInstance.Delete();
 		}
 	}
-}    // namespace pipe
+}    // namespace p

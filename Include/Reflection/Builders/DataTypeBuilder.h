@@ -17,7 +17,7 @@
 #include "TypeTraits.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	template<typename T, typename Parent, TypeFlags flags, typename TType>
 	struct TDataTypeBuilder : public TypeBuilder
@@ -191,114 +191,112 @@ namespace pipe::refl
 	{
 		static constexpr u32 value = 0;
 	};
-}    // namespace pipe::refl
+}    // namespace p::refl
 
 
 /** Defines a Class */
-#define CLASS_HEADER_NO_FLAGS(type, parent) CLASS_HEADER_FLAGS(type, parent, pipe::Type_NoFlag)
-#define CLASS_HEADER_FLAGS(type, parent, flags)                                           \
-public:                                                                                   \
-	using ThisType    = type;                                                             \
-	using Super       = parent;                                                           \
-	using BuilderType = pipe::refl::TClassTypeBuilder<ThisType, Super, GetStaticFlags()>; \
-                                                                                          \
-	static pipe::refl::ClassType* GetStaticType()                                         \
-	{                                                                                     \
-		return pipe::GetType<ThisType>();                                                 \
-	}                                                                                     \
-	static constexpr pipe::TypeFlags GetStaticFlags()                                     \
-	{                                                                                     \
-		return pipe::InitTypeFlags(flags);                                                \
-	}                                                                                     \
-	pipe::refl::ClassType* GetType() const override                                       \
-	{                                                                                     \
-		return pipe::GetType<ThisType>();                                                 \
+#define CLASS_HEADER_NO_FLAGS(type, parent) CLASS_HEADER_FLAGS(type, parent, p::Type_NoFlag)
+#define CLASS_HEADER_FLAGS(type, parent, flags)                                        \
+public:                                                                                \
+	using ThisType    = type;                                                          \
+	using Super       = parent;                                                        \
+	using BuilderType = p::refl::TClassTypeBuilder<ThisType, Super, GetStaticFlags()>; \
+                                                                                       \
+	static p::refl::ClassType* GetStaticType()                                         \
+	{                                                                                  \
+		return p::GetType<ThisType>();                                                 \
+	}                                                                                  \
+	static constexpr p::TypeFlags GetStaticFlags()                                     \
+	{                                                                                  \
+		return p::InitTypeFlags(flags);                                                \
+	}                                                                                  \
+	p::refl::ClassType* GetType() const override                                       \
+	{                                                                                  \
+		return p::GetType<ThisType>();                                                 \
 	}
 
-#define REFLECTION_BODY(buildCode)                                                          \
-public:                                                                                     \
-	static pipe::refl::Type* InitType()                                                     \
-	{                                                                                       \
-		BuilderType builder{};                                                              \
-		builder.onBuild = [](auto& builder) {                                               \
-			__ReflReflectProperty(builder, pipe::refl::MetaCounter<0>{});                   \
-			{                                                                               \
-				buildCode                                                                   \
-			}                                                                               \
-		};                                                                                  \
-		builder.Initialize();                                                               \
-		return builder.GetType();                                                           \
-	}                                                                                       \
-                                                                                            \
-	void SerializeReflection(pipe::serl::CommonContext& ct)                                 \
-	{                                                                                       \
-		if constexpr (!(GetStaticFlags() & pipe::Type_NotSerialized))                       \
-		{                                                                                   \
-			Super::SerializeReflection(ct);                                                 \
-			__ReflSerializeProperty(ct, pipe::refl::MetaCounter<0>{});                      \
-		}                                                                                   \
-	}                                                                                       \
-                                                                                            \
-private:                                                                                    \
-	static constexpr pipe::refl::MetaCounter<0> __refl_Counter(pipe::refl::MetaCounter<0>); \
-	template<pipe::u32 N>                                                                   \
-	static void __ReflReflectProperty(BuilderType&, pipe::refl::MetaCounter<N>)             \
-	{}                                                                                      \
-	template<pipe::u32 N>                                                                   \
-	void __ReflSerializeProperty(pipe::serl::CommonContext&, pipe::refl::MetaCounter<N>)    \
-	{}                                                                                      \
-                                                                                            \
+#define REFLECTION_BODY(buildCode)                                                    \
+public:                                                                               \
+	static p::refl::Type* InitType()                                                  \
+	{                                                                                 \
+		BuilderType builder{};                                                        \
+		builder.onBuild = [](auto& builder) {                                         \
+			__ReflReflectProperty(builder, p::refl::MetaCounter<0>{});                \
+			{                                                                         \
+				buildCode                                                             \
+			}                                                                         \
+		};                                                                            \
+		builder.Initialize();                                                         \
+		return builder.GetType();                                                     \
+	}                                                                                 \
+                                                                                      \
+	void SerializeReflection(p::serl::CommonContext& ct)                              \
+	{                                                                                 \
+		if constexpr (!(GetStaticFlags() & p::Type_NotSerialized))                    \
+		{                                                                             \
+			Super::SerializeReflection(ct);                                           \
+			__ReflSerializeProperty(ct, p::refl::MetaCounter<0>{});                   \
+		}                                                                             \
+	}                                                                                 \
+                                                                                      \
+private:                                                                              \
+	static constexpr p::refl::MetaCounter<0> __refl_Counter(p::refl::MetaCounter<0>); \
+	template<p::u32 N>                                                                \
+	static void __ReflReflectProperty(BuilderType&, p::refl::MetaCounter<N>)          \
+	{}                                                                                \
+	template<p::u32 N>                                                                \
+	void __ReflSerializeProperty(p::serl::CommonContext&, p::refl::MetaCounter<N>)    \
+	{}                                                                                \
+                                                                                      \
 public:
 
 
 /** Defines an struct */
-#define STRUCT_HEADER_NO_FLAGS(type, parent) STRUCT_HEADER_FLAGS(type, parent, pipe::Type_NoFlag)
-#define STRUCT_HEADER_FLAGS(type, parent, flags)                                           \
-public:                                                                                    \
-	using Super       = parent;                                                            \
-	using ThisType    = type;                                                              \
-	using BuilderType = pipe::refl::TStructTypeBuilder<ThisType, Super, GetStaticFlags()>; \
-                                                                                           \
-	static pipe::refl::StructType* GetStaticType()                                         \
-	{                                                                                      \
-		return pipe::GetType<ThisType>();                                                  \
-	}                                                                                      \
-	static constexpr pipe::TypeFlags GetStaticFlags()                                      \
-	{                                                                                      \
-		return pipe::InitTypeFlags(flags);                                                 \
+#define STRUCT_HEADER_NO_FLAGS(type, parent) STRUCT_HEADER_FLAGS(type, parent, p::Type_NoFlag)
+#define STRUCT_HEADER_FLAGS(type, parent, flags)                                        \
+public:                                                                                 \
+	using Super       = parent;                                                         \
+	using ThisType    = type;                                                           \
+	using BuilderType = p::refl::TStructTypeBuilder<ThisType, Super, GetStaticFlags()>; \
+                                                                                        \
+	static p::refl::StructType* GetStaticType()                                         \
+	{                                                                                   \
+		return p::GetType<ThisType>();                                                  \
+	}                                                                                   \
+	static constexpr p::TypeFlags GetStaticFlags()                                      \
+	{                                                                                   \
+		return p::InitTypeFlags(flags);                                                 \
 	}
 
-#define PROPERTY_NO_FLAGS(name) PROPERTY_FLAGS(name, pipe::Prop_NoFlag)
+#define PROPERTY_NO_FLAGS(name) PROPERTY_FLAGS(name, p::Prop_NoFlag)
 #define PROPERTY_FLAGS(name, flags) __PROPERTY_IMPL(name, CAT(__refl_id_, name), flags)
-#define __PROPERTY_IMPL(name, id_name, flags)                                           \
-	static constexpr pipe::u32 id_name =                                                \
-	    decltype(__refl_Counter(pipe::MetaCounter<255>{}))::value;                      \
-	static constexpr pipe::MetaCounter<(id_name) + 1> __refl_Counter(                   \
-	    pipe::MetaCounter<(id_name) + 1>);                                              \
-                                                                                        \
-	static void __ReflReflectProperty(BuilderType& builder, pipe::MetaCounter<id_name>) \
-	{                                                                                   \
-		using PropType = decltype(name);                                                \
-		static_assert(pipe::HasType<PropType>(), "Type is not reflected");              \
-		builder.AddProperty<PropType>(                                                  \
-		    TX(#name),                                                                  \
-		    [](void* instance) {                                                        \
-			return (void*)&static_cast<ThisType*>(instance)->name;                      \
-		    },                                                                          \
-		    InitPropFlags(flags));                                                      \
-                                                                                        \
-		/* Registry next property if any */                                             \
-		__ReflReflectProperty(builder, pipe::MetaCounter<(id_name) + 1>{});             \
-	};                                                                                  \
-                                                                                        \
-	void __ReflSerializeProperty(pipe::CommonContext& ct, pipe::MetaCounter<id_name>)   \
-	{                                                                                   \
-		if constexpr (!(InitPropFlags(flags) & pipe::Prop_NotSerialized))               \
-		{ /* Don't serialize property if Transient */                                   \
-			ct.Next(#name, name);                                                       \
-		}                                                                               \
-		/* Serialize next property if any */                                            \
-		__ReflSerializeProperty(ct, pipe::MetaCounter<(id_name) + 1>{});                \
+#define __PROPERTY_IMPL(name, id_name, flags)                                                     \
+	static constexpr p::u32 id_name = decltype(__refl_Counter(p::MetaCounter<255>{}))::value;     \
+	static constexpr p::MetaCounter<(id_name) + 1> __refl_Counter(p::MetaCounter<(id_name) + 1>); \
+                                                                                                  \
+	static void __ReflReflectProperty(BuilderType& builder, p::MetaCounter<id_name>)              \
+	{                                                                                             \
+		using PropType = decltype(name);                                                          \
+		static_assert(p::HasType<PropType>(), "Type is not reflected");                           \
+		builder.AddProperty<PropType>(                                                            \
+		    TX(#name),                                                                            \
+		    [](void* instance) {                                                                  \
+			return (void*)&static_cast<ThisType*>(instance)->name;                                \
+		    },                                                                                    \
+		    InitPropFlags(flags));                                                                \
+                                                                                                  \
+		/* Registry next property if any */                                                       \
+		__ReflReflectProperty(builder, p::MetaCounter<(id_name) + 1>{});                          \
+	};                                                                                            \
+                                                                                                  \
+	void __ReflSerializeProperty(p::CommonContext& ct, p::MetaCounter<id_name>)                   \
+	{                                                                                             \
+		if constexpr (!(InitPropFlags(flags) & p::Prop_NotSerialized))                            \
+		{ /* Don't serialize property if Transient */                                             \
+			ct.Next(#name, name);                                                                 \
+		}                                                                                         \
+		/* Serialize next property if any */                                                      \
+		__ReflSerializeProperty(ct, p::MetaCounter<(id_name) + 1>{});                             \
 	};
 
 

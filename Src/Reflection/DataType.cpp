@@ -5,7 +5,7 @@
 #include "Reflection/Property.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	bool DataType::IsChildOf(const DataType* other) const
 	{
@@ -92,4 +92,4 @@ namespace pipe::refl
 		}
 		return nullptr;
 	}
-}    // namespace pipe::refl
+}    // namespace p::refl

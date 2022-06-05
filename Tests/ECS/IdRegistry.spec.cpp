@@ -6,7 +6,7 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace pipe;
+using namespace p;
 using namespace std::chrono_literals;
 
 namespace snowhouse

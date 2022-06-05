@@ -12,7 +12,7 @@
 #include "Templates/Greater.h"
 
 
-namespace pipe::Memory
+namespace p::Memory
 {
 	bool operator==(const BestFitArena::Slot& a, sizet b)
 	{
@@ -221,4 +221,4 @@ namespace pipe::Memory
 		}
 		pendingSort = true;
 	}
-}    // namespace pipe::Memory
+}    // namespace p::Memory

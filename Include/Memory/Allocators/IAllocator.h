@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace pipe::Memory
+namespace p::Memory
 {
 	class CORE_API IAllocator
 	{
@@ -27,4 +27,4 @@ namespace pipe::Memory
 
 		void Free(T* ptr) {}
 	};
-}    // namespace pipe::Memory
+}    // namespace p::Memory

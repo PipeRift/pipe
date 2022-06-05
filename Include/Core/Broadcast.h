@@ -8,7 +8,7 @@
 #include "Reflection/Class.h"
 
 
-namespace pipe::core
+namespace p::core
 {
 	template<typename... Params>
 	class TBroadcast
@@ -173,9 +173,9 @@ namespace pipe::core
 			Broadcast(Forward<Params>(params)...);
 		}
 	};
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

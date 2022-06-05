@@ -9,7 +9,7 @@
 #include <fstream>
 
 
-namespace pipe::files
+namespace p::files
 {
 	bool LoadStringFile(const Path& path, String& result, sizet extraPadding)
 	{
@@ -188,4 +188,4 @@ namespace pipe::files
 	{
 		return IsFile(FromString(path));
 	}
-}    // namespace pipe::files
+}    // namespace p::files

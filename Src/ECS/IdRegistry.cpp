@@ -3,7 +3,7 @@
 #include "ECS/IdRegistry.h"
 
 
-namespace pipe::ecs
+namespace p::ecs
 {
 	Id IdRegistry::Create()
 	{
@@ -83,4 +83,4 @@ namespace pipe::ecs
 		const Index index = GetIndex(id);
 		return entities.IsValidIndex(index) && entities[index] == id;
 	}
-}    // namespace pipe::ecs
+}    // namespace p::ecs

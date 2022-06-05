@@ -8,7 +8,7 @@
 #include "Reflection/Type.h"
 
 
-namespace pipe::refl
+namespace p::refl
 {
 	template<typename T>
 	struct TTypeInstance
@@ -40,4 +40,4 @@ namespace pipe::refl
 
 	template<typename T>
 	inline Type* TTypeInstance<T>::instance = TTypeInstance<T>::InitType();
-}    // namespace pipe::refl
+}    // namespace p::refl

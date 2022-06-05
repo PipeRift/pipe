@@ -5,7 +5,7 @@
 #include "Export.h"
 
 
-namespace pipe::core
+namespace p::core
 {
 	struct CORE_API MacPlatformProcess : public GenericPlatformProcess
 	{
@@ -17,9 +17,9 @@ namespace pipe::core
 	};
 
 	using PlatformProcess = MacPlatformProcess;
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

@@ -17,7 +17,7 @@
 #define CPP20_CONSTEXPR_ALGORITHMS_PRESENT (__cpp_lib_constexpr_algorithms)
 
 
-namespace pipe::core
+namespace p::core
 {
 	namespace Details
 	{
@@ -767,9 +767,9 @@ namespace pipe::core
 		out << str.data();
 		return out;
 	}
-}    // namespace pipe::core
+}    // namespace p::core
 
-namespace pipe
+namespace p
 {
-	using namespace pipe::core;
+	using namespace p::core;
 }

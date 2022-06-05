@@ -6,7 +6,7 @@
 #include "Core/Function.h"
 
 
-namespace pipe
+namespace p
 {
 	namespace refl
 	{
@@ -48,4 +48,4 @@ namespace pipe
 	{
 		return refl::TStaticNativeInitializer<T>::enabled;
 	}
-}    // namespace pipe
+}    // namespace p
