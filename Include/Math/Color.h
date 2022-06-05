@@ -865,7 +865,12 @@ namespace pipe::math
 		ct.Next("v", color.v);
 		ct.Next("a", color.a);
 	}
+}    // namespace pipe::math
 
+
+namespace pipe
+{
+	using namespace pipe::math;
 
 	template<ColorMode mode>
 	struct Hash<TColor<mode>>
@@ -884,7 +889,8 @@ namespace pipe::math
 			return color.DWColor();
 		}
 	};
-}    // namespace pipe::math
+}    // namespace pipe
+
 
 REFLECT_NATIVE_TYPE(pipe::LinearColor)
 REFLECT_NATIVE_TYPE(pipe::sRGBColor)
