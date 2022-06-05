@@ -291,6 +291,12 @@ namespace pipe::core
 		/** Holds the fourth component. */
 		u32 d = 0;
 	};
+}    // namespace pipe::core
+
+namespace pipe
+{
+	using namespace pipe::core;
+
 
 	template<>
 	struct Hash<Guid>
@@ -309,11 +315,6 @@ namespace pipe::core
 			HasMemberSerialize = true
 		};
 	};
-}    // namespace pipe::core
-
-namespace pipe
-{
-	using namespace pipe::core;
-}
+}    // namespace pipe
 
 REFLECT_NATIVE_TYPE(pipe::Guid);
