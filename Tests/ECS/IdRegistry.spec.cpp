@@ -6,18 +6,18 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
+using namespace p;
 using namespace std::chrono_literals;
 
 namespace snowhouse
 {
 	template<>
-	struct Stringizer<ECS::Id>
+	struct Stringizer<ecs::Id>
 	{
-		static std::string ToString(ECS::Id id)
+		static std::string ToString(ecs::Id id)
 		{
 			std::stringstream stream;
-			stream << "Id(" << UnderlyingType<ECS::Id>(id) << ")";
+			stream << "Id(" << UnderlyingType<ecs::Id>(id) << ")";
 			return stream.str();
 		}
 	};
@@ -27,18 +27,18 @@ namespace snowhouse
 go_bandit([]() {
 	describe("ECS.IdRegistry", []() {
 		it("Can create one id", [&]() {
-			ECS::IdRegistry ids;
+			ecs::IdRegistry ids;
 			AssertThat(ids.Size(), Equals(0));
 
-			ECS::Id id = ids.Create();
-			AssertThat(id, !Equals(ECS::Id(ECS::NoId)));
+			ecs::Id id = ids.Create();
+			AssertThat(id, !Equals(ecs::Id(ecs::NoId)));
 			AssertThat(ids.IsValid(id), Is().True());
 			AssertThat(ids.Size(), Equals(1));
 		});
 
 		it("Can remove one id", [&]() {
-			ECS::IdRegistry ids;
-			ECS::Id id = ids.Create();
+			ecs::IdRegistry ids;
+			ecs::Id id = ids.Create();
 			AssertThat(ids.Size(), Equals(1));
 
 			AssertThat(ids.Destroy(id), Is().True());
@@ -47,20 +47,20 @@ go_bandit([]() {
 		});
 
 		it("Can create two and remove first", [&]() {
-			ECS::IdRegistry ids;
+			ecs::IdRegistry ids;
 
-			ECS::Id id1 = ids.Create();
-			ECS::Id id2 = ids.Create();
+			ecs::Id id1 = ids.Create();
+			ecs::Id id2 = ids.Create();
 			AssertThat(ids.Destroy(id1), Is().True());
 			AssertThat(ids.IsValid(id1), Is().False());
 			AssertThat(ids.Size(), Equals(1));
 		});
 
 		it("Can create two and remove last", [&]() {
-			ECS::IdRegistry ids;
+			ecs::IdRegistry ids;
 
-			ECS::Id id1 = ids.Create();
-			ECS::Id id2 = ids.Create();
+			ecs::Id id1 = ids.Create();
+			ecs::Id id2 = ids.Create();
 
 			AssertThat(ids.Destroy(id2), Is().True());
 			AssertThat(ids.IsValid(id2), Is().False());
@@ -68,23 +68,23 @@ go_bandit([]() {
 		});
 
 		it("Can create many ids", [&]() {
-			ECS::IdRegistry ids;
+			ecs::IdRegistry ids;
 			AssertThat(ids.Size(), Equals(0));
 
-			TArray<ECS::Id> list(3);
+			TArray<ecs::Id> list(3);
 			ids.Create(list);
 
 			AssertThat(ids.Size(), Equals(3));
 			for (i32 i = 0; i < list.Size(); ++i)
 			{
-				AssertThat(list[i], Equals(ECS::Id(i)));
+				AssertThat(list[i], Equals(ecs::Id(i)));
 				AssertThat(ids.IsValid(list[i]), Is().True());
 			}
 		});
 
 		it("Can remove many ids", [&]() {
-			ECS::IdRegistry ids;
-			TArray<ECS::Id> list(3);
+			ecs::IdRegistry ids;
+			TArray<ecs::Id> list(3);
 			ids.Create(list);
 			AssertThat(ids.Size(), Equals(3));
 

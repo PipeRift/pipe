@@ -6,7 +6,7 @@
 
 #include "ECS/Id.h"
 
-#include <Misc/Checks.h>
+#include <Core/Checks.h>
 
 #include <cstddef>
 #include <iterator>
@@ -22,7 +22,7 @@
 //#include "fwd.hpp"
 
 
-namespace Rift::ECS
+namespace p::ecs
 {
 	enum class DeletionPolicy : u8
 	{
@@ -51,7 +51,7 @@ namespace Rift::ECS
 	 * no guarantees that entities are returned in the insertion order when iterate
 	 * a sparse set. Do not make assumption on the order in any case.
 	 *
-	 * @tparam ECS::Id A valid entity type (see entt_traits for more details).
+	 * @tparam ecs::Id A valid entity type (see entt_traits for more details).
 	 * @tparam Allocator Type of allocator used to manage memory and elements.
 	 */
 	template<typename Allocator>
@@ -60,10 +60,10 @@ namespace Rift::ECS
 		static constexpr auto growthFactor = 1.5;
 		static constexpr auto sparsePage   = 4096;
 
-		using traits_type = ECS::IdTraits<ECS::Id>;
+		using traits_type = ecs::IdTraits<ecs::Id>;
 
 		using alloc_traits =
-		    typename std::allocator_traits<Allocator>::template rebind_traits<ECS::Id>;
+		    typename std::allocator_traits<Allocator>::template rebind_traits<ecs::Id>;
 		using alloc_pointer       = typename alloc_traits::pointer;
 		using alloc_const_pointer = typename alloc_traits::const_pointer;
 
@@ -77,7 +77,7 @@ namespace Rift::ECS
 		struct SparseSetIterator final
 		{
 			using difference_type   = typename traits_type::Difference;
-			using value_type        = ECS::Id;
+			using value_type        = ecs::Id;
 			using pointer           = const value_type*;
 			using reference         = const value_type&;
 			using iterator_category = std::random_access_iterator_tag;
@@ -189,14 +189,14 @@ namespace Rift::ECS
 			difference_type index;
 		};
 
-		[[nodiscard]] static auto Page(const ECS::Id entt)
+		[[nodiscard]] static auto Page(const ecs::Id entt)
 		{
-			return static_cast<size_type>(ECS::GetIndex(entt) / sparsePage);
+			return static_cast<size_type>(ecs::GetIndex(entt) / sparsePage);
 		}
 
-		[[nodiscard]] static auto Offset(const ECS::Id entt)
+		[[nodiscard]] static auto Offset(const ecs::Id entt)
 		{
-			return static_cast<size_type>(ECS::GetIndex(entt) & (sparsePage - 1));
+			return static_cast<size_type>(ecs::GetIndex(entt) & (sparsePage - 1));
 		}
 
 		[[nodiscard]] auto AssurePage(const std::size_t idx)
@@ -219,7 +219,7 @@ namespace Rift::ECS
 			if (!sparse[idx])
 			{
 				sparse[idx] = alloc_traits::allocate(allocator, sparsePage);
-				std::uninitialized_fill(sparse[idx], sparse[idx] + sparsePage, ECS::NoId);
+				std::uninitialized_fill(sparse[idx], sparse[idx] + sparsePage, ecs::NoId);
 			}
 
 			return sparse[idx];
@@ -231,7 +231,7 @@ namespace Rift::ECS
 			const auto mem = alloc_traits::allocate(allocator, req);
 
 			std::uninitialized_copy(packed, packed + count, mem);
-			std::uninitialized_fill(mem + count, mem + req, ECS::NoId);
+			std::uninitialized_fill(mem + count, mem + req, ecs::NoId);
 
 			std::destroy(packed, packed + reserved);
 			alloc_traits::deallocate(allocator, packed, reserved);
@@ -284,19 +284,19 @@ namespace Rift::ECS
 		 * @param entt A valid entity identifier.
 		 * @param ud Optional user data that are forwarded as-is to derived classes.
 		 */
-		virtual void SwapAndPop(const ECS::Id entt, [[maybe_unused]] void* ud)
+		virtual void SwapAndPop(const ecs::Id entt, [[maybe_unused]] void* ud)
 		{
 			auto& ref      = sparse[Page(entt)][Offset(entt)];
-			const auto pos = static_cast<size_type>(ECS::GetIndex(ref));
+			const auto pos = static_cast<size_type>(ecs::GetIndex(ref));
 			CheckMsg(packed[pos] == entt, "Invalid entity identifier");
 			auto& last = packed[--count];
 
 			packed[pos]                      = last;
 			sparse[Page(last)][Offset(last)] = ref;
 			// lazy self-assignment guard
-			ref = ECS::NoId;
+			ref = ecs::NoId;
 			// unnecessary but it helps to detect nasty bugs
-			CheckMsg((last = ECS::NoId, true), "");
+			CheckMsg((last = ecs::NoId, true), "");
 		}
 
 		/**
@@ -304,23 +304,23 @@ namespace Rift::ECS
 		 * @param entt A valid entity identifier.
 		 * @param ud Optional user data that are forwarded as-is to derived classes.
 		 */
-		virtual void InPlacePop(const ECS::Id entt, [[maybe_unused]] void* ud)
+		virtual void InPlacePop(const ecs::Id entt, [[maybe_unused]] void* ud)
 		{
 			auto& ref      = sparse[Page(entt)][Offset(entt)];
-			const auto pos = static_cast<size_type>(ECS::GetIndex(ref));
+			const auto pos = static_cast<size_type>(ecs::GetIndex(ref));
 			CheckMsg(packed[pos] == entt, "Invalid entity identifier");
 
 			packed[pos] = std::exchange(
-			    freeList, ECS::MakeId(static_cast<typename traits_type::Entity>(pos)));
+			    freeList, ecs::MakeId(static_cast<typename traits_type::Entity>(pos)));
 			// lazy self-assignment guard
-			ref = ECS::NoId;
+			ref = ecs::NoId;
 		}
 
 	public:
 		/*! @brief Allocator type. */
 		using allocator_type = typename alloc_traits::allocator_type;
 		/*! @brief Underlying entity identifier. */
-		using entity_type = ECS::Id;
+		using entity_type = ecs::Id;
 		/*! @brief Unsigned integer type. */
 		using size_type = std::size_t;
 		/*! @brief Pointer type to contained entities. */
@@ -343,7 +343,7 @@ namespace Rift::ECS
 		    , bucket{0u}
 		    , count{0u}
 		    , reserved{0u}
-		    , freeList{ECS::NoId}
+		    , freeList{ecs::NoId}
 		    , mode{pol}
 		{}
 
@@ -367,7 +367,7 @@ namespace Rift::ECS
 		    , bucket{std::exchange(other.bucket, 0u)}
 		    , count{std::exchange(other.count, 0u)}
 		    , reserved{std::exchange(other.reserved, 0u)}
-		    , freeList{std::exchange(other.freeList, ECS::NoId)}
+		    , freeList{std::exchange(other.freeList, ecs::NoId)}
 		    , mode{other.mode}
 		{}
 
@@ -393,7 +393,7 @@ namespace Rift::ECS
 			bucket          = std::exchange(other.bucket, 0u);
 			count           = std::exchange(other.count, 0u);
 			reserved        = std::exchange(other.reserved, 0u);
-			freeList        = std::exchange(other.freeList, ECS::NoId);
+			freeList        = std::exchange(other.freeList, ecs::NoId);
 			mode            = other.mode;
 
 			return *this;
@@ -414,7 +414,7 @@ namespace Rift::ECS
 		 */
 		[[nodiscard]] size_type Slot() const
 		{
-			return freeList == ECS::NoId ? count : static_cast<size_type>(ECS::GetIndex(freeList));
+			return freeList == ecs::NoId ? count : static_cast<size_type>(ecs::GetIndex(freeList));
 		}
 
 		/**
@@ -580,8 +580,8 @@ namespace Rift::ECS
 		{
 			//  Testing versions permits to avoid accessing the packed array
 			const auto curr = Page(entt);
-			return ECS::GetVersion(entt) != ECS::GetVersion(ECS::NoId)
-			    && (curr < bucket && sparse[curr] && sparse[curr][Offset(entt)] != ECS::NoId);
+			return ecs::GetVersion(entt) != ecs::GetVersion(ecs::NoId)
+			    && (curr < bucket && sparse[curr] && sparse[curr][Offset(entt)] != ecs::NoId);
 		}
 
 		/**
@@ -597,7 +597,7 @@ namespace Rift::ECS
 		[[nodiscard]] size_type Index(const entity_type entt) const
 		{
 			CheckMsg(Contains(entt), "Set does not contain entity");
-			return static_cast<size_type>(ECS::GetIndex(sparse[Page(entt)][Offset(entt)]));
+			return static_cast<size_type>(ecs::GetIndex(sparse[Page(entt)][Offset(entt)]));
 		}
 
 		/**
@@ -642,7 +642,7 @@ namespace Rift::ECS
 			}
 
 			AssurePage(Page(entt))[Offset(entt)] =
-			    ECS::MakeId(static_cast<typename traits_type::Entity>(count));
+			    ecs::MakeId(static_cast<typename traits_type::Entity>(count));
 			packed[count] = entt;
 			return count++;
 		}
@@ -659,16 +659,16 @@ namespace Rift::ECS
 		 */
 		size_type Emplace(const entity_type entt)
 		{
-			if (freeList == ECS::NoId)
+			if (freeList == ecs::NoId)
 			{
 				return EmplaceBack(entt);
 			}
 			else
 			{
 				CheckMsg(!Contains(entt), "Set already contains entity");
-				const auto pos = static_cast<size_type>(ECS::GetIndex(freeList));
+				const auto pos = static_cast<size_type>(ecs::GetIndex(freeList));
 				AssurePage(Page(entt))[Offset(entt)] =
-				    ECS::MakeId(static_cast<typename traits_type::Entity>(pos));
+				    ecs::MakeId(static_cast<typename traits_type::Entity>(pos));
 				freeList = std::exchange(packed[pos], entt);
 				return pos;
 			}
@@ -695,7 +695,7 @@ namespace Rift::ECS
 				const auto entt = *first;
 				CheckMsg(!Contains(entt), "Set already contains entity");
 				AssurePage(Page(entt))[Offset(entt)] =
-				    ECS::MakeId(static_cast<typename traits_type::Entity>(count));
+				    ecs::MakeId(static_cast<typename traits_type::Entity>(count));
 				packed[count++] = entt;
 			}
 		}
@@ -767,31 +767,31 @@ namespace Rift::ECS
 			return found;
 		}
 
-		/*! @brief Removes all ECS::NoIds from the packed array of a sparse set. */
+		/*! @brief Removes all ecs::NoIds from the packed array of a sparse set. */
 		void Compact()
 		{
 			size_type next = count;
-			for (; next && ECS::GetVersion(packed[next - 1u]) == ECS::GetVersion(ECS::NoId); --next)
+			for (; next && ecs::GetVersion(packed[next - 1u]) == ecs::GetVersion(ecs::NoId); --next)
 			{}
 
-			for (auto* it = &freeList; *it != ECS::NoId && next;
-			     it       = std::addressof(packed[ECS::GetIndex(*it)]))
+			for (auto* it = &freeList; *it != ecs::NoId && next;
+			     it       = std::addressof(packed[ecs::GetIndex(*it)]))
 			{
-				if (const size_type pos = ECS::GetIndex(*it); pos < next)
+				if (const size_type pos = ecs::GetIndex(*it); pos < next)
 				{
 					--next;
 					MoveAndPop(next, pos);
 					std::swap(packed[next], packed[pos]);
 					sparse[Page(packed[pos])][Offset(packed[pos])] =
-					    ECS::MakeId(static_cast<const typename traits_type::Entity>(pos));
-					*it = ECS::MakeId(static_cast<typename traits_type::Entity>(next));
-					for (; next && ECS::GetVersion(packed[next - 1u]) == ECS::GetVersion(ECS::NoId);
+					    ecs::MakeId(static_cast<const typename traits_type::Entity>(pos));
+					*it = ecs::MakeId(static_cast<typename traits_type::Entity>(next));
+					for (; next && ecs::GetVersion(packed[next - 1u]) == ecs::GetVersion(ecs::NoId);
 					     --next)
 					{}
 				}
 			}
 
-			freeList = ECS::NoId;
+			freeList = ecs::NoId;
 			count    = next;
 		}
 
@@ -816,8 +816,8 @@ namespace Rift::ECS
 			auto& entt  = sparse[Page(lhs)][Offset(lhs)];
 			auto& other = sparse[Page(rhs)][Offset(rhs)];
 
-			const auto from = static_cast<size_type>(ECS::GetIndex(entt));
-			const auto to   = static_cast<size_type>(ECS::GetIndex(other));
+			const auto from = static_cast<size_type>(ecs::GetIndex(entt));
+			const auto to   = static_cast<size_type>(ecs::GetIndex(other));
 
 			// basic no-leak guarantee (with invalid state) if swapping throws
 			SwapAt(from, to);
@@ -834,7 +834,7 @@ namespace Rift::ECS
 		 * comparison function should be equivalent to the following:
 		 *
 		 * @code{.cpp}
-		 * bool(const ECS::Id, const ECS::Id);
+		 * bool(const ecs::Id, const ecs::Id);
 		 * @endcode
 		 *
 		 * Moreover, the comparison function object shall induce a
@@ -876,7 +876,7 @@ namespace Rift::ECS
 
 					SwapAt(next, idx);
 					sparse[Page(entt)][Offset(entt)] =
-					    ECS::MakeId(static_cast<typename traits_type::Entity>(curr));
+					    ecs::MakeId(static_cast<typename traits_type::Entity>(curr));
 					curr = std::exchange(next, idx);
 				}
 			}
@@ -945,13 +945,13 @@ namespace Rift::ECS
 		{
 			for (auto&& entity : *this)
 			{
-				if (ECS::GetVersion(entity) != ECS::GetVersion(ECS::NoId))
+				if (ecs::GetVersion(entity) != ecs::GetVersion(ecs::NoId))
 				{
 					InPlacePop(entity, ud);
 				}
 			}
 
-			freeList = ECS::NoId;
+			freeList = ecs::NoId;
 			count    = 0u;
 		}
 
@@ -968,4 +968,4 @@ namespace Rift::ECS
 	};
 
 
-}    // namespace Rift::ECS
+}    // namespace p::ecs

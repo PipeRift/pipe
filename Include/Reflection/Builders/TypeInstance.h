@@ -8,7 +8,7 @@
 #include "Reflection/Type.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	template<typename T>
 	struct TTypeInstance
@@ -32,7 +32,7 @@ namespace Rift::Refl
 			return instance;
 		}
 
-		static Refl::Type* GetType()
+		static refl::Type* GetType()
 		{
 			return instance;
 		}
@@ -40,4 +40,4 @@ namespace Rift::Refl
 
 	template<typename T>
 	inline Type* TTypeInstance<T>::instance = TTypeInstance<T>::InitType();
-}    // namespace Rift::Refl
+}    // namespace p::refl

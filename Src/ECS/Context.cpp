@@ -3,7 +3,7 @@
 #include "ECS/Context.h"
 
 
-namespace Rift::ECS
+namespace p::ecs
 {
 	Context::Context()
 	{
@@ -58,7 +58,7 @@ namespace Rift::ECS
 		}
 	}
 
-	Pool* Context::GetPool(Refl::TypeId componentId) const
+	Pool* Context::GetPool(refl::TypeId componentId) const
 	{
 		const i32 index = pools.FindSortedEqual(PoolInstance{componentId});
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
@@ -94,4 +94,4 @@ namespace Rift::ECS
 		// TODO: Move statics
 		// TODO: Cache pools
 	}
-}    // namespace Rift::ECS
+}    // namespace p::ecs

@@ -1,20 +1,28 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
+
 #include <bandit/bandit.h>
 #include <Context.h>
 
+#include <backward.hpp>
 
-class NoFileLogContext : public Rift::Context
+namespace backward
+{
+	backward::SignalHandling sh;
+}    // namespace backward
+
+
+class NoFileLogContext : public p::Context
 {
 public:
-	NoFileLogContext() : Rift::Context(Rift::Path{}) {}
+	NoFileLogContext() : p::Context(p::Path{}) {}
 };
 
 
 int main(int argc, char* argv[])
 {
-	Rift::InitializeContext<NoFileLogContext>();
+	p::InitializeContext<NoFileLogContext>();
 	int result = bandit::run(argc, argv);
-	Rift::ShutdownContext();
+	p::ShutdownContext();
 	return result;
 }

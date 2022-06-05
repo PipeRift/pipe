@@ -2,10 +2,10 @@
 
 #include "Files/FileWatcher.h"
 
-#include "Misc/Checks.h"
+#include "Core/Checks.h"
 
 
-namespace Rift
+namespace p::files
 {
 	efsw::FileWatcher FileWatcher::fileWatcher{};
 
@@ -93,4 +93,4 @@ namespace Rift
 			allowedExtensions.AddUnique(extension);
 		}
 	}
-}    // namespace Rift
+}    // namespace p::files

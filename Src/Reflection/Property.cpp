@@ -3,7 +3,7 @@
 #include "Reflection/Property.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	bool Property::HasFlag(PropFlags flag) const
 	{
@@ -17,4 +17,4 @@ namespace Rift::Refl
 	{
 		return (flags & inFlags) > 0;
 	}
-}    // namespace Rift::Refl
+}    // namespace p::refl

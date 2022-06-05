@@ -3,12 +3,12 @@
 
 #include "PCH.h"
 
-#include "Misc/EnumFlags.h"
+#include "Core/EnumFlags.h"
+#include "Core/StringView.h"
 #include "Reflection/TypeId.h"
-#include "Strings/StringView.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	using namespace EnumOperators;
 
@@ -60,4 +60,9 @@ namespace Rift::Refl
 		class StructType* AsStruct();
 		class ClassType* AsClass();
 	};
-}    // namespace Rift::Refl
+}    // namespace p::refl
+
+namespace p
+{
+	using namespace p::refl;
+}

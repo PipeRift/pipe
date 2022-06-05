@@ -2,13 +2,13 @@
 
 #pragma once
 
+#include "Core/FixedString.h"
 #include "Files/Paths.h"
-#include "Strings/FixedString.h"
 
 #include <efsw/efsw.hpp>
 
 
-namespace Rift
+namespace p::files
 {
 	using FileWatchId = efsw::WatchID;
 
@@ -47,4 +47,9 @@ namespace Rift
 
 		static CORE_API void StartAsync();
 	};
-}    // namespace Rift
+}    // namespace p::files
+
+namespace p
+{
+	using namespace p::files;
+}

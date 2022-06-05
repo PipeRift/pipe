@@ -3,7 +3,7 @@
 #include "Context.h"
 
 
-namespace Rift
+namespace p
 {
 	TOwnPtr<Context> globalInstance;
 
@@ -20,4 +20,4 @@ namespace Rift
 			globalInstance.Delete();
 		}
 	}
-}    // namespace Rift
+}    // namespace p

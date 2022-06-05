@@ -8,7 +8,7 @@
 #include "Reflection/ReflectionTraits.h"
 
 
-namespace Rift
+namespace p
 {
 	template<typename T>
 	struct HasTypeBuilderDefine
@@ -23,7 +23,7 @@ namespace Rift
 		static constexpr bool value = std::is_void<decltype(Impl<T>(0))>::value;
 	};
 
-	template<typename T, typename BuilderType = Refl::TypeBuilder>
+	template<typename T, typename BuilderType = refl::TypeBuilder>
 	constexpr bool HasTypeBuilder()
 	{
 		if constexpr (HasTypeBuilderDefine<T>::value)
@@ -63,4 +63,9 @@ namespace Rift
 	{
 		return HasType<typename T::ItemType>();
 	}
-}    // namespace Rift
+}    // namespace p
+
+namespace p
+{
+	using namespace p::refl;
+}

@@ -3,11 +3,11 @@
 
 #include "Files/Paths.h"
 
-#include "Misc/Char.h"
-#include "Platform/PlatformProcess.h"
+#include "Core/Char.h"
+#include "Core/PlatformProcess.h"
 
 
-namespace Rift::Paths
+namespace p::files
 {
 	Path GetBasePath()
 	{
@@ -129,21 +129,21 @@ namespace Rift::Paths
 		return last;
 	}
 
-	StringView GetRootName(const StringView path)
+	StringView GetRootPathName(const StringView path)
 	{
 		const auto first = path.data();
 		const auto last  = first + path.size();
 		return {first, static_cast<size_t>(FindRootNameEnd(first, last) - first)};
 	}
 
-	StringView GetRoot(const StringView path)
+	StringView GetRootPath(const StringView path)
 	{
 		const auto first = path.data();
 		const auto last  = first + path.size();
 		return {first, static_cast<sizet>(FindRelativeChar(first, last) - first)};
 	}
 
-	StringView GetRelative(const StringView path)
+	StringView GetRelativePath(const StringView path)
 	{
 		const auto first        = path.data();
 		const auto last         = first + path.size();
@@ -151,7 +151,7 @@ namespace Rift::Paths
 		return {relativePath, static_cast<size_t>(last - relativePath)};
 	}
 
-	StringView GetParent(const StringView path)
+	StringView GetParentPath(const StringView path)
 	{
 		const auto first        = path.data();
 		auto last               = first + path.size();
@@ -187,12 +187,17 @@ namespace Rift::Paths
 		return StringView{filename, static_cast<sizet>(last - filename)};
 	}
 
-	Path ToRelative(const Path& path, const Path& parent)
+	String GetFilename(const Path& path)
+	{
+		return String{GetFilename(StringView{ToString(path)})};
+	}
+
+	Path ToRelativePath(const Path& path, const Path& parent)
 	{
 		return fs::relative(path, parent);
 	}
 
-	Path ToAbsolute(const Path& path, const Path& parent)
+	Path ToAbsolutePath(const Path& path, const Path& parent)
 	{
 		if (path.is_absolute())
 		{
@@ -201,20 +206,16 @@ namespace Rift::Paths
 		return parent / path;
 	}
 
-	bool IsRelative(const Path& path)
+	bool IsRelativePath(const Path& path)
 	{
 		return path.is_relative();
 	}
 
-	bool IsAbsolute(const Path& path)
+	bool IsAbsolutePath(const Path& path)
 	{
 		return path.is_absolute();
 	}
 
-	String GetFilename(const Path& path)
-	{
-		return String{GetFilename(ToString(path))};
-	}
 
 	String ToString(const Path& path)
 	{
@@ -227,4 +228,4 @@ namespace Rift::Paths
 		path.assign(pathStr);
 		return path;
 	}
-}    // namespace Rift::Paths
+}    // namespace p::files

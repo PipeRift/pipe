@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Platform/Platform.h"
+#include "Core/Platform.h"
 
 #include <stddef.h>
 
@@ -10,7 +10,7 @@
 
 /** SIZE SELECTORS */
 
-namespace Rift
+namespace p
 {
 	template<typename T>
 	concept IsVoid = std::is_void_v<T>;
@@ -50,10 +50,7 @@ namespace Rift
 	concept IsAbstract = std::is_abstract_v<T>;
 
 	template<typename T>
-	constexpr bool IsEmpty()
-	{
-		return std::is_empty_v<T>;
-	}
+	concept IsEmpty = std::is_empty_v<T>;
 
 	template<typename T, sizet size>
 	concept IsSmaller = sizeof(T) < size;
@@ -149,7 +146,7 @@ namespace Rift
 	};
 	template<typename T, typename Reference>
 	using CopyConst = typename TCopyConst<T, Reference>::type;
-}    // namespace Rift
+}    // namespace p
 
 #define RIFT_DECLARE_IS_TRIVIAL(T, isTrivial)                                                \
 	namespace std                                                                            \

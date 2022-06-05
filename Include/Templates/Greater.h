@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Misc/Utility.h"
+#include "Core/Utility.h"
 
 
-namespace Rift
+namespace p
 {
 	template<typename T = void>
 	struct TGreater
@@ -43,4 +43,4 @@ namespace Rift
 			return Forward<T>(A) >= Forward<U>(B);
 		}
 	};
-}    // namespace Rift
+}    // namespace p

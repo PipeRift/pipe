@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace Rift::Memory
+namespace p::Memory
 {
 	/** This is an Arena interface.
 	 * It serves the single purpose of documenting an Arena's interface.
@@ -32,4 +32,4 @@ namespace Rift::Memory
 		}
 		void Free(void* ptr) {}
 	};
-}    // namespace Rift::Memory
+}    // namespace p::Memory

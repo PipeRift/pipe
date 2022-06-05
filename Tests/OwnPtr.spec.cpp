@@ -6,11 +6,11 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
+using namespace p;
 
 
 template<typename T>
-struct TestPtrBuilder : Rift::TPtrBuilder<T>
+struct TestPtrBuilder : p::TPtrBuilder<T>
 {
 	template<typename... Args>
 	static T* New(Args&&... args)
@@ -258,8 +258,8 @@ go_bandit([]() {
 
 
 		it("Can detect custom PtrBuilders", [&]() {
-			AssertThat(Rift::HasCustomPtrBuilder<EmptyStruct>::value, Equals(false));
-			AssertThat(Rift::HasCustomPtrBuilder<MockStruct>::value, Equals(true));
+			AssertThat(p::HasCustomPtrBuilder<EmptyStruct>::value, Equals(false));
+			AssertThat(p::HasCustomPtrBuilder<MockStruct>::value, Equals(true));
 		});
 
 		describe("Typeless pointer", []() {
@@ -296,7 +296,7 @@ go_bandit([]() {
 				OwnPtr ptr2 = Move(ptr1);
 				AssertThat(ptr1.IsValid(), Equals(false));
 				AssertThat(ptr1.Get<EmptyStruct>(), Equals(nullptr));
-				AssertThat(ptr1.GetId(), Equals(Refl::TypeId::None()));
+				AssertThat(ptr1.GetId(), Equals(refl::TypeId::None()));
 
 				AssertThat(ptr2.IsValid(), Equals(true));
 				AssertThat(ptr2.Get<EmptyStruct>(), Equals(data));

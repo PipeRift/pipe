@@ -6,7 +6,7 @@
 #include "Serialization/Formats/IFormat.h"
 
 
-namespace Rift::Serl
+namespace p::serl
 {
 	template<Format format>
 	struct TFormatReader : public IFormatReader
@@ -60,4 +60,4 @@ namespace Rift::Serl
 			return GetContext();
 		}
 	};
-}    // namespace Rift::Serl
+}    // namespace p::serl

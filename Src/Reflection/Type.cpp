@@ -9,7 +9,7 @@
 #include "Reflection/StructType.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	StringView Type::GetName() const
 	{
@@ -36,4 +36,4 @@ namespace Rift::Refl
 	{
 		return HasFlag(category, TypeCategory::Class) ? static_cast<ClassType*>(this) : nullptr;
 	}
-}    // namespace Rift::Refl
+}    // namespace p::refl

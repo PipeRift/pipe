@@ -2,11 +2,11 @@
 
 #include "Serialization/Contexts/WriteContext.h"
 
-#include "Misc/Checks.h"
+#include "Core/Checks.h"
 #include "Serialization/Formats/JsonFormat.h"
 
 
-namespace Rift::Serl
+namespace p::serl
 {
 #define WRITER_SWITCH(func)                                \
 	switch (format)                                        \
@@ -109,4 +109,4 @@ namespace Rift::Serl
 	{
 		WriteFromFormat(ct, val);
 	}
-}    // namespace Rift::Serl
+}    // namespace p::serl

@@ -2,10 +2,10 @@
 
 #include "Serialization/Contexts/CommonContext.h"
 
-#include "Misc/Checks.h"
+#include "Core/Checks.h"
 
 
-namespace Rift::Serl
+namespace p::serl
 {
 	void CommonContext::BeginObject()
 	{
@@ -90,4 +90,4 @@ namespace Rift::Serl
 			GetWrite().PopFlags();
 		}
 	}
-}    // namespace Rift::Serl
+}    // namespace p::serl

@@ -3,12 +3,12 @@
 
 #include "PCH.h"
 
-#include "Events/Function.h"
+#include "Core/Function.h"
 
 
-namespace Rift
+namespace p
 {
-	namespace Refl
+	namespace refl
 	{
 		class EnumType;
 		class NativeType;
@@ -34,18 +34,18 @@ namespace Rift
 
 		template<typename T>
 		inline const TFunction<NativeType*()> TStaticNativeInitializer<T>::onInit{};
-	}    // namespace Refl
+	}    // namespace refl
 
 
 	template<typename T>
 	inline constexpr bool IsReflectedEnum()
 	{
-		return Refl::TStaticEnumInitializer<T>::enabled;
+		return refl::TStaticEnumInitializer<T>::enabled;
 	}
 
 	template<typename T>
 	inline constexpr bool IsReflectedNative()
 	{
-		return Refl::TStaticNativeInitializer<T>::enabled;
+		return refl::TStaticNativeInitializer<T>::enabled;
 	}
-}    // namespace Rift
+}    // namespace p

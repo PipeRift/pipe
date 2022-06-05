@@ -9,39 +9,39 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
-using namespace Rift::ECS;
+using namespace p;
+using namespace p::ecs;
 
 namespace snowhouse
 {
 	template<>
-	struct Stringizer<ECS::Id>
+	struct Stringizer<ecs::Id>
 	{
-		static std::string ToString(ECS::Id id)
+		static std::string ToString(ecs::Id id)
 		{
 			std::stringstream stream;
-			stream << "Id(" << UnderlyingType<ECS::Id>(id) << ")";
+			stream << "Id(" << UnderlyingType<ecs::Id>(id) << ")";
 			return stream.str();
 		}
 	};
 }    // namespace snowhouse
 
 
-struct Type
+struct TypeA
 {};
-struct TypeTwo
+struct TypeB
 {};
-struct TypeThree
+struct TypeC
 {};
 
 
 go_bandit([]() {
-	ECS::Context ctx;
-	ECS::Id id1;
-	ECS::Id id2;
-	ECS::Id id3;
-	ECS::Id id4;
-	ECS::Id id5;
+	ecs::Context ctx;
+	ecs::Id id1;
+	ecs::Id id2;
+	ecs::Id id3;
+	ecs::Id id4;
+	ecs::Id id5;
 	describe("ECS.Filtering", [&]() {
 		before_each([&]() {
 			ctx = {};
@@ -50,78 +50,78 @@ go_bandit([]() {
 			id3 = ctx.Create();
 			id4 = ctx.Create();
 			id5 = ctx.Create();
-			ctx.Add<Type>(id1);
-			ctx.Add<Type, TypeTwo, TypeThree>(id2);
-			ctx.Add<TypeTwo, TypeThree>(id3);
-			ctx.Add<TypeTwo, TypeThree>(id4);
-			ctx.Add<TypeTwo>(id5);
+			ctx.Add<TypeA>(id1);
+			ctx.Add<TypeA, TypeB, TypeC>(id2);
+			ctx.Add<TypeB, TypeC>(id3);
+			ctx.Add<TypeB, TypeC>(id4);
+			ctx.Add<TypeB>(id5);
 		});
 
 		describe("ListAny/ListAll", [&]() {
 			it("Can get list matching all", [&]() {
-				TAccess<Type, TypeTwo, TypeThree> access{ctx};
-				TArray<ECS::Id> typeIds = ECS::ListAll<Type>(access);
+				TAccess<TypeA, TypeB, TypeC> access{ctx};
+				TArray<ecs::Id> typeIds = ecs::ListAll<TypeA>(access);
 				AssertThat(typeIds.Contains(id1), Is().True());
 				AssertThat(typeIds.Contains(id2), Is().True());
 				AssertThat(typeIds.Contains(id3), Is().False());
 
-				TArray<ECS::Id> type2Ids = ECS::ListAll<TypeTwo, TypeThree>(access);
+				TArray<ecs::Id> type2Ids = ecs::ListAll<TypeB, TypeC>(access);
 				AssertThat(type2Ids.Contains(id1), Is().False());
 				AssertThat(type2Ids.Contains(id2), Is().True());
 				AssertThat(type2Ids.Contains(id3), Is().True());
 			});
 
 			it("Can get list matching any", [&]() {
-				TAccess<Type, TypeTwo, TypeThree> access{ctx};
-				TArray<ECS::Id> typeIds = ECS::ListAny<Type>(access);
+				TAccess<TypeA, TypeB, TypeC> access{ctx};
+				TArray<ecs::Id> typeIds = ecs::ListAny<TypeA>(access);
 				AssertThat(typeIds.Contains(id1), Is().True());
 				AssertThat(typeIds.Contains(id2), Is().True());
 				AssertThat(typeIds.Contains(id3), Is().False());
 
-				TArray<ECS::Id> type2Ids = ECS::ListAny<Type, TypeThree>(access);
+				TArray<ecs::Id> type2Ids = ecs::ListAny<TypeA, TypeC>(access);
 				AssertThat(type2Ids.Contains(id1), Is().True());
 				AssertThat(type2Ids.Contains(id2), Is().True());
 				AssertThat(type2Ids.Contains(id3), Is().True());
 			});
 
 			it("Doesn't list removed ids", [&]() {
-				TAccess<TypeTwo> access{ctx};
+				TAccess<TypeB> access{ctx};
 				ctx.Destroy(id2);    // Remove first in the pool
 				ctx.Destroy(id3);    // Remove last in the pool
 				ctx.Destroy(id4);    // Remove last in the pool
 
-				TArray<ECS::Id> ids = ECS::ListAll<TypeTwo>(access);
-				AssertThat(ids.Contains(ECS::NoId), Is().False());
+				TArray<ecs::Id> ids = ecs::ListAll<TypeB>(access);
+				AssertThat(ids.Contains(ecs::NoId), Is().False());
 				AssertThat(ids.Size(), Equals(1));
 			});
 		});
 
 		describe("ExcludeIf", [&]() {
 			it("Removes ids containing component", [&]() {
-				TAccess<Type, TypeTwo, TypeThree> access{ctx};
-				TArray<ECS::Id> typeIds = ECS::ListAny<Type>(access);
+				TAccess<TypeA, TypeB, TypeC> access{ctx};
+				TArray<ecs::Id> typeIds = ecs::ListAny<TypeA>(access);
 
-				ECS::ExcludeIf<TypeThree>(access, typeIds);
+				ecs::ExcludeIf<TypeC>(access, typeIds);
 				AssertThat(typeIds.Contains(id1), Is().True());
 				AssertThat(typeIds.Contains(id2), Is().False());
 				AssertThat(typeIds.Contains(id3), Is().False());
 			});
 
 			it("Removes ids not containing component", [&]() {
-				TAccess<Type, TypeTwo, TypeThree> access{ctx};
-				TArray<ECS::Id> typeIds = ECS::ListAny<Type>(access);
+				TAccess<TypeA, TypeB, TypeC> access{ctx};
+				TArray<ecs::Id> typeIds = ecs::ListAny<TypeA>(access);
 
-				ECS::ExcludeIfNot<TypeThree>(access, typeIds);
+				ecs::ExcludeIfNot<TypeC>(access, typeIds);
 				AssertThat(typeIds.Contains(id1), Is().False());
 				AssertThat(typeIds.Contains(id2), Is().True());
 				AssertThat(typeIds.Contains(id3), Is().False());
 			});
 
 			it("Removes ids containing multiple component", [&]() {
-				TAccess<Type, TypeTwo, TypeThree> access{ctx};
-				TArray<ECS::Id> typeIds = ECS::ListAny<Type, TypeTwo, TypeThree>(access);
+				TAccess<TypeA, TypeB, TypeC> access{ctx};
+				TArray<ecs::Id> typeIds = ecs::ListAny<TypeA, TypeB, TypeC>(access);
 
-				ECS::ExcludeIf<TypeTwo, TypeThree>(access, typeIds);
+				ecs::ExcludeIf<TypeB, TypeC>(access, typeIds);
 				AssertThat(typeIds.Contains(id1), Is().True());
 				AssertThat(typeIds.Contains(id2), Is().False());
 				AssertThat(typeIds.Contains(id3), Is().False());
@@ -130,20 +130,20 @@ go_bandit([]() {
 
 		describe("GetIf", [&]() {
 			it("Finds ids containing a component from a list", [&]() {
-				TArray<ECS::Id> source{id1, id2, id3};
+				TArray<ecs::Id> source{id1, id2, id3};
 
-				TAccess<Type> access{ctx};
-				TArray<ECS::Id> typeIds = ECS::GetIf<Type>(access, source);
+				TAccess<TypeA> access{ctx};
+				TArray<ecs::Id> typeIds = ecs::GetIf<TypeA>(access, source);
 				AssertThat(typeIds.Contains(id1), Is().True());
 				AssertThat(typeIds.Contains(id2), Is().True());
 				AssertThat(typeIds.Contains(id3), Is().False());
 			});
 
 			it("Finds ids not containing a component from a list", [&]() {
-				TArray<ECS::Id> source{id1, id2, id3};
+				TArray<ecs::Id> source{id1, id2, id3};
 
-				TAccess<Type> access{ctx};
-				TArray<ECS::Id> ids = ECS::GetIfNot<Type>(access, source);
+				TAccess<TypeA> access{ctx};
+				TArray<ecs::Id> ids = ecs::GetIfNot<TypeA>(access, source);
 				AssertThat(ids.Contains(id1), Is().False());
 				AssertThat(ids.Contains(id2), Is().False());
 				AssertThat(ids.Contains(id3), Is().True());
@@ -152,10 +152,10 @@ go_bandit([]() {
 
 		describe("ExtractIf", [&]() {
 			it("Finds and removes ids containing a component from a list", [&]() {
-				TArray<ECS::Id> source{id1, id2, id3};
+				TArray<ecs::Id> source{id1, id2, id3};
 
-				TAccess<Type> access{ctx};
-				TArray<ECS::Id> ids = ECS::ExtractIf<Type>(access, source);
+				TAccess<TypeA> access{ctx};
+				TArray<ecs::Id> ids = ecs::ExtractIf<TypeA>(access, source);
 				AssertThat(ids.Contains(id1), Is().True());
 				AssertThat(ids.Contains(id2), Is().True());
 				AssertThat(ids.Contains(id3), Is().False());
@@ -165,10 +165,10 @@ go_bandit([]() {
 			});
 
 			it("Finds and removes ids not containing a component from a list", [&]() {
-				TArray<ECS::Id> source{id1, id2, id3};
+				TArray<ecs::Id> source{id1, id2, id3};
 
-				TAccess<Type> access{ctx};
-				TArray<ECS::Id> ids = ECS::ExtractIfNot<Type>(access, source);
+				TAccess<TypeA> access{ctx};
+				TArray<ecs::Id> ids = ecs::ExtractIfNot<TypeA>(access, source);
 				AssertThat(ids.Contains(id1), Is().False());
 				AssertThat(ids.Contains(id2), Is().False());
 				AssertThat(ids.Contains(id3), Is().True());
@@ -179,18 +179,18 @@ go_bandit([]() {
 		});
 
 		it("Can filter directly from ECS", [&]() {
-			TArray<ECS::Id> ids1 = ECS::ListAll<Type>(ctx);
+			TArray<ecs::Id> ids1 = ecs::ListAll<TypeA>(ctx);
 			AssertThat(ids1.Contains(id1), Is().True());
 
-			TArray<ECS::Id> ids2 = ECS::ListAny<Type>(ctx);
+			TArray<ecs::Id> ids2 = ecs::ListAny<TypeA>(ctx);
 			AssertThat(ids2.Contains(id1), Is().True());
 
-			TArray<ECS::Id> ids3 = ECS::ListAny<Type>(ctx);
-			ECS::ExcludeIf<TypeThree>(ctx, ids3);
+			TArray<ecs::Id> ids3 = ecs::ListAny<TypeA>(ctx);
+			ecs::ExcludeIf<TypeC>(ctx, ids3);
 			AssertThat(ids3.Contains(id1), Is().True());
 
-			TArray<ECS::Id> ids4 = ECS::ListAny<Type>(ctx);
-			ECS::ExcludeIfNot<TypeThree>(ctx, ids4);
+			TArray<ecs::Id> ids4 = ecs::ListAny<TypeA>(ctx);
+			ecs::ExcludeIfNot<TypeC>(ctx, ids4);
 			AssertThat(ids4.Contains(id1), Is().False());
 		});
 	});

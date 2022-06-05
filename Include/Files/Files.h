@@ -4,12 +4,12 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
+#include "Core/Array.h"
+#include "Core/String.h"
 #include "Files/STDFileSystem.h"
-#include "Strings/String.h"
 
 
-namespace Rift::Files
+namespace p::files
 {
 	using Iterator          = fs::directory_iterator;
 	using RecursiveIterator = fs::recursive_directory_iterator;
@@ -52,4 +52,9 @@ namespace Rift::Files
 	CORE_API bool Exists(const String& path);
 	CORE_API bool IsFolder(const String& path);
 	CORE_API bool IsFile(const String& path);
-}    // namespace Rift::Files
+}    // namespace p::files
+
+namespace p
+{
+	using namespace p::files;
+}

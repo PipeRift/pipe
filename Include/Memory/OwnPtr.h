@@ -4,9 +4,9 @@
 
 #include "PCH.h"
 
+#include "Core/Checks.h"
+#include "Core/Utility.h"
 #include "Memory/PtrBuilder.h"
-#include "Misc/Checks.h"
-#include "Misc/Utility.h"
 #include "Reflection/TypeId.h"
 #include "TypeTraits.h"
 
@@ -14,7 +14,7 @@
 #include <memory>
 
 
-namespace Rift
+namespace p
 {
 	namespace Internal
 	{
@@ -460,7 +460,7 @@ namespace Rift
 		using Super = BaseOwnPtr;
 
 	private:
-		Refl::TypeId typeId;
+		refl::TypeId typeId;
 
 
 	public:
@@ -475,7 +475,7 @@ namespace Rift
 		{
 			MoveFrom(Move(other));
 			typeId       = Move(other.typeId);
-			other.typeId = Refl::TypeId::None();
+			other.typeId = refl::TypeId::None();
 		}
 
 		template<typename T>
@@ -492,7 +492,7 @@ namespace Rift
 			Delete();
 			MoveFrom(Move(other));
 			typeId       = Move(other.typeId);
-			other.typeId = Refl::TypeId::None();
+			other.typeId = refl::TypeId::None();
 			return *this;
 		}
 
@@ -532,7 +532,7 @@ namespace Rift
 		}
 
 
-		Refl::TypeId GetId() const
+		refl::TypeId GetId() const
 		{
 			return typeId;
 		}
@@ -579,4 +579,4 @@ namespace Rift
 	//	using Elem = std::remove_extent_t<T>;
 	//	return {Builder::NewArray(size)};
 	//}
-}    // namespace Rift
+}    // namespace p

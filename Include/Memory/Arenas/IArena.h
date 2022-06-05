@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace Rift::Memory
+namespace p::Memory
 {
 	/** IArena defines the API used on all other arena types */
 	class CORE_API IArena
@@ -51,4 +51,4 @@ namespace Rift::Memory
 			Free(ptr, sizeof(T) * count);
 		}
 	};
-}    // namespace Rift::Memory
+}    // namespace p::Memory

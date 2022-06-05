@@ -1,18 +1,18 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Platform/Platform.h"
+#include "Core/Platform.h"
+#include "Core/StringView.h"
 #include "Reflection/EnumType.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Formats/IFormat.h"
 #include "Serialization/SerializationTypes.h"
-#include "Strings/StringView.h"
 #include "Templates/Tuples.h"
 #include "TypeTraits.h"
 
 
-namespace Rift::Serl
+namespace p::serl
 {
 	struct CORE_API ReadContext
 	{
@@ -161,11 +161,19 @@ namespace Rift::Serl
 	template<typename T>
 	void Read(ReadContext& ct, T& val) requires IsEnum<T>
 	{
-		String typeStr;
-		ct.Serialize(typeStr);
-		if (std::optional<T> value = Refl::GetEnumValue<T>(typeStr))
+		if constexpr (GetEnumSize<T>() > 0)
 		{
-			val = value.value();
+			String typeStr;
+			ct.Serialize(typeStr);
+			if (std::optional<T> value = refl::GetEnumValue<T>(typeStr))
+			{
+				val = value.value();
+			}
 		}
 	}
-}    // namespace Rift::Serl
+}    // namespace p::serl
+
+namespace p
+{
+	using namespace p::serl;
+}

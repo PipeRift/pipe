@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "Misc/Utility.h"
+#include "Core/Utility.h"
 
 
-namespace Rift
+namespace p
 {
 	/**
 	 * When we have an optional value IsSet() returns true, and GetValue() is meaningful.
@@ -144,4 +144,4 @@ namespace Rift
 			return IsSet() ? value : defaultValue;
 		}
 	};
-}    // namespace Rift
+}    // namespace p

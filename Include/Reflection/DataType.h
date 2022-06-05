@@ -3,18 +3,18 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
-#include "Containers/Map.h"
+#include "Core/Array.h"
+#include "Core/Map.h"
+#include "Core/String.h"
 #include "CoreTypes.h"
 #include "Reflection/Builders/TypeInstance.h"
 #include "Reflection/Property.h"
 #include "Reflection/ReflectionFlags.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/Type.h"
-#include "Strings/String.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	/** Smallest reflection type that contains all basic class or struct data */
 	class DataType : public Type
@@ -79,4 +79,9 @@ namespace Rift::Refl
 		CORE_API void GetChildrenDeep(TArray<DataType*>& outChildren) const;
 		CORE_API DataType* FindChild(const Name& className) const;
 	};
-}    // namespace Rift::Refl
+}    // namespace p::refl
+
+namespace p
+{
+	using namespace p::refl;
+}

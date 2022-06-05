@@ -3,12 +3,12 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
+#include "Core/Array.h"
 #include "Memory/Arenas/IArena.h"
 #include "Memory/Blocks/HeapBlock.h"
 
 
-namespace Rift::Memory
+namespace p::Memory
 {
 	class CORE_API BigBestFitArena : public IArena
 	{
@@ -137,4 +137,4 @@ namespace Rift::Memory
 	{
 	    return sizet(one.end - one.start) == other;
 	}*/
-}    // namespace Rift::Memory
+}    // namespace p::Memory

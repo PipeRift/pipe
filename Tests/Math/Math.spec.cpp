@@ -1,9 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Containers/Array.h>
-#include <Math/Search.h>
-#include <Platform/Platform.h>
+#include <Core/Array.h>
+#include <Core/Platform.h>
+#include <Core/Search.h>
 #include <Templates/Greater.h>
 
 #include <cmath>
@@ -12,7 +12,7 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
+using namespace p;
 
 
 go_bandit([]() {
@@ -248,80 +248,80 @@ go_bandit([]() {
 		});
 
 		it("Can check Infinite", [&]() {
-			AssertThat(Math::IsInf(0.0), Equals(false));
-			AssertThat(Math::IsInf(-0.0), Equals(false));
-			AssertThat(Math::IsInf(1.0), Equals(false));
-			AssertThat(Math::IsInf(-1.0), Equals(false));
+			AssertThat(math::IsInf(0.0), Equals(false));
+			AssertThat(math::IsInf(-0.0), Equals(false));
+			AssertThat(math::IsInf(1.0), Equals(false));
+			AssertThat(math::IsInf(-1.0), Equals(false));
 
 			static constexpr double dInfinite = std::numeric_limits<double>::infinity();
-			AssertThat(Math::IsInf(dInfinite), Equals(true));
-			AssertThat(Math::IsInf(-dInfinite), Equals(true));
-			AssertThat(Math::IsPosInf(-dInfinite), Equals(false));
-			AssertThat(Math::IsNegInf(dInfinite), Equals(false));
-			AssertThat(Math::IsInf(std::numeric_limits<double>::max()), Equals(false));
-			AssertThat(Math::IsInf(std::numeric_limits<double>::lowest()), Equals(false));
-			AssertThat(Math::IsInf(double(Math::BIG_NUMBER)), Equals(false));
+			AssertThat(math::IsInf(dInfinite), Equals(true));
+			AssertThat(math::IsInf(-dInfinite), Equals(true));
+			AssertThat(math::IsPosInf(-dInfinite), Equals(false));
+			AssertThat(math::IsNegInf(dInfinite), Equals(false));
+			AssertThat(math::IsInf(std::numeric_limits<double>::max()), Equals(false));
+			AssertThat(math::IsInf(std::numeric_limits<double>::lowest()), Equals(false));
+			AssertThat(math::IsInf(double(math::BIG_NUMBER)), Equals(false));
 		});
 
 		it("Can check NAN", [&]() {
-			AssertThat(Math::IsNAN(0.0), Equals(false));
-			AssertThat(Math::IsNAN(std::numeric_limits<double>::quiet_NaN()), Equals(true));
+			AssertThat(math::IsNAN(0.0), Equals(false));
+			AssertThat(math::IsNAN(std::numeric_limits<double>::quiet_NaN()), Equals(true));
 		});
 
 		describe("Roundings", []() {
 			it("Can Floor", [&]() {
-				AssertThat(Math::Floor(0.0), Equals(std::floor(0.0)));
-				AssertThat(Math::Floor(-0.0), Equals(std::floor(-0.0)));
-				AssertThat(Math::Floor(4.2), Equals(std::floor(4.2)));
-				AssertThat(Math::Floor(4.5), Equals(std::floor(4.5)));
-				AssertThat(Math::Floor(4.7), Equals(std::floor(4.7)));
-				AssertThat(Math::Floor(5.0), Equals(std::floor(5.0)));
-				AssertThat(Math::Floor(-4.2), Equals(std::floor(-4.2)));
-				AssertThat(Math::Floor(-4.7), Equals(std::floor(-4.7)));
-				AssertThat(Math::Floor(-5.0), Equals(std::floor(-5.0)));
-				AssertThat(Math::Floor(99999999999999999 + 0.5), Equals(99999999999999999));
+				AssertThat(math::Floor(0.0), Equals(std::floor(0.0)));
+				AssertThat(math::Floor(-0.0), Equals(std::floor(-0.0)));
+				AssertThat(math::Floor(4.2), Equals(std::floor(4.2)));
+				AssertThat(math::Floor(4.5), Equals(std::floor(4.5)));
+				AssertThat(math::Floor(4.7), Equals(std::floor(4.7)));
+				AssertThat(math::Floor(5.0), Equals(std::floor(5.0)));
+				AssertThat(math::Floor(-4.2), Equals(std::floor(-4.2)));
+				AssertThat(math::Floor(-4.7), Equals(std::floor(-4.7)));
+				AssertThat(math::Floor(-5.0), Equals(std::floor(-5.0)));
+				AssertThat(math::Floor(99999999999999999 + 0.5), Equals(99999999999999999));
 
 				static constexpr double dInfinite = std::numeric_limits<double>::infinity();
-				AssertThat(Math::Floor(-dInfinite), Equals(std::floor(-dInfinite)));
-				AssertThat(Math::Floor(dInfinite), Equals(std::floor(dInfinite)));
-				AssertThat(Math::IsNAN(Math::Floor(std::numeric_limits<double>::quiet_NaN())),
+				AssertThat(math::Floor(-dInfinite), Equals(std::floor(-dInfinite)));
+				AssertThat(math::Floor(dInfinite), Equals(std::floor(dInfinite)));
+				AssertThat(math::IsNAN(math::Floor(std::numeric_limits<double>::quiet_NaN())),
 				    Equals(true));
 			});
 			it("Can Ceil", [&]() {
-				AssertThat(Math::Ceil(0.0), Equals(std::ceil(0.0)));
-				AssertThat(Math::Ceil(-0.0), Equals(std::ceil(-0.0)));
-				AssertThat(Math::Ceil(4.2), Equals(std::ceil(4.2)));
-				AssertThat(Math::Ceil(4.5), Equals(std::ceil(4.5)));
-				AssertThat(Math::Ceil(4.7), Equals(std::ceil(4.7)));
-				AssertThat(Math::Ceil(5.0), Equals(std::ceil(5.0)));
-				AssertThat(Math::Ceil(-4.2), Equals(std::ceil(-4.2)));
-				AssertThat(Math::Ceil(-4.7), Equals(std::ceil(-4.7)));
-				AssertThat(Math::Ceil(-5.0), Equals(std::ceil(-5.0)));
-				AssertThat(Math::Ceil(99999999999999999 - 0.5), Equals(99999999999999999));
+				AssertThat(math::Ceil(0.0), Equals(std::ceil(0.0)));
+				AssertThat(math::Ceil(-0.0), Equals(std::ceil(-0.0)));
+				AssertThat(math::Ceil(4.2), Equals(std::ceil(4.2)));
+				AssertThat(math::Ceil(4.5), Equals(std::ceil(4.5)));
+				AssertThat(math::Ceil(4.7), Equals(std::ceil(4.7)));
+				AssertThat(math::Ceil(5.0), Equals(std::ceil(5.0)));
+				AssertThat(math::Ceil(-4.2), Equals(std::ceil(-4.2)));
+				AssertThat(math::Ceil(-4.7), Equals(std::ceil(-4.7)));
+				AssertThat(math::Ceil(-5.0), Equals(std::ceil(-5.0)));
+				AssertThat(math::Ceil(99999999999999999 - 0.5), Equals(99999999999999999));
 
 				static constexpr double dInfinite = std::numeric_limits<double>::infinity();
-				AssertThat(Math::Ceil(-dInfinite), Equals(std::ceil(-dInfinite)));
-				AssertThat(Math::Ceil(dInfinite), Equals(std::ceil(dInfinite)));
-				AssertThat(Math::IsNAN(Math::Ceil(std::numeric_limits<double>::quiet_NaN())),
+				AssertThat(math::Ceil(-dInfinite), Equals(std::ceil(-dInfinite)));
+				AssertThat(math::Ceil(dInfinite), Equals(std::ceil(dInfinite)));
+				AssertThat(math::IsNAN(math::Ceil(std::numeric_limits<double>::quiet_NaN())),
 				    Equals(true));
 			});
 
 			it("Can Round", [&]() {
-				AssertThat(Math::Round(0.0), Equals(std::round(0.0)));
-				AssertThat(Math::Round(-0.0), Equals(std::round(-0.0)));
-				AssertThat(Math::Round(4.2), Equals(std::round(4.2)));
-				AssertThat(Math::Round(4.5), Equals(std::round(4.5)));
-				AssertThat(Math::Round(4.7), Equals(std::round(4.7)));
-				AssertThat(Math::Round(5.0), Equals(std::round(5.0)));
-				AssertThat(Math::Round(-4.2), Equals(std::round(-4.2)));
-				AssertThat(Math::Round(-4.7), Equals(std::round(-4.7)));
-				AssertThat(Math::Round(-5.0), Equals(std::round(-5.0)));
-				AssertThat(Math::Round(99999999999999999 - 0.4), Equals(99999999999999999));
+				AssertThat(math::Round(0.0), Equals(std::round(0.0)));
+				AssertThat(math::Round(-0.0), Equals(std::round(-0.0)));
+				AssertThat(math::Round(4.2), Equals(std::round(4.2)));
+				AssertThat(math::Round(4.5), Equals(std::round(4.5)));
+				AssertThat(math::Round(4.7), Equals(std::round(4.7)));
+				AssertThat(math::Round(5.0), Equals(std::round(5.0)));
+				AssertThat(math::Round(-4.2), Equals(std::round(-4.2)));
+				AssertThat(math::Round(-4.7), Equals(std::round(-4.7)));
+				AssertThat(math::Round(-5.0), Equals(std::round(-5.0)));
+				AssertThat(math::Round(99999999999999999 - 0.4), Equals(99999999999999999));
 
 				static constexpr double dInfinite = std::numeric_limits<double>::infinity();
-				AssertThat(Math::Round(-dInfinite), Equals(std::round(-dInfinite)));
-				AssertThat(Math::Round(dInfinite), Equals(std::round(dInfinite)));
-				AssertThat(Math::IsNAN(Math::Round(std::numeric_limits<double>::quiet_NaN())),
+				AssertThat(math::Round(-dInfinite), Equals(std::round(-dInfinite)));
+				AssertThat(math::Round(dInfinite), Equals(std::round(dInfinite)));
+				AssertThat(math::IsNAN(math::Round(std::numeric_limits<double>::quiet_NaN())),
 				    Equals(true));
 			});
 		});

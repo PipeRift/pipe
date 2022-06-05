@@ -4,12 +4,12 @@
 
 #include "PCH.h"
 
+#include "Reflection/BaseClass.h"
 #include "Reflection/ReflectionTraits.h"
-#include "Types/BaseClass.h"
 #include "TypeTraits.h"
 
 
-namespace Rift
+namespace p
 {
 	template<typename T>
 	struct TOwnPtr;
@@ -53,4 +53,4 @@ namespace Rift
 	public:
 		static constexpr bool value = std::is_void<decltype(Impl<T>(0))>::value;
 	};
-}    // namespace Rift
+}    // namespace p

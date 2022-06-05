@@ -3,7 +3,7 @@
 #include "Memory/Arenas/LinearArena.h"
 
 
-namespace Rift::Memory
+namespace p::Memory
 {
 	void* LinearArena::Allocate(sizet size)
 	{
@@ -14,7 +14,7 @@ namespace Rift::Memory
 				return nullptr;
 			}
 			// Grow same size as previous block, but make sure its enough space
-			Grow(Math::Max(activeBlock.GetSize(), size));
+			Grow(math::Max(activeBlock.GetSize(), size));
 		}
 
 		void* const ptr = (u8*)(activeBlock.GetData()) + usedBlockSize;
@@ -42,7 +42,7 @@ namespace Rift::Memory
 			// Grow same size as previous block, but make sure its enough space
 			// NOTE: We use minimum size + alignment to make sure a
 			// non aligned Grow allocates enough memory
-			Grow(Math::Max(activeBlock.GetSize(), size + alignment), alignment);
+			Grow(math::Max(activeBlock.GetSize(), size + alignment), alignment);
 
 			// Try again with new block
 			return Allocate(size, alignment);
@@ -75,4 +75,4 @@ namespace Rift::Memory
 			usedBlockSize = 0;
 		}
 	}
-}    // namespace Rift::Memory
+}    // namespace p::Memory

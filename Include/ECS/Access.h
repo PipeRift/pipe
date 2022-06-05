@@ -6,7 +6,7 @@
 #include <Templates/TypeList.h>
 
 
-namespace Rift
+namespace p
 {
 	enum class AccessMode : u8
 	{
@@ -16,11 +16,11 @@ namespace Rift
 
 	struct TypeAccess
 	{
-		Refl::TypeId typeId = Refl::TypeId::None();
+		refl::TypeId typeId = refl::TypeId::None();
 		AccessMode mode     = AccessMode::Read;
 
 		constexpr TypeAccess() = default;
-		constexpr TypeAccess(Refl::TypeId typeId, AccessMode mode) : typeId{typeId}, mode{mode} {}
+		constexpr TypeAccess(refl::TypeId typeId, AccessMode mode) : typeId{typeId}, mode{mode} {}
 	};
 
 	template<typename T, AccessMode inMode>
@@ -66,12 +66,12 @@ namespace Rift
 		using RawComponents = TTypeList<AsComponent<T>...>;
 
 	private:
-		ECS::Context& context;
-		TTuple<ECS::TPool<AsComponent<T>>*...> pools;
+		ecs::Context& context;
+		TTuple<ecs::TPool<AsComponent<T>>*...> pools;
 
 
 	public:
-		TAccess(ECS::Context& context)
+		TAccess(ecs::Context& context)
 		    : context{context}, pools{&context.AssurePool<AsComponent<T>>()...}
 		{}
 		TAccess(const TAccess& other) : context{other.context}, pools{other.pools} {}
@@ -92,83 +92,83 @@ namespace Rift
 
 			if constexpr (validConstants && validMutables)
 			{
-				pools = {std::get<ECS::TPool<AsComponent<T>>*>(other.pools)...};
+				pools = {std::get<ecs::TPool<AsComponent<T>>*>(other.pools)...};
 			}
 		}
 
 		template<typename C>
-		ECS::TPool<Mut<C>>* GetPool() const requires(IsMutable<C>)
+		ecs::TPool<Mut<C>>* GetPool() const requires(IsMutable<C>)
 		{
 			static_assert(IsWritable<C>(), "Can't modify components of this type");
 			if constexpr (IsWritable<C>())    // Prevent missleading errors if condition fails
 			{
-				return std::get<ECS::TPool<Mut<C>>*>(pools);
+				return std::get<ecs::TPool<Mut<C>>*>(pools);
 			}
 			return nullptr;
 		}
 
 		template<typename C>
-		const ECS::TPool<Mut<C>>* GetPool() const requires(IsConst<C>)
+		const ecs::TPool<Mut<C>>* GetPool() const requires(IsConst<C>)
 		{
 			static_assert(IsReadable<C>(), "Can't read components of this type");
 			if constexpr (IsReadable<C>())    // Prevent missleading errors if condition fails
 			{
-				return std::get<ECS::TPool<Mut<C>>*>(pools);
+				return std::get<ecs::TPool<Mut<C>>*>(pools);
 			}
 			return nullptr;
 		}
 
 		template<typename C>
-		ECS::TPool<Mut<C>>& AssurePool() const requires(IsMutable<C>)
+		ecs::TPool<Mut<C>>& AssurePool() const requires(IsMutable<C>)
 		{
 			return *GetPool<C>();
 		}
 
 		template<typename C>
-		const ECS::TPool<Mut<C>>& AssurePool() const requires(IsConst<C>)
+		const ecs::TPool<Mut<C>>& AssurePool() const requires(IsConst<C>)
 		{
 			return *GetPool<C>();
 		}
 
-		bool IsValid(ECS::Id id) const
+		bool IsValid(ecs::Id id) const
 		{
 			return context.IsValid(id);
 		}
 
 		template<typename... C>
-		bool Has(ECS::Id id) const requires(sizeof...(C) >= 1)
+		bool Has(ecs::Id id) const requires(sizeof...(C) >= 1)
 		{
 			return (GetPool<const C>()->Has(id) && ...);
 		}
 
 		template<typename C>
-		decltype(auto) Add(ECS::Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
+		decltype(auto) Add(ecs::Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
 		{
 			return GetPool<C>()->Add(id, Forward<C>(value));
 		}
 		template<typename C>
-		decltype(auto) Add(ECS::Id id, const C& value) const requires(IsSame<C, Mut<C>>)
+		decltype(auto) Add(ecs::Id id, const C& value) const requires(IsSame<C, Mut<C>>)
 		{
 			return GetPool<C>()->Add(id, value);
 		}
 
 		// Add component to many entities (if they dont have it already)
 		template<typename C>
-		decltype(auto) Add(TSpan<const ECS::Id> ids, const C& value = {}) const
+		decltype(auto) Add(TSpan<const ecs::Id> ids, const C& value = {}) const
 		{
 			return GetPool<C>()->Add(ids.begin(), ids.end(), value);
 		}
 
 		// Add component to an entities (if they dont have it already)
 		template<typename... C>
-		void Add(ECS::Id id) const requires((IsSame<C, Mut<C>> && ...) && sizeof...(C) > 1)
+		void Add(ecs::Id id) const requires((IsSame<C, Mut<C>> && ...) && sizeof...(C) > 1)
 		{
 			(Add<C>(id), ...);
 		}
 
 		// Add components to many entities (if they dont have it already)
 		template<typename... C>
-		void Add(TSpan<const ECS::Id> ids) const
+		void Add(TSpan<const ecs::Id> ids) const
 		    requires((IsSame<C, Mut<C>> && ...) && sizeof...(C) > 1)
 		{
 			(Add<C>(ids), ...);
@@ -176,7 +176,7 @@ namespace Rift
 
 
 		template<typename C>
-		void Remove(const ECS::Id id) const requires(IsSame<C, Mut<C>>)
+		void Remove(const ecs::Id id) const requires(IsSame<C, Mut<C>>)
 		{
 			if (auto* pool = GetPool<C>())
 			{
@@ -184,12 +184,12 @@ namespace Rift
 			}
 		}
 		template<typename... C>
-		void Remove(const ECS::Id id) const requires(sizeof...(C) > 1)
+		void Remove(const ecs::Id id) const requires(sizeof...(C) > 1)
 		{
 			(Remove<C>(id), ...);
 		}
 		template<typename C>
-		void Remove(TSpan<const ECS::Id> ids) const requires(IsSame<C, Mut<C>>)
+		void Remove(TSpan<const ecs::Id> ids) const requires(IsSame<C, Mut<C>>)
 		{
 			if (auto* pool = GetPool<C>())
 			{
@@ -197,25 +197,25 @@ namespace Rift
 			}
 		}
 		template<typename... C>
-		void Remove(TSpan<const ECS::Id> ids) const requires(sizeof...(C) > 1)
+		void Remove(TSpan<const ecs::Id> ids) const requires(sizeof...(C) > 1)
 		{
 			(Remove<C>(ids), ...);
 		}
 
 		template<typename C>
-		C& Get(ECS::Id id) const
+		C& Get(ecs::Id id) const
 		{
 			return GetPool<C>()->Get(id);
 		}
 
 		template<typename C>
-		C* TryGet(ECS::Id id) const
+		C* TryGet(ecs::Id id) const
 		{
 			return GetPool<C>()->TryGet(id);
 		}
 
 		template<typename C>
-		C& GetOrAdd(ECS::Id id) const requires(IsMutable<C>)
+		C& GetOrAdd(ecs::Id id) const requires(IsMutable<C>)
 		{
 			return GetPool<C>()->GetOrAdd(id);
 		}
@@ -232,7 +232,7 @@ namespace Rift
 			return GetPool<const C>()->Size();
 		}
 
-		ECS::Context& GetContext() const
+		ecs::Context& GetContext() const
 		{
 			return context;
 		}
@@ -267,24 +267,24 @@ namespace Rift
 
 		Context& ast;
 		TArray<TypeAccess> types;
-		TArray<ECS::Pool*> pools;
+		TArray<ecs::Pool*> pools;
 
 
 	public:
-		Access(Context& ast, const TArray<Refl::TypeId>& types) : ast{ast} {}
+		Access(Context& ast, const TArray<refl::TypeId>& types) : ast{ast} {}
 
 		template<typename... T>
 		Access(TAccessRef<T...> access) : ast{access.ast}
 		{}
 
 		template<typename C>
-		ECS::TPool<Mut<C>>* GetPool() const requires(IsMutable<C>)
+		ecs::TPool<Mut<C>>* GetPool() const requires(IsMutable<C>)
 		{
 			return nullptr;
 		}
 
 		template<typename C>
-		const ECS::TPool<Mut<C>>* GetPool() const requires(IsConst<C>)
+		const ecs::TPool<Mut<C>>* GetPool() const requires(IsConst<C>)
 		{
 			return nullptr;
 		}
@@ -297,4 +297,4 @@ namespace Rift
 			return 0;
 		}
 	};
-}    // namespace Rift
+}    // namespace p

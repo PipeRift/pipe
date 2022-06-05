@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace Rift::Memory
+namespace p::Memory
 {
 	class CORE_API Block
 	{
@@ -54,4 +54,4 @@ namespace Rift::Memory
 			return GetData();
 		}
 	};
-}    // namespace Rift::Memory
+}    // namespace p::Memory

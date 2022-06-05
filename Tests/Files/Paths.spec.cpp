@@ -1,51 +1,50 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
+#include <Core/PlatformProcess.h>
 #include <Files/Paths.h>
-#include <Platform/PlatformProcess.h>
 
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
 
 
 go_bandit([]() {
 	describe("Files.Paths", []() {
 		it("Can get root name and path", [&]() {
 #if PLATFORM_WINDOWS
-			AssertThat(Paths::GetRootName("F:\\SomeFolder\\AnotherFolder"), Equals("F:"));
-			AssertThat(Paths::GetRoot("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\"));
+			AssertThat(p::GetRootPathName("F:\\SomeFolder\\AnotherFolder"), Equals("F:"));
+			AssertThat(p::GetRootPath("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\"));
 #elif PLATFORM_LINUX
-			AssertThat(Paths::GetRootName("/var/SomeFolder/AnotherFolder"), Equals(""));
-			AssertThat(Paths::GetRoot("/var/SomeFolder/AnotherFolder"), Equals("/"));
+			AssertThat(p::GetRootPathName("/var/SomeFolder/AnotherFolder"), Equals(""));
+			AssertThat(p::GetRootPath("/var/SomeFolder/AnotherFolder"), Equals("/"));
 #endif
-			AssertThat(Paths::GetRootName("/AnotherFolder"), Equals(""));
-			AssertThat(Paths::GetRoot("/AnotherFolder"), Equals("/"));
+			AssertThat(p::GetRootPathName("/AnotherFolder"), Equals(""));
+			AssertThat(p::GetRootPath("/AnotherFolder"), Equals("/"));
 		});
 
 		it("Can get relative path", [&]() {
 #if PLATFORM_WINDOWS
-			AssertThat(Paths::GetRelative("F:\\SomeFolder\\AnotherFolder"),
+			AssertThat(p::GetRelativePath("F:\\SomeFolder\\AnotherFolder"),
 			    Equals("SomeFolder\\AnotherFolder"));
 #endif
-			AssertThat(Paths::GetRelative("/var/SomeFolder/AnotherFolder"),
+			AssertThat(p::GetRelativePath("/var/SomeFolder/AnotherFolder"),
 			    Equals("var/SomeFolder/AnotherFolder"));
-			AssertThat(Paths::GetRelative("/SomeFolder/AnotherFolder"),
+			AssertThat(p::GetRelativePath("/SomeFolder/AnotherFolder"),
 			    Equals("SomeFolder/AnotherFolder"));
 		});
 
 		it("Can get parent path", [&]() {
 #if PLATFORM_WINDOWS
-			AssertThat(Paths::GetParent("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\SomeFolder"));
+			AssertThat(p::GetParentPath("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\SomeFolder"));
 #endif
-			AssertThat(Paths::GetParent("/var/SomeFolder"), Equals("/var"));
-			AssertThat(Paths::GetParent("/SomeFolder/AnotherFolder"), Equals("/SomeFolder"));
-			AssertThat(Paths::GetParent("/SomeFolder/SomeFile.txt"), Equals("/SomeFolder"));
+			AssertThat(p::GetParentPath("/var/SomeFolder"), Equals("/var"));
+			AssertThat(p::GetParentPath("/SomeFolder/AnotherFolder"), Equals("/SomeFolder"));
+			AssertThat(p::GetParentPath("/SomeFolder/SomeFile.txt"), Equals("/SomeFolder"));
 		});
 
 		it("Executable path is not empty", [&]() {
-			AssertThat(PlatformProcess::GetExecutablePath(), !Equals(""));
+			AssertThat(p::PlatformProcess::GetExecutablePath(), !Equals(""));
 		});
 	});
 });

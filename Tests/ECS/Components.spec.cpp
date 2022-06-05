@@ -6,18 +6,18 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
+using namespace p;
 using namespace std::chrono_literals;
 
 namespace snowhouse
 {
 	template<>
-	struct Stringizer<ECS::Id>
+	struct Stringizer<ecs::Id>
 	{
-		static std::string ToString(ECS::Id id)
+		static std::string ToString(ecs::Id id)
 		{
 			std::stringstream stream;
-			stream << "Id(" << UnderlyingType<ECS::Id>(id) << ")";
+			stream << "Id(" << UnderlyingType<ecs::Id>(id) << ")";
 			return stream.str();
 		}
 	};
@@ -36,8 +36,8 @@ struct NonEmptyComponent
 go_bandit([]() {
 	describe("ECS.Components", []() {
 		it("Can add one component", [&]() {
-			ECS::Context ctx;
-			ECS::Id id = ctx.Create();
+			ecs::Context ctx;
+			ecs::Id id = ctx.Create();
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
 			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
@@ -52,8 +52,8 @@ go_bandit([]() {
 		});
 
 		it("Can remove one component", [&]() {
-			ECS::Context ctx;
-			ECS::Id id = ctx.Create();
+			ecs::Context ctx;
+			ecs::Id id = ctx.Create();
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 
 			ctx.Remove<EmptyComponent>(id);
@@ -66,12 +66,12 @@ go_bandit([]() {
 		});
 
 		it("Can add many components", [&]() {
-			ECS::Context ctx;
-			TArray<ECS::Id> ids{3};
+			ecs::Context ctx;
+			TArray<ecs::Id> ids{3};
 			ctx.Create(ids);
 			ctx.Add<NonEmptyComponent>(ids, {2});
 
-			for (ECS::Id id : ids)
+			for (ecs::Id id : ids)
 			{
 				auto* data = ctx.TryGet<NonEmptyComponent>(id);
 				AssertThat(data, !Equals(nullptr));
@@ -79,12 +79,12 @@ go_bandit([]() {
 			}
 		});
 		it("Can remove many components", [&]() {
-			ECS::Context ctx;
-			TArray<ECS::Id> ids{3};
+			ecs::Context ctx;
+			TArray<ecs::Id> ids{3};
 			ctx.Create(ids);
 			ctx.Add<NonEmptyComponent>(ids, {2});
 
-			TSpan<ECS::Id> firstTwo{ids.Data(), ids.Data() + 2};
+			TSpan<ecs::Id> firstTwo{ids.Data(), ids.Data() + 2};
 			ctx.Remove<NonEmptyComponent>(firstTwo);
 
 			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[0]), Equals(nullptr));
@@ -93,8 +93,8 @@ go_bandit([]() {
 		});
 
 		it("Components are removed after node is deleted", [&]() {
-			ECS::Context ctx;
-			ECS::Id id = ctx.Create();
+			ecs::Context ctx;
+			ecs::Id id = ctx.Create();
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 
 			ctx.Destroy(id);
@@ -107,22 +107,22 @@ go_bandit([]() {
 		});
 
 		it("Components keep state when added", [&]() {
-			ECS::Context ctx;
-			ECS::Id id = ctx.Create();
+			ecs::Context ctx;
+			ecs::Id id = ctx.Create();
 			ctx.Add<NonEmptyComponent>(id, {2});
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
 			AssertThat(ctx.Get<NonEmptyComponent>(id).a, Equals(2));
 		});
 
 		it("Can copy registry", []() {
-			ECS::Context ctxa;
+			ecs::Context ctxa;
 
-			ECS::Id id = ctxa.Create();
+			ecs::Id id = ctxa.Create();
 			ctxa.Add<EmptyComponent, NonEmptyComponent>(id);
-			ECS::Id id2 = ctxa.Create();
+			ecs::Id id2 = ctxa.Create();
 			ctxa.Add<NonEmptyComponent>(id2, {2});
 
-			ECS::Context ctxb{ctxa};
+			ecs::Context ctxb{ctxa};
 			AssertThat(ctxb.Has<EmptyComponent>(id), Is().True());
 			AssertThat(ctxb.Has<NonEmptyComponent>(id), Is().True());
 			AssertThat(ctxb.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
@@ -132,8 +132,8 @@ go_bandit([]() {
 		});
 
 		it("Can check components", [&]() {
-			ECS::Context ctx;
-			ECS::Id id = ECS::NoId;
+			ecs::Context ctx;
+			ecs::Id id = ecs::NoId;
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
 			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
 

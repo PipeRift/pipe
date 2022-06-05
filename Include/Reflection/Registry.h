@@ -3,14 +3,14 @@
 
 #include "PCH.h"
 
-#include "Containers/Map.h"
+#include "Core/Map.h"
 #include "Memory/Arenas/LinearArena.h"
 #include "Reflection/Type.h"
 #include "Reflection/TypeId.h"
 #include "TypeTraits.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	class ReflectionRegistry
 	{
@@ -58,4 +58,9 @@ namespace Rift::Refl
 
 		static CORE_API ReflectionRegistry& Get();
 	};
-}    // namespace Rift::Refl
+}    // namespace p::refl
+
+namespace p
+{
+	using namespace p::refl;
+}

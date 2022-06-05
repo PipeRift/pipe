@@ -3,14 +3,14 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
+#include "Core/Array.h"
+#include "Core/Utility.h"
 #include "Math/Math.h"
 #include "Memory/Arenas/IArena.h"
 #include "Memory/Blocks/HeapBlock.h"
-#include "Misc/Utility.h"
 
 
-namespace Rift::Memory
+namespace p::Memory
 {
 	/**
 	 * LinearArena holds memory linearly in a block of memory.
@@ -70,4 +70,4 @@ namespace Rift::Memory
 			return discardedBlocks;
 		}
 	};
-}    // namespace Rift::Memory
+}    // namespace p::Memory

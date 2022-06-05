@@ -2,15 +2,15 @@
 
 #include "Memory/Alloc.h"
 
+#include "Core/Checks.h"
 #include "Math/Math.h"
-#include "Misc/Checks.h"
 #include "Profiler.h"
 
 #include <cstdlib>
 #include <memory>
 
 
-namespace Rift
+namespace p
 {
 	void* Alloc(sizet n)
 	{
@@ -52,7 +52,7 @@ namespace Rift
 
 	sizet GetAlignmentPadding(const void* ptr, sizet align)
 	{
-		Check(Math::IsPowerOfTwo(align));
+		Check(math::IsPowerOfTwo(align));
 		return -reinterpret_cast<ssizet>(ptr) & (align - 1);
 	}
 
@@ -61,4 +61,4 @@ namespace Rift
 		// Get padding with the header as an offset
 		return headerSize + GetAlignmentPadding(static_cast<const u8*>(ptr) + headerSize, align);
 	}
-}    // namespace Rift
+}    // namespace p

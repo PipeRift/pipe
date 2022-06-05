@@ -1,16 +1,16 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/String.h"
 #include "CoreTypes.h"
 #include "Memory/OwnPtr.h"
 #include "Reflection/ArrayProperty.h"
+#include "Reflection/BaseClass.h"
+#include "Reflection/BaseStruct.h"
 #include "Reflection/Property.h"
-#include "Strings/String.h"
-#include "Types/BaseClass.h"
-#include "Types/BaseStruct.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	struct PropertyHandle
 	{
@@ -77,4 +77,4 @@ namespace Rift::Refl
 			return IsValid();
 		}
 	};
-}    // namespace Rift::Refl
+}    // namespace p::refl

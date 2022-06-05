@@ -1,14 +1,14 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/Name.h"
+#include "Core/String.h"
 #include "Memory/OwnPtr.h"
 #include "Reflection/ReflectionFlags.h"
 #include "Reflection/Type.h"
-#include "Strings/Name.h"
-#include "Strings/String.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	class DataType;
 
@@ -73,4 +73,9 @@ namespace Rift::Refl
 	{
 		return displayName;
 	}
-}    // namespace Rift::Refl
+}    // namespace p::refl
+
+namespace p
+{
+	using namespace p::refl;
+}

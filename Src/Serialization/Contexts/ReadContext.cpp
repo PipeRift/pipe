@@ -2,11 +2,12 @@
 
 #include "Serialization/Contexts/ReadContext.h"
 
-#include "Misc/Checks.h"
+#include "Core/Checks.h"
+#include "Core/String.h"
 #include "Serialization/Formats/JsonFormat.h"
 
 
-namespace Rift::Serl
+namespace p::serl
 {
 #define READER_SWITCH(func)                                \
 	switch (format)                                        \
@@ -111,4 +112,4 @@ namespace Rift::Serl
 	{
 		ReadFromFormat(ct, val);
 	}
-}    // namespace Rift::Serl
+}    // namespace p::serl

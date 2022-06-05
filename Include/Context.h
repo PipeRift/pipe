@@ -1,12 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Events/Broadcast.h"
+#include "Core/Broadcast.h"
+#include "Reflection/Class.h"
 #include "Tasks.h"
-#include "Types/Class.h"
 
 
-namespace Rift
+namespace p
 {
 	class Context : public Class
 	{
@@ -65,4 +65,4 @@ namespace Rift
 		return GetContextInstance().Cast<T>();
 	}
 
-}    // namespace Rift
+}    // namespace p

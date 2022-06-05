@@ -4,14 +4,14 @@
 
 #include "PCH.h"
 
+#include "Core/Name.h"
 #include "Math.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
 #include "Serialization/ContextsFwd.h"
-#include "Strings/Name.h"
 #include "TypeTraits.h"
 
 
-namespace Rift
+namespace p::math
 {
 	template<u32 size, Number T>
 	struct Vec
@@ -55,7 +55,7 @@ namespace Rift
 
 		constexpr T Length() const
 		{
-			return Math::Sqrt(LengthSquared());
+			return math::Sqrt(LengthSquared());
 		}
 
 		constexpr T LengthSquared() const
@@ -65,17 +65,17 @@ namespace Rift
 
 		static T Distance(const Vec& one, const Vec& other)
 		{
-			return Math::Sqrt(DistanceSqrt(one, other));
+			return math::Sqrt(DistanceSqrt(one, other));
 		}
 		static T DistanceSqrt(const Vec& one, const Vec& other)
 		{
-			return Math::Square(other.x - one.x) + Math::Square(other.y - one.y);
+			return math::Square(other.x - one.x) + math::Square(other.y - one.y);
 		}
 
-		bool Equals(const Vec& other, float tolerance = Math::SMALL_NUMBER) const
+		bool Equals(const Vec& other, float tolerance = math::SMALL_NUMBER) const
 		{
-			return Math::NearlyEqual(x, other.x, tolerance)
-			    && Math::NearlyEqual(y, other.y, tolerance);
+			return math::NearlyEqual(x, other.x, tolerance)
+			    && math::NearlyEqual(y, other.y, tolerance);
 		}
 
 		Vec& Normalize()
@@ -83,7 +83,7 @@ namespace Rift
 			const T length = Length();
 			if (length > 0.f)
 			{
-				const float scale = Math::InvSqrt(length);
+				const float scale = math::InvSqrt(length);
 				x *= scale;
 				y *= scale;
 			}
@@ -105,7 +105,7 @@ namespace Rift
 
 		constexpr Vec Floor() const
 		{
-			return {Math::Floor(x), Math::Floor(y)};
+			return {math::Floor(x), math::Floor(y)};
 		}
 
 		T* Data()
@@ -283,7 +283,7 @@ namespace Rift
 
 		constexpr T Length() const
 		{
-			return Math::Sqrt(LengthSquared());
+			return math::Sqrt(LengthSquared());
 		}
 
 		constexpr T LengthSquared() const
@@ -293,19 +293,19 @@ namespace Rift
 
 		static T Distance(const Vec& one, const Vec& other)
 		{
-			return Math::Sqrt(DistanceSqrt(one, other));
+			return math::Sqrt(DistanceSqrt(one, other));
 		}
 		static T DistanceSqrt(const Vec& one, const Vec& other)
 		{
-			return Math::Square(other.x - one.x) + Math::Square(other.y - one.y)
-			     + Math::Square(other.z - one.z);
+			return math::Square(other.x - one.x) + math::Square(other.y - one.y)
+			     + math::Square(other.z - one.z);
 		}
 
-		bool Equals(const Vec& other, float tolerance = Math::SMALL_NUMBER) const
+		bool Equals(const Vec& other, float tolerance = math::SMALL_NUMBER) const
 		{
-			return Math::NearlyEqual(x, other.x, tolerance)
-			    && Math::NearlyEqual(y, other.y, tolerance)
-			    && Math::NearlyEqual(z, other.z, tolerance);
+			return math::NearlyEqual(x, other.x, tolerance)
+			    && math::NearlyEqual(y, other.y, tolerance)
+			    && math::NearlyEqual(z, other.z, tolerance);
 		}
 
 		Vec& Normalize()
@@ -313,7 +313,7 @@ namespace Rift
 			const T lengthSqrt = LengthSquared();
 			if (lengthSqrt > 0.f)
 			{
-				const float scale = Math::InvSqrt(lengthSqrt);
+				const float scale = math::InvSqrt(lengthSqrt);
 				x *= scale;
 				y *= scale;
 				z *= scale;
@@ -336,7 +336,7 @@ namespace Rift
 
 		constexpr Vec Floor() const
 		{
-			return {Math::Floor(x), Math::Floor(y), Math::Floor(z)};
+			return {math::Floor(x), math::Floor(y), math::Floor(z)};
 		}
 
 		T* Data()
@@ -522,12 +522,12 @@ namespace Rift
 			return {x, y, z};
 		}
 
-		bool Equals(const Vec& other, float tolerance = Math::SMALL_NUMBER) const
+		bool Equals(const Vec& other, float tolerance = math::SMALL_NUMBER) const
 		{
-			return Math::NearlyEqual(x, other.x, tolerance)
-			    && Math::NearlyEqual(y, other.y, tolerance)
-			    && Math::NearlyEqual(z, other.z, tolerance)
-			    && Math::NearlyEqual(w, other.w, tolerance);
+			return math::NearlyEqual(x, other.x, tolerance)
+			    && math::NearlyEqual(y, other.y, tolerance)
+			    && math::NearlyEqual(z, other.z, tolerance)
+			    && math::NearlyEqual(w, other.w, tolerance);
 		}
 
 		static T Dot(const Vec& a, const Vec& b) requires(
@@ -539,7 +539,7 @@ namespace Rift
 
 		constexpr Vec Floor() const
 		{
-			return {Math::Floor(x), Math::Floor(y), Math::Floor(z), Math::Floor(w)};
+			return {math::Floor(x), math::Floor(y), math::Floor(z), math::Floor(w)};
 		}
 
 		T* Data()
@@ -588,12 +588,6 @@ namespace Rift
 	using v4_u32 = Vec<4, u32>;
 
 
-	/** Reflected vectors */
-	REFLECT_NATIVE_TYPE(v2);
-	REFLECT_NATIVE_TYPE(v2_u32);
-	REFLECT_NATIVE_TYPE(v3);
-
-
 	template<u32 size, Number T>
 	struct TAABB
 	{
@@ -611,11 +605,11 @@ namespace Rift
 		{
 			for (u32 i = 0; i < size; ++i)
 			{
-				min[i] = Math::Clamp(min[i], other.min[i], other.max[i]);
+				min[i] = math::Clamp(min[i], other.min[i], other.max[i]);
 			}
 			for (u32 i = 0; i < size; ++i)
 			{
-				max[i] = Math::Clamp(max[i], other.min[i], other.max[i]);
+				max[i] = math::Clamp(max[i], other.min[i], other.max[i]);
 			}
 		}
 
@@ -763,24 +757,33 @@ namespace Rift
 	using Boxu  = TBox<u32>;
 
 
-	CORE_API void Read(Serl::ReadContext& ct, v2& val);
-	CORE_API void Write(Serl::WriteContext& ct, v2 val);
-
-	CORE_API void Read(Serl::ReadContext& ct, v2_u32& val);
-	CORE_API void Write(Serl::WriteContext& ct, v2_u32 val);
-
-	CORE_API void Read(Serl::ReadContext& ct, v3& val);
-	CORE_API void Write(Serl::WriteContext& ct, const v3& val);
-
-
 	namespace Vectors
 	{
 		// mathematically if you have 0 scale, it should be infinite,
 		// however, in practice if you have 0 scale, and relative transform doesn't make much
 		// sense anymore because you should be instead of showing gigantic infinite mesh also
 		// returning BIG_NUMBER causes sequential NaN issues by multiplying so we hardcode as 0
-		CORE_API v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = Math::SMALL_NUMBER);
+		CORE_API v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = math::SMALL_NUMBER);
 		CORE_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
 		CORE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
 	}    // namespace Vectors
-}    // namespace Rift
+
+	CORE_API void Read(serl::ReadContext& ct, v2& val);
+	CORE_API void Write(serl::WriteContext& ct, v2 val);
+
+	CORE_API void Read(serl::ReadContext& ct, v2_u32& val);
+	CORE_API void Write(serl::WriteContext& ct, v2_u32 val);
+
+	CORE_API void Read(serl::ReadContext& ct, v3& val);
+	CORE_API void Write(serl::WriteContext& ct, const v3& val);
+}    // namespace p::math
+
+namespace p
+{
+	using namespace p::math;
+
+}    // namespace p
+
+REFLECT_NATIVE_TYPE(p::v2);
+REFLECT_NATIVE_TYPE(p::v2_u32);
+REFLECT_NATIVE_TYPE(p::v3);

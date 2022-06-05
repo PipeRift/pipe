@@ -3,15 +3,15 @@
 
 #include "PCH.h"
 
+#include "Core/Utility.h"
 #include "Memory/Alloc.h"
 #include "Memory/Allocators/DefaultAllocator.h"
-#include "Misc/Utility.h"
 #include "TypeTraits.h"
 
 #include <memory>
 
 
-namespace Rift
+namespace p
 {
 	template<typename T, typename Allocator = Memory::TDefaultAllocator<T>>
 	struct STLAllocator
@@ -89,4 +89,4 @@ namespace Rift
 	{
 		return false;
 	}
-}    // namespace Rift
+}    // namespace p

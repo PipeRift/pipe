@@ -3,11 +3,11 @@
 
 #include "ECS/Id.h"
 
-#include <Containers/Array.h>
-#include <Containers/Span.h>
+#include <Core/Array.h>
+#include <Core/Span.h>
 
 
-namespace Rift::ECS
+namespace p::ecs
 {
 	struct CORE_API IdRegistry
 	{
@@ -64,4 +64,4 @@ namespace Rift::ECS
 			}
 		}
 	};
-}    // namespace Rift::ECS
+}    // namespace p::ecs

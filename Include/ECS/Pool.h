@@ -5,17 +5,17 @@
 #include "ECS/Id.h"
 #include "ECS/SparseSet.h"
 
-#include <Containers/BitArray.h>
-#include <Containers/Map.h>
-#include <Containers/Set.h>
-#include <Containers/Span.h>
-#include <Events/Broadcast.h>
+#include <Core/BitArray.h>
+#include <Core/Broadcast.h>
+#include <Core/Map.h>
+#include <Core/Set.h>
+#include <Core/Span.h>
 #include <Memory/OwnPtr.h>
 #include <Memory/STLAllocator.h>
 #include <TypeTraits.h>
 
 
-namespace Rift::ECS
+namespace p::ecs
 {
 	struct Context;
 
@@ -147,7 +147,7 @@ namespace Rift::ECS
 			}
 
 		private:
-			Value* const* chunks;
+			Value* const* chunks = nullptr;
 			difference_type index;
 		};
 
@@ -168,6 +168,8 @@ namespace Rift::ECS
 
 
 	public:
+		TPoolData() = default;
+
 		T* Get(sizet index) const
 		{
 			return chunks[GetChunk(index)] + GetOffset(index);
@@ -332,10 +334,11 @@ namespace Rift::ECS
 
 
 	template<typename T, typename Allocator>
-		requires(IsEmpty<T>())
+		requires(IsEmpty<T>)
 	struct TPoolData<T, Allocator>
 	{
 	public:
+		TPoolData() = default;
 		T* Get(sizet index) const
 		{
 			return nullptr;
@@ -466,13 +469,13 @@ namespace Rift::ECS
 
 
 	public:
-		TPool(Context& ast) : Pool(ast, DeletionPolicy::InPlace) {}
+		TPool(Context& ast) : Pool(ast, DeletionPolicy::InPlace), data{} {}
 		~TPool() override
 		{
 			Reset();
 		}
 
-		void Add(Id id, const T&) requires(IsEmpty<T>())
+		void Add(Id id, const T&) requires(IsEmpty<T>)
 		{
 			if (Has(id))
 			{
@@ -483,7 +486,7 @@ namespace Rift::ECS
 			OnAdded({id});
 		}
 
-		T& Add(Id id, const T& v) requires(!IsEmpty<T>())
+		T& Add(Id id, const T& v) requires(!IsEmpty<T>)
 		{
 			if (Has(id))
 			{
@@ -508,7 +511,7 @@ namespace Rift::ECS
 			}
 			return value;
 		}
-		T& Add(Id id, T&& v = {}) requires(!IsEmpty<T>())
+		T& Add(Id id, T&& v = {}) requires(!IsEmpty<T>)
 		{
 			if (Has(id))
 			{
@@ -557,7 +560,7 @@ namespace Rift::ECS
 						// Ignore reference value since we can only move
 						Get(id) = Move(T{});
 					}
-					else if constexpr (!IsEmpty<T>())
+					else if constexpr (!IsEmpty<T>)
 					{
 						Get(id) = value;
 					}
@@ -596,7 +599,7 @@ namespace Rift::ECS
 						// Ignore reference value since we can only move
 						Get(id) = Move(T{});
 					}
-					else if constexpr (!IsEmpty<T>())
+					else if constexpr (!IsEmpty<T>)
 					{
 						Get(id) = *from;
 					}
@@ -619,7 +622,7 @@ namespace Rift::ECS
 			OnAdded(ids);
 		}
 
-		T& GetOrAdd(const Id id) requires(!IsEmpty<T>())
+		T& GetOrAdd(const Id id) requires(!IsEmpty<T>)
 		{
 			return Has(id) ? Get(id) : Add(id);
 		}
@@ -694,13 +697,13 @@ namespace Rift::ECS
 			}
 		}
 
-		T& Get(Id id) requires(!IsEmpty<T>())
+		T& Get(Id id) requires(!IsEmpty<T>)
 		{
 			Check(Has(id));
 			return *data.Get(set.Index(id));
 		}
 
-		const T& Get(Id id) const requires(!IsEmpty<T>())
+		const T& Get(Id id) const requires(!IsEmpty<T>)
 		{
 			Check(Has(id));
 			return *data.Get(set.Index(id));
@@ -724,7 +727,7 @@ namespace Rift::ECS
 		TOwnPtr<Pool> Clone() override
 		{
 			auto newPool = MakeOwned<TPool<T>>(*context);
-			if constexpr (IsEmpty<T>())
+			if constexpr (IsEmpty<T>)
 			{
 				newPool->Add(set.begin(), set.end(), {});
 			}
@@ -773,17 +776,17 @@ namespace Rift::ECS
 
 	struct PoolInstance
 	{
-		Refl::TypeId componentId{};
+		refl::TypeId componentId{};
 		TOwnPtr<Pool> pool;
 
 
-		PoolInstance(Refl::TypeId componentId, TOwnPtr<Pool> pool = {})
+		PoolInstance(refl::TypeId componentId, TOwnPtr<Pool> pool = {})
 		    : componentId{componentId}, pool{Move(pool)}
 		{}
 		PoolInstance(PoolInstance&& other) noexcept
 		{
 			componentId       = other.componentId;
-			other.componentId = Refl::TypeId::None();
+			other.componentId = refl::TypeId::None();
 			pool              = Move(other.pool);
 		}
 		explicit PoolInstance(const PoolInstance& other)
@@ -797,7 +800,7 @@ namespace Rift::ECS
 		PoolInstance& operator=(PoolInstance&& other)
 		{
 			componentId       = other.componentId;
-			other.componentId = Refl::TypeId::None();
+			other.componentId = refl::TypeId::None();
 			pool              = Move(other.pool);
 			return *this;
 		}
@@ -812,7 +815,7 @@ namespace Rift::ECS
 			return *this;
 		}
 
-		Refl::TypeId GetId() const
+		refl::TypeId GetId() const
 		{
 			return componentId;
 		}
@@ -830,4 +833,4 @@ namespace Rift::ECS
 
 
 	i32 GetSmallestPool(TSpan<const Pool*> pools);
-}    // namespace Rift::ECS
+}    // namespace p::ecs

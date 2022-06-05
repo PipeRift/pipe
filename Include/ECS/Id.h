@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Platform/Platform.h>
+#include <Core/Platform.h>
 #include <Reflection/Builders/NativeTypeBuilder.h>
 #include <Serialization/ContextsFwd.h>
 #include <Templates/TypeList.h>
 
 
-namespace Rift::ECS
+namespace p::ecs
 {
 	enum class Id : u32
 	{};
@@ -80,10 +80,10 @@ namespace Rift::ECS
 		return IdTraits<Id>::Version((IdTraits<Id>::Entity(id) & mask) >> IdTraits<Id>::indexShift);
 	}
 
-	constexpr bool IsNone(ECS::Id id)
+	constexpr bool IsNone(ecs::Id id)
 	{
-		return ECS::GetVersion(id) == ECS::GetVersion(ECS::NoId);
+		return ecs::GetVersion(id) == ecs::GetVersion(ecs::NoId);
 	}
-}    // namespace Rift::ECS
+}    // namespace p::ecs
 
-REFLECT_NATIVE_TYPE(Rift::ECS::Id);
+REFLECT_NATIVE_TYPE(p::ecs::Id);

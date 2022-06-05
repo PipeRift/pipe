@@ -1,18 +1,19 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Containers/Array.h>
-#include <Containers/Map.h>
+#include <Core/Array.h>
+#include <Core/Guid.h>
+#include <Core/Map.h>
+#include <Core/Name.h>
+#include <Core/String.h>
 #include <Reflection/PredefinedTypes.h>
 #include <Reflection/TypeName.h>
-#include <Strings/Name.h>
-#include <Strings/String.h>
 
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
-using namespace Rift::Refl;
+using namespace p;
+using namespace p::refl;
 
 
 struct AnStruct
@@ -64,9 +65,9 @@ go_bandit([]() {
 
 		describe("Containers", []() {
 			it("Can get TArray names", [&]() {
-				AssertThat(GetTypeName<TArray<Name>>(), Equals("TArray"));
-				AssertThat(GetFullTypeName<TArray<Name>>(), Equals("TArray<Rift::Name>"));
-				AssertThat(GetFullTypeName<TArray<Name>>(false), Equals("TArray<Name>"));
+				AssertThat(GetTypeName<TArray<Guid>>(), Equals("TArray"));
+				AssertThat(GetFullTypeName<TArray<Guid>>(), Equals("TArray<p::core::Guid>"));
+				AssertThat(GetFullTypeName<TArray<Guid>>(false), Equals("TArray<Guid>"));
 			});
 
 			it("Can get TMap names", [&]() {
@@ -77,10 +78,10 @@ go_bandit([]() {
 				AssertThat(fullName, Equals("TMap<u8, bool>"));
 
 
-				auto namespaceName = GetFullTypeName<TMap<u8, Name>>();
-				AssertThat(namespaceName, Equals("TMap<u8, Rift::Name>"));
-				auto noNamespaceName = GetFullTypeName<TMap<u8, Name>>(false);
-				AssertThat(noNamespaceName, Equals("TMap<u8, Name>"));
+				auto namespaceName = GetFullTypeName<TMap<u8, Guid>>();
+				AssertThat(namespaceName, Equals("TMap<u8, p::core::Guid>"));
+				auto noNamespaceName = GetFullTypeName<TMap<u8, Guid>>(false);
+				AssertThat(noNamespaceName, Equals("TMap<u8, Guid>"));
 			});
 		});
 	});

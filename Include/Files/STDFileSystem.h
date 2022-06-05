@@ -2,30 +2,21 @@
 
 #pragma once
 
-#include "Misc/Hash.h"
-#include "Platform/Platform.h"
+#include "Core/Hash.h"
+#include "Core/Platform.h"
+#include "Core/StringView.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
 #include "Serialization/ContextsFwd.h"
-#include "Strings/StringView.h"
 
 #include <filesystem>
 
 
-namespace Rift
+namespace p::files
 {
 	namespace fs = std::filesystem;
 
 	using Path     = fs::path;
 	using PathView = TStringView<Path::value_type>;
-
-	template<>
-	struct Hash<Path>
-	{
-		sizet operator()(const Path& path) const
-		{
-			return GetStringHash(path.c_str());
-		}
-	};
 
 	enum class CopyOptions
 	{
@@ -63,23 +54,40 @@ namespace Rift
 		return {path.c_str()};
 	}
 
-	namespace Serl
-	{
-		CORE_API void Read(Serl::ReadContext& ct, Path& value);
-		CORE_API void Write(Serl::WriteContext& ct, const Path& value);
-	}    // namespace Serl
+}    // namespace p::files
 
-	REFLECT_NATIVE_TYPE(Path);
-}    // namespace Rift
+
+namespace p
+{
+	using namespace p::files;
+
+
+	template<>
+	struct Hash<Path>
+	{
+		sizet operator()(const Path& path) const
+		{
+			return GetStringHash(path.c_str());
+		}
+	};
+
+	namespace serl
+	{
+		CORE_API void Read(p::ReadContext& ct, p::Path& value);
+		CORE_API void Write(p::WriteContext& ct, const p::Path& value);
+	}    // namespace serl
+}    // namespace p
+
+REFLECT_NATIVE_TYPE(p::Path);
 
 
 // TODO: Finish implementation of formatting of Paths
 /*template <>
-struct fmt::formatter<Rift::Path> : public fmt::formatter<Rift::PathView>
+struct fmt::formatter<p::Path> : public fmt::formatter<p::PathView>
 {
     template <typename FormatContext>
-    auto format(const Rift::Path& path, FormatContext& ctx)
+    auto format(const p::Path& path, FormatContext& ctx)
     {
-        return formatter<Rift::PathView>::format(Rift::ToPathView(path), ctx);
+        return formatter<p::PathView>::format(p::ToPathView(path), ctx);
     }
 };*/

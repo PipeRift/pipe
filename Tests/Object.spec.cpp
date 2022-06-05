@@ -1,12 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Types/Class.h>
+#include <Reflection/Class.h>
 
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
+using namespace p;
 
 
 class TestClass : public Class

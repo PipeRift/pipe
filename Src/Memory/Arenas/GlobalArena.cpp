@@ -3,7 +3,7 @@
 #include "Memory/Arenas/GlobalArena.h"
 
 
-namespace Rift::Memory
+namespace p::Memory
 {
 	static BigBestFitArena globalArena{1024 * 1024};    // 1MB initial block size
 
@@ -12,4 +12,4 @@ namespace Rift::Memory
 	{
 		return globalArena;
 	}
-};    // namespace Rift::Memory
+};    // namespace p::Memory

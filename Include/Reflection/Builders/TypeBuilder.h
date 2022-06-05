@@ -3,12 +3,12 @@
 
 #include "PCH.h"
 
+#include "Core/Name.h"
 #include "Reflection/Type.h"
-#include "Strings/Name.h"
 #include "TypeTraits.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	struct TypeId;
 
@@ -34,4 +34,4 @@ namespace Rift::Refl
 	protected:
 		CORE_API virtual Type* Build() = 0;
 	};
-}    // namespace Rift::Refl
+}    // namespace p::refl

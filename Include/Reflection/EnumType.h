@@ -3,14 +3,14 @@
 
 #include "PCH.h"
 
-#include "Misc/EnumFlags.h"
+#include "Core/EnumFlags.h"
+#include "Core/Name.h"
 #include "Reflection/Type.h"
-#include "Strings/Name.h"
 
 #include <magic_enum.hpp>
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	template<typename T>
 	constexpr sizet GetEnumSize()
@@ -151,4 +151,9 @@ namespace Rift::Refl
 			return names.Size();
 		}
 	};
-}    // namespace Rift::Refl
+}    // namespace p::refl
+
+namespace p
+{
+	using namespace p::refl;
+}

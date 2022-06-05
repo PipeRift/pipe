@@ -3,90 +3,92 @@
 
 #include "PCH.h"
 
-#include "Misc/Hash.h"
+#include "Core/Hash.h"
 
 #include <fmt/format.h>
 
 #include <iostream>
 
 
-namespace Rift
+namespace p::refl
 {
-	namespace Refl
+	struct CORE_API TypeId
 	{
-		struct CORE_API TypeId
+	protected:
+		u64 id = 0;
+
+
+	public:
+		constexpr TypeId() = default;
+		explicit constexpr TypeId(u64 id) : id(id) {}
+
+		constexpr u64 GetId() const
 		{
-		protected:
-			u64 id = 0;
-
-
-		public:
-			constexpr TypeId() = default;
-			explicit constexpr TypeId(u64 id) : id(id) {}
-
-			constexpr u64 GetId() const
-			{
-				return id;
-			}
-
-			constexpr auto operator==(const TypeId& other) const
-			{
-				return id == other.id;
-			}
-			constexpr auto operator<(const TypeId& other) const
-			{
-				return id < other.id;
-			}
-			constexpr auto operator>(const TypeId& other) const
-			{
-				return id > other.id;
-			}
-			constexpr auto operator<=(const TypeId& other) const
-			{
-				return id <= other.id;
-			}
-			constexpr auto operator>=(const TypeId& other) const
-			{
-				return id >= other.id;
-			}
-
-			static consteval TypeId None()
-			{
-				return TypeId{};
-			}
-		};
-
-		inline std::ostream& operator<<(std::ostream& stream, TypeId typeId)
-		{
-			stream << "TypeId(id=" << typeId.GetId() << ")";
-			return stream;
+			return id;
 		}
-	}    // namespace Refl
 
-	template<typename T>
-	inline consteval Refl::TypeId GetTypeId()
+		constexpr auto operator==(const TypeId& other) const
+		{
+			return id == other.id;
+		}
+		constexpr auto operator<(const TypeId& other) const
+		{
+			return id < other.id;
+		}
+		constexpr auto operator>(const TypeId& other) const
+		{
+			return id > other.id;
+		}
+		constexpr auto operator<=(const TypeId& other) const
+		{
+			return id <= other.id;
+		}
+		constexpr auto operator>=(const TypeId& other) const
+		{
+			return id >= other.id;
+		}
+
+		static consteval TypeId None()
+		{
+			return TypeId{};
+		}
+	};
+
+	inline std::ostream& operator<<(std::ostream& stream, TypeId typeId)
 	{
-		return Refl::TypeId{Rift::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
+		stream << "TypeId(id=" << typeId.GetId() << ")";
+		return stream;
 	}
 
-	template<>
-	struct Hash<Refl::TypeId>
+	template<typename T>
+	inline consteval refl::TypeId GetTypeId()
 	{
-		sizet operator()(const Refl::TypeId& id) const
+		return refl::TypeId{p::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
+	}
+}    // namespace p::refl
+
+namespace p
+{
+	using namespace p::refl;
+
+	template<>
+	struct Hash<refl::TypeId>
+	{
+		sizet operator()(const refl::TypeId& id) const
 		{
 			const Hash<u64> hasher{};
 			return hasher(id.GetId());
 		}
 	};
-}    // namespace Rift
+}    // namespace p
 
 
 template<>
-struct fmt::formatter<Rift::Refl::TypeId> : public fmt::formatter<Rift::u64>
+struct fmt::formatter<p::refl::TypeId> : public fmt::formatter<p::u64>
 {
 	template<typename FormatContext>
-	auto format(const Rift::Refl::TypeId& typeId, FormatContext& ctx)
+	auto format(const p::refl::TypeId& typeId, FormatContext& ctx)
 	{
-		return formatter<Rift::u64>::format(typeId.GetId(), ctx);
+		return formatter<p::u64>::format(typeId.GetId(), ctx);
 	}
 };

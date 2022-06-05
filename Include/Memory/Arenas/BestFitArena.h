@@ -3,12 +3,12 @@
 
 #include "PCH.h"
 
-#include "Containers/Array.h"
+#include "Core/Array.h"
 #include "Memory/Arenas/IArena.h"
 #include "Memory/Blocks/HeapBlock.h"
 
 
-namespace Rift::Memory
+namespace p::Memory
 {
 	class CORE_API BestFitArena : public IArena
 	{
@@ -95,4 +95,4 @@ namespace Rift::Memory
 	{
 		return start + size;
 	}
-}    // namespace Rift::Memory
+}    // namespace p::Memory

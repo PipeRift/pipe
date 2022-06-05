@@ -3,7 +3,7 @@
 #include "Memory/OwnPtr.h"
 
 
-namespace Rift
+namespace p
 {
 	void BaseOwnPtr::Delete()
 	{
@@ -115,4 +115,4 @@ namespace Rift
 		counter = nullptr;
 		value   = nullptr;
 	}
-}    // namespace Rift
+}    // namespace p

@@ -3,7 +3,7 @@
 #include "ECS/Filtering.h"
 
 
-namespace Rift::ECS
+namespace p::ecs
 {
 	void ExcludeIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
@@ -62,8 +62,8 @@ namespace Rift::ECS
 		ZoneScoped;
 		if (pool)
 		{
-			results.ReserveMore(Math::Min(i32(pool->Size()), source.Size()));
-			for (ECS::Id id : source)
+			results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
+			for (ecs::Id id : source)
 			{
 				if (pool->Has(id))
 				{
@@ -87,7 +87,7 @@ namespace Rift::ECS
 		if (pool)
 		{
 			results.ReserveMore(source.Size());
-			for (ECS::Id id : source)
+			for (ecs::Id id : source)
 			{
 				if (!pool->Has(id))
 				{
@@ -106,10 +106,10 @@ namespace Rift::ECS
 	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		ZoneScoped;
-		results.ReserveMore(Math::Min(i32(pool->Size()), source.Size()));
+		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
 		for (i32 i = source.Size() - 1; i >= 0; --i)
 		{
-			const ECS::Id id = source[i];
+			const ecs::Id id = source[i];
 			if (pool->Has(id))
 			{
 				source.RemoveAtSwapUnsafe(i);
@@ -126,7 +126,7 @@ namespace Rift::ECS
 	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		ZoneScoped;
-		results.ReserveMore(Math::Min(i32(pool->Size()), source.Size()));
+		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
 		source.ExcludeIf(
 		    [pool, &results](Id id) {
 			if (pool->Has(id))
@@ -146,7 +146,7 @@ namespace Rift::ECS
 		results.ReserveMore(source.Size());
 		for (i32 i = source.Size() - 1; i >= 0; --i)
 		{
-			const ECS::Id id = source[i];
+			const ecs::Id id = source[i];
 			if (!pool->Has(id))
 			{
 				source.RemoveAtSwapUnsafe(i);
@@ -163,7 +163,7 @@ namespace Rift::ECS
 	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		ZoneScoped;
-		results.ReserveMore(Math::Min(i32(pool->Size()), source.Size()));
+		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
 		source.ExcludeIf(
 		    [pool, &results](Id id) {
 			if (!pool->Has(id))
@@ -195,7 +195,7 @@ namespace Rift::ECS
 
 		ids.Empty(false);
 		ids.Reserve(iterablePool->Size());
-		for (ECS::Id id : *iterablePool)
+		for (ecs::Id id : *iterablePool)
 		{
 			if (!IsNone(id)) [[likely]]
 			{
@@ -260,4 +260,4 @@ namespace Rift::ECS
 		ids.Empty();
 		ids.Append(idsSet.begin(), idsSet.end());
 	}
-}    // namespace Rift::ECS
+}    // namespace p::ecs

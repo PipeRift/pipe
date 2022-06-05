@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Platform/Platform.h"
+#include "Core/Platform.h"
 
 
-namespace Rift::Serl
+namespace p::serl
 {
 	enum class Format : u8
 	{
@@ -25,4 +25,4 @@ namespace Rift::Serl
 		Flags_NamesAsHashes        = 1 << 2,
 		Flags_StoreContainedOwnPtr = 1 << 3    // Store OwnPtr<> instances and their dependant Ptr<>
 	};
-}    // namespace Rift::Serl
+}    // namespace p::serl

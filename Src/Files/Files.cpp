@@ -9,7 +9,7 @@
 #include <fstream>
 
 
-namespace Rift::Files
+namespace p::files
 {
 	bool LoadStringFile(const Path& path, String& result, sizet extraPadding)
 	{
@@ -166,26 +166,26 @@ namespace Rift::Files
 
 	bool LoadStringFile(const String& path, String& result, sizet extraPadding)
 	{
-		return LoadStringFile(Paths::FromString(path), result, extraPadding);
+		return LoadStringFile(FromString(path), result, extraPadding);
 	}
 
 	bool SaveStringFile(const String& path, StringView data)
 	{
-		return SaveStringFile(Paths::FromString(path), data);
+		return SaveStringFile(FromString(path), data);
 	}
 
 	bool Exists(const String& path)
 	{
-		return Exists(Paths::FromString(path));
+		return Exists(FromString(path));
 	}
 
 	bool IsFolder(const String& path)
 	{
-		return IsFolder(Paths::FromString(path));
+		return IsFolder(FromString(path));
 	}
 
 	bool IsFile(const String& path)
 	{
-		return IsFile(Paths::FromString(path));
+		return IsFile(FromString(path));
 	}
-}    // namespace Rift::Files
+}    // namespace p::files

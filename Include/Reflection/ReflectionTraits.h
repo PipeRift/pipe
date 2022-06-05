@@ -1,14 +1,14 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Containers/Array.h"
-#include "Containers/Map.h"
+#include "Core/Array.h"
+#include "Core/Map.h"
 //#include "Reflection/Builders/TypeBuilder.h"
-#include "Types/BaseClass.h"
+#include "Reflection/BaseClass.h"
 #include "TypeTraits.h"
 
 
-namespace Rift
+namespace p::refl
 {
 	struct Struct;
 
@@ -46,4 +46,9 @@ namespace Rift
 		}
 		return false;
 	}
-}    // namespace Rift
+}    // namespace p::refl
+
+namespace p
+{
+	using namespace p::refl;
+}

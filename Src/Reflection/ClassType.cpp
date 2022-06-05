@@ -2,10 +2,10 @@
 
 #include "Reflection/ClassType.h"
 
-#include "Misc/Checks.h"
+#include "Core/Checks.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	BaseClass* ClassType::New() const
 	{
@@ -15,4 +15,4 @@ namespace Rift::Refl
 		}
 		return nullptr;
 	}
-}    // namespace Rift::Refl
+}    // namespace p::refl

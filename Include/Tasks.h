@@ -7,7 +7,7 @@
 #include <taskflow/taskflow.hpp>
 
 
-namespace Rift
+namespace p
 {
 	using TaskFlow = tf::Taskflow;
 	using Task     = tf::Task;
@@ -56,4 +56,4 @@ namespace Rift
 
 		static CORE_API TaskSystem& Get();
 	};
-}    // namespace Rift
+}    // namespace p

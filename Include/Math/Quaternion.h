@@ -8,7 +8,7 @@
 #include "Serialization/ContextsFwd.h"
 
 
-namespace Rift
+namespace p::math
 {
 	struct Rotator;
 
@@ -46,9 +46,9 @@ namespace Rift
 			return &x;
 		}
 
-		bool Equals(const Quat& other, float tolerance = Math::SMALL_NUMBER) const;
+		bool Equals(const Quat& other, float tolerance = math::SMALL_NUMBER) const;
 
-		void Normalize(float tolerance = Math::SMALL_NUMBER);
+		void Normalize(float tolerance = math::SMALL_NUMBER);
 
 		static Quat FromRotator(Rotator rotator);
 
@@ -70,14 +70,19 @@ namespace Rift
 			return Rotate(v);
 		}
 	};
-	REFLECT_NATIVE_TYPE(Quat);
-
 
 	inline Quat Quat::Inverse() const
 	{
 		return {-x, -y, -z, w};
 	}
 
-	void Read(Serl::ReadContext& ct, Quat& val);
-	void Write(Serl::WriteContext& ct, const Quat& val);
-}    // namespace Rift
+	void Read(serl::ReadContext& ct, Quat& val);
+	void Write(serl::WriteContext& ct, const Quat& val);
+}    // namespace p::math
+
+namespace p
+{
+	using namespace p::math;
+}
+
+REFLECT_NATIVE_TYPE(p::Quat);

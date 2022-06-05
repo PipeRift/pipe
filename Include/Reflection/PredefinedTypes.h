@@ -1,12 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/FixedString.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/TypeName.h"
-#include "Strings/FixedString.h"
 
 
-namespace Rift
+namespace p
 {
 	OVERRIDE_TYPE_NAME(u8)
 	OVERRIDE_TYPE_NAME(u16)
@@ -18,8 +18,10 @@ namespace Rift
 	OVERRIDE_TYPE_NAME(i64)
 	OVERRIDE_TYPE_NAME(TChar)
 	OVERRIDE_TYPE_NAME(StringView)
+}    // namespace p
 
-
+namespace p::refl
+{
 	// Contains an static fixed string with the name of a TArray<T>
 	template<typename ItemType, bool includeNamespaces>
 	struct StaticArrayName
@@ -79,4 +81,11 @@ namespace Rift
 	{
 		return "TMap";
 	}
-}    // namespace Rift
+
+}    // namespace p::refl
+
+
+namespace p
+{
+	using namespace p::refl;
+}

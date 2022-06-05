@@ -3,32 +3,32 @@
 
 #include "PCH.h"
 
-#include "Events/Function.h"
+#include "Core/Function.h"
+#include "Core/Name.h"
 #include "Reflection/Builders/StaticInitializers.h"
 #include "Reflection/Builders/TypeBuilder.h"
 #include "Reflection/EnumType.h"
 #include "Reflection/Registry.h"
 #include "Reflection/TypeId.h"
-#include "Strings/Name.h"
 #include "TypeTraits.h"
 
 
-#define ENUM(type)                                                    \
-	template<>                                                        \
-	struct Rift::Refl::TStaticEnumInitializer<type>                   \
-	{                                                                 \
-		static constexpr bool enabled = true;                         \
-		static const Rift::TFunction<Rift::Refl::EnumType*()> onInit; \
-	};                                                                \
-	inline const Rift::TFunction<Rift::Refl::EnumType*()>             \
-	    Rift::Refl::TStaticEnumInitializer<type>::onInit = []() {     \
-		    Rift::Refl::TEnumTypeBuilder<type> builder{};             \
-		    builder.Initialize();                                     \
-		    return builder.GetType();                                 \
+#define ENUM(type)                                              \
+	template<>                                                  \
+	struct p::refl::TStaticEnumInitializer<type>                \
+	{                                                           \
+		static constexpr bool enabled = true;                   \
+		static const p::TFunction<p::refl::EnumType*()> onInit; \
+	};                                                          \
+	inline const p::TFunction<p::refl::EnumType*()>             \
+	    p::refl::TStaticEnumInitializer<type>::onInit = []() {  \
+		    p::refl::TEnumTypeBuilder<type> builder{};          \
+		    builder.Initialize();                               \
+		    return builder.GetType();                           \
 	    };
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	/**
 	 * Enum Type Builder
@@ -72,4 +72,4 @@ namespace Rift::Refl
 			return &newType;
 		}
 	};
-}    // namespace Rift::Refl
+}    // namespace p::refl

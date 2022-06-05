@@ -2,16 +2,16 @@
 
 #include "Memory/Arenas/BigBestFitArena.h"
 
+#include "Core/Search.h"
+#include "Core/Sorting.h"
+#include "Core/Utility.h"
 #include "Log.h"
 #include "Math/Math.h"
-#include "Math/Search.h"
-#include "Math/Sorting.h"
 #include "Memory/Alloc.h"
-#include "Misc/Utility.h"
 #include "Templates/Greater.h"
 
 
-namespace Rift::Memory
+namespace p::Memory
 {
 	bool operator==(const BigBestFitArena::Slot& a, sizet b)
 	{
@@ -75,7 +75,7 @@ namespace Rift::Memory
 	void* BigBestFitArena::Allocate(const sizet size, sizet alignment)
 	{
 		// We always use at least 8 bytes of alignment for the header
-		alignment = Math::Max(alignment, minAlignment);
+		alignment = math::Max(alignment, minAlignment);
 
 		const i32 slotIndex = FindSmallestSlot(size + alignment - 1);
 		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size())
@@ -129,7 +129,7 @@ namespace Rift::Memory
 
 		// Find smallest slot fitting our required size
 		return freeSlots.FindSortedMin(neededSize, true);
-	}    // namespace Rift::Memory
+	}    // namespace p::Memory
 
 	void BigBestFitArena::ReduceSlot(
 	    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd)
@@ -206,4 +206,4 @@ namespace Rift::Memory
 		}
 		pendingSort = true;
 	}
-}    // namespace Rift::Memory
+}    // namespace p::Memory

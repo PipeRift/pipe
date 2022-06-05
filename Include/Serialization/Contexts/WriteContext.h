@@ -1,18 +1,18 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Platform/Platform.h"
+#include "Core/Platform.h"
+#include "Core/StringView.h"
 #include "Reflection/EnumType.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Formats/IFormat.h"
 #include "Serialization/SerializationTypes.h"
-#include "Strings/StringView.h"
 #include "Templates/Tuples.h"
 #include "TypeTraits.h"
 
 
-namespace Rift::Serl
+namespace p::serl
 {
 	struct CORE_API WriteContext
 	{
@@ -189,9 +189,17 @@ namespace Rift::Serl
 	template<typename T>
 	void Write(WriteContext& ct, T& val) requires IsEnum<T>
 	{
-		// Might not be necessary to cache string since enum name is static
-		ct.PushAddFlags(Serl::WriteFlags_CacheStringValues);
-		ct.Serialize(Refl::GetEnumName(val));
-		ct.PopFlags();
+		if constexpr (GetEnumSize<T>() > 0)
+		{
+			// Might not be necessary to cache string since enum name is static
+			ct.PushAddFlags(serl::WriteFlags_CacheStringValues);
+			ct.Serialize(refl::GetEnumName(val));
+			ct.PopFlags();
+		}
 	}
-}    // namespace Rift::Serl
+}    // namespace p::serl
+
+namespace p
+{
+	using namespace p::serl;
+}

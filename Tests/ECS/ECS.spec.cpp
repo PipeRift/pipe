@@ -6,77 +6,77 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
+using namespace p;
 
 
-struct Type
+struct ATypeA
 {
 	bool value = false;
 };
-struct TypeTwo
+struct ATypeB
 {};
 
 
 go_bandit([]() {
 	describe("ECS", []() {
 		it("Can copy tree", [&]() {
-			ECS::Context origin;
-			ECS::Id id = origin.Create();
+			ecs::Context origin;
+			ecs::Id id = origin.Create();
 
 			bool calledAdd = false;
-			origin.OnAdd<Type>().Bind([&calledAdd, &origin](ECS::Context& ast, auto ids) {
+			origin.OnAdd<ATypeA>().Bind([&calledAdd, &origin](ecs::Context& ast, auto ids) {
 				AssertThat(&origin, Equals(&ast));
 				calledAdd = true;
 			});
-			origin.Add<Type>(id);
+			origin.Add<ATypeA>(id);
 			AssertThat(calledAdd, Equals(true));
 
-			ECS::Context target{origin};
+			ecs::Context target{origin};
 			AssertThat(origin.IsValid(id), Equals(true));
-			AssertThat(origin.Has<Type>(id), Equals(true));
+			AssertThat(origin.Has<ATypeA>(id), Equals(true));
 
 			AssertThat(target.IsValid(id), Equals(true));
-			AssertThat(target.Has<Type>(id), Equals(true));
+			AssertThat(target.Has<ATypeA>(id), Equals(true));
 
 			calledAdd = false;
-			target.OnAdd<TypeTwo>().Bind([&calledAdd, &target](ECS::Context& ast, auto ids) {
+			target.OnAdd<ATypeB>().Bind([&calledAdd, &target](ecs::Context& ast, auto ids) {
 				AssertThat(&target, Equals(&ast));
 				calledAdd = true;
 			});
-			target.Add<TypeTwo>(id);
+			target.Add<ATypeB>(id);
 			AssertThat(calledAdd, Equals(true));
 		});
 
 		it("Can move tree", [&]() {
-			ECS::Context origin;
-			ECS::Id id = origin.Create();
+			ecs::Context origin;
+			ecs::Id id = origin.Create();
 
 			bool calledAdd = false;
-			origin.OnAdd<Type>().Bind([&calledAdd, &origin](ECS::Context& ast, auto ids) {
+			origin.OnAdd<ATypeA>().Bind([&calledAdd, &origin](ecs::Context& ast, auto ids) {
 				AssertThat(&origin, Equals(&ast));
 				calledAdd = true;
 			});
-			origin.Add<Type>(id);
+			origin.Add<ATypeA>(id);
 			AssertThat(calledAdd, Equals(true));
 
-			ECS::Context target{Move(origin)};
+			ecs::Context target{Move(origin)};
 			AssertThat(origin.IsValid(id), Equals(false));
 
 			AssertThat(target.IsValid(id), Equals(true));
-			AssertThat(target.Has<Type>(id), Equals(true));
+			AssertThat(target.Has<ATypeA>(id), Equals(true));
 
 			calledAdd = false;
-			target.OnAdd<TypeTwo>().Bind([&calledAdd, &target](ECS::Context& ast, auto ids) {
+			target.OnAdd<ATypeB>().Bind([&calledAdd, &target](ecs::Context& ast, auto ids) {
 				AssertThat(&target, Equals(&ast));
 				calledAdd = true;
 			});
-			target.Add<TypeTwo>(id);
+			target.Add<ATypeB>(id);
 			AssertThat(calledAdd, Equals(true));
 		});
 
 		it("Can assure pool", [&]() {
-			ECS::Context origin;
-			ECS::TPool<Type>& pool = origin.AssurePool<Type>();
+			ecs::Context origin;
+			ecs::TPool<ATypeA>& pool = origin.AssurePool<ATypeA>();
 			AssertThat(&origin, Equals(&pool.GetContext()));
 		});
 	});

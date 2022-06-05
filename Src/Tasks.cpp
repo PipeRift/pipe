@@ -3,9 +3,9 @@
 #include "Tasks.h"
 
 #include "Context.h"
+#include "Core/String.h"
 #include "Math/Math.h"
 #include "Profiler.h"
-#include "Strings/String.h"
 
 #include <chrono>
 #include <common/TracySystem.hpp>
@@ -13,12 +13,12 @@
 #include <mutex>
 
 
-namespace Rift
+namespace p
 {
 	TaskSystem::TaskSystem()
-	    : mainPool{Math::Min(1u, std::thread::hardware_concurrency())}
+	    : mainPool{math::Min(1u, std::thread::hardware_concurrency())}
 	    , workerPool{
-	          Math::Max(1u, std::thread::hardware_concurrency() - i32(mainPool.num_workers()))}
+	          math::Max(1u, std::thread::hardware_concurrency() - i32(mainPool.num_workers()))}
 	{
 		// Name main thread
 		tracy::SetThreadName("Main");
@@ -64,4 +64,4 @@ namespace Rift
 	{
 		return GetContext()->GetTasks();
 	}
-}    // namespace Rift
+}    // namespace p

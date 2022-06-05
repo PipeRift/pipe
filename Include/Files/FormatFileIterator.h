@@ -1,14 +1,14 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/String.h"
 #include "Files/Files.h"
 #include "Log.h"
-#include "Strings/String.h"
 
 
-namespace Rift
+namespace p::files
 {
-	template<typename FileIterator = Files::Iterator>
+	template<typename FileIterator = files::Iterator>
 	class FormatFileIterator
 	{
 	public:
@@ -73,7 +73,7 @@ namespace Rift
 	inline FormatFileIterator<FileIterator>::FormatFileIterator(StringView format, const Path& path)
 	    : format{format}
 	{
-		if (!Files::Exists(path) || !Files::IsFolder(path))
+		if (!files::Exists(path) || !files::IsFolder(path))
 		{
 			return;
 		}
@@ -105,4 +105,9 @@ namespace Rift
 	{
 		return it->path().extension() == format;
 	}
-}    // namespace Rift
+}    // namespace p::files
+
+namespace p
+{
+	using namespace p::files;
+}

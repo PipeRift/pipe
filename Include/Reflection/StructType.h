@@ -6,7 +6,7 @@
 #include "Reflection/DataType.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	class StructType : public DataType
 	{
@@ -44,4 +44,9 @@ namespace Rift::Refl
 			return this == other;
 		}
 	};
-}    // namespace Rift::Refl
+}    // namespace p::refl
+
+namespace p
+{
+	using namespace p::refl;
+}

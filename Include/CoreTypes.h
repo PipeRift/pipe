@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Platform/Platform.h"
+#include "Core/Name.h"
+#include "Core/Platform.h"
+#include "Core/String.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
-#include "Strings/Name.h"
-#include "Strings/String.h"
 
 
-namespace Rift
+namespace p
 {
 	REFLECT_NATIVE_TYPE(bool);
 	REFLECT_NATIVE_TYPE(u8);
@@ -20,4 +20,4 @@ namespace Rift
 
 	REFLECT_NATIVE_TYPE(String);
 	REFLECT_NATIVE_TYPE(Name);
-}    // namespace Rift
+}    // namespace p

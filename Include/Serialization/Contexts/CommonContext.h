@@ -1,15 +1,15 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Misc/Checks.h"
-#include "Platform/Platform.h"
+#include "Core/Checks.h"
+#include "Core/Platform.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Contexts/ReadContext.h"
 #include "Serialization/Contexts/WriteContext.h"
 #include "Serialization/SerializationTypes.h"
 
 
-namespace Rift::Serl
+namespace p::serl
 {
 	struct CORE_API CommonContext
 	{
@@ -168,4 +168,9 @@ namespace Rift::Serl
 		CommonContext commonContext{ct};
 		Serialize(commonContext, const_cast<T&>(val));
 	}
-}    // namespace Rift::Serl
+}    // namespace p::serl
+
+namespace p
+{
+	using namespace p::serl;
+}

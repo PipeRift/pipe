@@ -9,7 +9,7 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Rift;
+using namespace p;
 
 
 namespace snowhouse

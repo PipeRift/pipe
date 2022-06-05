@@ -5,9 +5,9 @@
 #include "Math/Vector.h"
 
 
-namespace Rift
+namespace p::math
 {
-	void Math::SinCos(float value, float& outSin, float& outCos)
+	void SinCos(float value, float& outSin, float& outCos)
 	{
 		// Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
 		float quotient = (INV_PI * 0.5f) * value;
@@ -59,7 +59,7 @@ namespace Rift
 		outCos = sign * p;
 	}
 
-	float Math::Atan2(float Y, float X)
+	float Atan2(float Y, float X)
 	{
 		// return atan2f(Y,X);
 		// atan2f occasionally returns NaN with perfectly valid input (possibly due to a compiler or
@@ -67,8 +67,8 @@ namespace Rift
 		// of 7.15255737e-007 compared to the C library function. On PC this has been measured to be
 		// 2x faster than the std C version.
 
-		const float absX      = Math::Abs(X);
-		const float absY      = Math::Abs(Y);
+		const float absX      = Abs(X);
+		const float absY      = Abs(Y);
 		const bool yAbsBigger = (absY > absX);
 		float t0              = yAbsBigger ? absY : absX;    // Max(absY, absX)
 		float t1              = yAbsBigger ? absX : absY;    // Min(absX, absY)
@@ -98,4 +98,37 @@ namespace Rift
 
 		return t3;
 	}
-}    // namespace Rift
+
+	float ClampAngle(float a)
+	{
+		const float cAngle = Mod(a, 360.f);             //(-360,360)
+		return cAngle + float(cAngle < 0.f) * 360.f;    //[0, 360)
+	}
+
+	float NormalizeAngle(float a)
+	{
+		a = ClampAngle(a);    //[0,360)
+
+		if (a > 180.f)
+			a -= 360.f;
+		return a;    //(-180, 180]
+	}
+
+	float ClampAngle(float a, float min, float max)
+	{
+		const float maxDelta        = ClampAngle(max - min) * 0.5f;       // 0..180
+		const float rangeCenter     = ClampAngle(min + maxDelta);         // 0..360
+		const float deltaFromCenter = NormalizeAngle(a - rangeCenter);    // -180..180
+
+		// maybe clamp to nearest edge
+		if (deltaFromCenter > maxDelta)
+		{
+			return NormalizeAngle(rangeCenter + maxDelta);
+		}
+		else if (deltaFromCenter < -maxDelta)
+		{
+			return NormalizeAngle(rangeCenter - maxDelta);
+		}
+		return NormalizeAngle(a);    // Already in range
+	}
+}    // namespace p::math

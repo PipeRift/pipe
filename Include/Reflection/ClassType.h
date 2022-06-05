@@ -3,12 +3,12 @@
 
 #include "PCH.h"
 
-#include "Events/Function.h"
+#include "Core/Function.h"
+#include "Reflection/BaseClass.h"
 #include "Reflection/DataType.h"
-#include "Types/BaseClass.h"
 
 
-namespace Rift::Refl
+namespace p::refl
 {
 	class ClassType : public DataType
 	{
@@ -76,4 +76,9 @@ namespace Rift::Refl
 			return *GetDefaultPtr();
 		}
 	};
-}    // namespace Rift::Refl
+}    // namespace p::refl
+
+namespace p
+{
+	using namespace p::refl;
+}

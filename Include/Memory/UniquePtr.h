@@ -6,7 +6,7 @@
 #include <memory>
 
 
-namespace Rift
+namespace p
 {
 	template<typename T, typename D = std::default_delete<T>>
 	struct TUniquePtr
@@ -88,4 +88,4 @@ namespace Rift
 
 	template<typename T, typename... Args>
 	TUniquePtr<T> MakeUnique(Args&&...) requires(std::extent_v<T> != 0) = delete;
-}    // namespace Rift
+}    // namespace p

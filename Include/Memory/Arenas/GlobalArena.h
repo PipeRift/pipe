@@ -4,7 +4,7 @@
 #include "Memory/Arenas/BigBestFitArena.h"
 
 
-namespace Rift::Memory
+namespace p::Memory
 {
 	CORE_API BigBestFitArena& GetGlobalArena();
 };

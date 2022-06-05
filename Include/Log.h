@@ -2,13 +2,13 @@
 
 #pragma once
 
+#include "Core/String.h"
 #include "Files/STDFileSystem.h"
-#include "Strings/String.h"
 
 #include <mutex>
 
 
-namespace Rift::Log
+namespace p::Log
 {
 	CORE_API void Init(Path logPath = {});
 	CORE_API void Shutdown();
@@ -43,4 +43,4 @@ namespace Rift::Log
 			Error(Strings::Format(format, std::forward<Args>(args)...));
 		}
 	}
-};    // namespace Rift::Log
+};    // namespace p::Log

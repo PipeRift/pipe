@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/String.h"
 #include "Serialization/Formats/TFormat.h"
-#include "Strings/String.h"
 
 
 struct yyjson_doc;
@@ -11,7 +11,7 @@ struct yyjson_val;
 struct yyjson_mut_val;
 
 
-namespace Rift::Serl
+namespace p::serl
 {
 	struct JsonFormatReader : public TFormatReader<Format::Json>
 	{
@@ -169,4 +169,4 @@ namespace Rift::Serl
 		using Reader = JsonFormatReader;
 		using Writer = JsonFormatWriter;
 	};
-}    // namespace Rift::Serl
+}    // namespace p::serl

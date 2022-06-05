@@ -3,12 +3,12 @@
 
 #include "PCH.h"
 
-#include "Strings/StringView.h"
+#include "Core/StringView.h"
 
 
-namespace Rift
+namespace p::refl
 {
-	namespace Refl::TypeName
+	namespace TypeName
 	{
 		template<class T>
 		constexpr StringView GetRaw()
@@ -27,7 +27,7 @@ namespace Rift
 		constexpr sizet suffixLength = testedRawName.size() - prefixLength - testNameLength;
 		static_assert(
 		    prefixLength != StringView::npos, "Can't extract typename from function signature");
-	}    // namespace Refl::TypeName
+	}    // namespace TypeName
 
 
 	inline constexpr StringView RemoveNamespace(StringView value)
@@ -43,9 +43,9 @@ namespace Rift
 	template<typename T>
 	inline consteval StringView GetFullTypeName(bool includeNamespaces = true)
 	{
-		const StringView raw = Refl::TypeName::GetRaw<T>();
-		StringView typeName{raw.data() + Refl::TypeName::prefixLength,
-		    raw.size() - Refl::TypeName::prefixLength - Refl::TypeName::suffixLength};
+		const StringView raw = refl::TypeName::GetRaw<T>();
+		StringView typeName{raw.data() + refl::TypeName::prefixLength,
+		    raw.size() - refl::TypeName::prefixLength - refl::TypeName::suffixLength};
 
 		typeName = Strings::RemoveFromStart(typeName, "struct ");
 		typeName = Strings::RemoveFromStart(typeName, "class ");
@@ -62,13 +62,16 @@ namespace Rift
 	{
 		return GetFullTypeName<T>(includeNamespaces);
 	}
+}    // namespace p::refl
 
+namespace p
+{
+	using namespace p::refl;
+}
 
-#define OVERRIDE_TYPE_NAME(type)                                              \
-	template<>                                                                \
-	inline consteval StringView GetFullTypeName<type>(bool includeNamespaces) \
-	{                                                                         \
-		return TX(#type);                                                     \
+#define OVERRIDE_TYPE_NAME(type)                                                          \
+	template<>                                                                            \
+	inline consteval p::StringView p::refl::GetFullTypeName<type>(bool includeNamespaces) \
+	{                                                                                     \
+		return TX(#type);                                                                 \
 	}
-
-}    // namespace Rift
