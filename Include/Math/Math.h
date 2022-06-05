@@ -257,11 +257,28 @@ namespace p::math
 		return val * val;
 	}
 
+	template<SignedIntegral T>
+	CORE_API constexpr T Pow(T value, u32 power)
+	{
+		if (power == 0)
+			return value >= 0 ? 1 : -1;
 
-	CORE_API constexpr i32 Pow(i32 value, u32 power);
-	CORE_API constexpr i64 Pow(i64 value, u32 power);
-	CORE_API constexpr u32 Pow(u32 value, u32 power);
-	CORE_API constexpr u64 Pow(u64 value, u32 power);
+		T result = value;
+		for (u32 i = 1; i < power; ++i)
+			result *= value;
+		return result;
+	}
+	template<UnsignedIntegral T>
+	CORE_API constexpr T Pow(T value, u32 power)
+	{
+		if (power == 0)
+			return 1u;
+
+		T result = value;
+		for (u32 i = 1; i < power; ++i)
+			result *= value;
+		return result;
+	}
 
 	template<FloatingPoint V, Number P>
 	static constexpr V Pow(V value, P power)

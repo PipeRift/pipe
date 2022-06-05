@@ -98,49 +98,6 @@ namespace p::math
 
 		return t3;
 	}
-	constexpr i32 Pow(i32 value, u32 power)
-	{
-		if (power == 0)
-			return value >= 0 ? 1 : -1;
-
-		i32 result = value;
-		for (u32 i = 1; i < power; ++i)
-			result *= value;
-		return result;
-	}
-
-	constexpr i64 Pow(i64 value, u32 power)
-	{
-		if (power == 0)
-			return value >= 0 ? 1 : -1;
-
-		i64 result = value;
-		for (u32 i = 1; i < power; ++i)
-			result *= value;
-		return result;
-	}
-
-	constexpr u32 Pow(u32 value, u32 power)
-	{
-		if (power == 0)
-			return 1u;
-
-		u32 result = value;
-		for (u32 i = 1; i < power; ++i)
-			result *= value;
-		return result;
-	}
-
-	constexpr u64 Pow(u64 value, u32 power)
-	{
-		if (power == 0)
-			return 1u;
-
-		u64 result = value;
-		for (u32 i = 1; i < power; ++i)
-			result *= value;
-		return result;
-	}
 
 	float ClampAngle(float a)
 	{
