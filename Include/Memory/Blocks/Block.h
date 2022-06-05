@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace Pipe::Memory
+namespace pipe::Memory
 {
 	class CORE_API Block
 	{
@@ -54,4 +54,4 @@ namespace Pipe::Memory
 			return GetData();
 		}
 	};
-}    // namespace Pipe::Memory
+}    // namespace pipe::Memory

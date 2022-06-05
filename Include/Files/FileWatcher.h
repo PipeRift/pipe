@@ -8,7 +8,7 @@
 #include <efsw/efsw.hpp>
 
 
-namespace Pipe::Files
+namespace pipe::Files
 {
 	using FileWatchId = efsw::WatchID;
 
@@ -47,9 +47,9 @@ namespace Pipe::Files
 
 		static CORE_API void StartAsync();
 	};
-}    // namespace Pipe::Files
+}    // namespace pipe::Files
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Files;
+	using namespace pipe::Files;
 }

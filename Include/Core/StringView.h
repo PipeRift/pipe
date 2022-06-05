@@ -9,7 +9,7 @@
 #include <string_view>
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	template<typename CharType>
 	using TStringView = std::basic_string_view<CharType, std::char_traits<CharType>>;
@@ -292,9 +292,9 @@ namespace Pipe::Core
 
 		// END TChar API
 	}    // namespace Strings
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }

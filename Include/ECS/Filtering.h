@@ -5,7 +5,7 @@
 #include "ECS/Context.h"
 
 
-namespace Pipe::ECS
+namespace pipe::ECS
 {
 	/** Remove ids containing a component from 'ids'. Does not guarantee order. */
 	CORE_API void ExcludeIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
@@ -364,4 +364,4 @@ namespace Pipe::ECS
 		const Pool* pool = access.template GetPool<const C>();
 		return (pool && pool->Size() > 0) ? *pool->begin() : ECS::NoId;
 	}
-}    // namespace Pipe::ECS
+}    // namespace pipe::ECS

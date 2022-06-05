@@ -9,42 +9,42 @@
 #include "Reflection/ReflectionTraits.h"
 
 
-namespace Pipe
+namespace pipe
 {
-	namespace Refl
+	namespace refl
 	{
 		class StructType;
 		class ClassType;
 		class EnumType;
-	}    // namespace Refl
+	}    // namespace refl
 
 
 	template<typename T>
-	Refl::StructType* GetType() requires(IsStruct<T>())
+	refl::StructType* GetType() requires(IsStruct<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<Refl::StructType*>(Refl::TTypeInstance<T>::GetType());
+		return static_cast<refl::StructType*>(refl::TTypeInstance<T>::GetType());
 	}
 
 	template<typename T>
-	Refl::ClassType* GetType() requires(IsClass<T>())
+	refl::ClassType* GetType() requires(IsClass<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<Refl::ClassType*>(Refl::TTypeInstance<T>::GetType());
+		return static_cast<refl::ClassType*>(refl::TTypeInstance<T>::GetType());
 	}
 
 	template<typename T>
-	Refl::EnumType* GetType() requires(IsReflectedEnum<T>())
+	refl::EnumType* GetType() requires(IsReflectedEnum<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<Refl::EnumType*>(Refl::TTypeInstance<T>::GetType());
+		return static_cast<refl::EnumType*>(refl::TTypeInstance<T>::GetType());
 	}
 
 	template<typename T>
-	Refl::Type* GetType()
+	refl::Type* GetType()
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return Refl::TTypeInstance<T>::GetType();
+		return refl::TTypeInstance<T>::GetType();
 	}
 
 	/**
@@ -54,7 +54,7 @@ namespace Pipe
 	 * @returns the type found, if any
 	 */
 	template<typename T>
-	Refl::Type* FindType(Name name)
+	refl::Type* FindType(Name name)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 
@@ -75,7 +75,7 @@ namespace Pipe
 	 * Classes will obtain their type from inheritance.
 	 */
 	template<typename T>
-	Refl::Type* GetType(T& instance)
+	refl::Type* GetType(T& instance)
 	{
 		if constexpr (IsClass<T>())
 		{
@@ -89,7 +89,7 @@ namespace Pipe
 	 * Classes will obtain their type from inheritance.
 	 */
 	template<typename T>
-	Refl::Type* GetType(TOwnPtr<T>& instance)
+	refl::Type* GetType(TOwnPtr<T>& instance)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 		if (instance && IsClass<T>())
@@ -104,7 +104,7 @@ namespace Pipe
 	 * Classes will obtain their type from inheritance.
 	 */
 	template<typename T>
-	Refl::Type* GetType(TPtr<T>& instance)
+	refl::Type* GetType(TPtr<T>& instance)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 		if (instance && IsClass<T>())
@@ -113,9 +113,9 @@ namespace Pipe
 		}
 		return GetType<T>();
 	}
-}    // namespace Pipe
+}    // namespace pipe
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }

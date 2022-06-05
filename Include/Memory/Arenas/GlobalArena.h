@@ -4,7 +4,7 @@
 #include "Memory/Arenas/BigBestFitArena.h"
 
 
-namespace Pipe::Memory
+namespace pipe::Memory
 {
 	CORE_API BigBestFitArena& GetGlobalArena();
 };

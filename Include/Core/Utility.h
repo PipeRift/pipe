@@ -5,7 +5,7 @@
 #include <type_traits>
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	template<typename T>
 	constexpr void Swap(T& a, T& b) noexcept
@@ -49,9 +49,9 @@ namespace Pipe::Core
 			return predicate(Forward<T>(B), Forward<T>(A));
 		}
 	};
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }

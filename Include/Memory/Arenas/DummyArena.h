@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace Pipe::Memory
+namespace pipe::Memory
 {
 	/** This is an Arena interface.
 	 * It serves the single purpose of documenting an Arena's interface.
@@ -32,4 +32,4 @@ namespace Pipe::Memory
 		}
 		void Free(void* ptr) {}
 	};
-}    // namespace Pipe::Memory
+}    // namespace pipe::Memory

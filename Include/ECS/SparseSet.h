@@ -22,7 +22,7 @@
 //#include "fwd.hpp"
 
 
-namespace Pipe::ECS
+namespace pipe::ECS
 {
 	enum class DeletionPolicy : u8
 	{
@@ -968,4 +968,4 @@ namespace Pipe::ECS
 	};
 
 
-}    // namespace Pipe::ECS
+}    // namespace pipe::ECS

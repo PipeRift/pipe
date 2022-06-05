@@ -6,7 +6,7 @@
 #include <magic_enum.hpp>
 
 
-namespace Pipe::Core::EnumOperators
+namespace pipe::core::EnumOperators
 {
 	// Bitwise operators: ~, |, &, ^, |=, &=, ^=
 	using namespace magic_enum::bitwise_operators;
@@ -53,9 +53,9 @@ namespace Pipe::Core::EnumOperators
 	{
 		value &= ~flags;
 	}
-}    // namespace Pipe::Core::EnumOperators
+}    // namespace pipe::core::EnumOperators
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }

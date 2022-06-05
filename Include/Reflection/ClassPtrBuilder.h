@@ -8,7 +8,7 @@
 #include "Reflection/TypeName.h"
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	template<typename T>
 	struct TClassPtrBuilder : public TPtrBuilder<T>
@@ -22,7 +22,7 @@ namespace Pipe::Refl
 		}
 
 		// Allow creation of classes using reflection
-		static T* New(Refl::ClassType* type, TPtr<BaseClass> owner = {})
+		static T* New(refl::ClassType* type, TPtr<BaseClass> owner = {})
 		{
 			if (type)
 			{
@@ -51,9 +51,9 @@ namespace Pipe::Refl
 		static T* NewArray(sizet size)                        = delete;
 		static void PostNewArray(TOwnPtr<T>& ptr, sizet size) = delete;
 	};
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }

@@ -4,7 +4,7 @@
 #include "TypeTraits.h"
 
 
-namespace Pipe::Refl
+namespace pipe
 {
 	/** CLASS TRAITS */
 
@@ -25,18 +25,13 @@ namespace Pipe::Refl
 	template<typename...>
 	struct TFlags : public DefaultTFlags
 	{};
-}    // namespace Pipe::Refl
-
-namespace Pipe
-{
-	using namespace Pipe::Refl;
-}
+}    // namespace pipe
 
 
 /** Custom traits go here */
 #define TYPE_FLAGS(type, ...)                           \
-	template<Pipe::Derived<type> T>                     \
-	struct Pipe::TFlags<T> : public Pipe::DefaultTFlags \
+	template<pipe::Derived<type> T>                     \
+	struct pipe::TFlags<T> : public pipe::DefaultTFlags \
 	{                                                   \
 		enum                                            \
 		{                                               \
@@ -46,8 +41,8 @@ namespace Pipe
 
 #define INHERIT_TYPE_FLAGS(type, parent, ...)            \
 	template<typename T>                                 \
-		requires Pipe::Derived<T, type>                  \
-	struct Pipe::TFlags<T> : public Pipe::TFlags<parent> \
+		requires pipe::Derived<T, type>                  \
+	struct pipe::TFlags<T> : public pipe::TFlags<parent> \
 	{                                                    \
 		enum                                             \
 		{                                                \
@@ -57,7 +52,7 @@ namespace Pipe
 
 #define TEMPLATE_TYPE_FLAGS(type, ...)                        \
 	template<typename T>                                      \
-	struct Pipe::TFlags<type<T>> : public Pipe::DefaultTFlags \
+	struct pipe::TFlags<type<T>> : public pipe::DefaultTFlags \
 	{                                                         \
 		enum                                                  \
 		{                                                     \
@@ -67,7 +62,7 @@ namespace Pipe
 
 #define INHERIT_TEMPLATE_TYPE_FLAGS(type, parent, ...)         \
 	template<typename T>                                       \
-	struct Pipe::TFlags<type<T>> : public Pipe::TFlags<parent> \
+	struct pipe::TFlags<type<T>> : public pipe::TFlags<parent> \
 	{                                                          \
 		enum                                                   \
 		{                                                      \

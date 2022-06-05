@@ -6,7 +6,7 @@
 #include <utility>
 
 
-namespace Pipe
+namespace pipe
 {
 	template<typename T1, typename T2>
 	using TPair = std::pair<T1, T2>;
@@ -34,4 +34,4 @@ namespace Pipe
 	{
 		return Internal::TTupleContains<T, Tuple>::value;
 	}
-}    // namespace Pipe
+}    // namespace pipe

@@ -5,7 +5,7 @@
 #include "Math/Vector.h"
 
 
-namespace Pipe::Math
+namespace pipe::Math
 {
 	struct Rotator : public v3
 	{
@@ -54,9 +54,9 @@ namespace Pipe::Math
 		 */
 		static float NormalizeAxis(float Angle);
 	};
-}    // namespace Pipe::Math
+}    // namespace pipe::Math
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Math;
+	using namespace pipe::Math;
 }

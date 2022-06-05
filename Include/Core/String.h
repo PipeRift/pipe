@@ -22,7 +22,7 @@
 #pragma warning(disable:4996)
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	template<typename CharType, typename Allocator = STLAllocator<CharType>>
 	using TString = std::basic_string<CharType, std::char_traits<CharType>, Allocator>;
@@ -147,16 +147,16 @@ namespace Pipe::Core
 			return GetStringHash(str.data());
 		}
 	};
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 
-	CORE_API void Read(Pipe::ReadContext& ct, Pipe::String& val);
-	CORE_API void Write(Pipe::WriteContext& ct, const Pipe::String& val);
+	CORE_API void Read(pipe::ReadContext& ct, pipe::String& val);
+	CORE_API void Write(pipe::WriteContext& ct, const pipe::String& val);
 	OVERRIDE_TYPE_NAME(String)
-}    // namespace Pipe
+}    // namespace pipe
 
 
 #pragma warning(pop)

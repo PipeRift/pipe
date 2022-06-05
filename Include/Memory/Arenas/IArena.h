@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace Pipe::Memory
+namespace pipe::Memory
 {
 	/** IArena defines the API used on all other arena types */
 	class CORE_API IArena
@@ -51,4 +51,4 @@ namespace Pipe::Memory
 			Free(ptr, sizeof(T) * count);
 		}
 	};
-}    // namespace Pipe::Memory
+}    // namespace pipe::Memory

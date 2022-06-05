@@ -6,7 +6,7 @@
 #include <cstddef>
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	/**
 	 * Windows specific types
@@ -17,11 +17,11 @@ namespace Pipe::Core
 	};
 
 	using PlatformTypes = WindowsPlatformTypes;
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }
 
 #define FORCEINLINE __forceinline     /* Force code to be inline */

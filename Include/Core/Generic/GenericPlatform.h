@@ -4,7 +4,7 @@
 #include "Export.h"
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	//---------------------------------------------------------------------
 	// Utility for automatically setting up the pointer-sized integer type
@@ -92,11 +92,11 @@ namespace Pipe::Core
 		using TYPE_OF_NULL    = int32;
 		using TYPE_OF_NULLPTR = decltype(nullptr);
 	};
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }
 
 

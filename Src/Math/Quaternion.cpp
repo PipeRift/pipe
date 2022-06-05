@@ -6,7 +6,7 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Pipe
+namespace pipe
 {
 	v3 Quat::Rotate(const v3& v) const
 	{
@@ -189,4 +189,4 @@ namespace Pipe
 		ct.Next(TX("z"), val.z);
 		ct.Next(TX("w"), val.w);
 	}
-}    // namespace Pipe
+}    // namespace pipe

@@ -11,7 +11,7 @@
 #include "Templates/Greater.h"
 
 
-namespace Pipe::Memory
+namespace pipe::Memory
 {
 	bool operator==(const BigBestFitArena::Slot& a, sizet b)
 	{
@@ -129,7 +129,7 @@ namespace Pipe::Memory
 
 		// Find smallest slot fitting our required size
 		return freeSlots.FindSortedMin(neededSize, true);
-	}    // namespace Pipe::Memory
+	}    // namespace pipe::Memory
 
 	void BigBestFitArena::ReduceSlot(
 	    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd)
@@ -206,4 +206,4 @@ namespace Pipe::Memory
 		}
 		pendingSort = true;
 	}
-}    // namespace Pipe::Memory
+}    // namespace pipe::Memory

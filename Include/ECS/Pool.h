@@ -15,7 +15,7 @@
 #include <TypeTraits.h>
 
 
-namespace Pipe::ECS
+namespace pipe::ECS
 {
 	struct Context;
 
@@ -773,17 +773,17 @@ namespace Pipe::ECS
 
 	struct PoolInstance
 	{
-		Refl::TypeId componentId{};
+		refl::TypeId componentId{};
 		TOwnPtr<Pool> pool;
 
 
-		PoolInstance(Refl::TypeId componentId, TOwnPtr<Pool> pool = {})
+		PoolInstance(refl::TypeId componentId, TOwnPtr<Pool> pool = {})
 		    : componentId{componentId}, pool{Move(pool)}
 		{}
 		PoolInstance(PoolInstance&& other) noexcept
 		{
 			componentId       = other.componentId;
-			other.componentId = Refl::TypeId::None();
+			other.componentId = refl::TypeId::None();
 			pool              = Move(other.pool);
 		}
 		explicit PoolInstance(const PoolInstance& other)
@@ -797,7 +797,7 @@ namespace Pipe::ECS
 		PoolInstance& operator=(PoolInstance&& other)
 		{
 			componentId       = other.componentId;
-			other.componentId = Refl::TypeId::None();
+			other.componentId = refl::TypeId::None();
 			pool              = Move(other.pool);
 			return *this;
 		}
@@ -812,7 +812,7 @@ namespace Pipe::ECS
 			return *this;
 		}
 
-		Refl::TypeId GetId() const
+		refl::TypeId GetId() const
 		{
 			return componentId;
 		}
@@ -830,4 +830,4 @@ namespace Pipe::ECS
 
 
 	i32 GetSmallestPool(TSpan<const Pool*> pools);
-}    // namespace Pipe::ECS
+}    // namespace pipe::ECS

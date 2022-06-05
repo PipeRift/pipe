@@ -9,7 +9,7 @@
 #include <Memory/UniquePtr.h>
 
 
-namespace Pipe::ECS
+namespace pipe::ECS
 {
 	struct CORE_API SortLessStatics
 	{
@@ -18,12 +18,12 @@ namespace Pipe::ECS
 			return a.GetId() < b.GetId();
 		}
 
-		bool operator()(Refl::TypeId a, const OwnPtr& b) const
+		bool operator()(refl::TypeId a, const OwnPtr& b) const
 		{
 			return a < b.GetId();
 		}
 
-		bool operator()(const OwnPtr& a, Refl::TypeId b) const
+		bool operator()(const OwnPtr& a, refl::TypeId b) const
 		{
 			return a.GetId() < b;
 		}
@@ -191,10 +191,10 @@ namespace Pipe::ECS
 		template<typename Static>
 		Static& SetStatic(Static&& value = {})
 		{
-			const Refl::TypeId typeId = GetTypeId<Static>();
+			const refl::TypeId typeId = GetTypeId<Static>();
 
 			// Find static first to replace it
-			i32 index = statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(typeId);
+			i32 index = statics.FindSortedEqual<refl::TypeId, SortLessStatics>(typeId);
 			if (index != NO_INDEX)
 			{
 				// Found, replace instance
@@ -211,10 +211,10 @@ namespace Pipe::ECS
 		template<typename Static>
 		Static& SetStatic(const Static& value)
 		{
-			const Refl::TypeId typeId = GetTypeId<Static>();
+			const refl::TypeId typeId = GetTypeId<Static>();
 
 			// Find static first to replace it
-			i32 index = statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(typeId);
+			i32 index = statics.FindSortedEqual<refl::TypeId, SortLessStatics>(typeId);
 			if (index != NO_INDEX)
 			{
 				// Found, replace instance
@@ -231,8 +231,8 @@ namespace Pipe::ECS
 		template<typename Static>
 		Static& GetOrSetStatic(Static&& newValue = {})
 		{
-			const Refl::TypeId typeId = GetTypeId<Static>();
-			i32 index                 = statics.LowerBound<Refl::TypeId, SortLessStatics>(typeId);
+			const refl::TypeId typeId = GetTypeId<Static>();
+			i32 index                 = statics.LowerBound<refl::TypeId, SortLessStatics>(typeId);
 			if (index != NO_INDEX)
 			{
 				if (typeId != statics[index].GetId())
@@ -251,8 +251,8 @@ namespace Pipe::ECS
 		template<typename Static>
 		Static& GetOrSetStatic(const Static& newValue)
 		{
-			const Refl::TypeId typeId = GetTypeId<Static>();
-			i32 index                 = statics.LowerBound<Refl::TypeId, SortLessStatics>(typeId);
+			const refl::TypeId typeId = GetTypeId<Static>();
+			i32 index                 = statics.LowerBound<refl::TypeId, SortLessStatics>(typeId);
 			if (index != NO_INDEX)
 			{
 				if (typeId != statics[index].GetId())
@@ -270,8 +270,8 @@ namespace Pipe::ECS
 		template<typename Static>
 		bool RemoveStatic()
 		{
-			const Refl::TypeId typeId = GetTypeId<Static>();
-			const i32 index = statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(typeId);
+			const refl::TypeId typeId = GetTypeId<Static>();
+			const i32 index = statics.FindSortedEqual<refl::TypeId, SortLessStatics>(typeId);
 			if (index != NO_INDEX)
 			{
 				statics.RemoveAt(index);
@@ -295,14 +295,14 @@ namespace Pipe::ECS
 		Static* TryGetStatic()
 		{
 			const i32 index =
-			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(GetTypeId<Static>());
+			    statics.FindSortedEqual<refl::TypeId, SortLessStatics>(GetTypeId<Static>());
 			return index != NO_INDEX ? statics[index].GetUnsafe<Static>() : nullptr;
 		}
 		template<typename Static>
 		const Static* TryGetStatic() const
 		{
 			const i32 index =
-			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(GetTypeId<Static>());
+			    statics.FindSortedEqual<refl::TypeId, SortLessStatics>(GetTypeId<Static>());
 			return index != NO_INDEX ? statics[index].GetUnsafe<Static>() : nullptr;
 		}
 
@@ -310,7 +310,7 @@ namespace Pipe::ECS
 		bool HasStatic() const
 		{
 			const i32 index =
-			    statics.FindSortedEqual<Refl::TypeId, SortLessStatics>(GetTypeId<Static>());
+			    statics.FindSortedEqual<refl::TypeId, SortLessStatics>(GetTypeId<Static>());
 			return index != NO_INDEX;
 		}
 
@@ -361,7 +361,7 @@ namespace Pipe::ECS
 		template<typename T>
 		TPool<Mut<T>>& AssurePool() const;
 
-		Pool* GetPool(Refl::TypeId componentId) const;
+		Pool* GetPool(refl::TypeId componentId) const;
 
 		template<typename T>
 		CopyConst<TPool<Mut<T>>, T>* GetPool() const
@@ -397,7 +397,7 @@ namespace Pipe::ECS
 	template<typename T>
 	inline TPool<Mut<T>>& Context::AssurePool() const
 	{
-		constexpr Refl::TypeId componentId = GetTypeId<Mut<T>>();
+		constexpr refl::TypeId componentId = GetTypeId<Mut<T>>();
 
 		i32 index = pools.LowerBound(componentId);
 		if (index != NO_INDEX)
@@ -419,11 +419,11 @@ namespace Pipe::ECS
 	template<typename T>
 	inline PoolInstance Context::CreatePoolInstance() const
 	{
-		constexpr Refl::TypeId componentId = GetTypeId<Mut<T>>();
+		constexpr refl::TypeId componentId = GetTypeId<Mut<T>>();
 
 		Context& self = const_cast<Context&>(*this);
 		PoolInstance instance{componentId};
 		instance.pool = Move(MakeOwned<TPool<Mut<T>>>(self));
 		return Move(instance);
 	}
-}    // namespace Pipe::ECS
+}    // namespace pipe::ECS

@@ -6,7 +6,7 @@
 #include <utility>
 
 
-namespace Pipe
+namespace pipe
 {
 	template<typename... Type>
 	struct TTypeList
@@ -85,4 +85,4 @@ namespace Pipe
 	{
 		return Internal::TTypeListContains<T, List>::value;
 	}
-}    // namespace Pipe
+}    // namespace pipe

@@ -10,7 +10,7 @@
 #include "Memory/Blocks/HeapBlock.h"
 
 
-namespace Pipe::Memory
+namespace pipe::Memory
 {
 	/**
 	 * LinearArena holds memory linearly in a block of memory.
@@ -70,4 +70,4 @@ namespace Pipe::Memory
 			return discardedBlocks;
 		}
 	};
-}    // namespace Pipe::Memory
+}    // namespace pipe::Memory

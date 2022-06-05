@@ -10,7 +10,7 @@
 #include <iostream>
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	struct CORE_API TypeId
 	{
@@ -61,34 +61,34 @@ namespace Pipe::Refl
 	}
 
 	template<typename T>
-	inline consteval Refl::TypeId GetTypeId()
+	inline consteval refl::TypeId GetTypeId()
 	{
-		return Refl::TypeId{Pipe::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
+		return refl::TypeId{pipe::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
 	}
 
 	template<>
-	struct Hash<Refl::TypeId>
+	struct Hash<refl::TypeId>
 	{
-		sizet operator()(const Refl::TypeId& id) const
+		sizet operator()(const refl::TypeId& id) const
 		{
 			const Hash<u64> hasher{};
 			return hasher(id.GetId());
 		}
 	};
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }
 
 
 template<>
-struct fmt::formatter<Pipe::Refl::TypeId> : public fmt::formatter<Pipe::u64>
+struct fmt::formatter<pipe::refl::TypeId> : public fmt::formatter<pipe::u64>
 {
 	template<typename FormatContext>
-	auto format(const Pipe::Refl::TypeId& typeId, FormatContext& ctx)
+	auto format(const pipe::refl::TypeId& typeId, FormatContext& ctx)
 	{
-		return formatter<Pipe::u64>::format(typeId.GetId(), ctx);
+		return formatter<pipe::u64>::format(typeId.GetId(), ctx);
 	}
 };

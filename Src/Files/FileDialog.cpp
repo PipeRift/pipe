@@ -7,7 +7,7 @@
 #include <portable-file-dialogs.h>
 
 
-namespace Pipe::Files
+namespace pipe::Files
 {
 	std::vector<std::string> ParseFilters(const TArray<DialogFileFilter>& filters)
 	{
@@ -18,7 +18,7 @@ namespace Pipe::Files
 			rawFilters.emplace_back(filter.first);
 			rawFilters.emplace_back(filter.second);
 		}
-		return Pipe::Move(rawFilters);
+		return pipe::Move(rawFilters);
 	}
 
 	Path SelectFileDialog(StringView title, const Path& defaultPath,
@@ -84,4 +84,4 @@ namespace Pipe::Files
 		path.replace_extension("rf");
 		return path;
 	}
-}    // namespace Pipe::Files
+}    // namespace pipe::Files

@@ -15,7 +15,7 @@
 #include <shared_mutex>
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	struct Name;
 
@@ -196,23 +196,23 @@ namespace Pipe::Core
 			HasMemberSerialize = true
 		};
 	};
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 
 	OVERRIDE_TYPE_NAME(Name)
-}    // namespace Pipe
+}    // namespace pipe
 
 
 template<>
-struct fmt::formatter<Pipe::Name> : public fmt::formatter<Pipe::StringView>
+struct fmt::formatter<pipe::Name> : public fmt::formatter<pipe::StringView>
 {
 	template<typename FormatContext>
-	auto format(const Pipe::Name& name, FormatContext& ctx)
+	auto format(const pipe::Name& name, FormatContext& ctx)
 	{
-		const Pipe::StringView nameStr{name.ToString()};
-		return formatter<Pipe::StringView>::format(nameStr, ctx);
+		const pipe::StringView nameStr{name.ToString()};
+		return formatter<pipe::StringView>::format(nameStr, ctx);
 	}
 };

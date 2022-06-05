@@ -4,7 +4,7 @@
 #include "Reflection/Property.h"
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	/**
 	 * Static information about an array property
@@ -67,9 +67,9 @@ namespace Pipe::Refl
 	{
 		empty(container);
 	}
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }

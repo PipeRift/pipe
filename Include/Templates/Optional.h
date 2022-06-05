@@ -5,7 +5,7 @@
 #include "Core/Utility.h"
 
 
-namespace Pipe
+namespace pipe
 {
 	/**
 	 * When we have an optional value IsSet() returns true, and GetValue() is meaningful.
@@ -144,4 +144,4 @@ namespace Pipe
 			return IsSet() ? value : defaultValue;
 		}
 	};
-}    // namespace Pipe
+}    // namespace pipe

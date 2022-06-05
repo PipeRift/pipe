@@ -9,7 +9,7 @@
 #include "Math/Timespan.h"
 
 
-namespace Pipe
+namespace pipe
 {
 	/**
 	 * Enumerates the days of the week in 7-day calendars.
@@ -703,4 +703,4 @@ namespace Pipe
 	private:
 		friend struct Z_Construct_UScriptStruct_FDateTime_Statics;
 	};
-}    // namespace Pipe
+}    // namespace pipe

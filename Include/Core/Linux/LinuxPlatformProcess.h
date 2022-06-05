@@ -5,7 +5,7 @@
 #include "Export.h"
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	struct CORE_API LinuxPlatformProcess : public GenericPlatformProcess
 	{
@@ -17,9 +17,9 @@ namespace Pipe::Core
 	};
 
 	using PlatformProcess = LinuxPlatformProcess;
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }

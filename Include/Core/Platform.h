@@ -13,7 +13,7 @@
 #endif
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	/////////////////////////////////////////////////////////////
 	// Define platform types as global types
@@ -80,11 +80,11 @@ namespace Pipe::Core
 
 
 	constexpr i32 NO_INDEX = -1;
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }
 
 

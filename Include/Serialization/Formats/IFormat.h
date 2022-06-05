@@ -6,7 +6,7 @@
 #include "TypeTraits.h"
 
 
-namespace Pipe::Serl
+namespace pipe::Serl
 {
 	struct IFormatReader
 	{};
@@ -61,4 +61,4 @@ namespace Pipe::Serl
 
 	template<Format format>
 	concept HasWriter = !IsVoid<typename FormatBind<format>::Writer>;
-}    // namespace Pipe::Serl
+}    // namespace pipe::Serl

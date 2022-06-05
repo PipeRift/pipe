@@ -10,7 +10,7 @@
 #include <cmath>
 
 
-namespace Pipe::Math
+namespace pipe::Math
 {
 	constexpr float PI{3.14159265358979323846f};
 	constexpr float HALF_PI  = PI * 0.5f;
@@ -433,9 +433,9 @@ namespace Pipe::Math
 	CORE_API float NormalizeAngle(float a);
 
 	CORE_API float ClampAngle(float a, float min, float max);
-}    // namespace Pipe::Math
+}    // namespace pipe::Math
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Math;
+	using namespace pipe::Math;
 }

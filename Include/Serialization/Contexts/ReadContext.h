@@ -12,7 +12,7 @@
 #include "TypeTraits.h"
 
 
-namespace Pipe::Serl
+namespace pipe::Serl
 {
 	struct CORE_API ReadContext
 	{
@@ -165,15 +165,15 @@ namespace Pipe::Serl
 		{
 			String typeStr;
 			ct.Serialize(typeStr);
-			if (std::optional<T> value = Refl::GetEnumValue<T>(typeStr))
+			if (std::optional<T> value = refl::GetEnumValue<T>(typeStr))
 			{
 				val = value.value();
 			}
 		}
 	}
-}    // namespace Pipe::Serl
+}    // namespace pipe::Serl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Serl;
+	using namespace pipe::Serl;
 }

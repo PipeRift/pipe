@@ -8,7 +8,7 @@
 #include "Reflection/ReflectionTraits.h"
 
 
-namespace Pipe
+namespace pipe
 {
 	template<typename T>
 	struct HasTypeBuilderDefine
@@ -23,7 +23,7 @@ namespace Pipe
 		static constexpr bool value = std::is_void<decltype(Impl<T>(0))>::value;
 	};
 
-	template<typename T, typename BuilderType = Refl::TypeBuilder>
+	template<typename T, typename BuilderType = refl::TypeBuilder>
 	constexpr bool HasTypeBuilder()
 	{
 		if constexpr (HasTypeBuilderDefine<T>::value)
@@ -63,9 +63,9 @@ namespace Pipe
 	{
 		return HasType<typename T::ItemType>();
 	}
-}    // namespace Pipe
+}    // namespace pipe
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }

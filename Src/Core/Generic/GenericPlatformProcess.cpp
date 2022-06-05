@@ -5,10 +5,10 @@
 #include "Log.h"
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	void GenericPlatformProcess::ShowFolder(StringView path)
 	{
 		Log::Error("ShowFolder not implemented on this platform");
 	}
-}    // namespace Pipe::Core
+}    // namespace pipe::core

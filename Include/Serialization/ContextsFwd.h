@@ -2,14 +2,14 @@
 #pragma once
 
 // Forward declarations of all contexts
-namespace Pipe::Serl
+namespace pipe::Serl
 {
 	struct CommonContext;
 	struct ReadContext;
 	struct WriteContext;
-}    // namespace Pipe::Serl
+}    // namespace pipe::Serl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Serl;
+	using namespace pipe::Serl;
 }

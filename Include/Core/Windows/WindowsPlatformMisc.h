@@ -4,7 +4,7 @@
 #include "Core/Generic/GenericPlatformMisc.h"
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	/**
 	 * Windows specific types
@@ -15,9 +15,9 @@ namespace Pipe::Core
 	};
 
 	using PlatformMisc = WindowsPlatformMisc;
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }

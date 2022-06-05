@@ -4,7 +4,7 @@
 #include "Core/Platform.h"
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	enum TypeFlags
 	{
@@ -49,9 +49,9 @@ namespace Pipe::Refl
 	{
 		return flags;
 	}
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }

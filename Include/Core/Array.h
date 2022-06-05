@@ -17,7 +17,7 @@
 #include <vector>
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>
 	struct TArray
@@ -248,12 +248,12 @@ namespace Pipe::Core
 		template<typename Predicate>
 		void Sort(Predicate predicate)
 		{
-			Pipe::Sort(Data(), Size(), predicate);
+			pipe::Sort(Data(), Size(), predicate);
 		}
 
 		void Sort()
 		{
-			Pipe::Sort(Data(), Size(), TLess<Type>());
+			pipe::Sort(Data(), Size(), TLess<Type>());
 		}
 
 		Iterator FindIt(const Type& item) const
@@ -386,7 +386,7 @@ namespace Pipe::Core
 		template<typename Value, typename SortPredicate = TLess<>>
 		i32 LowerBound(const Value& value, SortPredicate sortPredicate = {}) const
 		{
-			return Pipe::LowerBound(Data(), 0, Size(), value, sortPredicate);
+			return pipe::LowerBound(Data(), 0, Size(), value, sortPredicate);
 		}
 
 		/**
@@ -403,25 +403,25 @@ namespace Pipe::Core
 		template<typename Value, typename SortPredicate = TLess<>>
 		i32 UpperBound(const Value& value, SortPredicate sortPredicate = {}) const
 		{
-			return Pipe::UpperBound(Data(), 0, Size(), value, sortPredicate);
+			return pipe::UpperBound(Data(), 0, Size(), value, sortPredicate);
 		}
 
 		template<typename Value, typename SortPredicate = TLess<>>
 		i32 FindSortedEqual(const Value& value, SortPredicate sortPredicate = {}) const
 		{
-			return Pipe::BinarySearch(Data(), 0, Size(), value, sortPredicate);
+			return pipe::BinarySearch(Data(), 0, Size(), value, sortPredicate);
 		}
 
 		template<typename Value>
 		i32 FindSortedMax(const Value& max, bool included = false) const
 		{
-			return Pipe::FindSortedMax(Data(), 0, Size(), max, included);
+			return pipe::FindSortedMax(Data(), 0, Size(), max, included);
 		}
 
 		template<typename Value>
 		i32 FindSortedMin(const Value& min, bool included = false) const
 		{
-			return Pipe::FindSortedMin(Data(), 0, Size(), min, included);
+			return pipe::FindSortedMin(Data(), 0, Size(), min, included);
 		}
 
 		bool Contains(const Type& item) const
@@ -779,9 +779,9 @@ namespace Pipe::Core
 			std::iter_swap(vector.begin() + firstIndex, vector.begin() + secondIndex);
 		}
 	}
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }

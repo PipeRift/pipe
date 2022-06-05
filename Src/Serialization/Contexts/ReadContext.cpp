@@ -7,7 +7,7 @@
 #include "Serialization/Formats/JsonFormat.h"
 
 
-namespace Pipe::Serl
+namespace pipe::Serl
 {
 #define READER_SWITCH(func)                                \
 	switch (format)                                        \
@@ -112,4 +112,4 @@ namespace Pipe::Serl
 	{
 		ReadFromFormat(ct, val);
 	}
-}    // namespace Pipe::Serl
+}    // namespace pipe::Serl

@@ -8,7 +8,7 @@
 #include "Math/Timespan.h"
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	void GenericPlatformMisc::CreateGuid(Guid& guid)
 	{
@@ -38,4 +38,4 @@ namespace Pipe::Core
 		return Chrono::floor<Chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch())
 		    .count();
 	}
-}    // namespace Pipe::Core
+}    // namespace pipe::core

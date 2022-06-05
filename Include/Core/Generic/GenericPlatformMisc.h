@@ -4,7 +4,7 @@
 #include "PCH.h"
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	struct Guid;
 
@@ -13,7 +13,7 @@ namespace Pipe::Core
 	 */
 	struct CORE_API GenericPlatformMisc
 	{
-		static void CreateGuid(Core::Guid& guid);
+		static void CreateGuid(core::Guid& guid);
 
 		static constexpr u32 GetMaxPathLength()
 		{
@@ -27,9 +27,9 @@ namespace Pipe::Core
 			return u32(GetCycles64());
 		}
 	};
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }

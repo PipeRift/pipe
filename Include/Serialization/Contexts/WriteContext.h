@@ -12,7 +12,7 @@
 #include "TypeTraits.h"
 
 
-namespace Pipe::Serl
+namespace pipe::Serl
 {
 	struct CORE_API WriteContext
 	{
@@ -193,13 +193,13 @@ namespace Pipe::Serl
 		{
 			// Might not be necessary to cache string since enum name is static
 			ct.PushAddFlags(Serl::WriteFlags_CacheStringValues);
-			ct.Serialize(Refl::GetEnumName(val));
+			ct.Serialize(refl::GetEnumName(val));
 			ct.PopFlags();
 		}
 	}
-}    // namespace Pipe::Serl
+}    // namespace pipe::Serl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Serl;
+	using namespace pipe::Serl;
 }

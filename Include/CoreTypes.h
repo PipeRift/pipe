@@ -7,8 +7,7 @@
 #include "Reflection/Builders/NativeTypeBuilder.h"
 
 
-
-namespace Pipe
+namespace pipe
 {
 	REFLECT_NATIVE_TYPE(bool);
 	REFLECT_NATIVE_TYPE(u8);
@@ -21,4 +20,4 @@ namespace Pipe
 
 	REFLECT_NATIVE_TYPE(String);
 	REFLECT_NATIVE_TYPE(Name);
-}    // namespace Pipe
+}    // namespace pipe

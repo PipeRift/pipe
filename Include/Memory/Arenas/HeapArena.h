@@ -7,7 +7,7 @@
 #include "Memory/Arenas/IArena.h"
 
 
-namespace Pipe::Memory
+namespace pipe::Memory
 {
 	class CORE_API NativeArena : public IArena
 	{
@@ -17,16 +17,16 @@ namespace Pipe::Memory
 
 		void* Allocate(const sizet size)
 		{
-			return Pipe::Alloc(size);
+			return pipe::Alloc(size);
 		}
 		void* Allocate(const sizet size, const sizet align)
 		{
-			return Pipe::Alloc(size, align);
+			return pipe::Alloc(size, align);
 		}
 
 		void Free(void* ptr)
 		{
-			Pipe::Free(ptr);
+			pipe::Free(ptr);
 		}
 	};
-}    // namespace Pipe::Memory
+}    // namespace pipe::Memory

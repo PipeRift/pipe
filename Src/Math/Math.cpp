@@ -5,7 +5,7 @@
 #include "Math/Vector.h"
 
 
-namespace Pipe::Math
+namespace pipe::Math
 {
 	void SinCos(float value, float& outSin, float& outCos)
 	{
@@ -174,4 +174,4 @@ namespace Pipe::Math
 		}
 		return NormalizeAngle(a);    // Already in range
 	}
-}    // namespace Pipe::Math
+}    // namespace pipe::Math

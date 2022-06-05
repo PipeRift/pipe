@@ -3,7 +3,7 @@
 #include "Math/Bezier.h"
 
 
-namespace Pipe::Math
+namespace pipe::Math
 {
 	v2 EvaluateCubicBezier(v2 p0, v2 p1, v2 p2, v2 p3, float t)
 	{
@@ -16,4 +16,4 @@ namespace Pipe::Math
 		return {b0 * p0.x + b1 * p1.x + b2 * p2.x + b3 * p3.x,
 		    b0 * p0.y + b1 * p1.y + b2 * p2.y + b3 * p3.y};
 	}
-}    // namespace Pipe::Math
+}    // namespace pipe::Math

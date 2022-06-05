@@ -7,17 +7,8 @@
 #include <robin_hood.h>
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
-	template<typename T>
-	struct Hash : robin_hood::hash<T>
-	{
-		sizet operator()(const T& obj) const
-		{
-			return robin_hood::hash<T>::operator()(obj);
-		}
-	};
-
 	inline CORE_API sizet HashBytes(void const* ptr, sizet const len) noexcept
 	{
 		return robin_hood::hash_bytes(ptr, len);
@@ -75,9 +66,19 @@ namespace Pipe::Core
 			return static_cast<sizet>(result);
 		}
 	}
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
-}
+	template<typename T>
+	struct Hash : robin_hood::hash<T>
+	{
+		sizet operator()(const T& obj) const
+		{
+			return robin_hood::hash<T>::operator()(obj);
+		}
+	};
+
+
+	using namespace pipe::core;
+}    // namespace pipe

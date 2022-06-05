@@ -10,7 +10,7 @@
 #include "TypeTraits.h"
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	class ReflectionRegistry
 	{
@@ -58,9 +58,9 @@ namespace Pipe::Refl
 
 		static CORE_API ReflectionRegistry& Get();
 	};
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }

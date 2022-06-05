@@ -14,7 +14,7 @@
 #	include <libproc.h>
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	StringView MacPlatformProcess::GetExecutableFile()
 	{
@@ -54,5 +54,5 @@ namespace Pipe::Core
 		NotImplemented;
 		return;
 	}
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 #endif

@@ -8,21 +8,21 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Pipe
+namespace pipe
 {
-	void Read(Pipe::ReadContext& ct, Pipe::String& val)
+	void Read(pipe::ReadContext& ct, pipe::String& val)
 	{
-		Pipe::StringView view;
+		pipe::StringView view;
 		ct.Serialize(view);
 		val = view;
 	}
-	void Write(Pipe::WriteContext& ct, const Pipe::String& val)
+	void Write(pipe::WriteContext& ct, const pipe::String& val)
 	{
-		ct.Serialize(Pipe::StringView{val});
+		ct.Serialize(pipe::StringView{val});
 	}
-}    // namespace Pipe
+}    // namespace pipe
 
-namespace Pipe::Core::Strings
+namespace pipe::core::Strings
 {
 	String ToSentenceCase(const String& value)
 	{
@@ -139,4 +139,4 @@ namespace Pipe::Core::Strings
 
 		return Format("{}{}", sizeStr, sizes[scale]);
 	}
-}    // namespace Pipe::Core::Strings
+}    // namespace pipe::core::Strings

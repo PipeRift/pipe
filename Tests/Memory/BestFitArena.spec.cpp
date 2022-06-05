@@ -6,7 +6,7 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Pipe;
+using namespace pipe;
 using namespace Memory;
 
 template<u32 Size>

@@ -8,7 +8,7 @@
 #include "Reflection/DataType.h"
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	class ClassType : public DataType
 	{
@@ -76,9 +76,9 @@ namespace Pipe::Refl
 			return *GetDefaultPtr();
 		}
 	};
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }

@@ -10,7 +10,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ################################################################################
 # Project
 
-project(RiftCore VERSION 0.1 LANGUAGES CXX)
+project(Pipe VERSION 0.1 LANGUAGES CXX)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(RIFTCORE_IS_PROJECT ON)
@@ -18,7 +18,7 @@ else()
     set(RIFTCORE_IS_PROJECT OFF)
 endif()
 option(RIFT_BUILD_SHARED "Build shared libraries" ON)
-option(RIFT_CORE_BUILD_TESTS "Build RiftCore tests" ${RIFTCORE_IS_PROJECT})
+option(RIFT_CORE_BUILD_TESTS "Build Pipe tests" ${RIFTCORE_IS_PROJECT})
 option(RIFT_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
 option(RIFT_BUILD_WARNINGS "Enable compiler warnings" OFF)
 option(RIFT_ENABLE_CLANG_TOOLS "Enable clang-tidy and clang-format" ${RIFTCORE_IS_PROJECT})
@@ -38,28 +38,26 @@ add_subdirectory(Extern)
 
 
 ################################################################################
-#   Rift Core (compiled) library
+#   Pipe (compiled) library
 
 if (RIFT_BUILD_SHARED)
-    add_library(RiftCore SHARED)
+    add_library(Pipe SHARED)
 else()
-    add_library(RiftCore STATIC)
+    add_library(Pipe STATIC)
 endif()
-add_library(Rift::Core ALIAS RiftCore)
 
-generate_export_header(RiftCore
+generate_export_header(Pipe
     BASE_NAME CORE
     EXPORT_MACRO_NAME CORE_API
     EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Export.h)
-set_target_properties (RiftCore PROPERTIES FOLDER Rift)
-rift_target_define_platform(RiftCore)
+rift_target_define_platform(Pipe)
 
-target_include_directories(RiftCore PUBLIC Include)
+target_include_directories(Pipe PUBLIC Include)
 file(GLOB_RECURSE CORE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
-target_sources(RiftCore PRIVATE ${CORE_SOURCE_FILES})
-target_compile_definitions(RiftCore PRIVATE NOMINMAX)
+target_sources(Pipe PRIVATE ${CORE_SOURCE_FILES})
+target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
-target_link_libraries(RiftCore PUBLIC
+target_link_libraries(Pipe PUBLIC
     date::date
     efsw
     fmt::fmt
@@ -72,18 +70,18 @@ target_link_libraries(RiftCore PUBLIC
     magic_enum
     utf8cpp
 )
-target_link_libraries(RiftCore PRIVATE
+target_link_libraries(Pipe PRIVATE
     portable_file_dialogs
     spdlog
 )
 
 if(RIFT_ENABLE_PROFILER)
-    target_compile_definitions(RiftCore PUBLIC RIFT_ENABLE_PROFILER=1)
-    target_link_libraries(RiftCore PUBLIC Tracy)
+    target_compile_definitions(Pipe PUBLIC RIFT_ENABLE_PROFILER=1)
+    target_link_libraries(Pipe PUBLIC Tracy)
 endif()
-rift_target_shared_output_directory(RiftCore)
-rift_target_enable_CPP20(RiftCore)
-#target_compile_options(RiftCore PRIVATE /showIncludes)
+rift_target_shared_output_directory(Pipe)
+rift_target_enable_CPP20(Pipe)
+#target_compile_options(Pipe PRIVATE /showIncludes)
 
 
 ################################################################################

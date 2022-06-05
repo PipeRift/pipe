@@ -6,7 +6,7 @@
 #include <linux/limits.h>
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	struct LinuxPlatformMisc : public GenericPlatformMisc
 	{
@@ -17,9 +17,9 @@ namespace Pipe::Core
 	};
 
 	using PlatformMisc = LinuxPlatformMisc;
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }

@@ -14,7 +14,7 @@
 #include "Vector.h"
 
 
-namespace Pipe::Math
+namespace pipe::Math
 {
 	/**
 	 * Different color space representations supported
@@ -884,9 +884,9 @@ namespace Pipe::Math
 			return color.DWColor();
 		}
 	};
-}    // namespace Pipe::Math
+}    // namespace pipe::Math
 
-REFLECT_NATIVE_TYPE(Pipe::LinearColor)
-REFLECT_NATIVE_TYPE(Pipe::sRGBColor)
-REFLECT_NATIVE_TYPE(Pipe::HSVColor)
-REFLECT_NATIVE_TYPE(Pipe::Color)
+REFLECT_NATIVE_TYPE(pipe::LinearColor)
+REFLECT_NATIVE_TYPE(pipe::sRGBColor)
+REFLECT_NATIVE_TYPE(pipe::HSVColor)
+REFLECT_NATIVE_TYPE(pipe::Color)

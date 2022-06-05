@@ -6,13 +6,13 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Pipe::Memory;
+using namespace pipe::Memory;
 
-template<Pipe::u32 Size>
+template<pipe::u32 Size>
 struct TypeOfSize
 {
-	static constexpr Pipe::u32 size = Size;
-	Pipe::u8 data[size]{0};    // Fill data for debugging
+	static constexpr pipe::u32 size = Size;
+	pipe::u8 data[size]{0};    // Fill data for debugging
 };
 
 
@@ -37,17 +37,17 @@ go_bandit([]() {
 		it("Allocates at correct addresses", [&]() {
 			BigBestFitArena arena{1024};
 
-			const auto* blockPtr = static_cast<const Pipe::u8*>(*arena.GetBlock());
+			const auto* blockPtr = static_cast<const pipe::u8*>(*arena.GetBlock());
 
 			void* p = arena.Allocate(4);
 			new (p) TypeOfSize<4>();
-			const void* expectedP = blockPtr + Pipe::GetAlignmentPaddingWithHeader(blockPtr, 8, 8);
+			const void* expectedP = blockPtr + pipe::GetAlignmentPaddingWithHeader(blockPtr, 8, 8);
 			AssertThat(p, Is().EqualTo(expectedP));
 
 			void* p2 = arena.Allocate(4);
 			new (p2) TypeOfSize<4>();
 			void* expectedP2 =
-			    static_cast<Pipe::u8*>(p) + 8 + Pipe::GetAlignmentPaddingWithHeader(p, 8, 8);
+			    static_cast<pipe::u8*>(p) + 8 + pipe::GetAlignmentPaddingWithHeader(p, 8, 8);
 			AssertThat(p2, Is().EqualTo(expectedP2));
 		});
 
@@ -80,17 +80,17 @@ go_bandit([]() {
 			// When padding is not 0 (last ptr is not aligned)
 			void* p = arena.Allocate(4, 8);
 			new (p) TypeOfSize<4>();
-			AssertThat(Pipe::GetAlignmentPadding(p, 8), Is().EqualTo(0));
+			AssertThat(pipe::GetAlignmentPadding(p, 8), Is().EqualTo(0));
 
 			// When padding is 0 (last ptr is aligned)
 			void* p2 = arena.Allocate(4, 16);
 			new (p2) TypeOfSize<4>();
-			AssertThat(Pipe::GetAlignmentPadding(p2, 16), Is().EqualTo(0));
+			AssertThat(pipe::GetAlignmentPadding(p2, 16), Is().EqualTo(0));
 
 			// When padding is 0 (last ptr is aligned)
 			void* p3 = arena.Allocate(8, 32);
 			new (p3) TypeOfSize<8>();
-			AssertThat(Pipe::GetAlignmentPadding(p3, 32), Is().EqualTo(0));
+			AssertThat(pipe::GetAlignmentPadding(p3, 32), Is().EqualTo(0));
 		});
 
 		it("Can free", [&]() {
@@ -149,8 +149,8 @@ go_bandit([]() {
 			arena.Free(p2, 16);
 			AssertThat(arena.GetFreeSize(), Equals(24));
 			AssertThat(arena.GetFreeSlots().Size(), Equals(1));
-			AssertThat(arena.GetFreeSlots()[0].start, Equals(static_cast<Pipe::u8*>(p2) - 8));
-			AssertThat(arena.GetFreeSlots()[0].end, Equals(static_cast<Pipe::u8*>(p3) - 8));
+			AssertThat(arena.GetFreeSlots()[0].start, Equals(static_cast<pipe::u8*>(p2) - 8));
+			AssertThat(arena.GetFreeSlots()[0].end, Equals(static_cast<pipe::u8*>(p3) - 8));
 		});
 
 		it("Can merge previous and next slots on free", [&]() {
@@ -186,9 +186,9 @@ go_bandit([]() {
 
 			// Slot contains the entire memory block
 			AssertThat(arena.GetFreeSlots()[0].start,
-			    Equals(static_cast<const Pipe::u8*>(arena.GetBlock().GetData())));
+			    Equals(static_cast<const pipe::u8*>(arena.GetBlock().GetData())));
 			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const Pipe::u8*>(arena.GetBlock().GetEnd())));
+			    Equals(static_cast<const pipe::u8*>(arena.GetBlock().GetEnd())));
 		});
 
 		it("Can merge previous slot on free", [&]() {
@@ -213,9 +213,9 @@ go_bandit([]() {
 
 			// Slot contains the entire memory block
 			AssertThat(arena.GetFreeSlots()[0].start,
-			    Equals(static_cast<const Pipe::u8*>(arena.GetBlock().GetData())));
+			    Equals(static_cast<const pipe::u8*>(arena.GetBlock().GetData())));
 			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const Pipe::u8*>(arena.GetBlock().GetEnd())));
+			    Equals(static_cast<const pipe::u8*>(arena.GetBlock().GetEnd())));
 		});
 
 		it("Can merge next slot on free", [&]() {
@@ -240,9 +240,9 @@ go_bandit([]() {
 
 			// Slot contains the entire memory block
 			AssertThat(arena.GetFreeSlots()[0].start,
-			    Equals(static_cast<const Pipe::u8*>(arena.GetBlock().GetData())));
+			    Equals(static_cast<const pipe::u8*>(arena.GetBlock().GetData())));
 			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const Pipe::u8*>(arena.GetBlock().GetEnd())));
+			    Equals(static_cast<const pipe::u8*>(arena.GetBlock().GetEnd())));
 		});
 
 		it("Ensures a big alignment leaves a gap", [&]() {
@@ -262,7 +262,7 @@ go_bandit([]() {
 			// Slot contains the rest if the block
 			AssertThat(arena.GetFreeSlots()[0].start, Equals(arena.GetAllocationEnd(p2)));
 			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const Pipe::u8*>(arena.GetBlock().GetEnd())));
+			    Equals(static_cast<const pipe::u8*>(arena.GetBlock().GetEnd())));
 
 			// Slot contains the alignment gap
 			AssertThat(arena.GetFreeSlots()[1].start, Equals(arena.GetAllocationEnd(p)));

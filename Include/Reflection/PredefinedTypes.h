@@ -6,7 +6,7 @@
 #include "Reflection/TypeName.h"
 
 
-namespace Pipe
+namespace pipe
 {
 	OVERRIDE_TYPE_NAME(u8)
 	OVERRIDE_TYPE_NAME(u16)
@@ -18,9 +18,9 @@ namespace Pipe
 	OVERRIDE_TYPE_NAME(i64)
 	OVERRIDE_TYPE_NAME(TChar)
 	OVERRIDE_TYPE_NAME(StringView)
-}    // namespace Pipe
+}    // namespace pipe
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	// Contains an static fixed string with the name of a TArray<T>
 	template<typename ItemType, bool includeNamespaces>
@@ -82,10 +82,10 @@ namespace Pipe::Refl
 		return "TMap";
 	}
 
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl
 
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }

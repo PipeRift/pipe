@@ -6,7 +6,7 @@
 #include "Memory/Alloc.h"
 
 
-namespace Pipe::Core::Crc
+namespace pipe::core::Crc
 {
 	/** CRC 32 polynomial */
 	enum
@@ -356,4 +356,4 @@ namespace Pipe::Core::Crc
 
 		return ~CRC;
 	}
-}    // namespace Pipe::Core::Crc
+}    // namespace pipe::core::Crc

@@ -7,31 +7,31 @@
 
 void operator delete(void* p) noexcept
 {
-	Pipe::Free(p);
+	pipe::Free(p);
 };
 void operator delete[](void* p) noexcept
 {
-	Pipe::Free(p);
+	pipe::Free(p);
 };
 
 void* operator new(std::size_t n) noexcept(false)
 {
-	return Pipe::Alloc(n);
+	return pipe::Alloc(n);
 }
 void* operator new[](std::size_t n) noexcept(false)
 {
-	return Pipe::Alloc(n);
+	return pipe::Alloc(n);
 }
 
 void* operator new(std::size_t n, const std::nothrow_t& tag) noexcept
 {
 	(void)(tag);
-	return Pipe::Alloc(n);
+	return pipe::Alloc(n);
 }
 void* operator new[](std::size_t n, const std::nothrow_t& tag) noexcept
 {
 	(void)(tag);
-	return Pipe::Alloc(n);
+	return pipe::Alloc(n);
 }
 
 #	if (__cplusplus >= 201402L || _MSC_VER >= 1916)
@@ -39,12 +39,12 @@ void* operator new[](std::size_t n, const std::nothrow_t& tag) noexcept
 void operator delete(void* p, std::size_t n) noexcept
 {
 	(void)(n);
-	Pipe::Free(p);
+	pipe::Free(p);
 };
 void operator delete[](void* p, std::size_t n) noexcept
 {
 	(void)(n);
-	Pipe::Free(p);
+	pipe::Free(p);
 };
 
 #	endif
@@ -54,41 +54,41 @@ void operator delete[](void* p, std::size_t n) noexcept
 void operator delete(void* p, std::align_val_t align) noexcept
 {
 	(void)(align);
-	Pipe::Free(p);
+	pipe::Free(p);
 }
 void operator delete[](void* p, std::align_val_t align) noexcept
 {
 	(void)(align);
-	Pipe::Free(p);
+	pipe::Free(p);
 }
 void operator delete(void* p, std::size_t n, std::align_val_t align) noexcept
 {
 	(void)(n);
 	(void)(align);
-	Pipe::Free(p);
+	pipe::Free(p);
 };
 void operator delete[](void* p, std::size_t n, std::align_val_t align) noexcept
 {
 	(void)(n);
 	(void)(align);
-	Pipe::Free(p);
+	pipe::Free(p);
 };
 
 void* operator new(std::size_t n, std::align_val_t align) noexcept(false)
 {
-	return Pipe::Alloc(n, size_t(align));
+	return pipe::Alloc(n, size_t(align));
 }
 void* operator new[](std::size_t n, std::align_val_t align) noexcept(false)
 {
-	return Pipe::Alloc(n, size_t(align));
+	return pipe::Alloc(n, size_t(align));
 }
 void* operator new(std::size_t n, std::align_val_t align, const std::nothrow_t&) noexcept
 {
-	return Pipe::Alloc(n, size_t(align));
+	return pipe::Alloc(n, size_t(align));
 }
 void* operator new[](std::size_t n, std::align_val_t align, const std::nothrow_t&) noexcept
 {
-	return Pipe::Alloc(n, size_t(align));
+	return pipe::Alloc(n, size_t(align));
 }
 #	endif
 #endif

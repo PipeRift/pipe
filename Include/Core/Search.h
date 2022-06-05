@@ -13,7 +13,7 @@
 #include "Templates/Optional.h"
 
 
-namespace Pipe::Core
+namespace pipe::core
 {
 	/**
 	 * Finds the position of the first element in a sorted range that has a value
@@ -231,9 +231,9 @@ namespace Pipe::Core
 		// If first and last values are equal, we can just compare one value
 		return firstV > min || (included && firstV == min) ? first : NO_INDEX;
 	}
-}    // namespace Pipe::Core
+}    // namespace pipe::core
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }

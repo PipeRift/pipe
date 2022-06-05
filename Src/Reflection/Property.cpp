@@ -3,7 +3,7 @@
 #include "Reflection/Property.h"
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	bool Property::HasFlag(PropFlags flag) const
 	{
@@ -17,4 +17,4 @@ namespace Pipe::Refl
 	{
 		return (flags & inFlags) > 0;
 	}
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl

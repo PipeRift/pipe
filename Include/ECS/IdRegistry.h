@@ -7,7 +7,7 @@
 #include <Core/Span.h>
 
 
-namespace Pipe::ECS
+namespace pipe::ECS
 {
 	struct CORE_API IdRegistry
 	{
@@ -64,4 +64,4 @@ namespace Pipe::ECS
 			}
 		}
 	};
-}    // namespace Pipe::ECS
+}    // namespace pipe::ECS

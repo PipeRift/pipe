@@ -3,7 +3,7 @@
 #include "Math/Timespan.h"
 
 
-namespace Pipe
+namespace pipe
 {
 	/* FTimespan interface
 	 *****************************************************************************/
@@ -183,4 +183,4 @@ namespace Pipe
 	{
 		return Timespan{0, 0, seconds};
 	}
-}    // namespace Pipe
+}    // namespace pipe

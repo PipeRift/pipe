@@ -5,7 +5,7 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Pipe
+namespace pipe
 {
 	const String NameTable::noneStr{"none"};
 	const Name::Id Name::noneId{0};
@@ -63,4 +63,4 @@ namespace Pipe
 	{
 		ct.Serialize(ToString());
 	}
-}    // namespace Pipe
+}    // namespace pipe

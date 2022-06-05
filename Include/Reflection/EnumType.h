@@ -10,7 +10,7 @@
 #include <magic_enum.hpp>
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	template<typename T>
 	constexpr sizet GetEnumSize()
@@ -151,9 +151,9 @@ namespace Pipe::Refl
 			return names.Size();
 		}
 	};
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }

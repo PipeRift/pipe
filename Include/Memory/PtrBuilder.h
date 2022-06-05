@@ -9,7 +9,7 @@
 #include "TypeTraits.h"
 
 
-namespace Pipe
+namespace pipe
 {
 	template<typename T>
 	struct TOwnPtr;
@@ -53,4 +53,4 @@ namespace Pipe
 	public:
 		static constexpr bool value = std::is_void<decltype(Impl<T>(0))>::value;
 	};
-}    // namespace Pipe
+}    // namespace pipe

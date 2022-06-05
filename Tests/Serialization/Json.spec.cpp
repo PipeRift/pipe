@@ -8,8 +8,8 @@
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace Pipe;
-using namespace Pipe::Serl;
+using namespace pipe;
+using namespace pipe::Serl;
 
 
 go_bandit([]() {

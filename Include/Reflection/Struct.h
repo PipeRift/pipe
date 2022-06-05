@@ -8,17 +8,17 @@
 #include "Serialization/Contexts.h"
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	struct Struct : public BaseStruct
 	{
 	public:
 		using Super       = BaseStruct;
-		using BuilderType = Pipe::Refl::TStructTypeBuilder<Struct, void, Type_NoFlag>;
+		using BuilderType = pipe::refl::TStructTypeBuilder<Struct, void, Type_NoFlag>;
 
-		static Pipe::Refl::StructType* GetStaticType()
+		static pipe::refl::StructType* GetStaticType()
 		{
-			return Pipe::GetType<Struct>();
+			return pipe::GetType<Struct>();
 		}
 		static constexpr TypeFlags GetStaticFlags()
 		{
@@ -26,28 +26,28 @@ namespace Pipe::Refl
 		}
 		REFLECTION_BODY({})
 	};
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 
 	namespace Serl
 	{
 		template<typename T>
-		void Read(Pipe::ReadContext& ct, T& value) requires(Pipe::IsStruct<T>())
+		void Read(pipe::ReadContext& ct, T& value) requires(pipe::IsStruct<T>())
 		{
 			ct.BeginObject();
-			Pipe::CommonContext common{ct};
+			pipe::CommonContext common{ct};
 			value.SerializeReflection(common);
 		}
 
 		template<typename T>
-		void Write(Pipe::WriteContext& ct, const T& value) requires(Pipe::IsStruct<T>())
+		void Write(pipe::WriteContext& ct, const T& value) requires(pipe::IsStruct<T>())
 		{
 			ct.BeginObject();
-			Pipe::CommonContext common{ct};
+			pipe::CommonContext common{ct};
 			const_cast<T&>(value).SerializeReflection(common);
 		}
 	}    // namespace Serl
-}    // namespace Pipe
+}    // namespace pipe

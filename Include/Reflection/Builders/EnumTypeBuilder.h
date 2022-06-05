@@ -15,20 +15,20 @@
 
 #define ENUM(type)                                                    \
 	template<>                                                        \
-	struct Pipe::Refl::TStaticEnumInitializer<type>                   \
+	struct pipe::refl::TStaticEnumInitializer<type>                   \
 	{                                                                 \
 		static constexpr bool enabled = true;                         \
-		static const Pipe::TFunction<Pipe::Refl::EnumType*()> onInit; \
+		static const pipe::TFunction<pipe::refl::EnumType*()> onInit; \
 	};                                                                \
-	inline const Pipe::TFunction<Pipe::Refl::EnumType*()>             \
-	    Pipe::Refl::TStaticEnumInitializer<type>::onInit = []() {     \
-		    Pipe::Refl::TEnumTypeBuilder<type> builder{};             \
+	inline const pipe::TFunction<pipe::refl::EnumType*()>             \
+	    pipe::refl::TStaticEnumInitializer<type>::onInit = []() {     \
+		    pipe::refl::TEnumTypeBuilder<type> builder{};             \
 		    builder.Initialize();                                     \
 		    return builder.GetType();                                 \
 	    };
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	/**
 	 * Enum Type Builder
@@ -72,4 +72,4 @@ namespace Pipe::Refl
 			return &newType;
 		}
 	};
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl

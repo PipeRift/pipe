@@ -6,7 +6,7 @@
 #include "Core/StringView.h"
 
 
-namespace Pipe::Refl
+namespace pipe::refl
 {
 	namespace TypeName
 	{
@@ -43,9 +43,9 @@ namespace Pipe::Refl
 	template<typename T>
 	inline consteval StringView GetFullTypeName(bool includeNamespaces = true)
 	{
-		const StringView raw = Refl::TypeName::GetRaw<T>();
-		StringView typeName{raw.data() + Refl::TypeName::prefixLength,
-		    raw.size() - Refl::TypeName::prefixLength - Refl::TypeName::suffixLength};
+		const StringView raw = refl::TypeName::GetRaw<T>();
+		StringView typeName{raw.data() + refl::TypeName::prefixLength,
+		    raw.size() - refl::TypeName::prefixLength - refl::TypeName::suffixLength};
 
 		typeName = Strings::RemoveFromStart(typeName, "struct ");
 		typeName = Strings::RemoveFromStart(typeName, "class ");
@@ -62,16 +62,16 @@ namespace Pipe::Refl
 	{
 		return GetFullTypeName<T>(includeNamespaces);
 	}
-}    // namespace Pipe::Refl
+}    // namespace pipe::refl
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Refl;
+	using namespace pipe::refl;
 }
 
 #define OVERRIDE_TYPE_NAME(type)                                                                \
 	template<>                                                                                  \
-	inline consteval Pipe::StringView Pipe::Refl::GetFullTypeName<type>(bool includeNamespaces) \
+	inline consteval pipe::StringView pipe::refl::GetFullTypeName<type>(bool includeNamespaces) \
 	{                                                                                           \
 		return TX(#type);                                                                       \
 	}

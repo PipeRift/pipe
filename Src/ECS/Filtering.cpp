@@ -3,7 +3,7 @@
 #include "ECS/Filtering.h"
 
 
-namespace Pipe::ECS
+namespace pipe::ECS
 {
 	void ExcludeIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
@@ -260,4 +260,4 @@ namespace Pipe::ECS
 		ids.Empty();
 		ids.Append(idsSet.begin(), idsSet.end());
 	}
-}    // namespace Pipe::ECS
+}    // namespace pipe::ECS

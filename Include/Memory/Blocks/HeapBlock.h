@@ -7,7 +7,7 @@
 #include "Memory/Blocks/Block.h"
 
 
-namespace Pipe::Memory
+namespace pipe::Memory
 {
 	class CORE_API HeapBlock : public Block
 	{
@@ -81,12 +81,12 @@ namespace Pipe::Memory
 	inline void HeapBlock::Allocate(sizet newSize)
 	{
 		size = newSize;
-		data = Pipe::Alloc(newSize);
+		data = pipe::Alloc(newSize);
 	}
 	inline void HeapBlock::Free()
 	{
-		Pipe::Free(data);
+		pipe::Free(data);
 		data = nullptr;
 		size = 0;
 	}
-}    // namespace Pipe::Memory
+}    // namespace pipe::Memory

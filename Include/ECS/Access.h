@@ -6,7 +6,7 @@
 #include <Templates/TypeList.h>
 
 
-namespace Pipe
+namespace pipe
 {
 	enum class AccessMode : u8
 	{
@@ -16,11 +16,11 @@ namespace Pipe
 
 	struct TypeAccess
 	{
-		Refl::TypeId typeId = Refl::TypeId::None();
+		refl::TypeId typeId = refl::TypeId::None();
 		AccessMode mode     = AccessMode::Read;
 
 		constexpr TypeAccess() = default;
-		constexpr TypeAccess(Refl::TypeId typeId, AccessMode mode) : typeId{typeId}, mode{mode} {}
+		constexpr TypeAccess(refl::TypeId typeId, AccessMode mode) : typeId{typeId}, mode{mode} {}
 	};
 
 	template<typename T, AccessMode inMode>
@@ -271,7 +271,7 @@ namespace Pipe
 
 
 	public:
-		Access(Context& ast, const TArray<Refl::TypeId>& types) : ast{ast} {}
+		Access(Context& ast, const TArray<refl::TypeId>& types) : ast{ast} {}
 
 		template<typename... T>
 		Access(TAccessRef<T...> access) : ast{access.ast}
@@ -297,4 +297,4 @@ namespace Pipe
 			return 0;
 		}
 	};
-}    // namespace Pipe
+}    // namespace pipe

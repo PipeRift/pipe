@@ -3,7 +3,7 @@
 #include "Memory/Arenas/LinearArena.h"
 
 
-namespace Pipe::Memory
+namespace pipe::Memory
 {
 	void* LinearArena::Allocate(sizet size)
 	{
@@ -75,4 +75,4 @@ namespace Pipe::Memory
 			usedBlockSize = 0;
 		}
 	}
-}    // namespace Pipe::Memory
+}    // namespace pipe::Memory

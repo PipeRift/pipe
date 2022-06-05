@@ -6,7 +6,7 @@
 #include "Serialization/Formats/JsonFormat.h"
 
 
-namespace Pipe::Serl
+namespace pipe::Serl
 {
 #define WRITER_SWITCH(func)                                \
 	switch (format)                                        \
@@ -109,4 +109,4 @@ namespace Pipe::Serl
 	{
 		WriteFromFormat(ct, val);
 	}
-}    // namespace Pipe::Serl
+}    // namespace pipe::Serl

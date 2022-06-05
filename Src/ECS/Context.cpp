@@ -3,7 +3,7 @@
 #include "ECS/Context.h"
 
 
-namespace Pipe::ECS
+namespace pipe::ECS
 {
 	Context::Context()
 	{
@@ -58,7 +58,7 @@ namespace Pipe::ECS
 		}
 	}
 
-	Pool* Context::GetPool(Refl::TypeId componentId) const
+	Pool* Context::GetPool(refl::TypeId componentId) const
 	{
 		const i32 index = pools.FindSortedEqual(PoolInstance{componentId});
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
@@ -94,4 +94,4 @@ namespace Pipe::ECS
 		// TODO: Move statics
 		// TODO: Cache pools
 	}
-}    // namespace Pipe::ECS
+}    // namespace pipe::ECS

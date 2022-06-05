@@ -4,7 +4,7 @@
 #include "Core/Platform.h"
 
 
-namespace Pipe::Serl
+namespace pipe::Serl
 {
 	enum class Format : u8
 	{
@@ -25,4 +25,4 @@ namespace Pipe::Serl
 		Flags_NamesAsHashes        = 1 << 2,
 		Flags_StoreContainedOwnPtr = 1 << 3    // Store OwnPtr<> instances and their dependant Ptr<>
 	};
-}    // namespace Pipe::Serl
+}    // namespace pipe::Serl

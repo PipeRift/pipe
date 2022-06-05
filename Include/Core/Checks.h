@@ -7,7 +7,7 @@
 #include <fmt/format.h>
 
 
-namespace Pipe::Core::Checks
+namespace pipe::core::Checks
 {
 	template<typename RetType = void, typename InnerType>
 	RetType RunCheckCallback(InnerType&& callback)
@@ -34,21 +34,21 @@ namespace Pipe::Core::Checks
 		}
 		FailedCheckError(msg.c_str(), msg.size());
 	}
-}    // namespace Pipe::Core::Checks
+}    // namespace pipe::core::Checks
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }
 
 
 #define EnsureImpl(capture, always, expression, ...)                                        \
-	(LIKELY(!!(expression)) || (Pipe::Checks::RunCheckCallback<bool>([capture]() {          \
+	(LIKELY(!!(expression)) || (pipe::Checks::RunCheckCallback<bool>([capture]() {          \
 		static bool executed = false;                                                       \
 		if (!executed || always)                                                            \
 		{                                                                                   \
 			executed = true;                                                                \
-			Pipe::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
+			pipe::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
 			return true;                                                                    \
 		}                                                                                   \
 		return false;                                                                       \
@@ -68,7 +68,7 @@ namespace Pipe
 #		define CheckImpl(expression, ...)                                                      \
 			if (!(expression)) [[unlikely]]                                                     \
 			{                                                                                   \
-				Pipe::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
+				pipe::Checks::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
 				DEBUG_PLATFORM_BREAK();                                                         \
 			}
 #	endif

@@ -14,7 +14,7 @@
 #include <memory>
 
 
-namespace Pipe
+namespace pipe
 {
 	namespace Internal
 	{
@@ -460,7 +460,7 @@ namespace Pipe
 		using Super = BaseOwnPtr;
 
 	private:
-		Refl::TypeId typeId;
+		refl::TypeId typeId;
 
 
 	public:
@@ -475,7 +475,7 @@ namespace Pipe
 		{
 			MoveFrom(Move(other));
 			typeId       = Move(other.typeId);
-			other.typeId = Refl::TypeId::None();
+			other.typeId = refl::TypeId::None();
 		}
 
 		template<typename T>
@@ -492,7 +492,7 @@ namespace Pipe
 			Delete();
 			MoveFrom(Move(other));
 			typeId       = Move(other.typeId);
-			other.typeId = Refl::TypeId::None();
+			other.typeId = refl::TypeId::None();
 			return *this;
 		}
 
@@ -532,7 +532,7 @@ namespace Pipe
 		}
 
 
-		Refl::TypeId GetId() const
+		refl::TypeId GetId() const
 		{
 			return typeId;
 		}
@@ -579,4 +579,4 @@ namespace Pipe
 	//	using Elem = std::remove_extent_t<T>;
 	//	return {Builder::NewArray(size)};
 	//}
-}    // namespace Pipe
+}    // namespace pipe

@@ -8,7 +8,7 @@
 #include "Memory/Blocks/HeapBlock.h"
 
 
-namespace Pipe::Memory
+namespace pipe::Memory
 {
 	class CORE_API BestFitArena : public IArena
 	{
@@ -95,4 +95,4 @@ namespace Pipe::Memory
 	{
 		return start + size;
 	}
-}    // namespace Pipe::Memory
+}    // namespace pipe::Memory

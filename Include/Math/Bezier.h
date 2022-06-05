@@ -7,12 +7,12 @@
 #include "Math/Vector.h"
 
 
-namespace Pipe::Math
+namespace pipe::Math
 {
 	CORE_API v2 EvaluateCubicBezier(v2 p0, v2 p1, v2 p2, v2 p3, float t);
-}    // namespace Pipe::Math
+}    // namespace pipe::Math
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Math;
+	using namespace pipe::Math;
 }

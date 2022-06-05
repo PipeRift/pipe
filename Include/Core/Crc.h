@@ -9,13 +9,13 @@
 /**
  * CRC hash generation for different types of input data
  **/
-namespace Pipe::Core::Crc
+namespace pipe::core::Crc
 {
 	/** generates CRC hash of the memory area */
 	CORE_API u32 MemCrc32(const void* Data, i32 Length, u32 CRC = 0);
-}    // namespace Pipe::Core::Crc
+}    // namespace pipe::core::Crc
 
-namespace Pipe
+namespace pipe
 {
-	using namespace Pipe::Core;
+	using namespace pipe::core;
 }
