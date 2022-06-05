@@ -42,12 +42,12 @@ namespace pipe::core
 
 	void LinuxPlatformProcess::ShowFolder(StringView path)
 	{
-		if (!Files::Exists(path))
+		if (!files::Exists(path))
 		{
 			return;
 		}
 
-		if (!Files::IsFolder(path))
+		if (!files::IsFolder(path))
 		{
 			path = GetParent(path);
 		}

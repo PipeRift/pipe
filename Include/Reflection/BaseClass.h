@@ -35,7 +35,7 @@ namespace pipe::refl
 		refl::ClassType* GetType() const;
 		TPtr<Class> Self() const;
 
-		void SerializeReflection(pipe::Serl::CommonContext& ct) {}
+		void SerializeReflection(pipe::serl::CommonContext& ct) {}
 
 	protected:
 		virtual void BeforeDestroy() {}

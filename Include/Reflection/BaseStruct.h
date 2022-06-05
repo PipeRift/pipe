@@ -12,7 +12,7 @@ namespace pipe::refl
 
 	struct CORE_API BaseStruct
 	{
-		void SerializeReflection(pipe::Serl::CommonContext& ct) {}
+		void SerializeReflection(pipe::serl::CommonContext& ct) {}
 		// refl::StructType* GetType() const;
 	};
 }    // namespace pipe::refl

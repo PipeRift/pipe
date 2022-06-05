@@ -9,7 +9,7 @@
 using namespace snowhouse;
 using namespace bandit;
 using namespace pipe;
-using namespace pipe::Serl;
+using namespace pipe::serl;
 
 
 go_bandit([]() {

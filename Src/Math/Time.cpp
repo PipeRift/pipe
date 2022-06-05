@@ -15,7 +15,7 @@ namespace pipe
 		currentTime  = DateTime::Now();
 
 		// Avoid too big delta times
-		realDeltaTime = Math::Min(0.15f, (currentTime - previousTime).GetTotalSeconds());
+		realDeltaTime = math::Min(0.15f, (currentTime - previousTime).GetTotalSeconds());
 
 		// Apply time dilation
 		deltaTime = realDeltaTime * timeDilation;

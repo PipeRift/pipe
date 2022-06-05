@@ -16,9 +16,9 @@
 namespace pipe
 {
 	TaskSystem::TaskSystem()
-	    : mainPool{Math::Min(1u, std::thread::hardware_concurrency())}
+	    : mainPool{math::Min(1u, std::thread::hardware_concurrency())}
 	    , workerPool{
-	          Math::Max(1u, std::thread::hardware_concurrency() - i32(mainPool.num_workers()))}
+	          math::Max(1u, std::thread::hardware_concurrency() - i32(mainPool.num_workers()))}
 	{
 		// Name main thread
 		tracy::SetThreadName("Main");

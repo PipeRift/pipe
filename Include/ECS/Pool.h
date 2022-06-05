@@ -15,7 +15,7 @@
 #include <TypeTraits.h>
 
 
-namespace pipe::ECS
+namespace pipe::ecs
 {
 	struct Context;
 
@@ -830,4 +830,4 @@ namespace pipe::ECS
 
 
 	i32 GetSmallestPool(TSpan<const Pool*> pools);
-}    // namespace pipe::ECS
+}    // namespace pipe::ecs

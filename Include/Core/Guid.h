@@ -190,8 +190,8 @@ namespace pipe::core
 			return a;
 		}
 
-		void Read(Serl::ReadContext& ct);
-		void Write(Serl::WriteContext& ct) const;
+		void Read(serl::ReadContext& ct);
+		void Write(serl::WriteContext& ct) const;
 
 		/**
 		 * Guid default string conversion.

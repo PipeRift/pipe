@@ -14,7 +14,7 @@ namespace pipe
 	/* Guid interface
 	 *****************************************************************************/
 
-	void Guid::Read(Serl::ReadContext& ct)
+	void Guid::Read(serl::ReadContext& ct)
 	{
 		ct.BeginObject();
 		ct.Next(TX("a"), a);
@@ -23,7 +23,7 @@ namespace pipe
 		ct.Next(TX("d"), d);
 	}
 
-	void Guid::Write(Serl::WriteContext& ct) const
+	void Guid::Write(serl::WriteContext& ct) const
 	{
 		ct.BeginObject();
 		ct.Next(TX("a"), a);

@@ -10,7 +10,7 @@
 #include <cmath>
 
 
-namespace pipe::Math
+namespace pipe::math
 {
 	constexpr float PI{3.14159265358979323846f};
 	constexpr float HALF_PI  = PI * 0.5f;
@@ -347,13 +347,13 @@ namespace pipe::Math
 
 		// Clamp input to [-1,1].
 		bool nonnegative = (Value >= 0.0f);
-		float x          = Math::Abs(Value);
+		float x          = math::Abs(Value);
 		float omx        = 1.0f - x;
 		if (omx < 0.0f)
 		{
 			omx = 0.0f;
 		}
-		float root = Math::Sqrt(omx);
+		float root = math::Sqrt(omx);
 		// 7-degree minimax approximation
 		// clang-format off
 			float result = ((((((-0.0012624911f * x + 0.0066700901f)
@@ -433,9 +433,9 @@ namespace pipe::Math
 	CORE_API float NormalizeAngle(float a);
 
 	CORE_API float ClampAngle(float a, float min, float max);
-}    // namespace pipe::Math
+}    // namespace pipe::math
 
 namespace pipe
 {
-	using namespace pipe::Math;
+	using namespace pipe::math;
 }

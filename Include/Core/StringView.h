@@ -17,24 +17,6 @@ namespace pipe::core
 	using StringView  = TStringView<TChar>;
 	using WStringView = TStringView<WideChar>;
 
-	template<>
-	struct pipe::Hash<StringView>
-	{
-		sizet operator()(const StringView& str) const
-		{
-			return GetStringHash(str.data(), str.size());
-		}
-	};
-
-	template<>
-	struct pipe::Hash<const TChar*>
-	{
-		sizet operator()(const TChar* str) const
-		{
-			return GetStringHash(str);
-		}
-	};
-
 
 	enum class FindDirection : u8
 	{
@@ -297,4 +279,23 @@ namespace pipe::core
 namespace pipe
 {
 	using namespace pipe::core;
-}
+
+
+	template<>
+	struct Hash<StringView>
+	{
+		sizet operator()(const StringView& str) const
+		{
+			return GetStringHash(str.data(), str.size());
+		}
+	};
+
+	template<>
+	struct Hash<const TChar*>
+	{
+		sizet operator()(const TChar* str) const
+		{
+			return GetStringHash(str);
+		}
+	};
+}    // namespace pipe

@@ -64,17 +64,17 @@ namespace pipe::core
 
 	void WindowsPlatformProcess::ShowFolder(StringView path)
 	{
-		if (!Files::Exists(path))
+		if (!files::Exists(path))
 		{
 			return;
 		}
 
-		if (Files::IsFolder(path))
+		if (files::IsFolder(path))
 		{
 			const String fullPath{path};
 			::ShellExecuteA(nullptr, "explore", fullPath.data(), nullptr, nullptr, SW_SHOWNORMAL);
 		}
-		else if (Files::IsFile(path))
+		else if (files::IsFile(path))
 		{
 			String parameters = Strings::Format("/select,{}", path);
 			::ShellExecuteA(

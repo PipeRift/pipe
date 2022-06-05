@@ -75,7 +75,7 @@ namespace pipe::Memory
 	void* BigBestFitArena::Allocate(const sizet size, sizet alignment)
 	{
 		// We always use at least 8 bytes of alignment for the header
-		alignment = Math::Max(alignment, minAlignment);
+		alignment = math::Max(alignment, minAlignment);
 
 		const i32 slotIndex = FindSmallestSlot(size + alignment - 1);
 		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size())

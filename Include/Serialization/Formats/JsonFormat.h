@@ -11,7 +11,7 @@ struct yyjson_val;
 struct yyjson_mut_val;
 
 
-namespace pipe::Serl
+namespace pipe::serl
 {
 	struct JsonFormatReader : public TFormatReader<Format::Json>
 	{
@@ -169,4 +169,4 @@ namespace pipe::Serl
 		using Reader = JsonFormatReader;
 		using Writer = JsonFormatWriter;
 	};
-}    // namespace pipe::Serl
+}    // namespace pipe::serl

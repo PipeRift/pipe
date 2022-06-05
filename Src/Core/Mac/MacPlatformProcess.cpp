@@ -46,7 +46,7 @@ namespace pipe::core
 
 	void MacPlatformProcess::ShowFolder(StringView path)
 	{
-		if (!Files::Exists(path))
+		if (!files::Exists(path))
 		{
 			return;
 		}

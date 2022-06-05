@@ -6,7 +6,7 @@
 #include "Serialization/Contexts.h"
 
 
-namespace pipe::Serl
+namespace pipe::serl
 {
 	void Read(pipe::ReadContext& ct, pipe::Path& value)
 	{
@@ -19,4 +19,4 @@ namespace pipe::Serl
 	{
 		ct.Serialize(pipe::ToString(value));
 	}
-}    // namespace pipe::Serl
+}    // namespace pipe::serl

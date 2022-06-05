@@ -31,30 +31,30 @@ namespace pipe
 			{
 				switch (*format)
 				{
-					case TX('d'): Strings::FormatTo(result, TX("{}"), Math::Abs(GetDays())); break;
+					case TX('d'): Strings::FormatTo(result, TX("{}"), math::Abs(GetDays())); break;
 					case TX('D'):
-						Strings::FormatTo(result, TX("{:08i}"), Math::Abs(GetDays()));
+						Strings::FormatTo(result, TX("{:08i}"), math::Abs(GetDays()));
 						break;
 					case TX('h'):
-						Strings::FormatTo(result, TX("{:02i}"), Math::Abs(GetHours()));
+						Strings::FormatTo(result, TX("{:02i}"), math::Abs(GetHours()));
 						break;
 					case TX('m'):
-						Strings::FormatTo(result, TX("{:02i}"), Math::Abs(GetMinutes()));
+						Strings::FormatTo(result, TX("{:02i}"), math::Abs(GetMinutes()));
 						break;
 					case TX('s'):
-						Strings::FormatTo(result, TX("{:02i}"), Math::Abs(GetSeconds()));
+						Strings::FormatTo(result, TX("{:02i}"), math::Abs(GetSeconds()));
 						break;
 					case TX('f'):
-						Strings::FormatTo(result, TX("{:03i}"), Math::Abs(GetFractionMilli()));
+						Strings::FormatTo(result, TX("{:03i}"), math::Abs(GetFractionMilli()));
 						break;
 					case TX('u'):
-						Strings::FormatTo(result, TX("{:06i}"), Math::Abs(GetFractionMicro()));
+						Strings::FormatTo(result, TX("{:06i}"), math::Abs(GetFractionMicro()));
 						break;
 					case TX('t'):
-						Strings::FormatTo(result, TX("{:07i}"), Math::Abs(GetFractionTicks()));
+						Strings::FormatTo(result, TX("{:07i}"), math::Abs(GetFractionTicks()));
 						break;
 					case TX('n'):
-						Strings::FormatTo(result, TX("{:09i}"), Math::Abs(GetFractionNano()));
+						Strings::FormatTo(result, TX("{:09i}"), math::Abs(GetFractionNano()));
 						break;
 					default: result += *format;
 				}

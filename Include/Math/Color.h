@@ -14,7 +14,7 @@
 #include "Vector.h"
 
 
-namespace pipe::Math
+namespace pipe::math
 {
 	/**
 	 * Different color space representations supported
@@ -164,10 +164,10 @@ namespace pipe::Math
 			}
 			else if constexpr (to == ColorMode::RGBA && from == ColorMode::Linear)
 			{
-				return {u8(Math::Clamp<i32>(i32(this->r * 255.f), 0, 255)),
-				    u8(Math::Clamp<i32>(i32(this->g * 255.f), 0, 255)),
-				    u8(Math::Clamp<i32>(i32(this->b * 255.f), 0, 255)),
-				    u8(Math::Clamp<i32>(i32(this->a * 255.f), 0, 255))};
+				return {u8(math::Clamp<i32>(i32(this->r * 255.f), 0, 255)),
+				    u8(math::Clamp<i32>(i32(this->g * 255.f), 0, 255)),
+				    u8(math::Clamp<i32>(i32(this->b * 255.f), 0, 255)),
+				    u8(math::Clamp<i32>(i32(this->a * 255.f), 0, 255))};
 			}
 			else if constexpr (to == ColorMode::sRGB && from == ColorMode::RGBA)
 			{
@@ -176,32 +176,32 @@ namespace pipe::Math
 			}
 			else if constexpr (to == ColorMode::RGBA && from == ColorMode::sRGB)
 			{
-				float floatr = Math::Clamp(this->r, 0.0f, 1.0f);
-				float floatg = Math::Clamp(this->g, 0.0f, 1.0f);
-				float floatb = Math::Clamp(this->b, 0.0f, 1.0f);
-				float floata = Math::Clamp(this->a, 0.0f, 1.0f);
+				float floatr = math::Clamp(this->r, 0.0f, 1.0f);
+				float floatg = math::Clamp(this->g, 0.0f, 1.0f);
+				float floatb = math::Clamp(this->b, 0.0f, 1.0f);
+				float floata = math::Clamp(this->a, 0.0f, 1.0f);
 
 				constexpr float exp = 1.0f / 2.4f;
 				floatr              = floatr <= 0.0031308f ? floatr * 12.92f
-				                                           : Math::Pow(floatr, exp) * 1.055f - 0.055f;
+				                                           : math::Pow(floatr, exp) * 1.055f - 0.055f;
 				floatg              = floatg <= 0.0031308f ? floatg * 12.92f
-				                                           : Math::Pow(floatg, exp) * 1.055f - 0.055f;
+				                                           : math::Pow(floatg, exp) * 1.055f - 0.055f;
 				floatb              = floatb <= 0.0031308f ? floatb * 12.92f
-				                                           : Math::Pow(floatb, exp) * 1.055f - 0.055f;
+				                                           : math::Pow(floatb, exp) * 1.055f - 0.055f;
 
 				return {u8(floatr * 255.999f), u8(floatg * 255.999f), u8(floatb * 255.999f),
 				    u8(floata * 255.999f)};
 			}
 			else if constexpr (to == ColorMode::HSV && from == ColorMode::Linear)
 			{
-				const float rgbMin   = Math::Min(this->r, this->g, this->b);
-				const float rgbMax   = Math::Max(this->r, this->g, this->b);
+				const float rgbMin   = math::Min(this->r, this->g, this->b);
+				const float rgbMax   = math::Max(this->r, this->g, this->b);
 				const float rgbRange = rgbMax - rgbMin;
 
 				const float hue =
 				    (rgbMax == rgbMin ? 0.0f
 				        : rgbMax == this->r
-				            ? Math::Mod((((this->g - this->b) / rgbRange) * 60.0f) + 360.0f, 360.0f)
+				            ? math::Mod((((this->g - this->b) / rgbRange) * 60.0f) + 360.0f, 360.0f)
 				        : rgbMax == this->g ? (((this->b - this->r) / rgbRange) * 60.0f) + 120.0f
 				        : rgbMax == this->b ? (((this->r - this->g) / rgbRange) * 60.0f) + 240.0f
 				                            : 0.0f);
@@ -213,7 +213,7 @@ namespace pipe::Math
 			else if constexpr (to == ColorMode::Linear && from == ColorMode::HSV)
 			{
 				const float hDiv60         = this->h / 60.0f;
-				const float hDiv60Floor    = Math::Floor(hDiv60);
+				const float hDiv60Floor    = math::Floor(hDiv60);
 				const float hDiv60Fraction = hDiv60 - hDiv60Floor;
 
 				const u32 swizzleIndex = u32(hDiv60Floor) % 6;
@@ -317,10 +317,10 @@ namespace pipe::Math
 		{
 			if constexpr (mode == ColorMode::RGBA)
 			{
-				return {u8(Math::Clamp(i32(this->r) + other.r, 0, 255)),
-				    u8(Math::Clamp(i32(this->g) + other.g, 0, 255)),
-				    u8(Math::Clamp(i32(this->b) + other.b, 0, 255)),
-				    u8(Math::Clamp(i32(this->a) + other.a, 0, 255))};
+				return {u8(math::Clamp(i32(this->r) + other.r, 0, 255)),
+				    u8(math::Clamp(i32(this->g) + other.g, 0, 255)),
+				    u8(math::Clamp(i32(this->b) + other.b, 0, 255)),
+				    u8(math::Clamp(i32(this->a) + other.a, 0, 255))};
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
@@ -338,10 +338,10 @@ namespace pipe::Math
 		{
 			if constexpr (mode == ColorMode::RGBA)
 			{
-				return {u8(Math::Clamp(i32(this->r) - other.r, 0, 255)),
-				    u8(Math::Clamp(i32(this->g) - other.g, 0, 255)),
-				    u8(Math::Clamp(i32(this->b) - other.b, 0, 255)),
-				    u8(Math::Clamp(i32(this->a) - other.a, 0, 255))};
+				return {u8(math::Clamp(i32(this->r) - other.r, 0, 255)),
+				    u8(math::Clamp(i32(this->g) - other.g, 0, 255)),
+				    u8(math::Clamp(i32(this->b) - other.b, 0, 255)),
+				    u8(math::Clamp(i32(this->a) - other.a, 0, 255))};
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
@@ -359,10 +359,10 @@ namespace pipe::Math
 		{
 			if constexpr (mode == ColorMode::RGBA)
 			{
-				return {u8(Math::Clamp(i32(this->r) * other.r, 0, 255)),
-				    u8(Math::Clamp(i32(this->g) * other.g, 0, 255)),
-				    u8(Math::Clamp(i32(this->b) * other.b, 0, 255)),
-				    u8(Math::Clamp(i32(this->a) * other.a, 0, 255))};
+				return {u8(math::Clamp(i32(this->r) * other.r, 0, 255)),
+				    u8(math::Clamp(i32(this->g) * other.g, 0, 255)),
+				    u8(math::Clamp(i32(this->b) * other.b, 0, 255)),
+				    u8(math::Clamp(i32(this->a) * other.a, 0, 255))};
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
@@ -380,10 +380,10 @@ namespace pipe::Math
 		{
 			if constexpr (mode == ColorMode::RGBA)
 			{
-				return {u8(Math::Clamp(i32(this->r) / other.r, 0, 255)),
-				    u8(Math::Clamp(i32(this->g) / other.g, 0, 255)),
-				    u8(Math::Clamp(i32(this->b) / other.b, 0, 255)),
-				    u8(Math::Clamp(i32(this->a) / other.a, 0, 255))};
+				return {u8(math::Clamp(i32(this->r) / other.r, 0, 255)),
+				    u8(math::Clamp(i32(this->g) / other.g, 0, 255)),
+				    u8(math::Clamp(i32(this->b) / other.b, 0, 255)),
+				    u8(math::Clamp(i32(this->a) / other.a, 0, 255))};
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
@@ -401,10 +401,10 @@ namespace pipe::Math
 		{
 			if constexpr (mode == ColorMode::RGBA)
 			{
-				return {u8(Math::Clamp(i32(scalar * this->r), 0, 255)),
-				    u8(Math::Clamp(i32(scalar * this->g), 0, 255)),
-				    u8(Math::Clamp(i32(scalar * this->b), 0, 255)),
-				    u8(Math::Clamp(i32(scalar * this->a), 0, 255))};
+				return {u8(math::Clamp(i32(scalar * this->r), 0, 255)),
+				    u8(math::Clamp(i32(scalar * this->g), 0, 255)),
+				    u8(math::Clamp(i32(scalar * this->b), 0, 255)),
+				    u8(math::Clamp(i32(scalar * this->a), 0, 255))};
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
@@ -423,10 +423,10 @@ namespace pipe::Math
 			const float invScalar = 1.0f / scalar;
 			if constexpr (mode == ColorMode::RGBA)
 			{
-				return {u8(Math::Clamp(i32(invScalar * this->r), 0, 255)),
-				    u8(Math::Clamp(i32(invScalar * this->g), 0, 255)),
-				    u8(Math::Clamp(i32(invScalar * this->b), 0, 255)),
-				    u8(Math::Clamp(i32(invScalar * this->a), 0, 255))};
+				return {u8(math::Clamp(i32(invScalar * this->r), 0, 255)),
+				    u8(math::Clamp(i32(invScalar * this->g), 0, 255)),
+				    u8(math::Clamp(i32(invScalar * this->b), 0, 255)),
+				    u8(math::Clamp(i32(invScalar * this->a), 0, 255))};
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
@@ -486,18 +486,18 @@ namespace pipe::Math
 
 		TColor Clamp(float min = 0.f, float max = 1.f) const requires(mode != ColorMode::RGBA)
 		{
-			return {Math::Clamp(this->r, min, max), Math::Clamp(this->g, min, max),
-			    Math::Clamp(this->b, min, max), Math::Clamp(this->a, min, max)};
+			return {math::Clamp(this->r, min, max), math::Clamp(this->g, min, max),
+			    math::Clamp(this->b, min, max), math::Clamp(this->a, min, max)};
 		}
 
 		// Error-tolerant comparison.
-		bool Equals(const TColor& other, float Tolerance = Math::SMALL_NUMBER) const
+		bool Equals(const TColor& other, float Tolerance = math::SMALL_NUMBER) const
 		    requires(mode != ColorMode::RGBA)
 		{
-			return Math::Abs(this->r - other.r) < Tolerance
-			    && Math::Abs(this->g - other.g) < Tolerance
-			    && Math::Abs(this->b - other.b) < Tolerance
-			    && Math::Abs(this->a - other.a) < Tolerance;
+			return math::Abs(this->r - other.r) < Tolerance
+			    && math::Abs(this->g - other.g) < Tolerance
+			    && math::Abs(this->b - other.b) < Tolerance
+			    && math::Abs(this->a - other.a) < Tolerance;
 		}
 
 		constexpr v3_u8 ToV3() const requires(mode == ColorMode::RGBA)
@@ -533,14 +533,14 @@ namespace pipe::Math
 		 */
 		static inline float Dist(const TColor& one, const TColor& other)
 		{
-			return Math::Sqrt(Math::Square(other.r - one.r) + Math::Square(other.g - one.g)
-			                  + Math::Square(other.b - one.b) + Math::Square(other.a - one.a));
+			return math::Sqrt(math::Square(other.r - one.r) + math::Square(other.g - one.g)
+			                  + math::Square(other.b - one.b) + math::Square(other.a - one.a));
 		}
 
 		/**
 		 * Linearly interpolates between two colors by the specified progress amount.  The
 		 * interpolation is performed in HSV color space taking the shortest path to the new color's
-		 * hue.  This can give better results than Math::Lerp(), but is much more expensive. The
+		 * hue.  This can give better results than math::Lerp(), but is much more expensive. The
 		 * incoming colors are in RGB space, and the output color will be RGB.  The alpha value will
 		 * also be interpolated.
 		 *
@@ -565,7 +565,7 @@ namespace pipe::Math
 				float toHue   = to.h;
 
 				// Take the shortest path to the new hue
-				if (Math::Abs(fromHue - toHue) > 180.0f)
+				if (math::Abs(fromHue - toHue) > 180.0f)
 				{
 					if (toHue > fromHue)
 					{
@@ -577,15 +577,15 @@ namespace pipe::Math
 					}
 				}
 
-				float newHue = Math::Lerp(fromHue, toHue, delta);
-				newHue       = Math::Mod(newHue, 360.0f);
+				float newHue = math::Lerp(fromHue, toHue, delta);
+				newHue       = math::Mod(newHue, 360.0f);
 				if (newHue < 0.0f)
 				{
 					newHue += 360.0f;
 				}
 
-				return {newHue, Math::Lerp(from.s, to.s, delta), Math::Lerp(from.v, to.v, delta),
-				    Math::Lerp(from.a, to.a, delta)};
+				return {newHue, math::Lerp(from.s, to.s, delta), math::Lerp(from.v, to.v, delta),
+				    math::Lerp(from.a, to.a, delta)};
 			}
 		}
 
@@ -598,7 +598,7 @@ namespace pipe::Math
 		    requires(mode == ColorMode::Linear || mode == ColorMode::sRGB)
 		{
 			float lum = ComputeLuminance();
-			return Math::Lerp(*this, TColor<mode>{lum, lum, lum, this->a}, desaturation);
+			return math::Lerp(*this, TColor<mode>{lum, lum, lum, this->a}, desaturation);
 		}
 		constexpr TColor Shade(float delta) const;
 		constexpr TColor Tint(float delta) const;
@@ -608,7 +608,7 @@ namespace pipe::Math
 		}
 		constexpr TColor Translucency(float alpha) const requires(mode != ColorMode::RGBA)
 		{
-			return {this->r, this->g, this->b, Math::Clamp(alpha, 0.f, 1.f)};
+			return {this->r, this->g, this->b, math::Clamp(alpha, 0.f, 1.f)};
 		}
 
 		/** Computes the perceptually weighted luminance value of a color. */
@@ -623,15 +623,15 @@ namespace pipe::Math
 		 */
 		float GetMax() const
 		{
-			return Math::Max(Math::Max(Math::Max(this->r, this->g), this->b), this->a);
+			return math::Max(math::Max(math::Max(this->r, this->g), this->b), this->a);
 		}
 
 		/** useful to detect if a light contribution needs to be rendered */
 		bool IsAlmostBlack() const
 		{
-			return Math::Square(this->r) < Math::SMALLER_NUMBER
-			    && Math::Square(this->g) < Math::SMALLER_NUMBER
-			    && Math::Square(this->b) < Math::SMALLER_NUMBER;
+			return math::Square(this->r) < math::SMALLER_NUMBER
+			    && math::Square(this->g) < math::SMALLER_NUMBER
+			    && math::Square(this->b) < math::SMALLER_NUMBER;
 		}
 
 		/**
@@ -640,7 +640,7 @@ namespace pipe::Math
 		 */
 		float GetMin() const
 		{
-			return Math::Min(Math::Min(Math::Min(this->r, this->g), this->b), this->a);
+			return math::Min(math::Min(math::Min(this->r, this->g), this->b), this->a);
 		}
 
 		float GetLuminance() const
@@ -760,7 +760,7 @@ namespace pipe::Math
 	    LinearColor& linearColor, Color& outColor, float& outIntensity)
 	{
 		const float maxComponent =
-		    Math::Max(Math::SMALLER_NUMBER, linearColor.r, linearColor.g, linearColor.b);
+		    math::Max(math::SMALLER_NUMBER, linearColor.r, linearColor.g, linearColor.b);
 		outColor     = (linearColor / maxComponent).Convert<ColorMode::RGBA>();
 		outIntensity = maxComponent;
 	}
@@ -772,14 +772,14 @@ namespace pipe::Math
 	template<ColorMode mode>
 	TColor<mode> TColor<mode>::MakeRandomColor()
 	{
-		const u8 hue = u8(Math::Rand01() * 255.f);
+		const u8 hue = u8(math::Rand01() * 255.f);
 		return MakeFromHSV8(hue, 0, 255);
 	}
 
 	template<ColorMode mode>
 	TColor<mode> TColor<mode>::MakeFromColorTemperature(float temp)
 	{
-		temp = Math::Clamp(temp, 1000.0f, 15000.0f);
+		temp = math::Clamp(temp, 1000.0f, 15000.0f);
 
 		// Approximate Planckian locus in CIE 1960 UCS
 		const float u = (0.860117757f + 1.54118254e-4f * temp + 1.28641212e-7f * temp * temp)
@@ -807,9 +807,9 @@ namespace pipe::Math
 	constexpr TColor<mode> TColor<mode>::Shade(float delta) const
 	{
 		Color tmp{*this};
-		tmp.r = u8(Math::Lerp<i32>(tmp.r, Color::Black().r, delta));
-		tmp.g = u8(Math::Lerp<i32>(tmp.g, Color::Black().g, delta));
-		tmp.b = u8(Math::Lerp<i32>(tmp.b, Color::Black().b, delta));
+		tmp.r = u8(math::Lerp<i32>(tmp.r, Color::Black().r, delta));
+		tmp.g = u8(math::Lerp<i32>(tmp.g, Color::Black().g, delta));
+		tmp.b = u8(math::Lerp<i32>(tmp.b, Color::Black().b, delta));
 		tmp.a = tmp.a;
 		return tmp.Convert<mode>();
 	}
@@ -818,16 +818,16 @@ namespace pipe::Math
 	constexpr TColor<mode> TColor<mode>::Tint(float delta) const
 	{
 		Color tmp{*this};
-		tmp.r = u8(Math::Lerp<i32>(tmp.r, Color::White().r, delta));
-		tmp.g = u8(Math::Lerp<i32>(tmp.g, Color::White().g, delta));
-		tmp.b = u8(Math::Lerp<i32>(tmp.b, Color::White().b, delta));
+		tmp.r = u8(math::Lerp<i32>(tmp.r, Color::White().r, delta));
+		tmp.g = u8(math::Lerp<i32>(tmp.g, Color::White().g, delta));
+		tmp.b = u8(math::Lerp<i32>(tmp.b, Color::White().b, delta));
 		tmp.a = tmp.a;
 		return tmp.Convert<mode>();
 	}
 
 
 	template<ColorMode mode>
-	inline void Read(Serl::ReadContext& ct, TColor<mode>& color)
+	inline void Read(serl::ReadContext& ct, TColor<mode>& color)
 	{
 		ct.BeginObject();
 		ct.Next("r", color.r);
@@ -837,7 +837,7 @@ namespace pipe::Math
 	}
 
 	template<ColorMode mode>
-	inline void Write(Serl::WriteContext& ct, const TColor<mode>& color)
+	inline void Write(serl::WriteContext& ct, const TColor<mode>& color)
 	{
 		ct.BeginObject();
 		ct.Next("r", color.r);
@@ -847,7 +847,7 @@ namespace pipe::Math
 	}
 
 	template<>
-	inline void Read(Serl::ReadContext& ct, TColor<ColorMode::HSV>& color)
+	inline void Read(serl::ReadContext& ct, TColor<ColorMode::HSV>& color)
 	{
 		ct.BeginObject();
 		ct.Next("h", color.h);
@@ -857,7 +857,7 @@ namespace pipe::Math
 	}
 
 	template<>
-	inline void Write(Serl::WriteContext& ct, const TColor<ColorMode::HSV>& color)
+	inline void Write(serl::WriteContext& ct, const TColor<ColorMode::HSV>& color)
 	{
 		ct.BeginObject();
 		ct.Next("h", color.h);
@@ -868,7 +868,7 @@ namespace pipe::Math
 
 
 	template<ColorMode mode>
-	struct pipe::Hash<TColor<mode>>
+	struct Hash<TColor<mode>>
 	{
 		sizet operator()(const TColor<mode>& color) const
 		{
@@ -877,14 +877,14 @@ namespace pipe::Math
 	};
 
 	template<>
-	struct pipe::Hash<TColor<ColorMode::RGBA>>
+	struct Hash<TColor<ColorMode::RGBA>>
 	{
 		sizet operator()(const TColor<ColorMode::RGBA>& color) const
 		{
 			return color.DWColor();
 		}
 	};
-}    // namespace pipe::Math
+}    // namespace pipe::math
 
 REFLECT_NATIVE_TYPE(pipe::LinearColor)
 REFLECT_NATIVE_TYPE(pipe::sRGBColor)

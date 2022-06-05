@@ -230,7 +230,7 @@ public:                                                                         
 		return builder.GetType();                                                           \
 	}                                                                                       \
                                                                                             \
-	void SerializeReflection(pipe::Serl::CommonContext& ct)                                 \
+	void SerializeReflection(pipe::serl::CommonContext& ct)                                 \
 	{                                                                                       \
 		if constexpr (!(GetStaticFlags() & pipe::Type_NotSerialized))                       \
 		{                                                                                   \
@@ -245,7 +245,7 @@ private:                                                                        
 	static void __ReflReflectProperty(BuilderType&, pipe::refl::MetaCounter<N>)             \
 	{}                                                                                      \
 	template<pipe::u32 N>                                                                   \
-	void __ReflSerializeProperty(pipe::Serl::CommonContext&, pipe::refl::MetaCounter<N>)    \
+	void __ReflSerializeProperty(pipe::serl::CommonContext&, pipe::refl::MetaCounter<N>)    \
 	{}                                                                                      \
                                                                                             \
 public:

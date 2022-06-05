@@ -3,7 +3,7 @@
 #include "ECS/IdRegistry.h"
 
 
-namespace pipe::ECS
+namespace pipe::ecs
 {
 	Id IdRegistry::Create()
 	{
@@ -21,7 +21,7 @@ namespace pipe::ECS
 
 	void IdRegistry::Create(TSpan<Id> newIds)
 	{
-		const i32 availablesUsed = Math::Min(newIds.Size(), available.Size());
+		const i32 availablesUsed = math::Min(newIds.Size(), available.Size());
 		for (i32 i = 0; i < availablesUsed; ++i)
 		{
 			const Index index = available.Last();
@@ -83,4 +83,4 @@ namespace pipe::ECS
 		const Index index = GetIndex(id);
 		return entities.IsValidIndex(index) && entities[index] == id;
 	}
-}    // namespace pipe::ECS
+}    // namespace pipe::ecs

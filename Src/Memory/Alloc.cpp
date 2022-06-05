@@ -52,7 +52,7 @@ namespace pipe
 
 	sizet GetAlignmentPadding(const void* ptr, sizet align)
 	{
-		Check(Math::IsPowerOfTwo(align));
+		Check(math::IsPowerOfTwo(align));
 		return -reinterpret_cast<ssizet>(ptr) & (align - 1);
 	}
 

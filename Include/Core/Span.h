@@ -32,7 +32,7 @@ namespace pipe::core
 
 		TSpan(const TArray<Mut<T>>& value) : data{value.Data()}, size{value.Size()} {}
 		TSpan(const TArray<Mut<T>>& value, i32 firstN)
-		    : data{value.Data()}, size{Math::Min(value.Size(), firstN)}
+		    : data{value.Data()}, size{math::Min(value.Size(), firstN)}
 		{}
 
 		TSpan(const TSpan<T>& other) : data{other.data}, size{other.size} {}

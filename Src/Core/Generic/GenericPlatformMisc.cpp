@@ -27,7 +27,7 @@ namespace pipe::core
 		++incrementCounter;
 
 		// Add randomness to improve uniqueness across machines
-		u32 randBits = Math::Rand() & 0xFFFF;
+		u32 randBits = math::Rand() & 0xFFFF;
 
 		guid = Guid(randBits | (sequentialBits << 16), estimatedCurrentDateTime.GetTicks() >> 32,
 		    estimatedCurrentDateTime.GetTicks() & 0xffffffff, PlatformMisc::GetCycles());

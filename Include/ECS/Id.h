@@ -7,7 +7,7 @@
 #include <Templates/TypeList.h>
 
 
-namespace pipe::ECS
+namespace pipe::ecs
 {
 	enum class Id : u32
 	{};
@@ -80,10 +80,10 @@ namespace pipe::ECS
 		return IdTraits<Id>::Version((IdTraits<Id>::Entity(id) & mask) >> IdTraits<Id>::indexShift);
 	}
 
-	constexpr bool IsNone(ECS::Id id)
+	constexpr bool IsNone(ecs::Id id)
 	{
-		return ECS::GetVersion(id) == ECS::GetVersion(ECS::NoId);
+		return ecs::GetVersion(id) == ecs::GetVersion(ecs::NoId);
 	}
-}    // namespace pipe::ECS
+}    // namespace pipe::ecs
 
-REFLECT_NATIVE_TYPE(pipe::ECS::Id);
+REFLECT_NATIVE_TYPE(pipe::ecs::Id);

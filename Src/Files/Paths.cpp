@@ -7,7 +7,7 @@
 #include "Core/PlatformProcess.h"
 
 
-namespace pipe::Files
+namespace pipe::files
 {
 	Path GetBasePath()
 	{
@@ -228,4 +228,4 @@ namespace pipe::Files
 		path.assign(pathStr);
 		return path;
 	}
-}    // namespace pipe::Files
+}    // namespace pipe::files

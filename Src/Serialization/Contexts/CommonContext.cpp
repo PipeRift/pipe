@@ -5,7 +5,7 @@
 #include "Core/Checks.h"
 
 
-namespace pipe::Serl
+namespace pipe::serl
 {
 	void CommonContext::BeginObject()
 	{
@@ -90,4 +90,4 @@ namespace pipe::Serl
 			GetWrite().PopFlags();
 		}
 	}
-}    // namespace pipe::Serl
+}    // namespace pipe::serl

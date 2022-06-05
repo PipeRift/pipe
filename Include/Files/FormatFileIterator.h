@@ -6,9 +6,9 @@
 #include "Log.h"
 
 
-namespace pipe::Files
+namespace pipe::files
 {
-	template<typename FileIterator = Files::Iterator>
+	template<typename FileIterator = files::Iterator>
 	class FormatFileIterator
 	{
 	public:
@@ -73,7 +73,7 @@ namespace pipe::Files
 	inline FormatFileIterator<FileIterator>::FormatFileIterator(StringView format, const Path& path)
 	    : format{format}
 	{
-		if (!Files::Exists(path) || !Files::IsFolder(path))
+		if (!files::Exists(path) || !files::IsFolder(path))
 		{
 			return;
 		}
@@ -105,9 +105,9 @@ namespace pipe::Files
 	{
 		return it->path().extension() == format;
 	}
-}    // namespace pipe::Files
+}    // namespace pipe::files
 
 namespace pipe
 {
-	using namespace pipe::Files;
+	using namespace pipe::files;
 }

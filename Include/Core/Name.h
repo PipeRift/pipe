@@ -45,6 +45,12 @@ namespace pipe::core
 			return hash == other.hash;
 		}
 	};
+}    // namespace pipe::core
+
+namespace pipe
+{
+	using namespace pipe::core;
+
 
 	template<>
 	struct Hash<NameKey>
@@ -54,8 +60,10 @@ namespace pipe::core
 			return x.hash;
 		}
 	};
+}    // namespace pipe
 
-
+namespace pipe::core
+{
 	/** Global table storing all names */
 	class NameTable
 	{
@@ -172,15 +180,22 @@ namespace pipe::core
 			return NameTable::noneStr;
 		}
 
-		void Read(Serl::ReadContext& ct);
-		void Write(Serl::WriteContext& ct) const;
+		void Read(serl::ReadContext& ct);
+		void Write(serl::WriteContext& ct) const;
 
 	private:
 		Name(const Id& id) : id(id) {}
 	};
 
+}    // namespace pipe::core
+
+namespace pipe
+{
+	using namespace pipe::core;
+
+
 	template<>
-	struct pipe::Hash<Name>
+	struct Hash<Name>
 	{
 		sizet operator()(const Name& k) const
 		{
@@ -189,18 +204,13 @@ namespace pipe::core
 	};
 
 	template<>
-	struct pipe::TFlags<Name> : public DefaultTFlags
+	struct TFlags<Name> : public DefaultTFlags
 	{
 		enum
 		{
 			HasMemberSerialize = true
 		};
 	};
-}    // namespace pipe::core
-
-namespace pipe
-{
-	using namespace pipe::core;
 
 	OVERRIDE_TYPE_NAME(Name)
 }    // namespace pipe

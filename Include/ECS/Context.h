@@ -9,7 +9,7 @@
 #include <Memory/UniquePtr.h>
 
 
-namespace pipe::ECS
+namespace pipe::ecs
 {
 	struct CORE_API SortLessStatics
 	{
@@ -426,4 +426,4 @@ namespace pipe::ECS
 		instance.pool = Move(MakeOwned<TPool<Mut<T>>>(self));
 		return Move(instance);
 	}
-}    // namespace pipe::ECS
+}    // namespace pipe::ecs

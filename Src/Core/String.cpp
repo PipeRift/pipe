@@ -121,9 +121,9 @@ namespace pipe::core::Strings
 
 		static StringView sizes[]{"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 
-		const double scaleD    = Math::Log(double(size), 1024.l);
-		const u32 scale        = u32(Math::FloorToI64(scaleD));
-		const double finalSize = double(size) / Math::Pow(1024, scale);
+		const double scaleD    = math::Log(double(size), 1024.l);
+		const u32 scale        = u32(math::FloorToI64(scaleD));
+		const double finalSize = double(size) / math::Pow(1024, scale);
 
 		String sizeStr       = Format("{:.1f}", finalSize);
 		u32 numTrailingZeros = 0;

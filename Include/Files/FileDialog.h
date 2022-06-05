@@ -9,7 +9,7 @@
 #include "Templates/Tuples.h"
 
 
-namespace pipe::Files
+namespace pipe::files
 {
 	using DialogFileFilter = TPair<StringView, StringView>;
 
@@ -69,9 +69,9 @@ namespace pipe::Files
 	            {"All Files", "*"}
     },
 	    bool alwaysShowDefaultPath = false, bool confirmOverwrite = false);
-}    // namespace pipe::Files
+}    // namespace pipe::files
 
 namespace pipe
 {
-	using namespace pipe::Files;
+	using namespace pipe::files;
 }

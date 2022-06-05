@@ -9,7 +9,7 @@
 #include "Files/STDFileSystem.h"
 
 
-namespace pipe::Files
+namespace pipe::files
 {
 	using Iterator          = fs::directory_iterator;
 	using RecursiveIterator = fs::recursive_directory_iterator;
@@ -52,9 +52,9 @@ namespace pipe::Files
 	CORE_API bool Exists(const String& path);
 	CORE_API bool IsFolder(const String& path);
 	CORE_API bool IsFile(const String& path);
-}    // namespace pipe::Files
+}    // namespace pipe::files
 
 namespace pipe
 {
-	using namespace pipe::Files;
+	using namespace pipe::files;
 }

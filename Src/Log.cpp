@@ -87,7 +87,7 @@ namespace pipe::Log
 		if (!logFile.empty())
 		{
 			Path logFolder = logFile;
-			if (Files::IsFile(logFile))
+			if (files::IsFile(logFile))
 			{
 				logFolder.remove_filename();
 			}
@@ -95,7 +95,7 @@ namespace pipe::Log
 			{
 				logFile /= "log.txt";
 			}
-			Files::CreateFolder(logFolder, true);
+			files::CreateFolder(logFolder, true);
 
 			sinks.Add(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
 			    ToString(logFile).c_str(), 1048576 * 5, 3));

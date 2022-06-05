@@ -78,7 +78,7 @@ namespace pipe::refl
 		}
 		virtual void Construct() {}
 
-		virtual void Serialize(Serl::CommonContext& ct)
+		virtual void Serialize(serl::CommonContext& ct)
 		{
 			SerializeReflection(ct);
 		}

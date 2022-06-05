@@ -11,21 +11,12 @@
 #include <filesystem>
 
 
-namespace pipe::Files
+namespace pipe::files
 {
 	namespace fs = std::filesystem;
 
 	using Path     = fs::path;
 	using PathView = TStringView<Path::value_type>;
-
-	template<>
-	struct pipe::Hash<Path>
-	{
-		sizet operator()(const Path& path) const
-		{
-			return GetStringHash(path.c_str());
-		}
-	};
 
 	enum class CopyOptions
 	{
@@ -63,18 +54,28 @@ namespace pipe::Files
 		return {path.c_str()};
 	}
 
+}    // namespace pipe::files
 
-}    // namespace pipe::Files
 
 namespace pipe
 {
-	using namespace pipe::Files;
+	using namespace pipe::files;
 
-	namespace Serl
+
+	template<>
+	struct Hash<Path>
+	{
+		sizet operator()(const Path& path) const
+		{
+			return GetStringHash(path.c_str());
+		}
+	};
+
+	namespace serl
 	{
 		CORE_API void Read(pipe::ReadContext& ct, pipe::Path& value);
 		CORE_API void Write(pipe::WriteContext& ct, const pipe::Path& value);
-	}    // namespace Serl
+	}    // namespace serl
 }    // namespace pipe
 
 REFLECT_NATIVE_TYPE(pipe::Path);

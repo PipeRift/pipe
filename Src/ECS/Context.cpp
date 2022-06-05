@@ -3,7 +3,7 @@
 #include "ECS/Context.h"
 
 
-namespace pipe::ECS
+namespace pipe::ecs
 {
 	Context::Context()
 	{
@@ -94,4 +94,4 @@ namespace pipe::ECS
 		// TODO: Move statics
 		// TODO: Cache pools
 	}
-}    // namespace pipe::ECS
+}    // namespace pipe::ecs

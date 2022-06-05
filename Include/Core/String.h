@@ -137,6 +137,11 @@ namespace pipe::core
 			return Move(Convert<ToStringType>(TStringView<FromChar>{source}));
 		}
 	};    // namespace Strings
+}    // namespace pipe::core
+
+namespace pipe
+{
+	using namespace pipe::core;
 
 
 	template<>
@@ -147,11 +152,6 @@ namespace pipe::core
 			return GetStringHash(str.data());
 		}
 	};
-}    // namespace pipe::core
-
-namespace pipe
-{
-	using namespace pipe::core;
 
 	CORE_API void Read(pipe::ReadContext& ct, pipe::String& val);
 	CORE_API void Write(pipe::WriteContext& ct, const pipe::String& val);

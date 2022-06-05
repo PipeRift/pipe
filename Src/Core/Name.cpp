@@ -52,14 +52,14 @@ namespace pipe
 		return instance;
 	}
 
-	void Name::Read(Serl::ReadContext& ct)
+	void Name::Read(serl::ReadContext& ct)
 	{
 		String str;
 		ct.Serialize(str);
 
 		*this = Strings::Equals(str, NameTable::noneStr) ? None() : str;
 	}
-	void Name::Write(Serl::WriteContext& ct) const
+	void Name::Write(serl::WriteContext& ct) const
 	{
 		ct.Serialize(ToString());
 	}

@@ -32,7 +32,7 @@ namespace pipe
 {
 	using namespace pipe::refl;
 
-	namespace Serl
+	namespace serl
 	{
 		template<typename T>
 		void Read(pipe::ReadContext& ct, T& value) requires(pipe::IsStruct<T>())
@@ -49,5 +49,5 @@ namespace pipe
 			pipe::CommonContext common{ct};
 			const_cast<T&>(value).SerializeReflection(common);
 		}
-	}    // namespace Serl
+	}    // namespace serl
 }    // namespace pipe

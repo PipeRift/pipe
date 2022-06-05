@@ -6,7 +6,7 @@
 #include "Serialization/Formats/IFormat.h"
 
 
-namespace pipe::Serl
+namespace pipe::serl
 {
 	template<Format format>
 	struct TFormatReader : public IFormatReader
@@ -60,4 +60,4 @@ namespace pipe::Serl
 			return GetContext();
 		}
 	};
-}    // namespace pipe::Serl
+}    // namespace pipe::serl

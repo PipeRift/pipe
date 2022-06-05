@@ -50,7 +50,7 @@ bool yyjson_mut_obj_add_val(
 }
 
 
-namespace pipe::Serl
+namespace pipe::serl
 {
 	u64 GetKeyTag(sizet size)
 	{
@@ -264,7 +264,7 @@ namespace pipe::Serl
 		{
 			case YYJSON_SUBTYPE_UINT: val = u32(unsafe_yyjson_get_uint(current)); break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u32(Math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
+				val = u32(math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
 				break;
 
 			case YYJSON_SUBTYPE_REAL: val = u32(unsafe_yyjson_get_real(current)); break;
@@ -297,7 +297,7 @@ namespace pipe::Serl
 		{
 			case YYJSON_SUBTYPE_UINT: val = unsafe_yyjson_get_uint(current); break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u64(Math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
+				val = u64(math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
 				break;
 			case YYJSON_SUBTYPE_REAL: val = u64(unsafe_yyjson_get_real(current)); break;
 		}
@@ -608,4 +608,4 @@ namespace pipe::Serl
 		sizet size;
 		return {yyjson_mut_write_opts(doc, flags, &yyjsonAllocator, &size, nullptr), size};
 	}
-}    // namespace pipe::Serl
+}    // namespace pipe::serl

@@ -11,7 +11,7 @@
 #include <ratio>
 
 
-namespace pipe::Math
+namespace pipe::math
 {
 	/**
 	 * Implements a time span.
@@ -627,9 +627,9 @@ namespace pipe::Math
 	{
 		return Timespan.operator*(Scalar);
 	}
-}    // namespace pipe::Math
+}    // namespace pipe::math
 
 namespace pipe
 {
-	using namespace pipe::Math;
+	using namespace pipe::math;
 }

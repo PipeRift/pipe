@@ -40,7 +40,7 @@ namespace pipe
 	{
 		const float SingularityTest = z * x - w * y;
 		const float YawY            = 2.f * (w * z + x * y);
-		const float YawX            = (1.f - 2.f * (Math::Square(y) + Math::Square(z)));
+		const float YawX            = (1.f - 2.f * (math::Square(y) + math::Square(z)));
 
 		// reference
 		// http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
@@ -55,24 +55,24 @@ namespace pipe
 		if (SingularityTest < -SINGULARITY_THRESHOLD)
 		{
 			RotatorFromQuat.Pitch() = -90.f;
-			RotatorFromQuat.Yaw()   = Math::Atan2(YawY, YawX) * Math::RADTODEG;
+			RotatorFromQuat.Yaw()   = math::Atan2(YawY, YawX) * math::RADTODEG;
 			RotatorFromQuat.Roll()  = Rotator::NormalizeAxis(
-			     -RotatorFromQuat.Yaw() - (2.f * Math::Atan2(x, w) * Math::RADTODEG));
+			     -RotatorFromQuat.Yaw() - (2.f * math::Atan2(x, w) * math::RADTODEG));
 		}
 		else if (SingularityTest > SINGULARITY_THRESHOLD)
 		{
 			RotatorFromQuat.Pitch() = 90.f;
-			RotatorFromQuat.Yaw()   = Math::Atan2(YawY, YawX) * Math::RADTODEG;
+			RotatorFromQuat.Yaw()   = math::Atan2(YawY, YawX) * math::RADTODEG;
 			RotatorFromQuat.Roll()  = Rotator::NormalizeAxis(
-			     RotatorFromQuat.Yaw() - (2.f * Math::Atan2(x, w) * Math::RADTODEG));
+			     RotatorFromQuat.Yaw() - (2.f * math::Atan2(x, w) * math::RADTODEG));
 		}
 		else
 		{
-			RotatorFromQuat.Pitch() = Math::FastAsin(2.f * (SingularityTest)) * Math::RADTODEG;
-			RotatorFromQuat.Yaw()   = Math::Atan2(YawY, YawX) * Math::RADTODEG;
-			RotatorFromQuat.Roll()  = Math::Atan2(-2.f * (w * x + y * z),
-			                              (1.f - 2.f * (Math::Square(x) + Math::Square(y))))
-			                       * Math::RADTODEG;
+			RotatorFromQuat.Pitch() = math::FastAsin(2.f * (SingularityTest)) * math::RADTODEG;
+			RotatorFromQuat.Yaw()   = math::Atan2(YawY, YawX) * math::RADTODEG;
+			RotatorFromQuat.Roll()  = math::Atan2(-2.f * (w * x + y * z),
+			                              (1.f - 2.f * (math::Square(x) + math::Square(y))))
+			                       * math::RADTODEG;
 		}
 
 		return RotatorFromQuat;
@@ -80,13 +80,13 @@ namespace pipe
 
 	Rotator Quat::ToRotatorRad() const
 	{
-		return ToRotator() * Math::DEGTORAD;
+		return ToRotator() * math::DEGTORAD;
 	}
 
 	bool Quat::Equals(const Quat& other, float tolerance) const
 	{
-		return Math::NearlyEqual(x, other.x, tolerance) && Math::NearlyEqual(y, other.y, tolerance)
-		    && Math::NearlyEqual(z, other.z, tolerance) && Math::NearlyEqual(w, other.w, tolerance);
+		return math::NearlyEqual(x, other.x, tolerance) && math::NearlyEqual(y, other.y, tolerance)
+		    && math::NearlyEqual(z, other.z, tolerance) && math::NearlyEqual(w, other.w, tolerance);
 	}
 
 	void Quat::Normalize(float tolerance)
@@ -94,7 +94,7 @@ namespace pipe
 		const float lengthSqrt = x * x + y * y + z * z + w * w;
 		if (lengthSqrt >= tolerance)
 		{
-			const float scale = Math::InvSqrt(lengthSqrt);
+			const float scale = math::InvSqrt(lengthSqrt);
 			x *= scale;
 			y *= scale;
 			z *= scale;
@@ -108,13 +108,13 @@ namespace pipe
 
 	Quat Quat::FromRotator(Rotator rotator)
 	{
-		const float DIVIDE_BY_2 = Math::DEGTORAD / 2.f;
+		const float DIVIDE_BY_2 = math::DEGTORAD / 2.f;
 		float SP, SY, SR;
 		float CP, CY, CR;
 
-		Math::SinCos(rotator.Pitch() * DIVIDE_BY_2, SP, CP);
-		Math::SinCos(rotator.Yaw() * DIVIDE_BY_2, SY, CY);
-		Math::SinCos(rotator.Roll() * DIVIDE_BY_2, SR, CR);
+		math::SinCos(rotator.Pitch() * DIVIDE_BY_2, SP, CP);
+		math::SinCos(rotator.Yaw() * DIVIDE_BY_2, SY, CY);
+		math::SinCos(rotator.Roll() * DIVIDE_BY_2, SR, CR);
 
 		Quat RotationQuat{CR * CP * CY + SR * SP * SY, CR * SP * SY - SR * CP * CY,
 		    -CR * SP * CY - SR * CP * SY, CR * CP * SY - SR * SP * CY};
@@ -131,7 +131,7 @@ namespace pipe
 
 	Quat Quat::FromRotatorRad(Rotator rotator)
 	{
-		return FromRotator(rotator * Math::DEGTORAD);
+		return FromRotator(rotator * math::DEGTORAD);
 	}
 
 
@@ -150,7 +150,7 @@ namespace pipe
 			// A and B point in opposite directions
 			w = 0.f;
 			result =
-			    Math::Abs(a.x) > Math::Abs(a.y) ? Quat(-a.z, 0.f, a.x, w) : Quat(0.f, -a.z, a.y, w);
+			    math::Abs(a.x) > math::Abs(a.y) ? Quat(-a.z, 0.f, a.x, w) : Quat(0.f, -a.z, a.y, w);
 		}
 		result.Normalize();
 		return result;
@@ -158,7 +158,7 @@ namespace pipe
 
 	Quat Quat::Between(const v3& a, const v3& b)
 	{
-		const float lengthAB = Math::Sqrt(a.LengthSquared() * b.LengthSquared());
+		const float lengthAB = math::Sqrt(a.LengthSquared() * b.LengthSquared());
 		return InternalBetween(a, b, lengthAB);
 	}
 
@@ -173,7 +173,7 @@ namespace pipe
 	}
 
 
-	void Read(Serl::ReadContext& ct, Quat& val)
+	void Read(serl::ReadContext& ct, Quat& val)
 	{
 		ct.BeginObject();
 		ct.Next(TX("x"), val.x);
@@ -181,7 +181,7 @@ namespace pipe
 		ct.Next(TX("z"), val.z);
 		ct.Next(TX("w"), val.w);
 	}
-	void Write(Serl::WriteContext& ct, const Quat& val)
+	void Write(serl::WriteContext& ct, const Quat& val)
 	{
 		ct.BeginObject();
 		ct.Next(TX("x"), val.x);

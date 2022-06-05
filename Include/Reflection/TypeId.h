@@ -65,9 +65,14 @@ namespace pipe::refl
 	{
 		return refl::TypeId{pipe::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
 	}
+}    // namespace pipe::refl
+
+namespace pipe
+{
+	using namespace pipe::refl;
 
 	template<>
-	struct pipe::Hash<refl::TypeId>
+	struct Hash<refl::TypeId>
 	{
 		sizet operator()(const refl::TypeId& id) const
 		{
@@ -75,12 +80,7 @@ namespace pipe::refl
 			return hasher(id.GetId());
 		}
 	};
-}    // namespace pipe::refl
-
-namespace pipe
-{
-	using namespace pipe::refl;
-}
+}    // namespace pipe
 
 
 template<>

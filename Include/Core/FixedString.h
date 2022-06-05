@@ -93,7 +93,7 @@ namespace pipe::core
 
 		constexpr TFixedString(TStringView<value_type> other) noexcept
 		{
-			_size = Math::Min(other.size(), N);
+			_size = math::Min(other.size(), N);
 			Details::copy(other.begin(), other.begin() + _size, _data.begin());
 		}
 

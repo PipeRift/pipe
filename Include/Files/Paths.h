@@ -9,7 +9,7 @@
 #include "Files/STDFileSystem.h"
 
 
-namespace pipe::Files
+namespace pipe::files
 {
 	///////////////////////////////////////////////////////////
 	// PATHS
@@ -69,9 +69,9 @@ namespace pipe::Files
 	CORE_API bool IsAbsolutePath(const Path& path);
 	CORE_API String ToString(const Path& path);
 	CORE_API Path FromString(StringView pathStr);
-}    // namespace pipe::Files
+}    // namespace pipe::files
 
 namespace pipe
 {
-	using namespace pipe::Files;
+	using namespace pipe::files;
 }

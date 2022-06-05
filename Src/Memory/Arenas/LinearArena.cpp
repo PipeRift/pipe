@@ -14,7 +14,7 @@ namespace pipe::Memory
 				return nullptr;
 			}
 			// Grow same size as previous block, but make sure its enough space
-			Grow(Math::Max(activeBlock.GetSize(), size));
+			Grow(math::Max(activeBlock.GetSize(), size));
 		}
 
 		void* const ptr = (u8*)(activeBlock.GetData()) + usedBlockSize;
@@ -42,7 +42,7 @@ namespace pipe::Memory
 			// Grow same size as previous block, but make sure its enough space
 			// NOTE: We use minimum size + alignment to make sure a
 			// non aligned Grow allocates enough memory
-			Grow(Math::Max(activeBlock.GetSize(), size + alignment), alignment);
+			Grow(math::Max(activeBlock.GetSize(), size + alignment), alignment);
 
 			// Try again with new block
 			return Allocate(size, alignment);

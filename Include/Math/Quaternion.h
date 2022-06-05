@@ -8,7 +8,7 @@
 #include "Serialization/ContextsFwd.h"
 
 
-namespace pipe::Math
+namespace pipe::math
 {
 	struct Rotator;
 
@@ -46,9 +46,9 @@ namespace pipe::Math
 			return &x;
 		}
 
-		bool Equals(const Quat& other, float tolerance = Math::SMALL_NUMBER) const;
+		bool Equals(const Quat& other, float tolerance = math::SMALL_NUMBER) const;
 
-		void Normalize(float tolerance = Math::SMALL_NUMBER);
+		void Normalize(float tolerance = math::SMALL_NUMBER);
 
 		static Quat FromRotator(Rotator rotator);
 
@@ -76,13 +76,13 @@ namespace pipe::Math
 		return {-x, -y, -z, w};
 	}
 
-	void Read(Serl::ReadContext& ct, Quat& val);
-	void Write(Serl::WriteContext& ct, const Quat& val);
-}    // namespace pipe::Math
+	void Read(serl::ReadContext& ct, Quat& val);
+	void Write(serl::WriteContext& ct, const Quat& val);
+}    // namespace pipe::math
 
 namespace pipe
 {
-	using namespace pipe::Math;
+	using namespace pipe::math;
 }
 
 REFLECT_NATIVE_TYPE(pipe::Quat);

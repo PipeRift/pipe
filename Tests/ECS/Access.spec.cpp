@@ -20,7 +20,7 @@ go_bandit([]() {
 	describe("ECS.Access", []() {
 		describe("Templated", []() {
 			it("Can cache pools", [&]() {
-				ECS::Context ctx;
+				ecs::Context ctx;
 				TAccess<TWrite<TypeA>, TypeB> access{ctx};
 
 				AssertThat(access.GetPool<TypeA>(), Equals(ctx.GetPool<TypeA>()));
@@ -29,11 +29,11 @@ go_bandit([]() {
 			});
 
 			it("Can check if contained", [&]() {
-				ECS::Context ctx;
-				ECS::TPool<TypeA>& pool = ctx.AssurePool<TypeA>();
+				ecs::Context ctx;
+				ecs::TPool<TypeA>& pool = ctx.AssurePool<TypeA>();
 				TAccess<TWrite<TypeA>> access{ctx};
 				TAccess<TypeA> accessConst{ctx};
-				ECS::Id id = ECS::NoId;
+				ecs::Id id = ecs::NoId;
 				AssertThat(access.Has<TypeA>(id), Is().False());
 				AssertThat(accessConst.Has<TypeA>(id), Is().False());
 
@@ -51,8 +51,8 @@ go_bandit([]() {
 			});
 
 			it("Can initialize superset", [&]() {
-				ECS::Context ctx;
-				ECS::TPool<TypeA>& typePool = ctx.AssurePool<TypeA>();
+				ecs::Context ctx;
+				ecs::TPool<TypeA>& typePool = ctx.AssurePool<TypeA>();
 
 				TAccess<TWrite<TypeA>, TWrite<TypeB>> access1{ctx};
 				TAccess<TWrite<TypeA>> superset1{access1};
