@@ -23,7 +23,7 @@ namespace p
 		static constexpr bool value = std::is_void<decltype(Impl<T>(0))>::value;
 	};
 
-	template<typename T, typename BuilderType = refl::TypeBuilder>
+	template<typename T, typename BuilderType = TypeBuilder>
 	constexpr bool HasTypeBuilder()
 	{
 		if constexpr (HasTypeBuilderDefine<T>::value)
@@ -64,8 +64,3 @@ namespace p
 		return HasType<typename T::ItemType>();
 	}
 }    // namespace p
-
-namespace p
-{
-	using namespace p::refl;
-}

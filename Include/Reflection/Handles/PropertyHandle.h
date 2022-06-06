@@ -10,7 +10,7 @@
 #include "Reflection/Property.h"
 
 
-namespace p::refl
+namespace p
 {
 	struct PropertyHandle
 	{
@@ -77,4 +77,4 @@ namespace p::refl
 			return IsValid();
 		}
 	};
-}    // namespace p::refl
+}    // namespace p

@@ -13,7 +13,6 @@
 using namespace snowhouse;
 using namespace bandit;
 using namespace p;
-using namespace p::refl;
 
 
 struct AnStruct

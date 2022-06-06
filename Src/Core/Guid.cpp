@@ -4,7 +4,7 @@
 
 #include "Core/Char.h"
 #include "Core/PlatformMisc.h"
-#include "Serialization/Contexts.h"
+#include "Serialization/Serialization.h"
 
 #include <cstdio>
 
@@ -14,7 +14,7 @@ namespace p
 	/* Guid interface
 	 *****************************************************************************/
 
-	void Guid::Read(serl::ReadContext& ct)
+	void Guid::Read(Reader& ct)
 	{
 		ct.BeginObject();
 		ct.Next(TX("a"), a);
@@ -23,7 +23,7 @@ namespace p
 		ct.Next(TX("d"), d);
 	}
 
-	void Guid::Write(serl::WriteContext& ct) const
+	void Guid::Write(Writer& ct) const
 	{
 		ct.BeginObject();
 		ct.Next(TX("a"), a);

@@ -3,7 +3,7 @@
 
 #include <Core/Platform.h>
 #include <Reflection/Builders/NativeTypeBuilder.h>
-#include <Serialization/ContextsFwd.h>
+#include <Serialization/SerializationFwd.h>
 #include <Templates/TypeList.h>
 
 

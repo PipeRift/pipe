@@ -7,11 +7,11 @@
 #include "Core/Name.h"
 #include "Math.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
-#include "Serialization/ContextsFwd.h"
+#include "Serialization/SerializationFwd.h"
 #include "TypeTraits.h"
 
 
-namespace p::math
+namespace p
 {
 	template<u32 size, Number T>
 	struct Vec
@@ -768,20 +768,14 @@ namespace p::math
 		CORE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
 	}    // namespace Vectors
 
-	CORE_API void Read(serl::ReadContext& ct, v2& val);
-	CORE_API void Write(serl::WriteContext& ct, v2 val);
+	CORE_API void Read(Reader& ct, v2& val);
+	CORE_API void Write(Writer& ct, v2 val);
 
-	CORE_API void Read(serl::ReadContext& ct, v2_u32& val);
-	CORE_API void Write(serl::WriteContext& ct, v2_u32 val);
+	CORE_API void Read(Reader& ct, v2_u32& val);
+	CORE_API void Write(Writer& ct, v2_u32 val);
 
-	CORE_API void Read(serl::ReadContext& ct, v3& val);
-	CORE_API void Write(serl::WriteContext& ct, const v3& val);
-}    // namespace p::math
-
-namespace p
-{
-	using namespace p::math;
-
+	CORE_API void Read(Reader& ct, v3& val);
+	CORE_API void Write(Writer& ct, const v3& val);
 }    // namespace p
 
 REFLECT_NATIVE_TYPE(p::v2);

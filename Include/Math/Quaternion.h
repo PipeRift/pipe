@@ -5,10 +5,10 @@
 #include "Math.h"
 #include "Math/Vector.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
-#include "Serialization/ContextsFwd.h"
+#include "Serialization/SerializationFwd.h"
 
 
-namespace p::math
+namespace p
 {
 	struct Rotator;
 
@@ -76,13 +76,8 @@ namespace p::math
 		return {-x, -y, -z, w};
 	}
 
-	void Read(serl::ReadContext& ct, Quat& val);
-	void Write(serl::WriteContext& ct, const Quat& val);
-}    // namespace p::math
-
-namespace p
-{
-	using namespace p::math;
-}
+	void Read(Reader& ct, Quat& val);
+	void Write(Writer& ct, const Quat& val);
+}    // namespace p
 
 REFLECT_NATIVE_TYPE(p::Quat);

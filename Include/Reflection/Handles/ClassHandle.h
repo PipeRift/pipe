@@ -6,7 +6,7 @@
 #include "Reflection/TPropertyHandle.h"
 
 
-namespace p::refl
+namespace p
 {
 	// NOTE: Legacy class pending a rework
 	class ClassHandle
@@ -24,4 +24,4 @@ namespace p::refl
 
 		ClassHandle(Class& instance) : instance(*instance) {}
 	};
-}    // namespace p::refl
+}    // namespace p

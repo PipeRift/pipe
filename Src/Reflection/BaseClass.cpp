@@ -7,9 +7,9 @@
 #include "Reflection/Reflection.h"
 
 
-namespace p::refl
+namespace p
 {
-	refl::ClassType* BaseClass::GetType() const
+	ClassType* BaseClass::GetType() const
 	{
 		return static_cast<const Class*>(this)->GetType();
 	}
@@ -18,4 +18,4 @@ namespace p::refl
 	{
 		return static_cast<const Class*>(this)->Self();
 	}
-}    // namespace p::refl
+}    // namespace p

@@ -3,7 +3,7 @@
 #include "Reflection/Property.h"
 
 
-namespace p::refl
+namespace p
 {
 	bool Property::HasFlag(PropFlags flag) const
 	{
@@ -17,4 +17,4 @@ namespace p::refl
 	{
 		return (flags & inFlags) > 0;
 	}
-}    // namespace p::refl
+}    // namespace p

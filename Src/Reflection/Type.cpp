@@ -9,8 +9,10 @@
 #include "Reflection/StructType.h"
 
 
-namespace p::refl
+namespace p
 {
+	using namespace EnumOperators;
+
 	StringView Type::GetName() const
 	{
 		return name;
@@ -36,4 +38,4 @@ namespace p::refl
 	{
 		return HasFlag(category, TypeCategory::Class) ? static_cast<ClassType*>(this) : nullptr;
 	}
-}    // namespace p::refl
+}    // namespace p

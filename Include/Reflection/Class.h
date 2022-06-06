@@ -5,16 +5,14 @@
 #include "ClassPtrBuilder.h"
 #include "Log.h"
 #include "Reflection/Reflection.h"
-#include "Serialization/Contexts.h"
+#include "Serialization/Serialization.h"
 
 
 namespace p
 {
 	class Context;
-}
 
-namespace p::refl
-{
+
 	// For shared export purposes, we separate pointers from the exported Class
 	struct ClassOwnership
 	{
@@ -37,10 +35,10 @@ namespace p::refl
 	{
 	public:
 		using Super       = BaseClass;
-		using BuilderType = p::refl::TClassTypeBuilder<Class, void, Type_NoFlag>;
+		using BuilderType = p::TClassTypeBuilder<Class, void, Type_NoFlag>;
 
 
-		static p::refl::ClassType* GetStaticType()
+		static p::ClassType* GetStaticType()
 		{
 			return p::GetType<Class>();
 		}
@@ -48,7 +46,7 @@ namespace p::refl
 		{
 			return Type_NoFlag;
 		}
-		virtual p::refl::ClassType* GetType() const
+		virtual p::ClassType* GetType() const
 		{
 			return p::GetType<Class>();
 		}
@@ -78,7 +76,7 @@ namespace p::refl
 		}
 		virtual void Construct() {}
 
-		virtual void Serialize(serl::CommonContext& ct)
+		virtual void Serialize(ReadWriter& ct)
 		{
 			SerializeReflection(ct);
 		}
@@ -97,25 +95,21 @@ namespace p::refl
 	};
 
 
-}    // namespace p::refl
+}    // namespace p
 
-namespace p
-{
-	using namespace p::refl;
-}
 
 template<typename T>
-void Read(p::ReadContext& ct, T& value) requires(p::Derived<T, p::Class>)
+void Read(p::Reader& ct, T& value) requires(p::Derived<T, p::Class>)
 {
 	ct.BeginObject();
-	p::CommonContext common{ct};
+	p::ReadWriter common{ct};
 	value.Serialize(common);
 }
 
 template<typename T>
-void Write(p::WriteContext& ct, const T& value) requires(p::Derived<T, p::Class>)
+void Write(p::Writer& ct, const T& value) requires(p::Derived<T, p::Class>)
 {
 	ct.BeginObject();
-	p::CommonContext common{ct};
+	p::ReadWriter common{ct};
 	const_cast<T&>(value).Serialize(common);
 }

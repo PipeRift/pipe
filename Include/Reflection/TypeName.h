@@ -6,7 +6,7 @@
 #include "Core/StringView.h"
 
 
-namespace p::refl
+namespace p
 {
 	namespace TypeName
 	{
@@ -43,9 +43,9 @@ namespace p::refl
 	template<typename T>
 	inline consteval StringView GetFullTypeName(bool includeNamespaces = true)
 	{
-		const StringView raw = refl::TypeName::GetRaw<T>();
-		StringView typeName{raw.data() + refl::TypeName::prefixLength,
-		    raw.size() - refl::TypeName::prefixLength - refl::TypeName::suffixLength};
+		const StringView raw = TypeName::GetRaw<T>();
+		StringView typeName{raw.data() + TypeName::prefixLength,
+		    raw.size() - TypeName::prefixLength - TypeName::suffixLength};
 
 		typeName = Strings::RemoveFromStart(typeName, "struct ");
 		typeName = Strings::RemoveFromStart(typeName, "class ");
@@ -62,16 +62,11 @@ namespace p::refl
 	{
 		return GetFullTypeName<T>(includeNamespaces);
 	}
-}    // namespace p::refl
+}    // namespace p
 
-namespace p
-{
-	using namespace p::refl;
-}
-
-#define OVERRIDE_TYPE_NAME(type)                                                          \
-	template<>                                                                            \
-	inline consteval p::StringView p::refl::GetFullTypeName<type>(bool includeNamespaces) \
-	{                                                                                     \
-		return TX(#type);                                                                 \
+#define OVERRIDE_TYPE_NAME(type)                                                    \
+	template<>                                                                      \
+	inline consteval p::StringView p::GetFullTypeName<type>(bool includeNamespaces) \
+	{                                                                               \
+		return TX(#type);                                                           \
 	}

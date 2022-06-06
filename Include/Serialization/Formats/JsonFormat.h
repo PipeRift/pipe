@@ -11,9 +11,9 @@ struct yyjson_val;
 struct yyjson_mut_val;
 
 
-namespace p::serl
+namespace p
 {
-	struct JsonFormatReader : public TFormatReader<Format::Json>
+	struct JsonFormatReader : public TFormatReader<SerializeFormat::Json>
 	{
 		enum class ReadErrorCode : u32
 		{
@@ -112,7 +112,7 @@ namespace p::serl
 	};
 
 
-	struct JsonFormatWriter : public TFormatWriter<Format::Json>
+	struct JsonFormatWriter : public TFormatWriter<SerializeFormat::Json>
 	{
 	private:
 		struct Scope
@@ -164,9 +164,9 @@ namespace p::serl
 
 
 	template<>
-	struct FormatBind<Format::Json>
+	struct FormatBind<SerializeFormat::Json>
 	{
 		using Reader = JsonFormatReader;
 		using Writer = JsonFormatWriter;
 	};
-}    // namespace p::serl
+}    // namespace p

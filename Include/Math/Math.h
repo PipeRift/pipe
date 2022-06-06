@@ -451,8 +451,3 @@ namespace p::math
 
 	CORE_API float ClampAngle(float a, float min, float max);
 }    // namespace p::math
-
-namespace p
-{
-	using namespace p::math;
-}

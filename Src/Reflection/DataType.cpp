@@ -5,7 +5,7 @@
 #include "Reflection/Property.h"
 
 
-namespace p::refl
+namespace p
 {
 	bool DataType::IsChildOf(const DataType* other) const
 	{
@@ -92,4 +92,4 @@ namespace p::refl
 		}
 		return nullptr;
 	}
-}    // namespace p::refl
+}    // namespace p

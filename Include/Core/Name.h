@@ -6,7 +6,7 @@
 #include "Core/Hash.h"
 #include "Core/Utility.h"
 #include "Reflection/TypeFlags.h"
-#include "Serialization/ContextsFwd.h"
+#include "Serialization/SerializationFwd.h"
 #include "String.h"
 
 #include <tsl/robin_set.h>
@@ -180,8 +180,8 @@ namespace p::core
 			return NameTable::noneStr;
 		}
 
-		void Read(serl::ReadContext& ct);
-		void Write(serl::WriteContext& ct) const;
+		void Read(Reader& ct);
+		void Write(Writer& ct) const;
 
 	private:
 		Name(const Id& id) : id(id) {}

@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Serialization/Contexts/CommonContext.h"
+#include "Serialization/ReadWriter.h"
 
 #include "Core/Checks.h"
 
 
-namespace p::serl
+namespace p
 {
-	void CommonContext::BeginObject()
+	void ReadWriter::BeginObject()
 	{
 		if (IsWriting())
 		{
@@ -19,7 +19,7 @@ namespace p::serl
 		}
 	}
 
-	bool CommonContext::EnterNext(StringView name)
+	bool ReadWriter::EnterNext(StringView name)
 	{
 		if (IsWriting())
 		{
@@ -31,7 +31,7 @@ namespace p::serl
 		}
 	}
 
-	void CommonContext::BeginArray(u32& size)
+	void ReadWriter::BeginArray(u32& size)
 	{
 		if (IsWriting())
 		{
@@ -43,7 +43,7 @@ namespace p::serl
 		}
 	}
 
-	bool CommonContext::EnterNext()
+	bool ReadWriter::EnterNext()
 	{
 		if (IsWriting())
 		{
@@ -55,7 +55,7 @@ namespace p::serl
 		}
 	}
 
-	void CommonContext::Leave()
+	void ReadWriter::Leave()
 	{
 		if (IsWriting())
 		{
@@ -67,7 +67,7 @@ namespace p::serl
 		}
 	}
 
-	void CommonContext::PushAddFlags(WriteFlags flags)
+	void ReadWriter::PushAddFlags(WriteFlags flags)
 	{
 		if (IsWriting())
 		{
@@ -75,7 +75,7 @@ namespace p::serl
 		}
 	}
 
-	void CommonContext::PushRemoveFlags(WriteFlags flags)
+	void ReadWriter::PushRemoveFlags(WriteFlags flags)
 	{
 		if (IsWriting())
 		{
@@ -83,11 +83,11 @@ namespace p::serl
 		}
 	}
 
-	void CommonContext::PopFlags()
+	void ReadWriter::PopFlags()
 	{
 		if (IsWriting())
 		{
 			GetWrite().PopFlags();
 		}
 	}
-}    // namespace p::serl
+}    // namespace p

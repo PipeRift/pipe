@@ -6,7 +6,7 @@
 #include "Core/Platform.h"
 #include "Core/StringView.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
-#include "Serialization/ContextsFwd.h"
+#include "Serialization/SerializationFwd.h"
 
 #include <filesystem>
 
@@ -71,11 +71,8 @@ namespace p
 		}
 	};
 
-	namespace serl
-	{
-		CORE_API void Read(p::ReadContext& ct, p::Path& value);
-		CORE_API void Write(p::WriteContext& ct, const p::Path& value);
-	}    // namespace serl
+	CORE_API void Read(p::Reader& ct, p::Path& value);
+	CORE_API void Write(p::Writer& ct, const p::Path& value);
 }    // namespace p
 
 REFLECT_NATIVE_TYPE(p::Path);

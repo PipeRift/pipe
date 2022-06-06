@@ -8,7 +8,7 @@
 #include "Reflection/DataType.h"
 
 
-namespace p::refl
+namespace p
 {
 	class ClassType : public DataType
 	{
@@ -76,9 +76,4 @@ namespace p::refl
 			return *GetDefaultPtr();
 		}
 	};
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

@@ -2,9 +2,10 @@
 #pragma once
 
 #include "Core/Platform.h"
+#include "TypeTraits.h"
 
 
-namespace p::refl
+namespace p
 {
 	enum TypeFlags
 	{
@@ -31,6 +32,16 @@ namespace p::refl
 		Prop_Array = 1 << 3    // Assigned automatically when a property is an array
 	};
 
+	constexpr TypeFlags operator|(TypeFlags lhs, TypeFlags rhs) noexcept
+	{
+		return static_cast<TypeFlags>(static_cast<UnderlyingType<TypeFlags>>(lhs)
+		                              | static_cast<UnderlyingType<TypeFlags>>(rhs));
+	}
+	constexpr PropFlags operator|(PropFlags lhs, PropFlags rhs) noexcept
+	{
+		return static_cast<PropFlags>(static_cast<UnderlyingType<PropFlags>>(lhs)
+		                              | static_cast<UnderlyingType<PropFlags>>(rhs));
+	}
 
 	// Functions used to surround macro flag values making them template safe
 	constexpr TypeFlags InitTypeFlags()
@@ -49,9 +60,4 @@ namespace p::refl
 	{
 		return flags;
 	}
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

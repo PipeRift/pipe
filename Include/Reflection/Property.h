@@ -8,7 +8,7 @@
 #include "Reflection/Type.h"
 
 
-namespace p::refl
+namespace p
 {
 	class DataType;
 
@@ -73,9 +73,4 @@ namespace p::refl
 	{
 		return displayName;
 	}
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

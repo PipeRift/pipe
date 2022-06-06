@@ -4,19 +4,16 @@
 #include "PCH.h"
 
 #include "BaseStruct.h"
-#include "Serialization/ContextsFwd.h"
+#include "Serialization/SerializationFwd.h"
 #include "TypeTraits.h"
+
 
 namespace p
 {
-	template<typename Type>
-	struct TPtr;
-}
-
-namespace p::refl
-{
 	class ClassType;
 	class Class;
+	template<typename Type>
+	struct TPtr;
 
 
 	class CORE_API BaseClass : public BaseStruct
@@ -32,17 +29,12 @@ namespace p::refl
 			BeforeDestroy();
 		}
 
-		refl::ClassType* GetType() const;
+		ClassType* GetType() const;
 		TPtr<Class> Self() const;
 
-		void SerializeReflection(p::serl::CommonContext& ct) {}
+		void SerializeReflection(p::ReadWriter& ct) {}
 
 	protected:
 		virtual void BeforeDestroy() {}
 	};
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

@@ -14,7 +14,7 @@ namespace p
 	/**
 	 * Enumerates the days of the week in 7-day calendars.
 	 */
-	enum class EDayOfWeek
+	enum class DayOfWeek
 	{
 		Monday = 0,
 		Tuesday,
@@ -29,7 +29,7 @@ namespace p
 	/**
 	 * Enumerates the months of the year in 12-month calendars.
 	 */
-	enum class EMonthOfYear
+	enum class MonthOfYear
 	{
 		January = 1,
 		February,
@@ -294,7 +294,7 @@ namespace p
 		 * @return The week day.
 		 * @see GetDayOfYear, GetMonthOfYear, GetTimeOfDay
 		 */
-		EDayOfWeek GetDayOfWeek() const;
+		DayOfWeek GetDayOfWeek() const;
 
 		/**
 		 * Gets this date's day of the year.
@@ -366,9 +366,9 @@ namespace p
 		 * @return Month of year.
 		 * @see GetDayOfWeek, GetDayOfYear, GetTimeOfDay
 		 */
-		EMonthOfYear GetMonthOfYear() const
+		MonthOfYear GetMonthOfYear() const
 		{
-			return static_cast<EMonthOfYear>(GetMonth());
+			return static_cast<MonthOfYear>(GetMonth());
 		}
 
 		/**
@@ -427,8 +427,8 @@ namespace p
 			return (GetHour() < 12);
 		}
 
-		void Read(class ReadContext& ct);
-		void Write(class WriteContext& ct) const;
+		void Read(class Reader& ct);
+		void Write(class Writer& ct) const;
 
 		/**
 		 * Returns the RFC 1123 string representation of the FDateTime.

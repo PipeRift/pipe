@@ -776,17 +776,17 @@ namespace p::ecs
 
 	struct PoolInstance
 	{
-		refl::TypeId componentId{};
+		TypeId componentId{};
 		TOwnPtr<Pool> pool;
 
 
-		PoolInstance(refl::TypeId componentId, TOwnPtr<Pool> pool = {})
+		PoolInstance(TypeId componentId, TOwnPtr<Pool> pool = {})
 		    : componentId{componentId}, pool{Move(pool)}
 		{}
 		PoolInstance(PoolInstance&& other) noexcept
 		{
 			componentId       = other.componentId;
-			other.componentId = refl::TypeId::None();
+			other.componentId = TypeId::None();
 			pool              = Move(other.pool);
 		}
 		explicit PoolInstance(const PoolInstance& other)
@@ -800,7 +800,7 @@ namespace p::ecs
 		PoolInstance& operator=(PoolInstance&& other)
 		{
 			componentId       = other.componentId;
-			other.componentId = refl::TypeId::None();
+			other.componentId = TypeId::None();
 			pool              = Move(other.pool);
 			return *this;
 		}
@@ -815,7 +815,7 @@ namespace p::ecs
 			return *this;
 		}
 
-		refl::TypeId GetId() const
+		TypeId GetId() const
 		{
 			return componentId;
 		}

@@ -8,7 +8,7 @@
 #include "Reflection/TypeName.h"
 
 
-namespace p::refl
+namespace p
 {
 	template<typename T>
 	struct TClassPtrBuilder : public TPtrBuilder<T>
@@ -22,7 +22,7 @@ namespace p::refl
 		}
 
 		// Allow creation of classes using reflection
-		static T* New(refl::ClassType* type, TPtr<BaseClass> owner = {})
+		static T* New(ClassType* type, TPtr<BaseClass> owner = {})
 		{
 			if (type)
 			{
@@ -51,9 +51,4 @@ namespace p::refl
 		static T* NewArray(sizet size)                        = delete;
 		static void PostNewArray(TOwnPtr<T>& ptr, sizet size) = delete;
 	};
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

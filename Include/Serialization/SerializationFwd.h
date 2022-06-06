@@ -1,14 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Core/Platform.h"
-
-
+// Forward declarations of all contexts
 namespace p
 {
-	enum class SerializeFormat : u8
-	{
-		None = 0,
-		Json
-	};
+	struct ReadWriter;
+	struct Reader;
+	struct Writer;
 }    // namespace p

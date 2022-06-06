@@ -5,7 +5,7 @@
 #include "Math/Vector.h"
 
 
-namespace p::math
+namespace p
 {
 	struct Rotator : public v3
 	{
@@ -54,9 +54,4 @@ namespace p::math
 		 */
 		static float NormalizeAxis(float Angle);
 	};
-}    // namespace p::math
-
-namespace p
-{
-	using namespace p::math;
-}
+}    // namespace p

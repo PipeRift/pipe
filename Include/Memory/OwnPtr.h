@@ -460,7 +460,7 @@ namespace p
 		using Super = BaseOwnPtr;
 
 	private:
-		refl::TypeId typeId;
+		TypeId typeId;
 
 
 	public:
@@ -475,7 +475,7 @@ namespace p
 		{
 			MoveFrom(Move(other));
 			typeId       = Move(other.typeId);
-			other.typeId = refl::TypeId::None();
+			other.typeId = TypeId::None();
 		}
 
 		template<typename T>
@@ -492,7 +492,7 @@ namespace p
 			Delete();
 			MoveFrom(Move(other));
 			typeId       = Move(other.typeId);
-			other.typeId = refl::TypeId::None();
+			other.typeId = TypeId::None();
 			return *this;
 		}
 
@@ -532,7 +532,7 @@ namespace p
 		}
 
 
-		refl::TypeId GetId() const
+		TypeId GetId() const
 		{
 			return typeId;
 		}

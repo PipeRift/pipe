@@ -9,7 +9,7 @@
 #include "Core/StringView.h"
 #include "Core/Utility.h"
 #include "Reflection/TypeName.h"
-#include "Serialization/ContextsFwd.h"
+#include "Serialization/SerializationFwd.h"
 
 #include <fmt/chrono.h>
 #include <fmt/format.h>
@@ -153,8 +153,8 @@ namespace p
 		}
 	};
 
-	CORE_API void Read(p::ReadContext& ct, p::String& val);
-	CORE_API void Write(p::WriteContext& ct, const p::String& val);
+	CORE_API void Read(p::Reader& ct, p::String& val);
+	CORE_API void Write(p::Writer& ct, const p::String& val);
 	OVERRIDE_TYPE_NAME(String)
 }    // namespace p
 

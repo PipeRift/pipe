@@ -8,10 +8,8 @@
 #include "Reflection/TypeId.h"
 
 
-namespace p::refl
+namespace p
 {
-	using namespace EnumOperators;
-
 	enum class TypeCategory : u8
 	{
 		None   = 0,
@@ -22,6 +20,12 @@ namespace p::refl
 		Class  = 1 << 4,
 		All    = Native | Enum | Data | Struct | Class
 	};
+
+	constexpr TypeCategory operator|(TypeCategory lhs, TypeCategory rhs) noexcept
+	{
+		return static_cast<TypeCategory>(static_cast<UnderlyingType<TypeCategory>>(lhs)
+		                                 | static_cast<UnderlyingType<TypeCategory>>(rhs));
+	}
 
 	/** Smallest reflection type */
 	class CORE_API Type
@@ -60,9 +64,4 @@ namespace p::refl
 		class StructType* AsStruct();
 		class ClassType* AsClass();
 	};
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

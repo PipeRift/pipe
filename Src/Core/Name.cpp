@@ -2,7 +2,7 @@
 
 #include "Core/Name.h"
 
-#include "Serialization/Contexts.h"
+#include "Serialization/Serialization.h"
 
 
 namespace p
@@ -52,14 +52,14 @@ namespace p
 		return instance;
 	}
 
-	void Name::Read(serl::ReadContext& ct)
+	void Name::Read(Reader& ct)
 	{
 		String str;
 		ct.Serialize(str);
 
 		*this = Strings::Equals(str, NameTable::noneStr) ? None() : str;
 	}
-	void Name::Write(serl::WriteContext& ct) const
+	void Name::Write(Writer& ct) const
 	{
 		ct.Serialize(ToString());
 	}

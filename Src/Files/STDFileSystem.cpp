@@ -3,20 +3,20 @@
 #include "Files/STDFileSystem.h"
 
 #include "Files/Paths.h"
-#include "Serialization/Contexts.h"
+#include "Serialization/Serialization.h"
 
 
-namespace p::serl
+namespace p
 {
-	void Read(p::ReadContext& ct, p::Path& value)
+	void Read(p::Reader& ct, p::Path& value)
 	{
 		p::String str;
 		ct.Serialize(str);
 		value = p::FromString(str);
 	}
 
-	void Write(p::WriteContext& ct, const p::Path& value)
+	void Write(p::Writer& ct, const p::Path& value)
 	{
 		ct.Serialize(p::ToString(value));
 	}
-}    // namespace p::serl
+}    // namespace p

@@ -8,7 +8,7 @@
 #include "TypeTraits.h"
 
 
-namespace p::refl
+namespace p
 {
 	struct Struct;
 
@@ -46,9 +46,4 @@ namespace p::refl
 		}
 		return false;
 	}
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

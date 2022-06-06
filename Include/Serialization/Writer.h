@@ -12,25 +12,24 @@
 #include "TypeTraits.h"
 
 
-namespace p::serl
+namespace p
 {
-	struct CORE_API WriteContext
+	struct CORE_API Writer
 	{
-		template<Format format>
+		template<SerializeFormat format>
 		friend struct TFormatWriter;
 
-		Flags flags           = Flags_None;
-		Format format         = Format::None;
-		IFormatWriter* writer = nullptr;
+		SerializeFormat format = SerializeFormat::None;
+		IFormatWriter* writer  = nullptr;
 
 
 	private:
-		WriteContext() = default;
+		Writer() = default;
 
 	public:
-		explicit WriteContext(const WriteContext&) = default;
-		WriteContext& operator=(const WriteContext&) = default;
-		virtual ~WriteContext() {}
+		explicit Writer(const Writer&) = default;
+		Writer& operator=(const Writer&) = default;
+		virtual ~Writer() {}
 
 		/**
 		 * Marks current scope as an Object.
@@ -145,23 +144,23 @@ namespace p::serl
 			writer->PopFlags();
 		}
 
-		template<Format format>
+		template<SerializeFormat format>
 		typename FormatBind<format>::Writer& GetWriter() requires(HasWriter<format>);
 	};
 
 
-	CORE_API void Write(WriteContext& ct, bool val);
-	CORE_API void Write(WriteContext& ct, u8 val);
-	CORE_API void Write(WriteContext& ct, i32 val);
-	CORE_API void Write(WriteContext& ct, u32 val);
-	CORE_API void Write(WriteContext& ct, i64 val);
-	CORE_API void Write(WriteContext& ct, u64 val);
-	CORE_API void Write(WriteContext& ct, float val);
-	CORE_API void Write(WriteContext& ct, double val);
-	CORE_API void Write(WriteContext& ct, StringView val);
+	CORE_API void Write(Writer& ct, bool val);
+	CORE_API void Write(Writer& ct, u8 val);
+	CORE_API void Write(Writer& ct, i32 val);
+	CORE_API void Write(Writer& ct, u32 val);
+	CORE_API void Write(Writer& ct, i64 val);
+	CORE_API void Write(Writer& ct, u64 val);
+	CORE_API void Write(Writer& ct, float val);
+	CORE_API void Write(Writer& ct, double val);
+	CORE_API void Write(Writer& ct, StringView val);
 
 	template<typename T1, typename T2>
-	void Write(WriteContext& ct, TPair<T1, T2>& val)
+	void Write(Writer& ct, TPair<T1, T2>& val)
 	{
 		ct.BeginObject();
 		ct.Next("first", val.first);
@@ -169,14 +168,14 @@ namespace p::serl
 	}
 
 	template<typename T>
-	void Write(WriteContext& ct, const T& val) requires(
+	void Write(Writer& ct, const T& val) requires(
 	    bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
 	{
 		val.Write(ct);
 	}
 
 	template<typename T>
-	void Write(WriteContext& ct, const T& val) requires(IsArray<T>())
+	void Write(Writer& ct, const T& val) requires(IsArray<T>())
 	{
 		u32 size = val.Size();
 		ct.BeginArray(size);
@@ -187,19 +186,14 @@ namespace p::serl
 	}
 
 	template<typename T>
-	void Write(WriteContext& ct, T& val) requires IsEnum<T>
+	void Write(Writer& ct, T& val) requires IsEnum<T>
 	{
 		if constexpr (GetEnumSize<T>() > 0)
 		{
 			// Might not be necessary to cache string since enum name is static
-			ct.PushAddFlags(serl::WriteFlags_CacheStringValues);
-			ct.Serialize(refl::GetEnumName(val));
+			ct.PushAddFlags(WriteFlags_CacheStringValues);
+			ct.Serialize(GetEnumName(val));
 			ct.PopFlags();
 		}
 	}
-}    // namespace p::serl
-
-namespace p
-{
-	using namespace p::serl;
-}
+}    // namespace p

@@ -11,40 +11,37 @@
 
 namespace p
 {
-	namespace refl
-	{
-		class StructType;
-		class ClassType;
-		class EnumType;
-	}    // namespace refl
+	class StructType;
+	class ClassType;
+	class EnumType;
 
 
 	template<typename T>
-	refl::StructType* GetType() requires(IsStruct<T>())
+	StructType* GetType() requires(IsStruct<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<refl::StructType*>(refl::TTypeInstance<T>::GetType());
+		return static_cast<StructType*>(TTypeInstance<T>::GetType());
 	}
 
 	template<typename T>
-	refl::ClassType* GetType() requires(IsClass<T>())
+	ClassType* GetType() requires(IsClass<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<refl::ClassType*>(refl::TTypeInstance<T>::GetType());
+		return static_cast<ClassType*>(TTypeInstance<T>::GetType());
 	}
 
 	template<typename T>
-	refl::EnumType* GetType() requires(IsReflectedEnum<T>())
+	EnumType* GetType() requires(IsReflectedEnum<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<refl::EnumType*>(refl::TTypeInstance<T>::GetType());
+		return static_cast<EnumType*>(TTypeInstance<T>::GetType());
 	}
 
 	template<typename T>
-	refl::Type* GetType()
+	Type* GetType()
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return refl::TTypeInstance<T>::GetType();
+		return TTypeInstance<T>::GetType();
 	}
 
 	/**
@@ -54,7 +51,7 @@ namespace p
 	 * @returns the type found, if any
 	 */
 	template<typename T>
-	refl::Type* FindType(Name name)
+	Type* FindType(Name name)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 
@@ -75,7 +72,7 @@ namespace p
 	 * Classes will obtain their type from inheritance.
 	 */
 	template<typename T>
-	refl::Type* GetType(T& instance)
+	Type* GetType(T& instance)
 	{
 		if constexpr (IsClass<T>())
 		{
@@ -89,7 +86,7 @@ namespace p
 	 * Classes will obtain their type from inheritance.
 	 */
 	template<typename T>
-	refl::Type* GetType(TOwnPtr<T>& instance)
+	Type* GetType(TOwnPtr<T>& instance)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 		if (instance && IsClass<T>())
@@ -104,7 +101,7 @@ namespace p
 	 * Classes will obtain their type from inheritance.
 	 */
 	template<typename T>
-	refl::Type* GetType(TPtr<T>& instance)
+	Type* GetType(TPtr<T>& instance)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 		if (instance && IsClass<T>())
@@ -114,8 +111,3 @@ namespace p
 		return GetType<T>();
 	}
 }    // namespace p
-
-namespace p
-{
-	using namespace p::refl;
-}

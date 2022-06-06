@@ -12,26 +12,25 @@
 #include "TypeTraits.h"
 
 
-namespace p::serl
+namespace p
 {
-	struct CORE_API ReadContext
+	struct CORE_API Reader
 	{
-		template<Format format>
+		template<SerializeFormat format>
 		friend struct TFormatReader;
 
-		Flags flags           = Flags_None;
-		Format format         = Format::None;
-		IFormatReader* reader = nullptr;
+		SerializeFormat format = SerializeFormat::None;
+		IFormatReader* reader  = nullptr;
 
 
 	private:
 		// Initialize child classes using the copy constructor
-		ReadContext() = default;
+		Reader() = default;
 
 	public:
-		explicit ReadContext(const ReadContext&) = default;
-		ReadContext& operator=(const ReadContext&) = default;
-		virtual ~ReadContext() {}
+		explicit Reader(const Reader&) = default;
+		Reader& operator=(const Reader&) = default;
+		virtual ~Reader() {}
 
 
 		/**
@@ -116,23 +115,23 @@ namespace p::serl
 		}
 
 	public:
-		template<Format format>
+		template<SerializeFormat format>
 		typename FormatBind<format>::Reader& GetReader() requires(HasReader<format>);
 	};
 
 
-	CORE_API void Read(ReadContext& ct, bool& val);
-	CORE_API void Read(ReadContext& ct, u8& val);
-	CORE_API void Read(ReadContext& ct, i32& val);
-	CORE_API void Read(ReadContext& ct, u32& val);
-	CORE_API void Read(ReadContext& ct, i64& val);
-	CORE_API void Read(ReadContext& ct, u64& val);
-	CORE_API void Read(ReadContext& ct, float& val);
-	CORE_API void Read(ReadContext& ct, double& val);
-	CORE_API void Read(ReadContext& ct, StringView& val);
+	CORE_API void Read(Reader& ct, bool& val);
+	CORE_API void Read(Reader& ct, u8& val);
+	CORE_API void Read(Reader& ct, i32& val);
+	CORE_API void Read(Reader& ct, u32& val);
+	CORE_API void Read(Reader& ct, i64& val);
+	CORE_API void Read(Reader& ct, u64& val);
+	CORE_API void Read(Reader& ct, float& val);
+	CORE_API void Read(Reader& ct, double& val);
+	CORE_API void Read(Reader& ct, StringView& val);
 
 	template<typename T1, typename T2>
-	void Read(ReadContext& ct, TPair<T1, T2>& val)
+	void Read(Reader& ct, TPair<T1, T2>& val)
 	{
 		ct.BeginObject();
 		ct.Next("first", val.first);
@@ -140,14 +139,14 @@ namespace p::serl
 	}
 
 	template<typename T>
-	void Read(ReadContext& ct, T& val) requires(
+	void Read(Reader& ct, T& val) requires(
 	    bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
 	{
 		val.Read(ct);
 	}
 
 	template<typename T>
-	void Read(ReadContext& ct, T& val) requires(IsArray<T>())
+	void Read(Reader& ct, T& val) requires(IsArray<T>())
 	{
 		u32 size;
 		ct.BeginArray(size);
@@ -159,21 +158,16 @@ namespace p::serl
 	}
 
 	template<typename T>
-	void Read(ReadContext& ct, T& val) requires IsEnum<T>
+	void Read(Reader& ct, T& val) requires IsEnum<T>
 	{
 		if constexpr (GetEnumSize<T>() > 0)
 		{
 			String typeStr;
 			ct.Serialize(typeStr);
-			if (std::optional<T> value = refl::GetEnumValue<T>(typeStr))
+			if (std::optional<T> value = GetEnumValue<T>(typeStr))
 			{
 				val = value.value();
 			}
 		}
 	}
-}    // namespace p::serl
-
-namespace p
-{
-	using namespace p::serl;
-}
+}    // namespace p

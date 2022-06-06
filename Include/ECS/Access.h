@@ -16,11 +16,11 @@ namespace p
 
 	struct TypeAccess
 	{
-		refl::TypeId typeId = refl::TypeId::None();
-		AccessMode mode     = AccessMode::Read;
+		TypeId typeId   = TypeId::None();
+		AccessMode mode = AccessMode::Read;
 
 		constexpr TypeAccess() = default;
-		constexpr TypeAccess(refl::TypeId typeId, AccessMode mode) : typeId{typeId}, mode{mode} {}
+		constexpr TypeAccess(TypeId typeId, AccessMode mode) : typeId{typeId}, mode{mode} {}
 	};
 
 	template<typename T, AccessMode inMode>
@@ -271,7 +271,7 @@ namespace p
 
 
 	public:
-		Access(Context& ast, const TArray<refl::TypeId>& types) : ast{ast} {}
+		Access(Context& ast, const TArray<TypeId>& types) : ast{ast} {}
 
 		template<typename... T>
 		Access(TAccessRef<T...> access) : ast{access.ast}

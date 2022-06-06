@@ -8,7 +8,7 @@
 #include <utility>
 
 
-namespace p::refl
+namespace p
 {
 	TypeBuilder::TypeBuilder(TypeId id, StringView name) : id{id}, name{name} {}
 
@@ -36,4 +36,4 @@ namespace p::refl
 	{
 		return name;
 	}
-}    // namespace p::refl
+}    // namespace p

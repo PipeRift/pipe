@@ -10,7 +10,7 @@
 #include <iostream>
 
 
-namespace p::refl
+namespace p
 {
 	struct CORE_API TypeId
 	{
@@ -61,20 +61,16 @@ namespace p::refl
 	}
 
 	template<typename T>
-	inline consteval refl::TypeId GetTypeId()
+	inline consteval TypeId GetTypeId()
 	{
-		return refl::TypeId{p::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
+		return TypeId{p::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
 	}
-}    // namespace p::refl
 
-namespace p
-{
-	using namespace p::refl;
 
 	template<>
-	struct Hash<refl::TypeId>
+	struct Hash<TypeId>
 	{
-		sizet operator()(const refl::TypeId& id) const
+		sizet operator()(const TypeId& id) const
 		{
 			const Hash<u64> hasher{};
 			return hasher(id.GetId());
@@ -84,10 +80,10 @@ namespace p
 
 
 template<>
-struct fmt::formatter<p::refl::TypeId> : public fmt::formatter<p::u64>
+struct fmt::formatter<p::TypeId> : public fmt::formatter<p::u64>
 {
 	template<typename FormatContext>
-	auto format(const p::refl::TypeId& typeId, FormatContext& ctx)
+	auto format(const p::TypeId& typeId, FormatContext& ctx)
 	{
 		return formatter<p::u64>::format(typeId.GetId(), ctx);
 	}

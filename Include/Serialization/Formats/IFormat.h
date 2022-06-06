@@ -6,7 +6,7 @@
 #include "TypeTraits.h"
 
 
-namespace p::serl
+namespace p
 {
 	struct IFormatReader
 	{};
@@ -49,16 +49,16 @@ namespace p::serl
 	};
 
 
-	template<Format format>
+	template<SerializeFormat format>
 	struct FormatBind
 	{
 		using Reader = void;
 		using Writer = void;
 	};
 
-	template<Format format>
+	template<SerializeFormat format>
 	concept HasReader = !IsVoid<typename FormatBind<format>::Reader>;
 
-	template<Format format>
+	template<SerializeFormat format>
 	concept HasWriter = !IsVoid<typename FormatBind<format>::Writer>;
-}    // namespace p::serl
+}    // namespace p

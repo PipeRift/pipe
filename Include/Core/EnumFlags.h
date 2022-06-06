@@ -6,34 +6,38 @@
 #include <magic_enum.hpp>
 
 
-namespace p::core::EnumOperators
+namespace p::core
 {
-	// Bitwise operators: ~, |, &, ^, |=, &=, ^=
-	using namespace magic_enum::bitwise_operators;
-
-	template<typename E>
-	constexpr UnderlyingType<E> operator*(E value) noexcept requires(IsEnum<E>)
+	namespace EnumOperators
 	{
-		return static_cast<UnderlyingType<E>>(value);
-	}
+		// Bitwise operators: ~, |, &, ^, |=, &=, ^=
+		using namespace magic_enum::bitwise_operators;
 
-	template<typename E>
-	constexpr E operator|(E lhs, E rhs) noexcept requires(IsEnum<E>)
-	{
-		return static_cast<E>(
-		    static_cast<UnderlyingType<E>>(lhs) | static_cast<UnderlyingType<E>>(rhs));
-	}
+		template<typename E>
+		constexpr UnderlyingType<E> operator*(E value) noexcept requires(IsEnum<E>)
+		{
+			return static_cast<UnderlyingType<E>>(value);
+		}
+
+		template<typename E>
+		constexpr E operator|(E lhs, E rhs) noexcept requires(IsEnum<E>)
+		{
+			return static_cast<E>(
+			    static_cast<UnderlyingType<E>>(lhs) | static_cast<UnderlyingType<E>>(rhs));
+		}
+	}    // namespace EnumOperators
 
 	template<typename E>
 	constexpr bool HasAllFlags(E value, E flags) noexcept requires(IsEnum<E>)
 	{
-		return (value & flags) == flags;
+		return (static_cast<UnderlyingType<E>>(value) & static_cast<UnderlyingType<E>>(flags))
+		    == static_cast<UnderlyingType<E>>(flags);
 	}
 
 	template<typename E>
 	constexpr bool HasAnyFlags(E value, E flags) noexcept requires(IsEnum<E>)
 	{
-		return *(value & flags) != 0;
+		return (static_cast<UnderlyingType<E>>(value) & static_cast<UnderlyingType<E>>(flags)) != 0;
 	}
 
 	template<typename E>
@@ -45,15 +49,19 @@ namespace p::core::EnumOperators
 	template<typename E>
 	void AddFlags(E& value, E flags) noexcept requires(IsEnum<E>)
 	{
-		value |= flags;
+		auto rawValue = static_cast<UnderlyingType<E>>(value);
+		rawValue |= static_cast<UnderlyingType<E>>(flags);
+		value = static_cast<E>(rawValue);
 	}
 
 	template<typename E>
 	void RemoveFlags(E& value, E flags) noexcept requires(IsEnum<E>)
 	{
-		value &= ~flags;
+		auto rawValue = static_cast<UnderlyingType<E>>(value);
+		rawValue &= ~static_cast<UnderlyingType<E>>(flags);
+		value = static_cast<E>(rawValue);
 	}
-}    // namespace p::core::EnumOperators
+}    // namespace p::core
 
 namespace p
 {

@@ -8,7 +8,7 @@
 #include "Core/Name.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
 #include "Reflection/TypeFlags.h"
-#include "Serialization/ContextsFwd.h"
+#include "Serialization/SerializationFwd.h"
 
 
 namespace p::core
@@ -190,8 +190,8 @@ namespace p::core
 			return a;
 		}
 
-		void Read(serl::ReadContext& ct);
-		void Write(serl::WriteContext& ct) const;
+		void Read(Reader& ct);
+		void Write(Writer& ct) const;
 
 		/**
 		 * Guid default string conversion.

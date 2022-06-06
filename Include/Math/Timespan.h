@@ -11,7 +11,7 @@
 #include <ratio>
 
 
-namespace p::math
+namespace p
 {
 	/**
 	 * Implements a time span.
@@ -627,9 +627,4 @@ namespace p::math
 	{
 		return Timespan.operator*(Scalar);
 	}
-}    // namespace p::math
-
-namespace p
-{
-	using namespace p::math;
-}
+}    // namespace p

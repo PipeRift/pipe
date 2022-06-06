@@ -18,10 +18,8 @@ namespace p
 	OVERRIDE_TYPE_NAME(i64)
 	OVERRIDE_TYPE_NAME(TChar)
 	OVERRIDE_TYPE_NAME(StringView)
-}    // namespace p
 
-namespace p::refl
-{
+
 	// Contains an static fixed string with the name of a TArray<T>
 	template<typename ItemType, bool includeNamespaces>
 	struct StaticArrayName
@@ -82,10 +80,4 @@ namespace p::refl
 		return "TMap";
 	}
 
-}    // namespace p::refl
-
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

@@ -5,7 +5,7 @@
 #include "Core/Checks.h"
 
 
-namespace p::refl
+namespace p
 {
 	BaseClass* ClassType::New() const
 	{
@@ -15,4 +15,4 @@ namespace p::refl
 		}
 		return nullptr;
 	}
-}    // namespace p::refl
+}    // namespace p

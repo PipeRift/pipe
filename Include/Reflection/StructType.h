@@ -6,7 +6,7 @@
 #include "Reflection/DataType.h"
 
 
-namespace p::refl
+namespace p
 {
 	class StructType : public DataType
 	{
@@ -44,9 +44,4 @@ namespace p::refl
 			return this == other;
 		}
 	};
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

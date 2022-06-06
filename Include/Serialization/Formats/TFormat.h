@@ -1,63 +1,62 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Serialization/Contexts/ReadContext.h"
-#include "Serialization/Contexts/WriteContext.h"
 #include "Serialization/Formats/IFormat.h"
+#include "Serialization/Reader.h"
+#include "Serialization/Writer.h"
 
 
-namespace p::serl
+
+namespace p
 {
-	template<Format format>
+	template<SerializeFormat format>
 	struct TFormatReader : public IFormatReader
 	{
 	private:
-		ReadContext context{};
+		Reader context{};
 
 
 	public:
 		TFormatReader()
 		{
-			context.flags  = Flags_None;
 			context.format = format;
 			context.reader = this;
 		}
 
-		ReadContext& GetContext()
+		Reader& GetContext()
 		{
 			return context;
 		}
 
-		operator ReadContext&()
+		operator Reader&()
 		{
 			return GetContext();
 		}
 	};
 
 
-	template<Format format>
+	template<SerializeFormat format>
 	struct TFormatWriter : public IFormatWriter
 	{
 	private:
-		WriteContext context{};
+		Writer context{};
 
 
 	public:
 		TFormatWriter()
 		{
-			context.flags  = Flags_None;
 			context.format = format;
 			context.writer = this;
 		}
 
-		WriteContext& GetContext()
+		Writer& GetContext()
 		{
 			return context;
 		}
 
-		operator WriteContext&()
+		operator Writer&()
 		{
 			return GetContext();
 		}
 	};
-}    // namespace p::serl
+}    // namespace p

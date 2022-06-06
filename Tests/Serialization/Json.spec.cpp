@@ -2,14 +2,14 @@
 
 #include <bandit/bandit.h>
 #include <Context.h>
-#include <Serialization/Contexts.h>
 #include <Serialization/Formats/JsonFormat.h>
+#include <Serialization/Serialization.h>
+
 
 
 using namespace snowhouse;
 using namespace bandit;
 using namespace p;
-using namespace p::serl;
 
 
 go_bandit([]() {
@@ -27,7 +27,7 @@ go_bandit([]() {
 				String data{"{\"name\": \"Miguel\"}"};
 				JsonFormatReader reader{data};
 
-				ReadContext& ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				String name;
 				ct.Next("name", name);
@@ -39,7 +39,7 @@ go_bandit([]() {
 				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
 				JsonFormatReader reader{data};
 
-				ReadContext& ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				if (ct.EnterNext("players"))
 				{
@@ -60,7 +60,7 @@ go_bandit([]() {
 				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
 				JsonFormatReader reader{data};
 
-				ReadContext& ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				if (ct.EnterNext("players"))
 				{
@@ -81,7 +81,7 @@ go_bandit([]() {
 				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
 				JsonFormatReader reader{data};
 
-				ReadContext& ct = reader;
+				Reader& ct = reader;
 				AssertThat(reader.IsObject(), Equals(true));
 				ct.BeginObject();
 				if (ct.EnterNext("players"))
@@ -95,7 +95,7 @@ go_bandit([]() {
 				String data{"{\"one\": \"Miguel\", \"other\": \"Juan\"}"};
 				JsonFormatReader reader{data};
 
-				ReadContext& ct = reader;
+				Reader& ct = reader;
 				AssertThat(reader.IsObject(), Equals(true));
 				ct.BeginObject();
 				StringView name;
@@ -110,7 +110,7 @@ go_bandit([]() {
 				String data{"{\"one\": \"Miguel\", \"other\": \"Juan\"}"};
 				JsonFormatReader reader{data};
 
-				ReadContext& ct = reader;
+				Reader& ct = reader;
 				AssertThat(reader.IsObject(), Equals(true));
 				ct.BeginObject();
 				StringView name;
@@ -124,7 +124,7 @@ go_bandit([]() {
 			describe("Types", []() {
 				it("Can read bool values", [&]() {
 					JsonFormatReader reader{"{\"alive\": true}"};
-					ReadContext& ct = reader;
+					Reader& ct = reader;
 					ct.BeginObject();
 					bool value = false;
 					ct.Next("alive", value);
@@ -140,7 +140,7 @@ go_bandit([]() {
 
 				it("Can read u8 values", [&]() {
 					JsonFormatReader reader{"{\"alive\": 3}"};
-					ReadContext& ct = reader;
+					Reader& ct = reader;
 					ct.BeginObject();
 					u8 value = 0;
 					ct.Next("alive", value);
@@ -156,7 +156,7 @@ go_bandit([]() {
 
 				it("Can read u32 values", [&]() {
 					JsonFormatReader reader{"{\"alive\": 35533}"};
-					ReadContext ct = reader;
+					Reader ct = reader;
 					ct.BeginObject();
 					u32 value = 0;
 					ct.Next("alive", value);
@@ -174,7 +174,7 @@ go_bandit([]() {
 
 				it("Can read i32 values", [&]() {
 					JsonFormatReader reader{"{\"alive\": 35533}"};
-					ReadContext ct = reader;
+					Reader ct = reader;
 					ct.BeginObject();
 					i32 value = 0;
 					ct.Next("alive", value);
@@ -190,7 +190,7 @@ go_bandit([]() {
 
 				it("Can read float values", [&]() {
 					JsonFormatReader reader{"{\"alive\": 0.344}"};
-					ReadContext& ct = reader;
+					Reader& ct = reader;
 					ct.BeginObject();
 					float value = 0.f;
 					ct.Next("alive", value);
@@ -206,7 +206,7 @@ go_bandit([]() {
 
 				it("Can read StringView values", [&]() {
 					JsonFormatReader reader{"{\"alive\": \"yes\"}"};
-					ReadContext& ct = reader;
+					Reader& ct = reader;
 					ct.BeginObject();
 					StringView value;
 					ct.Next("alive", value);
@@ -223,7 +223,7 @@ go_bandit([]() {
 
 			it("Can write to object key", [&]() {
 				JsonFormatWriter writer{};
-				WriteContext& ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("name", StringView{"Miguel"});
 				AssertThat(writer.ToString(false), Equals("{\"name\":\"Miguel\"}"));
@@ -232,7 +232,7 @@ go_bandit([]() {
 			it("Can write arrays", [&]() {
 				JsonFormatWriter writer{};
 
-				WriteContext& ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				if (ct.EnterNext("players"))
 				{
@@ -250,7 +250,7 @@ go_bandit([]() {
 
 			it("Can write multiple object keys", [&]() {
 				JsonFormatWriter writer{};
-				WriteContext& ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("one", StringView{"Miguel"});
 				ct.Next("other", StringView{"Juan"});
@@ -261,7 +261,7 @@ go_bandit([]() {
 			describe("Types", []() {
 				it("Can write bool values", [&]() {
 					JsonFormatWriter writer{};
-					WriteContext& ct = writer;
+					Writer& ct = writer;
 					ct.BeginObject();
 					ct.Next("alive", true);
 					AssertThat(writer.ToString(false), Equals("{\"alive\":true}"));
@@ -275,7 +275,7 @@ go_bandit([]() {
 
 				it("Can write u8 values", [&]() {
 					JsonFormatWriter writer{};
-					WriteContext ct = writer;
+					Writer ct = writer;
 					ct.BeginObject();
 					ct.Next("alive", u8(3));
 					AssertThat(writer.ToString(false), Equals("{\"alive\":3}"));
@@ -283,7 +283,7 @@ go_bandit([]() {
 
 				it("Can write u32 values", [&]() {
 					JsonFormatWriter writer{};
-					WriteContext ct = writer;
+					Writer ct = writer;
 					ct.BeginObject();
 					ct.Next("alive", u32(35533));
 					AssertThat(writer.ToString(false), Equals("{\"alive\":35533}"));
@@ -291,7 +291,7 @@ go_bandit([]() {
 
 				it("Can write i32 values", [&]() {
 					JsonFormatWriter writer{};
-					WriteContext ct = writer;
+					Writer ct = writer;
 					ct.BeginObject();
 					i32 value = 0;
 					ct.Next("alive", u32(35533));
@@ -306,7 +306,7 @@ go_bandit([]() {
 
 				it("Can write float values", [&]() {
 					JsonFormatWriter writer{};
-					WriteContext ct = writer;
+					Writer ct = writer;
 					ct.BeginObject();
 					ct.Next("alive", 0.344f);
 					AssertThat(Strings::Contains(writer.ToString(false), "0.344"), Equals(true));
@@ -320,7 +320,7 @@ go_bandit([]() {
 
 				it("Can write StringView values", [&]() {
 					JsonFormatWriter writer{};
-					WriteContext ct = writer;
+					Writer ct = writer;
 					ct.BeginObject();
 					ct.Next("alive", StringView{"yes"});
 					AssertThat(writer.ToString(false), Equals("{\"alive\":\"yes\"}"));

@@ -10,11 +10,11 @@
 #include "Math.h"
 #include "Reflection/NativeType.h"
 #include "Reflection/TypeFlags.h"
-#include "Serialization/Contexts.h"
+#include "Serialization/Serialization.h"
 #include "Vector.h"
 
 
-namespace p::math
+namespace p
 {
 	/**
 	 * Different color space representations supported
@@ -827,7 +827,7 @@ namespace p::math
 
 
 	template<ColorMode mode>
-	inline void Read(serl::ReadContext& ct, TColor<mode>& color)
+	inline void Read(Reader& ct, TColor<mode>& color)
 	{
 		ct.BeginObject();
 		ct.Next("r", color.r);
@@ -837,7 +837,7 @@ namespace p::math
 	}
 
 	template<ColorMode mode>
-	inline void Write(serl::WriteContext& ct, const TColor<mode>& color)
+	inline void Write(Writer& ct, const TColor<mode>& color)
 	{
 		ct.BeginObject();
 		ct.Next("r", color.r);
@@ -847,7 +847,7 @@ namespace p::math
 	}
 
 	template<>
-	inline void Read(serl::ReadContext& ct, TColor<ColorMode::HSV>& color)
+	inline void Read(Reader& ct, TColor<ColorMode::HSV>& color)
 	{
 		ct.BeginObject();
 		ct.Next("h", color.h);
@@ -857,7 +857,7 @@ namespace p::math
 	}
 
 	template<>
-	inline void Write(serl::WriteContext& ct, const TColor<ColorMode::HSV>& color)
+	inline void Write(Writer& ct, const TColor<ColorMode::HSV>& color)
 	{
 		ct.BeginObject();
 		ct.Next("h", color.h);
@@ -865,12 +865,7 @@ namespace p::math
 		ct.Next("v", color.v);
 		ct.Next("a", color.a);
 	}
-}    // namespace p::math
 
-
-namespace p
-{
-	using namespace p::math;
 
 	template<ColorMode mode>
 	struct Hash<TColor<mode>>

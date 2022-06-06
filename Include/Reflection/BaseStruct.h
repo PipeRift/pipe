@@ -3,21 +3,16 @@
 
 #include "PCH.h"
 
-#include "Serialization/ContextsFwd.h"
+#include "Serialization/SerializationFwd.h"
 
 
-namespace p::refl
+namespace p
 {
 	class StructType;
 
 	struct CORE_API BaseStruct
 	{
-		void SerializeReflection(p::serl::CommonContext& ct) {}
-		// refl::StructType* GetType() const;
+		void SerializeReflection(p::ReadWriter& ct) {}
+		// StructType* GetType() const;
 	};
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

@@ -50,7 +50,7 @@ bool yyjson_mut_obj_add_val(
 }
 
 
-namespace p::serl
+namespace p
 {
 	u64 GetKeyTag(sizet size)
 	{
@@ -608,4 +608,4 @@ namespace p::serl
 		sizet size;
 		return {yyjson_mut_write_opts(doc, flags, &yyjsonAllocator, &size, nullptr), size};
 	}
-}    // namespace p::serl
+}    // namespace p

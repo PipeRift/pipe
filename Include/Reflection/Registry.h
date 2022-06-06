@@ -10,7 +10,7 @@
 #include "TypeTraits.h"
 
 
-namespace p::refl
+namespace p
 {
 	class ReflectionRegistry
 	{
@@ -58,9 +58,4 @@ namespace p::refl
 
 		static CORE_API ReflectionRegistry& Get();
 	};
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p

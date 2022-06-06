@@ -5,18 +5,18 @@
 #include "Export.h"
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectionTraits.h"
-#include "Serialization/Contexts.h"
+#include "Serialization/Serialization.h"
 
 
-namespace p::refl
+namespace p
 {
 	struct Struct : public BaseStruct
 	{
 	public:
 		using Super       = BaseStruct;
-		using BuilderType = p::refl::TStructTypeBuilder<Struct, void, Type_NoFlag>;
+		using BuilderType = p::TStructTypeBuilder<Struct, void, Type_NoFlag>;
 
-		static p::refl::StructType* GetStaticType()
+		static p::StructType* GetStaticType()
 		{
 			return p::GetType<Struct>();
 		}
@@ -26,28 +26,21 @@ namespace p::refl
 		}
 		REFLECTION_BODY({})
 	};
-}    // namespace p::refl
 
-namespace p
-{
-	using namespace p::refl;
 
-	namespace serl
+	template<typename T>
+	void Read(Reader& ct, T& value) requires(IsStruct<T>())
 	{
-		template<typename T>
-		void Read(p::ReadContext& ct, T& value) requires(p::IsStruct<T>())
-		{
-			ct.BeginObject();
-			p::CommonContext common{ct};
-			value.SerializeReflection(common);
-		}
+		ct.BeginObject();
+		ReadWriter common{ct};
+		value.SerializeReflection(common);
+	}
 
-		template<typename T>
-		void Write(p::WriteContext& ct, const T& value) requires(p::IsStruct<T>())
-		{
-			ct.BeginObject();
-			p::CommonContext common{ct};
-			const_cast<T&>(value).SerializeReflection(common);
-		}
-	}    // namespace serl
+	template<typename T>
+	void Write(Writer& ct, const T& value) requires(IsStruct<T>())
+	{
+		ct.BeginObject();
+		ReadWriter common{ct};
+		const_cast<T&>(value).SerializeReflection(common);
+	}
 }    // namespace p

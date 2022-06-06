@@ -5,18 +5,18 @@
 #include "Core/Char.h"
 #include "Core/Regex.h"
 #include "Math/Math.h"
-#include "Serialization/Contexts.h"
+#include "Serialization/Serialization.h"
 
 
 namespace p
 {
-	void Read(p::ReadContext& ct, p::String& val)
+	void Read(p::Reader& ct, p::String& val)
 	{
 		p::StringView view;
 		ct.Serialize(view);
 		val = view;
 	}
-	void Write(p::WriteContext& ct, const p::String& val)
+	void Write(p::Writer& ct, const p::String& val)
 	{
 		ct.Serialize(p::StringView{val});
 	}

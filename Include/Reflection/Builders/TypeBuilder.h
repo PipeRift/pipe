@@ -8,7 +8,7 @@
 #include "TypeTraits.h"
 
 
-namespace p::refl
+namespace p
 {
 	struct TypeId;
 
@@ -34,4 +34,4 @@ namespace p::refl
 	protected:
 		CORE_API virtual Type* Build() = 0;
 	};
-}    // namespace p::refl
+}    // namespace p

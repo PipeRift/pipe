@@ -10,7 +10,7 @@
 #include <magic_enum.hpp>
 
 
-namespace p::refl
+namespace p
 {
 	template<typename T>
 	constexpr sizet GetEnumSize()
@@ -49,7 +49,7 @@ namespace p::refl
 		bool hasAny = false;
 		for (auto v : GetEnumValues<T>())
 		{
-			if (*v != 0 && HasFlag(value, v))
+			if (static_cast<UnderlyingType<T>>(v) != 0 && HasFlag(value, v))
 			{
 				Strings::FormatTo(outName, "{} | ", GetEnumName(v));
 				hasAny = true;
@@ -151,9 +151,4 @@ namespace p::refl
 			return names.Size();
 		}
 	};
-}    // namespace p::refl
-
-namespace p
-{
-	using namespace p::refl;
-}
+}    // namespace p
