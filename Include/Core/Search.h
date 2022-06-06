@@ -4,13 +4,13 @@
 
 #include "PCH.h"
 
+#include "Core/Greater.h"
 #include "Core/Heap.h"
+#include "Core/Less.h"
+#include "Core/Optional.h"
+#include "Core/Profiler.h"
 #include "Core/Utility.h"
 #include "Math/Math.h"
-#include "Profiler.h"
-#include "Templates/Greater.h"
-#include "Templates/Less.h"
-#include "Templates/Optional.h"
 
 
 namespace p::core

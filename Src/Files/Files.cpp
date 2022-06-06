@@ -2,9 +2,9 @@
 
 #include "Files/Files.h"
 
+#include "Core/Log.h"
+#include "Core/Profiler.h"
 #include "Files/Paths.h"
-#include "Log.h"
-#include "Profiler.h"
 
 #include <fstream>
 

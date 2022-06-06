@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/Platform.h"
 #include "Core/String.h"
-#include "CoreTypes.h"
 #include "Memory/OwnPtr.h"
 #include "Reflection/ArrayProperty.h"
 #include "Reflection/BaseClass.h"

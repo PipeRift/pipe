@@ -10,9 +10,10 @@
 #include <Core/Map.h>
 #include <Core/Set.h>
 #include <Core/Span.h>
+#include <Core/TypeTraits.h>
 #include <Memory/OwnPtr.h>
 #include <Memory/STLAllocator.h>
-#include <TypeTraits.h>
+
 
 
 namespace p::ecs

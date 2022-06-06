@@ -3,13 +3,14 @@
 
 #include "PCH.h"
 
+#include "Core/TypeTraits.h"
 #include "Core/Utility.h"
 #include "Memory/Alloc.h"
 #include "Memory/Allocators/DefaultAllocator.h"
-#include "TypeTraits.h"
 
-#include <memory>
 #include <limits>
+#include <memory>
+
 
 
 namespace p

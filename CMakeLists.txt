@@ -63,7 +63,6 @@ target_link_libraries(Pipe PUBLIC
     fmt::fmt
     yyjson
     robin_hood
-    Taskflow
     tsl::robin_map
     tsl::sparse_map
     Tracy

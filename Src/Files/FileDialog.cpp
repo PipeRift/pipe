@@ -2,7 +2,7 @@
 
 #include "Files/FileDialog.h"
 
-#include "Profiler.h"
+#include "Core/Profiler.h"
 
 #include <portable-file-dialogs.h>
 

@@ -6,6 +6,7 @@
 #include "Core/Array.h"
 #include "Core/Function.h"
 #include "Core/Name.h"
+#include "Core/TypeTraits.h"
 #include "Reflection/ArrayProperty.h"
 #include "Reflection/Builders/TypeBuilder.h"
 #include "Reflection/ClassType.h"
@@ -14,7 +15,7 @@
 #include "Reflection/StructType.h"
 #include "Reflection/TypeId.h"
 #include "Serialization/Serialization.h"
-#include "TypeTraits.h"
+
 
 
 namespace p

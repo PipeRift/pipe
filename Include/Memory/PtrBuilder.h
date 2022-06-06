@@ -4,9 +4,10 @@
 
 #include "PCH.h"
 
+#include "Core/TypeTraits.h"
 #include "Reflection/BaseClass.h"
 #include "Reflection/ReflectionTraits.h"
-#include "TypeTraits.h"
+
 
 
 namespace p

@@ -6,8 +6,7 @@
 #include <Core/Map.h>
 #include <Core/Name.h>
 #include <Core/String.h>
-#include <Reflection/PredefinedTypes.h>
-#include <Reflection/TypeName.h>
+#include <Reflection/Reflection.h>
 
 
 using namespace snowhouse;

@@ -5,13 +5,13 @@
 #include "PCH.h"
 
 #include "Core/Function.h"
+#include "Core/Less.h"
 #include "Core/Platform.h"
 #include "Core/Search.h"
 #include "Core/Sorting.h"
+#include "Core/Tuples.h"
+#include "Core/TypeTraits.h"
 #include "Memory/STLAllocator.h"
-#include "Templates/Less.h"
-#include "Templates/Tuples.h"
-#include "TypeTraits.h"
 
 #include <cassert>
 #include <vector>

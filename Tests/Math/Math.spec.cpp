@@ -2,12 +2,13 @@
 
 #include <bandit/bandit.h>
 #include <Core/Array.h>
+#include <Core/Greater.h>
 #include <Core/Platform.h>
 #include <Core/Search.h>
-#include <Templates/Greater.h>
 
 #include <cmath>
 #include <limits>
+
 
 
 using namespace snowhouse;

@@ -3,7 +3,7 @@
 
 #include "BaseClass.h"
 #include "ClassPtrBuilder.h"
-#include "Log.h"
+#include "Core/Log.h"
 #include "Reflection/Reflection.h"
 #include "Serialization/Serialization.h"
 

@@ -3,9 +3,9 @@
 
 #include "Core/Array.h"
 #include "Core/Map.h"
-//#include "Reflection/Builders/TypeBuilder.h"
+#include "Core/TypeTraits.h"
 #include "Reflection/BaseClass.h"
-#include "TypeTraits.h"
+
 
 
 namespace p

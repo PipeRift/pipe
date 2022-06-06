@@ -1,9 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/Log.h"
 #include "Core/String.h"
 #include "Files/Files.h"
-#include "Log.h"
+
 
 
 namespace p::files

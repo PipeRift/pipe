@@ -5,12 +5,13 @@
 
 #include "Core/Function.h"
 #include "Core/Name.h"
+#include "Core/TypeTraits.h"
 #include "Reflection/Builders/StaticInitializers.h"
 #include "Reflection/Builders/TypeBuilder.h"
 #include "Reflection/EnumType.h"
 #include "Reflection/Registry.h"
 #include "Reflection/TypeId.h"
-#include "TypeTraits.h"
+
 
 
 #define ENUM(type)                                                   \

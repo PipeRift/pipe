@@ -3,7 +3,6 @@
 
 #include "Core/Broadcast.h"
 #include "Reflection/Class.h"
-#include "Tasks.h"
 
 
 namespace p
@@ -13,7 +12,6 @@ namespace p
 		CLASS(Context, Class)
 
 	private:
-		TaskSystem tasks;
 		Path logFolder{"Saved/Logs"};
 
 
@@ -32,11 +30,6 @@ namespace p
 		{
 			Super::BeforeDestroy();
 			Log::Shutdown();
-		}
-
-		PIPE_API TaskSystem& GetTasks()
-		{
-			return tasks;
 		}
 	};
 

@@ -4,8 +4,9 @@
 #include "PCH.h"
 
 #include "BaseStruct.h"
+#include "Core/TypeTraits.h"
 #include "Serialization/SerializationFwd.h"
-#include "TypeTraits.h"
+
 
 
 namespace p

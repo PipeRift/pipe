@@ -3,7 +3,9 @@
 
 #include "PCH.h"
 
+#include "Core/FixedString.h"
 #include "Core/StringView.h"
+#include "Reflection/ReflectionTraits.h"
 
 
 namespace p
@@ -61,6 +63,71 @@ namespace p
 	inline consteval StringView GetTypeName(bool includeNamespaces = true)
 	{
 		return GetFullTypeName<T>(includeNamespaces);
+	}
+
+
+	namespace TypeName
+	{
+		// Contains an static fixed string with the name of a TArray<T>
+		template<typename ItemType, bool includeNamespaces>
+		struct Array
+		{
+			static constexpr auto preffix        = TFixedString("TArray<");
+			static constexpr auto suffix         = TFixedString(">");
+			static constexpr StringView itemName = GetFullTypeName<ItemType>(includeNamespaces);
+			static constexpr TFixedString<itemName.size()> fixedItemName{itemName};
+
+			static constexpr auto name = preffix + fixedItemName + suffix;
+		};
+
+		// Contains an static fixed string with the name of a TMap<Key, Value>
+		template<typename KeyType, typename ValueType, bool includeNamespaces>
+		struct Map
+		{
+			static constexpr auto preffix         = TFixedString("TMap<");
+			static constexpr auto separator       = TFixedString(", ");
+			static constexpr auto suffix          = TFixedString(">");
+			static constexpr StringView keyName   = GetFullTypeName<KeyType>(includeNamespaces);
+			static constexpr StringView valueName = GetFullTypeName<ValueType>(includeNamespaces);
+			static constexpr TFixedString<keyName.size()> fixedKeyName{keyName};
+			static constexpr TFixedString<valueName.size()> fixedValueName{valueName};
+
+			static constexpr auto name =
+			    preffix + fixedKeyName + separator + fixedValueName + suffix;
+		};
+	}    // namespace TypeName
+
+
+	template<typename T>
+	consteval StringView GetFullTypeName(bool includeNamespaces = true) requires(IsArray<T>())
+	{
+		if (includeNamespaces)
+		{
+			return TypeName::Array<typename T::ItemType, true>::name;
+		}
+		return TypeName::Array<typename T::ItemType, false>::name;
+	}
+
+	template<typename T>
+	inline consteval StringView GetTypeName(bool includeNamespaces = true) requires(IsArray<T>())
+	{
+		return "TArray";
+	}
+
+	template<typename T>
+	consteval StringView GetFullTypeName(bool includeNamespaces = true) requires(IsMap<T>())
+	{
+		if (includeNamespaces)
+		{
+			return TypeName::Map<typename T::KeyType, typename T::ValueType, true>::name;
+		}
+		return TypeName::Map<typename T::KeyType, typename T::ValueType, false>::name;
+	}
+
+	template<typename T>
+	consteval StringView GetTypeName(bool includeNamespaces = true) requires(IsMap<T>())
+	{
+		return "TMap";
 	}
 }    // namespace p
 

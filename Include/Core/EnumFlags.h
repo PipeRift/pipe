@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "TypeTraits.h"
+#include "Core/TypeTraits.h"
 
 #include <magic_enum.hpp>
 
@@ -63,15 +63,15 @@ namespace p::core
 	}
 }    // namespace p::core
 
-#define DEFINE_FLAG_OPERATORS(Type)\
-		constexpr p::UnderlyingType<Type> operator*(Type value)\
-		{\
-			return static_cast<p::UnderlyingType<Type>>(value);\
-		}\
-		constexpr Type operator|(Type lhs, Type rhs)\
-		{\
-			return static_cast<Type>(*lhs | *rhs);\
-		}
+#define DEFINE_FLAG_OPERATORS(Type)                         \
+	constexpr p::UnderlyingType<Type> operator*(Type value) \
+	{                                                       \
+		return static_cast<p::UnderlyingType<Type>>(value); \
+	}                                                       \
+	constexpr Type operator|(Type lhs, Type rhs)            \
+	{                                                       \
+		return static_cast<Type>(*lhs | *rhs);              \
+	}
 
 namespace p
 {

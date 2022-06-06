@@ -3,7 +3,7 @@
 
 #include "Core/EnumFlags.h"
 #include "Core/Platform.h"
-#include "TypeTraits.h"
+#include "Core/TypeTraits.h"
 
 
 namespace p

@@ -59,13 +59,6 @@ set_target_properties (spdlog PROPERTIES FOLDER Extern)
 add_subdirectory(sparse-map)
 
 
-
-set(TF_BUILD_TESTS OFF CACHE BOOL "Enables builds of tests")
-set(TF_BUILD_EXAMPLES OFF CACHE BOOL "Enables builds of examples")
-add_subdirectory(taskflow)
-rift_target_disable_all_warnings(Taskflow INTERFACE)
-
-
 add_library(magic_enum INTERFACE)
 target_include_directories(magic_enum INTERFACE magic_enum)
 

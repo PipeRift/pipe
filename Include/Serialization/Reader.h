@@ -3,13 +3,13 @@
 
 #include "Core/Platform.h"
 #include "Core/StringView.h"
+#include "Core/Tuples.h"
+#include "Core/TypeTraits.h"
 #include "Reflection/EnumType.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/TypeFlags.h"
 #include "Serialization/Formats/IFormat.h"
 #include "Serialization/SerializationTypes.h"
-#include "Templates/Tuples.h"
-#include "TypeTraits.h"
 
 
 namespace p

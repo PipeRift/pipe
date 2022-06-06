@@ -5,13 +5,14 @@
 #include "PCH.h"
 
 #include "Core/Checks.h"
+#include "Core/TypeTraits.h"
 #include "Core/Utility.h"
 #include "Memory/PtrBuilder.h"
 #include "Reflection/TypeId.h"
-#include "TypeTraits.h"
 
 #include <atomic>
 #include <memory>
+
 
 
 namespace p

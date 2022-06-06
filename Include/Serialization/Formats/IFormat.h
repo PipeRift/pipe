@@ -2,8 +2,9 @@
 #pragma once
 
 #include "Core/Platform.h"
+#include "Core/TypeTraits.h"
 #include "Serialization/SerializationTypes.h"
-#include "TypeTraits.h"
+
 
 
 namespace p

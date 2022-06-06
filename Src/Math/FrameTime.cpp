@@ -2,7 +2,7 @@
 
 #include "Math/FrameTime.h"
 
-#include "Profiler.h"
+#include "Core/Profiler.h"
 
 #include <thread>
 

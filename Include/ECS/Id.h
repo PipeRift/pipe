@@ -2,9 +2,10 @@
 #pragma once
 
 #include <Core/Platform.h>
+#include <Core/TypeList.h>
 #include <Reflection/Builders/NativeTypeBuilder.h>
 #include <Serialization/SerializationFwd.h>
-#include <Templates/TypeList.h>
+
 
 
 namespace p::ecs

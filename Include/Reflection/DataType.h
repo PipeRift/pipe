@@ -5,13 +5,14 @@
 
 #include "Core/Array.h"
 #include "Core/Map.h"
+#include "Core/Platform.h"
 #include "Core/String.h"
-#include "CoreTypes.h"
 #include "Reflection/Builders/TypeInstance.h"
 #include "Reflection/Property.h"
 #include "Reflection/ReflectionFlags.h"
 #include "Reflection/ReflectionTraits.h"
 #include "Reflection/Type.h"
+
 
 
 namespace p

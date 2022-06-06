@@ -4,8 +4,9 @@
 #include "PCH.h"
 
 #include "Core/Name.h"
+#include "Core/TypeTraits.h"
 #include "Reflection/Type.h"
-#include "TypeTraits.h"
+
 
 
 namespace p

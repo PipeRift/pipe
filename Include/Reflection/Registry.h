@@ -4,10 +4,11 @@
 #include "PCH.h"
 
 #include "Core/Map.h"
+#include "Core/TypeTraits.h"
 #include "Memory/Arenas/LinearArena.h"
 #include "Reflection/Type.h"
 #include "Reflection/TypeId.h"
-#include "TypeTraits.h"
+
 
 
 namespace p

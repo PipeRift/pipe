@@ -4,10 +4,11 @@
 
 #include "Core/Macros.h"
 #include "Core/Platform.h"
+#include "Core/TypeTraits.h"
 #include "Core/Utility.h"
-#include "TypeTraits.h"
 
 #include <cmath>
+
 
 
 namespace p::math

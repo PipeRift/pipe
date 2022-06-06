@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "CoreTypes.h"
+#include "Core/Log.h"
+#include "Core/Platform.h"
 #include "EventHandle.h"
 #include "Function.h"
-#include "Log.h"
 #include "Reflection/Class.h"
 
 

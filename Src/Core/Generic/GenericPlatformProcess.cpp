@@ -2,7 +2,7 @@
 
 #include "Core/Generic/GenericPlatformProcess.h"
 
-#include "Log.h"
+#include "Core/Log.h"
 
 
 namespace p::core

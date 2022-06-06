@@ -3,7 +3,7 @@
 #include "Math/DateTime.h"
 
 #include "Core/Char.h"
-#include "Log.h"
+#include "Core/Log.h"
 
 
 namespace p

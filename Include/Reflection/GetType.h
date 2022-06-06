@@ -5,6 +5,7 @@
 
 #include "Memory/OwnPtr.h"
 #include "Reflection/Builders/TypeInstance.h"
+#include "Reflection/CoreTypes.h"
 #include "Reflection/HasType.h"
 #include "Reflection/ReflectionTraits.h"
 

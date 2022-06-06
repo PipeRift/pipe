@@ -5,10 +5,11 @@
 #include "PCH.h"
 
 #include "Core/Name.h"
+#include "Core/TypeTraits.h"
 #include "Math.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
 #include "Serialization/SerializationFwd.h"
-#include "TypeTraits.h"
+
 
 
 namespace p

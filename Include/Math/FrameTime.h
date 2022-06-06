@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreTypes.h"
+#include "Core/Platform.h"
 #include "DateTime.h"
 
 

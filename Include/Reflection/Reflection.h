@@ -7,9 +7,9 @@
 #include "Reflection/Builders/EnumTypeBuilder.h"
 #include "Reflection/Builders/NativeTypeBuilder.h"
 #include "Reflection/Builders/StaticInitializers.h"
+#include "Reflection/CoreTypes.h"
 #include "Reflection/GetType.h"
 #include "Reflection/HasType.h"
-#include "Reflection/PredefinedTypes.h"
 #include "Reflection/ReflectionFlags.h"
 #include "Reflection/ReflectionTraits.h"
 
