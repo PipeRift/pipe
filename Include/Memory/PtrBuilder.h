@@ -4,10 +4,9 @@
 
 #include "PCH.h"
 
-#include "Core/TypeTraits.h"
-#include "Reflection/BaseClass.h"
-#include "Reflection/ReflectionTraits.h"
-
+#include "PCore/TypeTraits.h"
+#include "PRefl/BaseClass.h"
+#include "PRefl/ReflectionTraits.h"
 
 
 namespace p

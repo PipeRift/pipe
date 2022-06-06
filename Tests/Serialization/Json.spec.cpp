@@ -1,9 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Core/Context.h>
-#include <Serialization/Formats/JsonFormat.h>
-#include <Serialization/Serialization.h>
+#include <PCore/Context.h>
+#include <PSerl/Formats/JsonFormat.h>
+#include <PSerl/Serialization.h>
 
 
 using namespace snowhouse;

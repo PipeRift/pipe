@@ -2,13 +2,13 @@
 
 #include "Memory/Arenas/BigBestFitArena.h"
 
-#include "Core/Greater.h"
-#include "Core/Log.h"
-#include "Core/Search.h"
-#include "Core/Sorting.h"
-#include "Core/Utility.h"
-#include "Math/Math.h"
 #include "Memory/Alloc.h"
+#include "PCore/Greater.h"
+#include "PCore/Log.h"
+#include "PCore/Search.h"
+#include "PCore/Sorting.h"
+#include "PCore/Utility.h"
+#include "PMath/Math.h"
 
 
 namespace p::Memory

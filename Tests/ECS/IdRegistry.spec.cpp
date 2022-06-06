@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <ECS/IdRegistry.h>
+#include <PECS/IdRegistry.h>
 
 
 using namespace snowhouse;

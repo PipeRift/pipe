@@ -2,9 +2,9 @@
 
 #include "Memory/Alloc.h"
 
-#include "Core/Checks.h"
-#include "Core/Profiler.h"
-#include "Math/Math.h"
+#include "PCore/Checks.h"
+#include "PCore/Profiler.h"
+#include "PMath/Math.h"
 
 #include <cstdlib>
 #include <memory>

@@ -1,14 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Core/Array.h>
-#include <Core/Greater.h>
-#include <Core/Platform.h>
-#include <Core/Search.h>
+#include <PCore/Array.h>
+#include <PCore/Greater.h>
+#include <PCore/Platform.h>
+#include <PCore/Search.h>
 
 #include <cmath>
 #include <limits>
-
 
 
 using namespace snowhouse;

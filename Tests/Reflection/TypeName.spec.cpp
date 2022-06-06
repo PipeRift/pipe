@@ -1,12 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Core/Array.h>
-#include <Core/Guid.h>
-#include <Core/Map.h>
-#include <Core/Name.h>
-#include <Core/String.h>
-#include <Reflection/Reflection.h>
+#include <PCore/Array.h>
+#include <PCore/Guid.h>
+#include <PCore/Map.h>
+#include <PCore/Name.h>
+#include <PCore/String.h>
+#include <PRefl/Reflection.h>
 
 
 using namespace snowhouse;

@@ -3,11 +3,11 @@
 
 #include "PCH.h"
 
-#include "Core/Array.h"
-#include "Core/Utility.h"
-#include "Math/Math.h"
 #include "Memory/Arenas/IArena.h"
 #include "Memory/Blocks/HeapBlock.h"
+#include "PCore/Array.h"
+#include "PCore/Utility.h"
+#include "PMath/Math.h"
 
 
 namespace p::Memory
