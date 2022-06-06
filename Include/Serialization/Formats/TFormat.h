@@ -6,7 +6,6 @@
 #include "Serialization/Writer.h"
 
 
-
 namespace p
 {
 	template<SerializeFormat format>

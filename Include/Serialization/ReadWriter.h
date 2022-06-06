@@ -9,7 +9,6 @@
 #include "Serialization/Writer.h"
 
 
-
 namespace p
 {
 	struct CORE_API ReadWriter

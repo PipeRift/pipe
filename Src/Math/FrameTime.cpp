@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include "Math/FrameTime.h"
+
 #include "Profiler.h"
 
 #include <thread>
-
 
 
 namespace p

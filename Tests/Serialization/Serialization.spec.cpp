@@ -6,7 +6,6 @@
 #include <Serialization/Serialization.h>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace p;
