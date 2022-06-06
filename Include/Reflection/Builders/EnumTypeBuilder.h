@@ -13,18 +13,19 @@
 #include "TypeTraits.h"
 
 
-#define ENUM(type)                                                                             \
-	template<>                                                                                 \
-	struct p::TStaticEnumInitializer<type>                                                     \
-	{                                                                                          \
-		static constexpr bool enabled = true;                                                  \
-		static const p::TFunction<p::EnumType*()> onInit;                                      \
-	};                                                                                         \
-	inline const p::TFunction<p::EnumType*()> p::TStaticEnumInitializer<type>::onInit = []() { \
-		p::TEnumTypeBuilder<type> builder{};                                                   \
-		builder.Initialize();                                                                  \
-		return builder.GetType();                                                              \
-	};
+#define ENUM(type)                                                   \
+	template<>                                                       \
+	struct p::reflection::TStaticEnumInitializer<type>               \
+	{                                                                \
+		static constexpr bool enabled = true;                        \
+		static const p::TFunction<p::EnumType*()> onInit;            \
+	};                                                               \
+	inline const p::TFunction<p::EnumType*()>                        \
+	    p::reflection::TStaticEnumInitializer<type>::onInit = []() { \
+		    p::TEnumTypeBuilder<type> builder{};                     \
+		    builder.Initialize();                                    \
+		    return builder.GetType();                                \
+	    };
 
 
 namespace p

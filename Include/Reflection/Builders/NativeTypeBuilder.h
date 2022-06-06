@@ -11,18 +11,19 @@
 #include "Reflection/TypeId.h"
 
 
-#define REFLECT_NATIVE_TYPE(type)                                                                  \
-	template<>                                                                                     \
-	struct p::TStaticNativeInitializer<type>                                                       \
-	{                                                                                              \
-		static constexpr bool enabled = true;                                                      \
-		static const p::TFunction<p::NativeType*()> onInit;                                        \
-	};                                                                                             \
-	inline const p::TFunction<p::NativeType*()> p::TStaticNativeInitializer<type>::onInit = []() { \
-		p::TNativeTypeBuilder<type> builder{};                                                     \
-		builder.Initialize();                                                                      \
-		return builder.GetType();                                                                  \
-	};
+#define REFLECT_NATIVE_TYPE(type)                                      \
+	template<>                                                         \
+	struct p::reflection::TStaticNativeInitializer<type>               \
+	{                                                                  \
+		static constexpr bool enabled = true;                          \
+		static const p::TFunction<p::NativeType*()> onInit;            \
+	};                                                                 \
+	inline const p::TFunction<p::NativeType*()>                        \
+	    p::reflection::TStaticNativeInitializer<type>::onInit = []() { \
+		    p::TNativeTypeBuilder<type> builder{};                     \
+		    builder.Initialize();                                      \
+		    return builder.GetType();                                  \
+	    };
 
 
 namespace p

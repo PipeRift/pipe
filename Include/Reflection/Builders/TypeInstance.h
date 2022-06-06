@@ -23,11 +23,11 @@ namespace p
 			}
 			else if constexpr (IsReflectedEnum<T>())
 			{
-				instance = TStaticEnumInitializer<T>::onInit();
+				instance = reflection::TStaticEnumInitializer<T>::onInit();
 			}
 			else if constexpr (IsReflectedNative<T>())
 			{
-				instance = TStaticNativeInitializer<T>::onInit();
+				instance = reflection::TStaticNativeInitializer<T>::onInit();
 			}
 			return instance;
 		}
