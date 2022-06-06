@@ -9,7 +9,7 @@
 
 namespace p::Memory
 {
-	class CORE_API NativeArena : public IArena
+	class PIPE_API NativeArena : public IArena
 	{
 	public:
 		NativeArena()          = default;

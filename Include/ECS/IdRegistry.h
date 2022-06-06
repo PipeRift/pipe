@@ -9,7 +9,7 @@
 
 namespace p::ecs
 {
-	struct CORE_API IdRegistry
+	struct PIPE_API IdRegistry
 	{
 		using Traits  = IdTraits<Id>;
 		using Index   = Traits::Index;

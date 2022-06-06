@@ -11,7 +11,7 @@
 
 namespace p
 {
-	struct CORE_API ReadWriter
+	struct PIPE_API ReadWriter
 	{
 		enum class Mode : u8
 		{

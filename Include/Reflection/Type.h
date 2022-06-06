@@ -8,6 +8,7 @@
 #include "Reflection/TypeId.h"
 
 
+
 namespace p
 {
 	enum class TypeCategory : u8
@@ -20,15 +21,11 @@ namespace p
 		Class  = 1 << 4,
 		All    = Native | Enum | Data | Struct | Class
 	};
+	DEFINE_FLAG_OPERATORS(TypeCategory)
 
-	constexpr TypeCategory operator|(TypeCategory lhs, TypeCategory rhs) noexcept
-	{
-		return static_cast<TypeCategory>(static_cast<UnderlyingType<TypeCategory>>(lhs)
-		                                 | static_cast<UnderlyingType<TypeCategory>>(rhs));
-	}
 
 	/** Smallest reflection type */
-	class CORE_API Type
+	class PIPE_API Type
 	{
 	protected:
 		TypeId id;

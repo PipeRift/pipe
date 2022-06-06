@@ -16,7 +16,7 @@ namespace p
 	struct TPtr;
 
 
-	class CORE_API BaseClass : public BaseStruct
+	class PIPE_API BaseClass : public BaseStruct
 	{
 	protected:
 		BaseClass() = default;

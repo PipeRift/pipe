@@ -1,6 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Core/EnumFlags.h"
 #include "Core/Platform.h"
 #include "TypeTraits.h"
 
@@ -20,6 +21,7 @@ namespace p
 		Class_NotSerialized = Type_NotSerialized | (1 << 4),
 		Class_Abstract      = 1 << 5
 	};
+	DEFINE_FLAG_OPERATORS(TypeFlags)
 
 	enum PropFlags
 	{
@@ -31,17 +33,8 @@ namespace p
 		// Internal use only
 		Prop_Array = 1 << 3    // Assigned automatically when a property is an array
 	};
+	DEFINE_FLAG_OPERATORS(PropFlags)
 
-	constexpr TypeFlags operator|(TypeFlags lhs, TypeFlags rhs) noexcept
-	{
-		return static_cast<TypeFlags>(static_cast<UnderlyingType<TypeFlags>>(lhs)
-		                              | static_cast<UnderlyingType<TypeFlags>>(rhs));
-	}
-	constexpr PropFlags operator|(PropFlags lhs, PropFlags rhs) noexcept
-	{
-		return static_cast<PropFlags>(static_cast<UnderlyingType<PropFlags>>(lhs)
-		                              | static_cast<UnderlyingType<PropFlags>>(rhs));
-	}
 
 	// Functions used to surround macro flag values making them template safe
 	constexpr TypeFlags InitTypeFlags()

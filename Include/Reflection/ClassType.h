@@ -28,38 +28,38 @@ namespace p
 			delete defaultValue;
 		}
 
-		CORE_API BaseClass* New() const;
+		PIPE_API BaseClass* New() const;
 
-		CORE_API ClassType* GetParent() const
+		PIPE_API ClassType* GetParent() const
 		{
 			return static_cast<ClassType*>(parent);
 		}
 
-		CORE_API const TArray<ClassType*>& GetChildren() const
+		PIPE_API const TArray<ClassType*>& GetChildren() const
 		{
 			// Classes only have Class children. It is safe to reinterpret_cast.
 			return reinterpret_cast<const TArray<ClassType*>&>(DataType::GetChildren());
 		}
 
-		CORE_API void GetChildrenDeep(TArray<ClassType*>& outChildren) const
+		PIPE_API void GetChildrenDeep(TArray<ClassType*>& outChildren) const
 		{
 			// Classes only have Class children. It is safe to reinterpret_cast.
 			DataType::GetChildrenDeep(reinterpret_cast<TArray<DataType*>&>(outChildren));
 		}
 
-		CORE_API ClassType* FindChild(const Name& className) const
+		PIPE_API ClassType* FindChild(const Name& className) const
 		{
 			// Classes only have Class children. It is safe to static_cast.
 			return static_cast<ClassType*>(DataType::FindChild(className));
 		}
 
-		CORE_API bool IsA(ClassType* other) const
+		PIPE_API bool IsA(ClassType* other) const
 		{
 			return this == other;
 		}
 
 
-		CORE_API BaseClass* GetDefaultPtr() const
+		PIPE_API BaseClass* GetDefaultPtr() const
 		{
 			if (!defaultValue)
 			{

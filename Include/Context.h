@@ -18,30 +18,30 @@ namespace p
 
 
 	public:
-		CORE_API Context() : Super() {}
-		CORE_API Context(const Path& logFolder) : Super(), logFolder{logFolder} {}
+		PIPE_API Context() : Super() {}
+		PIPE_API Context(const Path& logFolder) : Super(), logFolder{logFolder} {}
 
-		CORE_API void Construct() override
+		PIPE_API void Construct() override
 		{
 			Super::Construct();
 
 			Log::Init("Saved/Logs");    // Init logger
 		}
 
-		CORE_API void BeforeDestroy() override
+		PIPE_API void BeforeDestroy() override
 		{
 			Super::BeforeDestroy();
 			Log::Shutdown();
 		}
 
-		CORE_API TaskSystem& GetTasks()
+		PIPE_API TaskSystem& GetTasks()
 		{
 			return tasks;
 		}
 	};
 
 
-	CORE_API TOwnPtr<Context>& GetContextInstance();
+	PIPE_API TOwnPtr<Context>& GetContextInstance();
 
 	template<typename T = Context>
 	TPtr<T> InitializeContext()
@@ -55,7 +55,7 @@ namespace p
 		return {};
 	}
 
-	CORE_API void ShutdownContext();
+	PIPE_API void ShutdownContext();
 
 	template<typename T = Context>
 	TPtr<T> GetContext()

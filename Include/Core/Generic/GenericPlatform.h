@@ -32,7 +32,7 @@ namespace p::core
 	/**
 	 * Generic types for almost all compilers and platforms
 	 */
-	struct CORE_API GenericPlatformTypes
+	struct PIPE_API GenericPlatformTypes
 	{
 		// Unsigned base types.
 		using uint8  = unsigned char;         // 8-bit  unsigned.

@@ -178,99 +178,99 @@ namespace p::core
 		// BEGIN TChar API
 		// Specializations to avoid requiring <TChar> on function calls
 
-		CORE_API constexpr sizet Find(
+		PIPE_API constexpr sizet Find(
 		    const StringView str, const TChar c, FindDirection direction = FindDirection::Front)
 		{
 			return Find<TChar>(str, c, direction);
 		}
 
-		CORE_API constexpr sizet Find(const StringView str, const StringView subStr,
+		PIPE_API constexpr sizet Find(const StringView str, const StringView subStr,
 		    FindDirection direction = FindDirection::Front)
 		{
 			return Find<TChar>(str, subStr, direction);
 		}
 
-		CORE_API constexpr bool Contains(
+		PIPE_API constexpr bool Contains(
 		    const StringView str, const TChar c, FindDirection direction = FindDirection::Front)
 		{
 			return Contains<TChar>(str, c, direction);
 		}
 
-		CORE_API constexpr bool Contains(const StringView str, const StringView subStr,
+		PIPE_API constexpr bool Contains(const StringView str, const StringView subStr,
 		    FindDirection direction = FindDirection::Front)
 		{
 			return Contains<TChar>(str, subStr, direction);
 		}
 
-		CORE_API constexpr bool Equals(const StringView str, const StringView other)
+		PIPE_API constexpr bool Equals(const StringView str, const StringView other)
 		{
 			return Equals<TChar>(str, other);
 		}
 
-		CORE_API constexpr bool Equals(const StringView str, const TChar c)
+		PIPE_API constexpr bool Equals(const StringView str, const TChar c)
 		{
 			return Equals<TChar>(str, c);
 		}
 
-		CORE_API constexpr bool StartsWith(const StringView str, const StringView subStr)
+		PIPE_API constexpr bool StartsWith(const StringView str, const StringView subStr)
 		{
 			return StartsWith<TChar>(str, subStr);
 		}
 
-		CORE_API constexpr bool EndsWith(const StringView str, const StringView subStr)
+		PIPE_API constexpr bool EndsWith(const StringView str, const StringView subStr)
 		{
 			return EndsWith<TChar>(str, subStr);
 		}
 
-		CORE_API constexpr bool EndsWith(const StringView str, const TChar c)
+		PIPE_API constexpr bool EndsWith(const StringView str, const TChar c)
 		{
 			return EndsWith<TChar>(str, c);
 		}
 
-		CORE_API constexpr StringView RemoveFromStart(const StringView str, sizet size)
+		PIPE_API constexpr StringView RemoveFromStart(const StringView str, sizet size)
 		{
 			return RemoveFromStart<TChar>(str, size);
 		}
 
-		CORE_API constexpr StringView RemoveFromStart(const StringView str, const StringView subStr)
+		PIPE_API constexpr StringView RemoveFromStart(const StringView str, const StringView subStr)
 		{
 			return RemoveFromStart<TChar>(str, subStr);
 		}
 
-		CORE_API constexpr StringView RemoveFromEnd(const StringView str, sizet size)
+		PIPE_API constexpr StringView RemoveFromEnd(const StringView str, sizet size)
 		{
 			return RemoveFromEnd<TChar>(str, size);
 		}
 
-		CORE_API constexpr StringView RemoveFromEnd(const StringView str, const StringView subStr)
+		PIPE_API constexpr StringView RemoveFromEnd(const StringView str, const StringView subStr)
 		{
 			return RemoveFromEnd<TChar>(str, subStr);
 		}
 
-		CORE_API constexpr StringView FrontSubstr(StringView str, sizet size)
+		PIPE_API constexpr StringView FrontSubstr(StringView str, sizet size)
 		{
 			return FrontSubstr<TChar>(str, size);
 		}
 
-		CORE_API constexpr StringView BackSubstr(StringView str, sizet size)
+		PIPE_API constexpr StringView BackSubstr(StringView str, sizet size)
 		{
 			return BackSubstr<TChar>(str, size);
 		}
 
-		CORE_API constexpr void Replace(
+		PIPE_API constexpr void Replace(
 		    StringView str, const TChar searchChar, const TChar replacementChar)
 		{
 			Replace<TChar>(str, searchChar, replacementChar);
 		}
 
-		CORE_API constexpr sizet Length(const TChar* str)
+		PIPE_API constexpr sizet Length(const TChar* str)
 		{
 			return Length<TChar>(str);
 		}
 
-		CORE_API TOptional<u32> ToU32(StringView str);
+		PIPE_API TOptional<u32> ToU32(StringView str);
 
-		CORE_API TOptional<i32> ToI32(StringView str);
+		PIPE_API TOptional<i32> ToI32(StringView str);
 
 		// END TChar API
 	}    // namespace Strings

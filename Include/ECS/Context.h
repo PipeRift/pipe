@@ -11,7 +11,7 @@
 
 namespace p::ecs
 {
-	struct CORE_API SortLessStatics
+	struct PIPE_API SortLessStatics
 	{
 		bool operator()(const OwnPtr& a, const OwnPtr& b) const
 		{
@@ -29,7 +29,7 @@ namespace p::ecs
 		}
 	};
 
-	struct CORE_API Context
+	struct PIPE_API Context
 	{
 	private:
 		IdRegistry idRegistry;

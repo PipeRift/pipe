@@ -9,5 +9,5 @@
 
 namespace p
 {
-	CORE_API v2 EvaluateCubicBezier(v2 p0, v2 p1, v2 p2, v2 p3, float t);
+	PIPE_API v2 EvaluateCubicBezier(v2 p0, v2 p1, v2 p2, v2 p3, float t);
 }    // namespace p

@@ -33,27 +33,27 @@ namespace p
 
 
 	public:
-		CORE_API TaskSystem();
+		PIPE_API TaskSystem();
 
-		CORE_API ThreadPool& GetPool(TaskPool pool);
+		PIPE_API ThreadPool& GetPool(TaskPool pool);
 
 		// Runs a flow in Workers thread pool
-		CORE_API std::future<void> Run(TaskFlow& flow, TaskPool pool = TaskPool::Workers)
+		PIPE_API std::future<void> Run(TaskFlow& flow, TaskPool pool = TaskPool::Workers)
 		{
 			return GetPool(pool).run(flow);
 		}
 
 		// Creates a flow in Game thread pool
-		CORE_API std::future<void> RunMainFlow(TaskFlow& flow)
+		PIPE_API std::future<void> RunMainFlow(TaskFlow& flow)
 		{
 			return mainPool.run(flow);
 		}
 
-		CORE_API u32 GetNumWorkerThreads() const
+		PIPE_API u32 GetNumWorkerThreads() const
 		{
 			return (u32)workerPool.num_workers();
 		}
 
-		static CORE_API TaskSystem& Get();
+		static PIPE_API TaskSystem& Get();
 	};
 }    // namespace p

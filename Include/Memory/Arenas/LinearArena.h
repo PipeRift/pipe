@@ -28,44 +28,44 @@ namespace p::Memory
 
 
 	public:
-		CORE_API LinearArena(const sizet initialSize = 0, bool allowGrowing = true)
+		PIPE_API LinearArena(const sizet initialSize = 0, bool allowGrowing = true)
 		    : activeBlock{initialSize}, allowGrowing{allowGrowing}
 		{}
-		CORE_API ~LinearArena()
+		PIPE_API ~LinearArena()
 		{
 			Reset();
 		}
 		LinearArena(const LinearArena&)     = delete;
-		CORE_API LinearArena(LinearArena&&) = default;
+		PIPE_API LinearArena(LinearArena&&) = default;
 		LinearArena& operator=(const LinearArena&) = delete;
-		CORE_API LinearArena& operator=(LinearArena&&) = default;
+		PIPE_API LinearArena& operator=(LinearArena&&) = default;
 
-		CORE_API void* Allocate(sizet size);
-		CORE_API void* Allocate(sizet size, sizet alignment);
+		PIPE_API void* Allocate(sizet size);
+		PIPE_API void* Allocate(sizet size, sizet alignment);
 
-		CORE_API void Free(void* ptr, sizet size) {}
+		PIPE_API void Free(void* ptr, sizet size) {}
 
-		CORE_API void Reset();
+		PIPE_API void Reset();
 
-		CORE_API void Grow(sizet size, sizet align = 0);
+		PIPE_API void Grow(sizet size, sizet align = 0);
 
-		CORE_API sizet GetUsedBlockSize() const
+		PIPE_API sizet GetUsedBlockSize() const
 		{
 			return usedBlockSize;
 		}
-		CORE_API sizet GetBlockSize() const
+		PIPE_API sizet GetBlockSize() const
 		{
 			return activeBlock.GetSize();
 		}
-		CORE_API HeapBlock& GetBlock()
+		PIPE_API HeapBlock& GetBlock()
 		{
 			return activeBlock;
 		}
-		CORE_API const HeapBlock& GetBlock() const
+		PIPE_API const HeapBlock& GetBlock() const
 		{
 			return activeBlock;
 		}
-		CORE_API const TArray<HeapBlock>& GetDiscardedBlocks() const
+		PIPE_API const TArray<HeapBlock>& GetDiscardedBlocks() const
 		{
 			return discardedBlocks;
 		}

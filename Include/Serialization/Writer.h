@@ -14,7 +14,7 @@
 
 namespace p
 {
-	struct CORE_API Writer
+	struct PIPE_API Writer
 	{
 		template<SerializeFormat format>
 		friend struct TFormatWriter;
@@ -149,15 +149,15 @@ namespace p
 	};
 
 
-	CORE_API void Write(Writer& ct, bool val);
-	CORE_API void Write(Writer& ct, u8 val);
-	CORE_API void Write(Writer& ct, i32 val);
-	CORE_API void Write(Writer& ct, u32 val);
-	CORE_API void Write(Writer& ct, i64 val);
-	CORE_API void Write(Writer& ct, u64 val);
-	CORE_API void Write(Writer& ct, float val);
-	CORE_API void Write(Writer& ct, double val);
-	CORE_API void Write(Writer& ct, StringView val);
+	PIPE_API void Write(Writer& ct, bool val);
+	PIPE_API void Write(Writer& ct, u8 val);
+	PIPE_API void Write(Writer& ct, i32 val);
+	PIPE_API void Write(Writer& ct, u32 val);
+	PIPE_API void Write(Writer& ct, i64 val);
+	PIPE_API void Write(Writer& ct, u64 val);
+	PIPE_API void Write(Writer& ct, float val);
+	PIPE_API void Write(Writer& ct, double val);
+	PIPE_API void Write(Writer& ct, StringView val);
 
 	template<typename T1, typename T2>
 	void Write(Writer& ct, TPair<T1, T2>& val)

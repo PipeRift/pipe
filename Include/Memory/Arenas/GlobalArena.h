@@ -6,5 +6,5 @@
 
 namespace p::Memory
 {
-	CORE_API BigBestFitArena& GetGlobalArena();
+	PIPE_API BigBestFitArena& GetGlobalArena();
 };

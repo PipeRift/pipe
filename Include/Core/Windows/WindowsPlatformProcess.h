@@ -7,7 +7,7 @@
 
 namespace p::core
 {
-	struct CORE_API WindowsPlatformProcess : public GenericPlatformProcess
+	struct PIPE_API WindowsPlatformProcess : public GenericPlatformProcess
 	{
 		static StringView GetExecutableFile();
 		static StringView GetExecutablePath();

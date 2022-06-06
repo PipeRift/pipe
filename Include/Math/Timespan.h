@@ -31,7 +31,7 @@ namespace p
 	 *
 	 * @see DateTime
 	 */
-	struct CORE_API Timespan
+	struct PIPE_API Timespan
 	{
 	private:
 #pragma warning(push)

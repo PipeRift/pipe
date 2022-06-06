@@ -9,7 +9,7 @@ namespace p::core
 	/**
 	 * Windows specific types
 	 **/
-	struct CORE_API WindowsPlatformMisc : public GenericPlatformMisc
+	struct PIPE_API WindowsPlatformMisc : public GenericPlatformMisc
 	{
 		static u32 GetMaxPathLength();
 	};

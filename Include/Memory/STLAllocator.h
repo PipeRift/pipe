@@ -9,6 +9,7 @@
 #include "TypeTraits.h"
 
 #include <memory>
+#include <limits>
 
 
 namespace p

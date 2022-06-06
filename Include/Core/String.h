@@ -53,7 +53,7 @@ namespace p::core
 			    std::back_inserter(buffer), fmt::runtime(format), std::forward<Args>(args)...);
 		}
 
-		CORE_API String ToSentenceCase(const String& value);
+		PIPE_API String ToSentenceCase(const String& value);
 
 		/**
 		 * Breaks up a delimited string into elements of a string array.
@@ -64,20 +64,20 @@ namespace p::core
 		 *
 		 * @return	The number of elements in InArray
 		 */
-		CORE_API i32 ParseIntoArray(const String& str, TArray<String>& OutArray,
+		PIPE_API i32 ParseIntoArray(const String& str, TArray<String>& OutArray,
 		    const TChar* pchDelim, bool InCullEmpty = true);
 
-		CORE_API void RemoveFromStart(String& str, sizet size);
-		CORE_API void RemoveFromEnd(String& str, sizet size);
+		PIPE_API void RemoveFromStart(String& str, sizet size);
+		PIPE_API void RemoveFromEnd(String& str, sizet size);
 
-		CORE_API i32 Split(const String& str, TArray<String>& tokens, const TChar delim);
+		PIPE_API i32 Split(const String& str, TArray<String>& tokens, const TChar delim);
 
-		CORE_API bool Split(const String& str, String& a, String& b, const TChar* delim);
+		PIPE_API bool Split(const String& str, String& a, String& b, const TChar* delim);
 
-		CORE_API bool IsNumeric(const String& str);
-		CORE_API bool IsNumeric(const TChar* Str);
+		PIPE_API bool IsNumeric(const String& str);
+		PIPE_API bool IsNumeric(const TChar* Str);
 
-		CORE_API String ParseMemorySize(sizet size);
+		PIPE_API String ParseMemorySize(sizet size);
 
 		template<typename ToStringType, typename FromChar>
 		inline void ConvertTo(TStringView<FromChar> source, ToStringType& dest)
@@ -153,8 +153,8 @@ namespace p
 		}
 	};
 
-	CORE_API void Read(p::Reader& ct, p::String& val);
-	CORE_API void Write(p::Writer& ct, const p::String& val);
+	PIPE_API void Read(p::Reader& ct, p::String& val);
+	PIPE_API void Write(p::Writer& ct, const p::String& val);
 	OVERRIDE_TYPE_NAME(String)
 }    // namespace p
 

@@ -48,7 +48,7 @@ namespace p
 		future.wait();
 	}
 
-	CORE_API ThreadPool& TaskSystem::GetPool(TaskPool pool)
+	PIPE_API ThreadPool& TaskSystem::GetPool(TaskPool pool)
 	{
 		switch (pool)
 		{

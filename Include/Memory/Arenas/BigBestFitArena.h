@@ -10,7 +10,7 @@
 
 namespace p::Memory
 {
-	class CORE_API BigBestFitArena : public IArena
+	class PIPE_API BigBestFitArena : public IArena
 	{
 	public:
 		struct AllocationHeader
@@ -18,7 +18,7 @@ namespace p::Memory
 			u8* end;
 		};
 
-		struct CORE_API Slot
+		struct PIPE_API Slot
 		{
 			u8* start;
 			u8* end;

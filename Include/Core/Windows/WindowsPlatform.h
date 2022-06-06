@@ -11,7 +11,7 @@ namespace p::core
 	/**
 	 * Windows specific types
 	 **/
-	struct CORE_API WindowsPlatformTypes : public GenericPlatformTypes
+	struct PIPE_API WindowsPlatformTypes : public GenericPlatformTypes
 	{
 		using sizet = std::size_t;
 	};

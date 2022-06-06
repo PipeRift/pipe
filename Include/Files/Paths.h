@@ -14,61 +14,61 @@ namespace p::files
 	///////////////////////////////////////////////////////////
 	// PATHS
 
-	inline CORE_API void SetCurrentPath(Path path)
+	inline PIPE_API void SetCurrentPath(Path path)
 	{
 		fs::current_path(path);
 	}
 
-	inline CORE_API Path GetCurrentPath()
+	inline PIPE_API Path GetCurrentPath()
 	{
 		return fs::current_path();
 	}
 
-	CORE_API Path GetBasePath();
+	PIPE_API Path GetBasePath();
 
 
 	///////////////////////////////////////////////////////////
 	// PATH HELPERS
 
-	inline CORE_API constexpr bool IsSlash(TChar c)
+	inline PIPE_API constexpr bool IsSlash(TChar c)
 	{
 		return c == TX('\\') || c == TX('/');
 	}
 
-	CORE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
-	CORE_API const TChar* FindFilename(const TChar* const first, const TChar* last);
+	PIPE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
+	PIPE_API const TChar* FindFilename(const TChar* const first, const TChar* last);
 
 	// @return root name of a path, or an empty view if missing
 	// E.g: "C:\Folder" -> "C:"
-	CORE_API StringView GetRootPathName(const StringView path);
+	PIPE_API StringView GetRootPathName(const StringView path);
 
 	// @return root path of a path, or an empty view if missing
 	// E.g: "C:\Folder" -> "C:\"
-	CORE_API StringView GetRootPath(const StringView path);
+	PIPE_API StringView GetRootPath(const StringView path);
 
 	// @return the relative path if it exists, otherwise, an empty view
 	// E.g: "C:\Folder\Other" -> "Folder\Other"
-	CORE_API StringView GetRelativePath(const StringView path);
+	PIPE_API StringView GetRelativePath(const StringView path);
 
 	// @return the path to the parent directory
 	// E.g: "/var/tmp/file.txt" -> "/var/tmp"
 	// E.g: "/var/tmp/." -> "/var/tmp"
-	CORE_API StringView GetParentPath(StringView path);
+	PIPE_API StringView GetParentPath(StringView path);
 
-	CORE_API StringView GetFilename(StringView path);
-	CORE_API String GetFilename(const Path& path);
+	PIPE_API StringView GetFilename(StringView path);
+	PIPE_API String GetFilename(const Path& path);
 	inline StringView GetFilename(const String& path)
 	{
 		return GetFilename(StringView{path});
 	}
 
 
-	CORE_API Path ToRelativePath(const Path& path, const Path& parent = GetCurrentPath());
-	CORE_API Path ToAbsolutePath(const Path& path, const Path& parent = GetCurrentPath());
-	CORE_API bool IsRelativePath(const Path& path);
-	CORE_API bool IsAbsolutePath(const Path& path);
-	CORE_API String ToString(const Path& path);
-	CORE_API Path FromString(StringView pathStr);
+	PIPE_API Path ToRelativePath(const Path& path, const Path& parent = GetCurrentPath());
+	PIPE_API Path ToAbsolutePath(const Path& path, const Path& parent = GetCurrentPath());
+	PIPE_API bool IsRelativePath(const Path& path);
+	PIPE_API bool IsAbsolutePath(const Path& path);
+	PIPE_API String ToString(const Path& path);
+	PIPE_API Path FromString(StringView pathStr);
 }    // namespace p::files
 
 namespace p

@@ -7,7 +7,7 @@
 
 namespace p::core
 {
-	struct CORE_API LinuxPlatformProcess : public GenericPlatformProcess
+	struct PIPE_API LinuxPlatformProcess : public GenericPlatformProcess
 	{
 		static StringView GetExecutableFile();
 		static StringView GetExecutablePath();

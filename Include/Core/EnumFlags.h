@@ -63,6 +63,16 @@ namespace p::core
 	}
 }    // namespace p::core
 
+#define DEFINE_FLAG_OPERATORS(Type)\
+		constexpr p::UnderlyingType<Type> operator*(Type value)\
+		{\
+			return static_cast<p::UnderlyingType<Type>>(value);\
+		}\
+		constexpr Type operator|(Type lhs, Type rhs)\
+		{\
+			return static_cast<Type>(*lhs | *rhs);\
+		}
+
 namespace p
 {
 	using namespace p::core;

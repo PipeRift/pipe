@@ -6,7 +6,7 @@
 
 namespace p::core
 {
-	struct CORE_API EventHandle
+	struct PIPE_API EventHandle
 	{
 	private:
 		static u64 counter;

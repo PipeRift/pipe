@@ -20,18 +20,18 @@ namespace p
 		TPtr<BaseClass> owner;
 
 
-		CORE_API const TPtr<BaseClass>& GetSelf() const
+		PIPE_API const TPtr<BaseClass>& GetSelf() const
 		{
 			return self;
 		}
-		CORE_API const TPtr<BaseClass>& GetOwner() const
+		PIPE_API const TPtr<BaseClass>& GetOwner() const
 		{
 			return owner;
 		}
 	};
 
 
-	class CORE_API Class : public BaseClass
+	class PIPE_API Class : public BaseClass
 	{
 	public:
 		using Super       = BaseClass;

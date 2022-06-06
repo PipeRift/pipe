@@ -76,7 +76,7 @@ namespace p
 
 
 	public:
-		CORE_API EnumType() : Type(TypeCategory::Enum) {}
+		PIPE_API EnumType() : Type(TypeCategory::Enum) {}
 
 
 		template<Integral T>

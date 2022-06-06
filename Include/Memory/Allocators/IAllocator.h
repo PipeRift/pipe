@@ -6,7 +6,7 @@
 
 namespace p::Memory
 {
-	class CORE_API IAllocator
+	class PIPE_API IAllocator
 	{
 	public:
 		IAllocator() = default;

@@ -11,7 +11,7 @@ namespace p::core
 	/**
 	 * Generic types for almost all compilers and platforms
 	 */
-	struct CORE_API GenericPlatformMisc
+	struct PIPE_API GenericPlatformMisc
 	{
 		static void CreateGuid(core::Guid& guid);
 

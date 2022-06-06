@@ -7,7 +7,7 @@
 
 namespace p::core
 {
-	struct CORE_API GenericPlatformProcess
+	struct PIPE_API GenericPlatformProcess
 	{
 		/** Content saved to compiler or project directories should be rerouted to user directories
 		 * instead **/

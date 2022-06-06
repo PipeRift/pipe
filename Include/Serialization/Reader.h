@@ -14,7 +14,7 @@
 
 namespace p
 {
-	struct CORE_API Reader
+	struct PIPE_API Reader
 	{
 		template<SerializeFormat format>
 		friend struct TFormatReader;
@@ -120,15 +120,15 @@ namespace p
 	};
 
 
-	CORE_API void Read(Reader& ct, bool& val);
-	CORE_API void Read(Reader& ct, u8& val);
-	CORE_API void Read(Reader& ct, i32& val);
-	CORE_API void Read(Reader& ct, u32& val);
-	CORE_API void Read(Reader& ct, i64& val);
-	CORE_API void Read(Reader& ct, u64& val);
-	CORE_API void Read(Reader& ct, float& val);
-	CORE_API void Read(Reader& ct, double& val);
-	CORE_API void Read(Reader& ct, StringView& val);
+	PIPE_API void Read(Reader& ct, bool& val);
+	PIPE_API void Read(Reader& ct, u8& val);
+	PIPE_API void Read(Reader& ct, i32& val);
+	PIPE_API void Read(Reader& ct, u32& val);
+	PIPE_API void Read(Reader& ct, i64& val);
+	PIPE_API void Read(Reader& ct, u64& val);
+	PIPE_API void Read(Reader& ct, float& val);
+	PIPE_API void Read(Reader& ct, double& val);
+	PIPE_API void Read(Reader& ct, StringView& val);
 
 	template<typename T1, typename T2>
 	void Read(Reader& ct, TPair<T1, T2>& val)

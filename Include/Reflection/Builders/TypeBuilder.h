@@ -22,16 +22,16 @@ namespace p
 
 
 	public:
-		CORE_API TypeBuilder() = default;
-		CORE_API TypeBuilder(TypeId id, StringView name);
-		CORE_API virtual ~TypeBuilder() {}
+		PIPE_API TypeBuilder() = default;
+		PIPE_API TypeBuilder(TypeId id, StringView name);
+		PIPE_API virtual ~TypeBuilder() {}
 
-		CORE_API void Initialize();
+		PIPE_API void Initialize();
 
-		CORE_API TypeId GetId() const;
-		CORE_API StringView GetName() const;
+		PIPE_API TypeId GetId() const;
+		PIPE_API StringView GetName() const;
 
 	protected:
-		CORE_API virtual Type* Build() = 0;
+		PIPE_API virtual Type* Build() = 0;
 	};
 }    // namespace p

@@ -36,7 +36,7 @@ namespace p
 	}    // namespace Internal
 
 
-	struct CORE_API BaseOwnPtr
+	struct PIPE_API BaseOwnPtr
 	{
 		friend struct Ptr;
 
@@ -101,7 +101,7 @@ namespace p
 	};
 
 
-	struct CORE_API Ptr
+	struct PIPE_API Ptr
 	{
 	protected:
 		void* value                       = nullptr;
@@ -455,7 +455,7 @@ namespace p
 	///////////////////////////////////////////////////
 	// Non-templated Pointer types
 
-	struct CORE_API OwnPtr : public BaseOwnPtr
+	struct PIPE_API OwnPtr : public BaseOwnPtr
 	{
 		using Super = BaseOwnPtr;
 

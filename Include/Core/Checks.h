@@ -15,7 +15,7 @@ namespace p::core::Checks
 		return callback();
 	}
 
-	CORE_API void FailedCheckError(const char* msg, sizet size);
+	PIPE_API void FailedCheckError(const char* msg, sizet size);
 
 	template<typename... Args>
 	void FailedCheckError(

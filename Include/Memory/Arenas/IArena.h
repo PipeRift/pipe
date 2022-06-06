@@ -7,7 +7,7 @@
 namespace p::Memory
 {
 	/** IArena defines the API used on all other arena types */
-	class CORE_API IArena
+	class PIPE_API IArena
 	{
 	protected:
 		IArena() {}

@@ -62,40 +62,40 @@ namespace p
 		 * @param data containing the constant json string
 		 * @see JsonFormatReader(String& data, bool insitu = true) for optional insitu reading
 		 */
-		CORE_API explicit JsonFormatReader(StringView data);
+		PIPE_API explicit JsonFormatReader(StringView data);
 		/**
 		 * Configures a JsonFormatReader to read from an string buffer
 		 * This contructor might MODIFY the buffer if needed to improve reading speed
 		 * slightly.
 		 * @param data containing the MUTABLE json string
 		 */
-		CORE_API explicit JsonFormatReader(String& data);
-		CORE_API ~JsonFormatReader();
+		PIPE_API explicit JsonFormatReader(String& data);
+		PIPE_API ~JsonFormatReader();
 
-		CORE_API void BeginObject();
-		CORE_API void BeginArray(u32& size);
+		PIPE_API void BeginObject();
+		PIPE_API void BeginArray(u32& size);
 
-		CORE_API bool EnterNext(StringView name);
-		CORE_API bool EnterNext();
-		CORE_API void Leave();
+		PIPE_API bool EnterNext(StringView name);
+		PIPE_API bool EnterNext();
+		PIPE_API void Leave();
 
-		CORE_API void Read(bool& val);
-		CORE_API void Read(u8& val);
-		CORE_API void Read(i32& val);
-		CORE_API void Read(u32& val);
-		CORE_API void Read(i64& val);
-		CORE_API void Read(u64& val);
-		CORE_API void Read(float& val);
-		CORE_API void Read(double& val);
-		CORE_API void Read(StringView& val);
+		PIPE_API void Read(bool& val);
+		PIPE_API void Read(u8& val);
+		PIPE_API void Read(i32& val);
+		PIPE_API void Read(u32& val);
+		PIPE_API void Read(i64& val);
+		PIPE_API void Read(u64& val);
+		PIPE_API void Read(float& val);
+		PIPE_API void Read(double& val);
+		PIPE_API void Read(StringView& val);
 
-		CORE_API bool IsObject() const;
-		CORE_API bool IsArray() const;
-		CORE_API bool IsValid() const
+		PIPE_API bool IsObject() const;
+		PIPE_API bool IsArray() const;
+		PIPE_API bool IsValid() const
 		{
 			return root != nullptr;
 		}
-		CORE_API const ReadError& GetError() const
+		PIPE_API const ReadError& GetError() const
 		{
 			return error;
 		}
@@ -127,34 +127,34 @@ namespace p
 
 
 	public:
-		CORE_API JsonFormatWriter();
-		CORE_API ~JsonFormatWriter();
+		PIPE_API JsonFormatWriter();
+		PIPE_API ~JsonFormatWriter();
 
-		CORE_API bool EnterNext(StringView name);
-		CORE_API bool EnterNext();
-		CORE_API void Leave();
+		PIPE_API bool EnterNext(StringView name);
+		PIPE_API bool EnterNext();
+		PIPE_API void Leave();
 
-		CORE_API void BeginObject();
-		CORE_API void BeginArray(u32& size);
+		PIPE_API void BeginObject();
+		PIPE_API void BeginArray(u32& size);
 
-		CORE_API void Write(bool val);
-		CORE_API void Write(u8 val);
-		CORE_API void Write(i32 val);
-		CORE_API void Write(u32 val);
-		CORE_API void Write(i64 val);
-		CORE_API void Write(u64 val);
-		CORE_API void Write(float val);
-		CORE_API void Write(double val);
-		CORE_API void Write(StringView val);
+		PIPE_API void Write(bool val);
+		PIPE_API void Write(u8 val);
+		PIPE_API void Write(i32 val);
+		PIPE_API void Write(u32 val);
+		PIPE_API void Write(i64 val);
+		PIPE_API void Write(u64 val);
+		PIPE_API void Write(float val);
+		PIPE_API void Write(double val);
+		PIPE_API void Write(StringView val);
 
-		CORE_API bool IsValid() const
+		PIPE_API bool IsValid() const
 		{
 			return doc != nullptr;
 		}
 
-		CORE_API void Close();
+		PIPE_API void Close();
 
-		CORE_API StringView ToString(bool pretty = true, bool ensureClosed = true);
+		PIPE_API StringView ToString(bool pretty = true, bool ensureClosed = true);
 
 	private:
 		Scope& GetScope();

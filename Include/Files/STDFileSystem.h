@@ -33,20 +33,7 @@ namespace p::files
 		CreateSymLinks  = i32(fs::copy_options::create_symlinks),
 		CreateHardLinks = i32(fs::copy_options::create_hard_links)
 	};
-
-	inline i32 operator*(CopyOptions value)
-	{
-		return static_cast<i32>(value);
-	}
-	inline CopyOptions operator|(CopyOptions one, CopyOptions other)
-	{
-		return static_cast<CopyOptions>(*one | *other);
-	}
-	inline CopyOptions& operator|=(CopyOptions& one, CopyOptions other)
-	{
-		one = one | other;
-		return one;
-	}
+	DEFINE_FLAG_OPERATORS(CopyOptions)
 
 
 	inline PathView ToPathView(const Path& path)
@@ -71,8 +58,8 @@ namespace p
 		}
 	};
 
-	CORE_API void Read(p::Reader& ct, p::Path& value);
-	CORE_API void Write(p::Writer& ct, const p::Path& value);
+	PIPE_API void Read(p::Reader& ct, p::Path& value);
+	PIPE_API void Write(p::Writer& ct, const p::Path& value);
 }    // namespace p
 
 REFLECT_NATIVE_TYPE(p::Path);

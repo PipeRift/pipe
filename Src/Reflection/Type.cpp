@@ -11,7 +11,7 @@
 
 namespace p
 {
-	using namespace EnumOperators;
+	//using namespace EnumOperators;
 
 	StringView Type::GetName() const
 	{

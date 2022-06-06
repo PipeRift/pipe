@@ -35,21 +35,21 @@ namespace p
 
 
 	public:
-		CORE_API Property()       = default;
+		PIPE_API Property()       = default;
 		Property(Property&&)      = delete;
 		Property(const Property&) = delete;
 
 	public:
-		CORE_API virtual ~Property() = default;
+		PIPE_API virtual ~Property() = default;
 
-		CORE_API DataType* GetOwner() const;
-		CORE_API Type* GetType() const;
-		CORE_API Name GetName() const;
-		CORE_API void* GetDataPtr(void* container) const;
-		CORE_API StringView GetDisplayName() const;
-		CORE_API bool HasFlag(PropFlags flag) const;
-		CORE_API bool HasAllFlags(PropFlags inFlags) const;
-		CORE_API bool HasAnyFlags(PropFlags inFlags) const;
+		PIPE_API DataType* GetOwner() const;
+		PIPE_API Type* GetType() const;
+		PIPE_API Name GetName() const;
+		PIPE_API void* GetDataPtr(void* container) const;
+		PIPE_API StringView GetDisplayName() const;
+		PIPE_API bool HasFlag(PropFlags flag) const;
+		PIPE_API bool HasAllFlags(PropFlags inFlags) const;
+		PIPE_API bool HasAnyFlags(PropFlags inFlags) const;
 	};
 
 

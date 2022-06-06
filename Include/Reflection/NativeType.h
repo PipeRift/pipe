@@ -15,6 +15,6 @@ namespace p
 		friend struct TNativeTypeBuilder;
 
 	public:
-		CORE_API NativeType() : Type(TypeCategory::Native) {}
+		PIPE_API NativeType() : Type(TypeCategory::Native) {}
 	};
 }    // namespace p

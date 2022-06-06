@@ -9,7 +9,7 @@
 
 namespace p::core
 {
-	inline CORE_API sizet HashBytes(void const* ptr, sizet const len) noexcept
+	inline PIPE_API sizet HashBytes(void const* ptr, sizet const len) noexcept
 	{
 		return robin_hood::hash_bytes(ptr, len);
 	}
@@ -18,7 +18,7 @@ namespace p::core
 	// Use offset and prime based on the architecture (64bit or 32bit)
 	// http://www.isthe.com/chongo/tech/comp/fnv/index.html
 	template<typename CharType = TChar>
-	inline CORE_API constexpr sizet GetStringHash(const CharType* str)
+	inline PIPE_API constexpr sizet GetStringHash(const CharType* str)
 	{
 		// 32/64 bit architecture switch
 		if constexpr (sizeof(sizet) < 64)
@@ -41,7 +41,7 @@ namespace p::core
 		}
 	}
 	template<typename CharType = TChar>
-	inline CORE_API constexpr sizet GetStringHash(const CharType* str, sizet size)
+	inline PIPE_API constexpr sizet GetStringHash(const CharType* str, sizet size)
 	{
 		sizet i = 0;
 		// 32/64 bit architecture switch

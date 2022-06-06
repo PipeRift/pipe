@@ -35,12 +35,12 @@ namespace p
 
 	public:
 
-		CORE_API void* GetData(void* container) const;
-		CORE_API i32 GetSize(void* container) const;
-		CORE_API void* GetItem(void* container, i32 index) const;
-		CORE_API void AddItem(void* container, void* item) const;
-		CORE_API void RemoveItem(void* container, i32 index) const;
-		CORE_API void Empty(void* container) const;
+		PIPE_API void* GetData(void* container) const;
+		PIPE_API i32 GetSize(void* container) const;
+		PIPE_API void* GetItem(void* container, i32 index) const;
+		PIPE_API void AddItem(void* container, void* item) const;
+		PIPE_API void RemoveItem(void* container, i32 index) const;
+		PIPE_API void Empty(void* container) const;
 	};
 
 	inline void* ArrayProperty::GetData(void* container) const

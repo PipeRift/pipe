@@ -10,12 +10,12 @@
 
 namespace p::Log
 {
-	CORE_API void Init(Path logPath = {});
-	CORE_API void Shutdown();
+	PIPE_API void Init(Path logPath = {});
+	PIPE_API void Shutdown();
 
-	void CORE_API Info(StringView msg);
-	void CORE_API Warning(StringView msg);
-	void CORE_API Error(StringView msg);
+	void PIPE_API Info(StringView msg);
+	void PIPE_API Warning(StringView msg);
+	void PIPE_API Error(StringView msg);
 
 	template<typename... Args>
 	void Info(StringView format, Args... args)

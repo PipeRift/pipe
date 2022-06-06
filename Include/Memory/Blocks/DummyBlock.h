@@ -12,7 +12,7 @@ namespace p::Memory
 	 * It serves the single purpose of documenting a Block's interface.
 	 * Not intended to be used.
 	 */
-	class CORE_API DummyBlock : BaseBlock
+	class PIPE_API DummyBlock : BaseBlock
 	{
 	public:
 		DummyBlock()  = default;

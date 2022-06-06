@@ -95,7 +95,7 @@ namespace p::core
 	 * Searching, comparing and other operations are way cheaper, but creating (indexing) is more
 	 * expensive.
 	 */
-	struct CORE_API Name
+	struct PIPE_API Name
 	{
 		friend NameTable;
 		using Id = sizet;

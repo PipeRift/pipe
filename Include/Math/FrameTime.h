@@ -8,7 +8,7 @@
 
 namespace p
 {
-	struct CORE_API FrameTime
+	struct PIPE_API FrameTime
 	{
 	protected:
 		DateTime previousTime;

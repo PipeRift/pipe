@@ -9,7 +9,7 @@
 
 namespace p::Memory
 {
-	class CORE_API HeapBlock : public Block
+	class PIPE_API HeapBlock : public Block
 	{
 	public:
 		HeapBlock() = default;

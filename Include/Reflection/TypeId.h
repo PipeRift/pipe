@@ -12,7 +12,7 @@
 
 namespace p
 {
-	struct CORE_API TypeId
+	struct PIPE_API TypeId
 	{
 	protected:
 		u64 id = 0;

@@ -12,7 +12,7 @@
 namespace p::core::Crc
 {
 	/** generates CRC hash of the memory area */
-	CORE_API u32 MemCrc32(const void* Data, i32 Length, u32 CRC = 0);
+	PIPE_API u32 MemCrc32(const void* Data, i32 Length, u32 CRC = 0);
 }    // namespace p::core::Crc
 
 namespace p

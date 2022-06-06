@@ -8,66 +8,66 @@
 namespace p::ecs
 {
 	/** Remove ids containing a component from 'ids'. Does not guarantee order. */
-	CORE_API void ExcludeIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	PIPE_API void ExcludeIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids containing a component from 'ids'. Guarantees order. */
-	CORE_API void ExcludeIfStable(
+	PIPE_API void ExcludeIfStable(
 	    const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids NOT containing a component from 'ids'. Does not guarantee order. */
-	CORE_API void ExcludeIfNot(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	PIPE_API void ExcludeIfNot(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids NOT containing a component from 'ids'. Guarantees order. */
-	CORE_API void ExcludeIfNotStable(
+	PIPE_API void ExcludeIfNotStable(
 	    const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 
 	/** Find ids containing a component from a list 'source' into 'results'. */
-	CORE_API void GetIf(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results);
-	CORE_API void GetIf(
+	PIPE_API void GetIf(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results);
+	PIPE_API void GetIf(
 	    const TArray<const Pool*>& pools, const TSpan<Id>& source, TArray<Id>& results);
 
 	/** Find ids NOT containing a component from a list 'source' into 'results'. */
-	CORE_API void GetIfNot(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results);
+	PIPE_API void GetIfNot(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results);
 
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Does not guarantee order.
 	 */
-	CORE_API void ExtractIf(
+	PIPE_API void ExtractIf(
 	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Guarantees order.
 	 */
-	CORE_API void ExtractIfStable(
+	PIPE_API void ExtractIfStable(
 	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Does not guarantee order.
 	 */
-	CORE_API void ExtractIfNot(
+	PIPE_API void ExtractIfNot(
 	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
 
 	/**
 	 * Find and remove ids not containing a component from list 'source' into 'results'.
 	 * Guarantees order.
 	 */
-	CORE_API void ExtractIfNotStable(
+	PIPE_API void ExtractIfNotStable(
 	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
 
 
 	/** Find all ids containing all of the components */
-	CORE_API void ListAll(TArray<const Pool*> pools, TArray<Id>& ids);
+	PIPE_API void ListAll(TArray<const Pool*> pools, TArray<Id>& ids);
 
 	/** Find all ids containing any of the components. Includes possible duplicates */
-	CORE_API void ListAny(const TArray<const Pool*>& pools, TArray<Id>& ids);
+	PIPE_API void ListAny(const TArray<const Pool*>& pools, TArray<Id>& ids);
 
 	/** Find all ids containing any of the components. Prevents duplicates */
-	CORE_API void ListAnyUnique(const TArray<const Pool*>& pools, TArray<Id>& ids);
+	PIPE_API void ListAnyUnique(const TArray<const Pool*>& pools, TArray<Id>& ids);
 
 
 	// Templated API

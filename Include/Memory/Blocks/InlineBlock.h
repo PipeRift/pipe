@@ -9,7 +9,7 @@
 namespace p::Memory
 {
 	template<sizet Size>
-	class CORE_API InlineBlock : BaseBlock
+	class PIPE_API InlineBlock : BaseBlock
 	{
 	private:
 		u8 inlineData[Size];

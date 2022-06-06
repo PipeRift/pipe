@@ -71,7 +71,7 @@ namespace p
 	 * @see FDateRange
 	 * @see FTimespan
 	 */
-	struct CORE_API DateTime
+	struct PIPE_API DateTime
 	{
 	protected:
 		/** Holds the days per month in a non-leap year. */

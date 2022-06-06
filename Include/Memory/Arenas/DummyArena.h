@@ -10,7 +10,7 @@ namespace p::Memory
 	 * It serves the single purpose of documenting an Arena's interface.
 	 * Not intended to be used.
 	 */
-	class CORE_API DummyArena
+	class PIPE_API DummyArena
 	{
 	public:
 		DummyArena() {}

@@ -10,7 +10,7 @@
 
 namespace p::Memory
 {
-	class CORE_API BestFitArena : public IArena
+	class PIPE_API BestFitArena : public IArena
 	{
 	public:
 		struct Slot

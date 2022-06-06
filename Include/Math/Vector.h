@@ -763,19 +763,19 @@ namespace p
 		// however, in practice if you have 0 scale, and relative transform doesn't make much
 		// sense anymore because you should be instead of showing gigantic infinite mesh also
 		// returning BIG_NUMBER causes sequential NaN issues by multiplying so we hardcode as 0
-		CORE_API v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = math::SMALL_NUMBER);
-		CORE_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
-		CORE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
+		PIPE_API v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = math::SMALL_NUMBER);
+		PIPE_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
+		PIPE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
 	}    // namespace Vectors
 
-	CORE_API void Read(Reader& ct, v2& val);
-	CORE_API void Write(Writer& ct, v2 val);
+	PIPE_API void Read(Reader& ct, v2& val);
+	PIPE_API void Write(Writer& ct, v2 val);
 
-	CORE_API void Read(Reader& ct, v2_u32& val);
-	CORE_API void Write(Writer& ct, v2_u32 val);
+	PIPE_API void Read(Reader& ct, v2_u32& val);
+	PIPE_API void Write(Writer& ct, v2_u32 val);
 
-	CORE_API void Read(Reader& ct, v3& val);
-	CORE_API void Write(Writer& ct, const v3& val);
+	PIPE_API void Read(Reader& ct, v3& val);
+	PIPE_API void Write(Writer& ct, const v3& val);
 }    // namespace p
 
 REFLECT_NATIVE_TYPE(p::v2);

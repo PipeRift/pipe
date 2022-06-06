@@ -22,7 +22,7 @@ namespace p::files
 		public:
 			Listener(FileWatcher& self) : self{self} {}
 
-			CORE_API void handleFileAction(FileWatchId watchid, const std::string& dir,
+			PIPE_API void handleFileAction(FileWatchId watchid, const std::string& dir,
 			    const std::string& filename, efsw::Action action, std::string oldFilename) override;
 		};
 		friend Listener;
@@ -35,17 +35,17 @@ namespace p::files
 
 
 	public:
-		CORE_API FileWatcher() : listener{*this} {}
-		CORE_API ~FileWatcher();
+		PIPE_API FileWatcher() : listener{*this} {}
+		PIPE_API ~FileWatcher();
 
 		// Adds one extension. If there are no extensions, all are allowed
-		CORE_API FileWatchId AddPath(StringView path, bool recursive = true);
-		CORE_API void RemovePath(StringView path);
-		CORE_API void RemovePath(FileWatchId id);
-		CORE_API void Reset();
-		CORE_API void AddExtension(StringView extension);
+		PIPE_API FileWatchId AddPath(StringView path, bool recursive = true);
+		PIPE_API void RemovePath(StringView path);
+		PIPE_API void RemovePath(FileWatchId id);
+		PIPE_API void Reset();
+		PIPE_API void AddExtension(StringView extension);
 
-		static CORE_API void StartAsync();
+		static PIPE_API void StartAsync();
 	};
 }    // namespace p::files
 

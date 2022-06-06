@@ -11,7 +11,7 @@ namespace p
 	struct IFormatReader
 	{};
 
-	enum CORE_API WriteFlags
+	enum PIPE_API WriteFlags
 	{
 		WriteFlags_None              = 0,
 		WriteFlags_CacheStringKeys   = 1 << 0,
@@ -26,23 +26,23 @@ namespace p
 		TArray<sizet> flagStack;
 
 	public:
-		CORE_API void PushAddFlags(WriteFlags flags)
+		PIPE_API void PushAddFlags(WriteFlags flags)
 		{
 			flagStack.Add(activeFlags);
 			activeFlags |= flags;
 		}
-		CORE_API void PushRemoveFlags(WriteFlags flags)
+		PIPE_API void PushRemoveFlags(WriteFlags flags)
 		{
 			flagStack.Add(activeFlags);
 			activeFlags &= ~flags;
 		}
-		CORE_API void PopFlags()
+		PIPE_API void PopFlags()
 		{
 			activeFlags = flagStack.Last();
 			flagStack.RemoveAt(flagStack.Size() - 1);
 		}
 
-		CORE_API sizet GetFlags() const
+		PIPE_API sizet GetFlags() const
 		{
 			return activeFlags;
 		}

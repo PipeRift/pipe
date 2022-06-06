@@ -65,7 +65,7 @@ namespace p::core
 	/**
 	 * Implements a globally unique identifier.
 	 */
-	struct CORE_API Guid
+	struct PIPE_API Guid
 	{
 	public:
 		/** Default constructor. */

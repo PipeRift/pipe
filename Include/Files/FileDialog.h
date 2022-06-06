@@ -21,7 +21,7 @@ namespace p::files
 	 * can decide to, for example, display last user folder (windows).
 	 * @return selected file path
 	 */
-	CORE_API Path SelectFileDialog(StringView title, const Path& defaultPath,
+	PIPE_API Path SelectFileDialog(StringView title, const Path& defaultPath,
 	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}
@@ -36,7 +36,7 @@ namespace p::files
 	 * @param alwaysShowDefaultPath if true dialog will open to default path. Else, the system
 	 * can decide to, for example, display last user folder (windows).
 	 */
-	CORE_API void SelectFilesDialog(StringView title, const Path& defaultPath,
+	PIPE_API void SelectFilesDialog(StringView title, const Path& defaultPath,
 	    TArray<Path>& outFiles,
 	    const TArray<DialogFileFilter>& filters =
 	        {
@@ -52,7 +52,7 @@ namespace p::files
 	 * can decide to, for example, display last user folder (windows).
 	 * @return selected folder path
 	 */
-	CORE_API Path SelectFolderDialog(
+	PIPE_API Path SelectFolderDialog(
 	    StringView title, const Path& defaultPath, bool alwaysShowDefaultPath = false);
 
 	/**
@@ -63,7 +63,7 @@ namespace p::files
 	 * can decide to, for example, display last user folder (windows).
 	 * @return selected file path
 	 */
-	CORE_API Path SaveFileDialog(StringView title, const Path& defaultPath,
+	PIPE_API Path SaveFileDialog(StringView title, const Path& defaultPath,
 	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}

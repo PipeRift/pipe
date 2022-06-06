@@ -43,19 +43,19 @@ namespace p
 			return new (ptr) PropertyType(std::forward<Args>(args)...);
 		}
 
-		CORE_API Type* FindType(TypeId id) const;
+		PIPE_API Type* FindType(TypeId id) const;
 
 
-		CORE_API ConstIterator begin() const
+		PIPE_API ConstIterator begin() const
 		{
 			return idToTypes.begin();
 		}
-		CORE_API ConstIterator end() const
+		PIPE_API ConstIterator end() const
 		{
 			return idToTypes.end();
 		}
 
 
-		static CORE_API ReflectionRegistry& Get();
+		static PIPE_API ReflectionRegistry& Get();
 	};
 }    // namespace p

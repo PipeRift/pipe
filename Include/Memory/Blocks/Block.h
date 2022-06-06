@@ -6,7 +6,7 @@
 
 namespace p::Memory
 {
-	class CORE_API Block
+	class PIPE_API Block
 	{
 	protected:
 		void* data = nullptr;

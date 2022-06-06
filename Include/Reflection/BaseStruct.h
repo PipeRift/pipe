@@ -10,7 +10,7 @@ namespace p
 {
 	class StructType;
 
-	struct CORE_API BaseStruct
+	struct PIPE_API BaseStruct
 	{
 		void SerializeReflection(p::ReadWriter& ct) {}
 		// StructType* GetType() const;

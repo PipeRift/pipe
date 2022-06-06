@@ -47,7 +47,7 @@ namespace p
 
 		/** Type */
 
-		CORE_API bool IsChildOf(const DataType* other) const;
+		PIPE_API bool IsChildOf(const DataType* other) const;
 
 		template<typename T>
 		bool IsChildOf() const
@@ -57,26 +57,26 @@ namespace p
 			return IsChildOf(static_cast<DataType*>(TTypeInstance<T>::GetType()));
 		}
 
-		CORE_API bool IsParentOf(const DataType* other) const
+		PIPE_API bool IsParentOf(const DataType* other) const
 		{
 			return other && other->IsChildOf(this);
 		}
 
-		CORE_API bool HasFlag(TypeFlags flag) const;
-		CORE_API bool HasAllFlags(TypeFlags inFlags) const;
-		CORE_API bool HasAnyFlags(TypeFlags inFlags) const;
+		PIPE_API bool HasFlag(TypeFlags flag) const;
+		PIPE_API bool HasAllFlags(TypeFlags inFlags) const;
+		PIPE_API bool HasAnyFlags(TypeFlags inFlags) const;
 
 		/** Properties */
-		CORE_API const Property* FindProperty(const Name& propertyName) const;
-		CORE_API const TArray<Property*>& GetSelfProperties() const;
-		CORE_API void GetProperties(TArray<Property*>& outProperties) const;
+		PIPE_API const Property* FindProperty(const Name& propertyName) const;
+		PIPE_API const TArray<Property*>& GetSelfProperties() const;
+		PIPE_API void GetProperties(TArray<Property*>& outProperties) const;
 
-		CORE_API DataType* GetParent() const
+		PIPE_API DataType* GetParent() const
 		{
 			return parent;
 		}
-		CORE_API const TArray<DataType*>& GetChildren() const;
-		CORE_API void GetChildrenDeep(TArray<DataType*>& outChildren) const;
-		CORE_API DataType* FindChild(const Name& className) const;
+		PIPE_API const TArray<DataType*>& GetChildren() const;
+		PIPE_API void GetChildrenDeep(TArray<DataType*>& outChildren) const;
+		PIPE_API DataType* FindChild(const Name& className) const;
 	};
 }    // namespace p
