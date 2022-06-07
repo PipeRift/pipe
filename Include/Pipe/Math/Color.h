@@ -237,7 +237,7 @@ namespace p
 			else
 			{
 				CheckMsg(false, "Not supported color conversion");
-				return {};
+				return TColor<to>{};
 			}
 		}
 
