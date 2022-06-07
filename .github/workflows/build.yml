@@ -1,6 +1,13 @@
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - 'v*.*.*'
+  pull_request:
+  workflow_call:
 
 jobs:
   Build:
@@ -83,11 +90,11 @@ jobs:
       - name: Build
         run: cmake --build Build --config ${{ matrix.config }}
 
-      - uses: actions/upload-artifact@v2
-        # Only clang artifacts are stored
-        if: ${{ matrix.compiler == 'clang' && matrix.config == 'Release' }}
+      - name: Upload binaries as artifacts
+        uses: actions/upload-artifact@v2
+        if: ${{ matrix.config == 'Release' && matrix.compiler == 'clang' }} # Only clang artifacts are stored
         with:
-          name: ${{ matrix.os-name }}-${{ matrix.compiler }}-build
+          name: pipe-${{ matrix.os-name }}
           path: Build/Bin
 
       - name: Run Tests
