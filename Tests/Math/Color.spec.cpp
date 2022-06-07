@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <PMath/Color.h>
+#include <Pipe/Math/Color.h>
 
 #include <cmath>
 #include <limits>

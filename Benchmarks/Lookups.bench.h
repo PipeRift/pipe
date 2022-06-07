@@ -3,8 +3,8 @@
 
 #include "nanobench.h"
 
-#include <PCore/Array.h>
-#include <PCore/Set.h>
+#include <Pipe/Core/Array.h>
+#include <Pipe/Core/Set.h>
 
 using namespace ankerl;
 using namespace p;

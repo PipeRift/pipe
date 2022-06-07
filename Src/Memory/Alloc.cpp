@@ -1,14 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Memory/Alloc.h"
+#include "Pipe/Memory/Alloc.h"
 
-#include "PCore/Checks.h"
-#include "PCore/Profiler.h"
-#include "PMath/Math.h"
+#include "Pipe/Core/Checks.h"
+#include "Pipe/Core/Profiler.h"
+#include "Pipe/Math/Math.h"
 
 #include <cstdlib>
 #include <memory>
-
 
 
 namespace p

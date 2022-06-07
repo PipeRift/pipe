@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <PRefl/Class.h>
+#include <Pipe/Reflect/Class.h>
 
 
 using namespace snowhouse;

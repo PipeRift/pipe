@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Memory/Blocks/HeapBlock.h"
+#include "Pipe/Memory/Blocks/HeapBlock.h"
 
 #include <memory>
 
@@ -20,16 +20,16 @@ namespace p::Memory
 		}
 	}
 
-	HeapBlock::HeapBlock(const HeapBlock& other)
+	HeapBlock::HeapBlock(const HeapBlock& other) : Block(other)
 	{
 		if (other.data)
 		{
 			Allocate(other.size);
-			memcpy(other.data, data, size);
+			std::memcpy(other.data, data, size);
 		}
 	}
 
-	HeapBlock::HeapBlock(HeapBlock&& other)
+	HeapBlock::HeapBlock(HeapBlock&& other) noexcept
 	{
 		data       = other.data;
 		size       = other.size;
@@ -52,11 +52,11 @@ namespace p::Memory
 			}
 			Allocate(other.size);
 		}
-		memcpy(other.data, data, size);
+		std::memcpy(other.data, data, size);
 		return *this;
 	}
 
-	HeapBlock& HeapBlock::operator=(HeapBlock&& other)
+	HeapBlock& HeapBlock::operator=(HeapBlock&& other) noexcept
 	{
 		data       = other.data;
 		size       = other.size;

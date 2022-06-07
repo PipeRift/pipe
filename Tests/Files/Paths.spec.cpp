@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <PCore/PlatformProcess.h>
-#include <PFiles/Paths.h>
+#include <Pipe/Core/PlatformProcess.h>
+#include <Pipe/Files/Paths.h>
 
 
 using namespace snowhouse;
