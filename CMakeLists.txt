@@ -50,7 +50,7 @@ generate_export_header(Pipe
     BASE_NAME PIPE
     EXPORT_MACRO_NAME PIPE_API
     EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Pipe/Export.h)
-rift_target_define_platform(Pipe)
+pipe_target_define_platform(Pipe)
 
 target_include_directories(Pipe PUBLIC Include)
 file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
@@ -74,12 +74,12 @@ target_link_libraries(Pipe PRIVATE
     spdlog
 )
 
-if(RIFT_ENABLE_PROFILER)
-    target_compile_definitions(Pipe PUBLIC RIFT_ENABLE_PROFILER=1)
+if(PIPE_ENABLE_PROFILER)
+    target_compile_definitions(Pipe PUBLIC PIPE_ENABLE_PROFILER=1)
     target_link_libraries(Pipe PUBLIC Tracy)
 endif()
-rift_target_shared_output_directory(Pipe)
-rift_target_enable_CPP20(Pipe)
+pipe_target_shared_output_directory(Pipe)
+pipe_target_enable_CPP20(Pipe)
 #target_compile_options(Pipe PRIVATE /showIncludes)
 
 

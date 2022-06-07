@@ -27,7 +27,7 @@ namespace p::Log
 	TOwnPtr<spdlog::logger> errorLogger;
 
 
-#if RIFT_ENABLE_PROFILER
+#if PIPE_ENABLE_PROFILER
 	template<typename Mutex>
 	class ProfilerSink : public spdlog::sinks::base_sink<Mutex>
 	{
@@ -80,7 +80,7 @@ namespace p::Log
 		cliErrSink->set_color(spdlog::level::warn, cliSink->yellow);
 #endif
 		// Profiler
-#if RIFT_ENABLE_PROFILER
+#if PIPE_ENABLE_PROFILER
 		sinks.Add(std::make_shared<ProfilerSink_mt>());
 #endif
 

@@ -148,7 +148,7 @@ namespace p
 	using CopyConst = typename TCopyConst<T, Reference>::type;
 }    // namespace p
 
-#define RIFT_DECLARE_IS_TRIVIAL(T, isTrivial)                                                \
+#define PIPE_DECLARE_IS_TRIVIAL(T, isTrivial)                                                \
 	namespace std                                                                            \
 	{                                                                                        \
 		template<>                                                                           \

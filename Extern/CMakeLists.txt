@@ -4,7 +4,7 @@ set(BUILD_SHARED_LIBS OFF)
 
 ################################################################################
 # Tracy
-set(TRACY_ENABLE ${RIFT_ENABLE_PROFILER})
+set(TRACY_ENABLE ${PIPE_ENABLE_PROFILER})
 option(TRACY_ON_DEMAND "Profiling enabled on demand" OFF)
 option(TRACY_NO_EXIT "Client executable does not exit until all profile data is sent to server" OFF)
 option(TRACY_NO_BROADCAST "Disable client discovery by broadcast to local network" OFF)
@@ -24,13 +24,13 @@ if(PLATFORM_LINUX)
     target_link_libraries(Tracy PRIVATE ${DLPATH})
     set_target_properties(Tracy PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
-rift_target_shared_output_directory(Tracy)
+pipe_target_shared_output_directory(Tracy)
 
 # TODO: Find a way to detect which platforms support TSC
 # target_compile_definitions(Tracy PRIVATE TRACY_TIMER_QPC=1)
-rift_target_disable_all_warnings(Tracy PRIVATE)
+pipe_target_disable_all_warnings(Tracy PRIVATE)
 set_target_properties (Tracy PROPERTIES FOLDER Extern)
-rift_target_enable_CPP20(Tracy)
+pipe_target_enable_CPP20(Tracy)
 
 add_subdirectory(portable-file-dialogs)
 
@@ -38,10 +38,10 @@ add_library(Bandit INTERFACE)
 target_include_directories(Bandit INTERFACE Bandit)
 
 add_subdirectory(date)
-rift_target_disable_all_warnings(date INTERFACE)
+pipe_target_disable_all_warnings(date INTERFACE)
 
 add_subdirectory(efsw)
-rift_target_disable_all_warnings(efsw PRIVATE)
+pipe_target_disable_all_warnings(efsw PRIVATE)
 if(PLATFORM_LINUX)
     set_target_properties(efsw PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()

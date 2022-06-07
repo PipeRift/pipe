@@ -2,6 +2,25 @@
 
 #pragma once
 
+#ifndef PLATFORM_WINDOWS
+#	if defined(_WIN64)
+#		define PLATFORM_WINDOWS 1
+#	elif defined(_WIN32)
+#		define PLATFORM_WINDOWS 1
+#	endif
+#endif
+#ifndef PLATFORM_LINUX
+#	if defined(__linux__)
+#		define PLATFORM_LINUX 1
+#	endif
+#endif
+#ifndef PLATFORM_MACOS
+#	if defined(__APPLE__)
+#		define PLATFORM_MACOS 1
+#	endif
+#endif
+
+
 #if PLATFORM_WINDOWS
 #	include "Pipe/Core/Windows/WindowsPlatform.h"
 #elif PLATFORM_LINUX

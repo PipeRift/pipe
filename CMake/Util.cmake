@@ -14,14 +14,14 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(COMPILER_MSVC TRUE)
 endif()
 
-function(rift_target_enable_CPP20 target)
+function(pipe_target_enable_CPP20 target)
     set_target_properties (${target} PROPERTIES CXX_STANDARD 20)
     if(COMPILER_GCC)
         set_target_properties(${target} PROPERTIES COMPILE_FLAGS "-fconcepts")
     endif()
 endfunction()
 
-function(rift_target_define_platform target)
+function(pipe_target_define_platform target)
     if (PLATFORM_WINDOWS)
         target_compile_definitions(${target} PRIVATE PLATFORM_WINDOWS=1)
     elseif (PLATFORM_LINUX)
@@ -36,7 +36,7 @@ function(rift_target_define_platform target)
     )
 endfunction()
 
-function(rift_target_shared_output_directory target)
+function(pipe_target_shared_output_directory target)
     set_target_properties(${target}
         PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
@@ -46,8 +46,8 @@ function(rift_target_shared_output_directory target)
     )
 endfunction()
 
-function(rift_target_enable_warnings target_name)
-    if(RIFT_BUILD_WARNINGS)
+function(pipe_target_enable_warnings target_name)
+    if(pipe_BUILD_WARNINGS)
         if(COMPILER_MSVC)
             list(APPEND MSVC_OPTIONS "/W3")
             if(MSVC_VERSION GREATER 1900) # Allow non fatal security warnings for msvc 2015
@@ -67,7 +67,7 @@ function(rift_target_enable_warnings target_name)
     endif()
 endfunction()
 
-function(rift_target_disable_all_warnings target_name exposure)
+function(pipe_target_disable_all_warnings target_name exposure)
     if(COMPILER_CLANG)
     target_compile_options(${target_name} ${exposure} -Wno-everything)
     elseif(COMPILER_GCC)
