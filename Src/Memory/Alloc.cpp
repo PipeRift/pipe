@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Memory/Alloc.h"
+#include "Pipe/Memory/Alloc.h"
 
-#include "Core/Checks.h"
-#include "Math/Math.h"
-#include "Profiler.h"
+#include "Pipe/Core/Checks.h"
+#include "Pipe/Core/Profiler.h"
+#include "Pipe/Math/Math.h"
 
 #include <cstdlib>
 #include <memory>

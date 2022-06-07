@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "ECS/IdRegistry.h"
+#include "Pipe/ECS/IdRegistry.h"
 
 
 namespace p::ecs

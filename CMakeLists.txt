@@ -47,14 +47,14 @@ else()
 endif()
 
 generate_export_header(Pipe
-    BASE_NAME CORE
-    EXPORT_MACRO_NAME CORE_API
-    EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Export.h)
+    BASE_NAME PIPE
+    EXPORT_MACRO_NAME PIPE_API
+    EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Pipe/Export.h)
 rift_target_define_platform(Pipe)
 
 target_include_directories(Pipe PUBLIC Include)
-file(GLOB_RECURSE CORE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
-target_sources(Pipe PRIVATE ${CORE_SOURCE_FILES})
+file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
+target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
 target_link_libraries(Pipe PUBLIC
@@ -63,7 +63,6 @@ target_link_libraries(Pipe PUBLIC
     fmt::fmt
     yyjson
     robin_hood
-    Taskflow
     tsl::robin_map
     tsl::sparse_map
     Tracy
@@ -85,7 +84,7 @@ rift_target_enable_CPP20(Pipe)
 
 
 ################################################################################
-#   Core Tests (compiled) executable
+#   Pipe Tests (compiled) executable
 
 if(BUILD_TESTING AND PIPE_BUILD_TESTS)
     include (CTest)

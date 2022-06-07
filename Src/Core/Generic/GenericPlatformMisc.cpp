@@ -1,11 +1,11 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Core/Generic/GenericPlatformMisc.h"
+#include "Pipe/Core/Generic/GenericPlatformMisc.h"
 
-#include "Core/Guid.h"
-#include "Core/PlatformMisc.h"
-#include "Math/DateTime.h"
-#include "Math/Timespan.h"
+#include "Pipe/Core/Guid.h"
+#include "Pipe/Core/PlatformMisc.h"
+#include "Pipe/Math/DateTime.h"
+#include "Pipe/Math/Timespan.h"
 
 
 namespace p::core

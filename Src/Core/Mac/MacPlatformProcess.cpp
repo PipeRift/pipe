@@ -1,12 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #if PLATFORM_MACOS
-#	include "Core/Mac/MacPlatformProcess.h"
-#	include "Core/PlatformMisc.h"
-#	include "Core/String.h"
-#	include "Core/FixedString.h"
-#	include "Files/Paths.h"
-#	include "Files/Files.h"
+#	include "Pipe/Core/Mac/MacPlatformProcess.h"
+#	include "Pipe/Core/PlatformMisc.h"
+#	include "Pipe/Core/String.h"
+#	include "Pipe/Core/FixedString.h"
+#	include "Pipe/Files/Paths.h"
+#	include "Pipe/Files/Files.h"
 
 #	include <mach-o/dyld.h>
 #	include <mach/thread_act.h>

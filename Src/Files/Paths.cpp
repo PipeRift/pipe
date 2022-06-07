@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 // Some functions are adaptations to StringView from std::filesystem
 
-#include "Files/Paths.h"
+#include "Pipe/Files/Paths.h"
 
-#include "Core/Char.h"
-#include "Core/PlatformProcess.h"
+#include "Pipe/Core/Char.h"
+#include "Pipe/Core/PlatformProcess.h"
 
 
 namespace p::files

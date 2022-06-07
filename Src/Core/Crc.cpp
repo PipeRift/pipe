@@ -1,9 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 // Based on Unreal Engine 4 Crc
 
-#include "Core/Crc.h"
+#include "Pipe/Core/Crc.h"
 
-#include "Memory/Alloc.h"
+#include "Pipe/Memory/Alloc.h"
 
 
 namespace p::core::Crc

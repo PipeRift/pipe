@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Math/Vector.h"
+#include "Pipe/Math/Vector.h"
 
-#include "Core/PlatformMisc.h"
-#include "Math/Rotator.h"
-#include "Serialization/Contexts.h"
+#include "Pipe/Core/PlatformMisc.h"
+#include "Pipe/Math/Rotator.h"
+#include "Pipe/Serialize/Serialization.h"
 
 
-namespace p::math
+namespace p
 {
 	float Rotator::ClampAxis(float angle)
 	{
@@ -35,40 +35,40 @@ namespace p::math
 	}
 
 
-	void Read(serl::ReadContext& ct, v2& val)
+	void Read(Reader& ct, v2& val)
 	{
 		ct.BeginObject();
 		ct.Next(TX("x"), val.x);
 		ct.Next(TX("y"), val.y);
 	}
-	void Write(serl::WriteContext& ct, v2 val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-	}
-
-	void Read(serl::ReadContext& ct, v2_u32& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-	}
-	void Write(serl::WriteContext& ct, v2_u32 val)
+	void Write(Writer& ct, v2 val)
 	{
 		ct.BeginObject();
 		ct.Next(TX("x"), val.x);
 		ct.Next(TX("y"), val.y);
 	}
 
-	void Read(serl::ReadContext& ct, v3& val)
+	void Read(Reader& ct, v2_u32& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+	}
+	void Write(Writer& ct, v2_u32 val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+	}
+
+	void Read(Reader& ct, v3& val)
 	{
 		ct.BeginObject();
 		ct.Next(TX("x"), val.x);
 		ct.Next(TX("y"), val.y);
 		ct.Next(TX("z"), val.z);
 	}
-	void Write(serl::WriteContext& ct, const v3& val)
+	void Write(Writer& ct, const v3& val)
 	{
 		ct.BeginObject();
 		ct.Next(TX("x"), val.x);
@@ -116,4 +116,4 @@ namespace p::math
 		const float delta  = math::Clamp(-dot / length, 0.f, 1.f);
 		return a + (ab * delta);
 	}
-}    // namespace p::math
+}    // namespace p

@@ -1,19 +1,17 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Core/Array.h>
-#include <Core/Guid.h>
-#include <Core/Map.h>
-#include <Core/Name.h>
-#include <Core/String.h>
-#include <Reflection/PredefinedTypes.h>
-#include <Reflection/TypeName.h>
+#include <Pipe/Core/Array.h>
+#include <Pipe/Core/Guid.h>
+#include <Pipe/Core/Map.h>
+#include <Pipe/Core/Name.h>
+#include <Pipe/Core/String.h>
+#include <Pipe/Reflect/Reflection.h>
 
 
 using namespace snowhouse;
 using namespace bandit;
 using namespace p;
-using namespace p::refl;
 
 
 struct AnStruct

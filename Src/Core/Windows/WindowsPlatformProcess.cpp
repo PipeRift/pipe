@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #if PLATFORM_WINDOWS
-#	include "Files/Paths.h"
-#	include "Files/Files.h"
-#	include "Core/Windows/WindowsPlatformProcess.h"
-#	include "Core/String.h"
+#	include "Pipe/Files/Paths.h"
+#	include "Pipe/Files/Files.h"
+#	include "Pipe/Core/Windows/WindowsPlatformProcess.h"
+#	include "Pipe/Core/String.h"
 
 #	include <Windows.h>
 

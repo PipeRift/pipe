@@ -1,13 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Reflection/TypeId.h>
+#include <Pipe/Reflect/TypeId.h>
 
 
 using namespace snowhouse;
 using namespace bandit;
 using namespace p;
-using namespace p::refl;
 
 struct One
 {};

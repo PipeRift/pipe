@@ -16,9 +16,6 @@
 [submodule "Extern/spdlog"]
 	path = Extern/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule "Extern/taskflow"]
-	path = Extern/taskflow
-	url = https://github.com/taskflow/taskflow.git
 [submodule "Extern/robin-map"]
 	path = Extern/robin-map
 	url = https://github.com/Tessil/robin-map.git

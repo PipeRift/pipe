@@ -1,22 +1,22 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Core/String.h"
+#include "Pipe/Core/String.h"
 
-#include "Core/Char.h"
-#include "Core/Regex.h"
-#include "Math/Math.h"
-#include "Serialization/Contexts.h"
+#include "Pipe/Core/Char.h"
+#include "Pipe/Core/Regex.h"
+#include "Pipe/Math/Math.h"
+#include "Pipe/Serialize/Serialization.h"
 
 
 namespace p
 {
-	void Read(p::ReadContext& ct, p::String& val)
+	void Read(p::Reader& ct, p::String& val)
 	{
 		p::StringView view;
 		ct.Serialize(view);
 		val = view;
 	}
-	void Write(p::WriteContext& ct, const p::String& val)
+	void Write(p::Writer& ct, const p::String& val)
 	{
 		ct.Serialize(p::StringView{val});
 	}

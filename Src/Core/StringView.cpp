@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Core/StringView.h"
+#include "Pipe/Core/StringView.h"
 
 #include <charconv>
 

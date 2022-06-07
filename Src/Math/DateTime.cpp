@@ -1,9 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Math/DateTime.h"
+#include "Pipe/Math/DateTime.h"
 
-#include "Core/Char.h"
-#include "Log.h"
+#include "Pipe/Core/Char.h"
+#include "Pipe/Core/Log.h"
 
 
 namespace p
@@ -47,12 +47,12 @@ namespace p
 		return (u32)GetDateComponents().day();
 	}
 
-	EDayOfWeek DateTime::GetDayOfWeek() const
+	DayOfWeek DateTime::GetDayOfWeek() const
 	{
 		const WeekDay wd{Chrono::floor<Days>(value)};
 
 		// January 1, 0001 was a Monday
-		return static_cast<EDayOfWeek>((wd - Sunday).count());
+		return static_cast<DayOfWeek>((wd - Sunday).count());
 	}
 
 	u32 DateTime::GetDayOfYear() const
@@ -96,29 +96,29 @@ namespace p
 
 		switch (GetDayOfWeek())
 		{
-			case EDayOfWeek::Monday: DayStr = TX("Mon"); break;
-			case EDayOfWeek::Tuesday: DayStr = TX("Tue"); break;
-			case EDayOfWeek::Wednesday: DayStr = TX("Wed"); break;
-			case EDayOfWeek::Thursday: DayStr = TX("Thu"); break;
-			case EDayOfWeek::Friday: DayStr = TX("Fri"); break;
-			case EDayOfWeek::Saturday: DayStr = TX("Sat"); break;
-			case EDayOfWeek::Sunday: DayStr = TX("Sun"); break;
+			case DayOfWeek::Monday: DayStr = TX("Mon"); break;
+			case DayOfWeek::Tuesday: DayStr = TX("Tue"); break;
+			case DayOfWeek::Wednesday: DayStr = TX("Wed"); break;
+			case DayOfWeek::Thursday: DayStr = TX("Thu"); break;
+			case DayOfWeek::Friday: DayStr = TX("Fri"); break;
+			case DayOfWeek::Saturday: DayStr = TX("Sat"); break;
+			case DayOfWeek::Sunday: DayStr = TX("Sun"); break;
 		}
 
 		switch (GetMonthOfYear())
 		{
-			case EMonthOfYear::January: MonthStr = TX("Jan"); break;
-			case EMonthOfYear::February: MonthStr = TX("Feb"); break;
-			case EMonthOfYear::March: MonthStr = TX("Mar"); break;
-			case EMonthOfYear::April: MonthStr = TX("Apr"); break;
-			case EMonthOfYear::May: MonthStr = TX("May"); break;
-			case EMonthOfYear::June: MonthStr = TX("Jun"); break;
-			case EMonthOfYear::July: MonthStr = TX("Jul"); break;
-			case EMonthOfYear::August: MonthStr = TX("Aug"); break;
-			case EMonthOfYear::September: MonthStr = TX("Sep"); break;
-			case EMonthOfYear::October: MonthStr = TX("Oct"); break;
-			case EMonthOfYear::November: MonthStr = TX("Nov"); break;
-			case EMonthOfYear::December: MonthStr = TX("Dec"); break;
+			case MonthOfYear::January: MonthStr = TX("Jan"); break;
+			case MonthOfYear::February: MonthStr = TX("Feb"); break;
+			case MonthOfYear::March: MonthStr = TX("Mar"); break;
+			case MonthOfYear::April: MonthStr = TX("Apr"); break;
+			case MonthOfYear::May: MonthStr = TX("May"); break;
+			case MonthOfYear::June: MonthStr = TX("Jun"); break;
+			case MonthOfYear::July: MonthStr = TX("Jul"); break;
+			case MonthOfYear::August: MonthStr = TX("Aug"); break;
+			case MonthOfYear::September: MonthStr = TX("Sep"); break;
+			case MonthOfYear::October: MonthStr = TX("Oct"); break;
+			case MonthOfYear::November: MonthStr = TX("Nov"); break;
+			case MonthOfYear::December: MonthStr = TX("Dec"); break;
 		}
 
 		return Strings::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(),

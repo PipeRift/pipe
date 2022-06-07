@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "ECS/Context.h"
+#include "Pipe/ECS/Context.h"
 
 
 namespace p::ecs
@@ -58,7 +58,7 @@ namespace p::ecs
 		}
 	}
 
-	Pool* Context::GetPool(refl::TypeId componentId) const
+	Pool* Context::GetPool(TypeId componentId) const
 	{
 		const i32 index = pools.FindSortedEqual(PoolInstance{componentId});
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;

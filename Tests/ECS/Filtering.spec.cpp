@@ -3,8 +3,8 @@
 #include "bandit/grammar.h"
 
 #include <bandit/bandit.h>
-#include <ECS/Context.h>
-#include <ECS/Filtering.h>
+#include <Pipe/ECS/Context.h>
+#include <Pipe/ECS/Filtering.h>
 
 
 using namespace snowhouse;

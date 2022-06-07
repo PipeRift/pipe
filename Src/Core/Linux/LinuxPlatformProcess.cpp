@@ -1,12 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #if PLATFORM_LINUX
-#	include "Core/Linux/LinuxPlatformProcess.h"
-#	include "Core/PlatformMisc.h"
-#	include "Core/String.h"
-#	include "Core/FixedString.h"
-#	include "Files/Paths.h"
-#	include "Files/Files.h"
+#	include "Pipe/Core/Linux/LinuxPlatformProcess.h"
+#	include "Pipe/Core/PlatformMisc.h"
+#	include "Pipe/Core/String.h"
+#	include "Pipe/Core/FixedString.h"
+#	include "Pipe/Files/Paths.h"
+#	include "Pipe/Files/Files.h"
 
 #	include <unistd.h>
 

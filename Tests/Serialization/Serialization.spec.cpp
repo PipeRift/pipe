@@ -1,27 +1,26 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Context.h>
-#include <Serialization/Contexts.h>
-#include <Serialization/Formats/JsonFormat.h>
+#include <Pipe/Core/Context.h>
+#include <Pipe/Serialize/Formats/JsonFormat.h>
+#include <Pipe/Serialize/Serialization.h>
 
 
 using namespace snowhouse;
 using namespace bandit;
 using namespace p;
-using namespace p::serl;
 
 
 struct TypeA
 {
 	bool value = false;
 };
-void Read(ReadContext& ct, TypeA& val)
+void Read(Reader& ct, TypeA& val)
 {
 	ct.BeginObject();
 	ct.Next("value", val.value);
 }
-void Write(WriteContext& ct, const TypeA& val)
+void Write(Writer& ct, const TypeA& val)
 {
 	ct.BeginObject();
 	ct.Next("value", val.value);
@@ -41,7 +40,7 @@ struct p::TFlags<TypeB> : public p::DefaultTFlags
 	};
 };
 
-void Serialize(CommonContext& ct, TypeB& val)
+void Serialize(ReadWriter& ct, TypeB& val)
 {
 	ct.BeginObject();
 	ct.Next("value", val.value);
@@ -52,12 +51,12 @@ struct TypeC
 {
 	bool value = false;
 
-	void Read(ReadContext& ct)
+	void Read(Reader& ct)
 	{
 		ct.BeginObject();
 		ct.Next("value", value);
 	}
-	void Write(WriteContext& ct) const
+	void Write(Writer& ct) const
 	{
 		ct.BeginObject();
 		ct.Next("value", value);
@@ -77,7 +76,7 @@ struct TypeD
 {
 	bool value = false;
 
-	void Serialize(CommonContext& ct)
+	void Serialize(ReadWriter& ct)
 	{
 		ct.BeginObject();
 		ct.Next("value", value);
@@ -101,7 +100,7 @@ go_bandit([]() {
 				TypeA val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
-				ReadContext& ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				ct.Next("type", val);
 				AssertThat(val.value, Equals(true));
@@ -112,7 +111,7 @@ go_bandit([]() {
 				val.value = true;
 
 				JsonFormatWriter writer{};
-				WriteContext ct = writer;
+				Writer ct = writer;
 				ct.BeginObject();
 				ct.Next("type", val);
 				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
@@ -122,7 +121,7 @@ go_bandit([]() {
 				TypeB val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
-				ReadContext& ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				ct.Next("type", val);
 				AssertThat(val.value, Equals(true));
@@ -133,7 +132,7 @@ go_bandit([]() {
 				val.value = true;
 
 				JsonFormatWriter writer{};
-				WriteContext ct = writer;
+				Writer ct = writer;
 				ct.BeginObject();
 				ct.Next("type", val);
 				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
@@ -145,7 +144,7 @@ go_bandit([]() {
 				TypeC val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
-				ReadContext& ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				ct.Next("type", val);
 				AssertThat(val.value, Equals(true));
@@ -156,7 +155,7 @@ go_bandit([]() {
 				val.value = true;
 
 				JsonFormatWriter writer{};
-				WriteContext ct = writer;
+				Writer ct = writer;
 				ct.BeginObject();
 				ct.Next("type", val);
 				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
@@ -166,7 +165,7 @@ go_bandit([]() {
 				TypeD val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
-				ReadContext& ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				ct.Next("type", val);
 				AssertThat(val.value, Equals(true));
@@ -177,7 +176,7 @@ go_bandit([]() {
 				val.value = true;
 
 				JsonFormatWriter writer{};
-				WriteContext ct = writer;
+				Writer ct = writer;
 				ct.BeginObject();
 				ct.Next("type", val);
 				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));

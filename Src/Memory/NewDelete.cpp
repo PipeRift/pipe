@@ -2,7 +2,7 @@
 
 
 #if defined(__cplusplus)
-#	include "Memory/Alloc.h"
+#	include "Pipe/Memory/Alloc.h"
 #	include <new>
 
 void operator delete(void* p) noexcept
@@ -76,19 +76,19 @@ void operator delete[](void* p, std::size_t n, std::align_val_t align) noexcept
 
 void* operator new(std::size_t n, std::align_val_t align) noexcept(false)
 {
-	return p::Alloc(n, size_t(align));
+	return p::Alloc(n, p::sizet(align));
 }
 void* operator new[](std::size_t n, std::align_val_t align) noexcept(false)
 {
-	return p::Alloc(n, size_t(align));
+	return p::Alloc(n, p::sizet(align));
 }
 void* operator new(std::size_t n, std::align_val_t align, const std::nothrow_t&) noexcept
 {
-	return p::Alloc(n, size_t(align));
+	return p::Alloc(n, p::sizet(align));
 }
 void* operator new[](std::size_t n, std::align_val_t align, const std::nothrow_t&) noexcept
 {
-	return p::Alloc(n, size_t(align));
+	return p::Alloc(n, p::sizet(align));
 }
 #	endif
 #endif

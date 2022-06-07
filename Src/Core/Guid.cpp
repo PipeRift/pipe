@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Core/Guid.h"
+#include "Pipe/Core/Guid.h"
 
-#include "Core/Char.h"
-#include "Core/PlatformMisc.h"
-#include "Serialization/Contexts.h"
+#include "Pipe/Core/Char.h"
+#include "Pipe/Core/PlatformMisc.h"
+#include "Pipe/Serialize/Serialization.h"
 
 #include <cstdio>
 
@@ -14,7 +14,7 @@ namespace p
 	/* Guid interface
 	 *****************************************************************************/
 
-	void Guid::Read(serl::ReadContext& ct)
+	void Guid::Read(Reader& ct)
 	{
 		ct.BeginObject();
 		ct.Next(TX("a"), a);
@@ -23,7 +23,7 @@ namespace p
 		ct.Next(TX("d"), d);
 	}
 
-	void Guid::Write(serl::WriteContext& ct) const
+	void Guid::Write(Writer& ct) const
 	{
 		ct.BeginObject();
 		ct.Next(TX("a"), a);

@@ -1,15 +1,15 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Memory/Arenas/BestFitArena.h"
+#include "Pipe/Memory/Arenas/BestFitArena.h"
 
-#include "Core/Search.h"
-#include "Core/Sorting.h"
-#include "Core/Utility.h"
-#include "Log.h"
-#include "Math/Math.h"
-#include "Memory/Alloc.h"
-#include "Profiler.h"
-#include "Templates/Greater.h"
+#include "Pipe/Core/Greater.h"
+#include "Pipe/Core/Log.h"
+#include "Pipe/Core/Profiler.h"
+#include "Pipe/Core/Search.h"
+#include "Pipe/Core/Sorting.h"
+#include "Pipe/Core/Utility.h"
+#include "Pipe/Math/Math.h"
+#include "Pipe/Memory/Alloc.h"
 
 
 namespace p::Memory

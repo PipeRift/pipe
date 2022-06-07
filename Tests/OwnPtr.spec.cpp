@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Memory/OwnPtr.h>
+#include <Pipe/Memory/OwnPtr.h>
 
 
 using namespace snowhouse;
@@ -296,7 +296,7 @@ go_bandit([]() {
 				OwnPtr ptr2 = Move(ptr1);
 				AssertThat(ptr1.IsValid(), Equals(false));
 				AssertThat(ptr1.Get<EmptyStruct>(), Equals(nullptr));
-				AssertThat(ptr1.GetId(), Equals(refl::TypeId::None()));
+				AssertThat(ptr1.GetId(), Equals(TypeId::None()));
 
 				AssertThat(ptr2.IsValid(), Equals(true));
 				AssertThat(ptr2.Get<EmptyStruct>(), Equals(data));

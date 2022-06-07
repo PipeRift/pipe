@@ -1,8 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Core/Name.h"
+#include "Pipe/Core/Name.h"
 
-#include "Serialization/Contexts.h"
+#include "Pipe/Serialize/Serialization.h"
 
 
 namespace p
@@ -52,14 +52,14 @@ namespace p
 		return instance;
 	}
 
-	void Name::Read(serl::ReadContext& ct)
+	void Name::Read(Reader& ct)
 	{
 		String str;
 		ct.Serialize(str);
 
 		*this = Strings::Equals(str, NameTable::noneStr) ? None() : str;
 	}
-	void Name::Write(serl::WriteContext& ct) const
+	void Name::Write(Writer& ct) const
 	{
 		ct.Serialize(ToString());
 	}

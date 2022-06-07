@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Files/Files.h"
+#include "Pipe/Files/Files.h"
 
-#include "Files/Paths.h"
-#include "Log.h"
-#include "Profiler.h"
+#include "Pipe/Core/Log.h"
+#include "Pipe/Core/Profiler.h"
+#include "Pipe/Files/Paths.h"
 
 #include <fstream>
 

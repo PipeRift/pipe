@@ -1,9 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Math/Quaternion.h"
+#include "Pipe/Math/Quaternion.h"
 
-#include "Math/Rotator.h"
-#include "Serialization/Contexts.h"
+#include "Pipe/Math/Rotator.h"
+#include "Pipe/Serialize/Serialization.h"
 
 
 namespace p
@@ -173,7 +173,7 @@ namespace p
 	}
 
 
-	void Read(serl::ReadContext& ct, Quat& val)
+	void Read(Reader& ct, Quat& val)
 	{
 		ct.BeginObject();
 		ct.Next(TX("x"), val.x);
@@ -181,7 +181,7 @@ namespace p
 		ct.Next(TX("z"), val.z);
 		ct.Next(TX("w"), val.w);
 	}
-	void Write(serl::WriteContext& ct, const Quat& val)
+	void Write(Writer& ct, const Quat& val)
 	{
 		ct.BeginObject();
 		ct.Next(TX("x"), val.x);
