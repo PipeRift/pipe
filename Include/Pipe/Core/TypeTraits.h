@@ -8,10 +8,25 @@
 #include <type_traits>
 
 
-/** SIZE SELECTORS */
-
 namespace p
 {
+	namespace Internal
+	{
+		template<class T>
+		struct IsRValueReference : std::false_type
+		{};
+		template<class T>
+		struct IsRValueReference<T&&> : std::true_type
+		{};
+
+		template<class T>
+		struct IsLValueReference : std::false_type
+		{};
+		template<class T>
+		struct IsLValueReference<T&> : std::true_type
+		{};
+	}    // namespace Internal
+
 	template<typename T>
 	concept IsVoid = std::is_void_v<T>;
 
@@ -67,6 +82,10 @@ namespace p
 	template<bool UseT, typename T, typename F>
 	using Select = typename std::conditional<UseT, T, F>::type;
 
+	template<typename T>
+	concept IsRValueRef = Internal::IsRValueReference<T>::value;
+	template<typename T>
+	concept IsLValueRef = Internal::IsLValueReference<T>::value;
 
 	template<typename T>
 	struct HasTypeMember
