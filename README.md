@@ -7,7 +7,7 @@
 
 ## What is it for?
 
-**Pipe** simplifies and unifies operating system APIs and provides commonly missing tools in C++. However, it is in no way just a merge of random libraries into one. It follows the simple principle of "low-level essentials you wouldn't want to integrate/code every time in your project".
+**Pipe** simplifies and unifies operating system APIs and provides commonly missing tools in C++. However, it is in no way just a merge of random libraries into one. It follows the simple principle of "low-level essentials you wouldn't want to integrate/code every time in your projects".
 
 Pipe also has the secondary objective of unifying many coding standards into one to make code consistent and legible.
 
@@ -19,6 +19,7 @@ If you feel a feature should be added feel free to propose it [creating an issue
 #### Core
 - Containers (Array, Map, Set)
 - Strings (String, StringView, FixedString)
+- Names (hashed unique strings)
 - Compile-time string operations
 - Extensive strings constexpr API
 - Search and Sort algorithms
@@ -27,6 +28,7 @@ If you feel a feature should be added feel free to propose it [creating an issue
 - Runtime Checks
 - Improved Logging (including to file)
 - Integrated Profiling
+- Functions and Broadcasts (also known as delegates)
 
 #### Reflection
 - Runtime and Compile-time reflection
@@ -46,7 +48,6 @@ If you feel a feature should be added feel free to propose it [creating an issue
 #### Memory
 - Owned smart pointers
 - Allocators and Arenas
-- Functions and Broadcasts (also known as delegates)
 
 #### Math
 - Colors
