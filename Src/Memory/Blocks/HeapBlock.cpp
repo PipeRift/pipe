@@ -2,7 +2,7 @@
 
 #include "Pipe/Memory/Blocks/HeapBlock.h"
 
-#include <memory>
+#include <cstring>
 
 
 namespace p::Memory
