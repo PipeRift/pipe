@@ -7,7 +7,6 @@ namespace p::ecs
 {
 	Context::Context()
 	{
-		// TODO: Cache pools
 	}
 
 	Context::Context(const Context& other) noexcept

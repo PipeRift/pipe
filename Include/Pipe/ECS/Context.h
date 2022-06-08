@@ -39,6 +39,10 @@ namespace p::ecs
 
 	public:
 		Context();
+		~Context()
+		{
+			Reset();
+		}
 		explicit Context(const Context& other) noexcept;
 		explicit Context(Context&& other) noexcept;
 		Context& operator=(const Context& other) noexcept;
@@ -339,7 +343,6 @@ namespace p::ecs
 		{
 			idRegistry = {};
 			pools.Empty();
-			// TODO: Cache pools
 		}
 
 		template<typename Component>
