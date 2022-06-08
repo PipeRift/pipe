@@ -12,7 +12,7 @@ namespace p
 {
 	struct Rotator;
 
-	struct Quat
+	struct PIPE_API Quat
 	{
 	public:
 		float x;

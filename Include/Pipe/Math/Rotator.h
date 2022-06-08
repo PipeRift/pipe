@@ -9,6 +9,8 @@ namespace p
 {
 	struct Rotator : public v3
 	{
+		using v3::v3;
+
 		Rotator() {}
 		Rotator(const v3& vector) : v3{vector} {}
 

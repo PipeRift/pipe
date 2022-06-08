@@ -779,3 +779,49 @@ namespace p
 REFLECT_NATIVE_TYPE(p::v2);
 REFLECT_NATIVE_TYPE(p::v2_u32);
 REFLECT_NATIVE_TYPE(p::v3);
+
+
+template<typename T>
+struct fmt::formatter<p::Vec<2, T>>
+{
+	p::String formatStr;
+
+	constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin())
+	{
+		auto begin = ctx.begin();
+		auto end   = begin;
+		while(*begin != '{') { --begin; }
+		while(*end != '}') { ++end; }
+		const p::StringView valueFormat{begin, end + 1};
+		formatStr = fmt::format("({}, {})", valueFormat, valueFormat);
+		return end;
+	}
+
+	template<typename FormatContext>
+	auto format(const p::Vec<2, T>& v, FormatContext& ctx)
+	{
+		return format_to(ctx.out(), fmt::runtime(formatStr), v.x, v.y);
+	}
+};
+
+template<typename T>
+struct fmt::formatter<p::Vec<3, T>>
+{
+	p::String formatStr;
+
+	constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin())
+	{
+		auto begin = ctx.begin();
+		auto end   = begin;
+		while(*begin != '{') { --begin; }
+		while(*end != '}') { ++end; }
+		const p::StringView valueFormat{begin, end + 1};
+		formatStr = fmt::format("({}, {}, {})", valueFormat, valueFormat, valueFormat);
+		return end;
+	}
+	template<typename FormatContext>
+	auto format(const p::Vec<3, T>& v, FormatContext& ctx)
+	{
+		return format_to(ctx.out(), fmt::runtime(formatStr), v.x, v.y, v.z);
+	}
+};
