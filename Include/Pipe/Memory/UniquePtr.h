@@ -1,6 +1,8 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Core/TypeTraits.h"
+
 #include <memory>
 
 
@@ -9,6 +11,9 @@ namespace p
 	template<typename T, typename D = std::default_delete<T>>
 	struct TUniquePtr
 	{
+		template<typename T2, typename D2>
+		friend struct TUniquePtr;
+
 		using Pointer = typename std::unique_ptr<T>::pointer;
 
 	private:
@@ -18,10 +23,17 @@ namespace p
 	public:
 		constexpr TUniquePtr() noexcept = default;
 		explicit constexpr TUniquePtr(Pointer p) noexcept : ptr(p) {}
-		TUniquePtr(const TUniquePtr&) = delete;
-		TUniquePtr& operator=(const TUniquePtr&) = delete;
-
-		template<class D2 = D>
+		template<typename D2 = D>
+		TUniquePtr(TUniquePtr&& other) noexcept requires(IsMoveConstructible<D2>)
+		    : ptr{Move(other.ptr)}
+		{}
+		template<typename T2, typename D2>
+		TUniquePtr(TUniquePtr<T2, D2>&& other) noexcept requires(
+		    !std::is_array_v<
+		        T2> && std::is_assignable_v<D&, D2> && Convertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>)
+		    : ptr{Move(other.ptr)}
+		{}
+		template<typename D2 = D>
 		TUniquePtr& operator=(TUniquePtr&& other) noexcept requires(IsMoveAssignable<D2>)
 		{
 			if (Get() != other.Get())
@@ -30,8 +42,7 @@ namespace p
 			}
 			return *this;
 		}
-
-		template<class T2, class D2>
+		template<typename T2 = T, typename D2 = D>
 		TUniquePtr& operator=(TUniquePtr<T2, D2>&& other) noexcept requires(
 		    !std::is_array_v<
 		        T2> && std::is_assignable_v<D&, D2> && Convertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>)
@@ -39,6 +50,9 @@ namespace p
 			ptr = Move(other.ptr);
 			return *this;
 		}
+		TUniquePtr(const TUniquePtr&) = delete;
+		TUniquePtr& operator=(const TUniquePtr&) = delete;
+
 
 		void Swap(TUniquePtr& other) noexcept
 		{

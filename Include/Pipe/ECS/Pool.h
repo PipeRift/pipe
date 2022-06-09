@@ -11,7 +11,7 @@
 #include <Pipe/Core/Set.h>
 #include <Pipe/Core/Span.h>
 #include <Pipe/Core/TypeTraits.h>
-#include <Pipe/Memory/OwnPtr.h>
+#include <Pipe/Memory/UniquePtr.h>
 #include <Pipe/Memory/STLAllocator.h>
 
 
@@ -412,7 +412,7 @@ namespace p::ecs
 		{
 			context = &destination;
 		}
-		virtual TOwnPtr<Pool> Clone() = 0;
+		virtual TUniquePtr<Pool> Clone() = 0;
 
 		Context& GetContext() const
 		{
@@ -724,9 +724,9 @@ namespace p::ecs
 			return TryGet(id);
 		}
 
-		TOwnPtr<Pool> Clone() override
+		TUniquePtr<Pool> Clone() override
 		{
-			auto newPool = MakeOwned<TPool<T>>(*context);
+			auto newPool = MakeUnique<TPool<T>>(*context);
 			if constexpr (IsEmpty<T>)
 			{
 				newPool->Add(set.begin(), set.end(), {});
@@ -777,10 +777,10 @@ namespace p::ecs
 	struct PoolInstance
 	{
 		TypeId componentId{};
-		TOwnPtr<Pool> pool;
+		TUniquePtr<Pool> pool;
 
 
-		PoolInstance(TypeId componentId, TOwnPtr<Pool> pool = {})
+		PoolInstance(TypeId componentId, TUniquePtr<Pool>&& pool)
 		    : componentId{componentId}, pool{Move(pool)}
 		{}
 		PoolInstance(PoolInstance&& other) noexcept
@@ -807,7 +807,7 @@ namespace p::ecs
 		PoolInstance& operator=(const PoolInstance& other)
 		{
 			componentId = other.componentId;
-			pool.Delete();
+			pool.Reset();
 			if (other.pool)
 			{
 				pool = other.pool->Clone();

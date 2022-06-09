@@ -399,7 +399,7 @@ namespace p::ecs
 	{
 		constexpr TypeId componentId = GetTypeId<Mut<T>>();
 
-		i32 index = pools.LowerBound(componentId);
+		i32 index = pools.LowerBound(PoolInstance{componentId, {}});
 		if (index != NO_INDEX)
 		{
 			if (componentId != pools[index].GetId())
@@ -422,8 +422,7 @@ namespace p::ecs
 		constexpr TypeId componentId = GetTypeId<Mut<T>>();
 
 		Context& self = const_cast<Context&>(*this);
-		PoolInstance instance{componentId};
-		instance.pool = Move(MakeOwned<TPool<Mut<T>>>(self));
+		PoolInstance instance{componentId, MakeUnique<TPool<Mut<T>>>(self)};
 		return Move(instance);
 	}
 }    // namespace p::ecs
