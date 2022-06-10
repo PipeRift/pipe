@@ -339,10 +339,14 @@ namespace p::ecs
 			(ClearPool<Component>(), ...);
 		}
 
-		void Reset()
+		void Reset(bool keepStatics = false)
 		{
 			idRegistry = {};
 			pools.Empty();
+			if (!keepStatics)
+			{
+				statics.Empty();
+			}
 		}
 
 		template<typename Component>
