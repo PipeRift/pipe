@@ -39,6 +39,14 @@ go_bandit([]() {
 			normal = p::v2{0.f, 1.f};
 			v2     = v.Reflect(normal);
 			AssertThat(v2.Equals({-1.f, 1.f}), Equals(true));
+			v      = p::v2{0.f, 1.f};
+			normal = p::v2{0.f, 1.f};
+			v2     = v.Reflect(normal);
+			AssertThat(v2.Equals({0.f, -1.f}), Equals(true));
+			v      = p::v2{0.f, -1.f};
+			normal = p::v2{0.f, 1.f};
+			v2     = v.Reflect(normal);
+			AssertThat(v2.Equals({0.f, 1.f}), Equals(true));
 		});
 	});
 });
