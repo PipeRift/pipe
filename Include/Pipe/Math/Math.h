@@ -70,6 +70,11 @@ namespace p::math
 		return Rand() / (float)RAND_MAX;
 	}
 
+	inline PIPE_API float Random(float min, float max)
+	{
+		return min + (max - min) * Rand01();
+	}
+
 
 	template<typename T>
 	static constexpr bool IsPosInf(const T x)

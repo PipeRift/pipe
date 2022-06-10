@@ -106,6 +106,46 @@ namespace p
 			return {math::Floor(x), math::Floor(y)};
 		}
 
+		static Vec Mid(Vec one, Vec other)
+		{
+			return one + ((other - one) * 0.5f);
+		}
+
+		constexpr Vec Reflect(Vec normal) const
+		{
+			return *this - (*this * normal) * 2.f * normal;
+		}
+
+		static constexpr Vec FromAngle(float angle)
+		{
+			return FromAngleRad(angle * math::DEGTORAD);
+		}
+		constexpr Vec Rotate(float angle) const
+		{
+			return RotateRad(angle * math::DEGTORAD);
+		}
+
+		static constexpr Vec FromAngleRad(float angle)
+		{
+			return {std::cos(angle), std::sin(angle)};
+		}
+
+		constexpr Vec RotateRad(float angle) const
+		{
+			const float aCos = std::cos(angle);
+			const float aSin = std::sin(angle);
+			return {x * aCos - y * aSin, x * aSin + y * aCos};
+		}
+
+		constexpr float AngleRad() const
+		{
+			return math::Atan2(y, x);
+		}
+		constexpr float Angle() const
+		{
+			return AngleRad() * math::RADTODEG;
+		}
+
 		T* Data()
 		{
 			return &x;
@@ -225,6 +265,11 @@ namespace p
 			return *this;
 		}
 
+		constexpr Vec operator-() const
+		{
+			return {-x, -y};
+		}
+
 		bool operator==(const Vec& other) const
 		{
 			return x == other.x && y == other.y;
@@ -335,6 +380,11 @@ namespace p
 		constexpr Vec Floor() const
 		{
 			return {math::Floor(x), math::Floor(y), math::Floor(z)};
+		}
+
+		static Vec Mid(Vec one, Vec other)
+		{
+			return one + ((other - one) * 0.5f);
 		}
 
 		T* Data()
@@ -475,6 +525,11 @@ namespace p
 			return *this;
 		}
 
+		constexpr Vec operator-() const
+		{
+			return {-x, -y, -z};
+		}
+
 		bool operator==(const Vec& other) const
 		{
 			return x == other.x && y == other.y && z == other.z;
@@ -538,6 +593,11 @@ namespace p
 		constexpr Vec Floor() const
 		{
 			return {math::Floor(x), math::Floor(y), math::Floor(z), math::Floor(w)};
+		}
+
+		static Vec Mid(Vec one, Vec other)
+		{
+			return one + ((other - one) * 0.5f);
 		}
 
 		T* Data()
@@ -611,7 +671,7 @@ namespace p
 			}
 		}
 
-		void Add(const Vec<size, T>& point)
+		void Merge(const Vec<size, T>& point)
 		{
 			for (u32 i = 0; i < size; ++i)
 			{
@@ -624,7 +684,7 @@ namespace p
 					max[i] = point[i];
 			}
 		}
-		void Add(const TAABB& other)
+		void Merge(const TAABB& other)
 		{
 			for (u32 i = 0; i < size; ++i)
 			{
@@ -634,6 +694,22 @@ namespace p
 			for (u32 i = 0; i < size; ++i)
 			{
 				if (other.max[i] > max[i])
+					max[i] = other.max[i];
+			}
+		}
+
+		// Makes this rect shrink to occupy the overlapping area with another rect
+		// if this and other dont overlap, result will be an invalid rect
+		void Diff(const TAABB& other)
+		{
+			for (u32 i = 0; i < size; ++i)
+			{
+				if (other.min[i] > min[i])
+					min[i] = other.min[i];
+			}
+			for (u32 i = 0; i < size; ++i)
+			{
+				if (other.max[i] < max[i])
 					max[i] = other.max[i];
 			}
 		}
@@ -790,8 +866,14 @@ struct fmt::formatter<p::Vec<2, T>>
 	{
 		auto begin = ctx.begin();
 		auto end   = begin;
-		while(*begin != '{') { --begin; }
-		while(*end != '}') { ++end; }
+		while (*begin != '{')
+		{
+			--begin;
+		}
+		while (*end != '}')
+		{
+			++end;
+		}
 		const p::StringView valueFormat{begin, end + 1};
 		formatStr = fmt::format("({}, {})", valueFormat, valueFormat);
 		return end;
@@ -813,8 +895,14 @@ struct fmt::formatter<p::Vec<3, T>>
 	{
 		auto begin = ctx.begin();
 		auto end   = begin;
-		while(*begin != '{') { --begin; }
-		while(*end != '}') { ++end; }
+		while (*begin != '{')
+		{
+			--begin;
+		}
+		while (*end != '}')
+		{
+			++end;
+		}
 		const p::StringView valueFormat{begin, end + 1};
 		formatStr = fmt::format("({}, {}, {})", valueFormat, valueFormat, valueFormat);
 		return end;
