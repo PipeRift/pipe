@@ -116,9 +116,18 @@ namespace p
 			return *this - (*this * normal) * 2.f * normal;
 		}
 
+		static constexpr Vec FromAngle(float angle)
+		{
+			return FromAngleRad(angle * math::DEGTORAD);
+		}
 		constexpr Vec Rotate(float angle) const
 		{
 			return RotateRad(angle * math::DEGTORAD);
+		}
+
+		static constexpr Vec FromAngleRad(float angle)
+		{
+			return {std::cos(angle), std::sin(angle)};
 		}
 
 		constexpr Vec RotateRad(float angle) const
