@@ -24,7 +24,7 @@ namespace p::ecs
 	void ExcludeIfStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ZoneScoped;
-		ids.ExcludeIf(
+		ids.RemoveIf(
 		    [pool](Id id) {
 			return pool->Has(id);
 		    },
@@ -50,7 +50,7 @@ namespace p::ecs
 	void ExcludeIfNotStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ZoneScoped;
-		ids.ExcludeIf(
+		ids.RemoveIf(
 		    [pool](Id id) {
 			return !pool->Has(id);
 		    },
@@ -127,7 +127,7 @@ namespace p::ecs
 	{
 		ZoneScoped;
 		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
-		source.ExcludeIf(
+		source.RemoveIf(
 		    [pool, &results](Id id) {
 			if (pool->Has(id))
 			{
@@ -164,7 +164,7 @@ namespace p::ecs
 	{
 		ZoneScoped;
 		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
-		source.ExcludeIf(
+		source.RemoveIf(
 		    [pool, &results](Id id) {
 			if (!pool->Has(id))
 			{

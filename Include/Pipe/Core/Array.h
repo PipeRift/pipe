@@ -537,7 +537,7 @@ namespace p::core
 		 * Delete all items that match a delegate
 		 * @return number of deleted items
 		 */
-		i32 ExcludeIf(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
+		i32 RemoveIf(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			// We remove from the back so that there are less elements to move when removing an
@@ -561,7 +561,7 @@ namespace p::core
 		 * Delete all items that match a delegate
 		 * @return number of deleted items
 		 */
-		i32 ExcludeIfSwap(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
+		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			for (i32 i = 0; i < Size(); ++i)

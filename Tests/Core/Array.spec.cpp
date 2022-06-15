@@ -94,7 +94,7 @@ go_bandit([]() {
 
 			AssertThat(data.Size(), Equals(4));
 
-			data.ExcludeIf([](i32 v) {
+			data.RemoveIf([](i32 v) {
 				return v == 1 || v == 6;
 			});
 			AssertThat(data.Size(), Equals(2));
@@ -107,7 +107,7 @@ go_bandit([]() {
 
 			AssertThat(data.Size(), Equals(4));
 
-			data.ExcludeIfSwap([](i32 v) {
+			data.RemoveIfSwap([](i32 v) {
 				return v == 1 || v == 6;
 			});
 			AssertThat(data.Size(), Equals(2));
