@@ -63,7 +63,7 @@ namespace p::core
 	}
 }    // namespace p::core
 
-#define DEFINE_FLAG_OPERATORS(Type)                         \
+#define PIPE_DEFINE_FLAG_OPERATORS(Type)                    \
 	constexpr p::UnderlyingType<Type> operator*(Type value) \
 	{                                                       \
 		return static_cast<p::UnderlyingType<Type>>(value); \

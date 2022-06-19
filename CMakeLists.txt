@@ -68,6 +68,7 @@ target_link_libraries(Pipe PUBLIC
     Tracy
     magic_enum
     utf8cpp
+    subprocess
 )
 target_link_libraries(Pipe PRIVATE
     portable_file_dialogs

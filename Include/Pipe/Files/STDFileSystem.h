@@ -33,7 +33,7 @@ namespace p::files
 		CreateSymLinks  = i32(fs::copy_options::create_symlinks),
 		CreateHardLinks = i32(fs::copy_options::create_hard_links)
 	};
-	DEFINE_FLAG_OPERATORS(CopyOptions)
+	PIPE_DEFINE_FLAG_OPERATORS(CopyOptions)
 
 
 	inline PathView ToPathView(const Path& path)
