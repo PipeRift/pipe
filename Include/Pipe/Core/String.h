@@ -89,7 +89,7 @@ namespace p::core
 
 			if constexpr (IsSame<FromChar, ToChar>)
 			{
-				dest = source;
+				dest += source;
 			}
 			else if constexpr (sizeof(FromChar) == 1 && sizeof(ToChar) == 2)
 			{
@@ -112,13 +112,6 @@ namespace p::core
 				// TODO: Find a way to assert at compile time except on the previous cases
 				// static_assert(false, "Unknown char conversion");
 			}
-		}
-
-		// Help FromChar deduction
-		template<typename ToStringType, typename FromChar>
-		inline void ConvertTo(const TString<FromChar>& source, ToStringType& dest)
-		{
-			ConvertTo(TStringView<FromChar>{source}, dest);
 		}
 
 		template<typename ToStringType, typename FromChar>
