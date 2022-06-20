@@ -27,7 +27,9 @@ namespace p::core
 		template<sizet N>
 		constexpr TSpan(T (&value)[N]) : data{&value}, size{N}
 		{}
-		constexpr TSpan(std::initializer_list<T> value) : data{value.begin()}, size{value.size()} {}
+		constexpr TSpan(std::initializer_list<T> value)
+		    : data{value.begin()}, size{i32(value.size())}
+		{}
 
 		TSpan(const TArray<Mut<T>>& value) : data{value.Data()}, size{value.Size()} {}
 		TSpan(const TArray<Mut<T>>& value, i32 firstN)

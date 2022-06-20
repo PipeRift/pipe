@@ -6,6 +6,7 @@
 #	include "Pipe/Files/Files.h"
 #	include "Pipe/Core/Windows/WindowsPlatformProcess.h"
 #	include "Pipe/Core/String.h"
+#	include "Pipe/Core/Log.h"
 
 #	include <Windows.h>
 
@@ -68,7 +69,6 @@ namespace p::core
 			{
 				if (bytesRead > 0)
 				{
-					// buffer[bytesRead] = (Char8)'\0';
 					Strings::ConvertTo<String, Char8>({buffer, bytesRead}, output);
 				}
 				return true;
@@ -136,7 +136,6 @@ namespace p::core
 		// Get written message
 		if (outWritten)
 		{
-			// buffer[bytesWritten] = (Char8)'\0';
 			Strings::ConvertTo<String, Char8>({buffer, bytesWritten}, *outWritten);
 		}
 		delete[] buffer;

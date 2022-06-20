@@ -5,6 +5,7 @@
 #	include "Pipe/Core/PlatformMisc.h"
 #	include "Pipe/Core/String.h"
 #	include "Pipe/Core/FixedString.h"
+#	include "Pipe/Core/Log.h"
 #	include "Pipe/Files/Paths.h"
 #	include "Pipe/Files/Files.h"
 
@@ -16,7 +17,7 @@ namespace p::core
 	LinuxPipeHandle::LinuxPipeHandle(bool writePipeLocal)
 	{
 		i32 pipeFd[2];
-		if (-1 == pipe(PipeFd))
+		if (-1 == pipe(pipeFd))
 		{
 			Log::Warning("pipe() failed with errno = {} ({})", errno,
 			    Strings::Convert<String>(strerror(errno)));
@@ -59,17 +60,17 @@ namespace p::core
 		{
 			if (bytesAvailable > 0)
 			{
-				i32 bytesRead = read(readPipe, buffer, kBufferSize - 1);
+				const i32 bytesRead = read(readPipe, buffer, kBufferSize - 1);
 				if (bytesRead > 0)
 				{
-					Strings::ConvertTo<String, TChar>({buffer, bytesRead}, output);
+					Strings::ConvertTo<String>(TStringView<AnsiChar>{buffer, bytesRead}, output);
 					return true;
 				}
 			}
 		}
 		else
 		{
-			Log::Error("ioctl(..., FIONREAD, ...) failed with errno={} ({})"), errno, Strings::Convert<String>(strerror(errno)));
+			Log::Error("ioctl(..., FIONREAD, ...) failed with errno={} ({})"), errno, Strings::Convert<String>({strerror(errno)}));
 		}
 		return false;
 	}
@@ -101,7 +102,7 @@ namespace p::core
 		}
 		else
 		{
-			Log::Error("ioctl(..., FIONREAD, ...) failed with errno={} ({})"), errno, Strings::Convert<String>(strerror(errno)));
+			Log::Error("ioctl(..., FIONREAD, ...) failed with errno={} ({})"), errno, Strings::Convert<String>({strerror(errno)}));
 		}
 		return false;
 	}
