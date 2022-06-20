@@ -1,8 +1,5 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Pipe/Core/Generic/GenericPlatformProcess.h"
-#include "Pipe/Core/Windows/WindowsPlatformProcess.h"
-
 #include <bandit/bandit.h>
 #include <Pipe/Core/PlatformProcess.h>
 
