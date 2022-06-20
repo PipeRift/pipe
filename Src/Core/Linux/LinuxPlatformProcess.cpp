@@ -21,7 +21,7 @@ namespace p::core
 		if (-1 == pipe(pipeFd))
 		{
 			Log::Warning("pipe() failed with errno = {} ({})", errno,
-			    Strings::Convert<String>({strerror(errno)}));
+			    Strings::Convert<String, char>({strerror(errno)}));
 			valid = false;
 			return;
 		}
@@ -64,14 +64,15 @@ namespace p::core
 				const i32 bytesRead = read(readPipe, buffer, kBufferSize - 1);
 				if (bytesRead > 0)
 				{
-					Strings::ConvertTo<String>(TStringView<AnsiChar>{buffer, bytesRead}, output);
+					Strings::ConvertTo<String, AnsiChar>({buffer, bytesRead}, output);
 					return true;
 				}
 			}
 		}
 		else
 		{
-			Log::Error("ioctl(..., FIONREAD, ...) failed with errno={} ({})"), errno, Strings::Convert<String>({strerror(errno)}));
+			Log::Error("ioctl(..., FIONREAD, ...) failed with errno={} ({})", errno,
+			    Strings::Convert<String, char>({strerror(errno)}));
 		}
 		return false;
 	}
@@ -103,7 +104,8 @@ namespace p::core
 		}
 		else
 		{
-			Log::Error("ioctl(..., FIONREAD, ...) failed with errno={} ({})"), errno, Strings::Convert<String>({strerror(errno)}));
+			Log::Error("ioctl(..., FIONREAD, ...) failed with errno={} ({})", errno,
+			    Strings::Convert<String, char>({strerror(errno)}));
 		}
 		return false;
 	}
@@ -115,12 +117,12 @@ namespace p::core
 			return false;
 		}
 
-		// Convert input to UTF8CHAR
+		// Convert input to Char8
 		const u32 bytesAvailable = msg.size();
 		auto* buffer             = new Char8[bytesAvailable + 2];
 		for (u32 i = 0; i < bytesAvailable; i++)
 		{
-			buffer[i] = static_cast<Char8>(Char8>(msg[i]);
+			buffer[i] = static_cast<Char8>(msg[i]);
 		}
 		buffer[bytesAvailable] = static_cast<Char8>('\n');
 
@@ -165,8 +167,8 @@ namespace p::core
 				return {};
 			}
 
-			path = Strings::Convert<String>(
-			    TStringView<char>{rawPath.data(), Strings::Length(rawPath.data())});
+			path =
+			    Strings::Convert<String, char>({rawPath.data(), Strings::Length(rawPath.data())});
 		}
 		return path;
 	}
