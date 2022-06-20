@@ -10,6 +10,7 @@
 #	include "Pipe/Files/Files.h"
 
 #	include <unistd.h>
+#	include <sys/ioctl.h>
 
 
 namespace p::core
@@ -20,7 +21,7 @@ namespace p::core
 		if (-1 == pipe(pipeFd))
 		{
 			Log::Warning("pipe() failed with errno = {} ({})", errno,
-			    Strings::Convert<String>(strerror(errno)));
+			    Strings::Convert<String>({strerror(errno)}));
 			valid = false;
 			return;
 		}
@@ -109,13 +110,13 @@ namespace p::core
 
 	bool LinuxPipeHandle::Write(const String& msg, String* outWritten)
 	{
-		if (data.IsEmpty() || !valid)
+		if (msg.empty() || !valid)
 		{
 			return false;
 		}
 
 		// Convert input to UTF8CHAR
-		const u32 bytesAvailable = msg.Size();
+		const u32 bytesAvailable = msg.size();
 		auto* buffer             = new Char8[bytesAvailable + 2];
 		for (u32 i = 0; i < bytesAvailable; i++)
 		{
@@ -199,23 +200,5 @@ namespace p::core
 			exit(execl("/usr/bin/xdg-open", "xdg-open", fullPath.data(), (char*)0));
 		}
 	}
-
-	bool LinuxPlatformProcess::CreatePipe(
-	    PipeHandle& readPipe, PipeHandle& writePipe, bool writePipeLocal)
-	{}
-
-	void LinuxPlatformProcess::ClosePipe(PipeHandle& readPipe, PipeHandle& writePipe) {}
-
-	String LinuxPlatformProcess::ReadPipe(const PipeHandle& readPipe) {}
-
-	bool LinuxPlatformProcess::ReadPipe(const PipeHandle& readPipe, TArray<u8>& output) {}
-
-	bool LinuxPlatformProcess::WritePipe(
-	    const PipeHandle& writePipe, const String& msg, String* outWritten)
-	{}
-
-	bool LinuxPlatformProcess::WritePipe(
-	    const PipeHandle& writePipe, TSpan<const u8> data, i32* outWrittenLength)
-	{}
 }    // namespace p::core
 #endif
