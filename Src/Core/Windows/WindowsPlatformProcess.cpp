@@ -18,11 +18,13 @@ namespace p::core
 
 		if (!::CreatePipe(&readPipe, &writePipe, &Attr, 0))
 		{
-			return false;
+			Close();
 		}
 
-		return ::SetHandleInformation(
-		    writePipeLocal ? writePipe : readPipe, HANDLE_FLAG_INHERIT, 0);
+		if (!::SetHandleInformation(writePipeLocal ? writePipe : readPipe, HANDLE_FLAG_INHERIT, 0))
+		{
+			Close();
+		}
 	}
 
 	WindowsPipeHandle::WindowsPipeHandle(WindowsPipeHandle&& other) noexcept
@@ -37,13 +39,13 @@ namespace p::core
 		if (readPipe != nullptr && readPipe != INVALID_HANDLE_VALUE)
 		{
 			::CloseHandle(readPipe);
-			readPipe = nullptr;
 		}
 		if (writePipe != nullptr && writePipe != INVALID_HANDLE_VALUE)
 		{
 			::CloseHandle(writePipe);
-			writePipe = nullptr;
 		}
+		readPipe  = nullptr;
+		writePipe = nullptr;
 	}
 
 	bool WindowsPipeHandle::Read(String& output)
@@ -93,7 +95,8 @@ namespace p::core
 			// initializes vaues and this is not needed
 			output.Resize(initialSize + i32(bytesAvailable));
 			u32 bytesRead = 0;
-			if (::ReadFile(readPipe, output.Data() + initialSize, bytesAvailable, (::DWORD*)&bytesRead, nullptr))
+			if (::ReadFile(readPipe, output.Data() + initialSize, bytesAvailable,
+			        (::DWORD*)&bytesRead, nullptr))
 			{
 				if (bytesRead < bytesAvailable)
 				{

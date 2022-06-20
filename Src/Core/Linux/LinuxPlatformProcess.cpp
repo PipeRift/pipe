@@ -21,14 +21,15 @@ namespace p::core
 			Log::Warning("pipe() failed with errno = {} ({})", errno,
 			    Strings::Convert<String>(strerror(errno)));
 			valid = false;
+			return;
 		}
 		readPipe  = pipeFd[0];
 		writePipe = pipeFd[1];
-		valid = true;
+		valid     = true;
 	}
 
 	LinuxPipeHandle::LinuxPipeHandle(LinuxPipeHandle&& other) noexcept
-		: readPipe{other.readPipe}, writePipe{other.writePipe}, valid{other.valid}
+	    : readPipe{other.readPipe}, writePipe{other.writePipe}, valid{other.valid}
 	{
 		other.valid = false;
 	}
@@ -114,7 +115,7 @@ namespace p::core
 
 		// Convert input to UTF8CHAR
 		const u32 bytesAvailable = msg.Size();
-		auto* buffer = new Char8[bytesAvailable + 2];
+		auto* buffer             = new Char8[bytesAvailable + 2];
 		for (u32 i = 0; i < bytesAvailable; i++)
 		{
 			buffer[i] = static_cast<Char8>(Char8>(msg[i]);
