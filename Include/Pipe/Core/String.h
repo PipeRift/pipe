@@ -121,13 +121,6 @@ namespace p::core
 			ConvertTo(source, dest);
 			return Move(dest);
 		}
-
-		// Help FromChar deduction
-		template<typename ToStringType, typename FromChar>
-		inline ToStringType Convert(const TString<FromChar>& source)
-		{
-			return Move(Convert<ToStringType>(TStringView<FromChar>{source}));
-		}
 	};    // namespace Strings
 }    // namespace p::core
 
