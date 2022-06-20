@@ -9,11 +9,13 @@ namespace p::core
 {
 	struct PIPE_API LinuxPipeHandle : public GenericPipeHandle
 	{
+	protected:
 		i32 readPipe;
 		i32 writePipe;
 		bool valid = false;
 
 
+	public:
 		explicit LinuxPipeHandle(bool writePipeLocal = false);
 		LinuxPipeHandle(LinuxPipeHandle&& other) noexcept;
 		~LinuxPipeHandle()
@@ -26,6 +28,10 @@ namespace p::core
 		bool Write(const String& msg, String* outWritten = nullptr);
 		bool Write(TSpan<const u8> data, i32* outWrittenLength = nullptr);
 		void Close();
+		bool IsValid() const
+		{
+			return valid;
+		}
 	};
 	using PipeHandle = LinuxPipeHandle;
 

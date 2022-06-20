@@ -13,12 +13,10 @@ go_bandit([]() {
 	describe("Core.PlatformProcess", []() {
 		it("Can create and destroy pipes", [&]() {
 			PipeHandle pipe{};
-			AssertThat(pipe.readPipe, !Equals(nullptr));
-			AssertThat(pipe.writePipe, !Equals(nullptr));
+			AssertThat(pipe.IsValid(), Equals(true));
 
 			pipe.Close();
-			AssertThat(pipe.readPipe, Equals(nullptr));
-			AssertThat(pipe.writePipe, Equals(nullptr));
+			AssertThat(pipe.IsValid(), Equals(false));
 		});
 	});
 });

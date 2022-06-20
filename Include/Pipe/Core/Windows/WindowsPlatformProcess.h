@@ -9,10 +9,12 @@ namespace p::core
 {
 	struct PIPE_API WindowsPipeHandle : public GenericPipeHandle
 	{
+	protected:
 		void* readPipe  = nullptr;
 		void* writePipe = nullptr;
 
 
+	public:
 		explicit WindowsPipeHandle(bool writePipeLocal = false);
 		WindowsPipeHandle(WindowsPipeHandle&& other) noexcept;
 		~WindowsPipeHandle()
@@ -25,6 +27,11 @@ namespace p::core
 		bool Write(const String& msg, String* outWritten = nullptr);
 		bool Write(TSpan<const u8> data, i32* outWrittenLength = nullptr);
 		void Close();
+
+		bool IsValid() const
+		{
+			return readPipe != nullptr && writePipe != nullptr;
+		}
 	};
 	using PipeHandle = WindowsPipeHandle;
 
