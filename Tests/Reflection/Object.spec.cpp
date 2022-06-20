@@ -25,16 +25,16 @@ public:
 
 
 go_bandit([]() {
-	describe("Class", []() {
+	describe("Reflection.Class", []() {
 		describe("Pointers", []() {
-			it("Can create object", [&]() {
+			it("Can create class", [&]() {
 				auto owner = MakeOwned<TestClass>();
 
 				AssertThat(owner.Get(), Is().Not().EqualTo(nullptr));
 				AssertThat(owner->bConstructed, Equals(true));
 			});
 
-			it("Can create object with owner", [&]() {
+			it("Can create class with owner", [&]() {
 				auto owner  = MakeOwned<TestClass>();
 				auto owner2 = MakeOwned<TestClass>(owner);
 

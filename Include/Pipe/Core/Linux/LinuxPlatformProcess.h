@@ -7,6 +7,29 @@
 
 namespace p::core
 {
+	struct PIPE_API LinuxPipeHandle : public GenericPipeHandle
+	{
+		i32 readPipe;
+		i32 writePipe;
+		bool valid = false;
+
+
+		explicit LinuxPipeHandle(bool writePipeLocal = false);
+		LinuxPipeHandle(LinuxPipeHandle&& other) noexcept;
+		~LinuxPipeHandle()
+		{
+			Close();
+		}
+
+		bool Read(String& output);
+		bool Read(TArray<u8>& output);
+		bool Write(const String& msg, String* outWritten = nullptr);
+		bool Write(TSpan<const u8> data, i32* outWrittenLength = nullptr);
+		void Close();
+	};
+	using PipeHandle = LinuxPipeHandle;
+
+
 	struct PIPE_API LinuxPlatformProcess : public GenericPlatformProcess
 	{
 		static StringView GetExecutableFile();
@@ -15,7 +38,6 @@ namespace p::core
 
 		static void ShowFolder(StringView path);
 	};
-
 	using PlatformProcess = LinuxPlatformProcess;
 }    // namespace p::core
 

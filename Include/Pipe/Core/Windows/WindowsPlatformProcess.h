@@ -7,6 +7,28 @@
 
 namespace p::core
 {
+	struct PIPE_API WindowsPipeHandle : public GenericPipeHandle
+	{
+		void* readPipe  = nullptr;
+		void* writePipe = nullptr;
+
+
+		explicit WindowsPipeHandle(bool writePipeLocal = false);
+		WindowsPipeHandle(WindowsPipeHandle&& other) noexcept;
+		~WindowsPipeHandle()
+		{
+			Close();
+		}
+
+		bool Read(String& output);
+		bool Read(TArray<u8>& output);
+		bool Write(const String& msg, String* outWritten = nullptr);
+		bool Write(TSpan<const u8> data, i32* outWrittenLength = nullptr);
+		void Close();
+	};
+	using PipeHandle = WindowsPipeHandle;
+
+
 	struct PIPE_API WindowsPlatformProcess : public GenericPlatformProcess
 	{
 		static StringView GetExecutableFile();
@@ -14,17 +36,7 @@ namespace p::core
 		static StringView GetBasePath();
 
 		static void ShowFolder(StringView path);
-
-		static bool CreatePipe(void*& readPipe, void*& writePipe, bool writePipeLocal = false);
-		static void ClosePipe(void* readPipe, void* writePipe);
-		static String ReadPipe(void* readPipe)                   = delete;
-		static bool ReadPipe(void* readPipe, TArray<u8>& output) = delete;
-		static bool WritePipe(
-		    void* writePipe, const String& msg, String* outWritten = nullptr) = delete;
-		static bool WritePipe(
-		    void* writePipe, TSpan<const u8> data, i32* outWrittenLength = nullptr) = delete;
 	};
-
 	using PlatformProcess = WindowsPlatformProcess;
 }    // namespace p::core
 

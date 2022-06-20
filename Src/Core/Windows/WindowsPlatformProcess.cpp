@@ -12,6 +12,155 @@
 
 namespace p::core
 {
+	WindowsPipeHandle::WindowsPipeHandle(bool writePipeLocal)
+	{
+		SECURITY_ATTRIBUTES Attr = {sizeof(SECURITY_ATTRIBUTES), nullptr, true};
+
+		if (!::CreatePipe(&readPipe, &writePipe, &Attr, 0))
+		{
+			return false;
+		}
+
+		return ::SetHandleInformation(
+		    writePipeLocal ? writePipe : readPipe, HANDLE_FLAG_INHERIT, 0);
+	}
+
+	WindowsPipeHandle::WindowsPipeHandle(WindowsPipeHandle&& other) noexcept
+	    : readPipe{other.readPipe}, writePipe{other.writePipe}
+	{
+		other.readPipe  = nullptr;
+		other.writePipe = nullptr;
+	}
+
+	void WindowsPipeHandle::Close()
+	{
+		if (readPipe != nullptr && readPipe != INVALID_HANDLE_VALUE)
+		{
+			::CloseHandle(readPipe);
+			readPipe = nullptr;
+		}
+		if (writePipe != nullptr && writePipe != INVALID_HANDLE_VALUE)
+		{
+			::CloseHandle(writePipe);
+			writePipe = nullptr;
+		}
+	}
+
+	bool WindowsPipeHandle::Read(String& output)
+	{
+		if (readPipe == nullptr)
+		{
+			// Pipe is invalid. Nothing to read
+			return false;
+		}
+
+		// Note: String becomes corrupted when more than one byte per character and all bytes are
+		// not available
+		u32 bytesAvailable = 0;
+		if (::PeekNamedPipe(readPipe, nullptr, 0, nullptr, (::DWORD*)&bytesAvailable, nullptr)
+		    && (bytesAvailable > 0))
+		{
+			auto* buffer  = new Char8[bytesAvailable + 1];
+			u32 bytesRead = 0;
+			if (::ReadFile(readPipe, buffer, bytesAvailable, (::DWORD*)&bytesRead, nullptr))
+			{
+				if (bytesRead > 0)
+				{
+					// buffer[bytesRead] = (Char8)'\0';
+					Strings::ConvertTo<String, Char8>({buffer, bytesRead}, output);
+				}
+				return true;
+			}
+			delete[] buffer;
+		}
+		return false;
+	}
+
+	bool WindowsPipeHandle::Read(TArray<u8>& output)
+	{
+		if (readPipe == nullptr)
+		{
+			// Pipe is invalid. Nothing to read
+			return false;
+		}
+
+		u32 bytesAvailable = 0;
+		if (::PeekNamedPipe(readPipe, nullptr, 0, nullptr, (::DWORD*)&bytesAvailable, nullptr)
+		    && (bytesAvailable > 0))
+		{
+			const i32 initialSize = output.Size();
+			// Note: Can be improved since resize default
+			// initializes vaues and this is not needed
+			output.Resize(initialSize + i32(bytesAvailable));
+			u32 bytesRead = 0;
+			if (::ReadFile(readPipe, output.Data() + initialSize, bytesAvailable, (::DWORD*)&bytesRead, nullptr))
+			{
+				if (bytesRead < bytesAvailable)
+				{
+					output.Resize(initialSize + i32(bytesRead));
+				}
+				return true;
+			}
+			else
+			{
+				output.Empty();
+			}
+		}
+		return false;
+	}
+
+	bool WindowsPipeHandle::Write(const String& msg, String* outWritten)
+	{
+		if (msg.empty() || writePipe == nullptr)
+		{
+			return false;
+		}
+
+		// Convert input to Char8
+		u32 bytesAvailable = msg.size();
+		auto* buffer       = new Char8[bytesAvailable + 2];
+		for (u32 i = 0; i < bytesAvailable; i++)
+		{
+			buffer[i] = static_cast<Char8>(msg[i]);
+		}
+		buffer[bytesAvailable] = static_cast<Char8>('\n');
+
+		// Write to pipe
+		u32 bytesWritten = 0;
+		bool isWritten =
+		    !!WriteFile(writePipe, buffer, bytesAvailable + 1, (::DWORD*)&bytesWritten, nullptr);
+
+		// Get written message
+		if (outWritten)
+		{
+			// buffer[bytesWritten] = (Char8)'\0';
+			Strings::ConvertTo<String, Char8>({buffer, bytesWritten}, *outWritten);
+		}
+		delete[] buffer;
+		return isWritten;
+	}
+
+	bool WindowsPipeHandle::Write(TSpan<const u8> data, i32* outWrittenLength)
+	{
+		if (data.Size() == 0 || writePipe == nullptr)
+		{
+			return false;
+		}
+
+		// write to pipe
+		u32 bytesWritten = 0;
+		bool isWritten =
+		    !!WriteFile(writePipe, data.Data(), data.Size(), (::DWORD*)&bytesWritten, nullptr);
+
+		// Get written Data Length
+		if (outWrittenLength)
+		{
+			*outWrittenLength = static_cast<i32>(bytesWritten);
+		}
+		return isWritten;
+	}
+
+
 	template<typename StringType, typename TStringGetterFunc>
 	StringType GetStringFromWindowsAPI(TStringGetterFunc stringGetter, int initialSize = MAX_PATH)
 	{
@@ -81,139 +230,6 @@ namespace p::core
 			::ShellExecuteA(
 			    nullptr, "open", "explorer.exe", parameters.data(), nullptr, SW_SHOWNORMAL);
 		}
-	}
-
-	bool CreatePipe(void*& readPipe, void*& writePipe, bool writePipeLocal)
-	{
-		SECURITY_ATTRIBUTES Attr = {sizeof(SECURITY_ATTRIBUTES), nullptr, true};
-
-		if (!::CreatePipe(&readPipe, &writePipe, &Attr, 0))
-		{
-			return false;
-		}
-
-		if (!::SetHandleInformation(writePipeLocal ? writePipe : readPipe, HANDLE_FLAG_INHERIT, 0))
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	void ClosePipe(void* readPipe, void* writePipe)
-	{
-		if (readPipe != nullptr && readPipe != INVALID_HANDLE_VALUE)
-		{
-			::CloseHandle(readPipe);
-		}
-		if (writePipe != nullptr && writePipe != INVALID_HANDLE_VALUE)
-		{
-			::CloseHandle(writePipe);
-		}
-	}
-
-	String ReadPipe(void* readPipe)
-	{
-		String output;
-		// Note: String becomes corrupted when more than one byte per character and all bytes are
-		// not available
-		u32 bytesAvailable = 0;
-		if (::PeekNamedPipe(ReadPipe, nullptr, 0, nullptr, (::DWORD*)&bytesAvailable, nullptr)
-		    && (bytesAvailable > 0))
-		{
-			auto* buffer  = new Char8[bytesAvailable + 1];
-			u32 bytesRead = 0;
-			if (::ReadFile(ReadPipe, buffer, bytesAvailable, (::DWORD*)&bytesRead, nullptr))
-			{
-				if (bytesRead > 0)
-				{
-					// buffer[bytesRead] = (Char8)'\0';
-					Strings::ConvertTo<String, Char8>({buffer, bytesRead}, output);
-				}
-			}
-			delete[] buffer;
-		}
-		return output;
-	}
-
-	bool ReadPipe(void* readPipe, TArray<u8>& output)
-	{
-		u32 bytesAvailable = 0;
-		if (::PeekNamedPipe(readPipe, nullptr, 0, nullptr, (::DWORD*)&bytesAvailable, nullptr)
-		    && (bytesAvailable > 0))
-		{
-			// Note: Can be improved since resize default
-			// initializes vaues and this is not needed
-			output.Resize(i32(bytesAvailable));
-			u32 bytesRead = 0;
-			if (::ReadFile(readPipe, output.Data(), bytesAvailable, (::DWORD*)&bytesRead, nullptr))
-			{
-				if (bytesRead < bytesAvailable)
-				{
-					output.Resize(i32(bytesRead));
-				}
-				return true;
-			}
-			else
-			{
-				output.Empty();
-			}
-		}
-		return false;
-	}
-
-	bool WritePipe(void* writePipe, const String& msg, String* outWritten = nullptr)
-	{
-		// If there is not a message or WritePipe is null
-		if (msg.empty() || WritePipe == nullptr)
-		{
-			return false;
-		}
-
-		// Convert input to Char8
-		u32 bytesAvailable = msg.size();
-		auto* buffer       = new Char8[bytesAvailable + 2];
-		for (u32 i = 0; i < bytesAvailable; i++)
-		{
-			buffer[i] = static_cast<Char8>(msg[i]);
-		}
-		buffer[bytesAvailable] = static_cast<Char8>('\n');
-
-		// Write to pipe
-		u32 bytesWritten = 0;
-		bool isWritten =
-		    !!WriteFile(WritePipe, buffer, bytesAvailable + 1, (::DWORD*)&bytesWritten, nullptr);
-
-		// Get written message
-		if (outWritten)
-		{
-			// buffer[bytesWritten] = (Char8)'\0';
-			Strings::ConvertTo<String, Char8>({buffer, bytesWritten}, *outWritten);
-		}
-		delete[] buffer;
-		return isWritten;
-	}
-
-	bool WritePipe(void* writePipe, TSpan<const u8> data, i32* outWrittenLength = nullptr)
-	{
-		// if there is not a message or WritePipe is null
-		if (data.Size() == 0 || writePipe == nullptr)
-		{
-			return false;
-		}
-
-		// write to pipe
-		u32 bytesWritten = 0;
-		bool isWritten =
-		    !!WriteFile(writePipe, data.Data(), data.Size(), (::DWORD*)&bytesWritten, nullptr);
-
-		// Get written Data Length
-		if (outWrittenLength)
-		{
-			*outWrittenLength = (i32)bytesWritten;
-		}
-
-		return isWritten;
 	}
 }    // namespace p::core
 #endif

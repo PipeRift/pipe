@@ -42,7 +42,7 @@ struct MockStruct
 
 
 go_bandit([]() {
-	describe("OwnPtr", []() {
+	describe("Core.OwnPtr", []() {
 		describe("Owner pointer", []() {
 			it("Can initialize to empty", [&]() {
 				TOwnPtr<EmptyStruct> ptr;

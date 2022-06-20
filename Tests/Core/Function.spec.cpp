@@ -28,7 +28,7 @@ inline bool Foo::called = false;
 
 
 go_bandit([]() {
-	describe("Events.Function", []() {
+	describe("Core.Function", []() {
 		it("Can create empty", [&]() {
 			TFunction<void()> func{};
 			AssertThat(func.IsBound(), Equals(false));
