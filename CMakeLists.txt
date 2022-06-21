@@ -12,10 +12,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 project(Pipe VERSION 0.1 LANGUAGES CXX)
 
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    set(PIPE_IS_PROJECT ON)
+set(PIPE_IS_PROJECT ON)
 else()
-    set(PIPE_IS_PROJECT OFF)
+set(PIPE_IS_PROJECT OFF)
 endif()
 option(PIPE_BUILD_SHARED "Build shared libraries" ON)
 option(PIPE_BUILD_TESTS "Build Pipe tests" ${PIPE_IS_PROJECT})
@@ -30,6 +31,9 @@ include(CMake/DownloadProject.cmake)
 include(CMake/Util.cmake)
 include(GenerateExportHeader)
 
+if (PLATFORM_MACOS)
+    enable_language(OBJCXX)
+endif()
 
 # ##############################################################################
 # Dependencies
