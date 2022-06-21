@@ -30,7 +30,7 @@ namespace p::core
 
 		bool IsValid() const
 		{
-			return readPipe != nullptr && writePipe != nullptr;
+			return readPipe && writePipe;
 		}
 	};
 	using PipeHandle = WindowsPipeHandle;

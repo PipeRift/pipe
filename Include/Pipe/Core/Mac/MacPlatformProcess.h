@@ -7,6 +7,34 @@
 
 namespace p::core
 {
+	struct PIPE_API MacPipeHandle : public GenericPipeHandle
+	{
+	protected:
+		void* readPipe;
+		void* writePipe;
+
+
+	public:
+		explicit MacPipeHandle(bool writePipeLocal = false);
+		MacPipeHandle(MacPipeHandle&& other) noexcept;
+		~MacPipeHandle()
+		{
+			Close();
+		}
+
+		bool Read(String& output);
+		bool Read(TArray<u8>& output);
+		bool Write(const String& msg, String* outWritten = nullptr);
+		bool Write(TSpan<const u8> data, i32* outWrittenLength = nullptr);
+		void Close();
+		bool IsValid() const
+		{
+			return readPipe && writePipe;
+		}
+	};
+	using PipeHandle = MacPipeHandle;
+
+
 	struct PIPE_API MacPlatformProcess : public GenericPlatformProcess
 	{
 		static StringView GetExecutableFile();
@@ -15,7 +43,6 @@ namespace p::core
 
 		static void ShowFolder(StringView path);
 	};
-
 	using PlatformProcess = MacPlatformProcess;
 }    // namespace p::core
 
