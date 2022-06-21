@@ -71,7 +71,3 @@ if(PLATFORM_LINUX)
     set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
     set_target_properties(yyjson PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
-
-
-add_library(subprocess INTERFACE)
-target_include_directories(subprocess INTERFACE subprocessh)

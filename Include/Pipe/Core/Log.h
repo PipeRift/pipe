@@ -13,9 +13,9 @@ namespace p::Log
 	PIPE_API void Init(Path logPath = {});
 	PIPE_API void Shutdown();
 
-	void PIPE_API Info(StringView msg);
-	void PIPE_API Warning(StringView msg);
-	void PIPE_API Error(StringView msg);
+	PIPE_API void Info(StringView msg);
+	PIPE_API void Warning(StringView msg);
+	PIPE_API void Error(StringView msg);
 
 	template<typename... Args>
 	void Info(StringView format, Args... args)

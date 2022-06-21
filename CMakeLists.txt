@@ -31,9 +31,6 @@ include(CMake/DownloadProject.cmake)
 include(CMake/Util.cmake)
 include(GenerateExportHeader)
 
-if (PLATFORM_MACOS)
-    enable_language(OBJCXX)
-endif()
 
 # ##############################################################################
 # Dependencies
@@ -72,7 +69,6 @@ target_link_libraries(Pipe PUBLIC
     Tracy
     magic_enum
     utf8cpp
-    subprocess
 )
 target_link_libraries(Pipe PRIVATE
     portable_file_dialogs
