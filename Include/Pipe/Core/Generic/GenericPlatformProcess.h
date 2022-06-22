@@ -9,19 +9,6 @@
 
 namespace p::core
 {
-	struct PIPE_API GenericPipeHandle
-	{
-		//~GenericPipeHandle(){ Close() } Must call Close() on platform implementation
-
-		bool Read(String& output)                                   = delete;    // Not implemented
-		bool Read(TArray<u8>& output)                               = delete;    // Not implemented
-		bool Write(const String& msg, String* outWritten = nullptr) = delete;    // Not implemented
-		bool Write(
-		    TSpan<const u8> data, i32* outWrittenLength = nullptr) = delete;    // Not implemented
-		void Close()                                               = delete;    // Not implemented
-	};
-
-
 	struct PIPE_API GenericPlatformProcess
 	{
 		static StringView GetExecutableFile() = delete;

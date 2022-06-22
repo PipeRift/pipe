@@ -40,6 +40,9 @@ namespace p::core
 		// by the platform.
 		NoWindow = 1 << 3,
 
+		// If set, the process will terminate when the instance is destroyed
+		TerminateIfDestroyed = 1 << 4,
+
 		// Search for program names in the PATH variable. Always enabled on Windows.
 		// Note: this will **not** search for paths in any provided custom environment
 		// and instead uses the PATH of the spawning process.
@@ -54,7 +57,7 @@ namespace p::core
 #endif
 	struct PIPE_API Subprocess
 	{
-		FILE* inFile   = nullptr;
+		FILE* cinFile  = nullptr;
 		FILE* coutFile = nullptr;
 		FILE* cerrFile = nullptr;
 
@@ -68,7 +71,13 @@ namespace p::core
 		i32 returnStatus = 0;
 #endif
 
-		bool alive = false;
+		SubprocessOptions options = SubprocessOptions::None;
+		bool alive                = false;
+
+
+		Subprocess() = default;
+		Subprocess(Subprocess&& other) noexcept;
+		~Subprocess();
 	};
 #ifdef __clang__
 #	pragma clang diagnostic pop
@@ -91,8 +100,8 @@ namespace p::core
 	 * If `options` contains `subprocess_option_inherit_environment`, then
 	 * `environment` must be NULL.
 	 */
-	PIPE_API i32 CreateProcessEx(TSpan<const char*> command, TSpan<const char*> environment,
-	    Subprocess* outProcess, SubprocessOptions options = SubprocessOptions::None);
+	PIPE_API TOptional<Subprocess> RunProcessEx(TSpan<const StringView> command,
+	    TSpan<const StringView> environment, SubprocessOptions options = SubprocessOptions::None);
 
 	/**
 	 * @brief Create a process.
@@ -104,10 +113,10 @@ namespace p::core
 	 * @param outProcess The newly created process.
 	 * @return On success zero is returned.
 	 */
-	inline PIPE_API i32 CreateProcess(TSpan<const char*> command, Subprocess* outProcess,
-	    SubprocessOptions options = SubprocessOptions::None)
+	inline PIPE_API TOptional<Subprocess> RunProcess(
+	    TSpan<const StringView> command, SubprocessOptions options = SubprocessOptions::None)
 	{
-		return CreateProcessEx(command, {}, outProcess, options);
+		return RunProcessEx(command, {}, options);
 	}
 
 	/**
@@ -119,7 +128,7 @@ namespace p::core
 	 *
 	 * Joining a process will close the stdin pipe to the process.
 	 */
-	PIPE_API i32 WaitProcess(Subprocess* process, int* out_return_code);
+	PIPE_API i32 WaitProcess(Subprocess* process, i32* outReturnCode);
 
 	/**
 	 * @brief Destroy a previously created process.

@@ -2,6 +2,12 @@
 #include "Pipe/Core/Subprocess.h"
 
 #include "Pipe/Core/Array.h"
+#include "Pipe/Core/Log.h"
+#include "Pipe/Core/Optional.h"
+#include "Pipe/Core/PlatformMisc.h"
+#include "Pipe/Core/String.h"
+#include "Pipe/Core/StringView.h"
+
 
 #if defined(_MSC_VER)
 #	include <Windows.h>
@@ -12,18 +18,6 @@
 namespace p::core
 {
 #if defined(_MSC_VER)
-#	ifdef __clang__
-#		pragma clang diagnostic push
-#		pragma clang diagnostic ignored "-Wreserved-identifier"
-#	endif
-	using LPPROCESS_INFORMATION = struct _PROCESS_INFORMATION*;
-	using LPSECURITY_ATTRIBUTES = struct _SECURITY_ATTRIBUTES*;
-	using LPSTARTUPINFOA        = struct _STARTUPINFOA*;
-	using LPOVERLAPPED          = struct _OVERLAPPED*;
-#	ifdef __clang__
-#		pragma clang diagnostic pop
-#	endif
-
 	struct SubprocessInfo
 	{
 		void* hProcess;
@@ -41,7 +35,7 @@ namespace p::core
 
 	struct SubprocessStartupInfo
 	{
-		u64 cb              = 0;
+		u64 cb              = sizeof(SubprocessStartupInfo);
 		char* lpReserved    = nullptr;
 		char* lpDesktop     = nullptr;
 		char* lpTitle       = nullptr;
@@ -80,54 +74,39 @@ namespace p::core
 
 		SubprocessOverlapped() : Offset{0}, OffsetHigh{0} {}
 	};
-
-/*
-	__declspec(dllimport) u64 __stdcall GetLastError(void);
-	__declspec(dllimport) i32 __stdcall SetHandleInformation(void*, u64, u64);
-	__declspec(dllimport) i32 __stdcall CreatePipe(void**, void**, LPSECURITY_ATTRIBUTES, u64);
-	__declspec(dllimport) void* __stdcall CreateNamedPipeA(
-	    const char*, u64, u64, u64, u64, u64, u64, LPSECURITY_ATTRIBUTES);
-	__declspec(dllimport) i32 __stdcall ReadFile(void*, void*, u64, u64*, LPOVERLAPPED);
-	__declspec(dllimport) u64 __stdcall GetCurrentProcessId(void);
-	__declspec(dllimport) u64 __stdcall GetCurrentThreadId(void);
-	__declspec(dllimport) void* __stdcall CreateFileA(
-	    const char*, u64, u64, LPSECURITY_ATTRIBUTES, u64, u64, void*);
-	__declspec(dllimport) void* __stdcall CreateEventA(
-	    LPSECURITY_ATTRIBUTES, int, int, const char*);
-	__declspec(dllimport) i32 __stdcall CreateProcessA(const char*, char*, LPSECURITY_ATTRIBUTES,
-	    LPSECURITY_ATTRIBUTES, int, u64, void*, const char*, LPSTARTUPINFOA, LPPROCESS_INFORMATION);
-	__declspec(dllimport) i32 __stdcall CloseHandle(void*);
-	__declspec(dllimport) u64 __stdcall WaitForSingleObject(void*, u64);
-	__declspec(dllimport) i32 __stdcall GetExitCodeProcess(void*, u64* lpExitCode);
-	__declspec(dllimport) i32 __stdcall TerminateProcess(void*, unsigned int);
-	__declspec(dllimport) u64 __stdcall WaitForMultipleObjects(u64, void* const*, int, u64);
-	__declspec(dllimport) i32 __stdcall GetOverlappedResult(void*, LPOVERLAPPED, u64*, int);
-
-#	if defined(_DLL) && (_DLL == 1)
-#		define SUBPROCESS_DLLIMPORT __declspec(dllimport)
-#	else
-#		define SUBPROCESS_DLLIMPORT
-#	endif
-
-#	ifdef __clang__
-#		pragma clang diagnostic push
-#		pragma clang diagnostic ignored "-Wreserved-identifier"
-#	endif
-
-	SUBPROCESS_DLLIMPORT i32 __cdecl _fileno(FILE*);
-	SUBPROCESS_DLLIMPORT i32 __cdecl _open_osfhandle(iPtr, int);
-	SUBPROCESS_DLLIMPORT iPtr __cdecl _get_osfhandle(int);
-
-	void* __cdecl _alloca(sizet);
-
-#	ifdef __clang__
-#		pragma clang diagnostic pop
-#	endif*/
 #endif
 
 
+	Subprocess::Subprocess(Subprocess&& other) noexcept
+	{
+		Swap(cinFile, other.cinFile);
+		Swap(coutFile, other.coutFile);
+		Swap(cerrFile, other.cerrFile);
 #if defined(_MSC_VER)
-	i32 CreateProcessNamedPipeHelper(void** rd, void** wr)
+		Swap(hProcess, other.hProcess);
+		Swap(hStdInput, other.hStdInput);
+		Swap(hEventOutput, other.hEventOutput);
+		Swap(hEventError, other.hEventError);
+#else
+		Swap(child, other.child);
+		Swap(returnStatus, other.returnStatus);
+#endif
+		Swap(options, other.options);
+		Swap(alive, other.alive);
+	}
+
+	Subprocess::~Subprocess()
+	{
+		if (HasFlag(options, SubprocessOptions::TerminateIfDestroyed))
+		{
+			TerminateProcess(this);
+		}
+		DestroyProcess(this);    // Make sure process is destroyed
+	}
+
+
+#if defined(_MSC_VER)
+	i32 RunProcessNamedPipeHelper(void** readPipe, void** writePipe)
 	{
 		const u64 pipeAccessInbound          = 0x00000001;
 		const u64 fileFlagOverlapped         = 0x40000000;
@@ -153,19 +132,20 @@ namespace p::core
 		    ::GetCurrentProcessId(), ::GetCurrentThreadId(), unique);
 #	endif
 
-		*rd = ::CreateNamedPipeA(name, pipeAccessInbound | fileFlagOverlapped,
+		*readPipe = ::CreateNamedPipeA(name, pipeAccessInbound | fileFlagOverlapped,
 		    pipeTypeByte | pipeWait, 1, 4096, 4096, 0,
-		    reinterpret_cast<LPSECURITY_ATTRIBUTES>(&saAttr));
+		    reinterpret_cast<_SECURITY_ATTRIBUTES*>(&saAttr));
 
-		if (invalidHandleValue == *rd)
+		if (invalidHandleValue == *readPipe)
 		{
 			return -1;
 		}
 
-		*wr = ::CreateFileA(name, genericWrite, 0, reinterpret_cast<LPSECURITY_ATTRIBUTES>(&saAttr),
-		    openExisting, fileAttributeNormal, nullptr);
+		*writePipe =
+		    ::CreateFileA(name, genericWrite, 0, reinterpret_cast<_SECURITY_ATTRIBUTES*>(&saAttr),
+		        openExisting, fileAttributeNormal, nullptr);
 
-		if (invalidHandleValue == *wr)
+		if (invalidHandleValue == *writePipe)
 		{
 			return -1;
 		}
@@ -175,26 +155,25 @@ namespace p::core
 #endif
 
 
-	i32 CreateProcessEx(TSpan<const char*> command, TSpan<const char*> environment,
-	    Subprocess* outProcess, SubprocessOptions options)
+	TOptional<Subprocess> RunProcessEx(TSpan<const StringView> command,
+	    TSpan<const StringView> environment, SubprocessOptions options)
 	{
+		Subprocess instance;
+		instance.options = options;
+
 #if defined(_MSC_VER)
-		i32 fd;
-		void *rd, *wr;
-		char* commandCombined;
 		sizet len;
 		i32 i, j;
-		i32 need_quoting;
-		u64 flags                     = 0;
-		const u64 startFUseStdHandles = 0x00000100;
-		const u64 handleFlagInherit   = 0x00000001;
-		const u64 createNoWindow      = 0x08000000;
+		u64 flags                                = 0;
+		static constexpr u64 startFUseStdHandles = 0x00000100;
+		static constexpr u64 handleFlagInherit   = 0x00000001;
+		static constexpr u64 createNoWindow      = 0x08000000;
+		TString<char> commandCombined;
+		TString<char> environmentCombined;
+
 		SubprocessInfo processInfo;
 		SubprocessSecurityAttributes saAttr;
-		char* usedEnvironment = nullptr;
 		SubprocessStartupInfo startInfo;
-
-		startInfo.cb      = sizeof(startInfo);
 		startInfo.dwFlags = startFUseStdHandles;
 
 		if (HasFlag(options, SubprocessOptions::NoWindow))
@@ -202,368 +181,295 @@ namespace p::core
 			flags |= createNoWindow;
 		}
 
-		if (!HasFlag(options, SubprocessOptions::InheritEnvironment))
+		for (i = 0; i < command.Size(); ++i)
 		{
-			if (environment.IsEmpty())
+			auto commandStep       = command[i];
+			const bool needQuoting = Strings::Contains(commandStep, "\t")
+			                      || Strings::Contains(commandStep, '\v')
+			                      || Strings::Contains(commandStep, ' ');
+			if (needQuoting)
 			{
-				usedEnvironment = const_cast<char*>("\0\0");
+				commandCombined.push_back('"');
 			}
-			else
+
+			for (j = 0; j < commandStep.size(); ++j)
 			{
-				// We always end with two null terminators.
-				len = 2;
-
-				for (i = 0; environment[i]; ++i)
+				switch (commandStep[j])
 				{
-					for (j = 0; '\0' != environment[i][j]; ++j)
-					{
-						len++;
-					}
-
-					// For the null terminator too.
-					len++;
+					default: break;
+					case '\\':
+						if (commandStep[j + 1] == '"')
+						{
+							commandCombined.push_back('\\');
+						}
+						break;
+					case '"': commandCombined.push_back('\\'); break;
 				}
 
-				usedEnvironment = static_cast<char*>(::_alloca(len));
-
-				// Re-use len for the insertion position
-				len = 0;
-
-				for (i = 0; environment[i]; ++i)
-				{
-					for (j = 0; '\0' != environment[i][j]; ++j)
-					{
-						usedEnvironment[len++] = environment[i][j];
-					}
-
-					usedEnvironment[len++] = '\0';
-				}
-
-				// End with the two null terminators.
-				usedEnvironment[len++] = '\0';
-				usedEnvironment[len++] = '\0';
+				commandCombined.push_back(commandStep[j]);
 			}
+			if (needQuoting)
+			{
+				commandCombined.push_back('"');
+			}
+
+			commandCombined.push_back(' ');
 		}
-		else
+		commandCombined.pop_back();    // Remove last space
+		if (commandCombined.empty())
+		{
+			return {};
+		}
+
+		if (HasFlag(options, SubprocessOptions::InheritEnvironment))
 		{
 			if (!environment.IsEmpty())
 			{
-				return -1;
-			}
-		}
-
-		if (!::CreatePipe(&rd, &wr, reinterpret_cast<LPSECURITY_ATTRIBUTES>(&saAttr), 0))
-		{
-			return -1;
-		}
-
-		if (!::SetHandleInformation(wr, handleFlagInherit, 0))
-		{
-			return -1;
-		}
-
-		fd = _open_osfhandle(reinterpret_cast<iPtr>(wr), 0);
-
-		if (-1 != fd)
-		{
-			outProcess->inFile = _fdopen(fd, "wb");
-
-			if (nullptr == outProcess->inFile)
-			{
-				return -1;
-			}
-		}
-
-		startInfo.hStdInput = rd;
-
-		if (HasFlag(options, SubprocessOptions::EnableAsync))
-		{
-			if (CreateProcessNamedPipeHelper(&rd, &wr))
-			{
-				return -1;
+				return {};
 			}
 		}
 		else
 		{
-			if (!CreatePipe(&rd, &wr, reinterpret_cast<LPSECURITY_ATTRIBUTES>(&saAttr), 0))
+			if (environment.IsEmpty())
 			{
-				return -1;
+				environmentCombined.push_back('\0');
+			}
+			else
+			{
+				for (i = 0; i < environment.Size(); ++i)
+				{
+					environmentCombined.append(environment[i]);
+					environmentCombined.push_back('\0');
+				}
 			}
 		}
 
-		if (!SetHandleInformation(rd, handleFlagInherit, 0))
+		void* readPipe  = nullptr;
+		void* writePipe = nullptr;
+		if (!::CreatePipe(
+		        &readPipe, &writePipe, reinterpret_cast<_SECURITY_ATTRIBUTES*>(&saAttr), 0))
 		{
-			return -1;
+			return {};
 		}
-
-		fd = _open_osfhandle(reinterpret_cast<iPtr>(rd), 0);
-
-		if (-1 != fd)
+		if (!::SetHandleInformation(writePipe, handleFlagInherit, 0))
 		{
-			outProcess->coutFile = _fdopen(fd, "rb");
+			return {};
+		}
+		const i32 writeDescriptor = _open_osfhandle(reinterpret_cast<iPtr>(writePipe), 0);
+		if (writeDescriptor != -1)
+		{
+			instance.cinFile = _fdopen(writeDescriptor, "wb");
 
-			if (nullptr == outProcess->coutFile)
+			if (!instance.cinFile)
 			{
-				return -1;
+				return {};
 			}
 		}
+		startInfo.hStdInput = readPipe;
+		instance.hStdInput  = readPipe;
 
-		startInfo.hStdOutput = wr;
+		if (HasFlag(options, SubprocessOptions::EnableAsync))
+		{
+			if (RunProcessNamedPipeHelper(&readPipe, &writePipe))
+			{
+				return {};
+			}
+		}
+		else if (!::CreatePipe(
+		             &readPipe, &writePipe, reinterpret_cast<_SECURITY_ATTRIBUTES*>(&saAttr), 0))
+		{
+			return {};
+		}
+		if (!::SetHandleInformation(readPipe, handleFlagInherit, 0))
+		{
+			return {};
+		}
+		const i32 readDescriptor = _open_osfhandle(reinterpret_cast<iPtr>(readPipe), 0);
+		if (readDescriptor != -1)
+		{
+			instance.coutFile = _fdopen(readDescriptor, "rb");
+			if (!instance.coutFile)
+			{
+				return {};
+			}
+		}
+		startInfo.hStdOutput = writePipe;
 
 		if (HasFlag(options, SubprocessOptions::CombinedOutErr))
 		{
-			outProcess->cerrFile = outProcess->coutFile;
-			startInfo.hStdError  = startInfo.hStdOutput;
+			instance.cerrFile   = instance.coutFile;
+			startInfo.hStdError = startInfo.hStdOutput;
 		}
 		else
 		{
 			if (HasFlag(options, SubprocessOptions::EnableAsync))
 			{
-				if (CreateProcessNamedPipeHelper(&rd, &wr))
+				if (RunProcessNamedPipeHelper(&readPipe, &writePipe))
 				{
-					return -1;
+					return {};
 				}
 			}
 			else
 			{
-				if (!CreatePipe(&rd, &wr, reinterpret_cast<LPSECURITY_ATTRIBUTES>(&saAttr), 0))
+				if (!::CreatePipe(
+				        &readPipe, &writePipe, reinterpret_cast<_SECURITY_ATTRIBUTES*>(&saAttr), 0))
 				{
-					return -1;
+					return {};
 				}
 			}
-
-			if (!SetHandleInformation(rd, handleFlagInherit, 0))
+			if (!::SetHandleInformation(readPipe, handleFlagInherit, 0))
 			{
-				return -1;
+				return {};
 			}
-
-			fd = _open_osfhandle(reinterpret_cast<iPtr>(rd), 0);
-
-			if (-1 != fd)
+			const i32 errorDescriptor = _open_osfhandle(reinterpret_cast<iPtr>(readPipe), 0);
+			if (errorDescriptor != -1)
 			{
-				outProcess->cerrFile = ::_fdopen(fd, "rb");
-
-				if (!outProcess->cerrFile)
+				instance.cerrFile = ::_fdopen(errorDescriptor, "rb");
+				if (!instance.cerrFile)
 				{
-					return -1;
+					return {};
 				}
 			}
-
-			startInfo.hStdError = wr;
+			startInfo.hStdError = writePipe;
 		}
 
 		if (HasFlag(options, SubprocessOptions::EnableAsync))
 		{
-			outProcess->hEventOutput =
-			    CreateEventA(reinterpret_cast<LPSECURITY_ATTRIBUTES>(&saAttr), 1, 1, nullptr);
-			outProcess->hEventError =
-			    CreateEventA(reinterpret_cast<LPSECURITY_ATTRIBUTES>(&saAttr), 1, 1, nullptr);
+			instance.hEventOutput =
+			    CreateEventA(reinterpret_cast<_SECURITY_ATTRIBUTES*>(&saAttr), 1, 1, nullptr);
+			instance.hEventError =
+			    CreateEventA(reinterpret_cast<_SECURITY_ATTRIBUTES*>(&saAttr), 1, 1, nullptr);
 		}
 		else
 		{
-			outProcess->hEventOutput = nullptr;
-			outProcess->hEventError  = nullptr;
+			instance.hEventOutput = nullptr;
+			instance.hEventError  = nullptr;
 		}
 
-		// Combine command together into a single string
-		len = 0;
-		for (i = 0; command[i]; i++)
+		if (!::CreateProcessA(nullptr,
+		        commandCombined.data(),        // command line
+		        nullptr,                       // process security attributes
+		        nullptr,                       // primary thread security attributes
+		        1,                             // handles are inherited
+		        flags,                         // creation flags
+		        environmentCombined.data(),    // used environment
+		        nullptr,                       // use parent's current directory
+		        reinterpret_cast<_STARTUPINFOA*>(&startInfo),    // STARTUPINFO pointer
+		        reinterpret_cast<_PROCESS_INFORMATION*>(&processInfo)))
 		{
-			// for the trailing \0
-			len++;
-
-			// Quote the argument if it has a space in it
-			if (strpbrk(command[i], "\t\v ") != nullptr)
-				len += 2;
-
-			for (j = 0; '\0' != command[i][j]; j++)
-			{
-				switch (command[i][j])
-				{
-					default: break;
-					case '\\':
-						if (command[i][j + 1] == '"')
-						{
-							len++;
-						}
-
-						break;
-					case '"': len++; break;
-				}
-				len++;
-			}
+			DWORD errorCode = GetLastError();
+			TChar errorMessage[512];
+			PlatformMisc::GetSystemErrorMessage(errorMessage, 512, errorCode);
+			Log::Error("RunProcess failed: {} (0x{:08x})", errorMessage, errorCode);
+			return {};
 		}
 
-		commandCombined = static_cast<char*>(::_alloca(len));
-
-		if (!commandCombined)
-		{
-			return -1;
-		}
-
-		// Gonna re-use len to store the write index into commandCombined
-		len = 0;
-
-		for (i = 0; command[i]; i++)
-		{
-			if (0 != i)
-			{
-				commandCombined[len++] = ' ';
-			}
-
-			need_quoting = strpbrk(command[i], "\t\v ") != nullptr;
-			if (need_quoting)
-			{
-				commandCombined[len++] = '"';
-			}
-
-			for (j = 0; '\0' != command[i][j]; j++)
-			{
-				switch (command[i][j])
-				{
-					default: break;
-					case '\\':
-						if (command[i][j + 1] == '"')
-						{
-							commandCombined[len++] = '\\';
-						}
-
-						break;
-					case '"': commandCombined[len++] = '\\'; break;
-				}
-
-				commandCombined[len++] = command[i][j];
-			}
-			if (need_quoting)
-			{
-				commandCombined[len++] = '"';
-			}
-		}
-
-		commandCombined[len] = '\0';
-
-		if (!CreateProcessA(nullptr,
-		        commandCombined,    // command line
-		        nullptr,            // process security attributes
-		        nullptr,            // primary thread security attributes
-		        1,                  // handles are inherited
-		        flags,              // creation flags
-		        usedEnvironment,    // used environment
-		        nullptr,            // use parent's current directory
-		        reinterpret_cast<LPSTARTUPINFOA>(&startInfo),    // STARTUPINFO pointer
-		        reinterpret_cast<LPPROCESS_INFORMATION>(&processInfo)))
-		{
-			return -1;
-		}
-
-		outProcess->hProcess = processInfo.hProcess;
-
-		outProcess->hStdInput = startInfo.hStdInput;
+		instance.hProcess = processInfo.hProcess;
 
 		// We don't need the handle of the primary thread in the called process.
-		CloseHandle(processInfo.hThread);
+		::CloseHandle(processInfo.hThread);
 
-		if (nullptr != startInfo.hStdOutput)
+		if (startInfo.hStdOutput)
 		{
-			CloseHandle(startInfo.hStdOutput);
+			::CloseHandle(startInfo.hStdOutput);
 
 			if (startInfo.hStdError != startInfo.hStdOutput)
 			{
-				CloseHandle(startInfo.hStdError);
+				::CloseHandle(startInfo.hStdError);
 			}
 		}
 
-		outProcess->alive = true;
-
-		return 0;
+		instance.alive = true;
 #else
+		TArray<const char* const> posixCommand;
+		posixCommand.Append(command);
+		posixCommand.Add(nullptr);    // End in nullptr following posix API
+
+		TArray<const char* const> posixEnvironment;
+		posixEnvironment.Append(environment);
+		posixEnvironment.Add(nullptr);    // End in nullptr following posix API
+
 		i32 stdinfd[2];
 		i32 stdoutfd[2];
 		i32 stderrfd[2];
 		pid_t child;
 		extern char** environ;
-		char* empty_environment[1] = {nullptr};
 		posix_spawn_file_actions_t actions;
-		char* const* usedEnvironment;
 
+		char* const* usedEnvironment;
 		if (HasFlag(options, SubprocessOptions::InheritEnvironment))
 		{
-			if (nullptr != environment)
+			if (!environment.IsEmpty())
 			{
-				return -1;
+				return {};
+			}
+			else
+			{
+				usedEnvironment = environ;
 			}
 		}
-
-		if (0 != pipe(stdinfd))
-		{
-			return -1;
-		}
-
-		if (0 != pipe(stdoutfd))
-		{
-			return -1;
-		}
-
-		if (SubprocessOptions::CombinedOutErr != (options & SubprocessOptions::CombinedOutErr))
-		{
-			if (0 != pipe(stderrfd))
-			{
-				return -1;
-			}
-		}
-
-		if (environment)
+		else
 		{
 #	ifdef __clang__
 #		pragma clang diagnostic push
 #		pragma clang diagnostic ignored "-Wcast-qual"
 #		pragma clang diagnostic ignored "-Wold-style-cast"
 #	endif
-			usedEnvironment = (char* const*)environment;
+			usedEnvironment = (char* const*)posixEnvironment.Data();
 #	ifdef __clang__
 #		pragma clang diagnostic pop
 #	endif
 		}
-		else if (HasFlag(options, subprocess_option_inherit_environment))
+
+		if (pipe(stdinfd) != 0)
 		{
-			usedEnvironment = environ;
+			return {};
 		}
-		else
+
+		if (pipe(stdoutfd) != 0)
 		{
-			usedEnvironment = empty_environment;
+			return {};
+		}
+
+		if (HasFlag(options, SubprocessOptions::CombinedOutErr))
+		{
+			if (pipe(stderrfd) != 0)
+			{
+				return {};
+			}
 		}
 
 		if (0 != posix_spawn_file_actions_init(&actions))
 		{
-			return -1;
+			return {};
 		}
 
 		// Close the stdin write end
 		if (0 != posix_spawn_file_actions_addclose(&actions, stdinfd[1]))
 		{
 			posix_spawn_file_actions_destroy(&actions);
-			return -1;
+			return {};
 		}
 
 		// Map the read end to stdin
 		if (0 != posix_spawn_file_actions_adddup2(&actions, stdinfd[0], STDIN_FILENO))
 		{
 			posix_spawn_file_actions_destroy(&actions);
-			return -1;
+			return {};
 		}
 
 		// Close the stdout read end
 		if (0 != posix_spawn_file_actions_addclose(&actions, stdoutfd[0]))
 		{
 			posix_spawn_file_actions_destroy(&actions);
-			return -1;
+			return {};
 		}
 
 		// Map the write end to stdout
 		if (0 != posix_spawn_file_actions_adddup2(&actions, stdoutfd[1], STDOUT_FILENO))
 		{
 			posix_spawn_file_actions_destroy(&actions);
-			return -1;
+			return {};
 		}
 
 		if (HasFlag(options, SubprocessOptions::CombinedOutErr))
@@ -571,7 +477,7 @@ namespace p::core
 			if (0 != posix_spawn_file_actions_adddup2(&actions, STDOUT_FILENO, STDERR_FILENO))
 			{
 				posix_spawn_file_actions_destroy(&actions);
-				return -1;
+				return {};
 			}
 		}
 		else
@@ -580,13 +486,13 @@ namespace p::core
 			if (0 != posix_spawn_file_actions_addclose(&actions, stderrfd[0]))
 			{
 				posix_spawn_file_actions_destroy(&actions);
-				return -1;
+				return {};
 			}
 			// Map the write end to stdout
 			if (0 != posix_spawn_file_actions_adddup2(&actions, stderrfd[1], STDERR_FILENO))
 			{
 				posix_spawn_file_actions_destroy(&actions);
-				return -1;
+				return {};
 			}
 		}
 
@@ -595,24 +501,24 @@ namespace p::core
 #		pragma clang diagnostic ignored "-Wcast-qual"
 #		pragma clang diagnostic ignored "-Wold-style-cast"
 #	endif
-		if (HasFlag(options, subprocess_option_search_user_path))
+		if (HasFlag(options, SubprocessOptions::SearchUserPath))
 		{
-			if (0
-			    != posix_spawnp(
-			        &child, command[0], &actions, nullptr, (char* const*)command, usedEnvironment))
+			if (posix_spawnp(&child, posixCommand[0], &actions, nullptr,
+			        (char* const*)posixCommand.Data(), usedEnvironment)
+			    != 0)
 			{
 				posix_spawn_file_actions_destroy(&actions);
-				return -1;
+				return {};
 			}
 		}
 		else
 		{
-			if (0
-			    != posix_spawn(
-			        &child, command[0], &actions, nullptr, (char* const*)command, usedEnvironment))
+			if (posix_spawn(&child, posixCommand[0], &actions, nullptr,
+			        (char* const*)posixCommand.Data(), usedEnvironment)
+			    != 0)
 			{
 				posix_spawn_file_actions_destroy(&actions);
-				return -1;
+				return {};
 			}
 		}
 #	ifdef __clang__
@@ -622,44 +528,44 @@ namespace p::core
 		// Close the stdin read end
 		close(stdinfd[0]);
 		// Store the stdin write end
-		outProcess->inFile = fdopen(stdinfd[1], "wb");
+		instance.cinFile = fdopen(stdinfd[1], "wb");
 
 		// Close the stdout write end
 		close(stdoutfd[1]);
 		// Store the stdout read end
-		outProcess->coutFile = fdopen(stdoutfd[0], "rb");
+		instance.coutFile = fdopen(stdoutfd[0], "rb");
 
 		if (HasFlag(options, SubprocessOptions::CombinedOutErr))
 		{
-			outProcess->cerrFile = outProcess->coutFile;
+			instance.cerrFile = instance.coutFile;
 		}
 		else
 		{
 			// Close the stderr write end
 			close(stderrfd[1]);
 			// Store the stderr read end
-			outProcess->cerrFile = fdopen(stderrfd[0], "rb");
+			instance.cerrFile = fdopen(stderrfd[0], "rb");
 		}
 
 		// Store the child's pid
-		outProcess->child = child;
+		instance.child = child;
 
-		outProcess->alive = true;
+		instance.alive = true;
 
 		posix_spawn_file_actions_destroy(&actions);
-		return 0;
 #endif
+		return {Move(instance)};
 	}
 
-	i32 WaitProcess(Subprocess* process, int* out_return_code)
+	i32 WaitProcess(Subprocess* process, i32* outReturnCode)
 	{
 #if defined(_MSC_VER)
 		const u64 infinite = 0xFFFFFFFF;
 
-		if (process->inFile)
+		if (process->cinFile)
 		{
-			fclose(process->inFile);
-			process->inFile = nullptr;
+			fclose(process->cinFile);
+			process->cinFile = nullptr;
 		}
 
 		if (process->hStdInput)
@@ -670,10 +576,9 @@ namespace p::core
 
 		::WaitForSingleObject(process->hProcess, infinite);
 
-		if (out_return_code)
+		if (outReturnCode)
 		{
-			if (!::GetExitCodeProcess(
-			        process->hProcess, reinterpret_cast<::DWORD*>(out_return_code)))
+			if (!::GetExitCodeProcess(process->hProcess, reinterpret_cast<::DWORD*>(outReturnCode)))
 			{
 				return -1;
 			}
@@ -684,10 +589,10 @@ namespace p::core
 #else
 		i32 status;
 
-		if (process->inFile)
+		if (process->cinFile)
 		{
-			fclose(process->inFile);
-			process->inFile = nullptr;
+			fclose(process->cinFile);
+			process->cinFile = nullptr;
 		}
 
 		if (process->child)
@@ -723,16 +628,15 @@ namespace p::core
 
 	i32 DestroyProcess(Subprocess* process)
 	{
-		if (process->inFile)
+		if (process->cinFile)
 		{
-			fclose(process->inFile);
-			process->inFile = nullptr;
+			fclose(process->cinFile);
+			process->cinFile = nullptr;
 		}
 
 		if (process->coutFile)
 		{
 			fclose(process->coutFile);
-
 			if (process->coutFile != process->cerrFile)
 			{
 				fclose(process->cerrFile);
@@ -751,39 +655,48 @@ namespace p::core
 			if (process->hStdInput)
 			{
 				CloseHandle(process->hStdInput);
+				process->hStdInput = nullptr;
 			}
-
 			if (process->hEventOutput)
 			{
 				CloseHandle(process->hEventOutput);
+				process->hEventOutput = nullptr;
 			}
-
 			if (process->hEventError)
 			{
 				CloseHandle(process->hEventError);
+				process->hEventError = nullptr;
 			}
 		}
 #endif
-
 		return 0;
 	}
 
 	i32 TerminateProcess(Subprocess* process)
 	{
 #if defined(_MSC_VER)
-		u32 killed_process_exit_code;
-		i32 success_terminate;
-		i32 windows_call_result;
+		if (process->hProcess)
+		{
+			u32 killed_process_exit_code;
+			i32 success_terminate;
+			i32 windows_call_result;
 
-		killed_process_exit_code = 99;
-		windows_call_result      = ::TerminateProcess(process->hProcess, killed_process_exit_code);
-		success_terminate        = (windows_call_result == 0) ? 1 : 0;
-		return success_terminate;
+			killed_process_exit_code = 99;
+			windows_call_result = ::TerminateProcess(process->hProcess, killed_process_exit_code);
+			success_terminate   = (windows_call_result == 0) ? 1 : 0;
+			process->hProcess   = nullptr;
+			return success_terminate;
+		}
 #else
-		i32 result;
-		result = kill(process->child, 9);
-		return result;
+		if (process->child != 0)
+		{
+			i32 result;
+			result         = kill(process->child, 9);
+			process->child = 0;
+			return result;
+		}
 #endif
+		return false;
 	}
 
 	unsigned ReadProcessCout(Subprocess* process, char* buffer, u32 size)
@@ -797,7 +710,7 @@ namespace p::core
 		handle = reinterpret_cast<void*>(_get_osfhandle(::_fileno(process->coutFile)));
 
 		if (!::ReadFile(handle, buffer, size, (::DWORD*)&bytesRead,
-		        reinterpret_cast<LPOVERLAPPED>(&overlapped)))
+		        reinterpret_cast<_OVERLAPPED*>(&overlapped)))
 		{
 			const u64 errorIoPending = 997;
 			u64 error                = GetLastError();
@@ -805,7 +718,7 @@ namespace p::core
 			// Means we've got an async read!
 			if (error == errorIoPending)
 			{
-				if (!::GetOverlappedResult(handle, reinterpret_cast<LPOVERLAPPED>(&overlapped),
+				if (!::GetOverlappedResult(handle, reinterpret_cast<_OVERLAPPED*>(&overlapped),
 				        (::DWORD*)&bytesRead, 1))
 				{
 					const u64 errorIoIncomplete = 996;
@@ -845,7 +758,7 @@ namespace p::core
 		handle = reinterpret_cast<void*>(_get_osfhandle(::_fileno(process->cerrFile)));
 
 		if (!::ReadFile(handle, buffer, size, (::DWORD*)&bytesRead,
-		        reinterpret_cast<LPOVERLAPPED>(&overlapped)))
+		        reinterpret_cast<_OVERLAPPED*>(&overlapped)))
 		{
 			const u64 errorIoPending = 997;
 			u64 error                = GetLastError();
@@ -853,7 +766,7 @@ namespace p::core
 			// Means we've got an async read!
 			if (error == errorIoPending)
 			{
-				if (!::GetOverlappedResult(handle, reinterpret_cast<LPOVERLAPPED>(&overlapped),
+				if (!::GetOverlappedResult(handle, reinterpret_cast<_OVERLAPPED*>(&overlapped),
 				        (::DWORD*)&bytesRead, 1))
 				{
 					const u64 errorIoIncomplete = 996;
@@ -925,7 +838,7 @@ namespace p::core
 
 	FILE* GetProcessCin(const Subprocess* process)
 	{
-		return process->inFile;
+		return process->cinFile;
 	}
 
 	FILE* GetProcessCout(const Subprocess* process)
