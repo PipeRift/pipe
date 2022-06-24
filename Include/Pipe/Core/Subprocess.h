@@ -100,8 +100,8 @@ namespace p::core
 	 * If `options` contains `subprocess_option_inherit_environment`, then
 	 * `environment` must be NULL.
 	 */
-	PIPE_API TOptional<Subprocess> RunProcessEx(TSpan<const StringView> command,
-	    TSpan<const StringView> environment, SubprocessOptions options = SubprocessOptions::None);
+	PIPE_API TOptional<Subprocess> RunProcessEx(TSpan<const char* const> command,
+	    TSpan<const char* const> environment, SubprocessOptions options = SubprocessOptions::None);
 
 	/**
 	 * @brief Create a process.
@@ -114,7 +114,7 @@ namespace p::core
 	 * @return On success zero is returned.
 	 */
 	inline PIPE_API TOptional<Subprocess> RunProcess(
-	    TSpan<const StringView> command, SubprocessOptions options = SubprocessOptions::None)
+	    TSpan<const char* const> command, SubprocessOptions options = SubprocessOptions::None)
 	{
 		return RunProcessEx(command, {}, options);
 	}

@@ -155,8 +155,8 @@ namespace p::core
 #endif
 
 
-	TOptional<Subprocess> RunProcessEx(TSpan<const StringView> command,
-	    TSpan<const StringView> environment, SubprocessOptions options)
+	TOptional<Subprocess> RunProcessEx(TSpan<const char* const> command,
+	    TSpan<const char* const> environment, SubprocessOptions options)
 	{
 		Subprocess instance;
 		instance.options = options;
@@ -192,7 +192,7 @@ namespace p::core
 				commandCombined.push_back('"');
 			}
 
-			for (j = 0; j < commandStep.size(); ++j)
+			for (j = 0; commandStep[j]; ++j)
 			{
 				switch (commandStep[j])
 				{
@@ -381,12 +381,10 @@ namespace p::core
 
 		instance.alive = true;
 #else
-		TArray<const char* const> posixCommand;
-		posixCommand.Append(command);
+		TArray<const char* const> posixCommand = command;
 		posixCommand.Add(nullptr);    // End in nullptr following posix API
 
-		TArray<const char* const> posixEnvironment;
-		posixEnvironment.Append(environment);
+		TArray<const char* const> posixEnvironment = environment;
 		posixEnvironment.Add(nullptr);    // End in nullptr following posix API
 
 		i32 stdinfd[2];
@@ -616,9 +614,9 @@ namespace p::core
 			process->alive = false;
 		}
 
-		if (out_return_code)
+		if (outReturnCode)
 		{
-			*out_return_code = process->returnStatus;
+			*outReturnCode = process->returnStatus;
 		}
 
 		return 0;
