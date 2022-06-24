@@ -381,11 +381,11 @@ namespace p::core
 
 		instance.alive = true;
 #else
-		TArray<const char* const> posixCommand;
+		TArray<const char*> posixCommand;
 		posixCommand.Append(command);
 		posixCommand.Add(nullptr);    // End in nullptr following posix API
 
-		TArray<const char* const> posixEnvironment;
+		TArray<const char*> posixEnvironment;
 		posixEnvironment.Append(environment);
 		posixEnvironment.Add(nullptr);    // End in nullptr following posix API
 
