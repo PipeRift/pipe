@@ -15,7 +15,6 @@ namespace p::core
 
 		static void ShowFolder(StringView path);
 	};
-
 	using PlatformProcess = MacPlatformProcess;
 }    // namespace p::core
 

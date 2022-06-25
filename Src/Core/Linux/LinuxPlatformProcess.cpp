@@ -5,6 +5,7 @@
 #	include "Pipe/Core/PlatformMisc.h"
 #	include "Pipe/Core/String.h"
 #	include "Pipe/Core/FixedString.h"
+#	include "Pipe/Core/Log.h"
 #	include "Pipe/Files/Paths.h"
 #	include "Pipe/Files/Files.h"
 

@@ -17,7 +17,7 @@ struct TypeOfSize
 
 
 go_bandit([]() {
-	describe("Containers.Array", []() {
+	describe("Core.Array", []() {
 		it("Can initialize", [&]() {
 			TArray<i32> data1{};
 			TArray<i32> data2(3);

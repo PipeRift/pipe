@@ -21,7 +21,7 @@ namespace p
 		Class_NotSerialized = Type_NotSerialized | (1 << 4),
 		Class_Abstract      = 1 << 5
 	};
-	DEFINE_FLAG_OPERATORS(TypeFlags)
+	PIPE_DEFINE_FLAG_OPERATORS(TypeFlags)
 
 	enum PropFlags
 	{
@@ -33,7 +33,7 @@ namespace p
 		// Internal use only
 		Prop_Array = 1 << 3    // Assigned automatically when a property is an array
 	};
-	DEFINE_FLAG_OPERATORS(PropFlags)
+	PIPE_DEFINE_FLAG_OPERATORS(PropFlags)
 
 
 	// Functions used to surround macro flag values making them template safe

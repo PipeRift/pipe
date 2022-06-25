@@ -89,7 +89,7 @@ namespace p::core
 
 			if constexpr (IsSame<FromChar, ToChar>)
 			{
-				dest = source;
+				dest += source;
 			}
 			else if constexpr (sizeof(FromChar) == 1 && sizeof(ToChar) == 2)
 			{
@@ -114,26 +114,12 @@ namespace p::core
 			}
 		}
 
-		// Help FromChar deduction
-		template<typename ToStringType, typename FromChar>
-		inline void ConvertTo(const TString<FromChar>& source, ToStringType& dest)
-		{
-			ConvertTo(TStringView<FromChar>{source}, dest);
-		}
-
 		template<typename ToStringType, typename FromChar>
 		inline ToStringType Convert(TStringView<FromChar> source)
 		{
 			ToStringType dest;
 			ConvertTo(source, dest);
 			return Move(dest);
-		}
-
-		// Help FromChar deduction
-		template<typename ToStringType, typename FromChar>
-		inline ToStringType Convert(const TString<FromChar>& source)
-		{
-			return Move(Convert<ToStringType>(TStringView<FromChar>{source}));
 		}
 	};    // namespace Strings
 }    // namespace p::core

@@ -12,6 +12,7 @@
 #	include <mach/thread_act.h>
 #	include <mach/thread_policy.h>
 #	include <libproc.h>
+#	include <fcntl.h>
 
 
 namespace p::core

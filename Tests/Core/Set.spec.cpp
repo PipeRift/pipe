@@ -17,7 +17,7 @@ struct TypeOfSize
 
 
 go_bandit([]() {
-	describe("Containers.Set", []() {
+	describe("Core.Set", []() {
 		it("Can initialize", [&]() {
 			TSet<i32> data1{};
 			TSet<i32> data2(u32(3));

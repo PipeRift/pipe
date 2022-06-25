@@ -32,9 +32,9 @@ namespace p::core::Strings
 			static const Regex spaceCamelCase(TX("([a-zA-Z])(?=[A-Z0-9])"));
 
 			auto result = std::regex_replace(value, spaceCamelCase, TX("$& "));
-			result[0]   = TCharHelpers<char>::ToUpper(result[0]);
+			result[0]   = TCharHelpers<TChar>::ToUpper(result[0]);
 
-			return Convert<String>(result);
+			return Convert<String, TChar>(result);
 		}
 		else
 		{
