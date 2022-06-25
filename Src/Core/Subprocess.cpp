@@ -12,6 +12,8 @@
 #if defined(_MSC_VER)
 #	include <Windows.h>
 #	include <io.h>
+#else
+extern char** environ;
 #endif
 
 
@@ -393,7 +395,6 @@ namespace p::core
 		i32 stdoutfd[2];
 		i32 stderrfd[2];
 		pid_t child;
-		extern char** environ;
 		posix_spawn_file_actions_t actions;
 
 		char* const* usedEnvironment;
