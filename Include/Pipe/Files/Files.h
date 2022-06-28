@@ -19,7 +19,7 @@ namespace p::files
 	PIPE_API bool LoadStringFile(const Path& path, String& result, sizet extraPadding = 0);
 	PIPE_API bool SaveStringFile(const Path& path, StringView data);
 
-	PIPE_API void CreateFolder(const Path& path, bool bRecursive = false);
+	PIPE_API bool CreateFolder(const Path& path, bool bRecursive = false);
 	PIPE_API bool Delete(const Path& path, bool bExcludeIfNotEmpty = true, bool bLogErrors = true);
 
 	PIPE_API Iterator CreateIterator(const Path& path);

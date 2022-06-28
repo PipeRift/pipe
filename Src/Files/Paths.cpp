@@ -11,7 +11,7 @@ namespace p::files
 {
 	Path GetBasePath()
 	{
-		return FromString(PlatformProcess::GetBasePath());
+		return ToPath(PlatformProcess::GetBasePath());
 	}
 
 #if PLATFORM_WINDOWS
@@ -222,7 +222,7 @@ namespace p::files
 		return path.string<TChar, std::char_traits<TChar>, STLAllocator<TChar>>();
 	}
 
-	Path FromString(StringView pathStr)
+	Path ToPath(StringView pathStr)
 	{
 		Path path;
 		path.assign(pathStr);
