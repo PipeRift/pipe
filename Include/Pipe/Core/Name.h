@@ -10,6 +10,11 @@
 #include <tsl/robin_set.h>
 
 
+namespace std
+{
+	class shared_mutex;
+}
+
 namespace p::core
 {
 	struct Name;
@@ -73,7 +78,7 @@ namespace p::core
 
 		Container table{};
 		// Mutex that allows sync reads but waits for registries
-		mutable class std::shared_mutex editTableMutex;
+		mutable std::shared_mutex editTableMutex;
 
 
 		NameTable() = default;
