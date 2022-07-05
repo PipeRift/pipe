@@ -4,6 +4,8 @@
 
 #include "Pipe/Serialize/Serialization.h"
 
+#include <shared_mutex>
+
 
 namespace p
 {

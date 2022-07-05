@@ -10,7 +10,6 @@
 #include "Pipe/Reflect/TypeName.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 
-#include <fmt/chrono.h>
 #include <fmt/format.h>
 #include <utf8.h>
 
