@@ -68,7 +68,7 @@ namespace p::files
 	PIPE_API bool IsRelativePath(const Path& path);
 	PIPE_API bool IsAbsolutePath(const Path& path);
 	PIPE_API String ToString(const Path& path);
-	PIPE_API Path FromString(StringView pathStr);
+	PIPE_API Path ToPath(StringView pathStr);
 }    // namespace p::files
 
 namespace p

@@ -36,7 +36,7 @@ namespace p::files
 		return !result.empty();
 	}
 
-	void CreateFolder(const Path& path, bool bRecursive)
+	bool CreateFolder(const Path& path, bool bRecursive)
 	{
 		if (IsFolder(path) && !Exists(path))
 		{
@@ -44,8 +44,9 @@ namespace p::files
 			{
 				CreateFolder(path.parent_path(), bRecursive);
 			}
-			fs::create_directory(path);
+			return fs::create_directory(path);
 		}
+		return false;
 	}
 
 	bool SaveStringFile(const Path& path, StringView data)
@@ -166,26 +167,26 @@ namespace p::files
 
 	bool LoadStringFile(const String& path, String& result, sizet extraPadding)
 	{
-		return LoadStringFile(FromString(path), result, extraPadding);
+		return LoadStringFile(ToPath(path), result, extraPadding);
 	}
 
 	bool SaveStringFile(const String& path, StringView data)
 	{
-		return SaveStringFile(FromString(path), data);
+		return SaveStringFile(ToPath(path), data);
 	}
 
 	bool Exists(const String& path)
 	{
-		return Exists(FromString(path));
+		return Exists(ToPath(path));
 	}
 
 	bool IsFolder(const String& path)
 	{
-		return IsFolder(FromString(path));
+		return IsFolder(ToPath(path));
 	}
 
 	bool IsFile(const String& path)
 	{
-		return IsFile(FromString(path));
+		return IsFile(ToPath(path));
 	}
 }    // namespace p::files
