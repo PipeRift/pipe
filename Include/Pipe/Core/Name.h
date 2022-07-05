@@ -9,11 +9,8 @@
 
 #include <tsl/robin_set.h>
 
+#include <shared_mutex>
 
-namespace std
-{
-	class shared_mutex;
-}
 
 namespace p::core
 {
