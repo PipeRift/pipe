@@ -7,10 +7,11 @@
 
 namespace p::core
 {
-	template<typename Allocator = Memory::TDefaultAllocator<u32>>
+	template<typename Allocator = HeapAllocator>
 	class TBitArray
 	{
-		using ArrayType = TArray<u32, Allocator>;
+		using AllocatorType = Allocator;
+		using ArrayType     = TArray<u32, Allocator>;
 
 	private:
 		/** The number of bits in this array */

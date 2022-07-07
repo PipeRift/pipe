@@ -17,15 +17,16 @@
 
 namespace p::core
 {
-	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>
+	template<typename Type, typename Allocator = HeapAllocator>
 	struct TArray
 	{
 	public:
 		template<typename OtherType, typename OtherAllocator>
 		friend struct TArray;
 
-		using ItemType   = Type;
-		using VectorType = std::vector<Type, STLAllocator<Type, Allocator>>;
+		using AllocatorType = Allocator;
+		using ItemType      = Type;
+		using VectorType    = std::vector<Type, STLAllocator<Type, AllocatorType>>;
 
 		using Iterator             = typename VectorType::iterator;
 		using ConstIterator        = typename VectorType::const_iterator;

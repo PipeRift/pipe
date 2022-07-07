@@ -4,7 +4,7 @@
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
-#include "Pipe/Memory/Allocators/DefaultAllocator.h"
+#include "Pipe/Memory/HeapAllocator.h"
 
 #include <limits>
 #include <memory>
@@ -12,7 +12,7 @@
 
 namespace p
 {
-	template<typename T, typename Allocator = Memory::TDefaultAllocator<T>>
+	template<typename T, typename Allocator = HeapAllocator>
 	struct STLAllocator
 	{
 		// STD types
@@ -25,21 +25,21 @@ namespace p
 		template<typename U>
 		struct rebind
 		{
-			using other = STLAllocator<U, typename Allocator::template Rebind<U>>;
+			using other = STLAllocator<U, Allocator>;
 		};
 
-		Allocator allocator{};
+		typename Allocator::Typed<T> allocator{};
 
 
 		STLAllocator()                             = default;
 		STLAllocator(const STLAllocator&) noexcept = default;
 		template<typename U>
-		STLAllocator(const STLAllocator<U>&) noexcept
+		STLAllocator(const STLAllocator<U, Allocator>&) noexcept
 		{}
 
 		pointer allocate(size_type count)
 		{
-			return static_cast<pointer>(allocator.Allocate(count));
+			return static_cast<pointer>(allocator.Alloc(count));
 		}
 		pointer allocate(size_type count, const void*)
 		{

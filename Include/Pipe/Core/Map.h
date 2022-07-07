@@ -18,8 +18,7 @@
 
 namespace p::core
 {
-	template<typename Key, typename Value,
-	    typename Allocator = Memory::TDefaultAllocator<TPair<Key, Value>>>
+	template<typename Key, typename Value, typename Allocator = HeapAllocator>
 	class TMap
 	{
 		static_assert(std::is_nothrow_move_constructible<Value>::value
@@ -34,7 +33,7 @@ namespace p::core
 		using ValueType     = Value;
 		using AllocatorType = Allocator;
 		using HashMapType   = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>,
-            std::equal_to<KeyType>, STLAllocator<TPair<Key, Value>, Allocator>>;
+            std::equal_to<KeyType>, STLAllocator<TPair<Key, Value>, AllocatorType>>;
 
 		using Iterator      = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;

@@ -11,8 +11,8 @@
 #include <Pipe/Core/Set.h>
 #include <Pipe/Core/Span.h>
 #include <Pipe/Core/TypeTraits.h>
-#include <Pipe/Memory/UniquePtr.h>
 #include <Pipe/Memory/STLAllocator.h>
+#include <Pipe/Memory/UniquePtr.h>
 
 
 namespace p::ecs
@@ -20,7 +20,7 @@ namespace p::ecs
 	struct Context;
 
 
-	template<typename Allocator = Memory::TDefaultAllocator<Id>>
+	template<typename Allocator = HeapAllocator>
 	struct TPoolSet : public BasicSparseSet<STLAllocator<Id, Allocator>>
 	{
 		using Super = BasicSparseSet<STLAllocator<Id, Allocator>>;
@@ -461,11 +461,13 @@ namespace p::ecs
 	};
 
 
-	template<typename T, typename Allocator = Memory::TDefaultAllocator<T>>
+	template<typename T, typename Allocator = HeapAllocator>
 	struct TPool : public Pool
 	{
+		using AllocatorType = Allocator;
+
 	private:
-		TPoolData<T, Allocator> data;
+		TPoolData<T, AllocatorType> data;
 
 
 	public:
