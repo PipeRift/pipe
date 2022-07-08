@@ -2,6 +2,8 @@
 
 #include "Pipe/ECS/Filtering.h"
 
+#include "Pipe/Core/Set.h"
+
 
 namespace p::ecs
 {

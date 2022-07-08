@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
-// Modified version of sparse_set.hpp from entt
-// https://github.com/skypjack/entt
+// Modified version of sparse_set.hpp from id
+// https://github.com/skypjack/id
 
 #pragma once
 
@@ -51,7 +51,7 @@ namespace p::ecs
 	 * no guarantees that entities are returned in the insertion order when iterate
 	 * a sparse set. Do not make assumption on the order in any case.
 	 *
-	 * @tparam ecs::Id A valid entity type (see entt_traits for more details).
+	 * @tparam ecs::Id A valid entity type (see id_traits for more details).
 	 * @tparam Allocator Type of allocator used to manage memory and elements.
 	 */
 	template<typename Allocator>
@@ -60,19 +60,9 @@ namespace p::ecs
 		static constexpr auto growthFactor = 1.5;
 		static constexpr auto sparsePage   = 4096;
 
-		using traits_type = ecs::IdTraits<ecs::Id>;
+		using traits_type         = IdTraits<Id>;
+		using PackedContainerType = TArray<Id, Allocator>;
 
-		using alloc_traits =
-		    typename std::allocator_traits<Allocator>::template rebind_traits<ecs::Id>;
-		using alloc_pointer       = typename alloc_traits::pointer;
-		using alloc_const_pointer = typename alloc_traits::const_pointer;
-
-		using bucket_alloc_traits =
-		    typename std::allocator_traits<Allocator>::template rebind_traits<alloc_pointer>;
-		using bucket_alloc_pointer = typename bucket_alloc_traits::pointer;
-
-		static_assert(alloc_traits::propagate_on_container_move_assignment::value);
-		static_assert(bucket_alloc_traits::propagate_on_container_move_assignment::value);
 
 		struct SparseSetIterator final
 		{
@@ -84,8 +74,8 @@ namespace p::ecs
 
 			SparseSetIterator() = default;
 
-			SparseSetIterator(const alloc_const_pointer* ref, const difference_type idx)
-			    : packed{ref}, index{idx}
+			SparseSetIterator(const PackedContainerType& ref, const difference_type idx)
+			    : packed{std::addressof(ref)}, index{idx}
 			{}
 
 			SparseSetIterator& operator++()
@@ -185,18 +175,28 @@ namespace p::ecs
 			}
 
 		private:
-			const alloc_const_pointer* packed;
-			difference_type index;
+			const PackedContainerType* packed = nullptr;
+			difference_type index             = 0;
 		};
 
-		[[nodiscard]] static auto Page(const ecs::Id entt)
+
+	private:
+		typename Allocator::Typed<Id> allocator;
+		typename Allocator::Typed<Id*> bucketAllocator;
+		Id** sparse;
+		PackedContainerType packed;
+		std::size_t bucket;
+		Id freeList;
+		DeletionPolicy mode;
+
+		[[nodiscard]] static auto Page(const ecs::Id id)
 		{
-			return static_cast<size_type>(ecs::GetIndex(entt) / sparsePage);
+			return static_cast<size_type>(ecs::GetIndex(id) / sparsePage);
 		}
 
-		[[nodiscard]] static auto Offset(const ecs::Id entt)
+		[[nodiscard]] static auto Offset(const ecs::Id id)
 		{
-			return static_cast<size_type>(ecs::GetIndex(entt) & (sparsePage - 1));
+			return static_cast<size_type>(ecs::GetIndex(id) & (sparsePage - 1));
 		}
 
 		[[nodiscard]] auto AssurePage(const std::size_t idx)
@@ -204,13 +204,13 @@ namespace p::ecs
 			if (!(idx < bucket))
 			{
 				const size_type sz = idx + 1u;
-				const auto mem     = bucket_alloc_traits::allocate(bucketAllocator, sz);
+				const auto mem     = bucketAllocator.Alloc(sz);
 
 				std::uninitialized_value_construct(mem + bucket, mem + sz);
 				std::uninitialized_copy(sparse, sparse + bucket, mem);
 
 				std::destroy(sparse, sparse + bucket);
-				bucket_alloc_traits::deallocate(bucketAllocator, sparse, bucket);
+				bucketAllocator.Free(sparse);
 
 				sparse = mem;
 				bucket = sz;
@@ -218,45 +218,28 @@ namespace p::ecs
 
 			if (!sparse[idx])
 			{
-				sparse[idx] = alloc_traits::allocate(allocator, sparsePage);
+				sparse[idx] = allocator.Alloc(sparsePage);
 				std::uninitialized_fill(sparse[idx], sparse[idx] + sparsePage, ecs::NoId);
 			}
 
 			return sparse[idx];
 		}
 
-		void ResizePacked(const std::size_t req)
-		{
-			CheckMsg((req != reserved) && !(req < count), "Invalid request");
-			const auto mem = alloc_traits::allocate(allocator, req);
-
-			std::uninitialized_copy(packed, packed + count, mem);
-			std::uninitialized_fill(mem + count, mem + req, ecs::NoId);
-
-			std::destroy(packed, packed + reserved);
-			alloc_traits::deallocate(allocator, packed, reserved);
-
-			packed   = mem;
-			reserved = req;
-		}
-
 		void ReleaseMemory()
 		{
-			if (packed)
+			if (!packed.IsEmpty())
 			{
 				for (size_type pos{}; pos < bucket; ++pos)
 				{
 					if (sparse[pos])
 					{
 						std::destroy(sparse[pos], sparse[pos] + sparsePage);
-						alloc_traits::deallocate(allocator, sparse[pos], sparsePage);
+						allocator.Free(sparse[pos]);
 					}
 				}
 
-				std::destroy(packed, packed + reserved);
 				std::destroy(sparse, sparse + bucket);
-				alloc_traits::deallocate(allocator, packed, reserved);
-				bucket_alloc_traits::deallocate(bucketAllocator, sparse, bucket);
+				bucketAllocator.Free(sparse);
 			}
 		}
 
@@ -281,34 +264,35 @@ namespace p::ecs
 
 		/**
 		 * @brief Attempts to erase an entity from the internal packed array.
-		 * @param entt A valid entity identifier.
+		 * @param id A valid entity identifier.
 		 * @param ud Optional user data that are forwarded as-is to derived classes.
 		 */
-		virtual void SwapAndPop(const ecs::Id entt, [[maybe_unused]] void* ud)
+		virtual void SwapAndPop(const ecs::Id id, [[maybe_unused]] void* ud)
 		{
-			auto& ref      = sparse[Page(entt)][Offset(entt)];
-			const auto pos = static_cast<size_type>(ecs::GetIndex(ref));
-			CheckMsg(packed[pos] == entt, "Invalid entity identifier");
-			auto& last = packed[--count];
+			auto& ref        = sparse[Page(id)][Offset(id)];
+			const auto index = static_cast<size_type>(ecs::GetIndex(ref));
+			CheckMsg(packed[index] == id, "Invalid entity identifier");
 
-			packed[pos]                      = last;
+			auto& last                       = packed.Last();
 			sparse[Page(last)][Offset(last)] = ref;
-			// lazy self-assignment guard
-			ref = ecs::NoId;
+			packed[index]                    = last;
 			// unnecessary but it helps to detect nasty bugs
 			CheckMsg((last = ecs::NoId, true), "");
+			// lazy self-assignment guard
+			ref = ecs::NoId;
+			packed.RemoveLast();
 		}
 
 		/**
 		 * @brief Attempts to erase an entity from the internal packed array.
-		 * @param entt A valid entity identifier.
+		 * @param id A valid entity identifier.
 		 * @param ud Optional user data that are forwarded as-is to derived classes.
 		 */
-		virtual void InPlacePop(const ecs::Id entt, [[maybe_unused]] void* ud)
+		virtual void InPlacePop(const ecs::Id id, [[maybe_unused]] void* ud)
 		{
-			auto& ref      = sparse[Page(entt)][Offset(entt)];
+			auto& ref      = sparse[Page(id)][Offset(id)];
 			const auto pos = static_cast<size_type>(ecs::GetIndex(ref));
-			CheckMsg(packed[pos] == entt, "Invalid entity identifier");
+			CheckMsg(packed[pos] == id, "Invalid entity identifier");
 
 			packed[pos] = std::exchange(
 			    freeList, ecs::MakeId(static_cast<typename traits_type::Entity>(pos)));
@@ -318,13 +302,10 @@ namespace p::ecs
 
 	public:
 		/*! @brief Allocator type. */
-		using allocator_type = typename alloc_traits::allocator_type;
-		/*! @brief Underlying entity identifier. */
-		using entity_type = ecs::Id;
 		/*! @brief Unsigned integer type. */
-		using size_type = std::size_t;
+		using size_type = traits_type::Index;
 		/*! @brief Pointer type to contained entities. */
-		using pointer = alloc_const_pointer;
+		using pointer = Id* const;
 		/*! @brief Random access iterator type. */
 		using iterator = SparseSetIterator;
 		/*! @brief Reverse iterator type. */
@@ -335,24 +316,8 @@ namespace p::ecs
 		 * @param pol Type of deletion policy.
 		 * @param alloc Allocator to use (possibly default-constructed).
 		 */
-		explicit BasicSparseSet(DeletionPolicy pol, const allocator_type& alloc = {})
-		    : allocator{alloc}
-		    , bucketAllocator{alloc}
-		    , sparse{bucket_alloc_traits::allocate(bucketAllocator, 0u)}
-		    , packed{alloc_traits::allocate(allocator, 0u)}
-		    , bucket{0u}
-		    , count{0u}
-		    , reserved{0u}
-		    , freeList{ecs::NoId}
-		    , mode{pol}
-		{}
-
-		/**
-		 * @brief Constructs an empty container with the given allocator.
-		 * @param alloc Allocator to use (possibly default-constructed).
-		 */
-		explicit BasicSparseSet(const allocator_type& alloc = {})
-		    : BasicSparseSet{DeletionPolicy::Swap, alloc}
+		explicit BasicSparseSet(DeletionPolicy pol = DeletionPolicy::Swap)
+		    : sparse{bucketAllocator.Alloc(0u)}, bucket{0u}, freeList{ecs::NoId}, mode{pol}
 		{}
 
 		/**
@@ -362,11 +327,9 @@ namespace p::ecs
 		BasicSparseSet(BasicSparseSet&& other) noexcept
 		    : allocator{std::move(other.allocator)}
 		    , bucketAllocator{std::move(other.bucketAllocator)}
-		    , sparse{std::exchange(other.sparse, bucket_alloc_pointer{})}
-		    , packed{std::exchange(other.packed, alloc_pointer{})}
+		    , sparse{std::exchange(other.sparse, nullptr)}
+		    , packed{std::exchange(other.packed, {})}
 		    , bucket{std::exchange(other.bucket, 0u)}
-		    , count{std::exchange(other.count, 0u)}
-		    , reserved{std::exchange(other.reserved, 0u)}
 		    , freeList{std::exchange(other.freeList, ecs::NoId)}
 		    , mode{other.mode}
 		{}
@@ -388,11 +351,9 @@ namespace p::ecs
 
 			allocator       = std::move(other.allocator);
 			bucketAllocator = std::move(other.bucketAllocator);
-			sparse          = std::exchange(other.sparse, bucket_alloc_pointer{});
-			packed          = std::exchange(other.packed, alloc_pointer{});
+			sparse          = std::exchange(other.sparse, nullptr);
+			packed          = std::exchange(other.packed, {});
 			bucket          = std::exchange(other.bucket, 0u);
-			count           = std::exchange(other.count, 0u);
-			reserved        = std::exchange(other.reserved, 0u);
 			freeList        = std::exchange(other.freeList, ecs::NoId);
 			mode            = other.mode;
 
@@ -414,7 +375,8 @@ namespace p::ecs
 		 */
 		[[nodiscard]] size_type Slot() const
 		{
-			return freeList == ecs::NoId ? count : static_cast<size_type>(ecs::GetIndex(freeList));
+			return freeList == ecs::NoId ? packed.Size()
+			                             : static_cast<size_type>(ecs::GetIndex(freeList));
 		}
 
 		/**
@@ -427,10 +389,7 @@ namespace p::ecs
 		 */
 		void Reserve(const size_type cap)
 		{
-			if (cap > reserved)
-			{
-				ResizePacked(cap);
-			}
+			packed.Reserve(cap);
 		}
 
 		/**
@@ -440,16 +399,13 @@ namespace p::ecs
 		 */
 		[[nodiscard]] size_type Capacity() const
 		{
-			return reserved;
+			return packed.MaxSize();
 		}
 
 		/*! @brief Requests the removal of unused capacity. */
-		void ShrinkToFit()
+		void Shrink()
 		{
-			if (count < reserved)
-			{
-				ResizePacked(count);
-			}
+			packed.Shrink();
 		}
 
 		/**
@@ -479,16 +435,16 @@ namespace p::ecs
 		 */
 		[[nodiscard]] size_type Size() const
 		{
-			return count;
+			return packed.Size();
 		}
 
 		/**
 		 * @brief Checks whether a sparse set is empty.
 		 * @return True if the sparse set is empty, false otherwise.
 		 */
-		[[nodiscard]] bool Empty() const
+		[[nodiscard]] bool IsEmpty() const
 		{
-			return (count == size_type{});
+			return packed.IsEmpty();
 		}
 
 		/**
@@ -497,7 +453,7 @@ namespace p::ecs
 		 */
 		[[nodiscard]] pointer Data() const
 		{
-			return packed;
+			return packed.Data();
 		}
 
 		/**
@@ -511,8 +467,7 @@ namespace p::ecs
 		 */
 		[[nodiscard]] iterator begin() const
 		{
-			return iterator{
-			    std::addressof(packed), static_cast<typename traits_type::Difference>(count)};
+			return iterator{packed, static_cast<typename traits_type::Difference>(packed.Size())};
 		}
 
 		/**
@@ -527,7 +482,7 @@ namespace p::ecs
 		 */
 		[[nodiscard]] iterator end() const
 		{
-			return iterator{std::addressof(packed), {}};
+			return iterator{packed, {}};
 		}
 
 		/**
@@ -562,26 +517,26 @@ namespace p::ecs
 
 		/**
 		 * @brief Finds an entity.
-		 * @param entt A valid entity identifier.
+		 * @param id A valid entity identifier.
 		 * @return An iterator to the given entity if it's found, past the end
 		 * iterator otherwise.
 		 */
-		[[nodiscard]] iterator Find(const entity_type entt) const
+		[[nodiscard]] iterator Find(const Id id) const
 		{
-			return Contains(entt) ? --(end() - Index(entt)) : end();
+			return Contains(id) ? --(end() - Index(id)) : end();
 		}
 
 		/**
 		 * @brief Checks if a sparse set contains an entity.
-		 * @param entt A valid entity identifier.
+		 * @param id A valid entity identifier.
 		 * @return True if the sparse set contains the entity, false otherwise.
 		 */
-		[[nodiscard]] bool Contains(const entity_type entt) const
+		[[nodiscard]] bool Contains(const Id id) const
 		{
 			//  Testing versions permits to avoid accessing the packed array
-			const auto curr = Page(entt);
-			return ecs::GetVersion(entt) != ecs::GetVersion(ecs::NoId)
-			    && (curr < bucket && sparse[curr] && sparse[curr][Offset(entt)] != ecs::NoId);
+			const auto curr = Page(id);
+			return ecs::GetVersion(id) != ecs::GetVersion(ecs::NoId)
+			    && (curr < bucket && sparse[curr] && sparse[curr][Offset(id)] != ecs::NoId);
 		}
 
 		/**
@@ -591,13 +546,13 @@ namespace p::ecs
 		 * Attempting to get the position of an entity that doesn't belong to the
 		 * sparse set results in undefined behavior.
 		 *
-		 * @param entt A valid entity identifier.
+		 * @param id A valid entity identifier.
 		 * @return The position of the entity in the sparse set.
 		 */
-		[[nodiscard]] size_type Index(const entity_type entt) const
+		[[nodiscard]] size_type Index(const Id id) const
 		{
-			CheckMsg(Contains(entt), "Set does not contain entity");
-			return static_cast<size_type>(ecs::GetIndex(sparse[Page(entt)][Offset(entt)]));
+			CheckMsg(Contains(id), "Set does not contain entity");
+			return static_cast<size_type>(ecs::GetIndex(sparse[Page(id)][Offset(id)]));
 		}
 
 		/**
@@ -605,9 +560,9 @@ namespace p::ecs
 		 * @param pos The position for which to return the entity.
 		 * @return The entity at specified location if any, a nullptr entity otherwise.
 		 */
-		[[nodiscard]] entity_type At(const size_type pos) const
+		[[nodiscard]] Id At(const size_type pos) const
 		{
-			return pos < count ? packed[pos] : nullptr;
+			return pos < packed.Size() ? packed[pos] : nullptr;
 		}
 
 		/**
@@ -615,10 +570,10 @@ namespace p::ecs
 		 * @param pos The position for which to return the entity.
 		 * @return The entity at specified location.
 		 */
-		[[nodiscard]] entity_type operator[](const size_type pos) const
+		[[nodiscard]] Id operator[](const size_type index) const
 		{
-			CheckMsg(pos < count, "Position is out of bounds");
-			return packed[pos];
+			CheckMsg(packed.IsValidIndex(index), "Index is out of bounds");
+			return packed[index];
 		}
 
 		/**
@@ -628,23 +583,26 @@ namespace p::ecs
 		 * Attempting to assign an entity that already belongs to the sparse set
 		 * results in undefined behavior.
 		 *
-		 * @param entt A valid entity identifier.
+		 * @param id A valid entity identifier.
 		 * @return The slot used for insertion.
 		 */
-		size_type EmplaceBack(const entity_type entt)
+		size_type TryEmplace(const Id id, bool forceBack)
 		{
-			CheckMsg(!Contains(entt), "Set already contains entity");
-
-			if (count == reserved)
+			CheckMsg(!Contains(id), "Set already contains entity");
+			auto& item = AssurePage(Page(id))[Offset(id)];
+			if (freeList == ecs::NoId || forceBack)
 			{
-				const auto sz = static_cast<size_type>(reserved * growthFactor);
-				ResizePacked(sz + !(sz > reserved));
+				item = ecs::MakeId(static_cast<typename traits_type::Entity>(packed.Size()));
+				packed.Add(id);
+				return packed.Size() - 1;
 			}
-
-			AssurePage(Page(entt))[Offset(entt)] =
-			    ecs::MakeId(static_cast<typename traits_type::Entity>(count));
-			packed[count] = entt;
-			return count++;
+			else
+			{
+				const auto index = static_cast<size_type>(ecs::GetIndex(freeList));
+				item             = ecs::MakeId(static_cast<typename traits_type::Entity>(index));
+				freeList         = std::exchange(packed[index], id);
+				return index;
+			}
 		}
 
 		/**
@@ -654,24 +612,12 @@ namespace p::ecs
 		 * Attempting to assign an entity that already belongs to the sparse set
 		 * results in undefined behavior.
 		 *
-		 * @param entt A valid entity identifier.
+		 * @param id A valid entity identifier.
 		 * @return The slot used for insertion.
 		 */
-		size_type Emplace(const entity_type entt)
+		size_type Emplace(const Id id)
 		{
-			if (freeList == ecs::NoId)
-			{
-				return EmplaceBack(entt);
-			}
-			else
-			{
-				CheckMsg(!Contains(entt), "Set already contains entity");
-				const auto pos = static_cast<size_type>(ecs::GetIndex(freeList));
-				AssurePage(Page(entt))[Offset(entt)] =
-				    ecs::MakeId(static_cast<typename traits_type::Entity>(pos));
-				freeList = std::exchange(packed[pos], entt);
-				return pos;
-			}
+			return TryEmplace(id, false);
 		}
 
 		/**
@@ -688,15 +634,15 @@ namespace p::ecs
 		template<typename It>
 		void Insert(It first, It last)
 		{
-			Reserve(count + std::distance(first, last));
+			Reserve(packed.Size() + std::distance(first, last));
 
 			for (; first != last; ++first)
 			{
-				const auto entt = *first;
-				CheckMsg(!Contains(entt), "Set already contains entity");
-				AssurePage(Page(entt))[Offset(entt)] =
-				    ecs::MakeId(static_cast<typename traits_type::Entity>(count));
-				packed[count++] = entt;
+				const auto id = *first;
+				CheckMsg(!Contains(id), "Set already contains entity");
+				AssurePage(Page(id))[Offset(id)] =
+				    ecs::MakeId(static_cast<typename traits_type::Entity>(packed.Size()));
+				packed.Add(id);
 			}
 		}
 
@@ -707,13 +653,13 @@ namespace p::ecs
 		 * Attempting to erase an entity that doesn't belong to the sparse set
 		 * results in undefined behavior.
 		 *
-		 * @param entt A valid entity identifier.
+		 * @param id A valid entity identifier.
 		 * @param ud Optional user data that are forwarded as-is to derived classes.
 		 */
-		void Erase(const entity_type entt, void* ud = nullptr)
+		void Erase(const Id id, void* ud = nullptr)
 		{
-			CheckMsg(Contains(entt), "Set does not contain entity");
-			(mode == DeletionPolicy::InPlace) ? InPlacePop(entt, ud) : SwapAndPop(entt, ud);
+			CheckMsg(Contains(id), "Set does not contain entity");
+			(mode == DeletionPolicy::InPlace) ? InPlacePop(id, ud) : SwapAndPop(id, ud);
 		}
 
 		/**
@@ -737,13 +683,13 @@ namespace p::ecs
 
 		/**
 		 * @brief Removes an entity from a sparse set if it exists.
-		 * @param entt A valid entity identifier.
+		 * @param id A valid entity identifier.
 		 * @param ud Optional user data that are forwarded as-is to derived classes.
 		 * @return True if the entity is actually removed, false otherwise.
 		 */
-		bool Remove(const entity_type entt, void* ud = nullptr)
+		bool Remove(const Id id, void* ud = nullptr)
 		{
-			return Contains(entt) && (Erase(entt, ud), true);
+			return Contains(id) && (Erase(id, ud), true);
 		}
 
 		/**
@@ -770,29 +716,32 @@ namespace p::ecs
 		/*! @brief Removes all ecs::NoIds from the packed array of a sparse set. */
 		void Compact()
 		{
-			size_type next = count;
-			for (; next && ecs::GetVersion(packed[next - 1u]) == ecs::GetVersion(ecs::NoId); --next)
+			size_type from = packed.Size();
+			for (; from && ecs::GetVersion(packed[from - 1u]) == ecs::GetVersion(ecs::NoId); --from)
 			{}
 
-			for (auto* it = &freeList; *it != ecs::NoId && next;
+			for (auto* it = &freeList; *it != ecs::NoId && from;
 			     it       = std::addressof(packed[ecs::GetIndex(*it)]))
 			{
-				if (const size_type pos = ecs::GetIndex(*it); pos < next)
+				const size_type to = ecs::GetIndex(*it);
+				if (to < from)
 				{
-					--next;
-					MoveAndPop(next, pos);
-					std::swap(packed[next], packed[pos]);
-					sparse[Page(packed[pos])][Offset(packed[pos])] =
-					    ecs::MakeId(static_cast<const typename traits_type::Entity>(pos));
-					*it = ecs::MakeId(static_cast<typename traits_type::Entity>(next));
-					for (; next && ecs::GetVersion(packed[next - 1u]) == ecs::GetVersion(ecs::NoId);
-					     --next)
+					--from;
+					MoveAndPop(from, to);
+					std::swap(packed[from], packed[to]);
+
+					sparse[Page(packed[to])][Offset(packed[to])] =
+					    ecs::MakeId(static_cast<const typename traits_type::Entity>(to));
+					*it = ecs::MakeId(static_cast<typename traits_type::Entity>(from));
+
+					for (; from && ecs::GetVersion(packed[from - 1u]) == ecs::GetVersion(ecs::NoId);
+					     --from)
 					{}
 				}
 			}
 
 			freeList = ecs::NoId;
-			count    = next;
+			packed.Resize(from);
 		}
 
 		/**
@@ -808,21 +757,21 @@ namespace p::ecs
 		 * @param lhs A valid entity identifier.
 		 * @param rhs A valid entity identifier.
 		 */
-		void Swap(const entity_type lhs, const entity_type rhs)
+		void Swap(const Id lhs, const Id rhs)
 		{
 			CheckMsg(Contains(lhs), "Set does not contain entity");
 			CheckMsg(Contains(rhs), "Set does not contain entity");
 
-			auto& entt  = sparse[Page(lhs)][Offset(lhs)];
+			auto& id    = sparse[Page(lhs)][Offset(lhs)];
 			auto& other = sparse[Page(rhs)][Offset(rhs)];
 
-			const auto from = static_cast<size_type>(ecs::GetIndex(entt));
+			const auto from = static_cast<size_type>(ecs::GetIndex(id));
 			const auto to   = static_cast<size_type>(ecs::GetIndex(other));
 
 			// basic no-leak guarantee (with invalid state) if swapping throws
 			SwapAt(from, to);
-			std::swap(entt, other);
-			std::swap(packed[from], packed[to]);
+			std::swap(id, other);
+			packed.Swap(from, to);
 		}
 
 		/**
@@ -858,7 +807,7 @@ namespace p::ecs
 		void SortN(const size_type length, Compare compare, Args&&... args)
 		{
 			// basic no-leak guarantee (with invalid state) if sorting throws
-			CheckMsg(!(length > count), "Length exceeds the number of elements");
+			CheckMsg(!(length > packed.Size()), "Length exceeds the number of elements");
 			Compact();
 
 			std::sort(std::forward<Args>(args)..., std::make_reverse_iterator(packed + length),
@@ -871,11 +820,11 @@ namespace p::ecs
 
 				while (curr != next)
 				{
-					const auto idx  = Index(packed[next]);
-					const auto entt = packed[curr];
+					const auto idx = Index(packed[next]);
+					const auto id  = packed[curr];
 
 					SwapAt(next, idx);
-					sparse[Page(entt)][Offset(entt)] =
+					sparse[Page(id)][Offset(id)] =
 					    ecs::MakeId(static_cast<typename traits_type::Entity>(curr));
 					curr = std::exchange(next, idx);
 				}
@@ -897,7 +846,7 @@ namespace p::ecs
 		template<typename Compare, typename... Args>
 		void Sort(Compare compare, Args&&... args)
 		{
-			SortN(count, std::move(compare), std::forward<Args>(args)...);
+			SortN(packed.Size(), std::move(compare), std::forward<Args>(args)...);
 		}
 
 		/**
@@ -922,7 +871,7 @@ namespace p::ecs
 			const auto to = other.end();
 			auto from     = other.begin();
 
-			for (size_type pos = count - 1; pos && from != to; ++from)
+			for (size_type pos = packed.Size() - 1; pos && from != to; ++from)
 			{
 				if (Contains(*from))
 				{
@@ -952,19 +901,8 @@ namespace p::ecs
 			}
 
 			freeList = ecs::NoId;
-			count    = 0u;
+			packed.Empty();
 		}
-
-	private:
-		typename alloc_traits::allocator_type allocator;
-		typename bucket_alloc_traits::allocator_type bucketAllocator;
-		bucket_alloc_pointer sparse;
-		alloc_pointer packed;
-		std::size_t bucket;
-		std::size_t count;
-		std::size_t reserved;
-		entity_type freeList;
-		DeletionPolicy mode;
 	};
 
 

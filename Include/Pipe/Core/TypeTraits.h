@@ -165,6 +165,11 @@ namespace p
 	};
 	template<typename T, typename Reference>
 	using CopyConst = typename TCopyConst<T, Reference>::type;
+
+	template<typename T>
+	concept IsTrivial = std::is_trivial<T>::value;
+	template<typename T>
+	concept IsTriviallyCopyable = std::is_trivially_copyable<T>::value;
 }    // namespace p
 
 #define PIPE_DECLARE_IS_TRIVIAL(T, isTrivial)                                                \

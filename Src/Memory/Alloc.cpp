@@ -4,7 +4,6 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Profiler.h"
-#include "Pipe/Math/Math.h"
 
 #include <cstdlib>
 #include <memory>
@@ -48,17 +47,5 @@ namespace p
 	{
 		// TracyFreeS(p, 8);
 		std::free(p);
-	}
-
-	sizet GetAlignmentPadding(const void* ptr, sizet align)
-	{
-		Check(math::IsPowerOfTwo(align));
-		return -reinterpret_cast<ssizet>(ptr) & (align - 1);
-	}
-
-	sizet GetAlignmentPaddingWithHeader(const void* ptr, sizet align, sizet headerSize)
-	{
-		// Get padding with the header as an offset
-		return headerSize + GetAlignmentPadding(static_cast<const u8*>(ptr) + headerSize, align);
 	}
 }    // namespace p

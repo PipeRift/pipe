@@ -10,6 +10,7 @@
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 #include "Pipe/Memory/Alloc.h"
+#include "Pipe/Memory/Memory.h"
 
 
 namespace p::Memory

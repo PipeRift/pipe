@@ -2,6 +2,7 @@
 
 #include <bandit/bandit.h>
 #include <Pipe/Memory/Arenas/BigBestFitArena.h>
+#include <Pipe/Memory/Memory.h>
 
 
 using namespace snowhouse;

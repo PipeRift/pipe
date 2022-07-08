@@ -2,6 +2,8 @@
 
 #include "Pipe/Memory/Arenas/LinearArena.h"
 
+#include "Pipe/Memory/Memory.h"
+
 
 namespace p::Memory
 {
