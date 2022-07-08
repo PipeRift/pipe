@@ -73,7 +73,7 @@ namespace p::Memory
 
 	void HeapBlock::Free()
 	{
-		p::Free(data);
+		p::Free(data, size);
 		data = nullptr;
 		size = 0;
 	}

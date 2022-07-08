@@ -171,7 +171,7 @@ namespace p::ecs
 				std::uninitialized_copy(sparse, sparse + bucket, mem);
 
 				std::destroy(sparse, sparse + bucket);
-				bucketAllocator.Free(sparse);
+				bucketAllocator.Free(sparse, bucket);
 
 				sparse = mem;
 				bucket = sz;
@@ -195,12 +195,12 @@ namespace p::ecs
 					if (sparse[pos])
 					{
 						std::destroy(sparse[pos], sparse[pos] + sparsePage);
-						allocator.Free(sparse[pos]);
+						allocator.Free(sparse[pos], sparsePage);
 					}
 				}
 
 				std::destroy(sparse, sparse + bucket);
-				bucketAllocator.Free(sparse);
+				bucketAllocator.Free(sparse, bucket);
 			}
 		}
 

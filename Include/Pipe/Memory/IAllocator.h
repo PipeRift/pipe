@@ -17,16 +17,20 @@ namespace p
 		class Typed
 		{
 		public:
-			T* Alloc(const sizet n)
+			T* Alloc(sizet size)
 			{
 				return nullptr;
 			}
-			T* Alloc(const sizet n, const sizet align)
+			T* Alloc(sizet size, const sizet align)
+			{
+				return nullptr;
+			}
+			T* Realloc(T* ptr, sizet ptrSize, sizet size)
 			{
 				return nullptr;
 			}
 
-			void Free(T* ptr) {}
+			void Free(T* ptr, sizet size) {}
 		};
 	};
 }    // namespace p

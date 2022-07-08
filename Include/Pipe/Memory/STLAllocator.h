@@ -37,17 +37,17 @@ namespace p
 		STLAllocator(const STLAllocator<U, Allocator>&) noexcept
 		{}
 
-		pointer allocate(size_type count)
+		constexpr pointer allocate(size_type size)
 		{
-			return static_cast<pointer>(allocator.Alloc(count));
+			return static_cast<pointer>(allocator.Alloc(size));
 		}
-		pointer allocate(size_type count, const void*)
+		constexpr pointer allocate(size_type size, const void*)
 		{
-			return allocate(count);
+			return allocate(size);
 		}
-		void deallocate(pointer p, size_type)
+		constexpr void deallocate(pointer p, size_type n)
 		{
-			allocator.Free(p);
+			allocator.Free(p, n);
 		}
 
 		using propagate_on_container_copy_assignment = std::true_type;

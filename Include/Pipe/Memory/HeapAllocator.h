@@ -18,18 +18,20 @@ namespace p
 			{
 				return static_cast<T*>(p::Alloc(count * sizeof(T)));
 			}
+
 			T* Alloc(const sizet count, const sizet align)
 			{
 				return static_cast<T*>(p::Alloc(count * sizeof(T), align));
 			}
-			T* Realloc(T* old, sizet newCount)
+
+			T* Realloc(T* ptr, sizet ptrSize, sizet size)
 			{
-				return static_cast<T*>(p::Realloc(old, newCount * sizeof(T)));
+				return static_cast<T*>(p::Realloc(ptr, ptrSize * sizeof(T), size * sizeof(T)));
 			}
 
-			void Free(T* ptr)
+			void Free(T* ptr, sizet size)
 			{
-				p::Free(ptr);
+				p::Free(ptr, size);
 			}
 		};
 	};

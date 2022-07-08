@@ -180,7 +180,7 @@ namespace p::ecs
 		{
 			for (Chunk chunk : chunks)
 			{
-				allocator.Free(chunk);
+				allocator.Free(chunk, chunkSize);
 			}
 			chunks.Empty();
 		}

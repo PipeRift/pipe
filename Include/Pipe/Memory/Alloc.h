@@ -8,8 +8,8 @@
 
 namespace p
 {
-	PIPE_API void* Alloc(sizet n);
-	PIPE_API void* Alloc(sizet n, sizet align);
-	PIPE_API void* Realloc(void* old, sizet newSize);
-	PIPE_API void Free(void* p);
+	PIPE_API void* Alloc(sizet size);
+	PIPE_API void* Alloc(sizet size, sizet align);
+	PIPE_API void* Realloc(void* ptr, sizet ptrSize, sizet size);
+	PIPE_API void Free(void* ptr, sizet size);
 }    // namespace p

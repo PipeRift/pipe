@@ -65,12 +65,12 @@ void RunArenasBenchmarks()
 
 			p::i32 i = 0;
 			consecutiveFree.relative(true).run("OS (malloc)", [&] {
-				p::Free(allocated[i]);
+				p::Free(allocated[i], 16);
 				++i;
 			});
 			for (; i < allocated.Size(); ++i)
 			{
-				p::Free(allocated[i]);
+				p::Free(allocated[i], 16);
 			}
 		}
 
@@ -126,12 +126,13 @@ void RunArenasBenchmarks()
 			allocSequence.relative(true).run("OS (malloc)", [&] {
 				void* p  = p::Alloc(16);
 				void* p2 = p::Alloc(21);
-				p::Free(p);
+				p::Free(p, 16);
 				void* p3 = p::Alloc(8);
-				p::Free(p3);
+				p::Free(p3, 8);
 				ankerl::nanobench::doNotOptimizeAway(p);
 				ankerl::nanobench::doNotOptimizeAway(p2);
 				ankerl::nanobench::doNotOptimizeAway(p3);
+				p::Free(p2, 21);
 			});
 		}
 
@@ -146,6 +147,7 @@ void RunArenasBenchmarks()
 				ankerl::nanobench::doNotOptimizeAway(p);
 				ankerl::nanobench::doNotOptimizeAway(p2);
 				ankerl::nanobench::doNotOptimizeAway(p3);
+				arena.Free(p2, 21);
 			});
 		}
 
@@ -160,6 +162,7 @@ void RunArenasBenchmarks()
 				ankerl::nanobench::doNotOptimizeAway(p);
 				ankerl::nanobench::doNotOptimizeAway(p2);
 				ankerl::nanobench::doNotOptimizeAway(p3);
+				arena.Free(p2, 21);
 			});
 		}
 	}
@@ -191,14 +194,14 @@ void RunArenasBenchmarks()
 				{
 					p::u32 index   = rng.bounded(allocated.Size());
 					void* toRemove = allocated[index];
-					p::Free(toRemove);
+					p::Free(toRemove, 16);
 					allocated.RemoveAtSwapUnsafe(index);
 				}
 			});
 
 			for (void* p : allocated)
 			{
-				p::Free(p);
+				p::Free(p, 16);
 			}
 		}
 

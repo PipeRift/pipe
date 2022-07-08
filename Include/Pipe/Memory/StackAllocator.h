@@ -9,7 +9,7 @@
 namespace p
 {
 	template<sizet N, typename FallbackAllocator = HeapAllocator>
-	class TStackAllocator : public IAllocator
+	class TInlineAllocator : public IAllocator
 	{
 	public:
 		template<typename T>
@@ -22,18 +22,62 @@ namespace p
 			typename FallbackAllocator::Typed<T> fallback;
 
 
-			T* Alloc(const sizet count)
+			T* Alloc(sizet size)
 			{
-				return static_cast<T*>(p::Alloc(count * sizeof(T)));
+				if (inUse)
+				{
+					return fallback.Alloc(size);
+				}
+				inUse = true;
+				return buffer;
 			}
-			T* Alloc(const sizet count, const sizet align)
+			T* Alloc(sizet size, sizet align)
 			{
-				return static_cast<T*>(p::Alloc(count * sizeof(T), align));
+				if (inUse)
+				{
+					return fallback.Alloc(size, align);
+				}
+				inUse = true;
+				return buffer;
 			}
 
-			void Free(T* ptr)
+			void Free(T* ptr, sizet n)
 			{
-				p::Free(ptr);
+				if (ptr == buffer)
+				{
+					inUse = false;
+				}
+				else
+				{
+					fallback.Free(ptr, n);
+				}
+			}
+
+			T* Realloc(T* ptr, sizet ptrSize, sizet size)
+			{
+				if (size <= N)
+				{
+					if (ptr != buffer)    // Previous ptr was allocated on fallback
+					{
+						MoveConstructItems<T>(buffer, ptr, ptrSize);
+						fallback.Free(ptr, ptrSize);
+						inUse = true;
+					}
+					return buffer;
+				}
+				else
+				{
+					if (ptr == buffer)    // Previous ptr was allocated inline
+					{
+						ptr = fallback.Alloc(size);
+						MoveConstructItems<T>(ptr, buffer, ptrSize);
+						inUse = false;
+						return ptr;
+					}
+
+					// Completely external reallocation
+					return fallback.Realloc(ptr, ptrSize, size);
+				}
 			}
 		};
 	};

@@ -11,20 +11,20 @@
 
 namespace p
 {
-	void* Alloc(sizet n)
+	void* Alloc(sizet size)
 	{
-		void* const p = std::malloc(n);
+		void* const ptr = std::malloc(size);
 		// FIX: Profiler reports alloc gets called frequently twice with the same pointer. Seems
 		// related to allocators
 		// TracyAllocS(p, n, 12);
-		return p;
+		return ptr;
 	}
 
-	void* Alloc(sizet n, sizet align)
+	void* Alloc(sizet size, sizet align)
 	{
 #if PLATFORM_WINDOWS
 		// TODO: Windows needs _aligned_free in order to use _aligned_alloc()
-		void* const p = std::malloc(n);
+		void* const ptr = std::malloc(size);
 #elif PLATFORM_MACOS || PLATFORM_LINUX
 		void* p;
 		(void)(posix_memalign(&p, align, n));
@@ -32,20 +32,20 @@ namespace p
 		void* const p = std::aligned_alloc(align, n);
 #endif
 		// TracyAllocS(p, n, 8);
-		return p;
+		return ptr;
 	}
 
-	void* Realloc(void* old, sizet size)
+	void* Realloc(void* ptr, sizet, sizet size)
 	{
 		// TracyFreeS(old, 8);
-		void* const p = std::realloc(old, size);
+		void* const p = std::realloc(ptr, size);
 		// TracyAllocS(p, size, 8);
 		return p;
 	}
 
-	void Free(void* p)
+	void Free(void* ptr, sizet)
 	{
 		// TracyFreeS(p, 8);
-		std::free(p);
+		std::free(ptr);
 	}
 }    // namespace p

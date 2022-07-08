@@ -5,90 +5,80 @@
 #	include "Pipe/Memory/Alloc.h"
 #	include <new>
 
-void operator delete(void* p) noexcept
+void operator delete(void* ptr) noexcept
 {
-	p::Free(p);
+	p::Free(ptr, 0);
 };
-void operator delete[](void* p) noexcept
+void operator delete[](void* ptr) noexcept
 {
-	p::Free(p);
+	p::Free(ptr, 0);
 };
 
-void* operator new(std::size_t n) noexcept(false)
+void* operator new(std::size_t size) noexcept(false)
 {
-	return p::Alloc(n);
+	return p::Alloc(size);
 }
-void* operator new[](std::size_t n) noexcept(false)
+void* operator new[](std::size_t size) noexcept(false)
 {
-	return p::Alloc(n);
+	return p::Alloc(size);
 }
 
-void* operator new(std::size_t n, const std::nothrow_t& tag) noexcept
+void* operator new(std::size_t size, const std::nothrow_t&) noexcept
 {
-	(void)(tag);
-	return p::Alloc(n);
+	return p::Alloc(size);
 }
-void* operator new[](std::size_t n, const std::nothrow_t& tag) noexcept
+void* operator new[](std::size_t size, const std::nothrow_t&) noexcept
 {
-	(void)(tag);
-	return p::Alloc(n);
+	return p::Alloc(size);
 }
 
 #	if (__cplusplus >= 201402L || _MSC_VER >= 1916)
 
-void operator delete(void* p, std::size_t n) noexcept
+void operator delete(void* ptr, std::size_t) noexcept
 {
-	(void)(n);
-	p::Free(p);
+	p::Free(ptr, 0);
 };
-void operator delete[](void* p, std::size_t n) noexcept
+void operator delete[](void* ptr, std::size_t) noexcept
 {
-	(void)(n);
-	p::Free(p);
+	p::Free(ptr, 0);
 };
 
 #	endif
 
 #	if (__cplusplus > 201402L || defined(__cpp_aligned_new))
 
-void operator delete(void* p, std::align_val_t align) noexcept
+void operator delete(void* ptr, std::align_val_t) noexcept
 {
-	(void)(align);
-	p::Free(p);
+	p::Free(ptr, 0);
 }
-void operator delete[](void* p, std::align_val_t align) noexcept
+void operator delete[](void* ptr, std::align_val_t) noexcept
 {
-	(void)(align);
-	p::Free(p);
+	p::Free(ptr, 0);
 }
-void operator delete(void* p, std::size_t n, std::align_val_t align) noexcept
+void operator delete(void* ptr, std::size_t, std::align_val_t) noexcept
 {
-	(void)(n);
-	(void)(align);
-	p::Free(p);
+	p::Free(ptr, 0);
 };
-void operator delete[](void* p, std::size_t n, std::align_val_t align) noexcept
+void operator delete[](void* ptr, std::size_t, std::align_val_t) noexcept
 {
-	(void)(n);
-	(void)(align);
-	p::Free(p);
+	p::Free(ptr, 0);
 };
 
-void* operator new(std::size_t n, std::align_val_t align) noexcept(false)
+void* operator new(std::size_t size, std::align_val_t align) noexcept(false)
 {
-	return p::Alloc(n, p::sizet(align));
+	return p::Alloc(size, p::sizet(align));
 }
-void* operator new[](std::size_t n, std::align_val_t align) noexcept(false)
+void* operator new[](std::size_t size, std::align_val_t align) noexcept(false)
 {
-	return p::Alloc(n, p::sizet(align));
+	return p::Alloc(size, p::sizet(align));
 }
-void* operator new(std::size_t n, std::align_val_t align, const std::nothrow_t&) noexcept
+void* operator new(std::size_t size, std::align_val_t align, const std::nothrow_t&) noexcept
 {
-	return p::Alloc(n, p::sizet(align));
+	return p::Alloc(size, p::sizet(align));
 }
-void* operator new[](std::size_t n, std::align_val_t align, const std::nothrow_t&) noexcept
+void* operator new[](std::size_t size, std::align_val_t align, const std::nothrow_t&) noexcept
 {
-	return p::Alloc(n, p::sizet(align));
+	return p::Alloc(size, p::sizet(align));
 }
 #	endif
 #endif
