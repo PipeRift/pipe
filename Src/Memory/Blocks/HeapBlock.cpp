@@ -9,7 +9,7 @@ namespace p::Memory
 {
 	HeapBlock::HeapBlock(sizet initialSize)
 	{
-		Allocate(initialSize);
+		Alloc(initialSize);
 	}
 
 	HeapBlock::~HeapBlock()
@@ -24,7 +24,7 @@ namespace p::Memory
 	{
 		if (other.data)
 		{
-			Allocate(other.size);
+			Alloc(other.size);
 			std::memcpy(other.data, data, size);
 		}
 	}
@@ -50,7 +50,7 @@ namespace p::Memory
 			{
 				Free();
 			}
-			Allocate(other.size);
+			Alloc(other.size);
 		}
 		std::memcpy(other.data, data, size);
 		return *this;
@@ -65,7 +65,7 @@ namespace p::Memory
 		return *this;
 	}
 
-	void HeapBlock::Allocate(sizet newSize)
+	void HeapBlock::Alloc(sizet newSize)
 	{
 		size = newSize;
 		data = p::Alloc(newSize);
@@ -73,7 +73,7 @@ namespace p::Memory
 
 	void HeapBlock::Free()
 	{
-		p::Free(data, size);
+		p::Free(data);
 		data = nullptr;
 		size = 0;
 	}

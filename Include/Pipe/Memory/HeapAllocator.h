@@ -14,24 +14,24 @@ namespace p
 		class Typed
 		{
 		public:
-			T* Alloc(const sizet count)
+			static T* Alloc(const sizet count)
 			{
-				return static_cast<T*>(p::Alloc(count * sizeof(T)));
+				return static_cast<T*>(p::Alloc(count * sizeof(T), alignof(T)));
 			}
 
-			T* Alloc(const sizet count, const sizet align)
+			static T* Alloc(const sizet count, const sizet align)
 			{
 				return static_cast<T*>(p::Alloc(count * sizeof(T), align));
 			}
 
-			T* Realloc(T* ptr, sizet ptrSize, sizet size)
+			static bool Resize(T* ptr, sizet ptrSize, sizet size)
 			{
-				return static_cast<T*>(p::Realloc(ptr, ptrSize * sizeof(T), size * sizeof(T)));
+				return false;    // TODO
 			}
 
-			void Free(T* ptr, sizet size)
+			static void Free(T* ptr, sizet size)
 			{
-				p::Free(ptr, size);
+				p::Free(ptr);
 			}
 		};
 	};

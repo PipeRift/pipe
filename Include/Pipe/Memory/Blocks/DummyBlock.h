@@ -18,7 +18,7 @@ namespace p::Memory
 		// Implement copy or move as desired
 
 		// Allocate the block of memory with an optional size
-		void Allocate(sizet) {}
+		void Alloc(sizet) {}
 		// Free the block of memory
 		void Free() {}
 	};

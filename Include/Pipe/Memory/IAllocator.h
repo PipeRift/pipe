@@ -25,9 +25,9 @@ namespace p
 			{
 				return nullptr;
 			}
-			T* Realloc(T* ptr, sizet ptrSize, sizet size)
+			bool Resize(T* ptr, sizet ptrSize, sizet size)
 			{
-				return nullptr;
+				return false;
 			}
 
 			void Free(T* ptr, sizet size) {}

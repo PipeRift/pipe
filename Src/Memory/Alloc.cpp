@@ -4,6 +4,8 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Profiler.h"
+#include "Pipe/Memory/BigBestFitArena.h"
+#include "Pipe/Memory/IArena.h"
 
 #include <cstdlib>
 #include <memory>
@@ -11,6 +13,9 @@
 
 namespace p
 {
+	static BigBestFitArena globalArena{1024 * 1024};    // 1MB initial block size
+
+
 	void* Alloc(sizet size)
 	{
 		void* const ptr = std::malloc(size);
@@ -35,7 +40,7 @@ namespace p
 		return ptr;
 	}
 
-	void* Realloc(void* ptr, sizet, sizet size)
+	void* Realloc(void* ptr, sizet size)
 	{
 		// TracyFreeS(old, 8);
 		void* const p = std::realloc(ptr, size);
@@ -43,9 +48,35 @@ namespace p
 		return p;
 	}
 
-	void Free(void* ptr, sizet)
+	void Free(void* ptr)
 	{
 		// TracyFreeS(p, 8);
 		std::free(ptr);
+	}
+
+
+	IArena* GetGlobalArena()
+	{
+		return &globalArena;
+	}
+
+	void* Alloc(IArena* arena, sizet size)
+	{
+		return arena->Alloc(size);
+	}
+
+	void* Alloc(IArena* arena, sizet size, sizet align)
+	{
+		return arena->Alloc(size, align);
+	}
+
+	bool Resize(IArena* arena, void* ptr, sizet ptrSize, sizet size)
+	{
+		return arena->Resize(ptr, ptrSize, size);
+	}
+
+	void Free(IArena* arena, void* ptr, sizet size)
+	{
+		arena->Free(ptr, size);
 	}
 }    // namespace p

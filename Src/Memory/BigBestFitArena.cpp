@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Pipe/Memory/Arenas/BigBestFitArena.h"
+#include "Pipe/Memory/BigBestFitArena.h"
 
 #include "Pipe/Core/Greater.h"
 #include "Pipe/Core/Log.h"
@@ -12,7 +12,7 @@
 #include "Pipe/Memory/Memory.h"
 
 
-namespace p::Memory
+namespace p
 {
 	bool operator==(const BigBestFitArena::Slot& a, sizet b)
 	{
@@ -57,8 +57,11 @@ namespace p::Memory
 
 	BigBestFitArena::BigBestFitArena(const sizet initialSize)
 	{
+		SetupInterface(&BigBestFitArena::Alloc, &BigBestFitArena::Alloc, &BigBestFitArena::Resize,
+		    &BigBestFitArena::Free);
+
 		assert(initialSize > 0);
-		block.Allocate(initialSize);
+		block.Alloc(initialSize);
 		// Set address at end of block. Size is 0
 		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.GetSize());
 		// Add first slot for the entire block
@@ -68,12 +71,12 @@ namespace p::Memory
 		freeSize = initialSize;
 	}
 
-	void* BigBestFitArena::Allocate(const sizet size)
+	void* BigBestFitArena::Alloc(const sizet size)
 	{
-		return Allocate(size, minAlignment);    // Always align by header size
+		return Alloc(size, minAlignment);    // Always align by header size
 	}
 
-	void* BigBestFitArena::Allocate(const sizet size, sizet alignment)
+	void* BigBestFitArena::Alloc(const sizet size, sizet alignment)
 	{
 		// We always use at least 8 bytes of alignment for the header
 		alignment = math::Max(alignment, minAlignment);
@@ -130,7 +133,7 @@ namespace p::Memory
 
 		// Find smallest slot fitting our required size
 		return freeSlots.FindSortedMin(neededSize, true);
-	}    // namespace p::Memory
+	}    // namespace p
 
 	void BigBestFitArena::ReduceSlot(
 	    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd)
@@ -207,4 +210,4 @@ namespace p::Memory
 		}
 		pendingSort = true;
 	}
-}    // namespace p::Memory
+}    // namespace p

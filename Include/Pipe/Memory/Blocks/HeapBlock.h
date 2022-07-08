@@ -18,7 +18,7 @@ namespace p::Memory
 		HeapBlock& operator=(const HeapBlock& other);
 		HeapBlock& operator=(HeapBlock&& other) noexcept;
 
-		void Allocate(sizet size);
+		void Alloc(sizet size);
 		void Free();
 	};
 }    // namespace p::Memory

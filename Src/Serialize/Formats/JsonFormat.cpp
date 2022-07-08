@@ -15,11 +15,11 @@ static void* yyjson_malloc(void* ctx, p::sizet size)
 }
 static void* yyjson_realloc(void* ctx, void* ptr, p::sizet size)
 {
-	return p::Realloc(ptr, 0, size);
+	return p::Realloc(ptr, size);
 }
 static void yyjson_free(void* ctx, void* ptr)
 {
-	p::Free(ptr, 0);
+	p::Free(ptr);
 }
 yyjson_alc yyjsonAllocator = {yyjson_malloc, yyjson_realloc, yyjson_free, nullptr};
 

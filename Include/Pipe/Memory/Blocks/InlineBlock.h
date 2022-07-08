@@ -35,7 +35,7 @@ namespace p::Memory
 		InlineBlock& operator=(InlineBlock&&) = delete;    // Can't move
 
 		// Allocate and Free don't do anything
-		void Allocate(sizet) {}
+		void Alloc(sizet) {}
 		void Free() {}
 	};
 }    // namespace p::Memory

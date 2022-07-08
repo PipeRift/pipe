@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Pipe/Memory/Arenas/LinearArena.h"
+#include "Pipe/Memory/LinearArena.h"
 
 #include "Pipe/Memory/Memory.h"
 
 
-namespace p::Memory
+namespace p
 {
-	void* LinearArena::Allocate(sizet size)
+	void* LinearArena::Alloc(sizet size)
 	{
 		if (usedBlockSize + size > activeBlock.GetSize())
 		{
@@ -24,11 +24,11 @@ namespace p::Memory
 		return ptr;
 	}
 
-	void* LinearArena::Allocate(sizet size, sizet alignment)
+	void* LinearArena::Alloc(sizet size, sizet alignment)
 	{
 		if (alignment == 0)
 		{
-			return Allocate(size);    // Allocate without alignment
+			return Alloc(size);    // Allocate without alignment
 		}
 
 		void* currentPtr    = (u8*)(activeBlock.GetData()) + usedBlockSize;
@@ -47,7 +47,7 @@ namespace p::Memory
 			Grow(math::Max(activeBlock.GetSize(), size + alignment), alignment);
 
 			// Try again with new block
-			return Allocate(size, alignment);
+			return Alloc(size, alignment);
 		}
 
 		usedBlockSize += size + padding;
@@ -58,7 +58,7 @@ namespace p::Memory
 	{
 		usedBlockSize = 0;
 		activeBlock.Free();
-		for (HeapBlock& block : discardedBlocks)
+		for (Memory::HeapBlock& block : discardedBlocks)
 		{
 			block.Free();
 		}
@@ -73,8 +73,8 @@ namespace p::Memory
 			discardedBlocks.Add(Move(activeBlock));
 
 			// TODO: Support aligned blocks
-			activeBlock.Allocate(size);
+			activeBlock.Alloc(size);
 			usedBlockSize = 0;
 		}
 	}
-}    // namespace p::Memory
+}    // namespace p

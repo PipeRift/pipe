@@ -2,11 +2,11 @@
 #pragma once
 
 #include "Pipe/Core/Array.h"
-#include "Pipe/Memory/Arenas/IArena.h"
 #include "Pipe/Memory/Blocks/HeapBlock.h"
+#include "Pipe/Memory/IArena.h"
 
 
-namespace p::Memory
+namespace p
 {
 	class PIPE_API BestFitArena : public IArena
 	{
@@ -42,7 +42,7 @@ namespace p::Memory
 
 	protected:
 		// TODO: Support growing multiple blocks
-		HeapBlock block{};
+		Memory::HeapBlock block{};
 		TArray<Slot> freeSlots{};
 		bool pendingSort = false;
 		sizet freeSize   = 0;
@@ -52,12 +52,15 @@ namespace p::Memory
 		BestFitArena(const sizet initialSize = 1024);
 		~BestFitArena() {}
 
-		void* Allocate(const sizet size);
-		void* Allocate(const sizet size, sizet alignment);
-
+		void* Alloc(const sizet size);
+		void* Alloc(const sizet size, sizet align);
+		bool Resize(void* ptr, const sizet ptrSize, const sizet size)
+		{
+			return false;
+		}
 		void Free(void* ptr, sizet size);
 
-		const HeapBlock& GetBlock() const
+		const Memory::HeapBlock& GetBlock() const
 		{
 			return block;
 		}
@@ -93,4 +96,4 @@ namespace p::Memory
 	{
 		return start + size;
 	}
-}    // namespace p::Memory
+}    // namespace p

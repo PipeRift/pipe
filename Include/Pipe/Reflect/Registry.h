@@ -3,7 +3,7 @@
 
 #include "Pipe/Core/Map.h"
 #include "Pipe/Core/TypeTraits.h"
-#include "Pipe/Memory/Arenas/LinearArena.h"
+#include "Pipe/Memory/LinearArena.h"
 #include "Pipe/Reflect/Type.h"
 #include "Pipe/Reflect/TypeId.h"
 
@@ -13,10 +13,10 @@ namespace p
 	class ReflectionRegistry
 	{
 		// Contains all compiled reflection types linearly in memory
-		Memory::LinearArena arena{256 * 1024};    // First block is 256KB
+		LinearArena arena{256 * 1024};    // First block is 256KB
 
 		// Contains all runtime/data defined types in memory
-		// Memory::BigBestFitArena dynamicArena{256 * 1024};    // First block is 256KB
+		// BigBestFitArena dynamicArena{256 * 1024};    // First block is 256KB
 
 		// We map all classes by name in case we need to find them
 		TMap<TypeId, Type*> idToTypes{};
@@ -28,7 +28,7 @@ namespace p
 		template<typename TType>
 		TType& AddType(TypeId id) requires Derived<TType, Type, false>
 		{
-			TType* ptr = new (arena.Allocate(sizeof(TType))) TType();
+			TType* ptr = new (arena.Alloc(sizeof(TType))) TType();
 			idToTypes.Insert(id, ptr);
 			return *ptr;
 		}
@@ -37,7 +37,7 @@ namespace p
 		template<typename PropertyType, typename... Args>
 		PropertyType* AddProperty(Args&&... args)
 		{
-			void* ptr = arena.Allocate(sizeof(PropertyType));
+			void* ptr = arena.Alloc(sizeof(PropertyType));
 			return new (ptr) PropertyType(std::forward<Args>(args)...);
 		}
 

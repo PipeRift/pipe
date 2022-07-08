@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-namespace p::Memory
+namespace p
 {
 	/** This is an Arena interface.
 	 * It serves the single purpose of documenting an Arena's interface.
@@ -10,7 +10,11 @@ namespace p::Memory
 	class PIPE_API DummyArena
 	{
 	public:
-		DummyArena() {}
+		DummyArena()
+		{
+			SetupInterface(
+			    &DummyArena::Alloc, &DummyArena::Alloc, &DummyArena::Resize, &DummyArena::Free);
+		}
 		~DummyArena() {}
 
 		// Define copy or move as desired
@@ -19,14 +23,18 @@ namespace p::Memory
 		DummyArena& operator=(const DummyArena&) = default;
 		DummyArena& operator=(DummyArena&&) = default;
 
-		void* Allocate(const sizet size)
+		void* Alloc(const sizet size)
 		{
 			return nullptr;
 		}
-		void* Allocate(const sizet size, const sizet alignment)
+		void* Alloc(const sizet size, const sizet alignment)
 		{
 			return nullptr;
+		}
+		bool Resize(void* ptr, const sizet ptrSize, const sizet size)
+		{
+			return false;
 		}
 		void Free(void* ptr) {}
 	};
-}    // namespace p::Memory
+}    // namespace p

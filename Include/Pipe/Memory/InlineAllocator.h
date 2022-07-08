@@ -16,7 +16,7 @@ namespace p
 		class Typed
 		{
 		public:
-			bool inUse = false;
+			bool used = false;
 			T buffer[N];
 
 			typename FallbackAllocator::Typed<T> fallback;
@@ -24,20 +24,20 @@ namespace p
 
 			T* Alloc(sizet size)
 			{
-				if (inUse)
+				if (used)
 				{
 					return fallback.Alloc(size);
 				}
-				inUse = true;
+				used = true;
 				return buffer;
 			}
 			T* Alloc(sizet size, sizet align)
 			{
-				if (inUse)
+				if (used)
 				{
 					return fallback.Alloc(size, align);
 				}
-				inUse = true;
+				used = true;
 				return buffer;
 			}
 
@@ -45,7 +45,7 @@ namespace p
 			{
 				if (ptr == buffer)
 				{
-					inUse = false;
+					used = false;
 				}
 				else
 				{
@@ -53,31 +53,21 @@ namespace p
 				}
 			}
 
-			T* Realloc(T* ptr, sizet ptrSize, sizet size)
+			bool Resize(T* ptr, sizet ptrSize, sizet size)
 			{
 				if (size <= N)
 				{
-					if (ptr != buffer)    // Previous ptr was allocated on fallback
-					{
-						MoveConstructItems<T>(buffer, ptr, ptrSize);
-						fallback.Free(ptr, ptrSize);
-						inUse = true;
-					}
-					return buffer;
+					// if ptr is allocated externally and new size is smaller than
+					// inline buffer, don't allow Resize
+					return ptr == buffer;
 				}
-				else
+				else if (ptr == buffer)
 				{
-					if (ptr == buffer)    // Previous ptr was allocated inline
-					{
-						ptr = fallback.Alloc(size);
-						MoveConstructItems<T>(ptr, buffer, ptrSize);
-						inUse = false;
-						return ptr;
-					}
-
-					// Completely external reallocation
-					return fallback.Realloc(ptr, ptrSize, size);
+					// If ptr is allocated inlined but new size exceeds inline
+					// buffer, can't Resize
+					return false;
 				}
+				return fallback.Resize(ptr, ptrSize, size);
 			}
 		};
 	};

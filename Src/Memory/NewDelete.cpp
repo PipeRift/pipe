@@ -7,11 +7,11 @@
 
 void operator delete(void* ptr) noexcept
 {
-	p::Free(ptr, 0);
+	p::Free(ptr);
 };
 void operator delete[](void* ptr) noexcept
 {
-	p::Free(ptr, 0);
+	p::Free(ptr);
 };
 
 void* operator new(std::size_t size) noexcept(false)
@@ -36,11 +36,11 @@ void* operator new[](std::size_t size, const std::nothrow_t&) noexcept
 
 void operator delete(void* ptr, std::size_t) noexcept
 {
-	p::Free(ptr, 0);
+	p::Free(ptr);
 };
 void operator delete[](void* ptr, std::size_t) noexcept
 {
-	p::Free(ptr, 0);
+	p::Free(ptr);
 };
 
 #	endif
@@ -49,19 +49,19 @@ void operator delete[](void* ptr, std::size_t) noexcept
 
 void operator delete(void* ptr, std::align_val_t) noexcept
 {
-	p::Free(ptr, 0);
+	p::Free(ptr);
 }
 void operator delete[](void* ptr, std::align_val_t) noexcept
 {
-	p::Free(ptr, 0);
+	p::Free(ptr);
 }
 void operator delete(void* ptr, std::size_t, std::align_val_t) noexcept
 {
-	p::Free(ptr, 0);
+	p::Free(ptr);
 };
 void operator delete[](void* ptr, std::size_t, std::align_val_t) noexcept
 {
-	p::Free(ptr, 0);
+	p::Free(ptr);
 };
 
 void* operator new(std::size_t size, std::align_val_t align) noexcept(false)

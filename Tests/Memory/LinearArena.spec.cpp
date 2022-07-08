@@ -1,13 +1,13 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/Memory/Arenas/LinearArena.h>
+#include <Pipe/Memory/LinearArena.h>
 #include <Pipe/Memory/Memory.h>
 
 
 using namespace snowhouse;
 using namespace bandit;
-using namespace p::Memory;
+using namespace p;
 
 
 go_bandit([]() {
@@ -38,7 +38,7 @@ go_bandit([]() {
 
 		it("Can allocate", [&]() {
 			LinearArena arena{1024};
-			void* p = arena.Allocate(sizeof(float));
+			void* p = arena.Alloc(sizeof(float));
 			AssertThat(p, Is().Not().Null());
 			AssertThat(arena.GetUsedBlockSize(), Is().EqualTo(4));
 			AssertThat(arena.GetBlockSize(), Is().EqualTo(1024));
@@ -47,7 +47,7 @@ go_bandit([]() {
 		it("Can allocate after reset", [&]() {
 			LinearArena arena{1024};
 			arena.Reset();
-			void* p = arena.Allocate(sizeof(float));
+			void* p = arena.Alloc(sizeof(float));
 			AssertThat(p, Is().Not().Null());
 			AssertThat(arena.GetUsedBlockSize(), Is().EqualTo(4));
 			// Buffer size will be as small as the type (4 bytes)
@@ -57,7 +57,7 @@ go_bandit([]() {
 		it("Has correct allocation size after new block", [&]() {
 			LinearArena arena{256};
 
-			void* p = arena.Allocate(sizeof(float));
+			void* p = arena.Alloc(sizeof(float));
 			AssertThat(p, Is().Not().Null());
 			AssertThat(arena.GetUsedBlockSize(), Is().EqualTo(4));
 
@@ -77,10 +77,10 @@ go_bandit([]() {
 			LinearArena arena{1024};
 
 			void* blockPtr = *arena.GetBlock();
-			void* p        = arena.Allocate(sizeof(float));
+			void* p        = arena.Alloc(sizeof(float));
 			AssertThat(p, Is().EqualTo(blockPtr));
 
-			void* p2 = arena.Allocate(sizeof(float));
+			void* p2 = arena.Alloc(sizeof(float));
 			AssertThat(p2, Is().EqualTo((p::u8*)blockPtr + 4));
 		});
 
@@ -88,12 +88,12 @@ go_bandit([]() {
 			LinearArena arena{16};
 
 			void* block = *arena.GetBlock();
-			arena.Allocate(sizeof(float*));    // 8 bytes
-			arena.Allocate(sizeof(float));     // 4 bytes
+			arena.Alloc(sizeof(float*));    // 8 bytes
+			arena.Alloc(sizeof(float));     // 4 bytes
 			AssertThat(arena.GetUsedBlockSize(), Is().EqualTo(12));
 			AssertThat(arena.GetBlockSize(), Is().EqualTo(16));
 
-			void* p3       = arena.Allocate(sizeof(float*));    // 8 bytes
+			void* p3       = arena.Alloc(sizeof(float*));    // 8 bytes
 			void* newBlock = *arena.GetBlock();
 			AssertThat(block, Is().Not().EqualTo(newBlock));
 			AssertThat(p3, Is().EqualTo(newBlock));
@@ -104,14 +104,14 @@ go_bandit([]() {
 		it("Allocates with alignment", [&]() {
 			LinearArena arena{1024};
 
-			arena.Allocate(sizeof(bool));
+			arena.Alloc(sizeof(bool));
 
 			// When padding is not 0 (last ptr is not aligned)
-			void* p = arena.Allocate(sizeof(float), 8);
+			void* p = arena.Alloc(sizeof(float), 8);
 			AssertThat(p::GetAlignmentPadding(p, 8), Is().EqualTo(0));
 
 			// When padding is 0 (last ptr is aligned)
-			void* p2 = arena.Allocate(sizeof(float), 16);
+			void* p2 = arena.Alloc(sizeof(float), 16);
 			AssertThat(p::GetAlignmentPadding(p2, 16), Is().EqualTo(0));
 		});
 
@@ -120,11 +120,11 @@ go_bandit([]() {
 
 			void* firstBlock = *arena.GetBlock();
 
-			arena.Allocate(1019);    // 5 bytes available
+			arena.Alloc(1019);    // 5 bytes available
 
 			// Enough memory available, but not if we align it.
 			// Must grow a new block
-			void* p = arena.Allocate(sizeof(float), 8);
+			void* p = arena.Alloc(sizeof(float), 8);
 			AssertThat(p::GetAlignmentPadding(p, 8), Is().EqualTo(0));
 
 			void* secondBlock = *arena.GetBlock();
