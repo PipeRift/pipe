@@ -133,7 +133,11 @@ namespace p::core
 		 */
 		i32 Remove(const Type& value)
 		{
-			Iterator it = FindIt(value);
+			return RemoveIt(FindIt(value));
+		}
+
+		i32 RemoveIt(Iterator it)
+		{
 			if (it != end())
 			{
 				const i32 lastSize = Size();

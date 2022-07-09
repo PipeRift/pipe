@@ -7,6 +7,7 @@
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/BigBestFitArena.h"
 #include "Pipe/Memory/HeapArena.h"
+#include "Pipe/Memory/MemoryStats.h"
 
 #include <cstdlib>
 #include <memory>
@@ -14,15 +15,19 @@
 
 namespace p
 {
+	static MemoryStats heapStats;
 	static Arena* currentArena = nullptr;
 
 
 	void* HeapAlloc(sizet size)
 	{
 		void* const ptr = std::malloc(size);
+#if BUILD_DEBUG
+		heapStats.Add(ptr, size);
+#endif
 		// FIX: Profiler reports alloc gets called frequently twice with the same pointer. Seems
 		// related to allocators
-		// TracyAllocS(p, n, 12);
+		// TracyAllocS(ptr, size, 12);
 		return ptr;
 	}
 
@@ -32,26 +37,38 @@ namespace p
 		// TODO: Windows needs _aligned_free in order to use _aligned_alloc()
 		void* const ptr = std::malloc(size);
 #elif PLATFORM_MACOS || PLATFORM_LINUX
-		void* p;
-		(void)(posix_memalign(&p, align, n));
+		void* ptr;
+		(void)(posix_memalign(&ptr, align, size));
 #else
-		void* const p = std::aligned_alloc(align, n);
+		void* const ptr = std::aligned_alloc(align, size);
 #endif
-		// TracyAllocS(p, n, 8);
+#if BUILD_DEBUG
+		heapStats.Add(ptr, size);
+		// TracyAllocS(ptr, size, 8);
+#endif
 		return ptr;
 	}
 
 	void* HeapRealloc(void* ptr, sizet size)
 	{
-		// TracyFreeS(old, 8);
-		void* const p = std::realloc(ptr, size);
-		// TracyAllocS(p, size, 8);
-		return p;
+#if BUILD_DEBUG
+		// TracyFreeS(ptr, 8);
+		heapStats.Remove(ptr);
+#endif
+		ptr = std::realloc(ptr, size);
+#if BUILD_DEBUG
+		// TracyAllocS(ptr, size, 8);
+		heapStats.Add(ptr, size);
+#endif
+		return ptr;
 	}
 
 	void HeapFree(void* ptr)
 	{
-		// TracyFreeS(p, 8);
+#if BUILD_DEBUG
+		// TracyFreeS(ptr, 8);
+		heapStats.Remove(ptr);
+#endif
 		std::free(ptr);
 	}
 
@@ -70,6 +87,11 @@ namespace p
 	void SetCurrentArena(Arena& arena)
 	{
 		currentArena = &arena;
+	}
+
+	MemoryStats* GetHeapStats()
+	{
+		return &heapStats;
 	}
 
 

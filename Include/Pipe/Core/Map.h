@@ -176,7 +176,11 @@ namespace p::core
 		 */
 		i32 Remove(const KeyType& key)
 		{
-			Iterator it = FindIt(key);
+			return RemoveIt(FindIt(key));
+		}
+
+		i32 RemoveIt(Iterator it)
+		{
 			if (it != end())
 			{
 				const i32 lastSize = Size();

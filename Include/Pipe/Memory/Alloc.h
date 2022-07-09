@@ -9,6 +9,8 @@
 namespace p
 {
 	class Arena;
+	struct MemoryStats;
+
 
 	// Native allocation functions
 	PIPE_API void* HeapAlloc(sizet size);
@@ -20,6 +22,7 @@ namespace p
 	PIPE_API class HeapArena& GetHeapArena();
 	PIPE_API Arena* GetCurrentArena();
 	PIPE_API void SetCurrentArena(Arena& arena);
+	PIPE_API MemoryStats* GetHeapStats();
 
 	// Arena allocation functions
 	PIPE_API void* Alloc(sizet size);

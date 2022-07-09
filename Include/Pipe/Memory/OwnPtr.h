@@ -9,7 +9,6 @@
 #include "Pipe/Reflect/TypeId.h"
 
 #include <atomic>
-#include <memory>
 
 
 namespace p
