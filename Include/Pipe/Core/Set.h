@@ -17,7 +17,7 @@
 
 namespace p::core
 {
-	template<typename Type, typename Allocator = HeapAllocator>
+	template<typename Type, typename Allocator = ArenaAllocator>
 	class TSet
 	{
 		// static_assert(std::is_nothrow_move_constructible<Value>::value ||

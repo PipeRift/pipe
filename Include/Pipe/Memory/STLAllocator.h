@@ -4,7 +4,7 @@
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
-#include "Pipe/Memory/HeapAllocator.h"
+#include "Pipe/Memory/ArenaAllocator.h"
 
 #include <limits>
 #include <memory>
@@ -12,7 +12,7 @@
 
 namespace p
 {
-	template<typename T, typename Allocator = HeapAllocator>
+	template<typename T, typename Allocator = ArenaAllocator>
 	struct STLAllocator
 	{
 		// STD types

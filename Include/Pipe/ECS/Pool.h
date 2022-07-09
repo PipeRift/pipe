@@ -118,7 +118,7 @@ namespace p::ecs
 	};
 
 
-	template<typename T, typename Allocator = HeapAllocator>
+	template<typename T, typename Allocator = ArenaAllocator>
 	struct TPool : public Pool
 	{
 		using AllocatorType = Allocator;

@@ -15,7 +15,7 @@ namespace p::ecs
 		InPlace
 	};
 
-	template<typename Allocator = HeapAllocator>
+	template<typename Allocator = ArenaAllocator>
 	struct TPoolSet
 	{
 		static constexpr auto growthFactor = 1.5;

@@ -17,7 +17,7 @@
 
 namespace p::core
 {
-	template<typename Type, typename Allocator = HeapAllocator>
+	template<typename Type, typename Allocator = ArenaAllocator>
 	struct TArray
 	{
 	public:

@@ -16,59 +16,63 @@ namespace p
 {
 	bool operator==(const BigBestFitArena::Slot& a, sizet b)
 	{
-		return a.GetSize() == b;
+		return a.Size() == b;
 	}
 	bool operator<(const BigBestFitArena::Slot& a, sizet b)
 	{
-		return a.GetSize() < b;
+		return a.Size() < b;
 	}
 	bool operator>(const BigBestFitArena::Slot& a, sizet b)
 	{
-		return a.GetSize() > b;
+		return a.Size() > b;
 	}
 	bool operator<=(const BigBestFitArena::Slot& a, sizet b)
 	{
-		return a.GetSize() <= b;
+		return a.Size() <= b;
 	}
 	bool operator>=(const BigBestFitArena::Slot& a, sizet b)
 	{
-		return a.GetSize() >= b;
+		return a.Size() >= b;
 	}
 	bool operator==(sizet a, const BigBestFitArena::Slot& b)
 	{
-		return a == b.GetSize();
+		return a == b.Size();
 	}
 	bool operator<(sizet a, const BigBestFitArena::Slot& b)
 	{
-		return a < b.GetSize();
+		return a < b.Size();
 	}
 	bool operator>(sizet a, const BigBestFitArena::Slot& b)
 	{
-		return a > b.GetSize();
+		return a > b.Size();
 	}
 	bool operator<=(sizet a, const BigBestFitArena::Slot& b)
 	{
-		return a <= b.GetSize();
+		return a <= b.Size();
 	}
 	bool operator>=(sizet a, const BigBestFitArena::Slot& b)
 	{
-		return a >= b.GetSize();
+		return a >= b.Size();
 	}
 
-	BigBestFitArena::BigBestFitArena(const sizet initialSize)
+	BigBestFitArena::BigBestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
-		SetupInterface(&BigBestFitArena::Alloc, &BigBestFitArena::Alloc, &BigBestFitArena::Resize,
-		    &BigBestFitArena::Free);
-
 		assert(initialSize > 0);
-		block.Alloc(initialSize);
+		block.data = p::Alloc(GetParentArena(), initialSize);
+		block.size = initialSize;
 		// Set address at end of block. Size is 0
-		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.GetSize());
+		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.Size());
 		// Add first slot for the entire block
-		freeSlots.Add({reinterpret_cast<u8*>(block.GetData()),
-		    reinterpret_cast<u8*>(block.GetData()) + block.GetSize()});
+		freeSlots.Add(
+		    {reinterpret_cast<u8*>(block.data), reinterpret_cast<u8*>(block.data) + block.size});
 
 		freeSize = initialSize;
+	}
+
+	BigBestFitArena::~BigBestFitArena()
+	{
+		p::Free(block.data, block.size);
+		block.data = nullptr;
 	}
 
 	void* BigBestFitArena::Alloc(const sizet size)

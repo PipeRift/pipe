@@ -57,19 +57,23 @@ namespace p
 	}
 
 
-	BestFitArena::BestFitArena(const sizet initialSize)
+	BestFitArena::BestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
-		SetupInterface(
-		    &BestFitArena::Alloc, &BestFitArena::Alloc, &BestFitArena::Resize, &BestFitArena::Free);
-
 		assert(initialSize > 0);
-		block.Alloc(initialSize);
+		block.data = p::Alloc(GetParentArena(), initialSize);
+		block.size = initialSize;
 		// Set address at end of block. Size is 0
-		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.GetSize());
+		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.Size());
 		// Add first slot for the entire block
-		freeSlots.Add({reinterpret_cast<u8*>(block.GetData()), block.GetSize()});
+		freeSlots.Add({reinterpret_cast<u8*>(block.data), block.size});
 
 		freeSize = initialSize;
+	}
+
+	BestFitArena::~BestFitArena()
+	{
+		p::Free(block.data, block.size);
+		block.data = nullptr;
 	}
 
 	void* BestFitArena::Alloc(const sizet size)
@@ -142,7 +146,7 @@ namespace p
 	void BestFitArena::ReduceSlot(
 	    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd)
 	{
-		if (allocationEnd == slot.GetEnd())    // Slot would become empty
+		if (allocationEnd == slot.End())    // Slot would become empty
 		{
 			if (allocationStart > slot.start)    // Slot can still fill alignment gap
 			{
@@ -189,7 +193,7 @@ namespace p
 					break;    // We found both slots
 				}
 			}
-			else if (slot.GetEnd() == allocationStart)
+			else if (slot.End() == allocationStart)
 			{
 				previousSlot = i;
 				if (nextSlot != NO_INDEX)
@@ -204,7 +208,7 @@ namespace p
 			// Expand next slot to the start of the previous slot
 			const Slot& next = freeSlots[nextSlot];
 			Slot& previous   = freeSlots[previousSlot];
-			previous.size    = next.GetEnd() - previous.start;
+			previous.size    = next.End() - previous.start;
 
 			freeSlots.RemoveAtSwapUnsafe(nextSlot);
 		}

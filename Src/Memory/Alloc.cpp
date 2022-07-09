@@ -4,8 +4,9 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Profiler.h"
+#include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/BigBestFitArena.h"
-#include "Pipe/Memory/IArena.h"
+#include "Pipe/Memory/HeapArena.h"
 
 #include <cstdlib>
 #include <memory>
@@ -13,10 +14,10 @@
 
 namespace p
 {
-	static BigBestFitArena globalArena{1024 * 1024};    // 1MB initial block size
+	static Arena* currentArena = nullptr;
 
 
-	void* Alloc(sizet size)
+	void* HeapAlloc(sizet size)
 	{
 		void* const ptr = std::malloc(size);
 		// FIX: Profiler reports alloc gets called frequently twice with the same pointer. Seems
@@ -25,7 +26,7 @@ namespace p
 		return ptr;
 	}
 
-	void* Alloc(sizet size, sizet align)
+	void* HeapAlloc(sizet size, sizet align)
 	{
 #if PLATFORM_WINDOWS
 		// TODO: Windows needs _aligned_free in order to use _aligned_alloc()
@@ -40,7 +41,7 @@ namespace p
 		return ptr;
 	}
 
-	void* Realloc(void* ptr, sizet size)
+	void* HeapRealloc(void* ptr, sizet size)
 	{
 		// TracyFreeS(old, 8);
 		void* const p = std::realloc(ptr, size);
@@ -48,35 +49,67 @@ namespace p
 		return p;
 	}
 
-	void Free(void* ptr)
+	void HeapFree(void* ptr)
 	{
 		// TracyFreeS(p, 8);
 		std::free(ptr);
 	}
 
 
-	IArena* GetGlobalArena()
+	HeapArena& GetHeapArena()
 	{
-		return &globalArena;
+		static HeapArena heapArena{};
+		return heapArena;
 	}
 
-	void* Alloc(IArena* arena, sizet size)
+	Arena* GetCurrentArena()
 	{
-		return arena->Alloc(size);
+		return currentArena ? currentArena : &GetHeapArena();
 	}
 
-	void* Alloc(IArena* arena, sizet size, sizet align)
+	void SetCurrentArena(Arena& arena)
 	{
-		return arena->Alloc(size, align);
+		currentArena = &arena;
 	}
 
-	bool Resize(IArena* arena, void* ptr, sizet ptrSize, sizet size)
+
+	void* Alloc(Arena& arena, sizet size)
 	{
-		return arena->Resize(ptr, ptrSize, size);
+		return arena.Alloc(size);
 	}
 
-	void Free(IArena* arena, void* ptr, sizet size)
+	void* Alloc(Arena& arena, sizet size, sizet align)
 	{
-		arena->Free(ptr, size);
+		return arena.Alloc(size, align);
+	}
+
+	bool Resize(Arena& arena, void* ptr, sizet ptrSize, sizet size)
+	{
+		return arena.Resize(ptr, ptrSize, size);
+	}
+
+	void Free(Arena& arena, void* ptr, sizet size)
+	{
+		arena.Free(ptr, size);
+	}
+
+	void* Alloc(sizet size)
+	{
+		return Alloc(*GetCurrentArena(), size);
+	}
+
+	void* Alloc(sizet size, sizet align)
+	{
+		return Alloc(*GetCurrentArena(), size, align);
+	}
+
+	bool Resize(void* ptr, sizet ptrSize, sizet size)
+	{
+		return Resize(*GetCurrentArena(), ptr, ptrSize, size);
+	}
+
+	void Free(void* ptr, sizet size)
+	{
+		Free(*GetCurrentArena(), ptr, size);
 	}
 }    // namespace p

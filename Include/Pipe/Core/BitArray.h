@@ -7,7 +7,7 @@
 
 namespace p::core
 {
-	template<typename Allocator = HeapAllocator>
+	template<typename Allocator = ArenaAllocator>
 	class TBitArray
 	{
 		using AllocatorType = Allocator;

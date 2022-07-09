@@ -24,7 +24,7 @@ go_bandit([]() {
 			BestFitArena arena{1024};
 			AssertThat(arena.GetFreeSize(), Equals(1024));
 			AssertThat(*arena.GetBlock(), Is().Not().Null());
-			AssertThat(arena.GetBlock().GetSize(), Is().EqualTo(1024));
+			AssertThat(arena.GetBlock().size, Is().EqualTo(1024));
 		});
 
 		it("Can allocate", [&]() {
@@ -149,7 +149,7 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSize(), Equals(30));
 			AssertThat(arena.GetFreeSlots().Size(), Equals(1));
 			AssertThat(arena.GetFreeSlots()[0].start, Equals(p2));
-			AssertThat(arena.GetFreeSlots()[0].GetEnd(), Equals(p3));
+			AssertThat(arena.GetFreeSlots()[0].End(), Equals(p3));
 		});
 
 		it("Can merge previous and next slots on free", [&]() {
@@ -185,8 +185,8 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSlots()[0].size, Equals(64));
 
 			// Slot contains the entire memory block
-			AssertThat(arena.GetFreeSlots()[0].start, Equals(arena.GetBlock().GetData()));
-			AssertThat(arena.GetFreeSlots()[0].GetEnd(), Equals(arena.GetBlock().GetEnd()));
+			AssertThat(arena.GetFreeSlots()[0].start, Equals(arena.GetBlock().data));
+			AssertThat(arena.GetFreeSlots()[0].End(), Equals(arena.GetBlock().End()));
 		});
 
 		it("Can merge previous slot on free", [&]() {
@@ -211,8 +211,8 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSlots()[0].size, Equals(48));
 
 			// Slot contains the entire memory block
-			AssertThat(arena.GetFreeSlots()[0].start, Equals(arena.GetBlock().GetData()));
-			AssertThat(arena.GetFreeSlots()[0].GetEnd(), Equals(arena.GetBlock().GetEnd()));
+			AssertThat(arena.GetFreeSlots()[0].start, Equals(arena.GetBlock().data));
+			AssertThat(arena.GetFreeSlots()[0].End(), Equals(arena.GetBlock().End()));
 		});
 
 		it("Can merge next slot on free", [&]() {
@@ -237,8 +237,8 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSlots()[0].size, Equals(48));
 
 			// Slot contains the entire memory block
-			AssertThat(arena.GetFreeSlots()[0].start, Equals(arena.GetBlock().GetData()));
-			AssertThat(arena.GetFreeSlots()[0].GetEnd(), Equals(arena.GetBlock().GetEnd()));
+			AssertThat(arena.GetFreeSlots()[0].start, Equals(arena.GetBlock().data));
+			AssertThat(arena.GetFreeSlots()[0].End(), Equals(arena.GetBlock().End()));
 		});
 
 		it("Ensures a big alignment leaves a gap", [&]() {
@@ -258,11 +258,11 @@ go_bandit([]() {
 
 			// Slot contains the rest if the block
 			AssertThat(arena.GetFreeSlots()[0].start, Equals((u8*)p2 + 8));
-			AssertThat(arena.GetFreeSlots()[0].GetEnd(), Equals(arena.GetBlock().GetEnd()));
+			AssertThat(arena.GetFreeSlots()[0].End(), Equals(arena.GetBlock().End()));
 
 			// Slot contains the alignment gap
 			AssertThat(arena.GetFreeSlots()[1].start, Equals((u8*)p + 8));
-			AssertThat(arena.GetFreeSlots()[1].GetEnd(), Equals(p2));
+			AssertThat(arena.GetFreeSlots()[1].End(), Equals(p2));
 		});
 	});
 });

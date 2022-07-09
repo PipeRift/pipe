@@ -18,7 +18,7 @@
 
 namespace p::core
 {
-	template<typename Key, typename Value, typename Allocator = HeapAllocator>
+	template<typename Key, typename Value, typename Allocator = ArenaAllocator>
 	class TMap
 	{
 		static_assert(std::is_nothrow_move_constructible<Value>::value

@@ -5,8 +5,9 @@
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 #include "Pipe/Memory/Alloc.h"
-#include "Pipe/Memory/Blocks/HeapBlock.h"
-#include "Pipe/Memory/IArena.h"
+#include "Pipe/Memory/Arena.h"
+#include "Pipe/Memory/Block.h"
+#include "Pipe/Memory/Memory.h"
 
 
 namespace p
@@ -17,22 +18,25 @@ namespace p
 	 * Individual allocations can't be freed. It can
 	 * be resized, but never smaller than its used size.
 	 */
-	class LinearArena : public IArena
+	class LinearArena : public ChildArena
 	{
 	protected:
-		Memory::HeapBlock activeBlock{};
+		Memory::Block activeBlock{};
 		sizet usedBlockSize = 0;
-		TArray<Memory::HeapBlock> discardedBlocks;
+		TArray<Memory::Block> discardedBlocks;
 		bool allowGrowing = true;
 
 
 	public:
-		PIPE_API LinearArena(const sizet initialSize = 0, bool allowGrowing = true)
-		    : activeBlock{initialSize}, allowGrowing{allowGrowing}
-		{
-			SetupInterface(
-			    &LinearArena::Alloc, &LinearArena::Alloc, &LinearArena::Resize, &LinearArena::Free);
-		}
+		PIPE_API LinearArena(
+		    Arena* parent, const sizet firstBlockSize = Memory::MB, bool allowGrowing = true)
+		    : ChildArena(parent)
+		    , activeBlock{p::Alloc(GetParentArena(), firstBlockSize), firstBlockSize}
+		    , allowGrowing{allowGrowing}
+		{}
+		PIPE_API LinearArena(const sizet firstBlockSize = Memory::MB, bool allowGrowing = true)
+		    : LinearArena(nullptr, firstBlockSize, allowGrowing)
+		{}
 		PIPE_API ~LinearArena() override
 		{
 			Reset();
@@ -42,13 +46,13 @@ namespace p
 		LinearArena& operator=(const LinearArena&) = delete;
 		PIPE_API LinearArena& operator=(LinearArena&&) = default;
 
-		PIPE_API void* Alloc(sizet size);
-		PIPE_API void* Alloc(sizet size, sizet align);
-		PIPE_API bool Resize(void* ptr, sizet ptrSize, sizet size)
+		PIPE_API void* Alloc(sizet size) override;
+		PIPE_API void* Alloc(sizet size, sizet align) override;
+		PIPE_API bool Resize(void* ptr, sizet ptrSize, sizet size) override
 		{
 			return false;
 		}
-		PIPE_API void Free(void* ptr, sizet size) {}
+		PIPE_API void Free(void* ptr, sizet size) override {}
 
 
 		PIPE_API void Reset();
@@ -61,17 +65,17 @@ namespace p
 		}
 		PIPE_API sizet GetBlockSize() const
 		{
-			return activeBlock.GetSize();
+			return activeBlock.size;
 		}
-		PIPE_API Memory::HeapBlock& GetBlock()
+		PIPE_API Memory::Block& GetBlock()
 		{
 			return activeBlock;
 		}
-		PIPE_API const Memory::HeapBlock& GetBlock() const
+		PIPE_API const Memory::Block& GetBlock() const
 		{
 			return activeBlock;
 		}
-		PIPE_API const TArray<Memory::HeapBlock>& GetDiscardedBlocks() const
+		PIPE_API const TArray<Memory::Block>& GetDiscardedBlocks() const
 		{
 			return discardedBlocks;
 		}

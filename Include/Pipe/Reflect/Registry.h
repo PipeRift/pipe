@@ -13,7 +13,7 @@ namespace p
 	class ReflectionRegistry
 	{
 		// Contains all compiled reflection types linearly in memory
-		LinearArena arena{256 * 1024};    // First block is 256KB
+		LinearArena arena{};    // First block is 256KB
 
 		// Contains all runtime/data defined types in memory
 		// BigBestFitArena dynamicArena{256 * 1024};    // First block is 256KB

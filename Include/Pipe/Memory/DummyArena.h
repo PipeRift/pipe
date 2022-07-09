@@ -10,11 +10,6 @@ namespace p
 	class PIPE_API DummyArena
 	{
 	public:
-		DummyArena()
-		{
-			SetupInterface(
-			    &DummyArena::Alloc, &DummyArena::Alloc, &DummyArena::Resize, &DummyArena::Free);
-		}
 		~DummyArena() {}
 
 		// Define copy or move as desired

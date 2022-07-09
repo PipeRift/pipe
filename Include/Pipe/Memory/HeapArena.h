@@ -2,36 +2,31 @@
 #pragma once
 
 #include "Pipe/Memory/Alloc.h"
-#include "Pipe/Memory/IArena.h"
+#include "Pipe/Memory/Arena.h"
 
 
 namespace p
 {
-	class PIPE_API HeapArena : public IArena
+	class PIPE_API HeapArena : public Arena
 	{
 	public:
-		HeapArena()
-		{
-			SetupInterface(
-			    &HeapArena::Alloc, &HeapArena::Alloc, &HeapArena::Resize, &HeapArena::Free);
-		}
 		~HeapArena() override = default;
 
-		void* Alloc(const sizet size)
+		void* Alloc(const sizet size) override
 		{
-			return p::Alloc(size);
+			return p::HeapAlloc(size);
 		}
-		void* Alloc(const sizet size, const sizet align)
+		void* Alloc(const sizet size, const sizet align) override
 		{
-			return p::Alloc(size, align);
+			return p::HeapAlloc(size, align);
 		}
-		bool Resize(void* ptr, const sizet ptrSize, const sizet size)
+		bool Resize(void* ptr, const sizet ptrSize, const sizet size) override
 		{
 			return false;
 		}
-		void Free(void* ptr)
+		void Free(void* ptr, sizet size) override
 		{
-			p::Free(ptr);
+			p::HeapFree(ptr);
 		}
 	};
 }    // namespace p

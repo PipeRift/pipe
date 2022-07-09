@@ -23,7 +23,7 @@ go_bandit([]() {
 			BigBestFitArena arena{1024};
 			AssertThat(arena.GetFreeSize(), Equals(1024));
 			AssertThat(*arena.GetBlock(), Is().Not().Null());
-			AssertThat(arena.GetBlock().GetSize(), Is().EqualTo(1024));
+			AssertThat(arena.GetBlock().size, Is().EqualTo(1024));
 		});
 
 		it("Can allocate", [&]() {
@@ -187,9 +187,9 @@ go_bandit([]() {
 
 			// Slot contains the entire memory block
 			AssertThat(arena.GetFreeSlots()[0].start,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().GetData())));
+			    Equals(static_cast<const p::u8*>(arena.GetBlock().data)));
 			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().GetEnd())));
+			    Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 		});
 
 		it("Can merge previous slot on free", [&]() {
@@ -214,9 +214,9 @@ go_bandit([]() {
 
 			// Slot contains the entire memory block
 			AssertThat(arena.GetFreeSlots()[0].start,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().GetData())));
+			    Equals(static_cast<const p::u8*>(arena.GetBlock().data)));
 			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().GetEnd())));
+			    Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 		});
 
 		it("Can merge next slot on free", [&]() {
@@ -241,9 +241,9 @@ go_bandit([]() {
 
 			// Slot contains the entire memory block
 			AssertThat(arena.GetFreeSlots()[0].start,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().GetData())));
+			    Equals(static_cast<const p::u8*>(arena.GetBlock().data)));
 			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().GetEnd())));
+			    Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 		});
 
 		it("Ensures a big alignment leaves a gap", [&]() {
@@ -263,7 +263,7 @@ go_bandit([]() {
 			// Slot contains the rest if the block
 			AssertThat(arena.GetFreeSlots()[0].start, Equals(arena.GetAllocationEnd(p2)));
 			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().GetEnd())));
+			    Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 
 			// Slot contains the alignment gap
 			AssertThat(arena.GetFreeSlots()[1].start, Equals(arena.GetAllocationEnd(p)));

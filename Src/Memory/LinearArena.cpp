@@ -9,17 +9,17 @@ namespace p
 {
 	void* LinearArena::Alloc(sizet size)
 	{
-		if (usedBlockSize + size > activeBlock.GetSize())
+		if (usedBlockSize + size > activeBlock.size)
 		{
 			if (!allowGrowing)
 			{
 				return nullptr;
 			}
 			// Grow same size as previous block, but make sure its enough space
-			Grow(math::Max(activeBlock.GetSize(), size));
+			Grow(math::Max(activeBlock.size, size));
 		}
 
-		void* const ptr = (u8*)(activeBlock.GetData()) + usedBlockSize;
+		void* const ptr = (u8*)(activeBlock.data) + usedBlockSize;
 		usedBlockSize += size;
 		return ptr;
 	}
@@ -31,11 +31,11 @@ namespace p
 			return Alloc(size);    // Allocate without alignment
 		}
 
-		void* currentPtr    = (u8*)(activeBlock.GetData()) + usedBlockSize;
+		void* currentPtr    = (u8*)(activeBlock.data) + usedBlockSize;
 		const sizet padding = GetAlignmentPadding(currentPtr, alignment);
 
 		// Not enough space in current block?
-		if (usedBlockSize + size + padding > activeBlock.GetSize())
+		if (usedBlockSize + size + padding > activeBlock.size)
 		{
 			if (!allowGrowing)
 			{
@@ -44,7 +44,7 @@ namespace p
 			// Grow same size as previous block, but make sure its enough space
 			// NOTE: We use minimum size + alignment to make sure a
 			// non aligned Grow allocates enough memory
-			Grow(math::Max(activeBlock.GetSize(), size + alignment), alignment);
+			Grow(math::Max(activeBlock.size, size + alignment), alignment);
 
 			// Try again with new block
 			return Alloc(size, alignment);
@@ -57,10 +57,12 @@ namespace p
 	void LinearArena::Reset()
 	{
 		usedBlockSize = 0;
-		activeBlock.Free();
-		for (Memory::HeapBlock& block : discardedBlocks)
+		p::Free(GetParentArena(), activeBlock.data, activeBlock.size);
+		activeBlock = {};
+		for (Memory::Block& block : discardedBlocks)
 		{
-			block.Free();
+			p::Free(GetParentArena(), block.data, block.size);
+			block.data = nullptr;
 		}
 		discardedBlocks.Empty();
 	}
@@ -73,8 +75,9 @@ namespace p
 			discardedBlocks.Add(Move(activeBlock));
 
 			// TODO: Support aligned blocks
-			activeBlock.Alloc(size);
-			usedBlockSize = 0;
+			activeBlock.data = p::Alloc(GetParentArena(), size);
+			activeBlock.size = size;
+			usedBlockSize    = 0;
 		}
 	}
 }    // namespace p

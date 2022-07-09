@@ -2,13 +2,13 @@
 #pragma once
 
 #include "Pipe/Memory/Alloc.h"
-#include "Pipe/Memory/HeapAllocator.h"
+#include "Pipe/Memory/ArenaAllocator.h"
 #include "Pipe/Memory/IAllocator.h"
 
 
 namespace p
 {
-	template<sizet N, typename FallbackAllocator = HeapAllocator>
+	template<sizet N, typename FallbackAllocator = ArenaAllocator>
 	class TInlineAllocator : public IAllocator
 	{
 	public:

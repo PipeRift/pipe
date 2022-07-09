@@ -8,6 +8,16 @@
 
 namespace p
 {
+	namespace Memory
+	{
+		constexpr sizet KB = 1024;
+		constexpr sizet MB = KB * 1024;
+		constexpr sizet GB = MB * 1024;
+		constexpr sizet TB = GB * 1024;
+		constexpr sizet PB = TB * 1024;
+	}    // namespace Memory
+
+
 	PIPE_API void MoveMem(void* dest, void* src, sizet size);
 	PIPE_API void CopyMem(void* dest, void* src, sizet size);
 	PIPE_API void SwapMem(void* a, void* b, sizet size);
