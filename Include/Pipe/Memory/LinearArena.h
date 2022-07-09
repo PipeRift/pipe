@@ -33,7 +33,10 @@ namespace p
 		    : ChildArena(parent)
 		    , activeBlock{p::Alloc(GetParentArena(), firstBlockSize), firstBlockSize}
 		    , allowGrowing{allowGrowing}
-		{}
+		{
+			SetupInterface<LinearArena, &LinearArena::Alloc, &LinearArena::Alloc,
+			    &LinearArena::Resize, &LinearArena::Free>();
+		}
 		PIPE_API LinearArena(const sizet firstBlockSize = Memory::MB, bool allowGrowing = true)
 		    : LinearArena(nullptr, firstBlockSize, allowGrowing)
 		{}
@@ -41,18 +44,14 @@ namespace p
 		{
 			Reset();
 		}
-		LinearArena(const LinearArena&)     = delete;
-		PIPE_API LinearArena(LinearArena&&) = default;
-		LinearArena& operator=(const LinearArena&) = delete;
-		PIPE_API LinearArena& operator=(LinearArena&&) = default;
 
-		PIPE_API void* Alloc(sizet size) override;
-		PIPE_API void* Alloc(sizet size, sizet align) override;
-		PIPE_API bool Resize(void* ptr, sizet ptrSize, sizet size) override
+		PIPE_API void* Alloc(sizet size);
+		PIPE_API void* Alloc(sizet size, sizet align);
+		PIPE_API bool Resize(void* ptr, sizet ptrSize, sizet size)
 		{
 			return false;
 		}
-		PIPE_API void Free(void* ptr, sizet size) override {}
+		PIPE_API void Free(void* ptr, sizet size) {}
 
 
 		PIPE_API void Reset();

@@ -59,6 +59,9 @@ namespace p
 
 	BestFitArena::BestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
+		SetupInterface<BestFitArena, &BestFitArena::Alloc, &BestFitArena::Alloc,
+		    &BestFitArena::Resize, &BestFitArena::Free>();
+
 		assert(initialSize > 0);
 		block.data = p::Alloc(GetParentArena(), initialSize);
 		block.size = initialSize;

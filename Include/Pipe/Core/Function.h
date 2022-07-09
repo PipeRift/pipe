@@ -29,13 +29,14 @@ namespace p::core
 			return (*(S*)target)(args...);
 		}
 
-		TFunction() : dispatcher(nullptr), target(nullptr) {}
+		constexpr TFunction() : dispatcher(nullptr), target(nullptr) {}
 		template<typename T>
-		TFunction(T&& target) : dispatcher(&Dispatch<typename std::decay<T>::type>), target(&target)
+		constexpr TFunction(T&& target)
+		    : dispatcher(&Dispatch<typename std::decay<T>::type>), target(&target)
 		{}
 
 		// Specialize for reference-to-function, to ensure that a valid pointer is stored
-		TFunction(FunctionType function) : dispatcher(Dispatch<FunctionType>)
+		constexpr TFunction(FunctionType function) : dispatcher(Dispatch<FunctionType>)
 		{
 			static_assert(sizeof(void*) == sizeof(function),
 			    "It is not allowed to pass functions by reference. Use explicit function pointers: "
@@ -43,7 +44,7 @@ namespace p::core
 			target = reinterpret_cast<void*>(function);
 		}
 
-		Ret operator()(Args... args) const
+		constexpr Ret operator()(Args... args) const
 		{
 			Check(IsBound() && "Can't call an unbound TFunction.");
 			return dispatcher(target, args...);

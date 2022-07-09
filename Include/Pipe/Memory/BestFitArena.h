@@ -55,13 +55,13 @@ namespace p
 		{}
 		~BestFitArena() override;
 
-		void* Alloc(const sizet size) override;
-		void* Alloc(const sizet size, sizet align) override;
-		bool Resize(void* ptr, const sizet ptrSize, const sizet size) override
+		void* Alloc(const sizet size);
+		void* Alloc(const sizet size, sizet align);
+		bool Resize(void* ptr, const sizet ptrSize, const sizet size)
 		{
 			return false;
 		}
-		void Free(void* ptr, sizet size) override;
+		void Free(void* ptr, sizet size);
 
 		const Memory::Block& GetBlock() const
 		{
