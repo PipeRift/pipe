@@ -25,7 +25,7 @@ namespace p
 
 			T* Alloc(const sizet count, const sizet align)
 			{
-				return static_cast<T*>(std::aligned_alloc(align, sizeof(T) * count));
+				return static_cast<T*>(std::malloc(sizeof(T) * count));
 			}
 
 			bool Resize(T* ptr, sizet ptrCount, sizet count)
