@@ -2,9 +2,9 @@
 
 
 #include <bandit/bandit.h>
+#include <Pipe/Core/Backward.h>
 #include <Pipe/Core/Context.h>
 
-#include <backward.hpp>
 
 namespace backward
 {

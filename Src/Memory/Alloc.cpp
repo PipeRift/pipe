@@ -15,7 +15,6 @@
 
 namespace p
 {
-	static MemoryStats heapStats;
 	static Arena* currentArena = nullptr;
 
 
@@ -23,11 +22,11 @@ namespace p
 	{
 		void* const ptr = std::malloc(size);
 #if BUILD_DEBUG
-		heapStats.Add(ptr, size);
-#endif
 		// FIX: Profiler reports alloc gets called frequently twice with the same pointer. Seems
 		// related to allocators
 		// TracyAllocS(ptr, size, 12);
+		GetHeapStats()->Add(ptr, size);
+#endif
 		return ptr;
 	}
 
@@ -43,8 +42,7 @@ namespace p
 		void* const ptr = std::aligned_alloc(align, size);
 #endif
 #if BUILD_DEBUG
-		heapStats.Add(ptr, size);
-		// TracyAllocS(ptr, size, 8);
+		GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
 	}
@@ -52,13 +50,11 @@ namespace p
 	void* HeapRealloc(void* ptr, sizet size)
 	{
 #if BUILD_DEBUG
-		// TracyFreeS(ptr, 8);
-		heapStats.Remove(ptr);
+		GetHeapStats()->Remove(ptr);
 #endif
 		ptr = std::realloc(ptr, size);
 #if BUILD_DEBUG
-		// TracyAllocS(ptr, size, 8);
-		heapStats.Add(ptr, size);
+		GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
 	}
@@ -66,8 +62,7 @@ namespace p
 	void HeapFree(void* ptr)
 	{
 #if BUILD_DEBUG
-		// TracyFreeS(ptr, 8);
-		heapStats.Remove(ptr);
+		GetHeapStats()->Remove(ptr);
 #endif
 		std::free(ptr);
 	}
@@ -91,6 +86,7 @@ namespace p
 
 	MemoryStats* GetHeapStats()
 	{
+		static MemoryStats heapStats;
 		return &heapStats;
 	}
 

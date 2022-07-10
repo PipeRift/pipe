@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+// clang-format off
 
 #ifndef H_6B9572DA_A64B_49E6_B234_051480991C89
 #define H_6B9572DA_A64B_49E6_B234_051480991C89
@@ -76,6 +77,8 @@
 
 #define NOINLINE __attribute__((noinline))
 
+#include "Pipe/Memory/STLAllocator.h"
+#include "Pipe/Memory/ArenaAllocator.h"
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
@@ -724,7 +727,8 @@ struct ResolvedTrace : public Trace {
 /*************** STACK TRACE ***************/
 
 // default implemention.
-template <typename TAG> class StackTraceImpl {
+template<typename Allocator, typename TAG>
+class StackTraceImpl {
 public:
   size_t size() const { return 0; }
   Trace operator[](size_t) const { return Trace(); }
@@ -782,6 +786,8 @@ private:
   void *_error_addr;
 };
 
+
+template <typename Allocator>
 class StackTraceImplHolder : public StackTraceImplBase {
 public:
   size_t size() const {
@@ -803,7 +809,7 @@ public:
   }
 
 protected:
-  std::vector<void *> _stacktrace;
+  std::vector<void *, p::STLAllocator<void*, Allocator>> _stacktrace;
 };
 
 #if BACKWARD_HAS_UNWIND == 1
@@ -864,8 +870,8 @@ template <typename F> size_t unwind(F f, size_t depth) {
 
 } // namespace details
 
-template <>
-class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+template <typename Allocator>
+class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
 public:
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
@@ -908,8 +914,8 @@ private:
 
 #elif BACKWARD_HAS_LIBUNWIND == 1
 
-template <>
-class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+template <typename Allocator>
+class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
 public:
   __attribute__((noinline)) size_t load_here(size_t depth = 32,
                                              void *_context = nullptr,
@@ -1085,8 +1091,8 @@ public:
 
 #elif defined(BACKWARD_HAS_BACKTRACE)
 
-template <>
-class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+template <typename Allocator>
+class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
 public:
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
@@ -1123,8 +1129,8 @@ public:
 
 #elif defined(BACKWARD_SYSTEM_WINDOWS)
 
-template <>
-class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+template <typename Allocator>
+class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
 public:
   // We have to load the machine type from the image info
   // So we first initialize the resolver, and it tells us this info
@@ -1221,7 +1227,8 @@ private:
 
 #endif
 
-class StackTrace : public StackTraceImpl<system_tag::current_tag> {};
+template<typename Allocator = p::ArenaAllocator>
+class StackTrace : public StackTraceImpl<Allocator, system_tag::current_tag> {};
 
 /*************** TRACE RESOLVER ***************/
 
@@ -4447,7 +4454,7 @@ private:
     // in the constructor of TraceResolver
     Printer printer;
 
-    StackTrace st;
+    StackTrace<> st;
     st.set_machine_type(printer.resolver().machine_type());
     st.set_thread_handle(thread_handle());
     st.load_here(32 + skip_frames, ctx());
@@ -4474,3 +4481,4 @@ public:
 } // namespace backward
 
 #endif /* H_GUARD */
+// clang-format off
