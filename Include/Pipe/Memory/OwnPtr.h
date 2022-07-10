@@ -5,6 +5,8 @@
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
+#include "Pipe/Memory/Alloc.h"
+#include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/PtrBuilder.h"
 #include "Pipe/Reflect/TypeId.h"
 
@@ -16,18 +18,25 @@ namespace p
 	namespace Internal
 	{
 		// TODO: Use pool arena for counters
-		using Deleter = void(void*);
+		using Deleter = void(Arena& arena, void* ptr);
 
 		// Container that lives from when an owner is created to when the last weak has been reset
 		struct PtrWeakCounter
 		{
 			Deleter* deleter;
 			u32 weakCount = 0;
+			Arena& arena;
 
-			PtrWeakCounter(Deleter& deleter) : deleter(&deleter) {}
+			PtrWeakCounter(Arena& arena, Deleter* deleter) : arena{arena}, deleter(deleter) {}
 			bool IsSet() const
 			{
 				return deleter != nullptr;
+			}
+
+			void Delete()
+			{
+				this->~PtrWeakCounter();
+				p::Free<Internal::PtrWeakCounter>(arena, this, 1);
 			}
 		};
 	}    // namespace Internal
@@ -79,11 +88,12 @@ namespace p
 	protected:
 		BaseOwnPtr() = default;
 		// Initialization from parent
-		BaseOwnPtr(void* value, Internal::Deleter& deleter) : value{value}
+		BaseOwnPtr(Arena& arena, void* value, Internal::Deleter* deleter) : value{value}
 		{
 			if (value)
 			{
-				counter = new Internal::PtrWeakCounter(deleter);
+				counter = new (p::Alloc<Internal::PtrWeakCounter>(arena))
+				    Internal::PtrWeakCounter(arena, deleter);
 			}
 		}
 
@@ -172,8 +182,8 @@ namespace p
 
 	public:
 		TOwnPtr() = default;
-		explicit TOwnPtr(T* value, Internal::Deleter& deleter)
-		    : Super(value, deleter)
+		explicit TOwnPtr(Arena& arena, T* value, Internal::Deleter* deleter)
+		    : Super(arena, value, deleter)
 #if BUILD_DEBUG
 		    , instance(value)
 #endif
@@ -294,20 +304,20 @@ namespace p
 		template<typename... Args>
 		static TOwnPtr<T> Make(Args&&... args) requires(HasCustomPtrBuilder<T>::value)
 		{
+			Arena& arena   = GetCurrentArena();
 			using Builder  = typename T::template PtrBuilder<T>;
-			auto* instance = Builder::New(std::forward<Args>(args)...);
-			auto ptr       = TOwnPtr<T>(instance, Builder::Delete);
-			Builder::PostNew(ptr);
+			auto* instance = Builder::New(arena, std::forward<Args>(args)...);
+			auto ptr       = TOwnPtr<T>(arena, instance, Builder::Delete);
 			return Move(ptr);
 		}
 
 		template<typename... Args>
 		static TOwnPtr<T> Make(Args&&... args) requires(!HasCustomPtrBuilder<T>::value)
 		{
+			Arena& arena   = GetCurrentArena();
 			using Builder  = TPtrBuilder<T>;
-			auto* instance = Builder::New(std::forward<Args>(args)...);
-			auto ptr       = TOwnPtr<T>(instance, Builder::Delete);
-			Builder::PostNew(ptr);
+			auto* instance = Builder::New(arena, std::forward<Args>(args)...);
+			auto ptr       = TOwnPtr<T>(arena, instance, &Builder::Delete);
 			return Move(ptr);
 		}
 

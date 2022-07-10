@@ -7,6 +7,14 @@
 
 namespace p
 {
+	DataType::~DataType()
+	{
+		for (Property* prop : properties)
+		{
+			prop->~Property();
+		}
+	}
+
 	bool DataType::IsChildOf(const DataType* other) const
 	{
 		if (!other || !parent)

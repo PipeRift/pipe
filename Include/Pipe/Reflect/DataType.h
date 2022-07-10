@@ -30,18 +30,12 @@ namespace p
 
 
 	protected:
-		DataType(TypeCategory category) : Type(category | TypeCategory::Data) {}
+		PIPE_API DataType(TypeCategory category) : Type(category | TypeCategory::Data) {}
 
 	public:
 		DataType(const DataType&) = delete;
 		DataType& operator=(const DataType&) = delete;
-		virtual ~DataType()
-		{
-			for (Property* prop : properties)
-			{
-				delete prop;
-			}
-		}
+		PIPE_API ~DataType() override;
 
 		/** Type */
 

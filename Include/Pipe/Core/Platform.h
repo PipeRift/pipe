@@ -142,3 +142,11 @@ namespace p
 #else
 #	define ENABLE_OPTIMIZATION ENABLE_OPTIMIZATION_ACTUAL
 #endif
+
+#ifndef P_FORCE_INLINE
+#	if defined(_MSC_VER)
+#		define P_FORCE_INLINE __forceinline
+#	else
+#		define P_FORCE_INLINE inline __attribute__((always_inline))
+#	endif
+#endif

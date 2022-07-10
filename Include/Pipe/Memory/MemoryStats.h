@@ -4,8 +4,8 @@
 
 #include "Pipe/Core/Array.h"
 #include "Pipe/Core/Backward.h"
-#include "Pipe/Core/Map.h"
 #include "Pipe/Core/Platform.h"
+#include "Pipe/Core/Set.h"
 #include "Pipe/Memory/IAllocator.h"
 
 #include <cstdlib>
@@ -48,14 +48,6 @@ namespace p
 	{
 		void* ptr  = nullptr;
 		sizet size = 0;
-		backward::StackTrace<MemoryStatsAllocator> stackTrace;
-
-		AllocationStats(void* ptr, sizet size) : ptr{ptr}, size{size}
-		{
-			// Disabled until backward allocations are made safe
-			stackTrace.load_here(10 + 3);
-			stackTrace.skip_n_firsts(3);
-		}
 	};
 
 	struct PIPE_API SortLessAllocationStats
@@ -80,26 +72,15 @@ namespace p
 	struct PIPE_API MemoryStats
 	{
 		sizet used = 0;
-
 		TArray<AllocationStats, MemoryStatsAllocator> allocations;
+#if PIPE_ENABLE_ALLOCATION_STACKS
+		TArray<backward::StackTrace<MemoryStatsAllocator>, MemoryStatsAllocator> allocationStacks;
+#endif
 
 
-		void Add(void* ptr, sizet size)
-		{
-			used += size;
-			allocations.AddSorted<SortLessAllocationStats>({ptr, size});
-			// TracyAllocS(ptr, size, 8);
-		}
+		~MemoryStats();
 
-		void Remove(void* ptr)
-		{
-			// TracyFreeS(ptr, 8);
-			const i32 index = allocations.FindSortedEqual<void*, SortLessAllocationStats>(ptr);
-			if (index != NO_INDEX)
-			{
-				used -= allocations[index].size;
-				allocations.RemoveAt(index, false);
-			}
-		}
+		void Add(void* ptr, sizet size);
+		void Remove(void* ptr);
 	};
 }    // namespace p

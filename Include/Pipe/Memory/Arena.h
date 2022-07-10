@@ -35,7 +35,7 @@ namespace p
 
 		template<typename T, TAllocSignature<T> alloc, TAllocAlignedSignature<T> allocAligned,
 		    TResizeSignature<T> resize, TFreeSignature<T> free>
-		void SetupInterface()
+		void Interface()
 		{
 			doAlloc = [](Arena* self, sizet size) {
 				return (static_cast<T*>(self)->*alloc)(size);

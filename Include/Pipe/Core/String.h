@@ -7,6 +7,7 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
+#include "Pipe/Memory/ArenaAllocator.h"
 #include "Pipe/Reflect/TypeName.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 
@@ -22,21 +23,23 @@
 
 namespace p::core
 {
-	template<typename CharType, typename Allocator = STLAllocator<CharType>>
-	using TString = std::basic_string<CharType, std::char_traits<CharType>, Allocator>;
+	template<typename CharType, typename Allocator = ArenaAllocator>
+	using TString =
+	    std::basic_string<CharType, std::char_traits<CharType>, STLAllocator<CharType, Allocator>>;
 	using String  = TString<TChar>;
 	using WString = TString<WideChar>;
 
-
-	template<typename CharType, typename Allocator = STLAllocator<CharType>>
-	using TStringBuffer = fmt::basic_memory_buffer<CharType, fmt::inline_buffer_size, Allocator>;
-	using StringBuffer  = TStringBuffer<TChar>;
+	template<typename CharType, typename Allocator = ArenaAllocator,
+	    sizet inlineSize = fmt::inline_buffer_size>
+	using TStringBuffer =
+	    fmt::basic_memory_buffer<CharType, inlineSize, STLAllocator<CharType, Allocator>>;
+	using StringBuffer = TStringBuffer<TChar>;
 
 
 	namespace Strings
 	{
-		template<typename... Args>
-		inline String Format(StringView format, Args... args)
+		template<typename StringType = String, typename... Args>
+		inline StringType Format(StringView format, Args... args)
 		{
 			String str;
 			fmt::format_to(
@@ -44,8 +47,8 @@ namespace p::core
 			return Move(str);
 		}
 
-		template<typename... Args>
-		inline void FormatTo(String& buffer, StringView format, Args... args)
+		template<typename StringType, typename... Args>
+		inline void FormatTo(StringType& buffer, StringView format, Args... args)
 		{
 			fmt::format_to(
 			    std::back_inserter(buffer), fmt::runtime(format), std::forward<Args>(args)...);

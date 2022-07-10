@@ -57,7 +57,7 @@ namespace p
 
 	BigBestFitArena::BigBestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
-		SetupInterface<BigBestFitArena, &BigBestFitArena::Alloc, &BigBestFitArena::Alloc,
+		Interface<BigBestFitArena, &BigBestFitArena::Alloc, &BigBestFitArena::Alloc,
 		    &BigBestFitArena::Resize, &BigBestFitArena::Free>();
 
 		assert(initialSize > 0);

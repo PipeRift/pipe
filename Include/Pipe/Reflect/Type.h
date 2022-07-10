@@ -41,6 +41,7 @@ namespace p
 	public:
 		Type(const Type&) = delete;
 		Type& operator=(const Type&) = delete;
+		virtual ~Type()              = default;
 
 		TypeId GetId() const
 		{
@@ -52,6 +53,11 @@ namespace p
 		{
 			return category;
 		}
+		sizet GetSize() const
+		{
+			return size;
+		}
+
 		class NativeType* AsNative();
 		class EnumType* AsEnum();
 		class DataType* AsData();

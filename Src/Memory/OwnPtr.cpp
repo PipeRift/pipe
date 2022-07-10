@@ -12,10 +12,10 @@ namespace p
 			return;
 		}
 
-		counter->deleter(value);
+		counter->deleter(counter->arena, value);
 		if (counter->weakCount <= 0)
 		{
-			delete counter;
+			counter->Delete();
 		}
 		else
 		{
@@ -106,7 +106,7 @@ namespace p
 		// counter check is reducing one and then checking
 		if (!isSet && counter->weakCount <= 1)
 		{
-			delete counter;
+			counter->Delete();
 		}
 		else
 		{

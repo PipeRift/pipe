@@ -14,17 +14,20 @@ namespace p
 
 
 	// For shared export purposes, we separate pointers from the exported Class
-	struct ClassOwnership
+	struct PIPE_API ClassOwnership
 	{
 		TPtr<BaseClass> self;
 		TPtr<BaseClass> owner;
+		static ClassOwnership nextOwnership;
 
 
-		PIPE_API const TPtr<BaseClass>& GetSelf() const
+		ClassOwnership() : owner{Move(nextOwnership.owner)}, self{Move(nextOwnership.self)} {}
+
+		const TPtr<BaseClass>& GetSelf() const
 		{
 			return self;
 		}
-		PIPE_API const TPtr<BaseClass>& GetOwner() const
+		const TPtr<BaseClass>& GetOwner() const
 		{
 			return owner;
 		}
@@ -65,16 +68,10 @@ namespace p
 	public:
 		Class() = default;
 
-		void SetOwner(const TPtr<BaseClass>& inOwner)
+		void ChangeOwner(const TPtr<BaseClass>& inOwner)
 		{
 			ownership.owner = inOwner;
 		}
-
-		void PreConstruct(TPtr<BaseClass>&& inSelf)
-		{
-			ownership.self = inSelf;
-		}
-		virtual void Construct() {}
 
 		virtual void Serialize(ReadWriter& ct)
 		{

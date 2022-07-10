@@ -12,7 +12,7 @@ namespace p
 	public:
 		HeapArena()
 		{
-			SetupInterface<HeapArena, &HeapArena::Alloc, &HeapArena::Alloc, &HeapArena::Resize,
+			Interface<HeapArena, &HeapArena::Alloc, &HeapArena::Alloc, &HeapArena::Resize,
 			    &HeapArena::Free>();
 		}
 		~HeapArena() override = default;

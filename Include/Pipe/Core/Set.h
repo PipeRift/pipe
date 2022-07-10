@@ -99,27 +99,58 @@ namespace p::core
 			set.reserve(sizeNum);
 		}
 
-		Iterator FindIt(const Type& item)
+		template<typename Key = Type>
+		Iterator FindIt(const Key& key)
 		{
-			return set.find(item);
+			return set.find(key);
 		}
 
-		ConstIterator FindIt(const Type& item) const
+		template<typename Key = Type>
+		Iterator FindIt(const Key& key, sizet hash)
 		{
-			return set.find(item);
+			return set.find(key, hash);
 		}
 
-		const Type* Find(const Type& value) const
+		template<typename Key = Type>
+		ConstIterator FindIt(const Key& key) const
 		{
-			ConstIterator it = FindIt(value);
-			return it != end() ? &*it : nullptr;
+			return set.find(key);
 		}
 
-		const Type& FindRef(const Type& value) const
+		template<typename Key = Type>
+		ConstIterator FindIt(const Key& key, sizet hash) const
 		{
-			ConstIterator it = FindIt(value);
+			return set.find(key, hash);
+		}
+
+		template<typename Key = Type>
+		Type* Find(const Key& key) const
+		{
+			ConstIterator it = FindIt(key);
+			return it != end() ? &const_cast<Type&>(*it) : nullptr;
+		}
+
+		template<typename Key = Type>
+		Type* Find(const Key& key, sizet hash) const
+		{
+			ConstIterator it = FindIt(key, hash);
+			return it != end() ? &const_cast<Type&>(*it) : nullptr;
+		}
+
+		template<typename Key = Type>
+		Type& FindRef(const Key& key) const
+		{
+			ConstIterator it = FindIt(key);
 			assert(it != end() && "Value not found, can't dereference its value");
-			return *it;
+			return const_cast<Type&>(*it);
+		}
+
+		template<typename Key = Type>
+		Type& FindRef(const Key& key, sizet hash) const
+		{
+			ConstIterator it = FindIt(key, hash);
+			assert(it != end() && "Value not found, can't dereference its value");
+			return const_cast<Type&>(*it);
 		}
 
 		bool Contains(const Type& value) const

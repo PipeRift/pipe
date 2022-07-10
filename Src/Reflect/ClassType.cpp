@@ -7,11 +7,11 @@
 
 namespace p
 {
-	BaseClass* ClassType::New() const
+	BaseClass* ClassType::New(Arena& arena) const
 	{
 		if (Ensure(onNew && !HasFlag(Class_Abstract)))
 		{
-			return onNew();
+			return onNew(arena);
 		}
 		return nullptr;
 	}

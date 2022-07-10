@@ -16,19 +16,17 @@ namespace p
 
 
 	public:
-		PIPE_API Context() : Super() {}
-		PIPE_API Context(const Path& logFolder) : Super(), logFolder{logFolder} {}
-
-		PIPE_API void Construct() override
+		PIPE_API Context() : Super()
 		{
-			Super::Construct();
-
+			Log::Init("Saved/Logs");    // Init logger
+		}
+		PIPE_API Context(const Path& logFolder) : logFolder{logFolder}
+		{
 			Log::Init("Saved/Logs");    // Init logger
 		}
 
-		PIPE_API void BeforeDestroy() override
+		PIPE_API ~Context() override
 		{
-			Super::BeforeDestroy();
 			Log::Shutdown();
 		}
 	};

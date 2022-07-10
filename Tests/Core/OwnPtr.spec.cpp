@@ -13,17 +13,19 @@ template<typename T>
 struct TestPtrBuilder : p::TPtrBuilder<T>
 {
 	template<typename... Args>
-	static T* New(Args&&... args)
+	static T* New(Arena& arena, Args&&... args)
 	{
-		T* ptr          = new T(Forward<Args>(args)...);
+		T* ptr          = new (p::Alloc<T>(arena)) T(Forward<Args>(args)...);
 		ptr->bCalledNew = true;
 		return ptr;
 	}
 
-	static void Delete(void* ptr)
+	static void Delete(Arena& arena, void* rawPtr)
 	{
 		T::bCalledDelete = true;
-		delete static_cast<T*>(ptr);
+		T* const ptr     = static_cast<T*>(rawPtr);
+		ptr->~T();
+		p::Free<T>(arena, ptr);
 	}
 };
 

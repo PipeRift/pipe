@@ -22,17 +22,9 @@ namespace p
 	public:
 		virtual ~BaseClass() = default;
 
-		void StartDestroy()
-		{
-			BeforeDestroy();
-		}
-
 		ClassType* GetType() const;
 		TPtr<Class> Self() const;
 
 		void SerializeReflection(p::ReadWriter& ct) {}
-
-	protected:
-		virtual void BeforeDestroy() {}
 	};
 }    // namespace p

@@ -74,9 +74,9 @@ namespace p
 		return heapArena;
 	}
 
-	Arena* GetCurrentArena()
+	Arena& GetCurrentArena()
 	{
-		return currentArena ? currentArena : &GetHeapArena();
+		return currentArena ? *currentArena : GetHeapArena();
 	}
 
 	void SetCurrentArena(Arena& arena)
@@ -113,21 +113,21 @@ namespace p
 
 	void* Alloc(sizet size)
 	{
-		return Alloc(*GetCurrentArena(), size);
+		return Alloc(GetCurrentArena(), size);
 	}
 
 	void* Alloc(sizet size, sizet align)
 	{
-		return Alloc(*GetCurrentArena(), size, align);
+		return Alloc(GetCurrentArena(), size, align);
 	}
 
 	bool Resize(void* ptr, sizet ptrSize, sizet size)
 	{
-		return Resize(*GetCurrentArena(), ptr, ptrSize, size);
+		return Resize(GetCurrentArena(), ptr, ptrSize, size);
 	}
 
 	void Free(void* ptr, sizet size)
 	{
-		Free(*GetCurrentArena(), ptr, size);
+		Free(GetCurrentArena(), ptr, size);
 	}
 }    // namespace p

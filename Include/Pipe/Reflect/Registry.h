@@ -3,7 +3,10 @@
 
 #include "Pipe/Core/Map.h"
 #include "Pipe/Core/TypeTraits.h"
+#include "Pipe/Memory/Alloc.h"
+#include "Pipe/Memory/HeapArena.h"
 #include "Pipe/Memory/LinearArena.h"
+#include "Pipe/Memory/Memory.h"
 #include "Pipe/Reflect/Type.h"
 #include "Pipe/Reflect/TypeId.h"
 
@@ -13,7 +16,7 @@ namespace p
 	class ReflectionRegistry
 	{
 		// Contains all compiled reflection types linearly in memory
-		LinearArena arena{};    // First block is 256KB
+		LinearArena arena{};
 
 		// Contains all runtime/data defined types in memory
 		// BigBestFitArena dynamicArena{256 * 1024};    // First block is 256KB
@@ -25,10 +28,15 @@ namespace p
 
 
 	public:
+		~ReflectionRegistry()
+		{
+			Reset();
+		}
+
 		template<typename TType>
 		TType& AddType(TypeId id) requires Derived<TType, Type, false>
 		{
-			TType* ptr = new (arena.Alloc(sizeof(TType))) TType();
+			auto* ptr = new (p::Alloc<TType>(arena)) TType();
 			idToTypes.Insert(id, ptr);
 			return *ptr;
 		}
@@ -37,8 +45,9 @@ namespace p
 		template<typename PropertyType, typename... Args>
 		PropertyType* AddProperty(Args&&... args)
 		{
-			void* ptr = arena.Alloc(sizeof(PropertyType));
-			return new (ptr) PropertyType(std::forward<Args>(args)...);
+			auto* ptr =
+			    new (p::Alloc<PropertyType>(arena)) PropertyType(std::forward<Args>(args)...);
+			return ptr;
 		}
 
 		PIPE_API Type* FindType(TypeId id) const;
@@ -53,6 +62,15 @@ namespace p
 			return idToTypes.end();
 		}
 
+		void Reset()
+		{
+			for (auto it : idToTypes)
+			{
+				it.second->~Type();
+			}
+			idToTypes.Empty();
+			arena.Reset();
+		}
 
 		static PIPE_API ReflectionRegistry& Get();
 	};

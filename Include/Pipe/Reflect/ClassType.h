@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/Function.h"
+#include "Pipe/Memory/Alloc.h"
 #include "Pipe/Reflect/BaseClass.h"
 #include "Pipe/Reflect/DataType.h"
 
@@ -13,20 +14,17 @@ namespace p
 		template<typename T, typename Parent, TypeFlags flags, typename TType>
 		friend struct TClassTypeBuilder;
 
-		using CreateFunc = TFunction<BaseClass*()>;
+		using NewFunc = TFunction<BaseClass*(Arena& arena)>;
 
-		CreateFunc onNew;
-		mutable BaseClass* defaultValue;
+		NewFunc onNew;
+		mutable TOwnPtr<BaseClass> defaultValue;
 
 
 	public:
 		ClassType() : DataType(TypeCategory::Class) {}
-		~ClassType()
-		{
-			delete defaultValue;
-		}
+		~ClassType() {}
 
-		PIPE_API BaseClass* New() const;
+		PIPE_API BaseClass* New(Arena& arena) const;
 
 		PIPE_API ClassType* GetParent() const
 		{
@@ -57,11 +55,15 @@ namespace p
 		}
 
 
-		PIPE_API BaseClass* GetDefaultPtr() const
+		PIPE_API TPtr<BaseClass> GetDefaultPtr() const
 		{
 			if (!defaultValue)
 			{
-				defaultValue = New();
+				Arena& arena = GetCurrentArena();
+				auto deleter = [](Arena* arena, void* ptr) {
+					// Delete(arena, static_cast<BaseClass*>(ptr));
+				};
+				defaultValue = TOwnPtr<BaseClass>(arena, New(arena), {});
 			}
 			return defaultValue;
 		}

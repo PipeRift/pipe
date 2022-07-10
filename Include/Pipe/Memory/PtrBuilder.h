@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/TypeTraits.h"
+#include "Pipe/Memory/Alloc.h"
 #include "Pipe/Reflect/BaseClass.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
 
@@ -16,26 +17,15 @@ namespace p
 	struct TPtrBuilder
 	{
 		template<typename... Args>
-		static T* New(Args&&... args)
+		static T* New(Arena& arena, Args&&... args)
 		{
-			return new T(Forward<Args>(args)...);
+			return new (p::Alloc<T>(arena)) T(Forward<Args>(args)...);
 		}
-		static void PostNew(TOwnPtr<T>& ptr) {}
-		static void Delete(void* rawPtr)
+		static void Delete(Arena& arena, void* rawPtr)
 		{
-			delete static_cast<T*>(rawPtr);
-		}
-
-
-		static T* NewArray(sizet size)
-		{
-			using Elem = std::remove_extent_t<T>;
-			return new Elem[size]();
-		}
-		static void PostNewArray(TOwnPtr<T>& ptr, sizet size) {}
-		static void DeleteArray(void* rawPtr)
-		{
-			delete[] static_cast<T*>(rawPtr);
+			T* const ptr = static_cast<T*>(rawPtr);
+			ptr->~T();
+			p::Free<T>(arena, ptr);
 		}
 	};
 

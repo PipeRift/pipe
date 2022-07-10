@@ -11,7 +11,7 @@ namespace p
 	{
 		if (!parent)
 		{
-			parent = GetCurrentArena();
+			parent = &GetCurrentArena();
 			if (parent == this) [[unlikely]]
 			{
 				parent = &GetHeapArena();

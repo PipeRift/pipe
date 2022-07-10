@@ -34,8 +34,8 @@ namespace p
 		    , activeBlock{p::Alloc(GetParentArena(), firstBlockSize), firstBlockSize}
 		    , allowGrowing{allowGrowing}
 		{
-			SetupInterface<LinearArena, &LinearArena::Alloc, &LinearArena::Alloc,
-			    &LinearArena::Resize, &LinearArena::Free>();
+			Interface<LinearArena, &LinearArena::Alloc, &LinearArena::Alloc, &LinearArena::Resize,
+			    &LinearArena::Free>();
 		}
 		PIPE_API LinearArena(const sizet firstBlockSize = Memory::MB, bool allowGrowing = true)
 		    : LinearArena(nullptr, firstBlockSize, allowGrowing)

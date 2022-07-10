@@ -216,7 +216,7 @@ namespace p::core
 
 		void Insert(i32 index, const Type& item, i32 count = 1)
 		{
-			if (IsValidIndex(index))
+			if (index >= 0)
 			{
 				if (count == 1)
 					vector.insert(vector.begin() + index, item);

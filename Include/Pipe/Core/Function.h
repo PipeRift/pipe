@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/Checks.h"
+#include "Pipe/Core/Platform.h"
 
 #include <type_traits>
 
@@ -24,7 +25,7 @@ namespace p::core
 		// Dispatch() is instantiated by the TransientFunction constructor,
 		// which will store a pointer to the function in dispatcher.
 		template<typename S>
-		static Ret Dispatch(void* target, Args... args)
+		static P_FORCE_INLINE Ret Dispatch(void* target, Args... args)
 		{
 			return (*(S*)target)(args...);
 		}

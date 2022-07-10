@@ -18,7 +18,7 @@ namespace p
 
 		public:
 
-			Typed() : arena{GetCurrentArena()}
+			Typed() : arena{&GetCurrentArena()}
 			{
 				CheckMsg(arena, "No current arena set");
 			}

@@ -6,8 +6,6 @@
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 
-#include <vcruntime_string.h>
-
 
 namespace p
 {

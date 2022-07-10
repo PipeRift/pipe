@@ -16,9 +16,8 @@ class TestClass : public Class
 public:
 	bool bConstructed = false;
 
-	virtual void Construct() override
+	TestClass()
 	{
-		Super::Construct();
 		bConstructed = true;
 	}
 };

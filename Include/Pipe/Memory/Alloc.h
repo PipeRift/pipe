@@ -20,15 +20,17 @@ namespace p
 
 
 	PIPE_API class HeapArena& GetHeapArena();
-	PIPE_API Arena* GetCurrentArena();
+	PIPE_API Arena& GetCurrentArena();
 	PIPE_API void SetCurrentArena(Arena& arena);
 	PIPE_API MemoryStats* GetHeapStats();
 
-	// Arena allocation functions
+	// Arena allocation functions (Find current arena)
 	PIPE_API void* Alloc(sizet size);
 	PIPE_API void* Alloc(sizet size, sizet align);
 	PIPE_API bool Resize(void* ptr, sizet ptrSize, sizet size);
 	PIPE_API void Free(void* ptr, sizet size);
+
+	// Arena allocation functions (Use specific arena)
 	template<Derived<Arena> ArenaT>
 	void* Alloc(ArenaT& arena, sizet size)
 	{
@@ -51,7 +53,7 @@ namespace p
 	}
 
 	template<typename T, Derived<Arena> ArenaT>
-	T* Alloc(ArenaT& arena, sizet count) requires(!IsVoid<T>)
+	T* Alloc(ArenaT& arena, sizet count = 1) requires(!IsVoid<T>)
 	{
 		return static_cast<T*>(Alloc(arena, sizeof(T) * count, alignof(T)));
 	}
@@ -66,7 +68,7 @@ namespace p
 		return Resize(arena, ptr, sizeof(T) * ptrCount, sizeof(T) * count);
 	}
 	template<typename T, Derived<Arena> ArenaT>
-	void Free(ArenaT& arena, T* ptr, u32 count) requires(!IsVoid<T>)
+	void Free(ArenaT& arena, T* ptr, u32 count = 1) requires(!IsVoid<T>)
 	{
 		Free(arena, static_cast<void*>(ptr), sizeof(T) * count);
 	}

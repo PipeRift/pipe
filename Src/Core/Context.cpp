@@ -2,6 +2,9 @@
 
 #include "Pipe/Core/Context.h"
 
+#include "Pipe/Reflect/Registry.h"
+
+
 
 namespace p
 {
@@ -19,5 +22,8 @@ namespace p
 		{
 			globalInstance.Delete();
 		}
+
+		// Manually reset
+		ReflectionRegistry::Get().Reset();
 	}
 }    // namespace p
