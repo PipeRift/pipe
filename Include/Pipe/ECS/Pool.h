@@ -131,7 +131,7 @@ namespace p::ecs
 		TPool(Context& ast) : Pool(ast, DeletionPolicy::InPlace), data{} {}
 		~TPool() override
 		{
-			Reset();
+			ShrinkToSize(0);
 		}
 
 		void Add(Id id, const T&) requires(IsEmpty<T>)
@@ -412,10 +412,15 @@ namespace p::ecs
 			data.Release(set.Size());
 		}
 
+		void ShrinkToSize(i32 size)
+		{
+			data.ShrinkToSize(size, set);
+		}
+
 		void Reset()
 		{
+			ShrinkToSize(0);
 			set.Clear();
-			data.Reset();
 		}
 
 	private:

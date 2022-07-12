@@ -5,5 +5,5 @@
 
 namespace p
 {
-	ClassOwnership ClassOwnership::nextOwnership{};
+	TPtr<BaseClass> ClassOwnership::nextOwner{};
 }    // namespace p

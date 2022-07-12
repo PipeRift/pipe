@@ -19,7 +19,7 @@ namespace p::ecs
 	struct TPoolSet
 	{
 		static constexpr auto growthFactor = 1.5;
-		static constexpr auto sparsePage   = 4096;
+		static constexpr auto chunkSize    = 4096;
 
 		using traits_type         = IdTraits<Id>;
 		using PackedContainerType = TArray<Id, Allocator>;
@@ -143,64 +143,54 @@ namespace p::ecs
 
 	private:
 		typename Allocator::Typed<Id> allocator;
-		typename Allocator::Typed<Id*> bucketAllocator;
-		Id** sparse;
+		// Id** sparse;
+		// std::size_t bucket;
+		TArray<Id*, Allocator> chunks;
 		PackedContainerType packed;
-		std::size_t bucket;
 		Id freeList;
 		DeletionPolicy mode;
 
-		[[nodiscard]] static auto Page(const ecs::Id id)
+		[[nodiscard]] static auto GetChunk(const ecs::Id id)
 		{
-			return static_cast<size_type>(ecs::GetIndex(id) / sparsePage);
+			return static_cast<size_type>(ecs::GetIndex(id) / chunkSize);
 		}
 
-		[[nodiscard]] static auto Offset(const ecs::Id id)
+		[[nodiscard]] static auto GetOffset(const ecs::Id id)
 		{
-			return static_cast<size_type>(ecs::GetIndex(id) & (sparsePage - 1));
+			return static_cast<size_type>(ecs::GetIndex(id) & (chunkSize - 1));
 		}
 
-		[[nodiscard]] auto AssurePage(const std::size_t idx)
+		[[nodiscard]] Id* AssurePage(const std::size_t idx)
 		{
-			if (!(idx < bucket))
+			if (idx >= chunks.Size())
 			{
-				const size_type sz = idx + 1u;
-				const auto mem     = bucketAllocator.Alloc(sz);
-
-				std::uninitialized_value_construct(mem + bucket, mem + sz);
-				std::uninitialized_copy(sparse, sparse + bucket, mem);
-
-				std::destroy(sparse, sparse + bucket);
-				bucketAllocator.Free(sparse, bucket);
-
-				sparse = mem;
-				bucket = sz;
+				chunks.Resize(idx + 1);
 			}
 
-			if (!sparse[idx])
+			Id*& chunk = chunks[idx];
+			if (!chunk)
 			{
-				sparse[idx] = allocator.Alloc(sparsePage);
-				std::uninitialized_fill(sparse[idx], sparse[idx] + sparsePage, ecs::NoId);
+				chunk = allocator.Alloc(chunkSize);
+				std::uninitialized_fill(chunk, chunk + chunkSize, ecs::NoId);
 			}
 
-			return sparse[idx];
+			return chunk;
 		}
 
-		void ReleaseMemory()
+		void ReleaseChunks()
 		{
-			if (!packed.IsEmpty())
+			packed.Empty();
+			if (!chunks.IsEmpty())
 			{
-				for (size_type pos{}; pos < bucket; ++pos)
+				for (Id* chunk : chunks)
 				{
-					if (sparse[pos])
+					if (chunk)
 					{
-						std::destroy(sparse[pos], sparse[pos] + sparsePage);
-						allocator.Free(sparse[pos], sparsePage);
+						std::destroy(chunk, chunk + chunkSize);
+						allocator.Free(chunk, chunkSize);
 					}
 				}
-
-				std::destroy(sparse, sparse + bucket);
-				bucketAllocator.Free(sparse, bucket);
+				chunks.Empty();
 			}
 		}
 
@@ -230,13 +220,13 @@ namespace p::ecs
 		 */
 		void PopSwap(const ecs::Id id)
 		{
-			auto& ref        = sparse[Page(id)][Offset(id)];
+			auto& ref        = chunks[GetChunk(id)][GetOffset(id)];
 			const auto index = static_cast<size_type>(ecs::GetIndex(ref));
 			CheckMsg(packed[index] == id, "Invalid entity identifier");
 
-			auto& last                       = packed.Last();
-			sparse[Page(last)][Offset(last)] = ref;
-			packed[index]                    = last;
+			auto& last                              = packed.Last();
+			chunks[GetChunk(last)][GetOffset(last)] = ref;
+			packed[index]                           = last;
 			// unnecessary but it helps to detect nasty bugs
 			CheckMsg((last = ecs::NoId, true), "");
 			// lazy self-assignment guard
@@ -251,7 +241,7 @@ namespace p::ecs
 		 */
 		void Pop(const ecs::Id id)
 		{
-			auto& ref      = sparse[Page(id)][Offset(id)];
+			auto& ref      = chunks[GetChunk(id)][GetOffset(id)];
 			const auto pos = static_cast<size_type>(ecs::GetIndex(ref));
 			CheckMsg(packed[pos] == id, "Invalid entity identifier");
 
@@ -277,7 +267,7 @@ namespace p::ecs
 		 * @param alloc Allocator to use (possibly default-constructed).
 		 */
 		explicit TPoolSet(DeletionPolicy pol = DeletionPolicy::Swap)
-		    : sparse{bucketAllocator.Alloc(0u)}, bucket{0u}, freeList{ecs::NoId}, mode{pol}
+		    : freeList{ecs::NoId}, mode{pol}
 		{}
 
 		/**
@@ -286,10 +276,8 @@ namespace p::ecs
 		 */
 		TPoolSet(TPoolSet&& other) noexcept
 		    : allocator{std::move(other.allocator)}
-		    , bucketAllocator{std::move(other.bucketAllocator)}
-		    , sparse{std::exchange(other.sparse, nullptr)}
-		    , packed{std::exchange(other.packed, {})}
-		    , bucket{std::exchange(other.bucket, 0u)}
+		    , chunks{std::move(other.chunks)}
+		    , packed{std::move(other.packed)}
 		    , freeList{std::exchange(other.freeList, ecs::NoId)}
 		    , mode{other.mode}
 		{}
@@ -297,7 +285,7 @@ namespace p::ecs
 		/*! @brief Default destructor. */
 		~TPoolSet()
 		{
-			ReleaseMemory();
+			ReleaseChunks();
 		}
 
 		/**
@@ -307,16 +295,12 @@ namespace p::ecs
 		 */
 		TPoolSet& operator=(TPoolSet&& other) noexcept
 		{
-			ReleaseMemory();
-
-			allocator       = std::move(other.allocator);
-			bucketAllocator = std::move(other.bucketAllocator);
-			sparse          = std::exchange(other.sparse, nullptr);
-			packed          = std::exchange(other.packed, {});
-			bucket          = std::exchange(other.bucket, 0u);
-			freeList        = std::exchange(other.freeList, ecs::NoId);
-			mode            = other.mode;
-
+			ReleaseChunks();
+			allocator = std::move(other.allocator);
+			chunks    = std::move(other.chunks);
+			packed    = std::move(other.packed);
+			freeList  = std::exchange(other.freeList, ecs::NoId);
+			mode      = other.mode;
 			return *this;
 		}
 
@@ -380,7 +364,7 @@ namespace p::ecs
 		 */
 		[[nodiscard]] size_type Extent() const
 		{
-			return bucket * sparsePage;
+			return chunks.Size() * chunkSize;
 		}
 
 		/**
@@ -494,9 +478,10 @@ namespace p::ecs
 		[[nodiscard]] bool Contains(const Id id) const
 		{
 			//  Testing versions permits to avoid accessing the packed array
-			const auto curr = Page(id);
+			const auto curr = GetChunk(id);
 			return ecs::GetVersion(id) != ecs::GetVersion(ecs::NoId)
-			    && (curr < bucket && sparse[curr] && sparse[curr][Offset(id)] != ecs::NoId);
+			    && (curr < chunks.Size() && chunks[curr]
+			        && chunks[curr][GetOffset(id)] != ecs::NoId);
 		}
 
 		/**
@@ -512,7 +497,7 @@ namespace p::ecs
 		[[nodiscard]] size_type Index(const Id id) const
 		{
 			CheckMsg(Contains(id), "Set does not contain entity");
-			return static_cast<size_type>(ecs::GetIndex(sparse[Page(id)][Offset(id)]));
+			return static_cast<size_type>(ecs::GetIndex(chunks[GetChunk(id)][GetOffset(id)]));
 		}
 
 		/**
@@ -549,7 +534,7 @@ namespace p::ecs
 		size_type TryEmplace(const Id id, bool forceBack)
 		{
 			CheckMsg(!Contains(id), "Set already contains entity");
-			auto& item = AssurePage(Page(id))[Offset(id)];
+			auto& item = AssurePage(GetChunk(id))[GetOffset(id)];
 			if (freeList == ecs::NoId || forceBack)
 			{
 				item = ecs::MakeId(static_cast<typename traits_type::Entity>(packed.Size()));
@@ -600,7 +585,7 @@ namespace p::ecs
 			{
 				const auto id = *first;
 				CheckMsg(!Contains(id), "Set already contains entity");
-				AssurePage(Page(id))[Offset(id)] =
+				AssurePage(GetChunk(id))[GetOffset(id)] =
 				    ecs::MakeId(static_cast<typename traits_type::Entity>(packed.Size()));
 				packed.Add(id);
 			}
@@ -690,7 +675,7 @@ namespace p::ecs
 					MoveAndPop(from, to);
 					std::swap(packed[from], packed[to]);
 
-					sparse[Page(packed[to])][Offset(packed[to])] =
+					chunks[GetChunk(packed[to])][GetOffset(packed[to])] =
 					    ecs::MakeId(static_cast<const typename traits_type::Entity>(to));
 					*it = ecs::MakeId(static_cast<typename traits_type::Entity>(from));
 
@@ -722,8 +707,8 @@ namespace p::ecs
 			CheckMsg(Contains(lhs), "Set does not contain entity");
 			CheckMsg(Contains(rhs), "Set does not contain entity");
 
-			auto& id    = sparse[Page(lhs)][Offset(lhs)];
-			auto& other = sparse[Page(rhs)][Offset(rhs)];
+			auto& id    = chunks[GetChunk(lhs)][GetOffset(lhs)];
+			auto& other = chunks[GetChunk(rhs)][GetOffset(rhs)];
 
 			const auto from = static_cast<size_type>(ecs::GetIndex(id));
 			const auto to   = static_cast<size_type>(ecs::GetIndex(other));
@@ -784,7 +769,7 @@ namespace p::ecs
 					const auto id  = packed[curr];
 
 					SwapAt(next, idx);
-					sparse[Page(id)][Offset(id)] =
+					chunks[GetChunk(id)][GetOffset(id)] =
 					    ecs::MakeId(static_cast<typename traits_type::Entity>(curr));
 					curr = std::exchange(next, idx);
 				}

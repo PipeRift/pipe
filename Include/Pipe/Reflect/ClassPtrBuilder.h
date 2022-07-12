@@ -19,7 +19,7 @@ namespace p
 		{
 			// Sets owner during construction
 			// TODO: Fix self not existing at the moment of construction
-			ClassOwnership::nextOwnership.owner = owner;
+			ClassOwnership::nextOwner = owner;
 			return new (p::Alloc<T>(arena)) T(std::forward<Args>(args)...);
 		}
 
@@ -30,7 +30,7 @@ namespace p
 			{
 				// Sets owner during construction
 				// TODO: Fix self not existing at the moment of construction
-				ClassOwnership::nextOwnership.owner = owner;
+				ClassOwnership::nextOwner = owner;
 				if (T* instance = dynamic_cast<T*>(type->New(arena)))
 				{
 					return instance;

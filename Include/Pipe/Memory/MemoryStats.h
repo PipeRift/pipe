@@ -72,6 +72,8 @@ namespace p
 	struct PIPE_API MemoryStats
 	{
 		sizet used = 0;
+
+		mutable std::shared_mutex mutex;
 		TArray<AllocationStats, MemoryStatsAllocator> allocations;
 #if PIPE_ENABLE_ALLOCATION_STACKS
 		TArray<backward::StackTrace<MemoryStatsAllocator>, MemoryStatsAllocator> allocationStacks;

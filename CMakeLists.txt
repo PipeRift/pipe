@@ -76,7 +76,9 @@ target_link_libraries(Pipe PRIVATE
     spdlog
 )
 
-target_compile_definitions(Pipe PUBLIC PIPE_ENABLE_ALLOCATION_STACKS=${PIPE_ENABLE_ALLOCATION_STACKS})
+if(PIPE_ENABLE_ALLOCATION_STACKS)
+    target_compile_definitions(Pipe PUBLIC PIPE_ENABLE_ALLOCATION_STACKS=1)
+endif()
 
 if(PIPE_ENABLE_PROFILER)
     target_compile_definitions(Pipe PUBLIC PIPE_ENABLE_PROFILER=1)

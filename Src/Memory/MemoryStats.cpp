@@ -49,13 +49,14 @@ namespace p
 
 	void MemoryStats::Add(void* ptr, sizet size)
 	{
+		std::unique_lock lock{mutex};
 		used += size;
 		const i32 index = allocations.AddSorted<SortLessAllocationStats>({ptr, size});
 
 #if PIPE_ENABLE_ALLOCATION_STACKS
 		allocationStacks.InsertDefaulted(index);
 		auto& stack = allocationStacks[index];
-		stack.load_here(9 + 3);
+		stack.load_here(14 + 3);
 		stack.skip_n_firsts(3);
 #endif
 		//  TracyAllocS(ptr, size, 8);
@@ -63,6 +64,7 @@ namespace p
 
 	void MemoryStats::Remove(void* ptr)
 	{
+		std::unique_lock lock{mutex};
 		// TracyFreeS(ptr, 8);
 		const i32 index = allocations.FindSortedEqual<void*, SortLessAllocationStats>(ptr);
 		if (index != NO_INDEX)

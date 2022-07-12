@@ -7,6 +7,8 @@
 #include "Pipe/ECS/Id.h"
 #include "Pipe/Memory/STLAllocator.h"
 
+#include <memory>
+
 
 namespace p::ecs
 {
@@ -175,14 +177,21 @@ namespace p::ecs
 			chunks.RemoveLast(chunks.Size() - usedChunks);
 		}
 
-		// Release chunks to an specific size. No destructors are called
-		void Reset()
+		template<typename SetType>
+		void ShrinkToSize(sizet size, const SetType& set)
 		{
-			for (Chunk chunk : chunks)
+			// Destroy components
+			for (auto i = size; i < set.Size(); ++i)
 			{
-				allocator.Free(chunk, chunkSize);
+				std::destroy_at(Get(i));
 			}
-			chunks.Empty();
+
+			const auto from = (size + chunkSize - 1u) / chunkSize;
+			for (auto pos = from; pos < chunks.Size(); ++pos)
+			{
+				allocator.Free(chunks[pos], chunkSize);
+			}
+			chunks.Resize(from);
 		}
 
 		T* Push(sizet index, T&& value)
@@ -210,13 +219,13 @@ namespace p::ecs
 			T& item     = chunks[GetChunk(index)][GetOffset(index)];
 			T& lastItem = chunks[GetChunk(last)][GetOffset(last)];
 			Swap(item, lastItem);
-			lastItem.~T();
+			std::destroy_at(std::addressof(lastItem));
 			--size;
 		}
 		void Pop(sizet index)
 		{
 			T& item = chunks[GetChunk(index)][GetOffset(index)];
-			item.~T();
+			std::destroy_at(std::addressof(item));
 			--size;
 		}
 
@@ -301,7 +310,11 @@ namespace p::ecs
 		}
 		void Reserve(sizet size) {}
 		void Release(sizet size) {}
-		void Reset() {}
+
+		template<typename SetType>
+		void ShrinkToSize(sizet size, const SetType& set)
+		{}
+
 		T* Push(sizet index, const T&)
 		{
 			return nullptr;

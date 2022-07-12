@@ -18,10 +18,10 @@ namespace p
 	{
 		TPtr<BaseClass> self;
 		TPtr<BaseClass> owner;
-		static ClassOwnership nextOwnership;
+		static TPtr<BaseClass> nextOwner;
 
 
-		ClassOwnership() : owner{Move(nextOwnership.owner)}, self{Move(nextOwnership.self)} {}
+		ClassOwnership() : owner{Move(nextOwner)}, self{} {}
 
 		const TPtr<BaseClass>& GetSelf() const
 		{

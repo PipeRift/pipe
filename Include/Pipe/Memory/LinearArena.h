@@ -18,7 +18,7 @@ namespace p
 	 * Individual allocations can't be freed. It can
 	 * be resized, but never smaller than its used size.
 	 */
-	class LinearArena : public ChildArena
+	class PIPE_API LinearArena : public ChildArena
 	{
 	protected:
 		Memory::Block activeBlock{};
@@ -28,7 +28,7 @@ namespace p
 
 
 	public:
-		PIPE_API LinearArena(
+		LinearArena(
 		    Arena* parent, const sizet firstBlockSize = Memory::MB, bool allowGrowing = true)
 		    : ChildArena(parent)
 		    , activeBlock{p::Alloc(GetParentArena(), firstBlockSize), firstBlockSize}
@@ -37,44 +37,44 @@ namespace p
 			Interface<LinearArena, &LinearArena::Alloc, &LinearArena::Alloc, &LinearArena::Resize,
 			    &LinearArena::Free>();
 		}
-		PIPE_API LinearArena(const sizet firstBlockSize = Memory::MB, bool allowGrowing = true)
+		LinearArena(const sizet firstBlockSize = Memory::MB, bool allowGrowing = true)
 		    : LinearArena(nullptr, firstBlockSize, allowGrowing)
 		{}
-		PIPE_API ~LinearArena() override
+		~LinearArena() override
 		{
 			Reset();
 		}
 
-		PIPE_API void* Alloc(sizet size);
-		PIPE_API void* Alloc(sizet size, sizet align);
-		PIPE_API bool Resize(void* ptr, sizet ptrSize, sizet size)
+		inline void* Alloc(sizet size);
+		inline void* Alloc(sizet size, sizet align);
+		inline bool Resize(void* ptr, sizet ptrSize, sizet size)
 		{
 			return false;
 		}
-		PIPE_API void Free(void* ptr, sizet size) {}
+		inline void Free(void* ptr, sizet size) {}
 
 
-		PIPE_API void Reset();
+		void Reset();
 
-		PIPE_API void Grow(sizet size, sizet align = 0);
+		void Grow(sizet size, sizet align = 0);
 
-		PIPE_API sizet GetUsedBlockSize() const
+		sizet GetUsedBlockSize() const
 		{
 			return usedBlockSize;
 		}
-		PIPE_API sizet GetBlockSize() const
+		sizet GetBlockSize() const
 		{
 			return activeBlock.size;
 		}
-		PIPE_API Memory::Block& GetBlock()
+		Memory::Block& GetBlock()
 		{
 			return activeBlock;
 		}
-		PIPE_API const Memory::Block& GetBlock() const
+		const Memory::Block& GetBlock() const
 		{
 			return activeBlock;
 		}
-		PIPE_API const TArray<Memory::Block>& GetDiscardedBlocks() const
+		const TArray<Memory::Block>& GetDiscardedBlocks() const
 		{
 			return discardedBlocks;
 		}

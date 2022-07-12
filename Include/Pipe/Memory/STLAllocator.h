@@ -28,7 +28,7 @@ namespace p
 			using other = STLAllocator<U, Allocator>;
 		};
 
-		typename Allocator::Typed<T> allocator{};
+		typename Allocator::template Typed<T> allocator{};
 
 
 		STLAllocator()                             = default;
