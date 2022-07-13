@@ -13,27 +13,6 @@ namespace p
 	class Context;
 
 
-	// For shared export purposes, we separate pointers from the exported Class
-	struct PIPE_API ClassOwnership
-	{
-		TPtr<BaseClass> self;
-		TPtr<BaseClass> owner;
-		static TPtr<BaseClass> nextOwner;
-
-
-		ClassOwnership() : owner{Move(nextOwner)}, self{} {}
-
-		const TPtr<BaseClass>& GetSelf() const
-		{
-			return self;
-		}
-		const TPtr<BaseClass>& GetOwner() const
-		{
-			return owner;
-		}
-	};
-
-
 	class PIPE_API Class : public BaseClass
 	{
 	public:

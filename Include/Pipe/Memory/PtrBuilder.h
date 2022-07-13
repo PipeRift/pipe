@@ -4,8 +4,6 @@
 
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/Alloc.h"
-#include "Pipe/Reflect/BaseClass.h"
-#include "Pipe/Reflect/ReflectionTraits.h"
 
 
 namespace p
