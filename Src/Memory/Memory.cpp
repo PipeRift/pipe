@@ -6,6 +6,8 @@
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 
+#include <stddef.h>
+
 
 namespace p
 {
@@ -72,6 +74,15 @@ namespace p
 	i32 CmpMem(void* a, void* b, sizet size)
 	{
 		return memcmp(a, b, size);
+	}
+
+
+	void* GetAlignedBlock(void* ptr, const sizet blockSize)
+	{
+		Check(math::IsPowerOfTwo(blockSize));
+		const uPtr alignedPtr = uPtr(ptr) & ~(blockSize - 1);
+		// return alignedPtr without casting to int (performance-no-int-to-ptr)
+		return static_cast<u8*>(ptr) - (uPtr(ptr) - alignedPtr);
 	}
 
 	sizet GetAlignmentPadding(const void* ptr, sizet align)

@@ -10,6 +10,7 @@ namespace p
 {
 	namespace Memory
 	{
+		constexpr sizet B  = 1;
 		constexpr sizet KB = 1024;
 		constexpr sizet MB = KB * 1024;
 		constexpr sizet GB = MB * 1024;
@@ -24,6 +25,11 @@ namespace p
 	PIPE_API void SetMem(void* dest, u8 value, sizet size);
 	PIPE_API void SetZeroMem(void* dest, sizet size);
 	PIPE_API i32 CmpMem(void* a, void* b, sizet size);
+
+	/**
+	 * @return the previous pointer of 'ptr' aligned to blockSize
+	 */
+	void* GetAlignedBlock(void* ptr, const sizet blockSize);
 
 	/**
 	 * @return the number of bytes needed for p to be aligned in 'align'

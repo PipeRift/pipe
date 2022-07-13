@@ -1092,7 +1092,7 @@ public:
 #elif defined(BACKWARD_HAS_BACKTRACE)
 
 template <typename Allocator>
-class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
+class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
 public:
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
