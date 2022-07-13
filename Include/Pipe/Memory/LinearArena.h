@@ -45,13 +45,13 @@ namespace p
 			Reset();
 		}
 
-		inline void* Alloc(sizet size);
-		inline void* Alloc(sizet size, sizet align);
-		inline bool Resize(void* ptr, sizet ptrSize, sizet size)
+		void* Alloc(sizet size);
+		void* Alloc(sizet size, sizet align);
+		bool Resize(void* ptr, sizet ptrSize, sizet size)
 		{
 			return false;
 		}
-		inline void Free(void* ptr, sizet size) {}
+		void Free(void* ptr, sizet size) {}
 
 
 		void Reset();
