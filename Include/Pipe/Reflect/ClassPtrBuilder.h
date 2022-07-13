@@ -3,7 +3,6 @@
 
 #include "Pipe/Core/Log.h"
 #include "Pipe/Memory/PtrBuilder.h"
-#include "Pipe/Reflect/Class.h"
 #include "Pipe/Reflect/ClassType.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
 #include "Pipe/Reflect/TypeName.h"
