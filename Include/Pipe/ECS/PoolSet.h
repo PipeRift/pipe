@@ -142,7 +142,7 @@ namespace p::ecs
 
 
 	private:
-		typename Allocator::Typed<Id> allocator;
+		typename Allocator::template Typed<Id> allocator;
 		// Id** sparse;
 		// std::size_t bucket;
 		TArray<Id*, Allocator> chunks;
