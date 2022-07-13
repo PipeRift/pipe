@@ -604,7 +604,7 @@ namespace p::ecs
 		void Erase(const Id id, void* ud = nullptr)
 		{
 			CheckMsg(Contains(id), "Set does not contain entity");
-			(mode == DeletionPolicy::InPlace) ? InPlacePop(id, ud) : SwapAndPop(id, ud);
+			(mode == DeletionPolicy::InPlace) ? Pop(id, ud) : PopSwap(id, ud);
 		}
 
 		/**

@@ -19,7 +19,7 @@ namespace p
 			bool used = false;
 			T buffer[N];
 
-			typename FallbackAllocator::Typed<T> fallback;
+			typename FallbackAllocator::template Typed<T> fallback;
 
 
 			T* Alloc(sizet size)

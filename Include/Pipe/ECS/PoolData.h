@@ -132,7 +132,7 @@ namespace p::ecs
 
 	private:
 
-		typename Allocator::Typed<T> allocator;
+		typename Allocator::template Typed<T> allocator;
 		TArray<Chunk> chunks;
 		sizet size = 0;
 
