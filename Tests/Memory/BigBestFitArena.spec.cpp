@@ -150,8 +150,11 @@ go_bandit([]() {
 			arena.Free(p2, 16);
 			AssertThat(arena.GetFreeSize(), Equals(24));
 			AssertThat(arena.GetFreeSlots().Size(), Equals(1));
-			AssertThat(arena.GetFreeSlots()[0].start, Equals(static_cast<p::u8*>(p2) - 8));
-			AssertThat(arena.GetFreeSlots()[0].end, Equals(static_cast<p::u8*>(p3) - 8));
+
+			auto slot     = arena.GetFreeSlots()[0];
+			u8* slotStart = (u8*)arena.GetBlock().data + slot.offset;
+			AssertThat(slotStart, Equals(static_cast<p::u8*>(p2) - 8));
+			AssertThat(slotStart + slot.size, Equals(static_cast<p::u8*>(p3) - 8));
 		});
 
 		it("Can merge previous and next slots on free", [&]() {
@@ -186,10 +189,11 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSlots().Size(), Equals(1));
 
 			// Slot contains the entire memory block
-			AssertThat(arena.GetFreeSlots()[0].start,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().data)));
-			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
+			auto slot     = arena.GetFreeSlots()[0];
+			u8* slotStart = (u8*)arena.GetBlock().data + slot.offset;
+			AssertThat(slotStart, Equals(static_cast<const p::u8*>(arena.GetBlock().data)));
+			AssertThat(
+			    slotStart + slot.size, Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 		});
 
 		it("Can merge previous slot on free", [&]() {
@@ -213,10 +217,11 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSlots().Size(), Equals(1));
 
 			// Slot contains the entire memory block
-			AssertThat(arena.GetFreeSlots()[0].start,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().data)));
-			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
+			auto slot     = arena.GetFreeSlots()[0];
+			u8* slotStart = (u8*)arena.GetBlock().data + slot.offset;
+			AssertThat(slotStart, Equals(static_cast<const p::u8*>(arena.GetBlock().data)));
+			AssertThat(
+			    slotStart + slot.size, Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 		});
 
 		it("Can merge next slot on free", [&]() {
@@ -240,10 +245,11 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSlots().Size(), Equals(1));
 
 			// Slot contains the entire memory block
-			AssertThat(arena.GetFreeSlots()[0].start,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().data)));
-			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
+			auto slot     = arena.GetFreeSlots()[0];
+			u8* slotStart = (u8*)arena.GetBlock().data + slot.offset;
+			AssertThat(slotStart, Equals(static_cast<const p::u8*>(arena.GetBlock().data)));
+			AssertThat(
+			    slotStart + slot.size, Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 		});
 
 		it("Ensures a big alignment leaves a gap", [&]() {
@@ -261,13 +267,17 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSlots().Size(), Equals(2));
 
 			// Slot contains the rest if the block
-			AssertThat(arena.GetFreeSlots()[0].start, Equals(arena.GetAllocationEnd(p2)));
-			AssertThat(arena.GetFreeSlots()[0].end,
-			    Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
+			auto slot0     = arena.GetFreeSlots()[0];
+			u8* slot0Start = (u8*)arena.GetBlock().data + slot0.offset;
+			AssertThat(slot0Start, Equals(arena.GetAllocationEnd(p2)));
+			AssertThat(
+			    slot0Start + slot0.size, Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 
 			// Slot contains the alignment gap
-			AssertThat(arena.GetFreeSlots()[1].start, Equals(arena.GetAllocationEnd(p)));
-			AssertThat(arena.GetFreeSlots()[1].end, Equals(arena.GetAllocationStart(p2)));
+			auto slot1     = arena.GetFreeSlots()[1];
+			u8* slot1Start = (u8*)arena.GetBlock().data + slot1.offset;
+			AssertThat(slot1Start, Equals(arena.GetAllocationEnd(p)));
+			AssertThat(slot1Start + slot1.size, Equals(arena.GetAllocationStart(p2)));
 		});
 	});
 });

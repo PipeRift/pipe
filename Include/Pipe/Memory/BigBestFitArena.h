@@ -19,33 +19,16 @@ namespace p
 
 		struct PIPE_API Slot
 		{
-			u8* start;
-			u8* end;
+			u32 offset;
+			u32 size;
 
-			sizet Size() const
+			bool operator==(const Slot& other) const
 			{
-				return sizet(end - start);
+				return size == other.size;
 			}
-
-			auto operator==(const Slot& other) const
+			auto operator<=>(const Slot& other) const
 			{
-				return sizet(end - start) == sizet(other.end - other.start);
-			}
-			auto operator<(const Slot& other) const
-			{
-				return sizet(end - start) < sizet(other.end - other.start);
-			}
-			auto operator>(const Slot& other) const
-			{
-				return sizet(end - start) > sizet(other.end - other.start);
-			}
-			auto operator<=(const Slot& other) const
-			{
-				return sizet(end - start) <= sizet(other.end - other.start);
-			}
-			auto operator>=(const Slot& other) const
-			{
-				return sizet(end - start) >= sizet(other.end - other.start);
+				return size <=> other.size;
 			}
 		};
 
@@ -112,9 +95,10 @@ namespace p
 		}
 
 		i32 FindSmallestSlot(sizet size);
-		void ReduceSlot(
-		    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd);
-		void AbsorbFreeSpace(u8* const allocationStart, u8* const allocationEnd);
+		void ReduceSlot(i32 slotIndex, Slot& slot, u32 allocationStart, u32 allocationEnd);
+		void AbsorbFreeSpace(u32 allocationStart, u32 allocationEnd);
+
+		u32 ToOffset(void* data, void* block);
 	};
 
 
