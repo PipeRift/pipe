@@ -2,12 +2,14 @@
 
 #include "Pipe/ECS/Pool.h"
 
+#include "Pipe/Core/Limits.h"
+
 
 namespace p::ecs
 {
 	i32 GetSmallestPool(TSpan<const Pool*> pools)
 	{
-		sizet minSize = std::numeric_limits<sizet>::max();
+		sizet minSize = Limits<sizet>::Max();
 		i32 minIndex  = NO_INDEX;
 		for (i32 i = 0; i < pools.Size(); ++i)
 		{

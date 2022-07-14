@@ -1,12 +1,12 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Core/Limits.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/ArenaAllocator.h"
 
-#include <limits>
 #include <memory>
 
 
@@ -68,7 +68,7 @@ namespace p
 
 		static constexpr size_type max_size() noexcept
 		{
-			return std::numeric_limits<size_type>::max() / sizeof(T);
+			return Limits<size_type>::Max() / sizeof(T);
 		}
 	};
 

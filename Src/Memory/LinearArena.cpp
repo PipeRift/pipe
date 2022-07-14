@@ -2,56 +2,111 @@
 
 #include "Pipe/Memory/LinearArena.h"
 
+#include "Pipe/Memory/Block.h"
 #include "Pipe/Memory/Memory.h"
 
 
 namespace p
 {
-	void* LinearArena::Alloc(sizet size)
+		template<sizet blockSize>
+	void LinearBasePool::AllocateBlock(Arena& parentArena)
 	{
-		if (usedBlockSize + size > activeBlock.size)
+		LinearBlock* lastBlock = currentBlock;
+
+		// Allocate aligning by blockSize
+		void* ptr = p::Alloc(parentArena, blockSize + sizeof(LinearBlock), blockSize);
+
+		void* blockPtr = (u8*)ptr + GetAlignmentPadding(ptr, blockSize);
+		currentBlock = new (blockPtr) LinearBlock();
+		currentBlock->insert = currentBlock + 1;
+		currentBlock->last = lastBlock;
+		currentBlock->unaligned = ptr;
+
+		lastBlock->next = currentBlock;
+	}
+
+	template<sizet blockSize>
+	void LinearBasePool::FreeBlock(Arena& parentArena, LinearBlock* block)
+	{
+		Check(block);
+		if (currentBlock == block)
 		{
-			if (!allowGrowing)
-			{
-				return nullptr;
-			}
-			// Grow same size as previous block, but make sure its enough space
-			Grow(math::Max(activeBlock.size, size));
+			currentBlock = block->last;
+		}
+		else if (block->next) // currentBlock never has next block, only last
+		{
+			block->next->last = block->last;
 		}
 
-		void* const ptr = (u8*)(activeBlock.data) + usedBlockSize;
-		usedBlockSize += size;
+		if (block->last)
+		{
+			block->last->next = block->next;
+		}
+
+		p::Free(parentArena, block->unaligned, blockSize + sizeof(LinearBlock));
+	}
+
+	void* LinearSmallPool::Alloc(Arena& parentArena, sizet size, sizet align)
+	{
+		u8*& insert = (u8*&)currentBlock->insert;
+
+		// Not enough space in current block?
+		sizet padding = GetAlignmentPadding(insert, align);
+		if (insert + size + padding > currentBlock->End<blockSize>())
+		{
+			AllocateBlock<blockSize>(parentArena);
+
+			// Find alignment on the new block. Guaranteed to fit
+			padding = GetAlignmentPadding(insert, align);
+		}
+
+		u8* const ptr = insert + padding;
+		insert = ptr + size;
 		return ptr;
 	}
 
-	void* LinearArena::Alloc(sizet size, sizet alignment)
+	void LinearSmallPool::Free(Arena& parentArena, void* ptr, sizet size) {
+		// TODO
+	}
+
+	void* LinearArena::Alloc(sizet size, sizet align)
 	{
-		if (alignment == 0)
+		if (size < smallPool.maxSize)
 		{
-			return Alloc(size);    // Allocate without alignment
+			return smallPool.Alloc(GetParentArena(), size, align);
 		}
-
-		void* currentPtr    = (u8*)(activeBlock.data) + usedBlockSize;
-		const sizet padding = GetAlignmentPadding(currentPtr, alignment);
-
-		// Not enough space in current block?
-		if (usedBlockSize + size + padding > activeBlock.size)
+		else if (size < mediumPool.maxSize)
 		{
-			if (!allowGrowing)
-			{
-				return nullptr;
-			}
-			// Grow same size as previous block, but make sure its enough space
-			// NOTE: We use minimum size + alignment to make sure a
-			// non aligned Grow allocates enough memory
-			Grow(math::Max(activeBlock.size, size + alignment), alignment);
-
-			// Try again with new block
-			return Alloc(size, alignment);
+			//return mediumPool.Alloc(GetParentArena(), size, align);
 		}
+		else if (size < bigPool.maxSize)
+		{
+			//return bigPool.Alloc(GetParentArena(), size, align);
+		}
+		else
+		{
+			return p::Alloc(GetParentArena(), size, align);
+		}
+	}
 
-		usedBlockSize += size + padding;
-		return (u8*)(currentPtr) + padding;
+	void LinearArena::Free(void* ptr, sizet size)
+	{
+		if (size < smallPool.maxSize)
+		{
+			smallPool.Free(GetParentArena(), ptr, size);
+		}
+		else if (size < mediumPool.maxSize)
+		{
+			//mediumPool.Free(GetParentArena(), ptr, size);
+		}
+		else if (size < bigPool.maxSize)
+		{
+			//bigPool.Free(GetParentArena(), ptr, size);
+		}
+		else
+		{
+			p::Free(GetParentArena(), ptr, size);
+		}
 	}
 
 	void LinearArena::Reset()
