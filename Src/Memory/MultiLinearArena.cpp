@@ -9,42 +9,6 @@
 namespace p
 {
 	template<sizet blockSize>
-	void* LinearBasePool<blockSize>::Alloc(Arena& parentArena, sizet size, sizet align)
-	{
-		insert = (u8*)insert + size + GetAlignmentPadding(insert, align);
-
-		// Not enough space in current block?
-		if (freeBlock && insert <= GetBlockEnd(freeBlock)) [[likely]]
-		{
-			++freeBlock->count;
-			return (u8*)insert - size;    // Fast-path
-		}
-
-		AllocateBlock(parentArena);
-		// Recalculate allocation with new block
-		insert = (u8*)insert + size + GetAlignmentPadding(insert, align);
-		++freeBlock->count;
-		return (u8*)insert - size;
-	}
-
-	template<sizet blockSize>
-	void LinearBasePool<blockSize>::Free(Arena& parentArena, void* ptr, sizet size)
-	{
-		auto* block = static_cast<LinearBlock*>(GetAlignedBlock(ptr, GetBlockSize()));
-		if (!block) [[unlikely]]
-		{
-			return;
-		}
-
-		--block->count;
-		if (block->count <= 0) [[unlikely]]
-		{
-			// If the block is empty and was marked full, free it
-			FreeBlock(parentArena, block);
-		}
-	}
-
-	template<sizet blockSize>
 	void LinearBasePool<blockSize>::AllocateBlock(Arena& parentArena)
 	{
 		LinearBlock* const lastBlock = freeBlock;
@@ -83,6 +47,42 @@ namespace p
 			block->last->next = block->next;
 		}
 		p::Free(parentArena, block->unaligned, GetAllocatedBlockSize());
+	}
+
+	template<sizet blockSize>
+	void* LinearBasePool<blockSize>::Alloc(Arena& parentArena, sizet size, sizet align)
+	{
+		insert = (u8*)insert + size + GetAlignmentPadding(insert, align);
+
+		// Not enough space in current block?
+		if (freeBlock && insert <= GetBlockEnd(freeBlock)) [[likely]]
+		{
+			++freeBlock->count;
+			return (u8*)insert - size;    // Fast-path
+		}
+
+		AllocateBlock(parentArena);
+		// Recalculate allocation with new block
+		insert = (u8*)insert + size + GetAlignmentPadding(insert, align);
+		++freeBlock->count;
+		return (u8*)insert - size;
+	}
+
+	template<sizet blockSize>
+	void LinearBasePool<blockSize>::Free(Arena& parentArena, void* ptr, sizet size)
+	{
+		auto* block = static_cast<LinearBlock*>(GetAlignedBlock(ptr, GetBlockSize()));
+		if (!block) [[unlikely]]
+		{
+			return;
+		}
+
+		--block->count;
+		if (block->count <= 0) [[unlikely]]
+		{
+			// If the block is empty and was marked full, free it
+			FreeBlock(parentArena, block);
+		}
 	}
 
 	template<sizet blockSize>

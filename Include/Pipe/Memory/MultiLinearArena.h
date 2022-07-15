@@ -33,11 +33,13 @@ namespace p
 		LinearBlock* freeBlock = nullptr;
 
 
-		void* Alloc(Arena& parentArena, sizet size, sizet align);
-		void Free(Arena& parentArena, void* ptr, sizet size);
-
+	private:
 		void AllocateBlock(Arena& parentArena);
 		void FreeBlock(Arena& parentArena, LinearBlock* block);
+
+	public:
+		void* Alloc(Arena& parentArena, sizet size, sizet align);
+		void Free(Arena& parentArena, void* ptr, sizet size);
 
 		void Release(Arena& parentArena);
 
@@ -45,6 +47,7 @@ namespace p
 		{
 			return blockSize;
 		}
+
 		static constexpr sizet GetAllocatedBlockSize()
 		{
 			return blockSize + sizeof(LinearBlock);
