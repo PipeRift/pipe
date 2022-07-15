@@ -5,8 +5,8 @@
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/HeapArena.h"
-#include "Pipe/Memory/LinearArena.h"
 #include "Pipe/Memory/Memory.h"
+#include "Pipe/Memory/MultiLinearArena.h"
 #include "Pipe/Reflect/Type.h"
 #include "Pipe/Reflect/TypeId.h"
 
@@ -16,7 +16,7 @@ namespace p
 	class ReflectionRegistry
 	{
 		// Contains all compiled reflection types linearly in memory
-		LinearArena arena{};
+		MultiLinearArena arena{GetCurrentArena()};
 
 		// Contains all runtime/data defined types in memory
 		// BigBestFitArena dynamicArena{256 * 1024};    // First block is 256KB
@@ -69,7 +69,7 @@ namespace p
 				it.second->~Type();
 			}
 			idToTypes.Empty();
-			arena.Reset();
+			arena.Release();
 		}
 
 		static PIPE_API ReflectionRegistry& Get();

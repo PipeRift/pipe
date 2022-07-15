@@ -24,9 +24,9 @@ namespace p::ecs
 	public:
 
 		IdRegistry() {}
-		IdRegistry(IdRegistry&& other)      = default;
-		IdRegistry(const IdRegistry& other) = default;
-		IdRegistry& operator=(IdRegistry&& other) = default;
+		IdRegistry(IdRegistry&& other)                 = default;
+		IdRegistry(const IdRegistry& other)            = default;
+		IdRegistry& operator=(IdRegistry&& other)      = default;
 		IdRegistry& operator=(const IdRegistry& other) = default;
 
 

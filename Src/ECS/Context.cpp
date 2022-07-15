@@ -5,9 +5,7 @@
 
 namespace p::ecs
 {
-	Context::Context()
-	{
-	}
+	Context::Context() {}
 
 	Context::Context(const Context& other) noexcept
 	{

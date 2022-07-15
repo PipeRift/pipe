@@ -9,11 +9,6 @@
 
 namespace p::Memory
 {
-	Block::~Block()
-	{
-		Check(!data);
-	}
-
 	Block::Block(Block&& other) noexcept
 	{
 		data = std::exchange(other.data, nullptr);

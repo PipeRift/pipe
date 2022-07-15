@@ -39,7 +39,7 @@ namespace p
 		Type(TypeCategory category) : category{category} {}
 
 	public:
-		Type(const Type&) = delete;
+		Type(const Type&)            = delete;
 		Type& operator=(const Type&) = delete;
 		virtual ~Type()              = default;
 

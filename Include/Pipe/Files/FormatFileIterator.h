@@ -23,7 +23,7 @@ namespace p::files
 		~FormatFileIterator() noexcept                         = default;
 
 		FormatFileIterator& operator=(const FormatFileIterator&) noexcept = default;
-		FormatFileIterator& operator=(FormatFileIterator&&) noexcept = default;
+		FormatFileIterator& operator=(FormatFileIterator&&) noexcept      = default;
 
 		const fs::directory_entry& operator*() const noexcept
 		{

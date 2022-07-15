@@ -16,10 +16,10 @@ namespace p
 
 
 	public:
-		ClassHandle()                   = delete;
-		ClassHandle(ClassHandle&&)      = default;
-		ClassHandle(const ClassHandle&) = default;
-		ClassHandle& operator=(ClassHandle&&) = default;
+		ClassHandle()                              = delete;
+		ClassHandle(ClassHandle&&)                 = default;
+		ClassHandle(const ClassHandle&)            = default;
+		ClassHandle& operator=(ClassHandle&&)      = default;
 		ClassHandle& operator=(const ClassHandle&) = default;
 
 		ClassHandle(Class& instance) : instance(*instance) {}

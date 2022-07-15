@@ -321,11 +321,10 @@ namespace p
 			return Move(ptr);
 		}
 
-	private :
+	private:
 
 		template<typename T2>
-		void
-		MoveFrom(TOwnPtr<T2>&& other)
+		void MoveFrom(TOwnPtr<T2>&& other)
 		{
 			Super::MoveFrom(Move(other));
 #if BUILD_DEBUG

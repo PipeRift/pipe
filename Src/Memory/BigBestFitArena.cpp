@@ -182,11 +182,20 @@ namespace p
 		if (previousSlot != NO_INDEX && nextSlot != NO_INDEX)
 		{
 			// Expand next slot to the start of the previous slot
-			const Slot& next = freeSlots[nextSlot];
-			Slot& previous   = freeSlots[previousSlot];
-			previous.size    = (next.offset + next.size) - previous.offset;
-
-			freeSlots.RemoveAtSwapUnsafe(previousSlot);
+			Slot& next     = freeSlots[nextSlot];
+			Slot& previous = freeSlots[previousSlot];
+			const Slot combined{previous.offset, (next.offset - previous.offset) + next.size};
+			// Remove the smallest slot, expand the other
+			if (next.size > previous.size)
+			{
+				next = combined;
+				freeSlots.RemoveAtSwapUnsafe(previousSlot);
+			}
+			else
+			{
+				previous = combined;
+				freeSlots.RemoveAtSwapUnsafe(nextSlot);
+			}
 		}
 		else if (previousSlot != NO_INDEX)
 		{

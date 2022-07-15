@@ -664,14 +664,13 @@ namespace p::core
 		}
 
 		/** OPERATORS */
-	public :
+	public:
 		/**
 		 * Array bracket operator. Returns reference to element at give index.
 		 *
 		 * @returns Reference to indexed element.
 		 */
-		Type&
-		operator[](i32 index) requires(!IsSame<Type, bool>)
+		Type& operator[](i32 index) requires(!IsSame<Type, bool>)
 		{
 			assert(IsValidIndex(index));
 			return Data()[index];

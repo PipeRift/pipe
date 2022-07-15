@@ -49,10 +49,10 @@ namespace p::core
 		}
 		TSet(std::initializer_list<Type> initList) : set{initList.begin(), initList.end()} {}
 
-		TSet(TSet&& other) noexcept = default;
-		TSet(const TSet& other)     = default;
+		TSet(TSet&& other) noexcept            = default;
+		TSet(const TSet& other)                = default;
 		TSet& operator=(TSet&& other) noexcept = default;
-		TSet& operator=(const TSet& other) = default;
+		TSet& operator=(const TSet& other)     = default;
 
 		Iterator Insert(Type&& value)
 		{

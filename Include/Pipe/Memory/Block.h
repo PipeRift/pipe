@@ -15,12 +15,10 @@ namespace p::Memory
 
 		Block() = default;
 		Block(void* data, sizet size) : data{data}, size{size} {}
-		~Block();
 		Block(Block&& other) noexcept;
 		Block& operator=(Block&& other) noexcept;
-
-		Block(const Block& other) = delete;
-		Block& operator=(const Block& other) = delete;
+		Block(const Block& other)            = default;
+		Block& operator=(const Block& other) = default;
 
 
 		bool IsAllocated() const

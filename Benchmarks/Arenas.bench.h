@@ -9,7 +9,7 @@ using namespace ankerl;
 #include <Pipe/Memory/BestFitArena.h>
 #include <Pipe/Memory/BigBestFitArena.h>
 #include <Pipe/Memory/HeapArena.h>
-#include <Pipe/Memory/LinearArena.h>
+#include <Pipe/Memory/MonoLinearArena.h>
 
 
 void RunArenasBenchmarks()
@@ -36,9 +36,9 @@ void RunArenasBenchmarks()
 		}
 
 		{
-			p::LinearArena arenat{100 * p::Memory::MB};
+			p::MonoLinearArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
-			consecutiveAlloc.run("LinearArena", [&arena] {
+			consecutiveAlloc.run("MonoLinearArena", [&arena] {
 				ankerl::nanobench::doNotOptimizeAway(p::Alloc(arena, 16));
 			});
 		}
@@ -98,6 +98,27 @@ void RunArenasBenchmarks()
 
 			p::i32 i = 0;
 			consecutiveFree.run("HeapArena", [&arena, &i, &allocated] {
+				p::Free(arena, allocated[i], 16);
+				++i;
+			});
+			for (; i < allocated.Size(); ++i)
+			{
+				p::Free(arena, allocated[i], 16);
+			}
+		}
+
+		{
+			p::MonoLinearArena arenat{100 * p::Memory::MB};
+			p::Arena& arena{arenat};
+			p::TArray<void*> allocated;
+			allocated.Reserve(50000);
+			for (p::u32 i = 0; i < 50000; ++i)
+			{
+				allocated.Add(p::Alloc(arena, 16));
+			}
+
+			p::i32 i = 0;
+			consecutiveFree.run("MonoLinearArena", [&arena, &i, &allocated] {
 				p::Free(arena, allocated[i], 16);
 				++i;
 			});

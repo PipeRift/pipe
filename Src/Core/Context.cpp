@@ -5,7 +5,6 @@
 #include "Pipe/Reflect/Registry.h"
 
 
-
 namespace p
 {
 	TOwnPtr<Context> globalInstance;

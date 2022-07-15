@@ -54,10 +54,10 @@ namespace p::core
 		    : map{initList.begin(), initList.end()}
 		{}
 
-		TMap(TMap&& other) noexcept = default;
-		TMap(const TMap& other)     = default;
+		TMap(TMap&& other) noexcept            = default;
+		TMap(const TMap& other)                = default;
 		TMap& operator=(TMap&& other) noexcept = default;
-		TMap& operator=(const TMap& other) = default;
+		TMap& operator=(const TMap& other)     = default;
 
 		Iterator Insert(KeyType&& key, ValueType&& value)
 		{

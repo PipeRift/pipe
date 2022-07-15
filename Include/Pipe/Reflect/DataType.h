@@ -33,7 +33,7 @@ namespace p
 		PIPE_API DataType(TypeCategory category) : Type(category | TypeCategory::Data) {}
 
 	public:
-		DataType(const DataType&) = delete;
+		DataType(const DataType&)            = delete;
 		DataType& operator=(const DataType&) = delete;
 		PIPE_API ~DataType() override;
 

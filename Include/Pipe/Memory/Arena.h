@@ -3,10 +3,20 @@
 
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Platform.h"
+#include "Pipe/Memory/Block.h"
 
 
 namespace p
 {
+	class ArenaAllocator;
+	namespace core
+	{
+		template<typename Type, typename Allocator>
+		struct TArray;
+	}
+	using namespace core;
+
+
 	/** Arena defines the API used on all other arena types */
 	class PIPE_API Arena
 	{
@@ -54,10 +64,10 @@ namespace p
 	public:
 		Arena() = default;
 		virtual ~Arena() {}
-		Arena(const Arena&) = delete;
+		Arena(const Arena&)            = delete;
 		Arena& operator=(const Arena&) = delete;
 
-		Arena(Arena&&) = default;
+		Arena(Arena&&)            = default;
 		Arena& operator=(Arena&&) = default;
 
 
@@ -77,6 +87,17 @@ namespace p
 		{
 			doFree(this, ptr, size);
 		}
+
+
+		virtual sizet GetUsedMemory() const
+		{
+			return 0;
+		}
+		virtual sizet GetAvailableMemory() const
+		{
+			return 0;
+		}
+		virtual void GetBlocks(TArray<Memory::Block, ArenaAllocator>& outBlocks) const {}
 	};
 
 	class PIPE_API ChildArena : public Arena

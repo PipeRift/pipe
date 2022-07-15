@@ -289,10 +289,9 @@ namespace p
 			return nullptr;
 		}
 
-	private :
+	private:
 
-		i32
-		GetPoolIndex() const
+		i32 GetPoolIndex() const
 		{
 			return 0;
 		}

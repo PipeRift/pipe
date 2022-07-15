@@ -13,10 +13,10 @@ namespace p
 		~DummyArena() {}
 
 		// Define copy or move as desired
-		DummyArena(const DummyArena&) = default;
-		DummyArena(DummyArena&&)      = default;
+		DummyArena(const DummyArena&)            = default;
+		DummyArena(DummyArena&&)                 = default;
 		DummyArena& operator=(const DummyArena&) = default;
-		DummyArena& operator=(DummyArena&&) = default;
+		DummyArena& operator=(DummyArena&&)      = default;
 
 		void* Alloc(const sizet size)
 		{

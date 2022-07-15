@@ -28,7 +28,7 @@ namespace p
 		Reader() = default;
 
 	public:
-		explicit Reader(const Reader&) = default;
+		explicit Reader(const Reader&)   = default;
 		Reader& operator=(const Reader&) = default;
 		virtual ~Reader() {}
 
