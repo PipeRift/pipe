@@ -150,14 +150,14 @@ namespace p::ecs
 		Id freeList;
 		DeletionPolicy mode;
 
-		[[nodiscard]] static auto GetChunk(const ecs::Id id)
+		static auto GetChunk(sizet index)
 		{
-			return static_cast<size_type>(ecs::GetIndex(id) / chunkSize);
+			return static_cast<size_type>(index / chunkSize);
 		}
 
-		[[nodiscard]] static auto GetOffset(const ecs::Id id)
+		static auto GetOffset(sizet index)
 		{
-			return static_cast<size_type>(ecs::GetIndex(id) & (chunkSize - 1));
+			return static_cast<size_type>(index & (chunkSize - 1));
 		}
 
 		[[nodiscard]] Id* AssurePage(const std::size_t idx)
@@ -220,13 +220,14 @@ namespace p::ecs
 		 */
 		void PopSwap(const ecs::Id id)
 		{
-			auto& ref        = chunks[GetChunk(id)][GetOffset(id)];
-			const auto index = static_cast<size_type>(ecs::GetIndex(ref));
-			CheckMsg(packed[index] == id, "Invalid entity identifier");
+			const auto idIndex = ecs::GetIndex(id);
+			auto& ref          = chunks[GetChunk(idIndex)][GetOffset(idIndex)];
+			CheckMsg(packed[idIndex] == id, "Invalid entity identifier");
 
-			auto& last                              = packed.Last();
-			chunks[GetChunk(last)][GetOffset(last)] = ref;
-			packed[index]                           = last;
+			auto& last           = packed.Last();
+			const auto lastIndex = ecs::GetIndex(last);
+			Get(lastIndex)       = ref;
+			packed[idIndex]      = last;
 			// unnecessary but it helps to detect nasty bugs
 			CheckMsg((last = ecs::NoId, true), "");
 			// lazy self-assignment guard
@@ -241,14 +242,13 @@ namespace p::ecs
 		 */
 		void Pop(const ecs::Id id)
 		{
-			auto& ref      = chunks[GetChunk(id)][GetOffset(id)];
-			const auto pos = static_cast<size_type>(ecs::GetIndex(ref));
-			CheckMsg(packed[pos] == id, "Invalid entity identifier");
+			const auto idIndex = ecs::GetIndex(id);
+			CheckMsg(packed[idIndex] == id, "Invalid entity identifier");
 
-			packed[pos] = std::exchange(
-			    freeList, ecs::MakeId(static_cast<typename traits_type::Entity>(pos)));
+			packed[idIndex] = std::exchange(
+			    freeList, ecs::MakeId(static_cast<typename traits_type::Entity>(idIndex)));
 			// lazy self-assignment guard
-			ref = ecs::NoId;
+			Get(idIndex) = ecs::NoId;
 		}
 
 		/*! @brief Allocator type. */
@@ -477,11 +477,12 @@ namespace p::ecs
 		 */
 		[[nodiscard]] bool Contains(const Id id) const
 		{
+			const auto idIdx = ecs::GetIndex(id);
 			//  Testing versions permits to avoid accessing the packed array
-			const auto curr = GetChunk(id);
+			const auto curr = GetChunk(idIdx);
 			return ecs::GetVersion(id) != ecs::GetVersion(ecs::NoId)
 			    && (curr < chunks.Size() && chunks[curr]
-			        && chunks[curr][GetOffset(id)] != ecs::NoId);
+			        && chunks[curr][GetOffset(idIdx)] != ecs::NoId);
 		}
 
 		/**
@@ -497,7 +498,8 @@ namespace p::ecs
 		[[nodiscard]] size_type Index(const Id id) const
 		{
 			CheckMsg(Contains(id), "Set does not contain entity");
-			return static_cast<size_type>(ecs::GetIndex(chunks[GetChunk(id)][GetOffset(id)]));
+			const auto idIdx = ecs::GetIndex(id);
+			return static_cast<size_type>(ecs::GetIndex(Get(idIdx)));
 		}
 
 		/**
@@ -507,7 +509,7 @@ namespace p::ecs
 		 */
 		[[nodiscard]] Id At(const size_type pos) const
 		{
-			return pos < packed.Size() ? packed[pos] : nullptr;
+			return pos < packed.Size() ? packed[pos] : NoId;
 		}
 
 		/**
@@ -519,6 +521,15 @@ namespace p::ecs
 		{
 			CheckMsg(packed.IsValidIndex(index), "Index is out of bounds");
 			return packed[index];
+		}
+
+		const Id& Get(sizet index) const
+		{
+			return chunks[GetChunk(index)][GetOffset(index)];
+		}
+		Id& Get(sizet index)
+		{
+			return chunks[GetChunk(index)][GetOffset(index)];
 		}
 
 		/**
@@ -534,7 +545,8 @@ namespace p::ecs
 		size_type TryEmplace(const Id id, bool forceBack)
 		{
 			CheckMsg(!Contains(id), "Set already contains entity");
-			auto& item = AssurePage(GetChunk(id))[GetOffset(id)];
+			const auto idIndex = ecs::GetIndex(id);
+			auto& item         = AssurePage(GetChunk(idIndex))[GetOffset(idIndex)];
 			if (freeList == ecs::NoId || forceBack)
 			{
 				item = ecs::MakeId(static_cast<typename traits_type::Entity>(packed.Size()));
@@ -585,7 +597,8 @@ namespace p::ecs
 			{
 				const auto id = *first;
 				CheckMsg(!Contains(id), "Set already contains entity");
-				AssurePage(GetChunk(id))[GetOffset(id)] =
+				const auto idIndex = ecs::GetIndex(id);
+				AssurePage(GetChunk(idIndex))[GetOffset(idIndex)] =
 				    ecs::MakeId(static_cast<typename traits_type::Entity>(packed.Size()));
 				packed.Add(id);
 			}
@@ -675,7 +688,9 @@ namespace p::ecs
 					MoveAndPop(from, to);
 					std::swap(packed[from], packed[to]);
 
-					chunks[GetChunk(packed[to])][GetOffset(packed[to])] =
+
+					const auto packedToIdx = ecs::GetIndex(packed[to]);
+					chunks[GetChunk(packedToIdx)][GetOffset(packedToIdx)] =
 					    ecs::MakeId(static_cast<const typename traits_type::Entity>(to));
 					*it = ecs::MakeId(static_cast<typename traits_type::Entity>(from));
 
@@ -707,8 +722,10 @@ namespace p::ecs
 			CheckMsg(Contains(lhs), "Set does not contain entity");
 			CheckMsg(Contains(rhs), "Set does not contain entity");
 
-			auto& id    = chunks[GetChunk(lhs)][GetOffset(lhs)];
-			auto& other = chunks[GetChunk(rhs)][GetOffset(rhs)];
+			const auto lhsIdx = ecs::GetIndex(lhs);
+			const auto rhsIdx = ecs::GetIndex(rhs);
+			auto& id          = chunks[GetChunk(lhsIdx)][GetOffset(lhsIdx)];
+			auto& other       = chunks[GetChunk(rhsIdx)][GetOffset(rhsIdx)];
 
 			const auto from = static_cast<size_type>(ecs::GetIndex(id));
 			const auto to   = static_cast<size_type>(ecs::GetIndex(other));
@@ -769,7 +786,8 @@ namespace p::ecs
 					const auto id  = packed[curr];
 
 					SwapAt(next, idx);
-					chunks[GetChunk(id)][GetOffset(id)] =
+					const auto idIdx = ecs::GetIndex(id);
+					chunks[GetChunk(idIdx)][GetOffset(idIdx)] =
 					    ecs::MakeId(static_cast<typename traits_type::Entity>(curr));
 					curr = std::exchange(next, idx);
 				}

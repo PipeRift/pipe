@@ -183,7 +183,10 @@ namespace p::ecs
 			// Destroy components
 			for (auto i = size; i < set.Size(); ++i)
 			{
-				std::destroy_at(Get(i));
+				if (set.Get(i) != NoId)
+				{
+					std::destroy_at(Get(i));
+				}
 			}
 
 			const auto from = (size + chunkSize - 1u) / chunkSize;
