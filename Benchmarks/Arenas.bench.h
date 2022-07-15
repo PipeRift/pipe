@@ -10,6 +10,7 @@ using namespace ankerl;
 #include <Pipe/Memory/BigBestFitArena.h>
 #include <Pipe/Memory/HeapArena.h>
 #include <Pipe/Memory/MonoLinearArena.h>
+#include <Pipe/Memory/MultiLinearArena.h>
 
 
 void RunArenasBenchmarks()
@@ -39,6 +40,14 @@ void RunArenasBenchmarks()
 			p::MonoLinearArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
 			consecutiveAlloc.run("MonoLinearArena", [&arena] {
+				ankerl::nanobench::doNotOptimizeAway(p::Alloc(arena, 16));
+			});
+		}
+
+		{
+			p::MultiLinearArena arenat{};
+			p::Arena& arena{arenat};
+			consecutiveAlloc.run("MultiLinearArena", [&arena] {
 				ankerl::nanobench::doNotOptimizeAway(p::Alloc(arena, 16));
 			});
 		}
@@ -129,6 +138,27 @@ void RunArenasBenchmarks()
 		}
 
 		{
+			p::MultiLinearArena arenat{};
+			p::Arena& arena{arenat};
+			p::TArray<void*> allocated;
+			allocated.Reserve(50000);
+			for (p::u32 i = 0; i < 50000; ++i)
+			{
+				allocated.Add(p::Alloc(arena, 16));
+			}
+
+			p::i32 i = 0;
+			consecutiveFree.run("MultiLinearArena", [&arena, &i, &allocated] {
+				p::Free(arena, allocated[i], 16);
+				++i;
+			});
+			for (; i < allocated.Size(); ++i)
+			{
+				p::Free(arena, allocated[i], 16);
+			}
+		}
+
+		{
 			p::BestFitArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
 			p::TArray<void*> allocated;
@@ -196,6 +226,38 @@ void RunArenasBenchmarks()
 			p::HeapArena arenat;
 			p::Arena& arena{arenat};
 			allocSequence.run("HeapArena", [&arena] {
+				void* p  = p::Alloc(arena, 16);
+				void* p2 = p::Alloc(arena, 21);
+				p::Free(arena, p, 16);
+				void* p3 = p::Alloc(arena, 8);
+				p::Free(arena, p3, 8);
+				ankerl::nanobench::doNotOptimizeAway(p);
+				ankerl::nanobench::doNotOptimizeAway(p2);
+				ankerl::nanobench::doNotOptimizeAway(p3);
+				p::Free(arena, p2, 21);
+			});
+		}
+
+		{
+			p::MonoLinearArena arenat;
+			p::Arena& arena{arenat};
+			allocSequence.run("MonoLinearArena", [&arena] {
+				void* p  = p::Alloc(arena, 16);
+				void* p2 = p::Alloc(arena, 21);
+				p::Free(arena, p, 16);
+				void* p3 = p::Alloc(arena, 8);
+				p::Free(arena, p3, 8);
+				ankerl::nanobench::doNotOptimizeAway(p);
+				ankerl::nanobench::doNotOptimizeAway(p2);
+				ankerl::nanobench::doNotOptimizeAway(p3);
+				p::Free(arena, p2, 21);
+			});
+		}
+
+		{
+			p::MultiLinearArena arenat;
+			p::Arena& arena{arenat};
+			allocSequence.run("MultiLinearArena", [&arena] {
 				void* p  = p::Alloc(arena, 16);
 				void* p2 = p::Alloc(arena, 21);
 				p::Free(arena, p, 16);
@@ -291,6 +353,72 @@ void RunArenasBenchmarks()
 
 			ankerl::nanobench::Rng rng(122);
 			randomSequence.run("HeapArena", [&arena, &rng, &allocated] {
+				if (rng() & 1U)
+				{
+					void* ptr = p::Alloc(arena, 16);
+					ankerl::nanobench::doNotOptimizeAway(ptr);
+					allocated.Add(ptr);
+				}
+				else
+				{
+					p::u32 index   = rng.bounded(allocated.Size());
+					void* toRemove = allocated[index];
+					p::Free(arena, toRemove, 16);
+					allocated.RemoveAtSwapUnsafe(index);
+				}
+			});
+
+			for (void* p : allocated)
+			{
+				p::Free(arena, p, 16);
+			}
+		}
+
+		{
+			p::MonoLinearArena arenat{100 * p::Memory::MB};
+			p::Arena& arena{arenat};
+			p::TArray<void*> allocated;
+			allocated.Reserve(50000);
+			for (p::u32 i = 0; i < 25000; ++i)
+			{
+				allocated.Add(p::Alloc(arena, 16));
+			}
+
+			ankerl::nanobench::Rng rng(122);
+			randomSequence.run("MonoLinearArena", [&arena, &rng, &allocated] {
+				if (rng() & 1U)
+				{
+					void* ptr = p::Alloc(arena, 16);
+					ankerl::nanobench::doNotOptimizeAway(ptr);
+					allocated.Add(ptr);
+				}
+				else
+				{
+					p::u32 index   = rng.bounded(allocated.Size());
+					void* toRemove = allocated[index];
+					p::Free(arena, toRemove, 16);
+					allocated.RemoveAtSwapUnsafe(index);
+				}
+			});
+
+			for (void* p : allocated)
+			{
+				p::Free(arena, p, 16);
+			}
+		}
+
+		{
+			p::MultiLinearArena arenat{};
+			p::Arena& arena{arenat};
+			p::TArray<void*> allocated;
+			allocated.Reserve(50000);
+			for (p::u32 i = 0; i < 25000; ++i)
+			{
+				allocated.Add(p::Alloc(arena, 16));
+			}
+
+			ankerl::nanobench::Rng rng(122);
+			randomSequence.run("MultiLinearArena", [&arena, &rng, &allocated] {
 				if (rng() & 1U)
 				{
 					void* ptr = p::Alloc(arena, 16);

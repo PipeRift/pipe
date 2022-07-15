@@ -11,7 +11,6 @@ namespace p
 	void* MonoLinearArena::Alloc(sizet size, sizet align)
 	{
 		u8* const allocEnd = (u8*)insert + size + GetAlignmentPadding(insert, align);
-
 		// Not enough space in current block?
 		if (allocEnd <= block.End()) [[likely]]
 		{

@@ -11,17 +11,18 @@ namespace p
 	template<sizet blockSize>
 	void* LinearBasePool<blockSize>::Alloc(Arena& parentArena, sizet size, sizet align)
 	{
-		u8* allocEnd = (u8*)insert + size + GetAlignmentPadding(insert, align);
+		insert = (u8*)insert + size + GetAlignmentPadding(insert, align);
 
 		// Not enough space in current block?
-		if (!freeBlock || allocEnd > GetBlockEnd(freeBlock)) [[unlikely]]
+		if (freeBlock && insert <= GetBlockEnd(freeBlock)) [[likely]]
 		{
-			AllocateBlock(parentArena);
-			// Recalculate allocation with new block
-			allocEnd = (u8*)insert + size + GetAlignmentPadding(insert, align);
+			++freeBlock->count;
+			return (u8*)insert - size;    // Fast-path
 		}
 
-		insert = allocEnd;
+		AllocateBlock(parentArena);
+		// Recalculate allocation with new block
+		insert = (u8*)insert + size + GetAlignmentPadding(insert, align);
 		++freeBlock->count;
 		return (u8*)insert - size;
 	}
@@ -30,13 +31,16 @@ namespace p
 	void LinearBasePool<blockSize>::Free(Arena& parentArena, void* ptr, sizet size)
 	{
 		auto* block = static_cast<LinearBlock*>(GetAlignedBlock(ptr, GetBlockSize()));
-		if (block) [[likely]]
+		if (!block) [[unlikely]]
 		{
-			--block->count;
-			if (block->count <= 0) [[unlikely]]
-			{
-				FreeBlock(parentArena, block);
-			}
+			return;
+		}
+
+		--block->count;
+		if (block->count == 0 && block != freeBlock) [[unlikely]]
+		{
+			// If the block is empty and was marked full, free it
+			FreeBlock(parentArena, block);
 		}
 	}
 
@@ -65,21 +69,15 @@ namespace p
 	void LinearBasePool<blockSize>::FreeBlock(Arena& parentArena, LinearBlock* block)
 	{
 		Check(block);
-		if (freeBlock == block)
-		{
-			freeBlock = block->last;
-			insert    = freeBlock + 1;
-		}
-		else if (block->next)    // currentBlock never has next block, only last
+		// freeBlock is never freed. No need to handle it.
+		if (block->next)
 		{
 			block->next->last = block->last;
 		}
-
 		if (block->last)
 		{
 			block->last->next = block->next;
 		}
-
 		p::Free(parentArena, block->unaligned, GetAllocatedBlockSize());
 	}
 
@@ -105,11 +103,11 @@ namespace p
 		}
 		else if (size < mediumPool.maxSize)
 		{
-			// return mediumPool.Alloc(GetParentArena(), size, align);
+			return mediumPool.Alloc(GetParentArena(), size, align);
 		}
 		else if (size < bigPool.maxSize)
 		{
-			// return bigPool.Alloc(GetParentArena(), size, align);
+			return bigPool.Alloc(GetParentArena(), size, align);
 		}
 		else
 		{
@@ -125,11 +123,11 @@ namespace p
 		}
 		else if (size < mediumPool.maxSize)
 		{
-			// mediumPool.Free(GetParentArena(), ptr, size);
+			mediumPool.Free(GetParentArena(), ptr, size);
 		}
 		else if (size < bigPool.maxSize)
 		{
-			// bigPool.Free(GetParentArena(), ptr, size);
+			bigPool.Free(GetParentArena(), ptr, size);
 		}
 		else
 		{

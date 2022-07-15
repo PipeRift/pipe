@@ -4,6 +4,7 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/FixedString.h"
+#include "Pipe/Core/Heap.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"

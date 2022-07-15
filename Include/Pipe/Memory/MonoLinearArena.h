@@ -41,7 +41,8 @@ namespace p
 		    , block{insert, blockSize}
 		    , selfAllocated{true}
 		{
-			bool a;
+			Interface<MonoLinearArena, &MonoLinearArena::Alloc, &MonoLinearArena::Alloc,
+			    &MonoLinearArena::Resize, &MonoLinearArena::Free>();
 		}
 		~MonoLinearArena() override
 		{
