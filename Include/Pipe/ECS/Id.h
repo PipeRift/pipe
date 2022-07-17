@@ -67,7 +67,8 @@ namespace p::ecs
 		          | (IdTraits<Id>::Entity(version) << IdTraits<Id>::indexShift)};
 	}
 
-	constexpr Id NoId = MakeId();
+	constexpr Id NoId                         = MakeId();
+	constexpr IdTraits<Id>::Version NoVersion = IdTraits<Id>::versionMask;
 
 	static constexpr IdTraits<Id>::Index GetIndex(Id id)
 	{

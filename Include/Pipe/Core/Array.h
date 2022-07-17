@@ -85,6 +85,12 @@ namespace p::core
 			return Size() - 1;
 		}
 
+		i32 AddN(i32 count, const Type& item)
+		{
+			vector.insert(vector.end(), count, item);
+			return Size() - count;
+		}
+
 		Type& AddRef(Type&& item)
 		{
 			const i32 index = Add(Move(item));
