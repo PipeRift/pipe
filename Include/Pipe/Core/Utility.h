@@ -2,7 +2,10 @@
 
 #pragma once
 
+#include "Pipe/Core/TypeTraits.h"
+
 #include <type_traits>
+#include <utility>
 
 
 namespace p::core
@@ -33,6 +36,16 @@ namespace p::core
 	{
 		static_assert(!std::is_lvalue_reference_v<T>, "Bad Forward call");
 		return static_cast<T&&>(arg);
+	}
+
+	template<typename T, typename OtherT = T>
+	constexpr T Exchange(T& value, OtherT&& newValue) noexcept(
+	    IsMoveConstructible<T>&& IsAssignable<T&, OtherT>)
+	{
+		// assign _New_val to _Val, return previous _Val
+		T oldValue = Forward<T>(value);
+		value      = Forward<OtherT>(newValue);
+		return oldValue;
 	}
 
 	template<typename Predicate>

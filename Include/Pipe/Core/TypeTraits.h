@@ -60,6 +60,8 @@ namespace p
 	concept IsMoveConstructible = std::is_move_constructible_v<T>;
 	template<typename T>
 	concept IsMoveAssignable = std::is_move_assignable_v<T>;
+	template<typename To, typename From>
+	concept IsAssignable = std::is_assignable_v<To, From>;
 
 	template<typename T>
 	concept IsAbstract = std::is_abstract_v<T>;
