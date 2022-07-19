@@ -35,7 +35,7 @@ namespace p::core
 			current = *stackTop;
 
 		Loop:
-			Index count = Index(current.max - current.min + 1);
+			const Index count = Index(current.max - current.min + 1);
 
 			if (current.maxDepth == 0)
 			{
@@ -49,12 +49,12 @@ namespace p::core
 				// Use simple bubble-sort.
 				while (current.max > current.min)
 				{
-					T *max, *Item;
-					for (max = current.min, Item = current.min + 1; Item <= current.max; Item++)
+					T *max, *item;
+					for (max = current.min, item = current.min + 1; item <= current.max; item++)
 					{
-						if (predicate(*max, *Item))
+						if (predicate(*max, *item))
 						{
-							max = Item;
+							max = item;
 						}
 					}
 					Swap(*max, *current.max--);

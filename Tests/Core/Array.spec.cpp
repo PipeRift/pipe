@@ -89,7 +89,29 @@ go_bandit([]() {
 			AssertThat(data1[1], Equals(34));
 		});
 
-		it("Can ExcludeIf", [&]() {
+		it("Can RemoveLast", [&]() {
+			TArray<i32> data{1, 4, 6};
+			data.RemoveLast();
+			AssertThat(data.Size(), Equals(2));
+			AssertThat(data[0], Equals(1));
+			AssertThat(data[1], Equals(4));
+			AssertThat(data.MaxSize(), Equals(3));
+		});
+
+		it("Can RemoveLast N", [&]() {
+			TArray<i32> dataA{1, 4, 6};
+			dataA.RemoveLast(2);
+			AssertThat(dataA.Size(), Equals(1));
+			AssertThat(dataA[0], Equals(1));
+			AssertThat(dataA.MaxSize(), Equals(3));
+
+			TArray<i32> dataB{1, 4, 6};
+			dataB.RemoveLast(3);
+			AssertThat(dataB.Size(), Equals(0));
+			AssertThat(dataB.MaxSize(), Equals(3));
+		});
+
+		it("Can RemoveIf", [&]() {
 			TArray<i32> data{1, 4, 5, 6};
 
 			AssertThat(data.Size(), Equals(4));
@@ -102,7 +124,7 @@ go_bandit([]() {
 			AssertThat(data[1], Equals(5));
 		});
 
-		it("Can ExcludeIfSwap", [&]() {
+		it("Can RemoveIfSwap", [&]() {
 			TArray<i32> data{1, 4, 5, 6};
 
 			AssertThat(data.Size(), Equals(4));

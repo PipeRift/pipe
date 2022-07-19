@@ -67,9 +67,6 @@ namespace p::ecs
 		          | (IdTraits<Id>::Entity(version) << IdTraits<Id>::indexShift)};
 	}
 
-	constexpr Id NoId                         = MakeId();
-	constexpr IdTraits<Id>::Version NoVersion = IdTraits<Id>::versionMask;
-
 	static constexpr IdTraits<Id>::Index GetIndex(Id id)
 	{
 		return IdTraits<Id>::Index{IdTraits<Id>::Entity(id) & IdTraits<Id>::indexMask};
@@ -80,6 +77,10 @@ namespace p::ecs
 		constexpr auto mask = IdTraits<Id>::versionMask << IdTraits<Id>::indexShift;
 		return IdTraits<Id>::Version((IdTraits<Id>::Entity(id) & mask) >> IdTraits<Id>::indexShift);
 	}
+
+	constexpr Id NoId                         = MakeId();
+	constexpr IdTraits<Id>::Version NoVersion = GetVersion(NoId);
+	constexpr IdTraits<Id>::Version NoIndex   = GetIndex(NoId);
 
 	constexpr bool IsNone(ecs::Id id)
 	{

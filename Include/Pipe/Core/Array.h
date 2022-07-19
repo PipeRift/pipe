@@ -258,7 +258,19 @@ namespace p::core
 
 		void Sort()
 		{
-			p::Sort(Data(), Size(), TLess<Type>());
+			Sort(TLess<Type>());
+		}
+
+		template<typename Predicate>
+		void SortRange(i32 firstIndex, i32 count, Predicate predicate)
+		{
+			const i32 maxSize = Size() - firstIndex;
+			p::Sort(Data() + firstIndex, math::Min(count, maxSize), TLess<Type>());
+		}
+
+		void SortRange(i32 firstIndex, i32 count)
+		{
+			SortRange(firstIndex, count, TLess<Type>());
 		}
 
 		Iterator FindIt(const Type& item) const
@@ -587,11 +599,21 @@ namespace p::core
 			return lastSize - Size();
 		}
 
-		bool RemoveLast(i32 num = 1)
+		void RemoveLast()
 		{
-			const i32 lastSize = Size();
-			Resize(lastSize - num);
-			return lastSize - Size() > 0;
+			vector.pop_back();
+		}
+
+		void RemoveLast(i32 num)
+		{
+			if (num > Size())
+			{
+				Empty(false);
+			}
+			else
+			{
+				vector.erase(vector.end() - num, vector.end());
+			}
 		}
 
 		void Swap(i32 firstIndex, i32 secondIndex);
