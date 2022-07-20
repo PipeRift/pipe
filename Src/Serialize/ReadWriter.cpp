@@ -11,11 +11,11 @@ namespace p
 	{
 		if (IsWriting())
 		{
-			writeContext->BeginObject();
+			writer->BeginObject();
 		}
 		else
 		{
-			readContext->BeginObject();
+			reader->BeginObject();
 		}
 	}
 
@@ -23,11 +23,11 @@ namespace p
 	{
 		if (IsWriting())
 		{
-			return writeContext->EnterNext(name);
+			return writer->EnterNext(name);
 		}
 		else
 		{
-			return readContext->EnterNext(name);
+			return reader->EnterNext(name);
 		}
 	}
 
@@ -35,11 +35,11 @@ namespace p
 	{
 		if (IsWriting())
 		{
-			writeContext->BeginArray(size);
+			writer->BeginArray(size);
 		}
 		else
 		{
-			readContext->BeginArray(size);
+			reader->BeginArray(size);
 		}
 	}
 
@@ -47,11 +47,11 @@ namespace p
 	{
 		if (IsWriting())
 		{
-			return writeContext->EnterNext();
+			return writer->EnterNext();
 		}
 		else
 		{
-			return readContext->EnterNext();
+			return reader->EnterNext();
 		}
 	}
 
@@ -59,11 +59,11 @@ namespace p
 	{
 		if (IsWriting())
 		{
-			writeContext->Leave();
+			writer->Leave();
 		}
 		else
 		{
-			readContext->Leave();
+			reader->Leave();
 		}
 	}
 

@@ -42,9 +42,10 @@ namespace p
 
 		static void Delete(Arena& arena, void* rawPtr)
 		{
-			T* ptr = static_cast<T*>(rawPtr);
+			T* ptr               = static_cast<T*>(rawPtr);
+			const sizet typeSize = ptr->GetType()->GetSize();
 			ptr->~T();
-			p::Free(arena, (void*)ptr, ptr->GetType()->GetSize());
+			p::Free(arena, (void*)ptr, typeSize);
 		}
 	};
 }    // namespace p

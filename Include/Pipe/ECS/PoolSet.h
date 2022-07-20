@@ -5,458 +5,229 @@
 #include "Pipe/Core/Array.h"
 #include "Pipe/Core/Broadcast.h"
 #include "Pipe/ECS/Id.h"
+#include "Pipe/Memory/Alloc.h"
 
 
 namespace p::ecs
 {
+	template<typename PackedContainerType>
+	struct PoolIterator final
+	{
+		using difference_type   = typename IdTraits<Id>::Difference;
+		using value_type        = ecs::Id;
+		using pointer           = const value_type*;
+		using reference         = const value_type&;
+		using iterator_category = std::random_access_iterator_tag;
+
+		PoolIterator() = default;
+
+		PoolIterator(const PackedContainerType& ref, const difference_type offset)
+		    : packed{std::addressof(ref)}, offset{offset}
+		{}
+
+		PoolIterator& operator++()
+		{
+			return --offset, *this;
+		}
+
+		PoolIterator operator++(int)
+		{
+			PoolIterator orig = *this;
+			return ++(*this), orig;
+		}
+
+		PoolIterator& operator--()
+		{
+			return ++offset, *this;
+		}
+
+		PoolIterator operator--(int)
+		{
+			PoolIterator orig = *this;
+			return operator--(), orig;
+		}
+
+		PoolIterator& operator+=(const difference_type value)
+		{
+			offset -= value;
+			return *this;
+		}
+
+		PoolIterator operator+(const difference_type value) const
+		{
+			PoolIterator copy = *this;
+			return (copy += value);
+		}
+
+		PoolIterator& operator-=(const difference_type value)
+		{
+			return (*this += -value);
+		}
+
+		PoolIterator operator-(const difference_type value) const
+		{
+			return (*this + -value);
+		}
+
+		difference_type operator-(const PoolIterator& other) const
+		{
+			return other.offset - offset;
+		}
+
+		bool operator==(const PoolIterator& other) const
+		{
+			return other.offset == offset;
+		}
+
+		auto operator<=>(const PoolIterator& other) const
+		{
+			return other.offset <=> offset;
+		}
+
+		reference operator[](const difference_type value) const
+		{
+			return packed->Data()[Index() - value];
+		}
+
+		pointer operator->() const
+		{
+			return packed->Data() + Index();
+		}
+
+		reference operator*() const
+		{
+			return *operator->();
+		}
+
+		constexpr difference_type Index() const noexcept
+		{
+			return offset - 1;
+		}
+
+	private:
+		const PackedContainerType* packed = nullptr;
+		difference_type offset            = 0;
+	};
+
+
 	enum class DeletionPolicy : u8
 	{
 		Swap,
 		InPlace
 	};
 
-	template<typename Allocator = ArenaAllocator>
 	struct TPoolSet
 	{
 		static constexpr auto growthFactor = 1.5;
-		static constexpr auto chunkSize    = 4096;
+		static constexpr auto pageSize     = 4096;
 
 		using traits_type         = IdTraits<Id>;
-		using PackedContainerType = TArray<Id, Allocator>;
+		using PackedContainerType = TArray<Id>;
 
-
-		struct Iterator final
-		{
-			using difference_type   = typename traits_type::Difference;
-			using value_type        = ecs::Id;
-			using pointer           = const value_type*;
-			using reference         = const value_type&;
-			using iterator_category = std::random_access_iterator_tag;
-
-			Iterator() = default;
-
-			Iterator(const PackedContainerType& ref, const difference_type idx)
-			    : packed{std::addressof(ref)}, index{idx}
-			{}
-
-			Iterator& operator++()
-			{
-				return --index, *this;
-			}
-
-			Iterator operator++(int)
-			{
-				iterator orig = *this;
-				return ++(*this), orig;
-			}
-
-			Iterator& operator--()
-			{
-				return ++index, *this;
-			}
-
-			Iterator operator--(int)
-			{
-				Iterator orig = *this;
-				return operator--(), orig;
-			}
-
-			Iterator& operator+=(const difference_type value)
-			{
-				index -= value;
-				return *this;
-			}
-
-			Iterator operator+(const difference_type value) const
-			{
-				Iterator copy = *this;
-				return (copy += value);
-			}
-
-			Iterator& operator-=(const difference_type value)
-			{
-				return (*this += -value);
-			}
-
-			Iterator operator-(const difference_type value) const
-			{
-				return (*this + -value);
-			}
-
-			difference_type operator-(const Iterator& other) const
-			{
-				return other.index - index;
-			}
-
-			[[nodiscard]] reference operator[](const difference_type value) const
-			{
-				const auto pos = size_type(index - value - 1u);
-				return (*packed)[pos];
-			}
-
-			[[nodiscard]] bool operator==(const Iterator& other) const
-			{
-				return other.index == index;
-			}
-
-			[[nodiscard]] bool operator!=(const Iterator& other) const
-			{
-				return !(*this == other);
-			}
-
-			[[nodiscard]] bool operator<(const Iterator& other) const
-			{
-				return index > other.index;
-			}
-
-			[[nodiscard]] bool operator>(const Iterator& other) const
-			{
-				return index < other.index;
-			}
-
-			[[nodiscard]] bool operator<=(const Iterator& other) const
-			{
-				return !(*this > other);
-			}
-
-			[[nodiscard]] bool operator>=(const Iterator& other) const
-			{
-				return !(*this < other);
-			}
-
-			[[nodiscard]] pointer operator->() const
-			{
-				const auto pos = size_type(index - 1u);
-				return std::addressof((*packed)[pos]);
-			}
-
-			[[nodiscard]] reference operator*() const
-			{
-				return *operator->();
-			}
-
-		private:
-			const PackedContainerType* packed = nullptr;
-			difference_type index             = 0;
-		};
+		using Entity           = traits_type::Entity;
+		using Index            = traits_type::Index;
+		using Version          = traits_type::Version;
+		using pointer          = Id* const;
+		using iterator         = PoolIterator<PackedContainerType>;
+		using reverse_iterator = std::reverse_iterator<iterator>;
 
 
 	private:
-		typename Allocator::template Typed<Id> allocator;
-		// Id** sparse;
-		// std::size_t bucket;
-		TArray<Id*, Allocator> chunks;
+		TArray<Id*> pages;
 		PackedContainerType packed;
+		Arena* arena = nullptr;
 		Id freeList;
 		DeletionPolicy mode;
 
-		static auto GetChunk(sizet index)
-		{
-			return static_cast<size_type>(index / chunkSize);
-		}
-
-		static auto GetOffset(sizet index)
-		{
-			return static_cast<size_type>(index & (chunkSize - 1));
-		}
-
-		[[nodiscard]] Id* AssurePage(const std::size_t idx)
-		{
-			if (idx >= chunks.Size())
-			{
-				chunks.Resize(idx + 1);
-			}
-
-			Id*& chunk = chunks[idx];
-			if (!chunk)
-			{
-				chunk = allocator.Alloc(chunkSize);
-				std::uninitialized_fill(chunk, chunk + chunkSize, ecs::NoId);
-			}
-
-			return chunk;
-		}
-
-		void ReleaseChunks()
-		{
-			packed.Empty();
-			if (!chunks.IsEmpty())
-			{
-				for (Id* chunk : chunks)
-				{
-					if (chunk)
-					{
-						std::destroy(chunk, chunk + chunkSize);
-						allocator.Free(chunk, chunkSize);
-					}
-				}
-				chunks.Empty();
-			}
-		}
-
-	protected:
-		/**
-		 * @brief Swaps two entities in the internal packed array.
-		 * @param lhs A valid position of an entity within storage.
-		 * @param rhs A valid position of an entity within storage.
-		 */
-		void SwapAt([[maybe_unused]] const std::size_t lhs, [[maybe_unused]] const std::size_t rhs)
-		{}
-
-		/**
-		 * @brief Moves an entity in the internal packed array.
-		 * @param from A valid position of an entity within storage.
-		 * @param to A valid position of an entity within storage.
-		 */
-		void MoveAndPop(
-		    [[maybe_unused]] const std::size_t from, [[maybe_unused]] const std::size_t to)
-		{}
 
 	public:
-		/**
-		 * @brief Attempts to erase an entity from the internal packed array.
-		 * @param id A valid entity identifier.
-		 * @param ud Optional user data that are forwarded as-is to derived classes.
-		 */
-		void PopSwap(const ecs::Id id)
-		{
-			const auto idIndex = ecs::GetIndex(id);
-			auto& ref          = chunks[GetChunk(idIndex)][GetOffset(idIndex)];
-			CheckMsg(packed[idIndex] == id, "Invalid entity identifier");
-
-			auto& last           = packed.Last();
-			const auto lastIndex = ecs::GetIndex(last);
-			Get(lastIndex)       = ref;
-			packed[idIndex]      = last;
-			// unnecessary but it helps to detect nasty bugs
-			CheckMsg((last = ecs::NoId, true), "");
-			// lazy self-assignment guard
-			ref = ecs::NoId;
-			packed.RemoveLast();
-		}
-
-		/**
-		 * @brief Attempts to erase an entity from the internal packed array.
-		 * @param id A valid entity identifier.
-		 * @param ud Optional user data that are forwarded as-is to derived classes.
-		 */
-		void Pop(const ecs::Id id)
-		{
-			const auto idIndex = ecs::GetIndex(id);
-			CheckMsg(packed[idIndex] == id, "Invalid entity identifier");
-
-			packed[idIndex] = std::exchange(
-			    freeList, ecs::MakeId(static_cast<typename traits_type::Entity>(idIndex)));
-			// lazy self-assignment guard
-			Get(idIndex) = ecs::NoId;
-		}
-
-		/*! @brief Allocator type. */
-		/*! @brief Unsigned integer type. */
-		using size_type = traits_type::Index;
-		/*! @brief Pointer type to contained entities. */
-		using pointer = Id* const;
-		/*! @brief Random access iterator type. */
-		using iterator = Iterator;
-		/*! @brief Reverse iterator type. */
-		using reverse_iterator = std::reverse_iterator<iterator>;
-
-		/**
-		 * @brief Constructs an empty container with the given policy and allocator.
-		 * @param pol Type of deletion policy.
-		 * @param alloc Allocator to use (possibly default-constructed).
-		 */
-		explicit TPoolSet(DeletionPolicy pol = DeletionPolicy::Swap)
-		    : freeList{ecs::NoId}, mode{pol}
+		explicit TPoolSet(
+		    DeletionPolicy pol = DeletionPolicy::Swap, Arena& arena = GetCurrentArena())
+		    : arena{&arena}, freeList{ecs::NoId}, mode{pol}
 		{}
-
-		/**
-		 * @brief Move constructor.
-		 * @param other The instance to move from.
-		 */
 		TPoolSet(TPoolSet&& other) noexcept
-		    : allocator{std::move(other.allocator)}
-		    , chunks{std::move(other.chunks)}
-		    , packed{std::move(other.packed)}
-		    , freeList{std::exchange(other.freeList, ecs::NoId)}
+		    : pages{Move(other.pages)}
+		    , packed{Move(other.packed)}
+		    , arena{other.arena}
+		    , freeList{Exchange(other.freeList, ecs::NoId)}
 		    , mode{other.mode}
 		{}
-
-		/*! @brief Default destructor. */
-		~TPoolSet()
-		{
-			ReleaseChunks();
-		}
-
-		/**
-		 * @brief Move assignment operator.
-		 * @param other The instance to move from.
-		 * @return This sparse set.
-		 */
 		TPoolSet& operator=(TPoolSet&& other) noexcept
 		{
-			ReleaseChunks();
-			allocator = std::move(other.allocator);
-			chunks    = std::move(other.chunks);
-			packed    = std::move(other.packed);
-			freeList  = std::exchange(other.freeList, ecs::NoId);
-			mode      = other.mode;
+			ReleasePages();
+			pages    = Move(other.pages);
+			packed   = Move(other.packed);
+			arena    = other.arena;
+			freeList = Exchange(other.freeList, ecs::NoId);
+			mode     = other.mode;
 			return *this;
 		}
-
-		/**
-		 * @brief Returns the deletion policy of a sparse set.
-		 * @return The deletion policy of the sparse set.
-		 */
-		[[nodiscard]] DeletionPolicy Policy() const
+		~TPoolSet()
 		{
-			return mode;
+			ReleasePages();
 		}
 
-		/**
-		 * @brief Returns the next slot available for insertion.
-		 * @return The next slot available for insertion.
-		 */
-		[[nodiscard]] size_type Slot() const
+		void Reserve(const i32 capacity)
 		{
-			return freeList == ecs::NoId ? packed.Size()
-			                             : static_cast<size_type>(ecs::GetIndex(freeList));
+			packed.Reserve(capacity);
 		}
 
-		/**
-		 * @brief Increases the capacity of a sparse set.
-		 *
-		 * If the new capacity is greater than the current capacity, new storage is
-		 * allocated, otherwise the method does nothing.
-		 *
-		 * @param cap Desired capacity.
-		 */
-		void Reserve(const size_type cap)
-		{
-			packed.Reserve(cap);
-		}
-
-		/**
-		 * @brief Returns the number of elements that a sparse set has currently
-		 * allocated space for.
-		 * @return Capacity of the sparse set.
-		 */
-		[[nodiscard]] size_type Capacity() const
+		i32 Capacity() const
 		{
 			return packed.MaxSize();
 		}
 
-		/*! @brief Requests the removal of unused capacity. */
 		void Shrink()
 		{
 			packed.Shrink();
 		}
 
 		/**
-		 * @brief Returns the extent of a sparse set.
+		 * @returns the extent of a sparse set.
 		 *
 		 * The extent of a sparse set is also the size of the internal sparse array.
 		 * There is no guarantee that the internal packed array has the same size.
 		 * Usually the size of the internal sparse array is equal or greater than
 		 * the one of the internal packed array.
-		 *
-		 * @return Extent of the sparse set.
 		 */
-		[[nodiscard]] size_type Extent() const
+		Index Extent() const
 		{
-			return chunks.Size() * chunkSize;
+			return pages.Size() * pageSize;
 		}
 
 		/**
-		 * @brief Returns the number of elements in a sparse set.
+		 * @returns the number of elements in the pool set.
 		 *
 		 * The number of elements is also the size of the internal packed array.
 		 * There is no guarantee that the internal sparse array has the same size.
 		 * Usually the size of the internal sparse array is equal or greater than
 		 * the one of the internal packed array.
-		 *
-		 * @return Number of elements.
 		 */
-		[[nodiscard]] size_type Size() const
+		i32 Size() const
 		{
 			return packed.Size();
 		}
 
-		/**
-		 * @brief Checks whether a sparse set is empty.
-		 * @return True if the sparse set is empty, false otherwise.
-		 */
-		[[nodiscard]] bool IsEmpty() const
+		bool IsEmpty() const
 		{
 			return packed.IsEmpty();
 		}
 
 		/**
-		 * @brief Direct access to the internal packed array.
-		 * @return A pointer to the internal packed array.
+		 * @return direct access to the internal packed array
 		 */
-		[[nodiscard]] pointer Data() const
+		pointer Data() const
 		{
 			return packed.Data();
 		}
 
-		/**
-		 * @brief Returns an iterator to the beginning.
-		 *
-		 * The returned iterator points to the first entity of the internal packed
-		 * array. If the sparse set is empty, the returned iterator will be equal to
-		 * `end()`.
-		 *
-		 * @return An iterator to the first entity of the internal packed array.
-		 */
-		[[nodiscard]] iterator begin() const
+		// Returns the next slot available for insertion
+		Index Slot() const
 		{
-			return iterator{packed, static_cast<typename traits_type::Difference>(packed.Size())};
-		}
-
-		/**
-		 * @brief Returns an iterator to the end.
-		 *
-		 * The returned iterator points to the element following the last entity in
-		 * the internal packed array. Attempting to dereference the returned
-		 * iterator results in undefined behavior.
-		 *
-		 * @return An iterator to the element following the last entity of the
-		 * internal packed array.
-		 */
-		[[nodiscard]] iterator end() const
-		{
-			return iterator{packed, {}};
-		}
-
-		/**
-		 * @brief Returns a reverse iterator to the beginning.
-		 *
-		 * The returned iterator points to the first entity of the reversed internal
-		 * packed array. If the sparse set is empty, the returned iterator will be
-		 * equal to `rend()`.
-		 *
-		 * @return An iterator to the first entity of the reversed internal packed
-		 * array.
-		 */
-		[[nodiscard]] reverse_iterator rbegin() const
-		{
-			return std::make_reverse_iterator(end());
-		}
-
-		/**
-		 * @brief Returns a reverse iterator to the end.
-		 *
-		 * The returned iterator points to the element following the last entity in
-		 * the reversed internal packed array. Attempting to dereference the
-		 * returned iterator results in undefined behavior.
-		 *
-		 * @return An iterator to the element following the last entity of the
-		 * reversed internal packed array.
-		 */
-		[[nodiscard]] reverse_iterator rend() const
-		{
-			return std::make_reverse_iterator(begin());
+			if (freeList == ecs::NoId)
+				return packed.Size();
+			else
+				return static_cast<Index>(ecs::GetIndex(freeList));
 		}
 
 		/**
@@ -465,7 +236,7 @@ namespace p::ecs
 		 * @return An iterator to the given entity if it's found, past the end
 		 * iterator otherwise.
 		 */
-		[[nodiscard]] iterator Find(const Id id) const
+		iterator Find(const Id id) const
 		{
 			return Contains(id) ? --(end() - Index(id)) : end();
 		}
@@ -475,14 +246,21 @@ namespace p::ecs
 		 * @param id A valid entity identifier.
 		 * @return True if the sparse set contains the entity, false otherwise.
 		 */
-		[[nodiscard]] bool Contains(const Id id) const
+		bool Contains(const Id id) const
 		{
-			const auto idIdx = ecs::GetIndex(id);
-			//  Testing versions permits to avoid accessing the packed array
-			const auto curr = GetChunk(idIdx);
-			return ecs::GetVersion(id) != ecs::GetVersion(ecs::NoId)
-			    && (curr < chunks.Size() && chunks[curr]
-			        && chunks[curr][GetOffset(idIdx)] != ecs::NoId);
+			const auto index = ecs::GetIndex(id);
+			const Id* pageId = GetPageIdPtrFromId(id);
+			return pageId
+			    && (((~ecs::NoIndex & ecs::GetIndex(id)) ^ ecs::GetIndex(*pageId)) < ecs::NoIndex);
+		}
+
+		/**
+		 * @returns the contained version for an identifier
+		 */
+		Version GetCurrentVersion(const Id id) const noexcept
+		{
+			const Id* pageId = GetPageIdPtrFromId(id);
+			return pageId ? GetVersion(*pageId) : NoVersion;
 		}
 
 		/**
@@ -495,84 +273,14 @@ namespace p::ecs
 		 * @param id A valid entity identifier.
 		 * @return The position of the entity in the sparse set.
 		 */
-		[[nodiscard]] size_type Index(const Id id) const
+		Index GetIndex(const Id id) const
 		{
 			CheckMsg(Contains(id), "Set does not contain entity");
 			const auto idIdx = ecs::GetIndex(id);
-			return static_cast<size_type>(ecs::GetIndex(Get(idIdx)));
+			return static_cast<Index>(ecs::GetIndex(GetPageId(idIdx)));
 		}
 
-		/**
-		 * @brief Returns the entity at specified location, with bounds checking.
-		 * @param pos The position for which to return the entity.
-		 * @return The entity at specified location if any, a nullptr entity otherwise.
-		 */
-		[[nodiscard]] Id At(const size_type pos) const
-		{
-			return pos < packed.Size() ? packed[pos] : NoId;
-		}
-
-		/**
-		 * @brief Returns the entity at specified location, without bounds checking.
-		 * @param pos The position for which to return the entity.
-		 * @return The entity at specified location.
-		 */
-		[[nodiscard]] Id operator[](const size_type index) const
-		{
-			CheckMsg(packed.IsValidIndex(index), "Index is out of bounds");
-			return packed[index];
-		}
-
-		const Id& Get(sizet index) const
-		{
-			return chunks[GetChunk(index)][GetOffset(index)];
-		}
-		Id& Get(sizet index)
-		{
-			return chunks[GetChunk(index)][GetOffset(index)];
-		}
-
-		/**
-		 * @brief Appends an entity to a sparse set.
-		 *
-		 * @warning
-		 * Attempting to assign an entity that already belongs to the sparse set
-		 * results in undefined behavior.
-		 *
-		 * @param id A valid entity identifier.
-		 * @return The slot used for insertion.
-		 */
-		size_type TryEmplace(const Id id, bool forceBack)
-		{
-			CheckMsg(!Contains(id), "Set already contains entity");
-			const auto idIndex = ecs::GetIndex(id);
-			auto& item         = AssurePage(GetChunk(idIndex))[GetOffset(idIndex)];
-			if (freeList == ecs::NoId || forceBack)
-			{
-				item = ecs::MakeId(static_cast<typename traits_type::Entity>(packed.Size()));
-				packed.Add(id);
-				return packed.Size() - 1;
-			}
-			else
-			{
-				const auto index = static_cast<size_type>(ecs::GetIndex(freeList));
-				item             = ecs::MakeId(static_cast<typename traits_type::Entity>(index));
-				freeList         = std::exchange(packed[index], id);
-				return index;
-			}
-		}
-
-		/**
-		 * @brief Assigns an entity to a sparse set.
-		 *
-		 * @warning
-		 * Attempting to assign an entity that already belongs to the sparse set
-		 * results in undefined behavior.
-		 *
-		 * @param id A valid entity identifier.
-		 * @return The slot used for insertion.
-		 */
-		size_type Emplace(const Id id)
+		Index Emplace(Id id)
 		{
 			return TryEmplace(id, false);
 		}
@@ -593,110 +301,33 @@ namespace p::ecs
 		{
 			Reserve(packed.Size() + std::distance(first, last));
 
-			for (; first != last; ++first)
+			for (auto it = first; it != last; ++it)
 			{
-				const auto id = *first;
-				CheckMsg(!Contains(id), "Set already contains entity");
-				const auto idIndex = ecs::GetIndex(id);
-				AssurePage(GetChunk(idIndex))[GetOffset(idIndex)] =
-				    ecs::MakeId(static_cast<typename traits_type::Entity>(packed.Size()));
-				packed.Add(id);
+				TryEmplace(*it, true);
 			}
-		}
-
-		/**
-		 * @brief Erases an entity from a sparse set.
-		 *
-		 * @warning
-		 * Attempting to erase an entity that doesn't belong to the sparse set
-		 * results in undefined behavior.
-		 *
-		 * @param id A valid entity identifier.
-		 * @param ud Optional user data that are forwarded as-is to derived classes.
-		 */
-		void Erase(const Id id, void* ud = nullptr)
-		{
-			CheckMsg(Contains(id), "Set does not contain entity");
-			(mode == DeletionPolicy::InPlace) ? Pop(id, ud) : PopSwap(id, ud);
-		}
-
-		/**
-		 * @brief Erases entities from a set.
-		 *
-		 * @sa erase
-		 *
-		 * @tparam It Type of input iterator.
-		 * @param first An iterator to the first element of the range of entities.
-		 * @param last An iterator past the last element of the range of entities.
-		 * @param ud Optional user data that are forwarded as-is to derived classes.
-		 */
-		template<typename It>
-		void Erase(It first, It last, void* ud = nullptr)
-		{
-			for (; first != last; ++first)
-			{
-				Erase(*first, ud);
-			}
-		}
-
-		/**
-		 * @brief Removes an entity from a sparse set if it exists.
-		 * @param id A valid entity identifier.
-		 * @param ud Optional user data that are forwarded as-is to derived classes.
-		 * @return True if the entity is actually removed, false otherwise.
-		 */
-		bool Remove(const Id id, void* ud = nullptr)
-		{
-			return Contains(id) && (Erase(id, ud), true);
-		}
-
-		/**
-		 * @brief Removes entities from a sparse set if they exist.
-		 * @tparam It Type of input iterator.
-		 * @param first An iterator to the first element of the range of entities.
-		 * @param last An iterator past the last element of the range of entities.
-		 * @param ud Optional user data that are forwarded as-is to derived classes.
-		 * @return The number of entities actually removed.
-		 */
-		template<typename It>
-		size_type Remove(It first, It last, void* ud = nullptr)
-		{
-			size_type found{};
-
-			for (; first != last; ++first)
-			{
-				found += Remove(*first, ud);
-			}
-
-			return found;
 		}
 
 		/*! @brief Removes all ecs::NoIds from the packed array of a sparse set. */
 		void Compact()
 		{
-			size_type from = packed.Size();
-			for (; from && ecs::GetVersion(packed[from - 1u]) == ecs::GetVersion(ecs::NoId); --from)
-			{}
+			Index from = packed.Size();
+			for (; from && ecs::GetVersion(packed[i32(from) - 1u]) == NoVersion; --from) {}
 
-			for (auto* it = &freeList; *it != ecs::NoId && from;
-			     it       = std::addressof(packed[ecs::GetIndex(*it)]))
+			for (auto* it = &freeList; *it != NoId && from; it = &packed[i32(ecs::GetIndex(*it))])
 			{
-				const size_type to = ecs::GetIndex(*it);
+				const Index to = ecs::GetIndex(*it);
 				if (to < from)
 				{
 					--from;
-					MoveAndPop(from, to);
-					std::swap(packed[from], packed[to]);
+					// MoveElement(from, to);
 
+					auto& packedTo = packed[i32(to)];
+					p::Swap(packed[from], packedTo);
 
-					const auto packedToIdx = ecs::GetIndex(packed[to]);
-					chunks[GetChunk(packedToIdx)][GetOffset(packedToIdx)] =
-					    ecs::MakeId(static_cast<const typename traits_type::Entity>(to));
-					*it = ecs::MakeId(static_cast<typename traits_type::Entity>(from));
+					GetPageIdFromId(packedTo) = ecs::MakeId(to, ecs::GetVersion(packedTo));
+					*it                       = ecs::MakeId(from, NoVersion);
 
-					for (; from && ecs::GetVersion(packed[from - 1u]) == ecs::GetVersion(ecs::NoId);
-					     --from)
-					{}
+					for (; from && ecs::GetVersion(packed[from - 1u]) == NoVersion; --from) {}
 				}
 			}
 
@@ -717,23 +348,25 @@ namespace p::ecs
 		 * @param lhs A valid entity identifier.
 		 * @param rhs A valid entity identifier.
 		 */
-		void Swap(const Id lhs, const Id rhs)
+		void SwapElements(const Id a, const Id b)
 		{
-			CheckMsg(Contains(lhs), "Set does not contain entity");
-			CheckMsg(Contains(rhs), "Set does not contain entity");
+			CheckMsg(Contains(a), "Set does not contain entity");
+			CheckMsg(Contains(b), "Set does not contain entity");
 
-			const auto lhsIdx = ecs::GetIndex(lhs);
-			const auto rhsIdx = ecs::GetIndex(rhs);
-			auto& id          = chunks[GetChunk(lhsIdx)][GetOffset(lhsIdx)];
-			auto& other       = chunks[GetChunk(rhsIdx)][GetOffset(rhsIdx)];
+			auto& aPageId = GetPageIdFromId(a);
+			auto& bPageId = GetPageIdFromId(b);
 
-			const auto from = static_cast<size_type>(ecs::GetIndex(id));
-			const auto to   = static_cast<size_type>(ecs::GetIndex(other));
+			const auto aIndex = ecs::GetIndex(aPageId);
+			const auto bIndex = ecs::GetIndex(bPageId);
 
 			// basic no-leak guarantee (with invalid state) if swapping throws
-			SwapAt(from, to);
-			std::swap(id, other);
-			packed.Swap(from, to);
+			// SwapAt(aIndex, bIndex);
+			Id& packedA = packed[aIndex];
+			Id& packedB = packed[bIndex];
+			aPageId     = MakeId(bIndex, ecs::GetVersion(packedA));
+			bPageId     = MakeId(aIndex, ecs::GetVersion(packedB));
+
+			Swap(packedA, packedB);
 		}
 
 		/**
@@ -763,33 +396,31 @@ namespace p::ecs
 		 * @tparam Args Types of arguments to forward to the sort function object.
 		 * @param length Number of elements to sort.
 		 * @param compare A valid comparison function object.
-		 * @param args Arguments to forward to the sort function object, if any.
 		 */
-		template<typename Compare, typename... Args>
-		void SortN(const size_type length, Compare compare, Args&&... args)
+		template<typename Compare>
+		void SortN(const Index length, Compare compare)
 		{
 			// basic no-leak guarantee (with invalid state) if sorting throws
 			CheckMsg(!(length > packed.Size()), "Length exceeds the number of elements");
 			Compact();
 
-			std::sort(std::forward<Args>(args)..., std::make_reverse_iterator(packed + length),
-			    std::make_reverse_iterator(packed), std::move(compare));
+			packed.SortRange(0, length, Move(compare));
 
-			for (size_type pos{}; pos < length; ++pos)
+			for (Index pos{}; pos < length; ++pos)
 			{
-				auto curr = pos;
-				auto next = Index(packed[curr]);
+				Index curr = pos;
+				Index next = ecs::GetIndex(packed[curr]);
 
 				while (curr != next)
 				{
-					const auto idx = Index(packed[next]);
-					const auto id  = packed[curr];
+					const Index idx = ecs::GetIndex(packed[next]);
+					const Id id     = packed[curr];
 
 					SwapAt(next, idx);
-					const auto idIdx = ecs::GetIndex(id);
-					chunks[GetChunk(idIdx)][GetOffset(idIdx)] =
-					    ecs::MakeId(static_cast<typename traits_type::Entity>(curr));
-					curr = std::exchange(next, idx);
+					GetPageIdRefFromId(id) =
+					    ecs::MakeId(Entity(curr), ecs::GetVersion(packed[curr]));
+
+					curr = Exchange(next, idx);
 				}
 			}
 		}
@@ -803,13 +434,12 @@ namespace p::ecs
 		 * @tparam Sort Type of sort function object.
 		 * @tparam Args Types of arguments to forward to the sort function object.
 		 * @param compare A valid comparison function object.
-		 * @param algo A valid sort function object.
-		 * @param args Arguments to forward to the sort function object, if any.
 		 */
-		template<typename Compare, typename... Args>
-		void Sort(Compare compare, Args&&... args)
+		template<typename Compare>
+		void Sort(Compare compare)
 		{
-			SortN(packed.Size(), std::move(compare), std::forward<Args>(args)...);
+			Compact();
+			SortN(packed.Size(), Move(compare));
 		}
 
 		/**
@@ -831,20 +461,18 @@ namespace p::ecs
 		{
 			Compact();
 
-			const auto to = other.end();
-			auto from     = other.begin();
-
-			for (size_type pos = packed.Size() - 1; pos && from != to; ++from)
+			const iterator to = other.end();
+			iterator from     = other.begin();
+			for (Index index = packed.Size() - 1; index && from != to; ++from)
 			{
 				if (Contains(*from))
 				{
-					if (*from != packed[pos])
+					if (*from != packed[index])
 					{
 						// basic no-leak guarantee (with invalid state) if swapping throws
-						Swap(packed[pos], *from);
+						SwapElements(packed[index], *from);
 					}
-
-					--pos;
+					--index;
 				}
 			}
 		}
@@ -854,16 +482,212 @@ namespace p::ecs
 		 */
 		void Clear()
 		{
-			for (auto&& entity : *this)
+			if (const auto last = end(); freeList == NoId)
 			{
-				if (ecs::GetVersion(entity) != ecs::GetVersion(ecs::NoId))
+				Pop(begin(), last);
+			}
+			else
+			{
+				for (Id entity : *this)
 				{
-					Pop(entity);
+					if (ecs::GetVersion(entity) != ecs::GetVersion(ecs::NoId))
+					{
+						Pop(&entity, &entity + 1u);
+					}
 				}
 			}
 
 			freeList = ecs::NoId;
 			packed.Empty();
+		}
+
+
+		template<typename It>
+		void PopSwap(It first, It last)
+		{
+			for (; first != last; ++first)
+			{
+				const Id lastPacked = packed.Last();
+
+				const Index index           = ecs::GetIndex(*first);
+				GetPageIdFromId(lastPacked) = MakeId(index, ecs::GetVersion(lastPacked));
+				const Id id                 = Exchange(packed[index], lastPacked);
+
+				// unnecessary but it helps to detect nasty bugs
+				CheckMsg((packed.Last() = ecs::NoId, true), "");
+				// lazy self-assignment guard
+				GetPageIdFromId(id) = ecs::NoId;
+				packed.RemoveLast();
+			}
+		}
+
+		template<typename It>
+		void Pop(It first, It last)
+		{
+			for (; first != last; ++first)
+			{
+				const Index index = ecs::GetIndex(*first);
+				GetPageId(index)  = ecs::NoId;
+				packed[index]     = Exchange(freeList, ecs::MakeId(index, NoVersion));
+			}
+		}
+
+		/**
+		 * @brief Appends an entity to a sparse set.
+		 *
+		 * @warning
+		 * Attempting to assign an entity that already belongs to the sparse set
+		 * results in undefined behavior.
+		 *
+		 * @param id A valid entity identifier.
+		 * @return The slot used for insertion.
+		 */
+		Index TryEmplace(const Id id, bool forceBack)
+		{
+			CheckMsg(!Contains(id), "Set already contains entity");
+			const auto idIndex = ecs::GetIndex(id);
+			auto& item         = AssurePage(GetPage(idIndex))[GetOffset(idIndex)];
+			if (freeList == ecs::NoId || forceBack)
+			{
+				item = ecs::MakeId(static_cast<typename traits_type::Entity>(packed.Size()));
+				packed.Add(id);
+				return packed.Size() - 1;
+			}
+			else
+			{
+				const auto index = static_cast<Index>(ecs::GetIndex(freeList));
+				item             = ecs::MakeId(static_cast<typename traits_type::Entity>(index));
+				freeList         = Exchange(packed[index], id);
+				return index;
+			}
+		}
+
+		/**
+		 * @brief Returns the entity at specified location, with bounds checking.
+		 * @param pos The position for which to return the entity.
+		 * @return The entity at specified location if any, a nullptr entity otherwise.
+		 */
+		Id At(const Index index) const
+		{
+			return index < packed.Size() ? packed[index] : NoId;
+		}
+
+		/**
+		 * @brief Returns the entity at specified location, without bounds checking.
+		 * @param pos The position for which to return the entity.
+		 * @return The entity at specified location.
+		 */
+		Id operator[](const Index index) const
+		{
+			CheckMsg(packed.IsValidIndex(index), "Index is out of bounds");
+			return packed[index];
+		}
+
+		Id* GetPageIdPtr(Index index) const
+		{
+			const i32 pageId = GetPage(index);
+			if (pageId < pages.Size() && pages[pageId])
+			{
+				return pages[pageId] + GetOffset(index);
+			}
+			return nullptr;
+		}
+
+		Id& GetPageId(Index index) const
+		{
+			const i32 pageId = GetPage(index);
+			CheckMsg(pageId < pages.Size() && pages[pageId], "Invalid element");
+			return pages[pageId][GetOffset(index)];
+		}
+
+		Id* GetPageIdPtrFromId(const Id id) const
+		{
+			return GetPageIdPtr(ecs::GetIndex(id));
+		}
+
+		Id& GetPageIdFromId(Id id) const
+		{
+			return GetPageId(ecs::GetIndex(id));
+		}
+
+
+	private:
+
+		static i32 GetPage(sizet index)
+		{
+			return static_cast<i32>(index / pageSize);
+		}
+
+		static Index GetOffset(sizet index)
+		{
+			return static_cast<Index>(index & (pageSize - 1));
+		}
+
+
+		Id* AssurePage(i32 pageIndex)
+		{
+			if (pageIndex >= pages.Size())
+			{
+				pages.Resize(pageIndex + 1, nullptr);
+			}
+
+			Id*& page = pages[pageIndex];
+			if (!page)
+			{
+				page = p::Alloc<Id>(*arena, pageSize);
+				std::uninitialized_fill(page, page + pageSize, ecs::NoId);
+			}
+
+			return page;
+		}
+
+		void ReleasePages()
+		{
+			for (Id* page : pages)
+			{
+				if (page)
+				{
+					std::destroy(page, page + pageSize);
+					p::Free<Id>(*arena, page, pageSize);
+				}
+			}
+		}
+
+
+		// Standard functions:
+	public:
+
+		iterator begin() const
+		{
+			return iterator{packed, static_cast<Index>(packed.Size())};
+		}
+		iterator end() const
+		{
+			return iterator{packed, {}};
+		}
+		iterator cbegin() const
+		{
+			return begin();
+		}
+		iterator cend() const
+		{
+			return end();
+		}
+		reverse_iterator rbegin() const
+		{
+			return std::make_reverse_iterator(end());
+		}
+		reverse_iterator rend() const
+		{
+			return std::make_reverse_iterator(begin());
+		}
+		reverse_iterator crbegin() const
+		{
+			return rbegin();
+		}
+		reverse_iterator crend() const
+		{
+			return rend();
 		}
 	};
 }    // namespace p::ecs

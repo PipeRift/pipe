@@ -24,14 +24,14 @@ namespace p
 		Mode mode;
 		union
 		{
-			Reader* readContext;
-			Writer* writeContext;
+			Reader* reader;
+			Writer* writer;
 		};
 
 
 	public:
-		ReadWriter(Reader& readContext) : mode{Mode::Read}, readContext{&readContext} {}
-		ReadWriter(Writer& writeContext) : mode{Mode::Write}, writeContext{&writeContext} {}
+		ReadWriter(Reader& reader) : mode{Mode::Read}, reader{&reader} {}
+		ReadWriter(Writer& writer) : mode{Mode::Write}, writer{&writer} {}
 
 		/**
 		 * Starts the deserialization of an scope as an object.
@@ -53,11 +53,11 @@ namespace p
 		{
 			if (IsWriting())
 			{
-				writeContext->Next(name, val);
+				writer->Next(name, val);
 			}
 			else
 			{
-				readContext->Next(name, val);
+				reader->Next(name, val);
 			}
 		}
 
@@ -87,7 +87,7 @@ namespace p
 			}
 			else
 			{
-				readContext->Next(val);
+				reader->Next(val);
 			}
 		}
 
@@ -97,11 +97,11 @@ namespace p
 		{
 			if (IsWriting())
 			{
-				writeContext->Serialize(const_cast<const T&>(val));
+				writer->Serialize(const_cast<const T&>(val));
 			}
 			else
 			{
-				readContext->Serialize(val);
+				reader->Serialize(val);
 			}
 		}
 
@@ -119,13 +119,13 @@ namespace p
 		Reader& GetRead() const
 		{
 			Check(IsReading());
-			return *readContext;
+			return *reader;
 		}
 
 		Writer& GetWrite() const
 		{
 			Check(IsWriting());
-			return *writeContext;
+			return *writer;
 		}
 
 		void PushAddFlags(WriteFlags flags);

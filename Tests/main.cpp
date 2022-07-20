@@ -5,7 +5,7 @@ PIPE_OVERRIDE_NEW_DELETE
 
 #include <bandit/bandit.h>
 #include <Pipe/Core/Backward.h>
-#include <Pipe/Core/Context.h>
+#include <Pipe/Core/Log.h>
 
 
 namespace backward
@@ -14,17 +14,10 @@ namespace backward
 }    // namespace backward
 
 
-class NoFileLogContext : public p::Context
-{
-public:
-	NoFileLogContext() : p::Context(p::Path{}) {}
-};
-
-
 int main(int argc, char* argv[])
 {
-	p::InitializeContext<NoFileLogContext>();
+	p::Log::Init({});    // No folder logging
 	int result = bandit::run(argc, argv);
-	p::ShutdownContext();
+	p::Log::Shutdown();
 	return result;
 }

@@ -29,8 +29,27 @@ struct EmptyComponent
 
 struct NonEmptyComponent
 {
+	static u32 destructed;
 	i32 a = 0;
+
+	~NonEmptyComponent()
+	{
+		++destructed;
+	}
 };
+u32 NonEmptyComponent::destructed = 0;
+
+struct TestComponent
+{
+	static u32 destructed;
+	bool d;
+
+	~TestComponent()
+	{
+		++destructed;
+	}
+};
+u32 TestComponent::destructed = 0;
 
 
 go_bandit([]() {
@@ -60,9 +79,11 @@ go_bandit([]() {
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
 			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
 
+			NonEmptyComponent::destructed = 0;
 			ctx.Remove<NonEmptyComponent>(id);
 			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
+			AssertThat(NonEmptyComponent::destructed, Equals(1));
 		});
 
 		it("Can add many components", [&]() {
@@ -78,18 +99,31 @@ go_bandit([]() {
 				AssertThat(data->a, Equals(2));
 			}
 		});
+
 		it("Can remove many components", [&]() {
 			ecs::Context ctx;
 			TArray<ecs::Id> ids{3};
 			ctx.Create(ids);
 			ctx.Add<NonEmptyComponent>(ids, {2});
 
+			NonEmptyComponent::destructed = 0;
 			TSpan<ecs::Id> firstTwo{ids.Data(), ids.Data() + 2};
 			ctx.Remove<NonEmptyComponent>(firstTwo);
-
+			AssertThat(NonEmptyComponent::destructed, Equals(2));
 			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[0]), Equals(nullptr));
 			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[1]), Equals(nullptr));
 			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[2]), !Equals(nullptr));
+
+			// Repeat in different order
+			ctx.Add<NonEmptyComponent>(ids, {2});
+
+			NonEmptyComponent::destructed = 0;
+			TSpan<ecs::Id> lastTwo{ids.Data() + 1, ids.Data() + 3};
+			ctx.Remove<NonEmptyComponent>(lastTwo);
+			AssertThat(NonEmptyComponent::destructed, Equals(2));
+			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[0]), !Equals(nullptr));
+			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[1]), Equals(nullptr));
+			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[2]), Equals(nullptr));
 		});
 
 		it("Components are removed after node is deleted", [&]() {
@@ -144,6 +178,24 @@ go_bandit([]() {
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().True());
 			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
+		});
+
+		it("Can destroy components on reset", [&]() {
+			ecs::Context ctx;
+			TArray<ecs::Id> ids{3};
+			ctx.Create(ids);
+			ctx.Add<NonEmptyComponent>(ids, {2});
+			ctx.Add<TestComponent>(ids);
+
+			ctx.Remove<NonEmptyComponent>(ids);
+			ctx.Remove<TestComponent>(ids[0]);
+
+			NonEmptyComponent::destructed = 0;
+			TestComponent::destructed     = 0;
+			ctx.Reset();
+
+			AssertThat(NonEmptyComponent::destructed, Equals(0));
+			AssertThat(TestComponent::destructed, Equals(2));
 		});
 	});
 });

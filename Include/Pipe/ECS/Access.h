@@ -265,13 +265,13 @@ namespace p
 	{
 	protected:
 
-		Context& ast;
+		ecs::Context& ast;
 		TArray<TypeAccess> types;
 		TArray<ecs::Pool*> pools;
 
 
 	public:
-		Access(Context& ast, const TArray<TypeId>& types) : ast{ast} {}
+		Access(ecs::Context& ast, const TArray<TypeId>& types) : ast{ast} {}
 
 		template<typename... T>
 		Access(TAccessRef<T...> access) : ast{access.ast}

@@ -10,9 +10,6 @@
 
 namespace p
 {
-	class Context;
-
-
 	class PIPE_API Class : public BaseClass
 	{
 	public:

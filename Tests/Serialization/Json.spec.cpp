@@ -1,7 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/Core/Context.h>
 #include <Pipe/Serialize/Formats/JsonFormat.h>
 #include <Pipe/Serialize/Serialization.h>
 

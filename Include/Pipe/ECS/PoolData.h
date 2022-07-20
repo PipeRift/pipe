@@ -15,9 +15,9 @@ namespace p::ecs
 	template<typename T, typename Allocator>
 	struct TPoolData
 	{
-		static constexpr sizet chunkSize = 1024;
+		static constexpr sizet pageSize = 1024;
 
-		using Chunk = T*;
+		using Page = T*;
 
 		template<typename Value>
 		struct TPoolIterator final
@@ -30,8 +30,8 @@ namespace p::ecs
 
 			TPoolIterator() = default;
 
-			TPoolIterator(Value* const* chunks, const difference_type index)
-			    : chunks{chunks}, index{index}
+			TPoolIterator(Value* const* pages, const difference_type index)
+			    : pages{pages}, index{index}
 			{}
 
 			TPoolIterator& operator++()
@@ -86,7 +86,7 @@ namespace p::ecs
 			reference operator[](const difference_type value) const
 			{
 				const sizet pos{index - value - 1};
-				return (*chunks)[GetChunk(pos)][GetOffset(pos)];
+				return (*pages)[GetPage(pos)][GetOffset(pos)];
 			}
 
 			bool operator==(const TPoolIterator& other) const
@@ -107,17 +107,17 @@ namespace p::ecs
 			pointer operator->() const
 			{
 				const sizet pos = sizet(index - 1);
-				return std::addressof(chunks[GetChunk(pos)][GetOffset(pos)]);
+				return pages[GetPage(pos)] + GetOffset(pos);
 			}
 
 			reference operator*() const
 			{
 				const sizet pos = sizet(index - 1);
-				return chunks[GetChunk(pos)][GetOffset(pos)];
+				return pages[GetPage(pos)][GetOffset(pos)];
 			}
 
 		private:
-			Value* const* chunks = nullptr;
+			Value* const* pages = nullptr;
 			difference_type index;
 		};
 
@@ -133,7 +133,7 @@ namespace p::ecs
 	private:
 
 		typename Allocator::template Typed<T> allocator;
-		TArray<Chunk> chunks;
+		TArray<Page> pages;
 		sizet size = 0;
 
 
@@ -142,39 +142,39 @@ namespace p::ecs
 
 		T* Get(sizet index) const
 		{
-			return chunks[GetChunk(index)] + GetOffset(index);
+			return pages[GetPage(index)] + GetOffset(index);
 		}
 
 		void Reserve(sizet capacity)
 		{
-			const i32 neededChunks = GetChunk(capacity - 1) + 1;
-			if (neededChunks <= chunks.Size())    // There are enough buckets
+			const i32 neededPages = GetPage(capacity - 1) + 1;
+			if (neededPages <= pages.Size())    // There are enough buckets
 			{
 				return;
 			}
 
-			chunks.Reserve(neededChunks);
-			while (chunks.Size() < neededChunks)
+			pages.Reserve(neededPages);
+			while (pages.Size() < neededPages)
 			{
-				chunks.Add(allocator.Alloc(chunkSize));
+				pages.Add(allocator.Alloc(pageSize));
 			}
 		}
 
-		// Release chunks to an specific size. No destructors are called
+		// Release pages to an specific size. No destructors are called
 		void Release(sizet newSize)
 		{
 			CheckMsg(newSize >= size, "Cant erelease memory below used size");
-			const i32 usedChunks = i32(newSize / chunkSize);
-			if (usedChunks >= chunks.Size())
+			const i32 usedPages = i32(newSize / pageSize);
+			if (usedPages >= pages.Size())
 			{
 				return;
 			}
 
-			for (auto pos = usedChunks; pos < chunks.Size(); ++pos)
+			for (auto pos = usedPages; pos < pages.Size(); ++pos)
 			{
-				allocator.Free(chunks[pos], chunkSize);
+				allocator.Free(pages[pos], pageSize);
 			}
-			chunks.RemoveLast(chunks.Size() - usedChunks);
+			pages.RemoveLast(pages.Size() - usedPages);
 		}
 
 		template<typename SetType>
@@ -183,25 +183,25 @@ namespace p::ecs
 			// Destroy components
 			for (auto i = size; i < set.Size(); ++i)
 			{
-				if (set.Get(i) != NoId)
+				if (set.GetPageId(i) != NoId)
 				{
 					std::destroy_at(Get(i));
 				}
 			}
 
-			const auto from = (size + chunkSize - 1u) / chunkSize;
-			for (auto pos = from; pos < chunks.Size(); ++pos)
+			const auto from = (size + pageSize - 1u) / pageSize;
+			for (auto pos = from; pos < pages.Size(); ++pos)
 			{
-				allocator.Free(chunks[pos], chunkSize);
+				allocator.Free(pages[pos], pageSize);
 			}
-			chunks.Resize(from);
+			pages.Resize(from);
 		}
 
 		T* Push(sizet index, T&& value)
 		{
-			CheckMsg(index < (chunks.Size() * chunkSize), "Out of bounds index");
+			CheckMsg(index < (pages.Size() * pageSize), "Out of bounds index");
 			++size;
-			T* instance = chunks[GetChunk(index)] + GetOffset(index);
+			T* instance = pages[GetPage(index)] + GetOffset(index);
 			// Construct
 			new (instance) T(Move(value));
 			return instance;
@@ -209,9 +209,9 @@ namespace p::ecs
 
 		T* Push(sizet index, const T& value)
 		{
-			CheckMsg(index < (chunks.Size() * chunkSize), "Out of bounds index");
+			CheckMsg(index < (pages.Size() * pageSize), "Out of bounds index");
 			++size;
-			T* instance = chunks[GetChunk(index)] + GetOffset(index);
+			T* instance = pages[GetPage(index)] + GetOffset(index);
 			// Construct
 			new (instance) T(Move(value));
 			return instance;
@@ -219,32 +219,32 @@ namespace p::ecs
 
 		void PopSwap(sizet index, sizet last)
 		{
-			T& item     = chunks[GetChunk(index)][GetOffset(index)];
-			T& lastItem = chunks[GetChunk(last)][GetOffset(last)];
+			T& item     = pages[GetPage(index)][GetOffset(index)];
+			T& lastItem = pages[GetPage(last)][GetOffset(last)];
 			Swap(item, lastItem);
 			std::destroy_at(std::addressof(lastItem));
 			--size;
 		}
 		void Pop(sizet index)
 		{
-			T& item = chunks[GetChunk(index)][GetOffset(index)];
+			T& item = pages[GetPage(index)][GetOffset(index)];
 			std::destroy_at(std::addressof(item));
 			--size;
 		}
 
-		static i32 GetChunk(sizet index)
+		static i32 GetPage(sizet index)
 		{
-			return i32(index / chunkSize);
+			return i32(index / pageSize);
 		}
 
 		static sizet GetOffset(sizet index)
 		{
-			return index & (chunkSize - 1);
+			return index & (pageSize - 1);
 		}
 
 		ConstIterator cbegin() const
 		{
-			return ConstIterator{chunks.Data(), IdTraits<Id>::Difference(size)};
+			return ConstIterator{pages.Data(), IdTraits<Id>::Difference(size)};
 		}
 
 		ConstIterator begin() const
@@ -254,11 +254,11 @@ namespace p::ecs
 
 		Iterator begin()
 		{
-			return Iterator{chunks.Data(), IdTraits<Id>::Difference(size)};
+			return Iterator{pages.Data(), IdTraits<Id>::Difference(size)};
 		}
 		Iterator end()
 		{
-			return Iterator{chunks.Data(), {}};
+			return Iterator{pages.Data(), {}};
 		}
 		Iterator end() const
 		{
@@ -266,7 +266,7 @@ namespace p::ecs
 		}
 		Iterator cend() const
 		{
-			return Iterator{chunks.Data(), {}};
+			return Iterator{pages.Data(), {}};
 		}
 
 		ConstReverseIterator crbegin() const

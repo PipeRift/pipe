@@ -20,12 +20,12 @@ namespace p::ecs
 	{
 		using Index = IdTraits<Id>::Index;
 
-		using Iterator        = TPoolSet<>::iterator;
-		using ReverseIterator = TPoolSet<>::reverse_iterator;
+		using Iterator        = TPoolSet::iterator;
+		using ReverseIterator = TPoolSet::reverse_iterator;
 
 
 	protected:
-		TPoolSet<> set;
+		TPoolSet set;
 		DeletionPolicy deletionPolicy;
 
 		Context* context = nullptr;
@@ -141,7 +141,7 @@ namespace p::ecs
 				return;
 			}
 
-			set.Emplace(id);
+			set.TryEmplace(id, false);
 			OnAdded({id});
 		}
 
@@ -158,7 +158,7 @@ namespace p::ecs
 
 			T& value = *data.Push(i, v);
 
-			const auto setI = set.Emplace(id);
+			const auto setI = set.TryEmplace(id, false);
 			if (!Ensure(i == setI)) [[unlikely]]
 			{
 				Log::Error("Misplaced component");
@@ -182,7 +182,7 @@ namespace p::ecs
 
 			T& value = *data.Push(i, Forward<T>(v));
 
-			const auto setI = set.Emplace(id);
+			const auto setI = set.TryEmplace(id, false);
 			if (!Ensure(i == setI)) [[unlikely]]
 			{
 				Log::Error("Misplaced component");
@@ -359,23 +359,23 @@ namespace p::ecs
 		T& Get(Id id) requires(!IsEmpty<T>)
 		{
 			Check(Has(id));
-			return *data.Get(set.Index(id));
+			return *data.Get(set.GetIndex(id));
 		}
 
 		const T& Get(Id id) const requires(!IsEmpty<T>)
 		{
 			Check(Has(id));
-			return *data.Get(set.Index(id));
+			return *data.Get(set.GetIndex(id));
 		}
 
 		T* TryGet(Id id)
 		{
-			return Has(id) ? data.Get(set.Index(id)) : nullptr;
+			return Has(id) ? data.Get(set.GetIndex(id)) : nullptr;
 		}
 
 		const T* TryGet(Id id) const
 		{
-			return Has(id) ? data.Get(set.Index(id)) : nullptr;
+			return Has(id) ? data.Get(set.GetIndex(id)) : nullptr;
 		}
 
 		void* TryGetVoid(Id id) override
@@ -426,14 +426,14 @@ namespace p::ecs
 	private:
 		void PopSwap(Id id)
 		{
-			data.PopSwap(set.Index(id), set.Size() - 1u);
-			set.PopSwap(id);
+			data.PopSwap(set.GetIndex(id), set.Size() - 1u);
+			set.PopSwap(&id, &id + 1u);
 		}
 
 		void Pop(Id id)
 		{
-			data.Pop(set.Index(id));
-			set.Pop(id);
+			data.Pop(set.GetIndex(id));
+			set.Pop(&id, &id + 1u);
 		}
 	};
 
