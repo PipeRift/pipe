@@ -118,7 +118,7 @@ namespace p::core
 		void Clear()
 		{
 			numBits = 0;
-			bits.Empty();
+			bits.Clear();
 		}
 
 		// Returns index of next set bit in array (wraps around)
@@ -133,9 +133,9 @@ namespace p::core
 			return numBits;
 		}
 		// @return the number of bits reserved on the buffer
-		i32 MaxSize() const
+		i32 Capacity() const
 		{
-			return bits.MaxSize() * sizeof(i32) * 8;
+			return bits.Capacity() * sizeof(i32) * 8;
 		}
 
 		/** @return true if index is contained on the bit array */

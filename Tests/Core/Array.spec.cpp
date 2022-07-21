@@ -95,7 +95,7 @@ go_bandit([]() {
 			AssertThat(data.Size(), Equals(2));
 			AssertThat(data[0], Equals(1));
 			AssertThat(data[1], Equals(4));
-			AssertThat(data.MaxSize(), Equals(3));
+			AssertThat(data.Capacity(), Equals(3));
 		});
 
 		it("Can RemoveLast N", [&]() {
@@ -103,12 +103,12 @@ go_bandit([]() {
 			dataA.RemoveLast(2);
 			AssertThat(dataA.Size(), Equals(1));
 			AssertThat(dataA[0], Equals(1));
-			AssertThat(dataA.MaxSize(), Equals(3));
+			AssertThat(dataA.Capacity(), Equals(3));
 
 			TArray<i32> dataB{1, 4, 6};
 			dataB.RemoveLast(3);
 			AssertThat(dataB.Size(), Equals(0));
-			AssertThat(dataB.MaxSize(), Equals(3));
+			AssertThat(dataB.Capacity(), Equals(3));
 		});
 
 		it("Can RemoveIf", [&]() {

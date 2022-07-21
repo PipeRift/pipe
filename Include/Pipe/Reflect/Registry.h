@@ -68,7 +68,7 @@ namespace p
 			{
 				it.second->~Type();
 			}
-			idToTypes.Empty();
+			idToTypes.Clear();
 			arena.Release();
 		}
 

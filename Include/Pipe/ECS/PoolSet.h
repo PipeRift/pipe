@@ -174,7 +174,7 @@ namespace p::ecs
 
 		i32 Capacity() const
 		{
-			return packed.MaxSize();
+			return packed.Capacity();
 		}
 
 		void Shrink()
@@ -498,7 +498,7 @@ namespace p::ecs
 			}
 
 			freeList = ecs::NoId;
-			packed.Empty();
+			packed.Clear();
 		}
 
 

@@ -22,7 +22,7 @@ namespace p
 		using GetItemFunc    = void*(void*, i32);
 		using AddItemFunc    = void(void*, void*);
 		using RemoveItemFunc = void(void*, i32);
-		using EmptyFunc      = void(void*);
+		using ClearFunc      = void(void*);
 
 
 	protected:
@@ -31,7 +31,7 @@ namespace p
 		GetItemFunc* getItem       = nullptr;
 		AddItemFunc* addItem       = nullptr;
 		RemoveItemFunc* removeItem = nullptr;
-		EmptyFunc* empty           = nullptr;
+		ClearFunc* clear           = nullptr;
 
 	public:
 
@@ -40,7 +40,7 @@ namespace p
 		PIPE_API void* GetItem(void* container, i32 index) const;
 		PIPE_API void AddItem(void* container, void* item) const;
 		PIPE_API void RemoveItem(void* container, i32 index) const;
-		PIPE_API void Empty(void* container) const;
+		PIPE_API void Clear(void* container) const;
 	};
 
 	inline void* ArrayProperty::GetData(void* container) const
@@ -63,8 +63,8 @@ namespace p
 	{
 		removeItem(container, index);
 	}
-	inline void ArrayProperty::Empty(void* container) const
+	inline void ArrayProperty::Clear(void* container) const
 	{
-		empty(container);
+		clear(container);
 	}
 }    // namespace p

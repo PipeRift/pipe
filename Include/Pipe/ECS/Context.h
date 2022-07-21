@@ -342,10 +342,10 @@ namespace p::ecs
 		void Reset(bool keepStatics = false)
 		{
 			idRegistry = {};
-			pools.Empty();
+			pools.Clear();
 			if (!keepStatics)
 			{
-				statics.Empty();
+				statics.Clear();
 			}
 		}
 

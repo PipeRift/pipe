@@ -195,7 +195,7 @@ namespace p::ecs
 		const Pool* iterablePool = pools[smallestIdx];
 		pools.RemoveAtSwap(smallestIdx);
 
-		ids.Empty(false);
+		ids.Clear(false);
 		ids.Reserve(iterablePool->Size());
 		for (ecs::Id id : *iterablePool)
 		{
@@ -226,7 +226,7 @@ namespace p::ecs
 			}
 		}
 
-		ids.Empty();
+		ids.Clear();
 		for (const Pool* pool : pools)
 		{
 			ids.Append(pool->begin(), pool->end());
@@ -259,7 +259,7 @@ namespace p::ecs
 			}
 		}
 
-		ids.Empty();
+		ids.Clear();
 		ids.Append(idsSet.begin(), idsSet.end());
 	}
 }    // namespace p::ecs

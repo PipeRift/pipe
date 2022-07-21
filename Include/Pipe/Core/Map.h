@@ -190,10 +190,8 @@ namespace p::core
 			return 0;
 		}
 
-		/** Empty the map
-		 * @param bShouldShrink false will not free memory
-		 */
-		void Empty()
+		// Empty the map
+		void Clear()
 		{
 			map.clear();
 		}

@@ -106,7 +106,7 @@ namespace p
 		if (pendingSort) [[unlikely]]
 		{
 			pendingSort = false;
-			if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.25f)
+			if (float(freeSlots.Size()) / freeSlots.Capacity() < 0.25f)
 			{
 				// Dont shrink until there is 75% of unused space
 				freeSlots.Shrink();

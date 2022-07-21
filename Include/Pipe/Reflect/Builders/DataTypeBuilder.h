@@ -56,8 +56,8 @@ namespace p
 				arrayProp->removeItem = [](void* data, i32 index) {
 					static_cast<U*>(data)->RemoveAt(index);
 				};
-				arrayProp->empty = [](void* data) {
-					static_cast<U*>(data)->Empty();
+				arrayProp->clear = [](void* data) {
+					static_cast<U*>(data)->Clear();
 				};
 
 				property = arrayProp;

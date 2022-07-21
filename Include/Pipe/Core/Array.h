@@ -608,7 +608,7 @@ namespace p::core
 		{
 			if (num > Size())
 			{
-				Empty(false);
+				Clear(false);
 			}
 			else
 			{
@@ -621,7 +621,7 @@ namespace p::core
 		/** Empty the array.
 		 * @param shouldShrink false will not free memory
 		 */
-		void Empty(const bool shouldShrink = true, i32 sizeNum = 0)
+		void Clear(const bool shouldShrink = true, i32 sizeNum = 0)
 		{
 			vector.clear();
 
@@ -649,7 +649,7 @@ namespace p::core
 			return Size() * sizeof(Type);
 		}
 
-		i32 MaxSize() const
+		i32 Capacity() const
 		{
 			return (i32)vector.capacity();
 		}

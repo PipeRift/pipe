@@ -179,11 +179,11 @@ namespace p::core
 		}
 
 		/** Empty the array.
-		 * @param bShouldShrink false will not free memory
+		 * @param shouldShrink false will not free memory
 		 */
-		void Empty(const bool bShouldShrink = true, i32 sizeNum = 0)
+		void Clear(const bool shouldShrink = true, i32 sizeNum = 0)
 		{
-			if (bShouldShrink)
+			if (shouldShrink)
 			{
 				set.clear();
 			}
@@ -192,7 +192,7 @@ namespace p::core
 				set.clear_no_resize();
 				if (sizeNum > 0 && set.max_size() != sizeNum)
 				{
-					set.resize(sizeNum);
+					set.reserve(sizeNum);
 				}
 			}
 		}

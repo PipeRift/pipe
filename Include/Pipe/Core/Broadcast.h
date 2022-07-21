@@ -161,8 +161,8 @@ namespace p::core
 		{
 			if (!rawListeners.IsEmpty() || !ptrListeners.IsEmpty()) [[likely]]
 			{
-				rawListeners.Empty();
-				ptrListeners.Empty();
+				rawListeners.Clear();
+				ptrListeners.Clear();
 				return true;
 			}
 			return false;
