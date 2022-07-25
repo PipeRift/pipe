@@ -25,7 +25,15 @@ namespace snowhouse
 
 
 struct EmptyComponent
-{};
+{
+	static u32 destructed;
+
+	~EmptyComponent()
+	{
+		++destructed;
+	}
+};
+u32 EmptyComponent::destructed = 0;
 
 struct NonEmptyComponent
 {
@@ -181,6 +189,9 @@ go_bandit([]() {
 		});
 
 		it("Can destroy components on reset", [&]() {
+			NonEmptyComponent::destructed = 0;
+			TestComponent::destructed     = 0;
+
 			ecs::Context ctx;
 			TArray<ecs::Id> ids{3};
 			ctx.Create(ids);
@@ -189,6 +200,9 @@ go_bandit([]() {
 
 			ctx.Remove<NonEmptyComponent>(ids);
 			ctx.Remove<TestComponent>(ids[0]);
+			AssertThat(
+			    NonEmptyComponent::destructed, Equals(4));       // 3 + 1 (passed by value on Add())
+			AssertThat(TestComponent::destructed, Equals(2));    // 1 + 1 (passed by value on Add())
 
 			NonEmptyComponent::destructed = 0;
 			TestComponent::destructed     = 0;

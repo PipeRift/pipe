@@ -79,7 +79,7 @@ namespace p
 	concept IsEnum = std::is_enum_v<T>;
 
 	template<typename T>
-	concept ShouldPassByValue = sizeof(T) <= sizeof(sizet) && std::is_copy_constructible_v<T>;
+	concept ShouldPassByValue = sizeof(T) <= sizeof(sizet) && IsCopyConstructible<T>;
 
 	template<bool UseT, typename T, typename F>
 	using Select = typename std::conditional<UseT, T, F>::type;

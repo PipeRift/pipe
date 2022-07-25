@@ -56,17 +56,11 @@ namespace p::ecs
 		void Destroy(TSpan<const Id> ids);
 
 		// Adds Component to an entity (if the entity doesnt have it already)
-		template<typename Component>
-		decltype(auto) Add(Id id, Component&& value = {})
+		template<typename Component, typename... Args>
+		decltype(auto) Add(Id id, Args&&... args)
 		{
 			Check(IsValid(id));
-			return AssurePool<Component>().Add(id, Forward<Component>(value));
-		}
-		template<typename Component>
-		decltype(auto) Add(Id id, const Component& value)
-		{
-			Check(IsValid(id));
-			return AssurePool<Component>().Add(id, value);
+			return AssurePool<Component>().Add(id, Forward<Args>(args)...);
 		}
 
 		// Add Component to many entities (if they dont have it already)
@@ -365,7 +359,7 @@ namespace p::ecs
 		template<typename T>
 		TPool<Mut<T>>& AssurePool() const;
 
-		Pool* GetPool(TypeId componentId) const;
+		BasePool* GetPool(TypeId componentId) const;
 
 		template<typename T>
 		CopyConst<TPool<Mut<T>>, T>* GetPool() const
@@ -416,7 +410,7 @@ namespace p::ecs
 			index = pools.Add(CreatePoolInstance<T>());
 		}
 
-		Pool* pool = pools[index].GetPool();
+		BasePool* pool = pools[index].GetPool();
 		return *static_cast<TPool<Mut<T>>*>(pool);
 	}
 

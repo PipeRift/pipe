@@ -2,206 +2,86 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/BitArray.h"
-#include "Pipe/Core/Broadcast.h"
+#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Span.h"
 #include "Pipe/Core/TypeTraits.h"
+#include "Pipe/ECS/BasePool.h"
 #include "Pipe/ECS/Id.h"
-#include "Pipe/ECS/PoolData.h"
-#include "Pipe/ECS/PoolSet.h"
+#include "Pipe/ECS/PageBuffer.h"
 #include "Pipe/Memory/UniquePtr.h"
+
+#include <memory>
 
 
 namespace p::ecs
 {
 	struct Context;
 
-	struct Pool
-	{
-		using Index = IdTraits<Id>::Index;
-
-		using Iterator        = TPoolSet::iterator;
-		using ReverseIterator = TPoolSet::reverse_iterator;
-
-
-	protected:
-		TPoolSet set;
-		DeletionPolicy deletionPolicy;
-
-		Context* context = nullptr;
-		TBroadcast<Context&, TSpan<const Id>> onAdd;
-		TBroadcast<Context&, TSpan<const Id>> onRemove;
-
-
-		Pool(Context& ast, DeletionPolicy inDeletionPolicy)
-		    : context{&ast}
-		    , set{DeletionPolicy(u8(inDeletionPolicy))}
-		    , deletionPolicy{inDeletionPolicy}
-		{}
-
-		void OnAdded(TSpan<const Id> ids)
-		{
-			onAdd.Broadcast(*context, ids);
-		}
-
-		void OnRemoved(TSpan<const Id> ids)
-		{
-			onRemove.Broadcast(*context, ids);
-		}
-
-	public:
-		virtual ~Pool() {}
-
-		bool Has(Id id) const
-		{
-			return set.Contains(id);
-		}
-
-		// Returns the data pointer of a component if contianed
-		virtual void* TryGetVoid(Id id) = 0;
-
-		virtual bool Remove(Id id)                     = 0;
-		virtual void RemoveUnsafe(Id id)               = 0;
-		virtual i32 Remove(TSpan<const Id> ids)        = 0;
-		virtual void RemoveUnsafe(TSpan<const Id> ids) = 0;
-
-		virtual void SetOwnerContext(Context& destination)
-		{
-			context = &destination;
-		}
-		virtual TUniquePtr<Pool> Clone() = 0;
-
-		Context& GetContext() const
-		{
-			return *context;
-		}
-
-		Iterator Find(const Id id) const
-		{
-			return set.Find(id);
-		}
-
-		sizet Size() const
-		{
-			return set.Size();
-		}
-
-		Iterator begin() const
-		{
-			return set.begin();
-		}
-
-		Iterator end() const
-		{
-			return set.end();
-		}
-
-		ReverseIterator rbegin() const
-		{
-			return set.rbegin();
-		}
-
-		ReverseIterator rend() const
-		{
-			return set.rend();
-		}
-
-		TBroadcast<Context&, TSpan<const Id>>& OnAdd()
-		{
-			return onAdd;
-		}
-
-		TBroadcast<Context&, TSpan<const Id>>& OnRemove()
-		{
-			return onRemove;
-		}
-	};
-
-
 	template<typename T, typename Allocator = ArenaAllocator>
-	struct TPool : public Pool
+	struct TPool : public BasePool
 	{
 		using AllocatorType = Allocator;
 
 	private:
-		TPoolData<T, AllocatorType> data;
+		TPageBuffer<T, 1024, AllocatorType> data;
 
 
 	public:
-		TPool(Context& ast) : Pool(ast, DeletionPolicy::InPlace), data{} {}
+		TPool(Context& ast) : BasePool(ast, DeletionPolicy::InPlace), data{} {}
+		TPool(const TPool& other) : BasePool(other)
+		{
+			if constexpr (!p::IsEmpty<T>)
+			{
+				data.Reserve(other.data.Capacity());
+				i32 u = 0;
+				for (i32 i = 0; i < other.Size(); ++i, ++u)
+				{
+					const Id id = other.idList[i];
+					if (id != ecs::NoId)
+					{
+						if constexpr (IsCopyConstructible<T>)
+						{
+							data.Insert(u, other.data[i]);
+						}
+						else
+						{
+							data.Insert(u);
+						}
+					}
+				}
+			}
+		}
 		~TPool() override
 		{
-			ShrinkToSize(0);
+			Clear();
 		}
 
-		void Add(Id id, const T&) requires(IsEmpty<T>)
+		template<typename... Args>
+		auto Add(Id id, Args&&... args) -> Select<p::IsEmpty<T>, void, T&>
 		{
-			if (Has(id))
+			if constexpr (!p::IsEmpty<T>)
 			{
-				return;
+				if (Has(id))
+				{
+					return (Get(id) = T{Forward<Args>(args)...});
+				}
 			}
 
-			set.TryEmplace(id, false);
+			const auto index = EmplaceId(id, false);
+			if constexpr (!p::IsEmpty<T>)
+			{
+				data.Reserve(index + 1u);
+				T* const value = data.Insert(index, Forward<Args>(args)...);
+				OnAdded({id});
+				return *value;
+			}
 			OnAdded({id});
 		}
 
-		T& Add(Id id, const T& v) requires(!IsEmpty<T>)
-		{
-			if (Has(id))
-			{
-				return (Get(id) = v);
-			}
-
-			Check(!Has(id));
-			const auto i = set.Slot();
-			data.Reserve(i + 1u);
-
-			T& value = *data.Push(i, v);
-
-			const auto setI = set.TryEmplace(id, false);
-			if (!Ensure(i == setI)) [[unlikely]]
-			{
-				Log::Error("Misplaced component");
-				data.Pop(i);
-			}
-			else
-			{
-				OnAdded({id});
-			}
-			return value;
-		}
-		T& Add(Id id, T&& v = {}) requires(!IsEmpty<T>)
-		{
-			if (Has(id))
-			{
-				return (Get(id) = Move(v));
-			}
-
-			const auto i = set.Slot();
-			data.Reserve(i + 1u);
-
-			T& value = *data.Push(i, Forward<T>(v));
-
-			const auto setI = set.TryEmplace(id, false);
-			if (!Ensure(i == setI)) [[unlikely]]
-			{
-				Log::Error("Misplaced component");
-				data.Pop(i);
-			}
-			else
-			{
-				OnAdded({id});
-			}
-			return value;
-		}
-
 		template<typename It>
-		void Add(It first, It last, const T& value = {})
+		void Add(It first, It last, const T& value = {}) requires(IsCopyConstructible<T>)
 		{
 			const sizet numToAdd = std::distance(first, last);
-			const sizet newSize  = set.Size() + numToAdd;
-			set.Reserve(newSize);
-			data.Reserve(newSize);
 
 			TArray<Id> ids;
 			ids.Reserve(numToAdd);
@@ -210,24 +90,26 @@ namespace p::ecs
 				ids.Add(*it);
 			}
 
+			const sizet newSize = Size() + numToAdd;
+			idList.Reserve(newSize);
+			data.Reserve(newSize);
+
 			for (Id id : ids)
 			{
 				if (Has(id))
 				{
-					if constexpr (!IsCopyConstructible<T>)
-					{
-						// Ignore reference value since we can only move
-						Get(id) = Move(T{});
-					}
-					else if constexpr (!IsEmpty<T>)
+					if constexpr (!p::IsEmpty<T>)
 					{
 						Get(id) = value;
 					}
 				}
 				else
 				{
-					data.Push(set.Size(), value);
-					set.TryEmplace(id, true);
+					const auto index = EmplaceId(id, true);
+					if constexpr (!p::IsEmpty<T>)
+					{
+						data.Insert(index, value);
+					}
 				}
 			}
 			OnAdded(ids);
@@ -238,9 +120,6 @@ namespace p::ecs
 		    IsSame<std::decay_t<typename std::iterator_traits<CIt>::value_type>, T>)
 		{
 			const sizet numToAdd = std::distance(first, last);
-			const sizet newSize  = set.Size() + numToAdd;
-			set.Reserve(newSize);
-			data.Reserve(newSize);
 
 			TArray<Id> ids;
 			ids.Reserve(numToAdd);
@@ -248,6 +127,10 @@ namespace p::ecs
 			{
 				ids.Add(*it);
 			}
+
+			const sizet newSize = Size() + numToAdd;
+			idList.Reserve(newSize);
+			data.Reserve(newSize);
 
 			for (Id id : ids)
 			{
@@ -258,30 +141,30 @@ namespace p::ecs
 						// Ignore reference value since we can only move
 						Get(id) = Move(T{});
 					}
-					else if constexpr (!IsEmpty<T>)
+					else if constexpr (!p::IsEmpty<T>)
 					{
 						Get(id) = *from;
 					}
 				}
 				else
 				{
+					const auto index = EmplaceId(id, true);
 					if constexpr (!IsCopyConstructible<T>)
 					{
 						// Ignore reference value since we can only move
-						data.Push(set.Size(), {});
+						data.Insert(index, {});
 					}
 					else
 					{
-						data.Push(set.Size(), *from);
+						data.Insert(index, *from);
 					}
-					set.TryEmplace(id, true);
 				}
 				++from;
 			}
 			OnAdded(ids);
 		}
 
-		T& GetOrAdd(const Id id) requires(!IsEmpty<T>)
+		T& GetOrAdd(const Id id) requires(!p::IsEmpty<T>)
 		{
 			return Has(id) ? Get(id) : Add(id);
 		}
@@ -356,26 +239,30 @@ namespace p::ecs
 			}
 		}
 
-		T& Get(Id id) requires(!IsEmpty<T>)
+		T& Get(Id id) requires(!p::IsEmpty<T>)
 		{
 			Check(Has(id));
-			return *data.Get(set.GetIndex(id));
+			return data[GetIndexFromId(id)];
 		}
 
-		const T& Get(Id id) const requires(!IsEmpty<T>)
+		const T& Get(Id id) const requires(!p::IsEmpty<T>)
 		{
 			Check(Has(id));
-			return *data.Get(set.GetIndex(id));
+			return data[GetIndexFromId(id)];
 		}
 
 		T* TryGet(Id id)
 		{
-			return Has(id) ? data.Get(set.GetIndex(id)) : nullptr;
+			if (!p::IsEmpty<T> && Has(id))
+			{
+				return &data[GetIndexFromId(id)];
+			}
+			return nullptr;
 		}
 
 		const T* TryGet(Id id) const
 		{
-			return Has(id) ? data.Get(set.GetIndex(id)) : nullptr;
+			return Has(id) ? &data[GetIndexFromId(id)] : nullptr;
 		}
 
 		void* TryGetVoid(Id id) override
@@ -383,24 +270,15 @@ namespace p::ecs
 			return TryGet(id);
 		}
 
-		TUniquePtr<Pool> Clone() override
+		TUniquePtr<BasePool> Clone() override
 		{
-			auto newPool = MakeUnique<TPool<T>>(*context);
-			if constexpr (IsEmpty<T>)
-			{
-				newPool->Add(set.begin(), set.end(), {});
-			}
-			else
-			{
-				newPool->Add(set.begin(), set.end(), data.begin());
-			}
-			return Move(newPool);
+			return MakeUnique<TPool<T>>(*this);
 		}
 
 		void Reserve(sizet size)
 		{
-			set.Reserve(size);
-			if (size > set.Size())
+			idList.Reserve(size);
+			if (size > Size())
 			{
 				data.Reserve(size);
 			}
@@ -408,32 +286,89 @@ namespace p::ecs
 
 		void Shrink()
 		{
-			set.Shrink();
-			data.Release(set.Size());
+			idList.Shrink();
+			data.Shrink(idList.Size());
 		}
 
-		void ShrinkToSize(i32 size)
+		void Clear() override
 		{
-			data.ShrinkToSize(size, set);
+			if constexpr (!p::IsEmpty<T>)
+			{
+				for (i32 i = 0; i < Size(); ++i)
+				{
+					if (idList[i] != ecs::NoId)
+					{
+						data.RemoveAt(i);
+					}
+				}
+				data.Clear();
+			}
+			ClearIds();
 		}
 
-		void Reset()
+		/*! @brief Removes all ecs::NoIds from pool */
+		void Compact()
 		{
-			ShrinkToSize(0);
-			set.Clear();
+			i32 from = idList.Size();
+			for (; from && ecs::GetVersion(idList[from - 1]) == NoVersion; --from) {}
+
+			for (i32 to = lastRemovedIndex; to != NO_INDEX && from;)
+			{
+				if (to < from)
+				{
+					--from;
+
+					if constexpr (!p::IsEmpty<T>)
+					{
+						std::uninitialized_move_n(&data[from], 1, &data[to]);
+					}
+
+					auto& listTo = idList[i32(to)];
+					p::Swap(idList[from], listTo);
+
+					idIndices[ecs::GetIndex(listTo)] = to;
+					to                               = from;
+
+					for (; from && ecs::GetVersion(idList[from - 1]) == NoVersion; --from) {}
+				}
+			}
+
+			lastRemovedIndex = NO_INDEX;
+			idList.Resize(from);
+		}
+
+		void Swap(const Id a, const Id b)
+		{
+			CheckMsg(Contains(a), "Set does not contain entity");
+			CheckMsg(Contains(b), "Set does not contain entity");
+
+			i32& aListIdx = idIndices[ecs::GetIndex(a)];
+			i32& bListIdx = idIndices[ecs::GetIndex(b)];
+
+			p::Swap(idList[aListIdx], idList[bListIdx]);
+			p::Swap(aListIdx, bListIdx);
+			data.Swap(aListIdx, bListIdx);
 		}
 
 	private:
 		void PopSwap(Id id)
 		{
-			data.PopSwap(set.GetIndex(id), set.Size() - 1u);
-			set.PopSwap(&id, &id + 1u);
+			if constexpr (!p::IsEmpty<T>)
+			{
+				const i32 lastIndex = Size() - 1u;
+				data.Swap(GetIndexFromId(id), lastIndex);
+				data.RemoveAt(lastIndex);
+			}
+			PopSwapId(id);
 		}
 
 		void Pop(Id id)
 		{
-			data.Pop(set.GetIndex(id));
-			set.Pop(&id, &id + 1u);
+			if constexpr (!p::IsEmpty<T>)
+			{
+				data.RemoveAt(GetIndexFromId(id));
+			}
+			PopId(id);
 		}
 	};
 
@@ -441,10 +376,10 @@ namespace p::ecs
 	struct PoolInstance
 	{
 		TypeId componentId{};
-		TUniquePtr<Pool> pool;
+		TUniquePtr<BasePool> pool;
 
 
-		PoolInstance(TypeId componentId, TUniquePtr<Pool>&& pool)
+		PoolInstance(TypeId componentId, TUniquePtr<BasePool>&& pool)
 		    : componentId{componentId}, pool{Move(pool)}
 		{}
 		PoolInstance(PoolInstance&& other) noexcept
@@ -484,7 +419,7 @@ namespace p::ecs
 			return componentId;
 		}
 
-		Pool* GetPool() const
+		BasePool* GetPool() const
 		{
 			return pool.Get();
 		}
@@ -494,7 +429,4 @@ namespace p::ecs
 			return componentId.GetId() < other.componentId.GetId();
 		}
 	};
-
-
-	i32 GetSmallestPool(TSpan<const Pool*> pools);
 }    // namespace p::ecs

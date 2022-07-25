@@ -8,10 +8,10 @@ PIPE_OVERRIDE_NEW_DELETE
 #include <Pipe/Core/Log.h>
 
 
-namespace backward
-{
-	backward::SignalHandling sh;
-}    // namespace backward
+// namespace backward
+//{
+//	backward::SignalHandling sh;
+// }    // namespace backward
 
 
 int main(int argc, char* argv[])

@@ -7,7 +7,7 @@
 
 namespace p::ecs
 {
-	void ExcludeIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIf(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ZoneScoped;
 		for (i32 i = ids.Size() - 1; i >= 0; --i)
@@ -23,7 +23,7 @@ namespace p::ecs
 		}
 	}
 
-	void ExcludeIfStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIfStable(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ZoneScoped;
 		ids.RemoveIf(
@@ -33,7 +33,7 @@ namespace p::ecs
 		    shouldShrink);
 	}
 
-	void ExcludeIfNot(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIfNot(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ZoneScoped;
 		for (i32 i = ids.Size() - 1; i >= 0; --i)
@@ -49,7 +49,7 @@ namespace p::ecs
 		}
 	}
 
-	void ExcludeIfNotStable(const Pool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIfNotStable(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ZoneScoped;
 		ids.RemoveIf(
@@ -59,7 +59,7 @@ namespace p::ecs
 		    shouldShrink);
 	}
 
-	void GetIf(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results)
+	void GetIf(const BasePool* pool, const TSpan<Id>& source, TArray<Id>& results)
 	{
 		ZoneScoped;
 		if (pool)
@@ -74,7 +74,7 @@ namespace p::ecs
 			}
 		}
 	}
-	void GetIf(const TArray<const Pool*>& pools, const TSpan<Id>& source, TArray<Id>& results)
+	void GetIf(const TArray<const BasePool*>& pools, const TSpan<Id>& source, TArray<Id>& results)
 	{
 		GetIf(pools.First(), source, results);
 		for (i32 i = 1; i < pools.Size(); ++i)
@@ -83,7 +83,7 @@ namespace p::ecs
 		}
 	}
 
-	void GetIfNot(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results)
+	void GetIfNot(const BasePool* pool, const TSpan<Id>& source, TArray<Id>& results)
 	{
 		ZoneScoped;
 		if (pool)
@@ -105,7 +105,7 @@ namespace p::ecs
 	}
 
 	void ExtractIf(
-	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		ZoneScoped;
 		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
@@ -125,7 +125,7 @@ namespace p::ecs
 	}
 
 	void ExtractIfStable(
-	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		ZoneScoped;
 		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
@@ -142,7 +142,7 @@ namespace p::ecs
 	}
 
 	void ExtractIfNot(
-	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		ZoneScoped;
 		results.ReserveMore(source.Size());
@@ -162,7 +162,7 @@ namespace p::ecs
 	}
 
 	void ExtractIfNotStable(
-	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		ZoneScoped;
 		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
@@ -178,10 +178,10 @@ namespace p::ecs
 		    shouldShrink);
 	}
 
-	void ListAll(TArray<const Pool*> pools, TArray<Id>& ids)
+	void ListAll(TArray<const BasePool*> pools, TArray<Id>& ids)
 	{
 		ZoneScoped;
-		for (const Pool* pool : pools)
+		for (const BasePool* pool : pools)
 		{
 			if (!EnsureMsg(pool,
 			        "One of the pools is null. Is the access missing one or more of the specified "
@@ -191,8 +191,8 @@ namespace p::ecs
 			}
 		}
 
-		const i32 smallestIdx    = GetSmallestPool(pools);
-		const Pool* iterablePool = pools[smallestIdx];
+		const i32 smallestIdx        = GetSmallestPool(pools);
+		const BasePool* iterablePool = pools[smallestIdx];
 		pools.RemoveAtSwap(smallestIdx);
 
 		ids.Clear(false);
@@ -204,19 +204,19 @@ namespace p::ecs
 				ids.Add(id);
 			}
 		}
-		// Faster but doesnt exclude invalid ids. TODO: Improve PoolSet
+		// Faster but doesn't exclude invalid ids.
 		// ids.Append(iterablePool->begin(), iterablePool->end());
 
-		for (const Pool* pool : pools)
+		for (const BasePool* pool : pools)
 		{
 			ExcludeIfNot(pool, ids, false);
 		}
 	}
 
-	void ListAny(const TArray<const Pool*>& pools, TArray<Id>& ids)
+	void ListAny(const TArray<const BasePool*>& pools, TArray<Id>& ids)
 	{
 		ZoneScoped;
-		for (const Pool* pool : pools)
+		for (const BasePool* pool : pools)
 		{
 			if (!EnsureMsg(pool,
 			        "One of the pools is null. Is the access missing one or more of the specified "
@@ -227,17 +227,17 @@ namespace p::ecs
 		}
 
 		ids.Clear();
-		for (const Pool* pool : pools)
+		for (const BasePool* pool : pools)
 		{
 			ids.Append(pool->begin(), pool->end());
 		}
 	}
 
-	void ListAnyUnique(const TArray<const Pool*>& pools, TArray<Id>& ids)
+	void ListAnyUnique(const TArray<const BasePool*>& pools, TArray<Id>& ids)
 	{
 		ZoneScoped;
 		i32 maxPossibleSize = 0;
-		for (const Pool* pool : pools)
+		for (const BasePool* pool : pools)
 		{
 			if (!EnsureMsg(pool,
 			        "One of the pools is null. Is the access missing one or more of the specified "
@@ -251,7 +251,7 @@ namespace p::ecs
 
 		TSet<Id> idsSet;
 		idsSet.Reserve(maxPossibleSize);
-		for (const Pool* pool : pools)
+		for (const BasePool* pool : pools)
 		{
 			for (Id id : *pool)
 			{

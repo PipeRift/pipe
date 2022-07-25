@@ -8,66 +8,67 @@
 namespace p::ecs
 {
 	/** Remove ids containing a component from 'ids'. Does not guarantee order. */
-	PIPE_API void ExcludeIf(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	PIPE_API void ExcludeIf(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids containing a component from 'ids'. Guarantees order. */
 	PIPE_API void ExcludeIfStable(
-	    const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids NOT containing a component from 'ids'. Does not guarantee order. */
-	PIPE_API void ExcludeIfNot(const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	PIPE_API void ExcludeIfNot(
+	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids NOT containing a component from 'ids'. Guarantees order. */
 	PIPE_API void ExcludeIfNotStable(
-	    const Pool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 
 	/** Find ids containing a component from a list 'source' into 'results'. */
-	PIPE_API void GetIf(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results);
+	PIPE_API void GetIf(const BasePool* pool, const TSpan<Id>& source, TArray<Id>& results);
 	PIPE_API void GetIf(
-	    const TArray<const Pool*>& pools, const TSpan<Id>& source, TArray<Id>& results);
+	    const TArray<const BasePool*>& pools, const TSpan<Id>& source, TArray<Id>& results);
 
 	/** Find ids NOT containing a component from a list 'source' into 'results'. */
-	PIPE_API void GetIfNot(const Pool* pool, const TSpan<Id>& source, TArray<Id>& results);
+	PIPE_API void GetIfNot(const BasePool* pool, const TSpan<Id>& source, TArray<Id>& results);
 
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Does not guarantee order.
 	 */
-	PIPE_API void ExtractIf(
-	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+	PIPE_API void ExtractIf(const BasePool* pool, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true);
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Guarantees order.
 	 */
-	PIPE_API void ExtractIfStable(
-	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+	PIPE_API void ExtractIfStable(const BasePool* pool, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true);
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Does not guarantee order.
 	 */
-	PIPE_API void ExtractIfNot(
-	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+	PIPE_API void ExtractIfNot(const BasePool* pool, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true);
 
 	/**
 	 * Find and remove ids not containing a component from list 'source' into 'results'.
 	 * Guarantees order.
 	 */
-	PIPE_API void ExtractIfNotStable(
-	    const Pool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+	PIPE_API void ExtractIfNotStable(const BasePool* pool, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true);
 
 
 	/** Find all ids containing all of the components */
-	PIPE_API void ListAll(TArray<const Pool*> pools, TArray<Id>& ids);
+	PIPE_API void ListAll(TArray<const BasePool*> pools, TArray<Id>& ids);
 
 	/** Find all ids containing any of the components. Includes possible duplicates */
-	PIPE_API void ListAny(const TArray<const Pool*>& pools, TArray<Id>& ids);
+	PIPE_API void ListAny(const TArray<const BasePool*>& pools, TArray<Id>& ids);
 
 	/** Find all ids containing any of the components. Prevents duplicates */
-	PIPE_API void ListAnyUnique(const TArray<const Pool*>& pools, TArray<Id>& ids);
+	PIPE_API void ListAnyUnique(const TArray<const BasePool*>& pools, TArray<Id>& ids);
 
 
 	// Templated API
@@ -361,7 +362,7 @@ namespace p::ecs
 	template<typename C, typename AccessType>
 	Id GetFirst(const AccessType& access)
 	{
-		const Pool* pool = access.template GetPool<const C>();
+		const BasePool* pool = access.template GetPool<const C>();
 		return (pool && pool->Size() > 0) ? *pool->begin() : ecs::NoId;
 	}
 }    // namespace p::ecs

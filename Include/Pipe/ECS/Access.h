@@ -267,7 +267,7 @@ namespace p
 
 		ecs::Context& ast;
 		TArray<TypeAccess> types;
-		TArray<ecs::Pool*> pools;
+		TArray<ecs::BasePool*> pools;
 
 
 	public:

@@ -55,7 +55,7 @@ namespace p::ecs
 		}
 	}
 
-	Pool* Context::GetPool(TypeId componentId) const
+	BasePool* Context::GetPool(TypeId componentId) const
 	{
 		const i32 index = pools.FindSortedEqual(PoolInstance{componentId, {}});
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
