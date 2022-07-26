@@ -29,7 +29,6 @@ go_bandit([]() {
 			AssertThat(data3.Size(), Equals(3));
 			AssertThat(data4.Size(), Equals(4));
 
-
 			AssertThat(data2[0], Equals(0));
 			AssertThat(data2[2], Equals(0));
 			AssertThat(data3[0], Equals(0));

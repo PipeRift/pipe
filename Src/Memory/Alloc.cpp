@@ -35,9 +35,6 @@ namespace p
 #if PLATFORM_WINDOWS
 		// TODO: Windows needs _aligned_free in order to use _aligned_alloc()
 		void* const ptr = std::malloc(size);
-#elif PLATFORM_MACOS || PLATFORM_LINUX
-		void* ptr;
-		(void)(posix_memalign(&ptr, align, size));
 #else
 		void* const ptr = std::aligned_alloc(align, size);
 #endif

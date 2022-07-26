@@ -80,7 +80,7 @@ namespace p::ecs
 
 	constexpr Id NoId                         = MakeId();
 	constexpr IdTraits<Id>::Version NoVersion = GetVersion(NoId);
-	constexpr IdTraits<Id>::Version NoIndex   = GetIndex(NoId);
+	constexpr IdTraits<Id>::Index NoIndex     = GetIndex(NoId);
 
 	constexpr bool IsNone(ecs::Id id)
 	{
