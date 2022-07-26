@@ -39,7 +39,7 @@ namespace p
 	PIPE_API sizet GetAlignmentPaddingWithHeader(const void* ptr, sizet align, sizet headerSize);
 
 	template<typename T>
-	PIPE_API void MoveConstructItems(T* dest, const T* src, sizet size)
+	void MoveConstructItems(T* dest, const T* src, sizet size)
 	{
 		if constexpr (IsTriviallyCopyable<T>)
 		{
