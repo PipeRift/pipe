@@ -901,7 +901,7 @@ public:
     }
 
     Super::_stacktrace.resize(std::min(Super::_stacktrace.size(), Super::skip_n_firsts() + depth));
-    return size();
+    return Super::size();
   }
 
 private:
@@ -1071,7 +1071,7 @@ public:
 
     Super::_stacktrace.resize(index + 1);
     Super::skip_n_firsts(0);
-    return size();
+    return Super::size();
   }
 
   size_t load_from(void *addr, size_t depth = 32, void *context = nullptr,
@@ -1087,7 +1087,7 @@ public:
     }
 
     Super::_stacktrace.resize(std::min(Super::_stacktrace.size(), Super::skip_n_firsts() + depth));
-    return size();
+    return Super::size();
   }
 };
 
@@ -1110,7 +1110,7 @@ public:
     size_t trace_cnt = backtrace(&Super::_stacktrace[0], Super::_stacktrace.size());
     Super::_stacktrace.resize(trace_cnt);
     Super::skip_n_firsts(1);
-    return size();
+    return Super::size();
   }
 
   size_t load_from(void *addr, size_t depth = 32, void *context = nullptr,
@@ -1126,7 +1126,7 @@ public:
     }
 
     Super::_stacktrace.resize(std::min(Super::_stacktrace.size(), Super::skip_n_firsts() + depth));
-    return size();
+    return Super::size();
   }
 };
 
