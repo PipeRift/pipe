@@ -18,8 +18,7 @@
 
 namespace p::core
 {
-	template<typename Key, typename Value,
-	    typename Allocator = Memory::TDefaultAllocator<TPair<Key, Value>>>
+	template<typename Key, typename Value, typename Allocator = ArenaAllocator>
 	class TMap
 	{
 		static_assert(std::is_nothrow_move_constructible<Value>::value
@@ -34,7 +33,7 @@ namespace p::core
 		using ValueType     = Value;
 		using AllocatorType = Allocator;
 		using HashMapType   = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>,
-            std::equal_to<KeyType>, STLAllocator<TPair<Key, Value>, Allocator>>;
+            std::equal_to<KeyType>, STLAllocator<TPair<Key, Value>, AllocatorType>>;
 
 		using Iterator      = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;
@@ -55,10 +54,10 @@ namespace p::core
 		    : map{initList.begin(), initList.end()}
 		{}
 
-		TMap(TMap&& other) noexcept = default;
-		TMap(const TMap& other)     = default;
+		TMap(TMap&& other) noexcept            = default;
+		TMap(const TMap& other)                = default;
 		TMap& operator=(TMap&& other) noexcept = default;
-		TMap& operator=(const TMap& other) = default;
+		TMap& operator=(const TMap& other)     = default;
 
 		Iterator Insert(KeyType&& key, ValueType&& value)
 		{
@@ -177,7 +176,11 @@ namespace p::core
 		 */
 		i32 Remove(const KeyType& key)
 		{
-			Iterator it = FindIt(key);
+			return RemoveIt(FindIt(key));
+		}
+
+		i32 RemoveIt(Iterator it)
+		{
 			if (it != end())
 			{
 				const i32 lastSize = Size();
@@ -187,10 +190,8 @@ namespace p::core
 			return 0;
 		}
 
-		/** Empty the map
-		 * @param bShouldShrink false will not free memory
-		 */
-		void Empty()
+		// Empty the map
+		void Clear()
 		{
 			map.clear();
 		}

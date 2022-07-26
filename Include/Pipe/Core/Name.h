@@ -28,7 +28,7 @@ namespace p::core
 
 		NameKey(NameKey&& other) noexcept : value{Move(other.value)}, hash{other.hash} {}
 		NameKey(const NameKey& other) = delete;
-		NameKey& operator             =(NameKey&& other) noexcept
+		NameKey& operator=(NameKey&& other) noexcept
 		{
 			value      = Move(other.value);
 			hash       = other.hash;

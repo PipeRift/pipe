@@ -83,7 +83,7 @@ namespace p::files
 		{
 			fileWatcher.removeWatch(id);
 		}
-		watches.Empty();
+		watches.Clear();
 	}
 
 	void FileWatcher::AddExtension(StringView extension)

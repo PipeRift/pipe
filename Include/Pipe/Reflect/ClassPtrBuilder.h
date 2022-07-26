@@ -3,6 +3,7 @@
 
 #include "Pipe/Core/Log.h"
 #include "Pipe/Memory/PtrBuilder.h"
+#include "Pipe/Reflect/BaseClass.h"
 #include "Pipe/Reflect/ClassType.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
 #include "Pipe/Reflect/TypeName.h"
@@ -14,41 +15,37 @@ namespace p
 	struct TClassPtrBuilder : public TPtrBuilder<T>
 	{
 		template<typename... Args>
-		static T* New(Args&&... args, const TPtr<BaseClass>& owner = {})
+		static T* New(Arena& arena, Args&&... args, const TPtr<BaseClass>& owner = {})
 		{
-			T* instance = new T(std::forward<Args>(args)...);
-			instance->SetOwner(owner);
-			return instance;
+			// Sets owner during construction
+			// TODO: Fix self not existing at the moment of construction
+			ClassOwnership::nextOwner = owner;
+			return new (p::Alloc<T>(arena)) T(std::forward<Args>(args)...);
 		}
 
 		// Allow creation of classes using reflection
-		static T* New(ClassType* type, TPtr<BaseClass> owner = {})
+		static T* New(Arena& arena, ClassType* type, TPtr<BaseClass> owner = {})
 		{
 			if (type)
 			{
-				if (T* instance = dynamic_cast<T*>(type->New()))
+				// Sets owner during construction
+				// TODO: Fix self not existing at the moment of construction
+				ClassOwnership::nextOwner = owner;
+				if (T* instance = dynamic_cast<T*>(type->New(arena)))
 				{
-					instance->SetOwner(owner);
 					return instance;
 				}
 			}
 			return {};
 		}
 
-		static void PostNew(TOwnPtr<T>& ptr)
-		{
-			ptr->PreConstruct(ptr);
-			ptr->Construct();
-		}
 
-		static void Delete(void* rawPtr)
+		static void Delete(Arena& arena, void* rawPtr)
 		{
-			T* ptr = static_cast<T*>(rawPtr);
-			ptr->StartDestroy();
-			delete ptr;
+			T* ptr               = static_cast<T*>(rawPtr);
+			const sizet typeSize = ptr->GetType()->GetSize();
+			ptr->~T();
+			p::Free(arena, (void*)ptr, typeSize);
 		}
-
-		static T* NewArray(sizet size)                        = delete;
-		static void PostNewArray(TOwnPtr<T>& ptr, sizet size) = delete;
 	};
 }    // namespace p

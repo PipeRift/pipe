@@ -1,37 +1,36 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Core/Platform.h"
+#include "Pipe/Export.h"
+
+
 namespace p::Memory
 {
-	class PIPE_API Block
+	struct PIPE_API Block
 	{
-	protected:
 		void* data = nullptr;
 		sizet size = 0;
 
 
-	public:
-		const void* GetData() const
-		{
-			return data;
-		}
+		Block() = default;
+		Block(void* data, sizet size) : data{data}, size{size} {}
+		Block(Block&& other) noexcept;
+		Block& operator=(Block&& other) noexcept;
+		Block(const Block& other)            = default;
+		Block& operator=(const Block& other) = default;
 
-		void* GetData()
-		{
-			return data;
-		}
-
-		sizet GetSize() const
-		{
-			return size;
-		}
 
 		bool IsAllocated() const
 		{
 			return data != nullptr;
 		}
 
-		void* GetEnd() const
+		void* Begin() const
+		{
+			return data;
+		}
+		void* End() const
 		{
 			return static_cast<u8*>(data) + size;
 		}
@@ -43,12 +42,12 @@ namespace p::Memory
 
 		const void* operator*() const
 		{
-			return GetData();
+			return data;
 		}
 
 		void* operator*()
 		{
-			return GetData();
+			return data;
 		}
 	};
 }    // namespace p::Memory

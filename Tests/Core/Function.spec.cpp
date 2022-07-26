@@ -22,7 +22,10 @@ struct Foo
 		called = true;
 	}
 
-	void Func() {}
+	void Func()
+	{
+		called = true;
+	}
 };
 inline bool Foo::called = false;
 

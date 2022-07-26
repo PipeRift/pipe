@@ -56,8 +56,8 @@ namespace p
 				arrayProp->removeItem = [](void* data, i32 index) {
 					static_cast<U*>(data)->RemoveAt(index);
 				};
-				arrayProp->empty = [](void* data) {
-					static_cast<U*>(data)->Empty();
+				arrayProp->clear = [](void* data) {
+					static_cast<U*>(data)->Clear();
 				};
 
 				property = arrayProp;
@@ -128,15 +128,13 @@ namespace p
 		{
 			auto* type = Super::Build();
 
-			GetType()->onNew = []() {
-				if constexpr (IsAbstract<T> || IsSame<T, BaseClass>)
+			GetType()->onNew = [](Arena& arena) -> BaseClass* {
+				if constexpr (!IsAbstract<T> && !IsSame<T, BaseClass>)
 				{
-					return nullptr;    // Can't create instances of abstract classes or BaseClass
+					return new (p::Alloc<T>(arena)) T();
 				}
-				else
-				{
-					return new T();
-				}
+				return nullptr;    // Can't create instances of abstract classes or
+				                   // BaseClass
 			};
 
 			if (onBuild)

@@ -27,7 +27,7 @@ namespace p
 		Writer() = default;
 
 	public:
-		explicit Writer(const Writer&) = default;
+		explicit Writer(const Writer&)   = default;
 		Writer& operator=(const Writer&) = default;
 		virtual ~Writer() {}
 

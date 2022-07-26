@@ -17,15 +17,16 @@
 
 namespace p::core
 {
-	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>
+	template<typename Type, typename Allocator = ArenaAllocator>
 	struct TArray
 	{
 	public:
 		template<typename OtherType, typename OtherAllocator>
 		friend struct TArray;
 
-		using ItemType   = Type;
-		using VectorType = std::vector<Type, STLAllocator<Type, Allocator>>;
+		using AllocatorType = Allocator;
+		using ItemType      = Type;
+		using VectorType    = std::vector<Type, STLAllocator<Type, AllocatorType>>;
 
 		using Iterator             = typename VectorType::iterator;
 		using ConstIterator        = typename VectorType::const_iterator;
@@ -82,6 +83,12 @@ namespace p::core
 		{
 			vector.push_back(item);
 			return Size() - 1;
+		}
+
+		i32 AddN(i32 count, const Type& item)
+		{
+			vector.insert(vector.end(), count, item);
+			return Size() - count;
 		}
 
 		Type& AddRef(Type&& item)
@@ -215,7 +222,7 @@ namespace p::core
 
 		void Insert(i32 index, const Type& item, i32 count = 1)
 		{
-			if (IsValidIndex(index))
+			if (index >= 0)
 			{
 				if (count == 1)
 					vector.insert(vector.begin() + index, item);
@@ -251,7 +258,19 @@ namespace p::core
 
 		void Sort()
 		{
-			p::Sort(Data(), Size(), TLess<Type>());
+			Sort(TLess<Type>());
+		}
+
+		template<typename Predicate>
+		void SortRange(i32 firstIndex, i32 count, Predicate predicate)
+		{
+			const i32 maxSize = Size() - firstIndex;
+			p::Sort(Data() + firstIndex, math::Min(count, maxSize), TLess<Type>());
+		}
+
+		void SortRange(i32 firstIndex, i32 count)
+		{
+			SortRange(firstIndex, count, TLess<Type>());
 		}
 
 		Iterator FindIt(const Type& item) const
@@ -580,11 +599,21 @@ namespace p::core
 			return lastSize - Size();
 		}
 
-		bool RemoveLast(i32 num = 1)
+		void RemoveLast()
 		{
-			const i32 lastSize = Size();
-			Resize(lastSize - num);
-			return lastSize - Size() > 0;
+			vector.pop_back();
+		}
+
+		void RemoveLast(i32 num)
+		{
+			if (num > Size())
+			{
+				Clear(false);
+			}
+			else
+			{
+				vector.erase(vector.end() - num, vector.end());
+			}
 		}
 
 		void Swap(i32 firstIndex, i32 secondIndex);
@@ -592,7 +621,7 @@ namespace p::core
 		/** Empty the array.
 		 * @param shouldShrink false will not free memory
 		 */
-		void Empty(const bool shouldShrink = true, i32 sizeNum = 0)
+		void Clear(const bool shouldShrink = true, i32 sizeNum = 0)
 		{
 			vector.clear();
 
@@ -620,7 +649,7 @@ namespace p::core
 			return Size() * sizeof(Type);
 		}
 
-		i32 MaxSize() const
+		i32 Capacity() const
 		{
 			return (i32)vector.capacity();
 		}
@@ -663,14 +692,13 @@ namespace p::core
 		}
 
 		/** OPERATORS */
-	public :
+	public:
 		/**
 		 * Array bracket operator. Returns reference to element at give index.
 		 *
 		 * @returns Reference to indexed element.
 		 */
-		Type&
-		operator[](i32 index) requires(!IsSame<Type, bool>)
+		Type& operator[](i32 index) requires(!IsSame<Type, bool>)
 		{
 			assert(IsValidIndex(index));
 			return Data()[index];

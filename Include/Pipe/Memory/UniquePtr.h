@@ -50,7 +50,7 @@ namespace p
 			ptr = Move(other.ptr);
 			return *this;
 		}
-		TUniquePtr(const TUniquePtr&) = delete;
+		TUniquePtr(const TUniquePtr&)            = delete;
 		TUniquePtr& operator=(const TUniquePtr&) = delete;
 
 

@@ -32,11 +32,11 @@ namespace p
 
 
 #if BUILD_DEBUG
-#	define FORCEINLINE inline
+#	define P_FORCEINLINE inline
 #else
-#	define FORCEINLINE inline __attribute__((always_inline))
+#	define P_FORCEINLINE inline __attribute__((always_inline))
 #endif    // BUILD_DEBUG
-#define NOINLINE __attribute__((noinline))
+#define P_NOINLINE __attribute__((noinline))
 
 #define PLATFORM_BREAK() __asm__ volatile("int $0x03")
 

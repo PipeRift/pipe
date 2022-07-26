@@ -24,8 +24,8 @@ namespace p
 	using namespace p::core;
 }
 
-#define FORCEINLINE __forceinline     /* Force code to be inline */
-#define NOINLINE __declspec(noinline) /* Force code to not be inlined */
+#define P_FORCEINLINE __forceinline     /* Force code to be inline */
+#define P_NOINLINE __declspec(noinline) /* Force code to not be inlined */
 
 #define PLATFORM_BREAK() (__nop(), __debugbreak())
 

@@ -124,6 +124,7 @@ namespace p
 		yyjson_mut_val* current = nullptr;
 		TArray<Scope> scopeStack;
 		bool open = true;
+		StringView asString;
 
 
 	public:

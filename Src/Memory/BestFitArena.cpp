@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#include "Pipe/Memory/Arenas/BestFitArena.h"
+#include "Pipe/Memory/BestFitArena.h"
 
 #include "Pipe/Core/Greater.h"
 #include "Pipe/Core/Log.h"
@@ -10,9 +10,10 @@
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 #include "Pipe/Memory/Alloc.h"
+#include "Pipe/Memory/Memory.h"
 
 
-namespace p::Memory
+namespace p
 {
 	bool operator==(const BestFitArena::Slot& a, sizet b)
 	{
@@ -56,19 +57,29 @@ namespace p::Memory
 	}
 
 
-	BestFitArena::BestFitArena(const sizet initialSize)
+	BestFitArena::BestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
+		Interface<BestFitArena, &BestFitArena::Alloc, &BestFitArena::Alloc, &BestFitArena::Resize,
+		    &BestFitArena::Free>();
+
 		assert(initialSize > 0);
-		block.Allocate(initialSize);
+		block.data = p::Alloc(GetParentArena(), initialSize);
+		block.size = initialSize;
 		// Set address at end of block. Size is 0
-		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.GetSize());
+		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.Size());
 		// Add first slot for the entire block
-		freeSlots.Add({reinterpret_cast<u8*>(block.GetData()), block.GetSize()});
+		freeSlots.Add({reinterpret_cast<u8*>(block.data), block.size});
 
 		freeSize = initialSize;
 	}
 
-	void* BestFitArena::Allocate(const sizet size)
+	BestFitArena::~BestFitArena()
+	{
+		p::Free(block.data, block.size);
+		block.data = nullptr;
+	}
+
+	void* BestFitArena::Alloc(const sizet size)
 	{
 		const i32 slotIndex = FindSmallestSlot(size);
 		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size()) [[unlikely]]
@@ -86,7 +97,7 @@ namespace p::Memory
 		return start;
 	}
 
-	void* BestFitArena::Allocate(const sizet size, sizet alignment)
+	void* BestFitArena::Alloc(const sizet size, sizet alignment)
 	{
 		// Maximum size needed, based on worst possible alignment:
 		const i32 slotIndex = FindSmallestSlot(size + (alignment - 1));
@@ -121,7 +132,7 @@ namespace p::Memory
 		if (pendingSort) [[unlikely]]
 		{
 			pendingSort = false;
-			if (float(freeSlots.Size()) / freeSlots.MaxSize() < 0.1f)
+			if (float(freeSlots.Size()) / freeSlots.Capacity() < 0.1f)
 			{
 				// Dont shrink until there is 90% of unused space
 				freeSlots.Shrink();
@@ -138,11 +149,11 @@ namespace p::Memory
 	void BestFitArena::ReduceSlot(
 	    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd)
 	{
-		if (allocationEnd == slot.GetEnd())    // Slot would become empty
+		if (allocationEnd == slot.End())    // Slot would become empty
 		{
 			if (allocationStart > slot.start)    // Slot can still fill alignment gap
 			{
-				slot.size   = allocationEnd - allocationStart;
+				slot.size   = allocationStart - slot.start;
 				pendingSort = true;
 			}
 			else
@@ -185,7 +196,7 @@ namespace p::Memory
 					break;    // We found both slots
 				}
 			}
-			else if (slot.GetEnd() == allocationStart)
+			else if (slot.End() == allocationStart)
 			{
 				previousSlot = i;
 				if (nextSlot != NO_INDEX)
@@ -200,7 +211,7 @@ namespace p::Memory
 			// Expand next slot to the start of the previous slot
 			const Slot& next = freeSlots[nextSlot];
 			Slot& previous   = freeSlots[previousSlot];
-			previous.size    = next.GetEnd() - previous.start;
+			previous.size    = next.End() - previous.start;
 
 			freeSlots.RemoveAtSwapUnsafe(nextSlot);
 		}
@@ -221,4 +232,4 @@ namespace p::Memory
 		}
 		pendingSort = true;
 	}
-}    // namespace p::Memory
+}    // namespace p

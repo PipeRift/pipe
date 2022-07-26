@@ -21,6 +21,7 @@ endif()
 option(PIPE_BUILD_SHARED "Build shared libraries" ON)
 option(PIPE_BUILD_TESTS "Build Pipe tests" ${PIPE_IS_PROJECT})
 option(PIPE_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
+option(PIPE_ENABLE_ALLOCATION_STACKS "Should allocation call stacks be tracked?" OFF)
 option(PIPE_BUILD_WARNINGS "Enable compiler warnings" OFF)
 option(PIPE_ENABLE_CLANG_TOOLS "Enable clang-tidy and clang-format" ${PIPE_IS_PROJECT})
 
@@ -74,6 +75,10 @@ target_link_libraries(Pipe PRIVATE
     portable_file_dialogs
     spdlog
 )
+
+if(PIPE_ENABLE_ALLOCATION_STACKS)
+    target_compile_definitions(Pipe PUBLIC PIPE_ENABLE_ALLOCATION_STACKS=1)
+endif()
 
 if(PIPE_ENABLE_PROFILER)
     target_compile_definitions(Pipe PUBLIC PIPE_ENABLE_PROFILER=1)

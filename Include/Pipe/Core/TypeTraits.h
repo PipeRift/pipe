@@ -60,6 +60,8 @@ namespace p
 	concept IsMoveConstructible = std::is_move_constructible_v<T>;
 	template<typename T>
 	concept IsMoveAssignable = std::is_move_assignable_v<T>;
+	template<typename To, typename From>
+	concept IsAssignable = std::is_assignable_v<To, From>;
 
 	template<typename T>
 	concept IsAbstract = std::is_abstract_v<T>;
@@ -77,7 +79,7 @@ namespace p
 	concept IsEnum = std::is_enum_v<T>;
 
 	template<typename T>
-	concept ShouldPassByValue = sizeof(T) <= sizeof(sizet) && std::is_copy_constructible_v<T>;
+	concept ShouldPassByValue = sizeof(T) <= sizeof(sizet) && IsCopyConstructible<T>;
 
 	template<bool UseT, typename T, typename F>
 	using Select = typename std::conditional<UseT, T, F>::type;
@@ -165,6 +167,11 @@ namespace p
 	};
 	template<typename T, typename Reference>
 	using CopyConst = typename TCopyConst<T, Reference>::type;
+
+	template<typename T>
+	concept IsTrivial = std::is_trivial<T>::value;
+	template<typename T>
+	concept IsTriviallyCopyable = std::is_trivially_copyable<T>::value;
 }    // namespace p
 
 #define PIPE_DECLARE_IS_TRIVIAL(T, isTrivial)                                                \

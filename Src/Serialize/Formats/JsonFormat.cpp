@@ -11,15 +11,15 @@
 
 static void* yyjson_malloc(void* ctx, p::sizet size)
 {
-	return p::Alloc(size);
+	return p::HeapAlloc(size);
 }
 static void* yyjson_realloc(void* ctx, void* ptr, p::sizet size)
 {
-	return p::Realloc(ptr, size);
+	return p::HeapRealloc(ptr, size);
 }
 static void yyjson_free(void* ctx, void* ptr)
 {
-	p::Free(ptr);
+	p::HeapFree(ptr);
 }
 yyjson_alc yyjsonAllocator = {yyjson_malloc, yyjson_realloc, yyjson_free, nullptr};
 
@@ -435,6 +435,11 @@ namespace p
 	{
 		Close();
 		yyjson_mut_doc_free(doc);
+
+		if (asString.data())
+		{
+			yyjsonAllocator.free(yyjsonAllocator.ctx, const_cast<TChar*>(asString.data()));
+		}
 	}
 
 	JsonFormatWriter::Scope& JsonFormatWriter::GetScope()
@@ -604,8 +609,17 @@ namespace p
 		{
 			Close();
 		}
+
+		if (asString.data())
+		{
+			// Free previous string value
+			yyjsonAllocator.free(yyjsonAllocator.ctx, const_cast<TChar*>(asString.data()));
+		}
+
 		yyjson_write_flag flags = pretty ? YYJSON_WRITE_PRETTY : 0;
 		sizet size;
-		return {yyjson_mut_write_opts(doc, flags, &yyjsonAllocator, &size, nullptr), size};
+		asString =
+		    StringView{yyjson_mut_write_opts(doc, flags, &yyjsonAllocator, &size, nullptr), size};
+		return asString;
 	}
 }    // namespace p

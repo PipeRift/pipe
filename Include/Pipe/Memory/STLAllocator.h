@@ -1,18 +1,18 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Core/Limits.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
-#include "Pipe/Memory/Allocators/DefaultAllocator.h"
+#include "Pipe/Memory/ArenaAllocator.h"
 
-#include <limits>
 #include <memory>
 
 
 namespace p
 {
-	template<typename T, typename Allocator = Memory::TDefaultAllocator<T>>
+	template<typename T, typename Allocator = ArenaAllocator>
 	struct STLAllocator
 	{
 		// STD types
@@ -25,29 +25,29 @@ namespace p
 		template<typename U>
 		struct rebind
 		{
-			using other = STLAllocator<U, typename Allocator::template Rebind<U>>;
+			using other = STLAllocator<U, Allocator>;
 		};
 
-		Allocator allocator{};
+		typename Allocator::template Typed<T> allocator{};
 
 
 		STLAllocator()                             = default;
 		STLAllocator(const STLAllocator&) noexcept = default;
 		template<typename U>
-		STLAllocator(const STLAllocator<U>&) noexcept
+		STLAllocator(const STLAllocator<U, Allocator>&) noexcept
 		{}
 
-		pointer allocate(size_type count)
+		constexpr pointer allocate(size_type size)
 		{
-			return static_cast<pointer>(allocator.Allocate(count));
+			return static_cast<pointer>(allocator.Alloc(size));
 		}
-		pointer allocate(size_type count, const void*)
+		constexpr pointer allocate(size_type size, const void*)
 		{
-			return allocate(count);
+			return allocate(size);
 		}
-		void deallocate(pointer p, size_type)
+		constexpr void deallocate(pointer p, size_type n)
 		{
-			allocator.Free(p);
+			allocator.Free(p, n);
 		}
 
 		using propagate_on_container_copy_assignment = std::true_type;
@@ -68,7 +68,7 @@ namespace p
 
 		static constexpr size_type max_size() noexcept
 		{
-			return std::numeric_limits<size_type>::max() / sizeof(T);
+			return Limits<size_type>::Max() / sizeof(T);
 		}
 	};
 

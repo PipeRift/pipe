@@ -3,7 +3,7 @@
 
 #include "Pipe/Core/Crc.h"
 
-#include "Pipe/Memory/Alloc.h"
+#include "Pipe/Memory/Memory.h"
 
 
 namespace p::core::Crc

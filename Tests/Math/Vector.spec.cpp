@@ -3,9 +3,6 @@
 #include <bandit/bandit.h>
 #include <Pipe/Math/Vector.h>
 
-#include <cmath>
-#include <limits>
-
 
 using namespace snowhouse;
 using namespace bandit;

@@ -20,6 +20,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+// clang-format off
 
 #ifndef H_6B9572DA_A64B_49E6_B234_051480991C89
 #define H_6B9572DA_A64B_49E6_B234_051480991C89
@@ -76,6 +77,8 @@
 
 #define NOINLINE __attribute__((noinline))
 
+#include "Pipe/Memory/STLAllocator.h"
+#include "Pipe/Memory/ArenaAllocator.h"
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
@@ -724,7 +727,8 @@ struct ResolvedTrace : public Trace {
 /*************** STACK TRACE ***************/
 
 // default implemention.
-template <typename TAG> class StackTraceImpl {
+template<typename Allocator, typename TAG>
+class StackTraceImpl {
 public:
   size_t size() const { return 0; }
   Trace operator[](size_t) const { return Trace(); }
@@ -782,6 +786,8 @@ private:
   void *_error_addr;
 };
 
+
+template <typename Allocator>
 class StackTraceImplHolder : public StackTraceImplBase {
 public:
   size_t size() const {
@@ -803,7 +809,7 @@ public:
   }
 
 protected:
-  std::vector<void *> _stacktrace;
+  std::vector<void *, p::STLAllocator<void*, Allocator>> _stacktrace;
 };
 
 #if BACKWARD_HAS_UNWIND == 1
@@ -864,37 +870,38 @@ template <typename F> size_t unwind(F f, size_t depth) {
 
 } // namespace details
 
-template <>
-class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+template <typename Allocator>
+class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
+  using Super = StackTraceImplHolder<Allocator>;
 public:
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
-    load_thread_info();
-    set_context(context);
-    set_error_addr(error_addr);
+    Super::load_thread_info();
+    Super::set_context(context);
+    Super::set_error_addr(error_addr);
     if (depth == 0) {
       return 0;
     }
-    _stacktrace.resize(depth);
+    Super::_stacktrace.resize(depth);
     size_t trace_cnt = details::unwind(callback(*this), depth);
-    _stacktrace.resize(trace_cnt);
-    skip_n_firsts(0);
-    return size();
+    Super::_stacktrace.resize(trace_cnt);
+    Super::skip_n_firsts(0);
+    return Super::size();
   }
   size_t load_from(void *addr, size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
     load_here(depth + 8, context, error_addr);
 
-    for (size_t i = 0; i < _stacktrace.size(); ++i) {
-      if (_stacktrace[i] == addr) {
-        skip_n_firsts(i);
+    for (size_t i = 0; i < Super::_stacktrace.size(); ++i) {
+      if (Super::_stacktrace[i] == addr) {
+        Super::skip_n_firsts(i);
         break;
       }
     }
 
-    _stacktrace.resize(std::min(_stacktrace.size(), skip_n_firsts() + depth));
-    return size();
+    Super::_stacktrace.resize(std::min(Super::_stacktrace.size(), Super::skip_n_firsts() + depth));
+    return Super::size();
   }
 
 private:
@@ -908,19 +915,20 @@ private:
 
 #elif BACKWARD_HAS_LIBUNWIND == 1
 
-template <>
-class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+template <typename Allocator>
+class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
+  using Super = StackTraceImplHolder<Allocator>;
 public:
   __attribute__((noinline)) size_t load_here(size_t depth = 32,
                                              void *_context = nullptr,
                                              void *_error_addr = nullptr) {
-    set_context(_context);
-    set_error_addr(_error_addr);
-    load_thread_info();
+    Super::set_context(_context);
+    Super::set_error_addr(_error_addr);
+    Super::load_thread_info();
     if (depth == 0) {
       return 0;
     }
-    _stacktrace.resize(depth + 1);
+    Super::_stacktrace.resize(depth + 1);
 
     int result = 0;
 
@@ -951,7 +959,7 @@ public:
         uctx->uc_mcontext.gregs[REG_EIP] =
             *reinterpret_cast<size_t *>(uctx->uc_mcontext.gregs[REG_ESP]);
       }
-      _stacktrace[index] =
+      Super::_stacktrace[index] =
           reinterpret_cast<void *>(uctx->uc_mcontext.gregs[REG_EIP]);
       ++index;
       ctx = *reinterpret_cast<unw_context_t *>(uctx);
@@ -984,7 +992,7 @@ public:
         ctx.regs[UNW_ARM_R15] =
             uctx->uc_mcontext.arm_lr - sizeof(unsigned long);
       }
-      _stacktrace[index] = reinterpret_cast<void *>(ctx.regs[UNW_ARM_R15]);
+      Super::_stacktrace[index] = reinterpret_cast<void *>(ctx.regs[UNW_ARM_R15]);
       ++index;
 #elif defined(__APPLE__) && defined(__x86_64__)
       unw_getcontext(&ctx);
@@ -1018,7 +1026,7 @@ public:
         ctx.data[16] =
             *reinterpret_cast<__uint64_t *>(uctx->uc_mcontext->__ss.__rsp);
       }
-      _stacktrace[index] = reinterpret_cast<void *>(ctx.data[16]);
+      Super::_stacktrace[index] = reinterpret_cast<void *>(ctx.data[16]);
       ++index;
 #elif defined(__APPLE__)
       unw_getcontext(&ctx)
@@ -1028,7 +1036,7 @@ public:
               reinterpret_cast<greg_t>(error_addr())) {
         ctx.uc_mcontext->__ss.__eip = ctx.uc_mcontext->__ss.__esp;
       }
-      _stacktrace[index] =
+      Super::_stacktrace[index] =
           reinterpret_cast<void *>(ctx.uc_mcontext->__ss.__eip);
       ++index;
 #endif
@@ -1055,76 +1063,78 @@ public:
     while (index <= depth && unw_step(&cursor) > 0) {
       result = unw_get_reg(&cursor, UNW_REG_IP, &ip);
       if (result == 0) {
-        _stacktrace[index] = reinterpret_cast<void *>(--ip);
+        Super::_stacktrace[index] = reinterpret_cast<void *>(--ip);
         ++index;
       }
     }
     --index;
 
-    _stacktrace.resize(index + 1);
-    skip_n_firsts(0);
-    return size();
+    Super::_stacktrace.resize(index + 1);
+    Super::skip_n_firsts(0);
+    return Super::size();
   }
 
   size_t load_from(void *addr, size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
     load_here(depth + 8, context, error_addr);
 
-    for (size_t i = 0; i < _stacktrace.size(); ++i) {
-      if (_stacktrace[i] == addr) {
-        skip_n_firsts(i);
-        _stacktrace[i] = (void *)((uintptr_t)_stacktrace[i]);
+    for (size_t i = 0; i < Super::_stacktrace.size(); ++i) {
+      if (Super::_stacktrace[i] == addr) {
+        Super::skip_n_firsts(i);
+        Super::_stacktrace[i] = (void *)((uintptr_t)Super::_stacktrace[i]);
         break;
       }
     }
 
-    _stacktrace.resize(std::min(_stacktrace.size(), skip_n_firsts() + depth));
-    return size();
+    Super::_stacktrace.resize(std::min(Super::_stacktrace.size(), Super::skip_n_firsts() + depth));
+    return Super::size();
   }
 };
 
 #elif defined(BACKWARD_HAS_BACKTRACE)
 
-template <>
-class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+template <typename Allocator>
+class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
+  using Super = StackTraceImplHolder<Allocator>;
 public:
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
-    set_context(context);
-    set_error_addr(error_addr);
-    load_thread_info();
+    Super::set_context(context);
+    Super::set_error_addr(error_addr);
+    Super::load_thread_info();
     if (depth == 0) {
       return 0;
     }
-    _stacktrace.resize(depth + 1);
-    size_t trace_cnt = backtrace(&_stacktrace[0], _stacktrace.size());
-    _stacktrace.resize(trace_cnt);
-    skip_n_firsts(1);
-    return size();
+    Super::_stacktrace.resize(depth + 1);
+    size_t trace_cnt = backtrace(&Super::_stacktrace[0], Super::_stacktrace.size());
+    Super::_stacktrace.resize(trace_cnt);
+    Super::skip_n_firsts(1);
+    return Super::size();
   }
 
   size_t load_from(void *addr, size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
     load_here(depth + 8, context, error_addr);
 
-    for (size_t i = 0; i < _stacktrace.size(); ++i) {
-      if (_stacktrace[i] == addr) {
-        skip_n_firsts(i);
-        _stacktrace[i] = (void *)((uintptr_t)_stacktrace[i] + 1);
+    for (size_t i = 0; i < Super::_stacktrace.size(); ++i) {
+      if (Super::_stacktrace[i] == addr) {
+        Super::skip_n_firsts(i);
+        Super::_stacktrace[i] = (void *)((uintptr_t)Super::_stacktrace[i] + 1);
         break;
       }
     }
 
-    _stacktrace.resize(std::min(_stacktrace.size(), skip_n_firsts() + depth));
-    return size();
+    Super::_stacktrace.resize(std::min(Super::_stacktrace.size(), Super::skip_n_firsts() + depth));
+    return Super::size();
   }
 };
 
 #elif defined(BACKWARD_SYSTEM_WINDOWS)
 
-template <>
-class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+template <typename Allocator>
+class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
+  using Super = StackTraceImplHolder<Allocator>;
 public:
   // We have to load the machine type from the image info
   // So we first initialize the resolver, and it tells us this info
@@ -1135,8 +1145,8 @@ public:
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
-    set_context(static_cast<CONTEXT*>(context));
-    set_error_addr(error_addr);
+    Super::set_context(static_cast<CONTEXT*>(context));
+    Super::set_error_addr(error_addr);
     CONTEXT localCtx; // used when no context is provided
 
     if (depth == 0) {
@@ -1189,28 +1199,28 @@ public:
       if (s.AddrReturn.Offset == 0)
         break;
 
-      _stacktrace.push_back(reinterpret_cast<void *>(s.AddrPC.Offset));
+      Super::_stacktrace.push_back(reinterpret_cast<void *>(s.AddrPC.Offset));
 
-      if (size() >= depth)
+      if (Super::size() >= depth)
         break;
     }
 
-    return size();
+    return Super::size();
   }
 
   size_t load_from(void *addr, size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
     load_here(depth + 8, context, error_addr);
 
-    for (size_t i = 0; i < _stacktrace.size(); ++i) {
-      if (_stacktrace[i] == addr) {
-        skip_n_firsts(i);
+    for (size_t i = 0; i < Super::_stacktrace.size(); ++i) {
+      if (Super::_stacktrace[i] == addr) {
+        Super::skip_n_firsts(i);
         break;
       }
     }
 
-    _stacktrace.resize(std::min(_stacktrace.size(), skip_n_firsts() + depth));
-    return size();
+    Super::_stacktrace.resize(std::min(Super::_stacktrace.size(), Super::skip_n_firsts() + depth));
+    return Super::size();
   }
 
 private:
@@ -1221,7 +1231,8 @@ private:
 
 #endif
 
-class StackTrace : public StackTraceImpl<system_tag::current_tag> {};
+template<typename Allocator = p::ArenaAllocator>
+class StackTrace : public StackTraceImpl<Allocator, system_tag::current_tag> {};
 
 /*************** TRACE RESOLVER ***************/
 
@@ -4447,7 +4458,7 @@ private:
     // in the constructor of TraceResolver
     Printer printer;
 
-    StackTrace st;
+    StackTrace<> st;
     st.set_machine_type(printer.resolver().machine_type());
     st.set_thread_handle(thread_handle());
     st.load_here(32 + skip_frames, ctx());
@@ -4474,3 +4485,4 @@ public:
 } // namespace backward
 
 #endif /* H_GUARD */
+// clang-format off

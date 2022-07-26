@@ -18,4 +18,7 @@ namespace p
 	{
 		return static_cast<const Class*>(this)->Self();
 	}
+
+
+	TPtr<BaseClass> ClassOwnership::nextOwner{};
 }    // namespace p

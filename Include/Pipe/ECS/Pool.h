@@ -2,547 +2,86 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Core/Platform.h"
+#include "Pipe/Core/Span.h"
+#include "Pipe/Core/TypeTraits.h"
+#include "Pipe/ECS/BasePool.h"
 #include "Pipe/ECS/Id.h"
-#include "Pipe/ECS/SparseSet.h"
+#include "Pipe/ECS/PageBuffer.h"
+#include "Pipe/Memory/UniquePtr.h"
 
-#include <Pipe/Core/BitArray.h>
-#include <Pipe/Core/Broadcast.h>
-#include <Pipe/Core/Map.h>
-#include <Pipe/Core/Set.h>
-#include <Pipe/Core/Span.h>
-#include <Pipe/Core/TypeTraits.h>
-#include <Pipe/Memory/UniquePtr.h>
-#include <Pipe/Memory/STLAllocator.h>
+#include <memory>
 
 
 namespace p::ecs
 {
 	struct Context;
 
-
-	template<typename Allocator = Memory::TDefaultAllocator<Id>>
-	struct TPoolSet : public BasicSparseSet<STLAllocator<Id, Allocator>>
+	template<typename T, typename Allocator = ArenaAllocator>
+	struct TPool : public BasePool
 	{
-		using Super = BasicSparseSet<STLAllocator<Id, Allocator>>;
-
-	public:
-		using Super::Super;
-
-		void PopSwap(Id id)
-		{
-			Super::SwapAndPop(id, nullptr);
-		}
-
-		void Pop(Id id)
-		{
-			Super::InPlacePop(id, nullptr);
-		}
-	};
-
-
-	template<typename T, typename Allocator>
-	struct TPoolData
-	{
-		static constexpr sizet chunkSize = 1024;
-
-		using AllocatorTraits = std::allocator_traits<STLAllocator<T, Allocator>>;
-		static_assert(AllocatorTraits::propagate_on_container_move_assignment::value);
-		using Chunk = T*;
-
-		template<typename Value>
-		struct TPoolIterator final
-		{
-			using difference_type   = typename IdTraits<Id>::Difference;
-			using value_type        = Value;
-			using pointer           = Value*;
-			using reference         = Value&;
-			using iterator_category = std::random_access_iterator_tag;
-
-			TPoolIterator() = default;
-
-			TPoolIterator(Value* const* chunks, const difference_type index)
-			    : chunks{chunks}, index{index}
-			{}
-
-			TPoolIterator& operator++()
-			{
-				return --index, *this;
-			}
-
-			TPoolIterator operator++(int)
-			{
-				TPoolIterator orig = *this;
-				return ++(*this), orig;
-			}
-
-			TPoolIterator& operator--()
-			{
-				return ++index, *this;
-			}
-
-			TPoolIterator operator--(int)
-			{
-				TPoolIterator orig = *this;
-				return operator--(), orig;
-			}
-
-			TPoolIterator& operator+=(const difference_type value)
-			{
-				index -= value;
-				return *this;
-			}
-
-			TPoolIterator operator+(const difference_type value) const
-			{
-				TPoolIterator copy = *this;
-				return (copy += value);
-			}
-
-			TPoolIterator& operator-=(const difference_type value)
-			{
-				return (*this += -value);
-			}
-
-			TPoolIterator operator-(const difference_type value) const
-			{
-				return (*this + -value);
-			}
-
-			difference_type operator-(const TPoolIterator& other) const
-			{
-				return other.index - index;
-			}
-
-			reference operator[](const difference_type value) const
-			{
-				const sizet pos{index - value - 1};
-				return (*chunks)[GetChunk(pos)][GetOffset(pos)];
-			}
-
-			bool operator==(const TPoolIterator& other) const
-			{
-				return other.index == index;
-			}
-
-			bool operator!=(const TPoolIterator& other) const
-			{
-				return !(*this == other);
-			}
-
-			auto operator<=>(const TPoolIterator& other) const
-			{
-				return other.index <=> index;
-			}
-
-			pointer operator->() const
-			{
-				const sizet pos = sizet(index - 1);
-				return std::addressof(chunks[GetChunk(pos)][GetOffset(pos)]);
-			}
-
-			reference operator*() const
-			{
-				const sizet pos = sizet(index - 1);
-				return chunks[GetChunk(pos)][GetOffset(pos)];
-			}
-
-		private:
-			Value* const* chunks = nullptr;
-			difference_type index;
-		};
-
-		using Iterator = TPoolIterator<T>;
-		/*! @brief Constant random access iterator type. */
-		using ConstIterator = TPoolIterator<const T>;
-		/*! @brief Reverse iterator type. */
-		using ReverseIterator = std::reverse_iterator<Iterator>;
-		/*! @brief Constant reverse iterator type. */
-		using ConstReverseIterator = std::reverse_iterator<ConstIterator>;
-
+		using AllocatorType = Allocator;
 
 	private:
-
-		STLAllocator<T, Allocator> allocator;
-		TArray<Chunk> chunks;
-		sizet size = 0;
+		TPageBuffer<T, 1024, AllocatorType> data;
 
 
 	public:
-		TPoolData() = default;
-
-		T* Get(sizet index) const
+		TPool(Context& ast) : BasePool(ast, DeletionPolicy::InPlace), data{} {}
+		TPool(const TPool& other) : BasePool(other)
 		{
-			return chunks[GetChunk(index)] + GetOffset(index);
-		}
-
-		void Reserve(sizet capacity)
-		{
-			const i32 neededChunks = GetChunk(capacity - 1) + 1;
-			if (neededChunks <= chunks.Size())    // There are enough buckets
+			if constexpr (!p::IsEmpty<T>)
 			{
-				return;
+				data.Reserve(other.data.Capacity());
+				i32 u = 0;
+				for (i32 i = 0; i < other.Size(); ++i, ++u)
+				{
+					const Id id = other.idList[i];
+					if (id != ecs::NoId)
+					{
+						if constexpr (IsCopyConstructible<T>)
+						{
+							data.Insert(u, other.data[i]);
+						}
+						else
+						{
+							data.Insert(u);
+						}
+					}
+				}
 			}
-
-			chunks.Reserve(neededChunks);
-			while (chunks.Size() < neededChunks)
-			{
-				chunks.Add(AllocatorTraits::allocate(allocator, chunkSize));
-			}
 		}
-
-		// Release chunks to an specific size. No destructors are called
-		void Release(sizet newSize)
-		{
-			CheckMsg(newSize >= size, "Cant erelease memory below used size");
-			const i32 usedChunks = i32(newSize / chunkSize);
-			if (usedChunks >= chunks.Size())
-			{
-				return;
-			}
-
-			for (auto pos = usedChunks; pos < chunks.Size(); ++pos)
-			{
-				AllocatorTraits::deallocate(allocator, chunks[pos], chunkSize);
-			}
-			chunks.RemoveLast(chunks.Size() - usedChunks);
-		}
-
-		// Release chunks to an specific size. No destructors are called
-		void Reset()
-		{
-			for (Chunk chunk : chunks)
-			{
-				AllocatorTraits::deallocate(allocator, chunk, chunkSize);
-			}
-			chunks.Empty();
-		}
-
-		T* Push(sizet index, T&& value)
-		{
-			CheckMsg(index < (chunks.Size() * chunkSize), "Out of bounds index");
-			++size;
-			T* instance = chunks[GetChunk(index)] + GetOffset(index);
-			if constexpr (std::is_aggregate_v<T>)
-			{
-				AllocatorTraits::construct(allocator, instance, Move(value));
-			}
-			else
-			{
-				AllocatorTraits::construct(allocator, instance, Move(value));
-			}
-			return instance;
-		}
-
-		T* Push(sizet index, const T& value)
-		{
-			CheckMsg(index < (chunks.Size() * chunkSize), "Out of bounds index");
-			++size;
-			T* instance = chunks[GetChunk(index)] + GetOffset(index);
-			if constexpr (std::is_aggregate_v<T>)
-			{
-				AllocatorTraits::construct(allocator, instance, value);
-			}
-			else
-			{
-				AllocatorTraits::construct(allocator, instance, value);
-			}
-			return instance;
-		}
-
-		void PopSwap(sizet index, sizet last)
-		{
-			T& item     = chunks[GetChunk(index)][GetOffset(index)];
-			T& lastItem = chunks[GetChunk(last)][GetOffset(last)];
-			Swap(item, lastItem);
-			AllocatorTraits::destroy(allocator, &lastItem);
-			--size;
-		}
-		void Pop(sizet index)
-		{
-			T& item = chunks[GetChunk(index)][GetOffset(index)];
-			AllocatorTraits::destroy(allocator, &item);
-			--size;
-		}
-
-		static i32 GetChunk(sizet index)
-		{
-			return i32(index / chunkSize);
-		}
-
-		static sizet GetOffset(sizet index)
-		{
-			return index & (chunkSize - 1);
-		}
-
-		ConstIterator cbegin() const
-		{
-			return ConstIterator{chunks.Data(), IdTraits<Id>::Difference(size)};
-		}
-
-		ConstIterator begin() const
-		{
-			return cbegin();
-		}
-
-		Iterator begin()
-		{
-			return Iterator{chunks.Data(), IdTraits<Id>::Difference(size)};
-		}
-		Iterator end()
-		{
-			return Iterator{chunks.Data(), {}};
-		}
-		Iterator end() const
-		{
-			return cend();
-		}
-		Iterator cend() const
-		{
-			return Iterator{chunks.Data(), {}};
-		}
-
-		ConstReverseIterator crbegin() const
-		{
-			return std::make_reverse_iterator(cend());
-		}
-
-		ConstReverseIterator rbegin() const
-		{
-			return crbegin();
-		}
-
-		ReverseIterator rbegin()
-		{
-			return std::make_reverse_iterator(end());
-		}
-
-		ConstReverseIterator crend() const
-		{
-			return std::make_reverse_iterator(cbegin());
-		}
-
-		ConstReverseIterator rend() const
-		{
-			return crend();
-		}
-
-		ReverseIterator rend()
-		{
-			return std::make_reverse_iterator(begin());
-		}
-	};
-
-
-	template<typename T, typename Allocator>
-		requires(IsEmpty<T>)
-	struct TPoolData<T, Allocator>
-	{
-	public:
-		TPoolData() = default;
-		T* Get(sizet index) const
-		{
-			return nullptr;
-		}
-		void Reserve(sizet size) {}
-		void Release(sizet size) {}
-		void Reset() {}
-		T* Push(sizet index, const T&)
-		{
-			return nullptr;
-		}
-		T* Push(sizet index, T&&)
-		{
-			return nullptr;
-		}
-		void PopSwap(sizet index, sizet last) {}
-		void Pop(sizet index) {}
-	};
-
-
-	struct Pool
-	{
-		using Index = IdTraits<Id>::Index;
-
-		using Iterator        = TPoolSet<>::iterator;
-		using ReverseIterator = TPoolSet<>::reverse_iterator;
-
-
-	protected:
-		TPoolSet<> set;
-		DeletionPolicy deletionPolicy;
-
-		Context* context = nullptr;
-		TBroadcast<Context&, TSpan<const Id>> onAdd;
-		TBroadcast<Context&, TSpan<const Id>> onRemove;
-
-
-		Pool(Context& ast, DeletionPolicy inDeletionPolicy)
-		    : context{&ast}
-		    , set{DeletionPolicy(u8(inDeletionPolicy))}
-		    , deletionPolicy{inDeletionPolicy}
-		{}
-
-		void OnAdded(TSpan<const Id> ids)
-		{
-			onAdd.Broadcast(*context, ids);
-		}
-
-		void OnRemoved(TSpan<const Id> ids)
-		{
-			onRemove.Broadcast(*context, ids);
-		}
-
-	public:
-		virtual ~Pool() {}
-
-		bool Has(Id id) const
-		{
-			return set.Contains(id);
-		}
-
-		// Returns the data pointer of a component if contianed
-		virtual void* TryGetVoid(Id id) = 0;
-
-		virtual bool Remove(Id id)                     = 0;
-		virtual void RemoveUnsafe(Id id)               = 0;
-		virtual i32 Remove(TSpan<const Id> ids)        = 0;
-		virtual void RemoveUnsafe(TSpan<const Id> ids) = 0;
-
-		virtual void SetOwnerContext(Context& destination)
-		{
-			context = &destination;
-		}
-		virtual TUniquePtr<Pool> Clone() = 0;
-
-		Context& GetContext() const
-		{
-			return *context;
-		}
-
-		Iterator Find(const Id id) const
-		{
-			return set.Find(id);
-		}
-
-		sizet Size() const
-		{
-			return set.Size();
-		}
-
-		Iterator begin() const
-		{
-			return set.begin();
-		}
-
-		Iterator end() const
-		{
-			return set.end();
-		}
-
-		ReverseIterator rbegin() const
-		{
-			return set.rbegin();
-		}
-
-		ReverseIterator rend() const
-		{
-			return set.rend();
-		}
-
-		TBroadcast<Context&, TSpan<const Id>>& OnAdd()
-		{
-			return onAdd;
-		}
-
-		TBroadcast<Context&, TSpan<const Id>>& OnRemove()
-		{
-			return onRemove;
-		}
-	};
-
-
-	template<typename T, typename Allocator = Memory::TDefaultAllocator<T>>
-	struct TPool : public Pool
-	{
-	private:
-		TPoolData<T, Allocator> data;
-
-
-	public:
-		TPool(Context& ast) : Pool(ast, DeletionPolicy::InPlace), data{} {}
 		~TPool() override
 		{
-			Reset();
+			Clear();
 		}
 
-		void Add(Id id, const T&) requires(IsEmpty<T>)
+		template<typename... Args>
+		auto Add(Id id, Args&&... args) -> Select<p::IsEmpty<T>, void, T&>
 		{
-			if (Has(id))
+			if constexpr (!p::IsEmpty<T>)
 			{
-				return;
+				if (Has(id))
+				{
+					return (Get(id) = T{Forward<Args>(args)...});
+				}
 			}
 
-			set.Emplace(id);
+			const auto index = EmplaceId(id, false);
+			if constexpr (!p::IsEmpty<T>)
+			{
+				data.Reserve(index + 1u);
+				T* const value = data.Insert(index, Forward<Args>(args)...);
+				OnAdded({id});
+				return *value;
+			}
 			OnAdded({id});
 		}
 
-		T& Add(Id id, const T& v) requires(!IsEmpty<T>)
-		{
-			if (Has(id))
-			{
-				return (Get(id) = v);
-			}
-
-			Check(!Has(id));
-			const auto i = set.Slot();
-			data.Reserve(i + 1u);
-
-			T& value = *data.Push(i, v);
-
-			const auto setI = set.Emplace(id);
-			if (!Ensure(i == setI)) [[unlikely]]
-			{
-				Log::Error("Misplaced component");
-				data.Pop(i);
-			}
-			else
-			{
-				OnAdded({id});
-			}
-			return value;
-		}
-		T& Add(Id id, T&& v = {}) requires(!IsEmpty<T>)
-		{
-			if (Has(id))
-			{
-				return (Get(id) = Move(v));
-			}
-
-			const auto i = set.Slot();
-			data.Reserve(i + 1u);
-
-			T& value = *data.Push(i, Forward<T>(v));
-
-			const auto setI = set.Emplace(id);
-			if (!Ensure(i == setI)) [[unlikely]]
-			{
-				Log::Error("Misplaced component");
-				data.Pop(i);
-			}
-			else
-			{
-				OnAdded({id});
-			}
-			return value;
-		}
-
 		template<typename It>
-		void Add(It first, It last, const T& value = {})
+		void Add(It first, It last, const T& value = {}) requires(IsCopyConstructible<T>)
 		{
 			const sizet numToAdd = std::distance(first, last);
-			const sizet newSize  = set.Size() + numToAdd;
-			set.Reserve(newSize);
-			data.Reserve(newSize);
 
 			TArray<Id> ids;
 			ids.Reserve(numToAdd);
@@ -551,24 +90,26 @@ namespace p::ecs
 				ids.Add(*it);
 			}
 
+			const sizet newSize = Size() + numToAdd;
+			idList.Reserve(newSize);
+			data.Reserve(newSize);
+
 			for (Id id : ids)
 			{
 				if (Has(id))
 				{
-					if constexpr (!IsCopyConstructible<T>)
-					{
-						// Ignore reference value since we can only move
-						Get(id) = Move(T{});
-					}
-					else if constexpr (!IsEmpty<T>)
+					if constexpr (!p::IsEmpty<T>)
 					{
 						Get(id) = value;
 					}
 				}
 				else
 				{
-					data.Push(set.Size(), value);
-					set.EmplaceBack(id);
+					const auto index = EmplaceId(id, true);
+					if constexpr (!p::IsEmpty<T>)
+					{
+						data.Insert(index, value);
+					}
 				}
 			}
 			OnAdded(ids);
@@ -579,9 +120,6 @@ namespace p::ecs
 		    IsSame<std::decay_t<typename std::iterator_traits<CIt>::value_type>, T>)
 		{
 			const sizet numToAdd = std::distance(first, last);
-			const sizet newSize  = set.Size() + numToAdd;
-			set.Reserve(newSize);
-			data.Reserve(newSize);
 
 			TArray<Id> ids;
 			ids.Reserve(numToAdd);
@@ -589,6 +127,10 @@ namespace p::ecs
 			{
 				ids.Add(*it);
 			}
+
+			const sizet newSize = Size() + numToAdd;
+			idList.Reserve(newSize);
+			data.Reserve(newSize);
 
 			for (Id id : ids)
 			{
@@ -599,30 +141,30 @@ namespace p::ecs
 						// Ignore reference value since we can only move
 						Get(id) = Move(T{});
 					}
-					else if constexpr (!IsEmpty<T>)
+					else if constexpr (!p::IsEmpty<T>)
 					{
 						Get(id) = *from;
 					}
 				}
 				else
 				{
+					const auto index = EmplaceId(id, true);
 					if constexpr (!IsCopyConstructible<T>)
 					{
 						// Ignore reference value since we can only move
-						data.Push(set.Size(), {});
+						data.Insert(index, {});
 					}
 					else
 					{
-						data.Push(set.Size(), *from);
+						data.Insert(index, *from);
 					}
-					set.EmplaceBack(id);
 				}
 				++from;
 			}
 			OnAdded(ids);
 		}
 
-		T& GetOrAdd(const Id id) requires(!IsEmpty<T>)
+		T& GetOrAdd(const Id id) requires(!p::IsEmpty<T>)
 		{
 			return Has(id) ? Get(id) : Add(id);
 		}
@@ -697,26 +239,30 @@ namespace p::ecs
 			}
 		}
 
-		T& Get(Id id) requires(!IsEmpty<T>)
+		T& Get(Id id) requires(!p::IsEmpty<T>)
 		{
 			Check(Has(id));
-			return *data.Get(set.Index(id));
+			return data[GetIndexFromId(id)];
 		}
 
-		const T& Get(Id id) const requires(!IsEmpty<T>)
+		const T& Get(Id id) const requires(!p::IsEmpty<T>)
 		{
 			Check(Has(id));
-			return *data.Get(set.Index(id));
+			return data[GetIndexFromId(id)];
 		}
 
 		T* TryGet(Id id)
 		{
-			return Has(id) ? data.Get(set.Index(id)) : nullptr;
+			if (!p::IsEmpty<T> && Has(id))
+			{
+				return &data[GetIndexFromId(id)];
+			}
+			return nullptr;
 		}
 
 		const T* TryGet(Id id) const
 		{
-			return Has(id) ? data.Get(set.Index(id)) : nullptr;
+			return Has(id) ? &data[GetIndexFromId(id)] : nullptr;
 		}
 
 		void* TryGetVoid(Id id) override
@@ -724,24 +270,15 @@ namespace p::ecs
 			return TryGet(id);
 		}
 
-		TUniquePtr<Pool> Clone() override
+		TUniquePtr<BasePool> Clone() override
 		{
-			auto newPool = MakeUnique<TPool<T>>(*context);
-			if constexpr (IsEmpty<T>)
-			{
-				newPool->Add(set.begin(), set.end(), {});
-			}
-			else
-			{
-				newPool->Add(set.begin(), set.end(), data.begin());
-			}
-			return Move(newPool);
+			return MakeUnique<TPool<T>>(*this);
 		}
 
 		void Reserve(sizet size)
 		{
-			set.Reserve(size);
-			if (size > set.Size())
+			idList.Reserve(size);
+			if (size > Size())
 			{
 				data.Reserve(size);
 			}
@@ -749,27 +286,89 @@ namespace p::ecs
 
 		void Shrink()
 		{
-			set.ShrinkToFit();
-			data.Release(set.Size());
+			idList.Shrink();
+			data.Shrink(idList.Size());
 		}
 
-		void Reset()
+		void Clear() override
 		{
-			set.Clear();
-			data.Reset();
+			if constexpr (!p::IsEmpty<T>)
+			{
+				for (i32 i = 0; i < Size(); ++i)
+				{
+					if (idList[i] != ecs::NoId)
+					{
+						data.RemoveAt(i);
+					}
+				}
+				data.Clear();
+			}
+			ClearIds();
+		}
+
+		/*! @brief Removes all ecs::NoIds from pool */
+		void Compact()
+		{
+			i32 from = idList.Size();
+			for (; from && ecs::GetVersion(idList[from - 1]) == NoVersion; --from) {}
+
+			for (i32 to = lastRemovedIndex; to != NO_INDEX && from;)
+			{
+				if (to < from)
+				{
+					--from;
+
+					if constexpr (!p::IsEmpty<T>)
+					{
+						std::uninitialized_move_n(&data[from], 1, &data[to]);
+					}
+
+					auto& listTo = idList[i32(to)];
+					p::Swap(idList[from], listTo);
+
+					idIndices[ecs::GetIndex(listTo)] = to;
+					to                               = from;
+
+					for (; from && ecs::GetVersion(idList[from - 1]) == NoVersion; --from) {}
+				}
+			}
+
+			lastRemovedIndex = NO_INDEX;
+			idList.Resize(from);
+		}
+
+		void Swap(const Id a, const Id b)
+		{
+			CheckMsg(Has(a), "Set does not contain entity");
+			CheckMsg(Has(b), "Set does not contain entity");
+
+			i32& aListIdx = idIndices[ecs::GetIndex(a)];
+			i32& bListIdx = idIndices[ecs::GetIndex(b)];
+
+			p::Swap(idList[aListIdx], idList[bListIdx]);
+			p::Swap(aListIdx, bListIdx);
+			data.Swap(aListIdx, bListIdx);
 		}
 
 	private:
 		void PopSwap(Id id)
 		{
-			data.PopSwap(set.Index(id), set.Size() - 1u);
-			set.PopSwap(id);
+			if constexpr (!p::IsEmpty<T>)
+			{
+				const i32 lastIndex = Size() - 1u;
+				data.Swap(GetIndexFromId(id), lastIndex);
+				data.RemoveAt(lastIndex);
+			}
+			PopSwapId(id);
 		}
 
 		void Pop(Id id)
 		{
-			data.Pop(set.Index(id));
-			set.Pop(id);
+			if constexpr (!p::IsEmpty<T>)
+			{
+				data.RemoveAt(GetIndexFromId(id));
+			}
+			PopId(id);
 		}
 	};
 
@@ -777,10 +376,10 @@ namespace p::ecs
 	struct PoolInstance
 	{
 		TypeId componentId{};
-		TUniquePtr<Pool> pool;
+		TUniquePtr<BasePool> pool;
 
 
-		PoolInstance(TypeId componentId, TUniquePtr<Pool>&& pool)
+		PoolInstance(TypeId componentId, TUniquePtr<BasePool>&& pool)
 		    : componentId{componentId}, pool{Move(pool)}
 		{}
 		PoolInstance(PoolInstance&& other) noexcept
@@ -820,7 +419,7 @@ namespace p::ecs
 			return componentId;
 		}
 
-		Pool* GetPool() const
+		BasePool* GetPool() const
 		{
 			return pool.Get();
 		}
@@ -830,7 +429,4 @@ namespace p::ecs
 			return componentId.GetId() < other.componentId.GetId();
 		}
 	};
-
-
-	i32 GetSmallestPool(TSpan<const Pool*> pools);
 }    // namespace p::ecs

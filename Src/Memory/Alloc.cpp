@@ -4,7 +4,10 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Profiler.h"
-#include "Pipe/Math/Math.h"
+#include "Pipe/Memory/Arena.h"
+#include "Pipe/Memory/BigBestFitArena.h"
+#include "Pipe/Memory/HeapArena.h"
+#include "Pipe/Memory/MemoryStats.h"
 
 #include <cstdlib>
 #include <memory>
@@ -12,53 +15,116 @@
 
 namespace p
 {
-	void* Alloc(sizet n)
+	static Arena* currentArena = nullptr;
+
+
+	void* HeapAlloc(sizet size)
 	{
-		void* const p = std::malloc(n);
+		void* const ptr = std::malloc(size);
+#if BUILD_DEBUG
 		// FIX: Profiler reports alloc gets called frequently twice with the same pointer. Seems
 		// related to allocators
-		// TracyAllocS(p, n, 12);
-		return p;
+		// TracyAllocS(ptr, size, 12);
+		GetHeapStats()->Add(ptr, size);
+#endif
+		return ptr;
 	}
 
-	void* Alloc(sizet n, sizet align)
+	void* HeapAlloc(sizet size, sizet align)
 	{
 #if PLATFORM_WINDOWS
 		// TODO: Windows needs _aligned_free in order to use _aligned_alloc()
-		void* const p = std::malloc(n);
-#elif PLATFORM_MACOS || PLATFORM_LINUX
-		void* p;
-		(void)(posix_memalign(&p, align, n));
+		void* const ptr = std::malloc(size);
 #else
-		void* const p = std::aligned_alloc(align, n);
+		void* const ptr = std::aligned_alloc(align, size);
 #endif
-		// TracyAllocS(p, n, 8);
-		return p;
+#if BUILD_DEBUG
+		GetHeapStats()->Add(ptr, size);
+#endif
+		return ptr;
 	}
 
-	void* Realloc(void* old, sizet size)
+	void* HeapRealloc(void* ptr, sizet size)
 	{
-		// TracyFreeS(old, 8);
-		void* const p = std::realloc(old, size);
-		// TracyAllocS(p, size, 8);
-		return p;
+#if BUILD_DEBUG
+		GetHeapStats()->Remove(ptr);
+#endif
+		ptr = std::realloc(ptr, size);
+#if BUILD_DEBUG
+		GetHeapStats()->Add(ptr, size);
+#endif
+		return ptr;
 	}
 
-	void Free(void* p)
+	void HeapFree(void* ptr)
 	{
-		// TracyFreeS(p, 8);
-		std::free(p);
+#if BUILD_DEBUG
+		GetHeapStats()->Remove(ptr);
+#endif
+		std::free(ptr);
 	}
 
-	sizet GetAlignmentPadding(const void* ptr, sizet align)
+
+	HeapArena& GetHeapArena()
 	{
-		Check(math::IsPowerOfTwo(align));
-		return -reinterpret_cast<ssizet>(ptr) & (align - 1);
+		static HeapArena heapArena{};
+		return heapArena;
 	}
 
-	sizet GetAlignmentPaddingWithHeader(const void* ptr, sizet align, sizet headerSize)
+	Arena& GetCurrentArena()
 	{
-		// Get padding with the header as an offset
-		return headerSize + GetAlignmentPadding(static_cast<const u8*>(ptr) + headerSize, align);
+		return currentArena ? *currentArena : GetHeapArena();
+	}
+
+	void SetCurrentArena(Arena& arena)
+	{
+		currentArena = &arena;
+	}
+
+	MemoryStats* GetHeapStats()
+	{
+		static MemoryStats heapStats;
+		return &heapStats;
+	}
+
+
+	void* Alloc(Arena& arena, sizet size)
+	{
+		return arena.Alloc(size);
+	}
+
+	void* Alloc(Arena& arena, sizet size, sizet align)
+	{
+		return arena.Alloc(size, align);
+	}
+
+	bool Resize(Arena& arena, void* ptr, sizet ptrSize, sizet size)
+	{
+		return arena.Resize(ptr, ptrSize, size);
+	}
+
+	void Free(Arena& arena, void* ptr, sizet size)
+	{
+		arena.Free(ptr, size);
+	}
+
+	void* Alloc(sizet size)
+	{
+		return Alloc(GetCurrentArena(), size);
+	}
+
+	void* Alloc(sizet size, sizet align)
+	{
+		return Alloc(GetCurrentArena(), size, align);
+	}
+
+	bool Resize(void* ptr, sizet ptrSize, sizet size)
+	{
+		return Resize(GetCurrentArena(), ptr, ptrSize, size);
+	}
+
+	void Free(void* ptr, sizet size)
+	{
+		Free(GetCurrentArena(), ptr, size);
 	}
 }    // namespace p

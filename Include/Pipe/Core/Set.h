@@ -17,7 +17,7 @@
 
 namespace p::core
 {
-	template<typename Type, typename Allocator = Memory::TDefaultAllocator<Type>>
+	template<typename Type, typename Allocator = ArenaAllocator>
 	class TSet
 	{
 		// static_assert(std::is_nothrow_move_constructible<Value>::value ||
@@ -49,10 +49,10 @@ namespace p::core
 		}
 		TSet(std::initializer_list<Type> initList) : set{initList.begin(), initList.end()} {}
 
-		TSet(TSet&& other) noexcept = default;
-		TSet(const TSet& other)     = default;
+		TSet(TSet&& other) noexcept            = default;
+		TSet(const TSet& other)                = default;
 		TSet& operator=(TSet&& other) noexcept = default;
-		TSet& operator=(const TSet& other) = default;
+		TSet& operator=(const TSet& other)     = default;
 
 		Iterator Insert(Type&& value)
 		{
@@ -99,27 +99,58 @@ namespace p::core
 			set.reserve(sizeNum);
 		}
 
-		Iterator FindIt(const Type& item)
+		template<typename Key = Type>
+		Iterator FindIt(const Key& key)
 		{
-			return set.find(item);
+			return set.find(key);
 		}
 
-		ConstIterator FindIt(const Type& item) const
+		template<typename Key = Type>
+		Iterator FindIt(const Key& key, sizet hash)
 		{
-			return set.find(item);
+			return set.find(key, hash);
 		}
 
-		const Type* Find(const Type& value) const
+		template<typename Key = Type>
+		ConstIterator FindIt(const Key& key) const
 		{
-			ConstIterator it = FindIt(value);
-			return it != end() ? &*it : nullptr;
+			return set.find(key);
 		}
 
-		const Type& FindRef(const Type& value) const
+		template<typename Key = Type>
+		ConstIterator FindIt(const Key& key, sizet hash) const
 		{
-			ConstIterator it = FindIt(value);
+			return set.find(key, hash);
+		}
+
+		template<typename Key = Type>
+		Type* Find(const Key& key) const
+		{
+			ConstIterator it = FindIt(key);
+			return it != end() ? &const_cast<Type&>(*it) : nullptr;
+		}
+
+		template<typename Key = Type>
+		Type* Find(const Key& key, sizet hash) const
+		{
+			ConstIterator it = FindIt(key, hash);
+			return it != end() ? &const_cast<Type&>(*it) : nullptr;
+		}
+
+		template<typename Key = Type>
+		Type& FindRef(const Key& key) const
+		{
+			ConstIterator it = FindIt(key);
 			assert(it != end() && "Value not found, can't dereference its value");
-			return *it;
+			return const_cast<Type&>(*it);
+		}
+
+		template<typename Key = Type>
+		Type& FindRef(const Key& key, sizet hash) const
+		{
+			ConstIterator it = FindIt(key, hash);
+			assert(it != end() && "Value not found, can't dereference its value");
+			return const_cast<Type&>(*it);
 		}
 
 		bool Contains(const Type& value) const
@@ -133,7 +164,11 @@ namespace p::core
 		 */
 		i32 Remove(const Type& value)
 		{
-			Iterator it = FindIt(value);
+			return RemoveIt(FindIt(value));
+		}
+
+		i32 RemoveIt(Iterator it)
+		{
 			if (it != end())
 			{
 				const i32 lastSize = Size();
@@ -144,11 +179,11 @@ namespace p::core
 		}
 
 		/** Empty the array.
-		 * @param bShouldShrink false will not free memory
+		 * @param shouldShrink false will not free memory
 		 */
-		void Empty(const bool bShouldShrink = true, i32 sizeNum = 0)
+		void Clear(const bool shouldShrink = true, i32 sizeNum = 0)
 		{
-			if (bShouldShrink)
+			if (shouldShrink)
 			{
 				set.clear();
 			}
@@ -157,7 +192,7 @@ namespace p::core
 				set.clear_no_resize();
 				if (sizeNum > 0 && set.max_size() != sizeNum)
 				{
-					set.resize(sizeNum);
+					set.reserve(sizeNum);
 				}
 			}
 		}

@@ -2,13 +2,14 @@
 #pragma once
 
 #include "Pipe/Core/Array.h"
-#include "Pipe/Memory/Arenas/IArena.h"
-#include "Pipe/Memory/Blocks/HeapBlock.h"
+#include "Pipe/Memory/Arena.h"
+#include "Pipe/Memory/Block.h"
+#include "Pipe/Memory/Memory.h"
 
 
-namespace p::Memory
+namespace p
 {
-	class PIPE_API BestFitArena : public IArena
+	class PIPE_API BestFitArena : public ChildArena
 	{
 	public:
 		struct Slot
@@ -16,7 +17,7 @@ namespace p::Memory
 			u8* start;
 			sizet size;
 
-			u8* GetEnd() const;
+			u8* End() const;
 
 			auto operator==(const Slot& other) const
 			{
@@ -42,22 +43,27 @@ namespace p::Memory
 
 	protected:
 		// TODO: Support growing multiple blocks
-		HeapBlock block{};
+		Memory::Block block{};
 		TArray<Slot> freeSlots{};
 		bool pendingSort = false;
 		sizet freeSize   = 0;
 
 
 	public:
-		BestFitArena(const sizet initialSize = 1024);
-		~BestFitArena() {}
+		BestFitArena(Arena* parent, const sizet initialSize = 4 * Memory::KB);
+		BestFitArena(const sizet initialSize = 4 * Memory::KB) : BestFitArena(nullptr, initialSize)
+		{}
+		~BestFitArena() override;
 
-		void* Allocate(const sizet size);
-		void* Allocate(const sizet size, sizet alignment);
-
+		void* Alloc(const sizet size);
+		void* Alloc(const sizet size, sizet align);
+		bool Resize(void* ptr, const sizet ptrSize, const sizet size)
+		{
+			return false;
+		}
 		void Free(void* ptr, sizet size);
 
-		const HeapBlock& GetBlock() const
+		const Memory::Block& GetBlock() const
 		{
 			return block;
 		}
@@ -73,7 +79,7 @@ namespace p::Memory
 
 		sizet GetUsedSize()
 		{
-			return block.GetSize() - freeSize;
+			return block.size - freeSize;
 		}
 
 		const TArray<Slot>& GetFreeSlots() const
@@ -89,8 +95,8 @@ namespace p::Memory
 	};
 
 
-	inline u8* BestFitArena::Slot::GetEnd() const
+	inline u8* BestFitArena::Slot::End() const
 	{
 		return start + size;
 	}
-}    // namespace p::Memory
+}    // namespace p

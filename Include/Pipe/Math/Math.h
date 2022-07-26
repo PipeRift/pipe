@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Pipe/Core/Limits.h"
 #include "Pipe/Core/Macros.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/TypeTraits.h"
@@ -79,13 +80,13 @@ namespace p::math
 	template<typename T>
 	static constexpr bool IsPosInf(const T x)
 	{
-		return x == std::numeric_limits<T>::infinity();
+		return x == Limits<T>::Infinity();
 	}
 
 	template<typename T>
 	static constexpr bool IsNegInf(const T x)
 	{
-		return x == -std::numeric_limits<T>::infinity();
+		return x == -Limits<T>::Infinity();
 	}
 
 	template<typename T>
@@ -114,7 +115,7 @@ namespace p::math
 			{
 				return v;
 			}
-			else if (std::numeric_limits<T>::epsilon() > Abs(v))
+			else if (Limits<T>::Epsilon() > Abs(v))
 			{
 				return v;
 			}
@@ -148,7 +149,7 @@ namespace p::math
 			{
 				return v;
 			}
-			else if (std::numeric_limits<T>::epsilon() > Abs(v))
+			else if (Limits<T>::Epsilon() > Abs(v))
 			{
 				return v;
 			}
