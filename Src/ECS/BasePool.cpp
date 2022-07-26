@@ -90,7 +90,7 @@ namespace p::ecs
 		if (lastRemovedIndex == NO_INDEX)
 		{
 			const auto last = end();
-			for (auto it = begin(); it < end(); ++it)
+			for (auto it = begin(); it < last; ++it)
 			{
 				PopId(*it);
 			}
