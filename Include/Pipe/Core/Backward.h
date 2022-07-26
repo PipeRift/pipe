@@ -1201,11 +1201,11 @@ public:
 
       Super::_stacktrace.push_back(reinterpret_cast<void *>(s.AddrPC.Offset));
 
-      if (size() >= depth)
+      if (Super::size() >= depth)
         break;
     }
 
-    return size();
+    return Super::size();
   }
 
   size_t load_from(void *addr, size_t depth = 32, void *context = nullptr,
@@ -1220,7 +1220,7 @@ public:
     }
 
     Super::_stacktrace.resize(std::min(Super::_stacktrace.size(), Super::skip_n_firsts() + depth));
-    return size();
+    return Super::size();
   }
 
 private:
