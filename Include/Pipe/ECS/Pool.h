@@ -339,8 +339,8 @@ namespace p::ecs
 
 		void Swap(const Id a, const Id b)
 		{
-			CheckMsg(Contains(a), "Set does not contain entity");
-			CheckMsg(Contains(b), "Set does not contain entity");
+			CheckMsg(Has(a), "Set does not contain entity");
+			CheckMsg(Has(b), "Set does not contain entity");
 
 			i32& aListIdx = idIndices[ecs::GetIndex(a)];
 			i32& bListIdx = idIndices[ecs::GetIndex(b)];
