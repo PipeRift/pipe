@@ -25,7 +25,7 @@ namespace p::core
 		// Dispatch() is instantiated by the TransientFunction constructor,
 		// which will store a pointer to the function in dispatcher.
 		template<typename S>
-		static P_FORCE_INLINE Ret Dispatch(void* target, Args... args)
+		static P_FORCEINLINE Ret Dispatch(void* target, Args... args)
 		{
 			return (*(S*)target)(args...);
 		}

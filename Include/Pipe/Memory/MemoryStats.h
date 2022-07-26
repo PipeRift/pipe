@@ -9,6 +9,7 @@
 #include "Pipe/Memory/IAllocator.h"
 
 #include <cstdlib>
+#include <shared_mutex>
 
 
 namespace p

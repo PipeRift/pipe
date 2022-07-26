@@ -36,11 +36,11 @@ namespace p
 }
 
 #if BUILD_DEBUG
-#	define FORCEINLINE inline /* Don't force code to be inline */
+#	define P_FORCEINLINE inline /* Don't force code to be inline */
 #else
-#	define FORCEINLINE inline __attribute__((always_inline)) /* Force code to be inline */
+#	define P_FORCEINLINE inline __attribute__((always_inline)) /* Force code to be inline */
 #endif
-#define NOINLINE __attribute__((noinline))
+#define P_NOINLINE __attribute__((noinline))
 
 #define PLATFORM_BREAK() __asm__("int $3")
 

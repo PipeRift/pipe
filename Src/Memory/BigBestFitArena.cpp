@@ -42,7 +42,7 @@ namespace p
 		// Set address at end of block. Size is 0
 		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.Size());
 		// Add first slot for the entire block
-		freeSlots.Add({0, block.size});
+		freeSlots.Add({0, u32(block.size)});
 
 		freeSize = initialSize;
 	}
