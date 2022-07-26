@@ -20,12 +20,20 @@ struct ATypeB
 go_bandit([]() {
 	describe("ECS", []() {
 		it("Can copy tree", [&]() {
+			static ecs::Context* astPtr = nullptr;
+			static bool calledAdd;
+
 			ecs::Context origin;
 			ecs::Id id = origin.Create();
 
-			bool calledAdd = false;
-			origin.OnAdd<ATypeA>().Bind([&calledAdd, &origin](ecs::Context& ast, auto ids) {
-				AssertThat(&origin, Equals(&ast));
+			calledAdd = false;
+			astPtr    = &origin;
+			origin.OnAdd<ATypeA>().Bind([](ecs::Context& ast, auto ids) {
+				for (ecs::Id id : ids)
+				{
+					AssertThat(ast.Has<ATypeA>(id), Equals(true));
+				}
+				AssertThat(astPtr, Equals(&ast));
 				calledAdd = true;
 			});
 			origin.Add<ATypeA>(id);
@@ -39,21 +47,35 @@ go_bandit([]() {
 			AssertThat(target.Has<ATypeA>(id), Equals(true));
 
 			calledAdd = false;
-			target.OnAdd<ATypeB>().Bind([&calledAdd, &target](ecs::Context& ast, auto ids) {
-				AssertThat(&target, Equals(&ast));
+			astPtr    = &target;
+			target.OnAdd<ATypeB>().Bind([](ecs::Context& ast, auto ids) {
+				for (ecs::Id id : ids)
+				{
+					AssertThat(ast.Has<ATypeB>(id), Equals(true));
+				}
+				AssertThat(astPtr, Equals(&ast));
 				calledAdd = true;
 			});
+
 			target.Add<ATypeB>(id);
 			AssertThat(calledAdd, Equals(true));
 		});
 
 		it("Can move tree", [&]() {
+			static ecs::Context* astPtr = nullptr;
+			static bool calledAdd;
+
 			ecs::Context origin;
 			ecs::Id id = origin.Create();
 
-			bool calledAdd = false;
-			origin.OnAdd<ATypeA>().Bind([&calledAdd, &origin](ecs::Context& ast, auto ids) {
-				AssertThat(&origin, Equals(&ast));
+			calledAdd = false;
+			astPtr    = &origin;
+			origin.OnAdd<ATypeA>().Bind([](ecs::Context& ast, auto ids) {
+				for (ecs::Id id : ids)
+				{
+					AssertThat(ast.Has<ATypeA>(id), Equals(true));
+				}
+				AssertThat(astPtr, Equals(&ast));
 				calledAdd = true;
 			});
 			origin.Add<ATypeA>(id);
@@ -66,8 +88,13 @@ go_bandit([]() {
 			AssertThat(target.Has<ATypeA>(id), Equals(true));
 
 			calledAdd = false;
-			target.OnAdd<ATypeB>().Bind([&calledAdd, &target](ecs::Context& ast, auto ids) {
-				AssertThat(&target, Equals(&ast));
+			astPtr    = &target;
+			target.OnAdd<ATypeB>().Bind([](ecs::Context& ast, auto ids) {
+				for (ecs::Id id : ids)
+				{
+					AssertThat(ast.Has<ATypeB>(id), Equals(true));
+				}
+				AssertThat(astPtr, Equals(&ast));
 				calledAdd = true;
 			});
 			target.Add<ATypeB>(id);
