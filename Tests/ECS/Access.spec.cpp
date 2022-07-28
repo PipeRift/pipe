@@ -67,9 +67,5 @@ go_bandit([]() {
 				AssertThat(superset1.GetPool<TypeA>(), Equals(&typePool));
 			});
 		});
-
-		xdescribe("Runtime", []() {
-			xit("Can cache pools", [&]() {});
-		});
 	});
 });

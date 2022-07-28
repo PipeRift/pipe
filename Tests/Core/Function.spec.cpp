@@ -72,11 +72,11 @@ go_bandit([]() {
 			AssertThat(Foo::called, Equals(true));
 		});
 
-		// TODO: Find out why this test fails on some Linux environments
-		xit("Can call lambda functions", [&]() {
-			bool called = false;
+		it("Can call lambda functions", [&]() {
+			static bool called;
+			called = false;
 
-			TFunction<void()> func = [&called]() {
+			TFunction<void()> func = []() {
 				called = true;
 			};
 			func();
