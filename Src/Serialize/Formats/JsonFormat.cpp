@@ -128,6 +128,7 @@ namespace p
 	{
 		if (!current) [[unlikely]]
 		{
+			size = 0;
 			return;
 		}
 		else if (!unsafe_yyjson_is_arr(current)) [[unlikely]]
@@ -135,6 +136,7 @@ namespace p
 			CheckMsg(false,
 			    "Scope is already initialized but it is not an array. Is BeginArray() being "
 			    "mixed with BeginObject() in the same scope?");
+			size = 0;
 			return;
 		}
 		size = InternalBegin();

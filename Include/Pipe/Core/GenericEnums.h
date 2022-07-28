@@ -12,6 +12,11 @@ namespace p::core
 		True  = true,
 		False = false
 	};
+
+	inline bool operator!(YesNo v)
+	{
+		return v == YesNo::No;
+	}
 }    // namespace p::core
 
 namespace p
