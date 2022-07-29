@@ -158,11 +158,11 @@ namespace p
 	}
 
 	template<typename T>
-	void Read(Reader& ct, T& val) requires IsEnum<T>
+	void Read(Reader& ct, T& val) requires(IsEnum<T>)
 	{
 		if constexpr (GetEnumSize<T>() > 0)
 		{
-			String typeStr;
+			StringView typeStr;
 			ct.Serialize(typeStr);
 			if (std::optional<T> value = GetEnumValue<T>(typeStr))
 			{
