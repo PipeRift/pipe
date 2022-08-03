@@ -57,7 +57,7 @@ namespace p
 		String str;
 		ct.Serialize(str);
 
-		*this = Strings::Equals(str, NameTable::noneStr) ? None() : str;
+		*this = Strings::Equals(str, NameTable::noneStr) ? None() : Name(str);
 	}
 	void Name::Write(Writer& ct) const
 	{

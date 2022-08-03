@@ -112,7 +112,7 @@ namespace p::core
 	public:
 		Name() = default;
 		Name(const TChar* key) : Name(StringView{key}) {}
-		Name(StringView key)
+		explicit Name(StringView key)
 		{
 			// Index this name
 			id = NameTable::Get().Register(key);
@@ -120,7 +120,7 @@ namespace p::core
 			value = ToString();
 #endif
 		}
-		Name(const String& str) : Name(StringView(str)) {}
+		explicit Name(const String& str) : Name(StringView(str)) {}
 		Name(const Name& other)
 		    : id(other.id)
 #if BUILD_DEBUG
