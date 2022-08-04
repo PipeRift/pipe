@@ -211,5 +211,30 @@ go_bandit([]() {
 			AssertThat(NonEmptyComponent::destructed, Equals(0));
 			AssertThat(TestComponent::destructed, Equals(2));
 		});
+
+		it("Components are removed with the entity", [&]() {
+			ecs::Context ctx;
+			ecs::Id id = ctx.Create();
+			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
+			ctx.Destroy(id);
+
+			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
+			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
+			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
+			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
+		});
+
+		it("Can access components on recicled entities", [&]() {
+			ecs::Context ctx;
+			ecs::Id id = ctx.Create();
+			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
+			ctx.Destroy(id);
+
+			id = ctx.Create();
+			ctx.Add<NonEmptyComponent>(id);
+			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
+			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
+			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+		});
 	});
 });
