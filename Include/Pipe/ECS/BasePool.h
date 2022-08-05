@@ -176,14 +176,13 @@ namespace p::ecs
 		virtual i32 Remove(TSpan<const Id> ids)        = 0;
 		virtual void RemoveUnsafe(TSpan<const Id> ids) = 0;
 
-		i32 GetIndexFromId(const Id id) const
-		{
-			CheckMsg(Has(id), "Set does not contain entity");
-			return idIndices[ecs::GetIndex(id)];
-		}
-		i32 GetIndexFromId(const Index index) const
+		inline i32 GetIndexFromId(const Index index) const
 		{
 			return idIndices[index];
+		}
+		inline i32 GetIndexFromId(const Id id) const
+		{
+			return GetIndexFromId(ecs::GetIndex(id));
 		}
 		Id GetIdFromIndex(i32 index) const
 		{
