@@ -49,11 +49,6 @@ namespace p
 			ownership.owner = inOwner;
 		}
 
-		virtual void Serialize(ReadWriter& ct)
-		{
-			SerializeReflection(ct);
-		}
-
 		template<typename T = Class>
 		TPtr<T> Self() const
 		{
@@ -66,23 +61,4 @@ namespace p
 			return ownership.GetOwner().Cast<T>();
 		}
 	};
-
-
 }    // namespace p
-
-
-template<typename T>
-void Read(p::Reader& ct, T& value) requires(p::Derived<T, p::Class>)
-{
-	ct.BeginObject();
-	p::ReadWriter common{ct};
-	value.Serialize(common);
-}
-
-template<typename T>
-void Write(p::Writer& ct, const T& value) requires(p::Derived<T, p::Class>)
-{
-	ct.BeginObject();
-	p::ReadWriter common{ct};
-	const_cast<T&>(value).Serialize(common);
-}

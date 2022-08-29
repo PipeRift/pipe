@@ -13,25 +13,16 @@ namespace p
 {
 	struct PIPE_API ReadWriter
 	{
-		enum class Mode : u8
-		{
-			Read,
-			Write
-		};
-
-
 	private:
-		Mode mode;
-		union
-		{
-			Reader* reader;
-			Writer* writer;
-		};
+		Reader* reader;
+		Writer* writer;
 
 
 	public:
-		ReadWriter(Reader& reader) : mode{Mode::Read}, reader{&reader} {}
-		ReadWriter(Writer& writer) : mode{Mode::Write}, writer{&writer} {}
+		ReadWriter(Reader& reader) : reader{&reader}, writer{nullptr} {}
+		ReadWriter(Writer& writer) : reader{nullptr}, writer{&writer} {}
+		ReadWriter(const ReadWriter& other)            = default;
+		ReadWriter& operator=(const ReadWriter& other) = default;
 
 		/**
 		 * Starts the deserialization of an scope as an object.
@@ -109,11 +100,11 @@ namespace p
 
 		bool IsReading() const
 		{
-			return mode == Mode::Read;
+			return reader;
 		}
 		bool IsWriting() const
 		{
-			return mode == Mode::Write;
+			return writer;
 		}
 
 		Reader& GetRead() const

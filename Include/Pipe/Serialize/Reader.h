@@ -14,6 +14,21 @@
 
 namespace p
 {
+	namespace internal
+	{
+		template<typename T>
+		struct HasRead : std::false_type
+		{};
+		template<typename T>
+			requires IsVoid<decltype(Read(std::declval<struct Reader&>(), std::declval<T&>()))>
+		struct HasRead<T> : std::true_type
+		{};
+	}    // namespace internal
+
+	template<typename T>
+	static constexpr bool Readable = internal::template HasRead<T>::value;
+
+
 	struct PIPE_API Reader
 	{
 		template<SerializeFormat format>
@@ -97,7 +112,13 @@ namespace p
 		template<typename T>
 		void Serialize(T& val)
 		{
-			Read(*this, val);
+			static_assert(Readable<T>,
+			    "Type must be readable! No valid read function found. E.g: 'Read(Reader& w, T& "
+			    "value)'");
+			if constexpr (Readable<T>)
+			{
+				Read(*this, val);
+			}
 		}
 
 		void Leave();

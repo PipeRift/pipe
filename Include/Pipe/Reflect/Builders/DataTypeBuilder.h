@@ -103,6 +103,18 @@ namespace p
 			newType->id    = id;
 			newType->name  = name;
 			newType->flags = flags;
+			newType->read  = [](Reader& r, void* instance) {
+                if constexpr (Readable<T>)
+                {
+                    r.Serialize(*static_cast<T*>(instance));
+                }
+			};
+			newType->write = [](Writer& w, void* instance) {
+				if constexpr (Writable<T>)
+				{
+					w.Serialize(*static_cast<T*>(instance));
+				}
+			};
 
 			initializedType = newType;
 			return newType;

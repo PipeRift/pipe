@@ -32,15 +32,7 @@ namespace p
 
 	// Write a value directly from the format reader.
 	template<typename T>
-	void WriteFromFormat(Writer& ct, const T& val) requires(!ShouldPassByValue<T>)
-	{
-		switch (ct.format)
-		{
-			case SerializeFormat::Json: ct.GetWriter<SerializeFormat::Json>().Write(val);
-		}
-	}
-	template<typename T>
-	void WriteFromFormat(Writer& ct, T val) requires(ShouldPassByValue<T>)
+	void WriteFromFormat(Writer& ct, const T& val)
 	{
 		switch (ct.format)
 		{
