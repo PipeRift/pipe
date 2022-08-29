@@ -78,11 +78,14 @@ namespace p
 	template<typename T>
 	concept IsEnum = std::is_enum_v<T>;
 
+	template<bool UseT, typename T, typename F>
+	using Select = typename std::conditional<UseT, T, F>::type;
+
 	template<typename T>
 	concept ShouldPassByValue = sizeof(T) <= sizeof(sizet) && IsCopyConstructible<T>;
 
-	template<bool UseT, typename T, typename F>
-	using Select = typename std::conditional<UseT, T, F>::type;
+	template<typename T>
+	using ValueOrRef = typename std::conditional<ShouldPassByValue<T>, T, const T&>::type;
 
 	template<typename T>
 	concept IsRValueRef = Internal::IsRValueReference<T>::value;
@@ -99,7 +102,7 @@ namespace p
 		static bool Impl(char);
 
 	public:
-		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
+		static const bool value = IsVoid<decltype(Impl<T>(0))>;
 	};
 
 	template<typename T>

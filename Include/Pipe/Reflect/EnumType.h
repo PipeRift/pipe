@@ -132,7 +132,7 @@ namespace p
 		}
 		Name GetNameByIndex(i32 index) const
 		{
-			return names[index];
+			return names.IsValidIndex(index) ? names[index] : Name::None();
 		}
 
 		// Intentionally unsafe function. Do not modify the value!

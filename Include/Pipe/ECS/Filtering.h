@@ -93,6 +93,23 @@ namespace p::ecs
 		(ExcludeIf<C>(access, ids, shouldShrink), ...);
 	}
 
+	template<typename Predicate>
+	void ExcludeIf(TArray<Id>& ids, Predicate predicate, const bool shouldShrink = true)
+	{
+		ZoneScoped;
+		for (i32 i = ids.Size() - 1; i >= 0; --i)
+		{
+			if (predicate(ids[i]))
+			{
+				ids.RemoveAtSwapUnsafe(i);
+			}
+		}
+		if (shouldShrink)
+		{
+			ids.Shrink();
+		}
+	}
+
 	/**
 	 * Remove ids containing a component from 'ids'. Guarantees order.
 	 *

@@ -47,16 +47,17 @@ namespace p::ecs
 		CheckMsg(!Has(id), "Set already contains entity");
 		const auto idIndex = ecs::GetIndex(id);
 
-		idIndices.Reserve(idIndex + 1);
 		if (lastRemovedIndex != NO_INDEX && !forceBack)
 		{
 			const i32 index = lastRemovedIndex;
 			idIndices.Insert(idIndex, i32(index));
-			lastRemovedIndex = index;
+			idList[index]    = id;
+			lastRemovedIndex = NO_INDEX;
 			return index;
 		}
 		else
 		{
+			idIndices.Reserve(idIndex + 1);
 			idIndices.Insert(idIndex, idList.Size());
 			idList.Add(id);
 			return idList.Size() - 1;

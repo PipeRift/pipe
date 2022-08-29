@@ -14,6 +14,21 @@
 
 namespace p
 {
+	namespace internal
+	{
+		template<typename T>
+		struct HasWrite : std::false_type
+		{};
+		template<typename T>
+			requires IsVoid<decltype(Write(
+			    std::declval<struct Writer&>(), std::declval<const T&>()))>
+		struct HasWrite<T> : std::true_type
+		{};
+	}    // namespace internal
+
+	template<typename T>
+	static constexpr bool Writable = internal::template HasWrite<T>::value;
+
 	struct PIPE_API Writer
 	{
 		template<SerializeFormat format>
@@ -49,16 +64,7 @@ namespace p
 		 * This function won't do anything on array or uninitialized scopes
 		 */
 		template<typename T>
-		void Next(StringView name, const T& val) requires(!ShouldPassByValue<T>)
-		{
-			if (EnterNext(name))
-			{
-				Serialize(val);
-				Leave();
-			}
-		}
-		template<typename T>
-		void Next(StringView name, T val) requires(ShouldPassByValue<T>)
+		void Next(StringView name, const T& val)
 		{
 			if (EnterNext(name))
 			{
@@ -89,16 +95,7 @@ namespace p
 		 * This function won't do anything on object or uninitialized scopes
 		 */
 		template<typename T>
-		void Next(const T& val) requires(!ShouldPassByValue<T>)
-		{
-			if (EnterNext())
-			{
-				Serialize(val);
-				Leave();
-			}
-		}
-		template<typename T>
-		void Next(T val) requires(ShouldPassByValue<T>)
+		void Next(const T& val)
 		{
 			if (EnterNext())
 			{
@@ -110,14 +107,15 @@ namespace p
 
 		// Write a type into the current scope
 		template<typename T>
-		void Serialize(const T& val) requires(!ShouldPassByValue<T>)
+		void Serialize(const T& val)
 		{
-			Write(*this, val);
-		}
-		template<typename T>
-		void Serialize(T val) requires(ShouldPassByValue<T>)
-		{
-			Write(*this, val);
+			static_assert(Writable<T>,
+			    "Type must be writable! No valid write function found. E.g: 'Write(Writer& w, "
+			    "const T& value)'");
+			if constexpr (Writable<T>)
+			{
+				Write(*this, val);
+			}
 		}
 
 		void Leave();

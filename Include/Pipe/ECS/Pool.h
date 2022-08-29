@@ -242,7 +242,8 @@ namespace p::ecs
 		T& Get(Id id) requires(!p::IsEmpty<T>)
 		{
 			Check(Has(id));
-			return data[GetIndexFromId(id)];
+			const i32 index = GetIndexFromId(id);
+			return data[index];
 		}
 
 		const T& Get(Id id) const requires(!p::IsEmpty<T>)

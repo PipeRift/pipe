@@ -56,18 +56,23 @@ namespace p::ecs
 		void Destroy(TSpan<const Id> ids);
 
 		// Adds Component to an entity (if the entity doesnt have it already)
-		template<typename Component, typename... Args>
+		template<typename C>
+		decltype(auto) Add(Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
+		{
+			Check(IsValid(id));
+			return AssurePool<C>().Add(id, Forward<C>(value));
+		}
+		template<typename C>
+		decltype(auto) Add(Id id, const C& value) const requires(IsSame<C, Mut<C>>)
+		{
+			Check(IsValid(id));
+			return AssurePool<C>().Add(id, value);
+		}
+		template<typename C, typename... Args>
 		decltype(auto) Add(Id id, Args&&... args)
 		{
 			Check(IsValid(id));
-			return AssurePool<Component>().Add(id, Forward<Args>(args)...);
-		}
-
-		// Add Component to many entities (if they dont have it already)
-		template<typename Component>
-		decltype(auto) Add(TSpan<const Id> ids, const Component& value = {})
-		{
-			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
+			return AssurePool<C>().Add(id, Forward<Args>(args)...);
 		}
 
 		// Adds Component to an entity (if the entity doesnt have it already)
@@ -78,9 +83,17 @@ namespace p::ecs
 			(Add<Component>(id), ...);
 		}
 
+		// Add Component to many entities (if they dont have it already)
+		template<typename Component>
+		decltype(auto) AddN(TSpan<const Id> ids, const Component& value = {})
+		{
+			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
+		}
+
+
 		// Add Components to many entities (if they dont have it already)
 		template<typename... Component>
-		void Add(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
+		void AddN(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
 		{
 			(Add<Component>(ids), ...);
 		}

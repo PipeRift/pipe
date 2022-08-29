@@ -114,13 +114,6 @@ namespace p
 		{
 			return;
 		}
-		else if (!unsafe_yyjson_is_obj(current)) [[unlikely]]
-		{
-			CheckMsg(false,
-			    "Scope is already initialized but it is not an object. Is BeginObject() being "
-			    "mixed with BeginArray() in the same scope?");
-			return;
-		}
 		InternalBegin();
 	}
 
@@ -131,15 +124,12 @@ namespace p
 			size = 0;
 			return;
 		}
-		else if (!unsafe_yyjson_is_arr(current)) [[unlikely]]
+		const bool isArray = unsafe_yyjson_is_arr(current);
+		size               = InternalBegin();
+		if (!isArray)
 		{
-			CheckMsg(false,
-			    "Scope is already initialized but it is not an array. Is BeginArray() being "
-			    "mixed with BeginObject() in the same scope?");
 			size = 0;
-			return;
 		}
-		size = InternalBegin();
 	}
 
 	bool JsonFormatReader::EnterNext(StringView name)

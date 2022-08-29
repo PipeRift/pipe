@@ -693,6 +693,16 @@ namespace p::core
 
 		/** OPERATORS */
 	public:
+		/// @returns safely a pointer to an element given an index
+		Type* At(i32 index) requires(!IsSame<Type, bool>)
+		{
+			return IsValidIndex(index) ? Data() + index : nullptr;
+		}
+		const Type* At(i32 index) const requires(!IsSame<Type, bool>)
+		{
+			return IsValidIndex(index) ? Data() + index : nullptr;
+		}
+
 		/**
 		 * Array bracket operator. Returns reference to element at give index.
 		 *

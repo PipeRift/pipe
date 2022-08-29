@@ -15,10 +15,8 @@ namespace p
 		{
 			HasMemberSerialize = false,    // If true, serialization functions for this type will be
 			                               // contained inside the type as member functions
-			HasSingleSerialize = false,    // If true, Serialize() will be used for reading and
+			HasSingleSerialize = false     // If true, Serialize() will be used for reading and
 			                               // saving instead of Read() and Write()
-			HasGlobalSerialize = false,    // DEPRECATED
-			HasPostSerialize   = false
 		};
 	};
 

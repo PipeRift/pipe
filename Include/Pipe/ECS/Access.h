@@ -151,12 +151,10 @@ namespace p
 		{
 			return GetPool<C>()->Add(id, value);
 		}
-
-		// Add component to many entities (if they dont have it already)
-		template<typename C>
-		decltype(auto) Add(TSpan<const ecs::Id> ids, const C& value = {}) const
+		template<typename C, typename... Args>
+		decltype(auto) Add(ecs::Id id, Args&&... args)
 		{
-			return GetPool<C>()->Add(ids.begin(), ids.end(), value);
+			return GetPool<C>()->Add(id, Forward<Args>(args)...);
 		}
 
 		// Add component to an entities (if they dont have it already)
@@ -166,12 +164,19 @@ namespace p
 			(Add<C>(id), ...);
 		}
 
+		// Add component to many entities (if they dont have it already)
+		template<typename C>
+		decltype(auto) AddN(TSpan<const ecs::Id> ids, const C& value = {}) const
+		{
+			return GetPool<C>()->Add(ids.begin(), ids.end(), value);
+		}
+
 		// Add components to many entities (if they dont have it already)
 		template<typename... C>
-		void Add(TSpan<const ecs::Id> ids) const
+		void AddN(TSpan<const ecs::Id> ids) const
 		    requires((IsSame<C, Mut<C>> && ...) && sizeof...(C) > 1)
 		{
-			(Add<C>(ids), ...);
+			(AddN<C>(ids), ...);
 		}
 
 

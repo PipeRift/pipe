@@ -89,7 +89,7 @@ namespace p
 
 		for (auto* const child : children)
 		{
-			if (child->GetName() == className)
+			if (child->GetName() == className.ToString())    // TODO: Use Names
 			{
 				return child;
 			}
