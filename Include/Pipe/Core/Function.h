@@ -2,7 +2,6 @@
 #pragma once
 
 #include "Pipe/Core/Checks.h"
-#include "Pipe/Core/Platform.h"
 
 #include <type_traits>
 

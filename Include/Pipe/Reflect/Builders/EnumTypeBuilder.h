@@ -3,12 +3,11 @@
 
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Name.h"
-#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/Builders/StaticInitializers.h"
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 #include "Pipe/Reflect/EnumType.h"
-#include "Pipe/Reflect/Registry.h"
 #include "Pipe/Reflect/TypeId.h"
+#include "Pipe/Reflect/TypeRegistry.h"
 
 
 #define ENUM(type)                                                   \
@@ -46,7 +45,7 @@ namespace p
 	protected:
 		Type* Build() override
 		{
-			EnumType& newType = ReflectionRegistry::Get().AddType<EnumType>(GetId());
+			EnumType& newType = TypeRegistry::Get().AddType<EnumType>(GetId());
 
 			newType.size = sizeof(T);
 			newType.id   = id;

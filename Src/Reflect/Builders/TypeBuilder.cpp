@@ -2,10 +2,11 @@
 
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 
-#include "Pipe/Reflect/Registry.h"
 #include "Pipe/Reflect/TypeId.h"
+#include "Pipe/Reflect/TypeRegistry.h"
 
 #include <utility>
+
 
 
 namespace p
@@ -21,7 +22,7 @@ namespace p
 
 		// Make sure this type has not been initialized before from another builder instance
 		// (including DLL static memory)
-		initializedType = ReflectionRegistry::Get().FindType(id);
+		initializedType = TypeRegistry::Get().FindType(id);
 		if (!initializedType)
 		{
 			initializedType = Build();

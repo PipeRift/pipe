@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "Pipe/Core/String.h"
+#include "Pipe/Core/Array.h"
+#include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Tuples.h"
-#include "Pipe/Files/Files.h"
+#include "Pipe/Files/STDFileSystem.h"
 
 
 namespace p::files

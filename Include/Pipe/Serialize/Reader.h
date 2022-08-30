@@ -4,9 +4,9 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Tuples.h"
-#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/EnumType.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
+#include "Pipe/Reflect/Type.h"
 #include "Pipe/Reflect/TypeFlags.h"
 #include "Pipe/Serialize/Formats/IFormat.h"
 #include "Pipe/Serialize/SerializationTypes.h"
@@ -141,6 +141,7 @@ namespace p
 	};
 
 
+	// Format reads
 	PIPE_API void Read(Reader& ct, bool& val);
 	PIPE_API void Read(Reader& ct, u8& val);
 	PIPE_API void Read(Reader& ct, i32& val);
@@ -150,6 +151,10 @@ namespace p
 	PIPE_API void Read(Reader& ct, float& val);
 	PIPE_API void Read(Reader& ct, double& val);
 	PIPE_API void Read(Reader& ct, StringView& val);
+
+	// Pipe types reads
+	PIPE_API void Read(Reader& ct, Type*& val);
+	PIPE_API void Read(Reader& r, TypeId& val);
 
 	template<typename T1, typename T2>
 	void Read(Reader& ct, TPair<T1, T2>& val)

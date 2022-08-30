@@ -1,6 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Core/Profiler.h"
 #include "Pipe/ECS/Access.h"
 #include "Pipe/ECS/Context.h"
 

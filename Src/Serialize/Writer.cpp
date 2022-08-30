@@ -3,6 +3,7 @@
 #include "Pipe/Serialize/Writer.h"
 
 #include "Pipe/Core/Checks.h"
+#include "Pipe/Reflect/TypeRegistry.h"
 #include "Pipe/Serialize/Formats/JsonFormat.h"
 
 
@@ -32,11 +33,11 @@ namespace p
 
 	// Write a value directly from the format reader.
 	template<typename T>
-	void WriteFromFormat(Writer& ct, const T& val)
+	void WriteFromFormat(Writer& w, const T& val)
 	{
-		switch (ct.format)
+		switch (w.format)
 		{
-			case SerializeFormat::Json: ct.GetWriter<SerializeFormat::Json>().Write(val);
+			case SerializeFormat::Json: w.GetWriter<SerializeFormat::Json>().Write(val);
 		}
 	}
 
@@ -65,40 +66,50 @@ namespace p
 		WRITER_SWITCH(Leave());
 	}
 
-	void Write(Writer& ct, bool val)
+	void Write(Writer& w, bool val)
 	{
-		WriteFromFormat(ct, val);
+		WriteFromFormat(w, val);
 	}
-	void Write(Writer& ct, u8 val)
+	void Write(Writer& w, u8 val)
 	{
-		WriteFromFormat(ct, val);
+		WriteFromFormat(w, val);
 	}
-	void Write(Writer& ct, i32 val)
+	void Write(Writer& w, i32 val)
 	{
-		WriteFromFormat(ct, val);
+		WriteFromFormat(w, val);
 	}
-	void Write(Writer& ct, u32 val)
+	void Write(Writer& w, u32 val)
 	{
-		WriteFromFormat(ct, val);
+		WriteFromFormat(w, val);
 	}
-	void Write(Writer& ct, i64 val)
+	void Write(Writer& w, i64 val)
 	{
-		WriteFromFormat(ct, val);
+		WriteFromFormat(w, val);
 	}
-	void Write(Writer& ct, u64 val)
+	void Write(Writer& w, u64 val)
 	{
-		WriteFromFormat(ct, val);
+		WriteFromFormat(w, val);
 	}
-	void Write(Writer& ct, float val)
+	void Write(Writer& w, float val)
 	{
-		WriteFromFormat(ct, val);
+		WriteFromFormat(w, val);
 	}
-	void Write(Writer& ct, double val)
+	void Write(Writer& w, double val)
 	{
-		WriteFromFormat(ct, val);
+		WriteFromFormat(w, val);
 	}
-	void Write(Writer& ct, StringView val)
+	void Write(Writer& w, StringView val)
 	{
-		WriteFromFormat(ct, val);
+		WriteFromFormat(w, val);
+	}
+
+	void Write(Writer& w, Type* val)
+	{
+		// TODO: Use name instead of typeId
+		w.Serialize(val->GetId());
+	}
+	void Write(Writer& w, TypeId val)
+	{
+		w.Serialize(val.GetId());
 	}
 }    // namespace p

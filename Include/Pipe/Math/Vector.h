@@ -3,8 +3,6 @@
 #pragma once
 
 #include "Math.h"
-#include "Pipe/Core/Name.h"
-#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 

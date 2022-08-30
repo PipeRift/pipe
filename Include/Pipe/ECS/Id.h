@@ -1,10 +1,10 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include <Pipe/Core/Platform.h>
-#include <Pipe/Core/TypeList.h>
-#include <Pipe/Reflect/Builders/NativeTypeBuilder.h>
-#include <Pipe/Serialize/SerializationFwd.h>
+#include "Pipe/Core/Platform.h"
+#include "Pipe/Core/TypeList.h"
+#include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
+#include "Pipe/Serialize/SerializationFwd.h"
 
 
 namespace p::ecs

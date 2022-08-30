@@ -4,7 +4,6 @@
 
 #include "Pipe/Core/Chrono.h"
 #include "Pipe/Core/String.h"
-#include "Pipe/Math/Math.h"
 
 #include <ratio>
 

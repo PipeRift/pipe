@@ -3,8 +3,7 @@
 
 #include "Pipe/Core/Platform.h"
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <type_traits>
 
 

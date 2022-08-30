@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Pipe/Core/Heap.h"
-#include "Pipe/Core/Profiler.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 

@@ -1,13 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Platform.h"
-#include "Pipe/Core/String.h"
-#include "Pipe/Memory/OwnPtr.h"
 #include "Pipe/Reflect/ArrayProperty.h"
-#include "Pipe/Reflect/BaseClass.h"
-#include "Pipe/Reflect/BaseStruct.h"
-#include "Pipe/Reflect/Property.h"
 
 
 namespace p

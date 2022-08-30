@@ -3,12 +3,11 @@
 #pragma once
 
 #include "Math.h"
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Reflect/NativeType.h"
-#include "Pipe/Reflect/TypeFlags.h"
-#include "Pipe/Serialize/Serialization.h"
+#include "Pipe/Serialize/Reader.h"
+#include "Pipe/Serialize/Writer.h"
 #include "Vector.h"
 
 
@@ -845,23 +844,23 @@ namespace p
 	}
 
 	template<>
-	inline void Read(Reader& ct, TColor<ColorMode::HSV>& color)
+	inline void Read(Reader& r, TColor<ColorMode::HSV>& color)
 	{
-		ct.BeginObject();
-		ct.Next("h", color.h);
-		ct.Next("s", color.s);
-		ct.Next("v", color.v);
-		ct.Next("a", color.a);
+		r.BeginObject();
+		r.Next("h", color.h);
+		r.Next("s", color.s);
+		r.Next("v", color.v);
+		r.Next("a", color.a);
 	}
 
 	template<>
-	inline void Write(Writer& ct, const TColor<ColorMode::HSV>& color)
+	inline void Write(Writer& w, const TColor<ColorMode::HSV>& color)
 	{
-		ct.BeginObject();
-		ct.Next("h", color.h);
-		ct.Next("s", color.s);
-		ct.Next("v", color.v);
-		ct.Next("a", color.a);
+		w.BeginObject();
+		w.Next("h", color.h);
+		w.Next("s", color.s);
+		w.Next("v", color.v);
+		w.Next("a", color.a);
 	}
 
 

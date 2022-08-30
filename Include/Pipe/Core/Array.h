@@ -8,7 +8,6 @@
 #include "Pipe/Core/Search.h"
 #include "Pipe/Core/Sorting.h"
 #include "Pipe/Core/Tuples.h"
-#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/STLAllocator.h"
 
 #include <cassert>

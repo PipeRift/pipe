@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "Pipe/Core/Platform.h"
-
 #ifndef PIPE_ENABLE_PROFILER
 #	define PIPE_ENABLE_PROFILER 0
 #endif
