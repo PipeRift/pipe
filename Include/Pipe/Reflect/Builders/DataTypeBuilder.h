@@ -9,10 +9,11 @@
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 #include "Pipe/Reflect/ClassType.h"
 #include "Pipe/Reflect/Property.h"
-#include "Pipe/Reflect/Registry.h"
 #include "Pipe/Reflect/StructType.h"
 #include "Pipe/Reflect/TypeId.h"
+#include "Pipe/Reflect/TypeRegistry.h"
 #include "Pipe/Serialize/Serialization.h"
+
 
 
 namespace p
@@ -29,7 +30,7 @@ namespace p
 		template<typename U>
 		void AddProperty(Name name, Property::AccessFunc* access, PropFlags propFlags)
 		{
-			auto& registry = ReflectionRegistry::Get();
+			auto& registry = TypeRegistry::Get();
 			Type* type;
 			Property* property;
 			if constexpr (IsArray<U>())
@@ -91,13 +92,13 @@ namespace p
 				auto* parent = static_cast<DataType*>(TTypeInstance<Parent>::InitType());
 				Check(parent);
 
-				newType = &ReflectionRegistry::Get().AddType<TType>(GetId());
+				newType = &TypeRegistry::Get().AddType<TType>(GetId());
 				parent->children.Add(newType);
 				newType->parent = parent;
 			}
 			else
 			{
-				newType = &ReflectionRegistry::Get().AddType<TType>(GetId());
+				newType = &TypeRegistry::Get().AddType<TType>(GetId());
 			}
 			newType->size  = sizeof(T);
 			newType->id    = id;

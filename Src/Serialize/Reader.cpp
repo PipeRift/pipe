@@ -4,6 +4,8 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/String.h"
+#include "Pipe/ECS/Id.h"
+#include "Pipe/Reflect/TypeId.h"
 #include "Pipe/Serialize/Formats/JsonFormat.h"
 
 
@@ -33,11 +35,11 @@ namespace p
 
 	// Read a value directly from the format reader.
 	template<typename T>
-	void ReadFromFormat(Reader& ct, T& val)
+	void ReadFromFormat(Reader& r, T& val)
 	{
-		switch (ct.format)
+		switch (r.format)
 		{
-			case SerializeFormat::Json: ct.GetReader<SerializeFormat::Json>().Read(val);
+			case SerializeFormat::Json: r.GetReader<SerializeFormat::Json>().Read(val);
 		}
 	}
 
@@ -76,40 +78,54 @@ namespace p
 		RETURN_READER_SWITCH(IsArray(), false);
 	}
 
-	void Read(Reader& ct, bool& val)
+	void Read(Reader& r, bool& val)
 	{
-		ReadFromFormat(ct, val);
+		ReadFromFormat(r, val);
 	}
-	void Read(Reader& ct, u8& val)
+	void Read(Reader& r, u8& val)
 	{
-		ReadFromFormat(ct, val);
+		ReadFromFormat(r, val);
 	}
-	void Read(Reader& ct, i32& val)
+	void Read(Reader& r, i32& val)
 	{
-		ReadFromFormat(ct, val);
+		ReadFromFormat(r, val);
 	}
-	void Read(Reader& ct, u32& val)
+	void Read(Reader& r, u32& val)
 	{
-		ReadFromFormat(ct, val);
+		ReadFromFormat(r, val);
 	}
-	void Read(Reader& ct, i64& val)
+	void Read(Reader& r, i64& val)
 	{
-		ReadFromFormat(ct, val);
+		ReadFromFormat(r, val);
 	}
-	void Read(Reader& ct, u64& val)
+	void Read(Reader& r, u64& val)
 	{
-		ReadFromFormat(ct, val);
+		ReadFromFormat(r, val);
 	}
-	void Read(Reader& ct, float& val)
+	void Read(Reader& r, float& val)
 	{
-		ReadFromFormat(ct, val);
+		ReadFromFormat(r, val);
 	}
-	void Read(Reader& ct, double& val)
+	void Read(Reader& r, double& val)
 	{
-		ReadFromFormat(ct, val);
+		ReadFromFormat(r, val);
 	}
-	void Read(Reader& ct, StringView& val)
+	void Read(Reader& r, StringView& val)
 	{
-		ReadFromFormat(ct, val);
+		ReadFromFormat(r, val);
+	}
+
+	void Read(Reader& r, Type*& val)
+	{
+		// TODO: Use name instead of typeId
+		TypeId typeId{};
+		r.Serialize(typeId);
+		val = TypeRegistry::Get().FindType(typeId);
+	}
+	void Read(Reader& r, TypeId& val)
+	{
+		u64 idValue = TypeId::None().GetId();
+		r.Serialize(idValue);
+		val = TypeId{idValue};
 	}
 }    // namespace p

@@ -5,8 +5,9 @@
 #include "Pipe/Reflect/Builders/StaticInitializers.h"
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 #include "Pipe/Reflect/NativeType.h"
-#include "Pipe/Reflect/Registry.h"
 #include "Pipe/Reflect/TypeId.h"
+#include "Pipe/Reflect/TypeRegistry.h"
+
 
 
 #define REFLECT_NATIVE_TYPE(type)                                      \
@@ -44,7 +45,7 @@ namespace p
 	protected:
 		Type* Build() override
 		{
-			NativeType& newType = ReflectionRegistry::Get().AddType<NativeType>(GetId());
+			NativeType& newType = TypeRegistry::Get().AddType<NativeType>(GetId());
 
 			newType.size = sizeof(T);
 			newType.id   = id;

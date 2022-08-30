@@ -147,51 +147,56 @@ namespace p
 	};
 
 
-	PIPE_API void Write(Writer& ct, bool val);
-	PIPE_API void Write(Writer& ct, u8 val);
-	PIPE_API void Write(Writer& ct, i32 val);
-	PIPE_API void Write(Writer& ct, u32 val);
-	PIPE_API void Write(Writer& ct, i64 val);
-	PIPE_API void Write(Writer& ct, u64 val);
-	PIPE_API void Write(Writer& ct, float val);
-	PIPE_API void Write(Writer& ct, double val);
-	PIPE_API void Write(Writer& ct, StringView val);
+	// Format writes
+	PIPE_API void Write(Writer& w, bool val);
+	PIPE_API void Write(Writer& w, u8 val);
+	PIPE_API void Write(Writer& w, i32 val);
+	PIPE_API void Write(Writer& w, u32 val);
+	PIPE_API void Write(Writer& w, i64 val);
+	PIPE_API void Write(Writer& w, u64 val);
+	PIPE_API void Write(Writer& w, float val);
+	PIPE_API void Write(Writer& w, double val);
+	PIPE_API void Write(Writer& w, StringView val);
+
+	// Pipe types writes
+	PIPE_API void Write(Writer& w, Type* val);
+	PIPE_API void Write(Writer& w, TypeId val);
 
 	template<typename T1, typename T2>
-	void Write(Writer& ct, TPair<T1, T2>& val)
+	void Write(Writer& w, TPair<T1, T2>& val)
 	{
-		ct.BeginObject();
-		ct.Next("first", val.first);
-		ct.Next("second", val.second);
+		w.BeginObject();
+		w.Next("first", val.first);
+		w.Next("second", val.second);
 	}
 
 	template<typename T>
-	void Write(Writer& ct, const T& val) requires(
+	void Write(Writer& w, const T& val) requires(
 	    bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
 	{
-		val.Write(ct);
+		val.Write(w);
 	}
 
 	template<typename T>
-	void Write(Writer& ct, const T& val) requires(IsArray<T>())
+	void Write(Writer& w, const T& val) requires(IsArray<T>())
 	{
 		u32 size = val.Size();
-		ct.BeginArray(size);
+		w.BeginArray(size);
 		for (u32 i = 0; i < size; ++i)
 		{
-			ct.Next(val[i]);
+			w.Next(val[i]);
 		}
 	}
 
 	template<typename T>
-	void Write(Writer& ct, T& val) requires IsEnum<T>
+	void Write(Writer& w, T& val) requires IsEnum<T>
 	{
 		if constexpr (GetEnumSize<T>() > 0)
 		{
 			// Might not be necessary to cache string since enum name is static
-			ct.PushAddFlags(WriteFlags_CacheStringValues);
-			ct.Serialize(GetEnumName(val));
-			ct.PopFlags();
+			w.PushAddFlags(WriteFlags_CacheStringValues);
+			w.Serialize(GetEnumName(val));
+			w.PopFlags();
 		}
 	}
 }    // namespace p

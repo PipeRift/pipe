@@ -13,7 +13,7 @@
 
 namespace p
 {
-	class ReflectionRegistry
+	class TypeRegistry
 	{
 		// Contains all compiled reflection types linearly in memory
 		MultiLinearArena arena{GetCurrentArena()};
@@ -28,7 +28,7 @@ namespace p
 
 
 	public:
-		~ReflectionRegistry()
+		~TypeRegistry()
 		{
 			Reset();
 		}
@@ -72,6 +72,6 @@ namespace p
 			arena.Release();
 		}
 
-		static PIPE_API ReflectionRegistry& Get();
+		static PIPE_API TypeRegistry& Get();
 	};
 }    // namespace p
