@@ -3,7 +3,6 @@
 
 #include "BaseClass.h"
 #include "ClassPtrBuilder.h"
-#include "Pipe/Core/Log.h"
 #include "Pipe/Reflect/Reflection.h"
 #include "Pipe/Serialize/Serialization.h"
 

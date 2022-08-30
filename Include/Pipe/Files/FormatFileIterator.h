@@ -1,8 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Log.h"
-#include "Pipe/Core/String.h"
 #include "Pipe/Files/Files.h"
 
 

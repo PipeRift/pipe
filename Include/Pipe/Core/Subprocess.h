@@ -3,8 +3,8 @@
 #pragma once
 
 #include "Pipe/Core/EnumFlags.h"
+#include "Pipe/Core/Optional.h"
 #include "Pipe/Core/Span.h"
-#include "Pipe/Core/StringView.h"
 #include "Pipe/Export.h"
 
 #include <stdio.h>

@@ -2,7 +2,6 @@
 #pragma once
 
 #include "BaseStruct.h"
-#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/OwnPtr.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 

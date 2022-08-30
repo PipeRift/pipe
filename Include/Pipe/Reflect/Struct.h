@@ -2,7 +2,6 @@
 #pragma once
 
 #include "BaseStruct.h"
-#include "Pipe/Export.h"
 #include "Pipe/Reflect/Reflection.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
 #include "Pipe/Serialize/Serialization.h"

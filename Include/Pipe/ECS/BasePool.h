@@ -2,11 +2,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/BitArray.h"
 #include "Pipe/Core/Broadcast.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Span.h"
-#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/ECS/Id.h"
 #include "Pipe/ECS/PageBuffer.h"
 #include "Pipe/Memory/UniquePtr.h"

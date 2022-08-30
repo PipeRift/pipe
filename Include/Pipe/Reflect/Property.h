@@ -3,7 +3,6 @@
 
 #include "Pipe/Core/Name.h"
 #include "Pipe/Core/String.h"
-#include "Pipe/Memory/OwnPtr.h"
 #include "Pipe/Reflect/ReflectionFlags.h"
 #include "Pipe/Reflect/Type.h"
 

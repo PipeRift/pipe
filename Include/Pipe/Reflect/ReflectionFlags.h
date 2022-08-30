@@ -2,8 +2,6 @@
 #pragma once
 
 #include "Pipe/Core/EnumFlags.h"
-#include "Pipe/Core/Platform.h"
-#include "Pipe/Core/TypeTraits.h"
 
 
 namespace p

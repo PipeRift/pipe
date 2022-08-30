@@ -3,9 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/Limits.h"
-#include "Pipe/Core/Macros.h"
 #include "Pipe/Core/Platform.h"
-#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 
 #include <cmath>

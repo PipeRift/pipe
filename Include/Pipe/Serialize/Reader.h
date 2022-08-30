@@ -4,7 +4,6 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Tuples.h"
-#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
 #include "Pipe/Reflect/Type.h"
 #include "Pipe/Reflect/TypeFlags.h"

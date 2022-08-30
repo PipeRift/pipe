@@ -1,10 +1,9 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Core/Array.h"
+#include "Pipe/Core/Span.h"
 #include "Pipe/ECS/Id.h"
-
-#include <Pipe/Core/Array.h>
-#include <Pipe/Core/Span.h>
 
 
 namespace p::ecs

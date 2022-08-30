@@ -5,7 +5,6 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Reflect/TypeFlags.h"
 #include "Pipe/Serialize/Reader.h"
-#include "Pipe/Serialize/SerializationTypes.h"
 #include "Pipe/Serialize/Writer.h"
 
 

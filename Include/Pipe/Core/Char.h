@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "Pipe/Core/Platform.h"
+
 #include <cctype>
 #include <cwctype>
 #include <locale>
