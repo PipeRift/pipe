@@ -199,96 +199,19 @@ namespace p::ecs
 		}
 
 		template<typename Static>
-		Static& SetStatic(Static&& value = {})
-		{
-			const TypeId typeId = GetTypeId<Static>();
-
-			// Find static first to replace it
-			i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
-			if (index != NO_INDEX)
-			{
-				// Found, replace instance
-				OwnPtr& instance = statics[index];
-				instance         = MakeOwned<Static>(Forward<Static>(value));
-				return *instance.GetUnsafe<Static>();
-			}
-
-			// Not found. return new instance
-			index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Static>(value)));
-			return *statics[index].GetUnsafe<Static>();
-		}
+		Static& SetStatic(Static&& value = {});
 
 		template<typename Static>
-		Static& SetStatic(const Static& value)
-		{
-			const TypeId typeId = GetTypeId<Static>();
-
-			// Find static first to replace it
-			i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
-			if (index != NO_INDEX)
-			{
-				// Found, replace instance
-				OwnPtr& instance = statics[index];
-				instance         = MakeOwned<Static>(value);
-				return *instance.GetUnsafe<Static>();
-			}
-
-			// Not found. return new instance
-			index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(value));
-			return *statics[index].GetUnsafe<Static>();
-		}
+		Static& SetStatic(const Static& value);
 
 		template<typename Static>
-		Static& GetOrSetStatic(Static&& newValue = {})
-		{
-			const TypeId typeId = GetTypeId<Static>();
-			i32 index           = statics.LowerBound<TypeId, SortLessStatics>(typeId);
-			if (index != NO_INDEX)
-			{
-				if (typeId != statics[index].GetId())
-				{
-					// Not found, insert sorted
-					statics.Insert(index, MakeOwned<Static>(Forward<Static>(newValue)));
-				}
-				return *statics[index].GetUnsafe<Static>();
-			}
-			// Not found, insert sorted
-			index =
-			    statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Static>(newValue)));
-			return *statics[index].GetUnsafe<Static>();
-		}
+		Static& GetOrSetStatic(Static&& newValue = {});
 
 		template<typename Static>
-		Static& GetOrSetStatic(const Static& newValue)
-		{
-			const TypeId typeId = GetTypeId<Static>();
-			i32 index           = statics.LowerBound<TypeId, SortLessStatics>(typeId);
-			if (index != NO_INDEX)
-			{
-				if (typeId != statics[index].GetId())
-				{
-					// Not found, insert sorted
-					statics.Insert(index, MakeOwned<Static>(newValue));
-				}
-				return *statics[index].GetUnsafe<Static>();
-			}
-			// Not found, insert sorted
-			index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(newValue));
-			return *statics[index].GetUnsafe<Static>();
-		}
+		Static& GetOrSetStatic(const Static& newValue);
 
 		template<typename Static>
-		bool RemoveStatic()
-		{
-			const TypeId typeId = GetTypeId<Static>();
-			const i32 index     = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
-			if (index != NO_INDEX)
-			{
-				statics.RemoveAt(index);
-				return true;
-			}
-			return false;
-		}
+		bool RemoveStatic();
 
 		template<typename Static>
 		Static& GetStatic()
@@ -339,8 +262,17 @@ namespace p::ecs
 			});
 		}
 
+		template<typename Component>
+		void ClearPool()
+		{
+			if (auto* pool = GetPool<Component>())
+			{
+				pool->Clear();
+			}
+		}
+
 		template<typename... Component>
-		void Clear()
+		void ClearPool() requires(sizeof...(Component) > 1)
 		{
 			(ClearPool<Component>(), ...);
 		}
@@ -391,15 +323,6 @@ namespace p::ecs
 		void CopyFrom(const Context& other);
 		void MoveFrom(Context&& other);
 
-		template<typename Component>
-		void ClearPool()
-		{
-			if (auto* pool = GetPool<Component>())
-			{
-				pool->Reset();
-			}
-		}
-
 		template<typename T>
 		PoolInstance CreatePoolInstance() const;
 	};
@@ -434,5 +357,96 @@ namespace p::ecs
 		Context& self = const_cast<Context&>(*this);
 		PoolInstance instance{componentId, MakeUnique<TPool<Mut<T>>>(self)};
 		return Move(instance);
+	}
+
+	template<typename Static>
+	inline Static& Context::SetStatic(Static&& value)
+	{
+		const TypeId typeId = GetTypeId<Static>();
+
+		// Find static first to replace it
+		i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
+		if (index != NO_INDEX)
+		{
+			// Found, replace instance
+			OwnPtr& instance = statics[index];
+			instance         = MakeOwned<Static>(Forward<Static>(value));
+			return *instance.GetUnsafe<Static>();
+		}
+
+		// Not found. return new instance
+		index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Static>(value)));
+		return *statics[index].GetUnsafe<Static>();
+	}
+
+	template<typename Static>
+	inline Static& Context::SetStatic(const Static& value)
+	{
+		const TypeId typeId = GetTypeId<Static>();
+
+		// Find static first to replace it
+		i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
+		if (index != NO_INDEX)
+		{
+			// Found, replace instance
+			OwnPtr& instance = statics[index];
+			instance         = MakeOwned<Static>(value);
+			return *instance.GetUnsafe<Static>();
+		}
+
+		// Not found. return new instance
+		index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(value));
+		return *statics[index].GetUnsafe<Static>();
+	}
+
+	template<typename Static>
+	inline Static& Context::GetOrSetStatic(Static&& newValue)
+	{
+		const TypeId typeId = GetTypeId<Static>();
+		i32 index           = statics.LowerBound<TypeId, SortLessStatics>(typeId);
+		if (index != NO_INDEX)
+		{
+			if (typeId != statics[index].GetId())
+			{
+				// Not found, insert sorted
+				statics.Insert(index, MakeOwned<Static>(Forward<Static>(newValue)));
+			}
+			return *statics[index].GetUnsafe<Static>();
+		}
+		// Not found, insert sorted
+		index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Static>(newValue)));
+		return *statics[index].GetUnsafe<Static>();
+	}
+
+	template<typename Static>
+	inline Static& Context::GetOrSetStatic(const Static& newValue)
+	{
+		const TypeId typeId = GetTypeId<Static>();
+		i32 index           = statics.LowerBound<TypeId, SortLessStatics>(typeId);
+		if (index != NO_INDEX)
+		{
+			if (typeId != statics[index].GetId())
+			{
+				// Not found, insert sorted
+				statics.Insert(index, MakeOwned<Static>(newValue));
+			}
+			return *statics[index].GetUnsafe<Static>();
+		}
+		// Not found, insert sorted
+		index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(newValue));
+		return *statics[index].GetUnsafe<Static>();
+	}
+
+	template<typename Static>
+	inline bool Context::RemoveStatic()
+	{
+		const TypeId typeId = GetTypeId<Static>();
+		const i32 index     = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
+		if (index != NO_INDEX)
+		{
+			statics.RemoveAt(index);
+			return true;
+		}
+		return false;
 	}
 }    // namespace p::ecs
