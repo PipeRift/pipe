@@ -4,9 +4,13 @@
 
 #include "Pipe/Core/Utility.h"
 
+#include <optional>
+
+
 
 namespace p
 {
+	std::optional<i32>;
 	/**
 	 * When we have an optional value IsSet() returns true, and GetValue() is meaningful.
 	 * Otherwise GetValue() is not meaningful.
@@ -23,8 +27,8 @@ namespace p
 		TOptional() : isSet(false) {}
 
 		/** Construct an Type with a valid value. */
-		TOptional(const Type& value) : isSet{true}, value{value} {}
-		TOptional(Type&& value) : isSet{true}, value{Move(value)} {}
+		TOptional(const Type& value, bool isSet = true) : isSet{isSet}, value{value} {}
+		TOptional(Type&& value, bool isSet = true) : isSet{isSet}, value{Move(value)} {}
 
 		/** Copy/Move construction */
 		TOptional(const TOptional& other) : isSet(other.isSet)
