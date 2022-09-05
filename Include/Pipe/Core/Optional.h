@@ -7,10 +7,8 @@
 #include <optional>
 
 
-
 namespace p
 {
-	std::optional<i32>;
 	/**
 	 * When we have an optional value IsSet() returns true, and GetValue() is meaningful.
 	 * Otherwise GetValue() is not meaningful.

@@ -21,15 +21,12 @@ namespace p::ecs
 		const i32 maxSize = math::Min(entities.Size(), ids.Size());
 		for (i32 i = 0; i < maxSize; ++i)
 		{
-			const Id entity = entities[i];
-			if (entity != NoId)
+			Id& entity = entities[i];
+			if (entity == NoId)
 			{
-				ids[i] = entity;
+				entity = context.Create();
 			}
-			else
-			{
-				ids[i] = context.Create();
-			}
+			ids[i] = entity;
 		}
 		// Create all non-root entities
 		context.Create({ids.Data() + maxSize, ids.Data() + ids.Size()});
@@ -37,59 +34,70 @@ namespace p::ecs
 		if (EnterNext("components"))
 		{
 			BeginObject();
+			serializingMany = true;
 			onReadPools(*this);
+			serializingMany = false;
 			Leave();
 		}
 
 		p::ecs::FixParentLinks(context, parents);
 	}
 
+	void EntityReader::SerializeSingleEntity(Id& entity, TFunction<void(EntityReader&)> onReadPools)
+	{
+		Id parent = p::ecs::GetParent(context, entity);
+		if (entity == NoId)
+		{
+			entity = context.Create();
+		}
+		ids.Assign(&entity, 1);
+
+		onReadPools(*this);
+
+		p::ecs::FixParentLinks(context, parent);
+	}
+
 	void EntityWriter::SerializeEntities(const TArray<Id>& entities,
 	    TFunction<void(EntityWriter&)> onWritePools, bool includeChildren)
 	{
 		if (includeChildren)
-		{
 			RetrieveHierarchy(entities, ids);
-		}
 		else
-		{
 			ids = entities;
-		}
+		MapIdsToIndices();
 
-		const i32 idCount = ids.Size();
-		Next("count", idCount);
-
-		idToIndexes.Reserve(idCount);
-		for (i32 i = 0; i < i32(idCount); ++i)
-		{
-			idToIndexes.Insert(ids[i], i);
-		}
-
-		Next("roots", entities);
+		Next("count", ids.Size());
 		if (EnterNext("components"))
 		{
 			BeginObject();
+			serializingMany = true;
 			onWritePools(*this);
+			serializingMany = false;
 			Leave();
 		}
+	}
+
+	void EntityWriter::SerializeSingleEntity(Id entity, TFunction<void(EntityWriter&)> onWritePools)
+	{
+		ids.Assign(&entity, 1);
+		MapIdsToIndices();
+
+		onWritePools(*this);
 	}
 
 	void EntityWriter::RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children)
 	{
 		children.Append(roots);
 
-		if (includeChildren)
+		TArray<Id> currentLinked{};
+		TArray<Id> pendingInspection;
+		pendingInspection.Append(roots);
+		while (pendingInspection.Size() > 0)
 		{
-			TArray<Id> currentLinked{};
-			TArray<Id> pendingInspection;
-			pendingInspection.Append(roots);
-			while (pendingInspection.Size() > 0)
-			{
-				RemoveIgnoredEntities(pendingInspection);
-				p::ecs::GetChildren(context, pendingInspection, currentLinked);
-				children.Append(currentLinked);
-				pendingInspection = Move(currentLinked);
-			}
+			RemoveIgnoredEntities(pendingInspection);
+			p::ecs::GetChildren(context, pendingInspection, currentLinked);
+			children.Append(currentLinked);
+			pendingInspection = Move(currentLinked);
 		}
 	}
 
@@ -105,5 +113,14 @@ namespace p::ecs
 			}
 		}
 		entities.Shrink();
+	}
+
+	void EntityWriter::MapIdsToIndices()
+	{
+		idToIndexes.Reserve(ids.Size());
+		for (i32 i = 0; i < ids.Size(); ++i)
+		{
+			idToIndexes.Insert(ids[i], i);
+		}
 	}
 }    // namespace p::ecs

@@ -14,6 +14,7 @@ namespace p::ecs
 
 		// While serializing we create ids as Ids appear and link them.
 		TArray<Id> ids;
+		bool serializingMany = false;
 
 
 	public:
@@ -21,13 +22,13 @@ namespace p::ecs
 		{}
 
 		void SerializeEntities(p::TArray<Id>& entities, TFunction<void(EntityReader&)> onReadPools);
-
 		void SerializeEntity(Id& entity, TFunction<void(EntityReader&)> onReadPools)
 		{
 			TArray<Id> entities{entity};
 			SerializeEntities(entities, onReadPools);
 			entity = entities.IsEmpty() ? NoId : entities[0];
 		}
+		void SerializeSingleEntity(Id& entity, TFunction<void(EntityReader&)> onReadPools);
 
 		template<typename T>
 		void SerializeComponent();
@@ -52,26 +53,24 @@ namespace p::ecs
 	class PIPE_API EntityWriter : public Writer
 	{
 		Context& context;
-		bool includeChildren;
 
 		// While serializing we create ids as Ids appear and link them.
 		TArray<Id> ids;
 		TMap<Id, i32> idToIndexes;
+		bool serializingMany = false;
 
 
 	public:
-		EntityWriter(const Writer& parent, Context& context, bool includeChildren = true)
-		    : Writer(parent), context{context}, includeChildren{includeChildren}
-		{}
+		EntityWriter(const Writer& parent, Context& context) : Writer(parent), context{context} {}
 
 		void SerializeEntities(const TArray<Id>& entities,
 		    TFunction<void(EntityWriter&)> onWritePools, bool includeChildren = true);
-
 		void SerializeEntity(
 		    Id entity, TFunction<void(EntityWriter&)> onWritePools, bool includeChildren = true)
 		{
 			SerializeEntities({entity}, onWritePools, includeChildren);
 		}
+		void SerializeSingleEntity(Id entity, TFunction<void(EntityWriter&)> onWritePools);
 
 		template<typename T>
 		void SerializeComponent();
@@ -95,6 +94,7 @@ namespace p::ecs
 	private:
 		void RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children);
 		void RemoveIgnoredEntities(TArray<Id>& entities);
+		void MapIdsToIndices();
 	};
 
 	template<typename T>
@@ -104,26 +104,41 @@ namespace p::ecs
 		{
 			auto& pool = GetContext().AssurePool<T>();
 
-			String key;
-			BeginObject();
-			for (i32 i = 0; i < ids.Size(); ++i)
+			if (serializingMany)
 			{
-				const Id node = ids[i];
-				key.clear();
-				Strings::FormatTo(key, "{}", i);
-
-				if (EnterNext(key))
+				String key;
+				BeginObject();
+				for (i32 i = 0; i < ids.Size(); ++i)
 				{
-					if constexpr (!IsEmpty<T>)
+					const Id node = ids[i];
+					key.clear();
+					Strings::FormatTo(key, "{}", i);
+
+					if (EnterNext(key))
 					{
-						T& comp = pool.GetOrAdd(node);
-						Serialize(comp);
+						if constexpr (!IsEmpty<T>)
+						{
+							T& comp = pool.GetOrAdd(node);
+							Serialize(comp);
+						}
+						else
+						{
+							pool.Add(node);
+						}
+						Leave();
 					}
-					else
-					{
-						pool.Add(node);
-					}
-					Leave();
+				}
+			}
+			else
+			{
+				if constexpr (!IsEmpty<T>)
+				{
+					T& comp = pool.GetOrAdd(ids[0]);
+					Serialize(comp);
+				}
+				else
+				{
+					pool.Add(ids[0]);
 				}
 			}
 			Leave();
@@ -159,20 +174,34 @@ namespace p::ecs
 		PushAddFlags(p::WriteFlags_CacheStringKeys);
 		if (EnterNext(GetTypeName<T>(false)))
 		{
-			String key;
-			BeginObject();
-			for (auto id : componentIds)
+			if (serializingMany)
 			{
-				key.clear();
-				Strings::FormatTo(key, "{}", id.first);
+				String key;
+				BeginObject();
+				for (auto id : componentIds)
+				{
+					key.clear();
+					Strings::FormatTo(key, "{}", id.first);
 
+					if constexpr (std::is_empty_v<T>)
+					{
+						Next(StringView{key}, T{});
+					}
+					else
+					{
+						Next(StringView{key}, pool->Get(id.second));
+					}
+				}
+			}
+			else
+			{
 				if constexpr (std::is_empty_v<T>)
 				{
-					Next(StringView{key}, T{});
+					Serialize(T{});
 				}
 				else
 				{
-					Next(StringView{key}, pool->Get(id.second));
+					Serialize(pool->Get(componentIds.First().second));
 				}
 			}
 			Leave();
