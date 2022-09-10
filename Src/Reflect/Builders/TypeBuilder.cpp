@@ -8,7 +8,6 @@
 #include <utility>
 
 
-
 namespace p
 {
 	TypeBuilder::TypeBuilder(TypeId id, StringView name) : id{id}, name{name} {}

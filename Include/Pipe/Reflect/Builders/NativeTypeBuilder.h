@@ -9,7 +9,6 @@
 #include "Pipe/Reflect/TypeRegistry.h"
 
 
-
 #define REFLECT_NATIVE_TYPE(type)                                      \
 	template<>                                                         \
 	struct p::reflection::TStaticNativeInitializer<type>               \
