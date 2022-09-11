@@ -86,6 +86,10 @@ namespace p::ecs
 	{
 		return ecs::GetVersion(id) == ecs::GetVersion(ecs::NoId);
 	}
+
+
+	void PIPE_API Read(p::Reader& ct, p::ecs::Id& val);
+	void PIPE_API Write(p::Writer& ct, p::ecs::Id val);
 }    // namespace p::ecs
 
 REFLECT_NATIVE_TYPE(p::ecs::Id);

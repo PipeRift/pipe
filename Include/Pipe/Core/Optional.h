@@ -4,6 +4,8 @@
 
 #include "Pipe/Core/Utility.h"
 
+#include <optional>
+
 
 namespace p
 {
@@ -23,8 +25,8 @@ namespace p
 		TOptional() : isSet(false) {}
 
 		/** Construct an Type with a valid value. */
-		TOptional(const Type& value) : isSet{true}, value{value} {}
-		TOptional(Type&& value) : isSet{true}, value{Move(value)} {}
+		TOptional(const Type& value, bool isSet = true) : isSet{isSet}, value{value} {}
+		TOptional(Type&& value, bool isSet = true) : isSet{isSet}, value{Move(value)} {}
 
 		/** Copy/Move construction */
 		TOptional(const TOptional& other) : isSet(other.isSet)
