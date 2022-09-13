@@ -227,20 +227,23 @@ namespace p::ecs
 		template<typename Static>
 		Static* TryGetStatic()
 		{
-			const i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(GetTypeId<Static>());
+			const i32 index =
+			    statics.FindSortedEqual<TypeId, SortLessStatics>(GetTypeId<Mut<Static>>());
 			return index != NO_INDEX ? statics[index].GetUnsafe<Static>() : nullptr;
 		}
 		template<typename Static>
 		const Static* TryGetStatic() const
 		{
-			const i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(GetTypeId<Static>());
+			const i32 index =
+			    statics.FindSortedEqual<TypeId, SortLessStatics>(GetTypeId<Mut<Static>>());
 			return index != NO_INDEX ? statics[index].GetUnsafe<Static>() : nullptr;
 		}
 
 		template<typename Static>
 		bool HasStatic() const
 		{
-			const i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(GetTypeId<Static>());
+			const i32 index =
+			    statics.FindSortedEqual<TypeId, SortLessStatics>(GetTypeId<Mut<Static>>());
 			return index != NO_INDEX;
 		}
 
