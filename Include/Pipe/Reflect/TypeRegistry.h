@@ -61,12 +61,15 @@ namespace p
 
 		void Reset()
 		{
-			for (auto it : idToTypes)
+			if (arena.GetUsedMemory() > 0)    // Prevent multiple deallocations
 			{
-				it.second->~Type();
+				for (auto it : idToTypes)
+				{
+					it.second->~Type();
+				}
+				idToTypes.Clear();
+				arena.Release();
 			}
-			idToTypes.Clear();
-			arena.Release();
 		}
 
 		static PIPE_API TypeRegistry& Get();

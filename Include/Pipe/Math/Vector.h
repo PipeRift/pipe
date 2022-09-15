@@ -842,16 +842,17 @@ namespace p
 
 	PIPE_API void Read(Reader& ct, v2& val);
 	PIPE_API void Write(Writer& ct, v2 val);
-
 	PIPE_API void Read(Reader& ct, v2_u32& val);
 	PIPE_API void Write(Writer& ct, v2_u32 val);
-
+	PIPE_API void Read(Reader& ct, v2_i32& val);
+	PIPE_API void Write(Writer& ct, v2_i32 val);
 	PIPE_API void Read(Reader& ct, v3& val);
 	PIPE_API void Write(Writer& ct, const v3& val);
 }    // namespace p
 
 REFLECT_NATIVE_TYPE(p::v2);
 REFLECT_NATIVE_TYPE(p::v2_u32);
+REFLECT_NATIVE_TYPE(p::v2_i32);
 REFLECT_NATIVE_TYPE(p::v3);
 
 

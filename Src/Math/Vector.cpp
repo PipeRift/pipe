@@ -47,7 +47,6 @@ namespace p
 		ct.Next(TX("x"), val.x);
 		ct.Next(TX("y"), val.y);
 	}
-
 	void Read(Reader& ct, v2_u32& val)
 	{
 		ct.BeginObject();
@@ -60,7 +59,18 @@ namespace p
 		ct.Next(TX("x"), val.x);
 		ct.Next(TX("y"), val.y);
 	}
-
+	void Read(Reader& ct, v2_i32& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+	}
+	void Write(Writer& ct, v2_i32 val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+	}
 	void Read(Reader& ct, v3& val)
 	{
 		ct.BeginObject();
