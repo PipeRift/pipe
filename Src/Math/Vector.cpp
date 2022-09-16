@@ -85,6 +85,34 @@ namespace p
 		ct.Next(TX("y"), val.y);
 		ct.Next(TX("z"), val.z);
 	}
+	void Read(Reader& ct, v3_u32& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+	}
+	void Write(Writer& ct, const v3_u32& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+	}
+	void Read(Reader& ct, v3_i32& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+	}
+	void Write(Writer& ct, const v3_i32& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+	}
 
 	v3 Vectors::GetSafeScaleReciprocal(const v3& scale, float tolerance)
 	{
