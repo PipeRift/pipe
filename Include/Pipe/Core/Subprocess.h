@@ -48,7 +48,7 @@ namespace p::core
 		// and instead uses the PATH of the spawning process.
 		SearchUserPath = InheritEnvironment | NoWindow
 	};
-	PIPE_DEFINE_FLAG_OPERATORS(SubprocessOptions)
+	P_DEFINE_FLAG_OPERATORS(SubprocessOptions)
 
 
 #ifdef __clang__

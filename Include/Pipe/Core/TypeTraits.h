@@ -176,7 +176,7 @@ namespace p
 	concept IsTriviallyCopyable = std::is_trivially_copyable<T>::value;
 }    // namespace p
 
-#define PIPE_DECLARE_IS_TRIVIAL(T, isTrivial)                                                \
+#define P_DECLARE_IS_TRIVIAL(T, isTrivial)                                                   \
 	namespace std                                                                            \
 	{                                                                                        \
 		template<>                                                                           \

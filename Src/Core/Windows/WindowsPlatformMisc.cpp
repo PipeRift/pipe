@@ -1,7 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
 #include <cstring>
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 #	include "Pipe/Core/Windows/WindowsPlatformMisc.h"
 #	include "Pipe/Core/Checks.h"
 

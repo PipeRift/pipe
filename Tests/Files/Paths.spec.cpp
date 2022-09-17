@@ -12,10 +12,10 @@ using namespace bandit;
 go_bandit([]() {
 	describe("Files.Paths", []() {
 		it("Can get root name and path", [&]() {
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 			AssertThat(p::GetRootPathName("F:\\SomeFolder\\AnotherFolder"), Equals("F:"));
 			AssertThat(p::GetRootPath("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\"));
-#elif PLATFORM_LINUX
+#elif P_PLATFORM_LINUX
 			AssertThat(p::GetRootPathName("/var/SomeFolder/AnotherFolder"), Equals(""));
 			AssertThat(p::GetRootPath("/var/SomeFolder/AnotherFolder"), Equals("/"));
 #endif
@@ -24,7 +24,7 @@ go_bandit([]() {
 		});
 
 		it("Can get relative path", [&]() {
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 			AssertThat(p::GetRelativePath("F:\\SomeFolder\\AnotherFolder"),
 			    Equals("SomeFolder\\AnotherFolder"));
 #endif
@@ -35,7 +35,7 @@ go_bandit([]() {
 		});
 
 		it("Can get parent path", [&]() {
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 			AssertThat(p::GetParentPath("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\SomeFolder"));
 #endif
 			AssertThat(p::GetParentPath("/var/SomeFolder"), Equals("/var"));

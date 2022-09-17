@@ -2,11 +2,11 @@
 
 #pragma once
 
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 #	include "Pipe/Core/Windows/WindowsPlatformMisc.h"
-#elif PLATFORM_LINUX
+#elif P_PLATFORM_LINUX
 #	include "Pipe/Core/Linux/LinuxPlatformMisc.h"
-#elif PLATFORM_MACOS
+#elif P_PLATFORM_MACOS
 #	include "Pipe/Core/Mac/MacPlatformMisc.h"
 #else
 #	error Unknown platform

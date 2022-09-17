@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#if PLATFORM_MACOS
+#if P_PLATFORM_MACOS
 #	include "Pipe/Core/Mac/MacPlatformProcess.h"
 #	include "Pipe/Core/PlatformMisc.h"
 #	include "Pipe/Core/String.h"

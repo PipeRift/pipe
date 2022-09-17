@@ -11,7 +11,7 @@
 #include <new>
 
 
-#define PIPE_DO_OVERRIDE_NEW_DELETE                                                                \
+#define P_DO_OVERRIDE_NEW_DELETE                                                                   \
 	void* operator new(std::size_t size) noexcept(false)                                           \
 	{                                                                                              \
 		return p::HeapAlloc(size);                                                                 \
@@ -95,8 +95,8 @@
 
 
 // If Pipe is linked statically, only Pipe overrides new/delete
-#ifdef PIPE_STATIC_DEFINE
-#	define PIPE_OVERRIDE_NEW_DELETE
+#ifdef P_STATIC_DEFINE
+#	define P_OVERRIDE_NEW_DELETE
 #else
-#	define PIPE_OVERRIDE_NEW_DELETE PIPE_DO_OVERRIDE_NEW_DELETE
+#	define P_OVERRIDE_NEW_DELETE P_DO_OVERRIDE_NEW_DELETE
 #endif

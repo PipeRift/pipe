@@ -1,6 +1,6 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 
-#if PLATFORM_LINUX
+#if P_PLATFORM_LINUX
 #	include "Pipe/Core/Linux/LinuxPlatformProcess.h"
 #	include "Pipe/Core/PlatformMisc.h"
 #	include "Pipe/Core/String.h"

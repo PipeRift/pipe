@@ -6,7 +6,7 @@
 #include <cstddef>
 
 
-#define PLATFORM_MACOS_USE_CHAR16 0
+#define P_PLATFORM_MACOS_USE_CHAR16 0
 
 
 namespace p::core
@@ -19,7 +19,7 @@ namespace p::core
 		using DWORD        = unsigned int;
 		using sizet        = std::size_t;
 		using TYPE_OF_NULL = decltype(nullptr);
-#if PLATFORM_MACOS_USE_CHAR16
+#if P_PLATFORM_MACOS_USE_CHAR16
 		using WideChar = char16_t;
 		using TChar    = WideChar;
 #else
@@ -35,7 +35,7 @@ namespace p
 	using namespace p::core;
 }
 
-#if BUILD_DEBUG
+#if P_DEBUG
 #	define P_FORCEINLINE inline /* Don't force code to be inline */
 #else
 #	define P_FORCEINLINE inline __attribute__((always_inline)) /* Force code to be inline */
@@ -49,7 +49,7 @@ namespace p
 #	define ENABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize on")
 #endif
 
-#if PLATFORM_MACOS_USE_CHAR16
+#if P_PLATFORM_MACOS_USE_CHAR16
 #	undef PLATFORM_TCHAR_IS_CHAR16
 #	define PLATFORM_TCHAR_IS_CHAR16 1
 #endif

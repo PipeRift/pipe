@@ -3,7 +3,7 @@
 
 #include "Pipe/Core/Generic/GenericPlatform.h"
 
-#define PLATFORM_LINUX_USE_CHAR16 0
+#define P_PLATFORM_LINUX_USE_CHAR16 0
 
 
 namespace p::core
@@ -16,7 +16,7 @@ namespace p::core
 		using DWORD        = unsigned int;
 		using sizet        = __SIZE_TYPE__;
 		using TYPE_OF_NULL = decltype(__null);
-#if PLATFORM_LINUX_USE_CHAR16
+#if P_PLATFORM_LINUX_USE_CHAR16
 		using WideChar = char16_t;
 		using TChar    = WideChar;
 #endif
@@ -31,11 +31,11 @@ namespace p
 }
 
 
-#if BUILD_DEBUG
+#if P_DEBUG
 #	define P_FORCEINLINE inline
 #else
 #	define P_FORCEINLINE inline __attribute__((always_inline))
-#endif    // BUILD_DEBUG
+#endif    // P_DEBUG
 #define P_NOINLINE __attribute__((noinline))
 
 #define PLATFORM_BREAK() __asm__ volatile("int $0x03")
@@ -45,7 +45,7 @@ namespace p
 #	define ENABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize on")
 #endif
 
-#if PLATFORM_LINUX_USE_CHAR16
+#if P_PLATFORM_LINUX_USE_CHAR16
 #	undef PLATFORM_TCHAR_IS_CHAR16
 #	define PLATFORM_TCHAR_IS_CHAR16 1
 #endif

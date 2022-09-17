@@ -2,30 +2,30 @@
 
 #pragma once
 
-#ifndef PLATFORM_WINDOWS
+#ifndef P_PLATFORM_WINDOWS
 #	if defined(_WIN64)
-#		define PLATFORM_WINDOWS 1
+#		define P_PLATFORM_WINDOWS 1
 #	elif defined(_WIN32)
-#		define PLATFORM_WINDOWS 1
+#		define P_PLATFORM_WINDOWS 1
 #	endif
 #endif
-#ifndef PLATFORM_LINUX
+#ifndef P_PLATFORM_LINUX
 #	if defined(__linux__)
-#		define PLATFORM_LINUX 1
+#		define P_PLATFORM_LINUX 1
 #	endif
 #endif
-#ifndef PLATFORM_MACOS
+#ifndef P_PLATFORM_MACOS
 #	if defined(__APPLE__)
-#		define PLATFORM_MACOS 1
+#		define P_PLATFORM_MACOS 1
 #	endif
 #endif
 
 
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 #	include "Pipe/Core/Windows/WindowsPlatform.h"
-#elif PLATFORM_LINUX
+#elif P_PLATFORM_LINUX
 #	include "Pipe/Core/Linux/LinuxPlatform.h"
-#elif PLATFORM_MACOS
+#elif P_PLATFORM_MACOS
 #	include "Pipe/Core/Mac/MacPlatform.h"
 #else
 #	error Unknown platform
@@ -130,14 +130,14 @@ namespace p
 #	endif
 #endif
 
-#if BUILD_RELEASE
+#if P_RELEASE
 #	define DEBUG_PLATFORM_BREAK()
 #else
 #	define DEBUG_PLATFORM_BREAK() PLATFORM_BREAK()
 #endif
 
 #define DISABLE_OPTIMIZATION DISABLE_OPTIMIZATION_ACTUAL
-#if BUILD_DEBUG
+#if P_DEBUG
 #	define ENABLE_OPTIMIZATION DISABLE_OPTIMIZATION_ACTUAL
 #else
 #	define ENABLE_OPTIMIZATION ENABLE_OPTIMIZATION_ACTUAL

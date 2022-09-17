@@ -16,7 +16,7 @@
 #include <spdlog/spdlog.h>
 
 
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 #	include <spdlog/details/windows_include.h>
 #endif
 
@@ -27,7 +27,7 @@ namespace p::Log
 	TOwnPtr<spdlog::logger> errorLogger;
 
 
-#if PIPE_ENABLE_PROFILER
+#if P_ENABLE_PROFILER
 	template<typename Mutex>
 	class ProfilerSink : public spdlog::sinks::base_sink<Mutex>
 	{
@@ -71,7 +71,7 @@ namespace p::Log
 		auto cliErrSink = std::make_shared<spdlog::sinks::stderr_color_sink_mt>();
 		cliSink->set_pattern("%^%v%$");
 		cliErrSink->set_pattern("%^[%l] %v%$");
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 		cliSink->set_color(
 		    spdlog::level::info, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
 		cliErrSink->set_color(spdlog::level::warn, FOREGROUND_RED | FOREGROUND_GREEN);
@@ -80,7 +80,7 @@ namespace p::Log
 		cliErrSink->set_color(spdlog::level::warn, cliSink->yellow);
 #endif
 		// Profiler
-#if PIPE_ENABLE_PROFILER
+#if P_ENABLE_PROFILER
 		sinks.Add(std::make_shared<ProfilerSink_mt>());
 #endif
 

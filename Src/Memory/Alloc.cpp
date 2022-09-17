@@ -21,7 +21,7 @@ namespace p
 	void* HeapAlloc(sizet size)
 	{
 		void* const ptr = std::malloc(size);
-#if BUILD_DEBUG
+#if P_DEBUG
 		// FIX: Profiler reports alloc gets called frequently twice with the same pointer. Seems
 		// related to allocators
 		// TracyAllocS(ptr, size, 12);
@@ -32,13 +32,13 @@ namespace p
 
 	void* HeapAlloc(sizet size, sizet align)
 	{
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 		// TODO: Windows needs _aligned_free in order to use _aligned_alloc()
 		void* const ptr = std::malloc(size);
 #else
 		void* const ptr = std::aligned_alloc(align, size);
 #endif
-#if BUILD_DEBUG
+#if P_DEBUG
 		GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
@@ -46,11 +46,11 @@ namespace p
 
 	void* HeapRealloc(void* ptr, sizet size)
 	{
-#if BUILD_DEBUG
+#if P_DEBUG
 		GetHeapStats()->Remove(ptr);
 #endif
 		ptr = std::realloc(ptr, size);
-#if BUILD_DEBUG
+#if P_DEBUG
 		GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
@@ -58,7 +58,7 @@ namespace p
 
 	void HeapFree(void* ptr)
 	{
-#if BUILD_DEBUG
+#if P_DEBUG
 		GetHeapStats()->Remove(ptr);
 #endif
 		std::free(ptr);

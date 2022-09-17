@@ -14,7 +14,7 @@ namespace p::files
 		return ToPath(PlatformProcess::GetBasePath());
 	}
 
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 	bool HasDriveLetterPrefix(const TChar* const first, const TChar* const last)
 	{
 		// test if [first, last) has a prefix of the form X:
@@ -29,7 +29,7 @@ namespace p::files
 	const TChar* FindRootNameEnd(const TChar* const first, const TChar* const last)
 	{
 		const sizet len = last - first;
-#if PLATFORM_WINDOWS
+#if P_PLATFORM_WINDOWS
 		// attempt to parse [first, last) as a path and return the end of root-name if it exists;
 		// otherwise, first
 

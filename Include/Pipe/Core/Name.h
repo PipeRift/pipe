@@ -100,7 +100,7 @@ namespace p::core
 	private:
 		static const Id noneId;
 		Id id = noneId;
-#if BUILD_DEBUG
+#if P_DEBUG
 
 #	pragma warning(push)
 #	pragma warning(disable:4251)
@@ -116,21 +116,21 @@ namespace p::core
 		{
 			// Index this name
 			id = NameTable::Get().Register(key);
-#if BUILD_DEBUG
+#if P_DEBUG
 			value = ToString();
 #endif
 		}
 		explicit Name(const String& str) : Name(StringView(str)) {}
 		Name(const Name& other)
 		    : id(other.id)
-#if BUILD_DEBUG
+#if P_DEBUG
 		    , value(other.value)
 #endif
 		{}
 		Name(Name&& other) noexcept
 		{
 			std::swap(id, other.id);
-#if BUILD_DEBUG
+#if P_DEBUG
 			std::swap(value, other.value);
 #endif
 		}
@@ -139,7 +139,7 @@ namespace p::core
 		Name& operator=(Name&& other) noexcept
 		{
 			std::swap(id, other.id);
-#if BUILD_DEBUG
+#if P_DEBUG
 			std::swap(value, other.value);
 #endif
 			return *this;

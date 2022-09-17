@@ -174,7 +174,7 @@ namespace p
 		template<typename T2>
 		friend struct TOwnPtr;
 
-#if BUILD_DEBUG
+#if P_DEBUG
 		// Pointer to value for debugging
 		T* instance = nullptr;
 #endif
@@ -184,7 +184,7 @@ namespace p
 		TOwnPtr() = default;
 		explicit TOwnPtr(Arena& arena, T* value, Internal::Deleter* deleter)
 		    : Super(arena, value, deleter)
-#if BUILD_DEBUG
+#if P_DEBUG
 		    , instance(value)
 #endif
 		{}
@@ -327,7 +327,7 @@ namespace p
 		void MoveFrom(TOwnPtr<T2>&& other)
 		{
 			Super::MoveFrom(Move(other));
-#if BUILD_DEBUG
+#if P_DEBUG
 			instance       = static_cast<T*>(value);
 			other.instance = nullptr;
 #endif
@@ -556,7 +556,7 @@ namespace p
 	{
 		CheckMsg(other.IsType<T>(), "Type doesn't match!");
 		Super::MoveFrom(Move(other));
-#if BUILD_DEBUG
+#if P_DEBUG
 		instance = static_cast<T*>(value);
 #endif
 	}
@@ -567,7 +567,7 @@ namespace p
 		CheckMsg(other.IsType<T>(), "Type doesn't match!");
 		Delete();
 		Super::MoveFrom(Move(other));
-#if BUILD_DEBUG
+#if P_DEBUG
 		instance = static_cast<T*>(value);
 #endif
 	}

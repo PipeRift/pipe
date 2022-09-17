@@ -26,7 +26,7 @@ namespace p
 				const auto& allocation = allocations[i];
 				Strings::FormatTo(errorMsg, "\n>{} {}", allocation.ptr,
 				    Strings::ParseMemorySize(allocation.size));
-#if PIPE_ENABLE_ALLOCATION_STACKS
+#if P_ENABLE_ALLOCATION_STACKS
 				const auto& stack = allocationStacks[i];
 				backward::TraceResolver tr;
 				tr.load_stacktrace(stack);
@@ -54,7 +54,7 @@ namespace p
 		used += size;
 		const i32 index = allocations.AddSorted<SortLessAllocationStats>({ptr, size});
 
-#if PIPE_ENABLE_ALLOCATION_STACKS
+#if P_ENABLE_ALLOCATION_STACKS
 		allocationStacks.InsertDefaulted(index);
 		auto& stack = allocationStacks[index];
 		stack.load_here(14 + 3);
@@ -72,7 +72,7 @@ namespace p
 		{
 			used -= allocations[index].size;
 			allocations.RemoveAt(index, false);
-#if PIPE_ENABLE_ALLOCATION_STACKS
+#if P_ENABLE_ALLOCATION_STACKS
 			allocationStacks.RemoveAt(index, false);
 #endif
 		}

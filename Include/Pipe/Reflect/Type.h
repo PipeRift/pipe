@@ -18,7 +18,7 @@ namespace p
 		Class  = 1 << 4,
 		All    = Native | Enum | Data | Struct | Class
 	};
-	PIPE_DEFINE_FLAG_OPERATORS(TypeCategory)
+	P_DEFINE_FLAG_OPERATORS(TypeCategory)
 
 
 	/** Smallest reflection type */

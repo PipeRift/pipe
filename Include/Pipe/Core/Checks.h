@@ -62,7 +62,7 @@ namespace p
 #define EnsureMsg(expression, format, ...) EnsureImpl(&, false, expression, format, ##__VA_ARGS__)
 
 #ifndef Check
-#	if BUILD_RELEASE
+#	if P_RELEASE
 #		define CheckImpl(expression, ...)
 #	else
 #		define CheckImpl(expression, ...)                                                   \

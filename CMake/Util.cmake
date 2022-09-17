@@ -23,16 +23,16 @@ endfunction()
 
 function(pipe_target_define_platform target)
     if (PLATFORM_WINDOWS)
-        target_compile_definitions(${target} PRIVATE PLATFORM_WINDOWS=1)
+        target_compile_definitions(${target} PUBLIC P_PLATFORM_WINDOWS=1)
     elseif (PLATFORM_LINUX)
-        target_compile_definitions(${target} PRIVATE PLATFORM_LINUX=1)
+        target_compile_definitions(${target} PUBLIC P_PLATFORM_LINUX=1)
     elseif (PLATFORM_MACOS)
-        target_compile_definitions(${target} PRIVATE PLATFORM_MACOS=1)
+        target_compile_definitions(${target} PUBLIC P_PLATFORM_MACOS=1)
     endif()
 
     target_compile_definitions(${target} PRIVATE
-        $<$<CONFIG:Debug>:BUILD_DEBUG>
-        $<$<CONFIG:Release>:BUILD_RELEASE>
+        $<$<CONFIG:Debug>:P_DEBUG>
+        $<$<CONFIG:Release>:P_RELEASE>
     )
 endfunction()
 

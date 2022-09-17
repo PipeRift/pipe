@@ -115,7 +115,7 @@ namespace p
 
 
 #ifndef LIKELY
-#	if (defined(__clang__) || defined(__GNUC__)) && (PLATFORM_LINUX)
+#	if (defined(__clang__) || defined(__GNUC__)) && (P_PLATFORM_LINUX)
 #		define LIKELY(x) __builtin_expect(!!(x), 1)
 #	else
 #		define LIKELY(x) (x)
@@ -123,7 +123,7 @@ namespace p
 #endif
 
 #ifndef UNLIKELY
-#	if (defined(__clang__) || defined(__GNUC__)) && (PLATFORM_LINUX)
+#	if (defined(__clang__) || defined(__GNUC__)) && (P_PLATFORM_LINUX)
 #		define UNLIKELY(x) __builtin_expect(!!(x), 0)
 #	else
 #		define UNLIKELY(x) (x)
