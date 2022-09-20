@@ -28,8 +28,11 @@ option(PIPE_ENABLE_CLANG_TOOLS "Enable clang-tidy and clang-format" ${PIPE_IS_PR
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Export commands for Clangd
 
-include(CMake/DownloadProject.cmake)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
+
 include(CMake/Util.cmake)
+include(CMake/LinkTimeOptimization.cmake)
+find_package(Sanitizers)
 include(GenerateExportHeader)
 
 
@@ -86,7 +89,8 @@ if(PIPE_ENABLE_PROFILER)
 endif()
 pipe_target_shared_output_directory(Pipe)
 pipe_target_enable_CPP20(Pipe)
-#target_compile_options(Pipe PRIVATE /showIncludes)
+pipe_add_sanitizers(Pipe)
+pipe_target_link_time_optimization(Pipe)
 
 
 ################################################################################
@@ -97,6 +101,7 @@ if(BUILD_TESTING AND PIPE_BUILD_TESTS)
     add_subdirectory(Tests)
     add_subdirectory(Benchmarks)
 endif()
+
 
 
 if(PIPE_ENABLE_CLANG_TOOLS)
