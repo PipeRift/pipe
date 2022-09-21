@@ -127,7 +127,7 @@ namespace p
 	{
 		static_assert(IsClass<T>(), "Type does not inherit Class!");
 		using Super     = TDataTypeBuilder<T, Parent, flags, TType>;
-		using BuildFunc = TFunction<void(TClassTypeBuilder& builder)>;
+		using BuildFunc = TFunction<void(TClassTypeBuilder* builder)>;
 		using Super::GetType;
 
 		BuildFunc onBuild;
@@ -152,7 +152,7 @@ namespace p
 
 			if (onBuild)
 			{
-				onBuild(*this);
+				onBuild(this);
 			}
 			return type;
 		}
@@ -167,7 +167,7 @@ namespace p
 		static_assert(!(flags & Class_Abstract), "Only classes can use Class_Abstract");
 
 		using Super     = TDataTypeBuilder<T, Parent, flags, TType>;
-		using BuildFunc = TFunction<void(TStructTypeBuilder& builder)>;
+		using BuildFunc = TFunction<void(TStructTypeBuilder* builder)>;
 		using Super::GetType;
 
 		BuildFunc onBuild;
@@ -182,7 +182,7 @@ namespace p
 			auto* type = Super::Build();
 			if (onBuild)
 			{
-				onBuild(*this);
+				onBuild(this);
 			}
 			return type;
 		}
@@ -229,8 +229,8 @@ public:                                                                   \
 	static p::Type* InitType()                                            \
 	{                                                                     \
 		BuilderType builder{};                                            \
-		builder.onBuild = [](auto& builder) {                             \
-			__ReflReflectProperty(builder, p::MetaCounter<0>{});          \
+		builder.onBuild = [](auto* builder) {                             \
+			__ReflReflectProperty<0>(builder);                            \
 			{                                                             \
 				buildCode                                                 \
 			}                                                             \
@@ -244,17 +244,17 @@ public:                                                                   \
 		if constexpr (!(GetStaticFlags() & p::Type_NotSerialized))        \
 		{                                                                 \
 			Super::SerializeReflection(ct);                               \
-			__ReflSerializeProperty(ct, p::MetaCounter<0>{});             \
+			__ReflSerializeProperty<0>(ct);                               \
 		}                                                                 \
 	}                                                                     \
                                                                           \
 private:                                                                  \
 	static constexpr p::MetaCounter<0> __refl_Counter(p::MetaCounter<0>); \
-	template<p::u32 N>                                                    \
-	static void __ReflReflectProperty(BuilderType&, p::MetaCounter<N>)    \
+	template<p::u32 index>                                                \
+	static void __ReflReflectProperty(BuilderType*)                       \
 	{}                                                                    \
-	template<p::u32 N>                                                    \
-	void __ReflSerializeProperty(p::ReadWriter&, p::MetaCounter<N>)       \
+	template<p::u32 index>                                                \
+	void __ReflSerializeProperty(p::ReadWriter&)                          \
 	{}                                                                    \
                                                                           \
 public:
@@ -283,11 +283,12 @@ public:                                                                         
 	static constexpr p::u32 id_name = decltype(__refl_Counter(p::MetaCounter<255>{}))::value;     \
 	static constexpr p::MetaCounter<(id_name) + 1> __refl_Counter(p::MetaCounter<(id_name) + 1>); \
                                                                                                   \
-	static void __ReflReflectProperty(BuilderType& builder, p::MetaCounter<id_name>)              \
+	template<>                                                                                    \
+	static void __ReflReflectProperty<id_name>(BuilderType * builder)                             \
 	{                                                                                             \
 		using PropType = decltype(name);                                                          \
 		static_assert(p::HasType<PropType>(), "Type is not reflected");                           \
-		builder.AddProperty<PropType>(                                                            \
+		builder->AddProperty<PropType>(                                                           \
 		    TX(#name),                                                                            \
 		    [](void* instance) {                                                                  \
 			return (void*)&static_cast<ThisType*>(instance)->name;                                \
@@ -295,17 +296,18 @@ public:                                                                         
 		    p::InitPropFlags(flags));                                                             \
                                                                                                   \
 		/* Registry next property if any */                                                       \
-		__ReflReflectProperty(builder, p::MetaCounter<(id_name) + 1>{});                          \
+		__ReflReflectProperty<(id_name) + 1>(builder);                                            \
 	};                                                                                            \
                                                                                                   \
-	void __ReflSerializeProperty(p::ReadWriter& ct, p::MetaCounter<id_name>)                      \
+	template<>                                                                                    \
+	void __ReflSerializeProperty<id_name>(p::ReadWriter & ct)                                     \
 	{                                                                                             \
 		if constexpr (!(p::InitPropFlags(flags) & p::Prop_NotSerialized))                         \
 		{ /* Don't serialize property if Transient */                                             \
 			ct.Next(#name, name);                                                                 \
 		}                                                                                         \
 		/* Serialize next property if any */                                                      \
-		__ReflSerializeProperty(ct, p::MetaCounter<(id_name) + 1>{});                             \
+		__ReflSerializeProperty<(id_name) + 1>(ct);                                               \
 	};
 
 
