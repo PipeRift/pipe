@@ -547,7 +547,7 @@ namespace p::core
 		{
 			const i32 lastSize = Size();
 			Swap(index, lastSize - 1);
-			vector.pop_back();
+			RemoveLast();
 			return lastSize - Size() > 0;
 		}
 
@@ -582,13 +582,22 @@ namespace p::core
 		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
-			for (i32 i = 0; i < Size(); ++i)
+			for (i32 i = Size(); i > 0; --i)
 			{
 				if (callback(Data()[i]))
 				{
 					RemoveAtSwapUnsafe(i);
-					--i;    // We removed one item, so we iterate the same index
 				}
+			}
+
+			// First item is checked last to prevent invalid swap
+			if (Size() > 0 && callback(Data()[0]))
+			{
+				if (Size() > 1)
+				{
+					Swap(0, Size() - 1);
+				}
+				RemoveLast();
 			}
 
 			if (shouldShrink)
