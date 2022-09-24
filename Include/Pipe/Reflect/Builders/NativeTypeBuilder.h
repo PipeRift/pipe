@@ -19,7 +19,7 @@
 	inline const p::TFunction<p::NativeType*()>                        \
 	    p::reflection::TStaticNativeInitializer<type>::onInit = []() { \
 		    p::TNativeTypeBuilder<type> builder{};                     \
-		    builder.Initialize();                                      \
+		    builder.BeginBuild();                                      \
 		    return builder.GetType();                                  \
 	    };
 
@@ -42,7 +42,7 @@ namespace p
 		}
 
 	protected:
-		Type* Build() override
+		Type* CreateType() override
 		{
 			NativeType& newType = TypeRegistry::Get().AddType<NativeType>(GetId());
 

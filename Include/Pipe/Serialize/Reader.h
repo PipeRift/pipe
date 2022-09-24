@@ -34,8 +34,8 @@ namespace p
 		template<SerializeFormat format>
 		friend struct TFormatReader;
 
-		SerializeFormat format = SerializeFormat::None;
-		IFormatReader* reader  = nullptr;
+		SerializeFormat format      = SerializeFormat::None;
+		IFormatReader* formatReader = nullptr;
 
 
 	private:

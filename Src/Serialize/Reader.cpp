@@ -30,7 +30,7 @@ namespace p
 	typename FormatBind<inFormat>::Reader& Reader::GetReader() requires(HasReader<inFormat>)
 	{
 		Check(format == inFormat);
-		return *static_cast<typename FormatBind<inFormat>::Reader*>(reader);
+		return *static_cast<typename FormatBind<inFormat>::Reader*>(formatReader);
 	}
 
 	// Read a value directly from the format reader.

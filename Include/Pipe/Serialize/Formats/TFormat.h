@@ -12,24 +12,24 @@ namespace p
 	struct TFormatReader : public IFormatReader
 	{
 	private:
-		Reader context{};
+		Reader reader{};
 
 
 	public:
 		TFormatReader()
 		{
-			context.format = format;
-			context.reader = this;
+			reader.format       = format;
+			reader.formatReader = this;
 		}
 
-		Reader& GetContext()
+		Reader& GetReader()
 		{
-			return context;
+			return reader;
 		}
 
 		operator Reader&()
 		{
-			return GetContext();
+			return GetReader();
 		}
 	};
 
@@ -38,24 +38,24 @@ namespace p
 	struct TFormatWriter : public IFormatWriter
 	{
 	private:
-		Writer context{};
+		Writer writer{};
 
 
 	public:
 		TFormatWriter()
 		{
-			context.format = format;
-			context.writer = this;
+			writer.format       = format;
+			writer.formatWriter = this;
 		}
 
-		Writer& GetContext()
+		Writer& GetWriter()
 		{
-			return context;
+			return writer;
 		}
 
 		operator Writer&()
 		{
-			return GetContext();
+			return GetWriter();
 		}
 	};
 }    // namespace p

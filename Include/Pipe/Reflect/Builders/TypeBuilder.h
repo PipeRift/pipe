@@ -22,12 +22,13 @@ namespace p
 		PIPE_API TypeBuilder(TypeId id, StringView name);
 		PIPE_API virtual ~TypeBuilder() {}
 
-		PIPE_API void Initialize();
+		PIPE_API bool BeginBuild();
+		PIPE_API void EndBuild();
 
 		PIPE_API TypeId GetId() const;
 		PIPE_API StringView GetName() const;
 
 	protected:
-		PIPE_API virtual Type* Build() = 0;
+		PIPE_API virtual Type* CreateType() = 0;
 	};
 }    // namespace p

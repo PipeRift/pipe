@@ -33,8 +33,8 @@ namespace p
 		template<SerializeFormat format>
 		friend struct TFormatWriter;
 
-		SerializeFormat format = SerializeFormat::None;
-		IFormatWriter* writer  = nullptr;
+		SerializeFormat format      = SerializeFormat::None;
+		IFormatWriter* formatWriter = nullptr;
 
 
 	private:
@@ -130,15 +130,15 @@ namespace p
 
 		void PushAddFlags(WriteFlags flags)
 		{
-			writer->PushAddFlags(flags);
+			formatWriter->PushAddFlags(flags);
 		}
 		void PushRemoveFlags(WriteFlags flags)
 		{
-			writer->PushRemoveFlags(flags);
+			formatWriter->PushRemoveFlags(flags);
 		}
 		void PopFlags()
 		{
-			writer->PopFlags();
+			formatWriter->PopFlags();
 		}
 
 		template<SerializeFormat format>

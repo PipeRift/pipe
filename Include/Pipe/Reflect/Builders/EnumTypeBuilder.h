@@ -20,7 +20,7 @@
 	inline const p::TFunction<p::EnumType*()>                        \
 	    p::reflection::TStaticEnumInitializer<type>::onInit = []() { \
 		    p::TEnumTypeBuilder<type> builder{};                     \
-		    builder.Initialize();                                    \
+		    builder.BeginBuild();                                    \
 		    return builder.GetType();                                \
 	    };
 
@@ -43,7 +43,7 @@ namespace p
 		}
 
 	protected:
-		Type* Build() override
+		Type* CreateType() override
 		{
 			EnumType& newType = TypeRegistry::Get().AddType<EnumType>(GetId());
 

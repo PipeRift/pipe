@@ -28,7 +28,7 @@ namespace p
 	typename FormatBind<inFormat>::Writer& Writer::GetWriter() requires(HasWriter<inFormat>)
 	{
 		Check(format == inFormat);
-		return *static_cast<typename FormatBind<inFormat>::Writer*>(writer);
+		return *static_cast<typename FormatBind<inFormat>::Writer*>(formatWriter);
 	}
 
 	// Write a value directly from the format reader.

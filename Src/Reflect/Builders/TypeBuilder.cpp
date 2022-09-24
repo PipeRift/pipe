@@ -12,21 +12,25 @@ namespace p
 {
 	TypeBuilder::TypeBuilder(TypeId id, StringView name) : id{id}, name{name} {}
 
-	void TypeBuilder::Initialize()
+	bool TypeBuilder::BeginBuild()
 	{
 		if (initializedType)
 		{
-			return;
+			return false;
 		}
-
 		// Make sure this type has not been initialized before from another builder instance
 		// (including DLL static memory)
 		initializedType = TypeRegistry::Get().FindType(id);
-		if (!initializedType)
+		if (initializedType)
 		{
-			initializedType = Build();
+			return false;
 		}
+
+		initializedType = CreateType();
+		return initializedType != nullptr;
 	}
+
+	void TypeBuilder::EndBuild() {}
 
 	TypeId TypeBuilder::GetId() const
 	{

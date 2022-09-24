@@ -83,7 +83,7 @@ namespace p
 		}
 
 	protected:
-		Type* Build() override
+		Type* CreateType() override
 		{
 			TType* newType;
 			if constexpr (hasParent)
@@ -126,20 +126,16 @@ namespace p
 	struct TClassTypeBuilder : public TDataTypeBuilder<T, Parent, flags, TType>
 	{
 		static_assert(IsClass<T>(), "Type does not inherit Class!");
-		using Super     = TDataTypeBuilder<T, Parent, flags, TType>;
-		using BuildFunc = TFunction<void(TClassTypeBuilder* builder)>;
+		using Super = TDataTypeBuilder<T, Parent, flags, TType>;
 		using Super::GetType;
-
-		BuildFunc onBuild;
-
 
 	public:
 		TClassTypeBuilder() = default;
 
 	protected:
-		Type* Build() override
+		Type* CreateType() override
 		{
-			auto* type = Super::Build();
+			auto* type = Super::CreateType();
 
 			GetType()->onNew = [](Arena& arena) -> BaseClass* {
 				if constexpr (!IsAbstract<T> && !IsSame<T, BaseClass>)
@@ -149,11 +145,6 @@ namespace p
 				return nullptr;    // Can't create instances of abstract classes or
 				                   // BaseClass
 			};
-
-			if (onBuild)
-			{
-				onBuild(this);
-			}
 			return type;
 		}
 	};
@@ -170,22 +161,8 @@ namespace p
 		using BuildFunc = TFunction<void(TStructTypeBuilder* builder)>;
 		using Super::GetType;
 
-		BuildFunc onBuild;
-
-
 	public:
 		TStructTypeBuilder() = default;
-
-	protected:
-		Type* Build() override
-		{
-			auto* type = Super::Build();
-			if (onBuild)
-			{
-				onBuild(this);
-			}
-			return type;
-		}
 	};
 
 
@@ -229,13 +206,11 @@ public:                                                                   \
 	static p::Type* InitType()                                            \
 	{                                                                     \
 		BuilderType builder{};                                            \
-		builder.onBuild = [](auto* builder) {                             \
-			__ReflReflectProperty<0>(builder);                            \
-			{                                                             \
-				buildCode                                                 \
-			}                                                             \
-		};                                                                \
-		builder.Initialize();                                             \
+		if (builder.BeginBuild())                                         \
+		{                                                                 \
+			__ReflReflectProperty<0>(&builder);                           \
+			{buildCode} builder.EndBuild();                               \
+		}                                                                 \
 		return builder.GetType();                                         \
 	}                                                                     \
                                                                           \
