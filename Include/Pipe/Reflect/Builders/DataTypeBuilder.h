@@ -201,37 +201,37 @@ public:                                                                         
 		return p::GetType<ThisType>();                                           \
 	}
 
-#define REFLECTION_BODY(buildCode)                                        \
-public:                                                                   \
-	static p::Type* InitType()                                            \
-	{                                                                     \
-		BuilderType builder{};                                            \
-		if (builder.BeginBuild())                                         \
-		{                                                                 \
-			__ReflReflectProperty<0>(&builder);                           \
-			{buildCode} builder.EndBuild();                               \
-		}                                                                 \
-		return builder.GetType();                                         \
-	}                                                                     \
-                                                                          \
-	void SerializeReflection(p::ReadWriter& ct)                           \
-	{                                                                     \
-		if constexpr (!(GetStaticFlags() & p::Type_NotSerialized))        \
-		{                                                                 \
-			Super::SerializeReflection(ct);                               \
-			__ReflSerializeProperty<0>(ct);                               \
-		}                                                                 \
-	}                                                                     \
-                                                                          \
-private:                                                                  \
-	static constexpr p::MetaCounter<0> __refl_Counter(p::MetaCounter<0>); \
-	template<p::u32 index>                                                \
-	static void __ReflReflectProperty(BuilderType*)                       \
-	{}                                                                    \
-	template<p::u32 index>                                                \
-	void __ReflSerializeProperty(p::ReadWriter&)                          \
-	{}                                                                    \
-                                                                          \
+#define REFLECTION_BODY(buildCode)                                         \
+public:                                                                    \
+	static p::Type* InitType()                                             \
+	{                                                                      \
+		BuilderType builder{};                                             \
+		if (builder.BeginBuild())                                          \
+		{                                                                  \
+			__ReflReflectProperty(builder, p::MetaCounter<0>{});           \
+			{buildCode} builder.EndBuild();                                \
+		}                                                                  \
+		return builder.GetType();                                          \
+	}                                                                      \
+                                                                           \
+	void SerializeReflection(p::ReadWriter& ct)                            \
+	{                                                                      \
+		if constexpr (!(GetStaticFlags() & p::Type_NotSerialized))         \
+		{                                                                  \
+			Super::SerializeReflection(ct);                                \
+			__ReflSerializeProperty(ct, p::MetaCounter<0>{});              \
+		}                                                                  \
+	}                                                                      \
+                                                                           \
+private:                                                                   \
+	static constexpr p::MetaCounter<0> __refl_Counter(p::MetaCounter<0>);  \
+	template<p::u32 index>                                                 \
+	static void __ReflReflectProperty(BuilderType&, p::MetaCounter<index>) \
+	{}                                                                     \
+	template<p::u32 index>                                                 \
+	void __ReflSerializeProperty(p::ReadWriter&, p::MetaCounter<index>)    \
+	{}                                                                     \
+                                                                           \
 public:
 
 
@@ -258,12 +258,11 @@ public:                                                                         
 	static constexpr p::u32 id_name = decltype(__refl_Counter(p::MetaCounter<255>{}))::value;     \
 	static constexpr p::MetaCounter<(id_name) + 1> __refl_Counter(p::MetaCounter<(id_name) + 1>); \
                                                                                                   \
-	template<>                                                                                    \
-	static void __ReflReflectProperty<id_name>(BuilderType * builder)                             \
+	static void __ReflReflectProperty(BuilderType& builder, p::MetaCounter<id_name>)              \
 	{                                                                                             \
 		using PropType = decltype(name);                                                          \
 		static_assert(p::HasType<PropType>(), "Type is not reflected");                           \
-		builder->AddProperty<PropType>(                                                           \
+		builder.AddProperty<PropType>(                                                            \
 		    TX(#name),                                                                            \
 		    [](void* instance) {                                                                  \
 			return (void*)&static_cast<ThisType*>(instance)->name;                                \
@@ -271,18 +270,17 @@ public:                                                                         
 		    p::InitPropFlags(flags));                                                             \
                                                                                                   \
 		/* Registry next property if any */                                                       \
-		__ReflReflectProperty<(id_name) + 1>(builder);                                            \
+		__ReflReflectProperty(builder, p::MetaCounter<id_name + 1>{});                            \
 	};                                                                                            \
                                                                                                   \
-	template<>                                                                                    \
-	void __ReflSerializeProperty<id_name>(p::ReadWriter & ct)                                     \
+	void __ReflSerializeProperty(p::ReadWriter& ct, p::MetaCounter<id_name>)                      \
 	{                                                                                             \
 		if constexpr (!(p::InitPropFlags(flags) & p::Prop_NotSerialized))                         \
 		{ /* Don't serialize property if Transient */                                             \
 			ct.Next(#name, name);                                                                 \
 		}                                                                                         \
 		/* Serialize next property if any */                                                      \
-		__ReflSerializeProperty<(id_name) + 1>(ct);                                               \
+		__ReflSerializeProperty(ct, p::MetaCounter<id_name + 1>{});                               \
 	};
 
 
