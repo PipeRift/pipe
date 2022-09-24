@@ -793,6 +793,18 @@ namespace p
 			return min + (max - min) * 0.5f;
 		}
 
+		Vec<size, T> Clamp(const Vec<size, T>& point)
+		{
+			Vec<size, T> clamped;
+			clamped.x = p::math::Clamp(point.x, min.x, max.x);
+			clamped.y = p::math::Clamp(point.y, min.y, max.y);
+			if constexpr (size >= 3)
+			{
+				clamped.z = p::math::Clamp(point.z, min.z, max.z);
+			}
+			return clamped;
+		}
+
 
 		constexpr v4 ToV4() const requires(size == 2)
 		{

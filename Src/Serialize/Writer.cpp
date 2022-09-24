@@ -3,7 +3,6 @@
 #include "Pipe/Serialize/Writer.h"
 
 #include "Pipe/Core/Checks.h"
-#include "Pipe/Reflect/TypeRegistry.h"
 #include "Pipe/Serialize/Formats/JsonFormat.h"
 
 
