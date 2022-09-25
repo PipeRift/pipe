@@ -518,7 +518,7 @@ namespace p
 		/**
 		 * Makes a random but quite nice color
 		 */
-		static TColor MakeRandomColor();
+		static TColor MakeRandomColor(u8 saturation = 0, u8 value = 255);
 
 		/**
 		 * Converts temperature in Kelvins of a black body radiator to RGB chromaticism.
@@ -767,10 +767,10 @@ namespace p
 	// TColor inline functions
 
 	template<ColorMode mode>
-	TColor<mode> TColor<mode>::MakeRandomColor()
+	TColor<mode> TColor<mode>::MakeRandomColor(u8 saturation, u8 value)
 	{
 		const u8 hue = u8(math::Rand01() * 255.f);
-		return MakeFromHSV8(hue, 0, 255);
+		return MakeFromHSV8(hue, saturation, value);
 	}
 
 	template<ColorMode mode>
