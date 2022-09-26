@@ -233,6 +233,10 @@ namespace p
 				    rgbValues[rgbSwizzle[swizzleIndex][1]], rgbValues[rgbSwizzle[swizzleIndex][2]],
 				    this->a};
 			}
+			else if constexpr (to == ColorMode::RGBA && from == ColorMode::HSV)
+			{
+				return Convert<ColorMode::Linear>().template Convert<to>();
+			}
 			else
 			{
 				CheckMsg(false, "Not supported color conversion");
