@@ -72,6 +72,24 @@ namespace p::core
 			return *this;
 		}
 
+		template<typename OtherType>
+		bool operator==(const TArray<OtherType>& other) const
+		{
+			if (Size() != other.Size() || IsEmpty())
+			{
+				return false;
+			}
+
+			for (i32 i = 0; i < Size(); ++i)
+			{
+				if (Data()[i] != other[i])
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
 		i32 Add(Type&& item)
 		{
 			vector.push_back(Move(item));
