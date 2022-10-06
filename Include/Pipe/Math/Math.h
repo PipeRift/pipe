@@ -347,6 +347,8 @@ namespace p::math
 	}
 
 	PIPE_API void SinCos(float value, float& outSin, float& outCos);
+	PIPE_API float Sin(float value);
+	PIPE_API float Cos(float value);
 
 	PIPE_API float Atan2(float Y, float X);
 
