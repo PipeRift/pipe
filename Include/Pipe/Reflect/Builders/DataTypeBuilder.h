@@ -50,7 +50,17 @@ namespace p
 				};
 				arrayProp->addItem = [](void* data, void* item) {
 					if (item)
-						static_cast<U*>(data)->Add(*static_cast<typename U::ItemType*>(item));
+					{
+						auto& itemRef = *static_cast<typename U::ItemType*>(item);
+						if constexpr (IsCopyAssignable<typename U::ItemType>)
+						{
+							static_cast<U*>(data)->Add(itemRef);
+						}
+						else
+						{
+							static_cast<U*>(data)->Add(Move(itemRef));
+						}
+					}
 					else
 						static_cast<U*>(data)->Add({});
 				};
