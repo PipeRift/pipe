@@ -14,13 +14,13 @@ namespace p
 	template<typename T>
 	inline constexpr bool IsStruct()
 	{
-		return Derived<T, Struct>;    // && IsDefined<struct TTypeInstance<T>>();
+		return Derived<T, Struct>;    // && IsDefined<struct TCompiledTypeRegister<T>>();
 	}
 
 	template<typename T>
 	inline constexpr bool IsClass()
 	{
-		return Derived<T, BaseClass, false>;    // && IsDefined<struct TTypeInstance<T>>();
+		return Derived<T, BaseClass, false>;    // && IsDefined<struct TCompiledTypeRegister<T>>();
 	}
 
 	template<typename T>

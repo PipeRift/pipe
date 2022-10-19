@@ -36,7 +36,7 @@ namespace p
 			if constexpr (IsArray<U>())
 			{
 				propFlags       = propFlags | Prop_Array;
-				type            = TTypeInstance<typename U::ItemType>::InitType();
+				type            = TCompiledTypeRegister<typename U::ItemType>::InitType();
 				auto* arrayProp = registry.AddProperty<ArrayProperty>();
 
 				arrayProp->getData = [](void* data) {
@@ -75,21 +75,16 @@ namespace p
 			}
 			else
 			{
-				type     = TTypeInstance<U>::InitType();
+				type     = TCompiledTypeRegister<U>::InitType();
 				property = registry.AddProperty<Property>();
 			}
-			property->owner       = GetType();
+			property->owner       = GetType()->AsData();
 			property->type        = type;
 			property->name        = name;
 			property->access      = access;
 			property->flags       = propFlags;
 			property->displayName = Strings::ToSentenceCase(name.ToString());
-			GetType()->properties.Add(property);
-		}
-
-		TType* GetType() const
-		{
-			return static_cast<TType*>(initializedType);
+			GetType()->AsData()->properties.Add(property);
 		}
 
 	protected:
@@ -99,7 +94,7 @@ namespace p
 			if constexpr (hasParent)
 			{
 				// Parent gets initialized before anything else
-				auto* parent = static_cast<DataType*>(TTypeInstance<Parent>::InitType());
+				auto* parent = static_cast<DataType*>(TCompiledTypeRegister<Parent>::InitType());
 				Check(parent);
 
 				newType = &TypeRegistry::Get().AddType<TType>(GetId());
@@ -147,7 +142,7 @@ namespace p
 		{
 			auto* type = Super::CreateType();
 
-			GetType()->onNew = [](Arena& arena) -> BaseClass* {
+			GetType()->AsClass()->onNew = [](Arena& arena) -> BaseClass* {
 				if constexpr (!IsAbstract<T> && !IsSame<T, BaseClass>)
 				{
 					return new (p::Alloc<T>(arena)) T();
@@ -167,9 +162,9 @@ namespace p
 		static_assert(IsStruct<T>(), "Type does not inherit Struct!");
 		static_assert(!(flags & Class_Abstract), "Only classes can use Class_Abstract");
 
-		using Super     = TDataTypeBuilder<T, Parent, flags, TType>;
-		using BuildFunc = TFunction<void(TStructTypeBuilder* builder)>;
+		using Super = TDataTypeBuilder<T, Parent, flags, TType>;
 		using Super::GetType;
+		using BuildFunc = TFunction<void(TStructTypeBuilder* builder)>;
 
 	public:
 		TStructTypeBuilder() = default;

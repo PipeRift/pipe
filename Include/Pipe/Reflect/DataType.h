@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/Array.h"
-#include "Pipe/Reflect/Builders/TypeInstance.h"
+#include "Pipe/Reflect/Builders/CompiledTypeRegister.h"
 #include "Pipe/Reflect/Property.h"
 #include "Pipe/Reflect/ReflectionFlags.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
@@ -70,7 +70,7 @@ namespace p
 	{
 		static_assert(
 		    IsStruct<T>() || IsClass<T>(), "IsChildOf only valid with Structs or Classes.");
-		return IsChildOf(static_cast<DataType*>(TTypeInstance<T>::GetType()));
+		return IsChildOf(static_cast<DataType*>(TCompiledTypeRegister<T>::GetType()));
 	}
 	inline DataType* DataType::GetParent() const
 	{

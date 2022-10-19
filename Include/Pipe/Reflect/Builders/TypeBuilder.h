@@ -9,7 +9,7 @@ namespace p
 	struct TypeId;
 
 
-	struct TypeBuilder
+	struct PIPE_API TypeBuilder
 	{
 	protected:
 		TypeId id;
@@ -18,17 +18,22 @@ namespace p
 
 
 	public:
-		PIPE_API TypeBuilder() = default;
-		PIPE_API TypeBuilder(TypeId id, StringView name);
-		PIPE_API virtual ~TypeBuilder() {}
+		TypeBuilder() = default;
+		TypeBuilder(TypeId id, StringView name);
+		virtual ~TypeBuilder() {}
 
-		PIPE_API bool BeginBuild();
-		PIPE_API void EndBuild();
+		bool BeginBuild();
+		void EndBuild();
 
-		PIPE_API TypeId GetId() const;
-		PIPE_API StringView GetName() const;
+		TypeId GetId() const;
+		StringView GetName() const;
+
+		Type* GetType() const
+		{
+			return initializedType;
+		}
 
 	protected:
-		PIPE_API virtual Type* CreateType() = 0;
+		virtual Type* CreateType() = 0;
 	};
 }    // namespace p

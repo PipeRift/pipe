@@ -12,6 +12,5 @@ namespace p
 	struct PIPE_API BaseStruct
 	{
 		void SerializeReflection(p::ReadWriter& ct) {}
-		// StructType* GetType() const;
 	};
 }    // namespace p

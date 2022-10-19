@@ -5,7 +5,7 @@ P_OVERRIDE_NEW_DELETE
 
 #include <bandit/bandit.h>
 #include <Pipe/Core/Backward.h>
-#include <Pipe/Core/Log.h>
+#include <Pipe/Pipe.h>
 
 
 // namespace backward
@@ -16,8 +16,8 @@ P_OVERRIDE_NEW_DELETE
 
 int main(int argc, char* argv[])
 {
-	p::Log::Init({});    // No folder logging
+	p::Initialize();
 	int result = bandit::run(argc, argv);
-	p::Log::Shutdown();
+	p::Shutdown();
 	return result;
 }

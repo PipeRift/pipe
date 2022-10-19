@@ -12,16 +12,16 @@ namespace p
 {
 	class TypeRegistry
 	{
+		using ConstIterator = TMap<TypeId, Type*>::ConstIterator;
+
 		// Contains all compiled reflection types linearly in memory
 		MultiLinearArena arena{GetCurrentArena()};
-
-		// Contains all runtime/data defined types in memory
-		// BigBestFitArena dynamicArena{256 * 1024};    // First block is 256KB
 
 		// We map all classes by name in case we need to find them
 		TMap<TypeId, Type*> idToTypes{};
 
-		using ConstIterator = TMap<TypeId, Type*>::ConstIterator;
+		TArray<TFunction<void()>> compiledTypeRegisters;
+		bool initialized = false;
 
 
 	public:
@@ -29,6 +29,9 @@ namespace p
 		{
 			Reset();
 		}
+
+		static PIPE_API void Initialize();
+
 
 		template<typename TType>
 		TType& AddType(TypeId id) requires Derived<TType, Type, false>
@@ -71,6 +74,8 @@ namespace p
 				arena.Release();
 			}
 		}
+
+		void RegisterCompiledType(TFunction<void()> callback);
 
 		static PIPE_API TypeRegistry& Get();
 	};
