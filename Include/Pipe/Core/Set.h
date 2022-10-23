@@ -179,20 +179,9 @@ namespace p::core
 		/** Empty the array.
 		 * @param shouldShrink false will not free memory
 		 */
-		void Clear(const bool shouldShrink = true, i32 sizeNum = 0)
+		void Clear()
 		{
-			if (shouldShrink)
-			{
-				set.clear();
-			}
-			else
-			{
-				set.clear_no_resize();
-				if (sizeNum > 0 && set.max_size() != sizeNum)
-				{
-					set.reserve(sizeNum);
-				}
-			}
+			set.clear();
 		}
 
 		void Reserve(u32 size)
