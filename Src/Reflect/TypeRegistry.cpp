@@ -33,7 +33,7 @@ namespace p
 
 	void TypeRegistry::RegisterCompiledType(TFunction<void()> callback)
 	{
-		if (EnsureMsg(initialized, "Can't register compile types after initializing!"))
+		if (EnsureMsg(!initialized, "Can't register compile types after initializing!"))
 		{
 			compiledTypeRegisters.Add(callback);
 		}

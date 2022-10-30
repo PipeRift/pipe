@@ -12,7 +12,6 @@ namespace p
 	template<typename T>
 	struct TCompiledTypeRegister
 	{
-		static TCompiledTypeRegister<T> instance;
 		static inline Type* type = nullptr;
 
 		TCompiledTypeRegister()
@@ -45,7 +44,4 @@ namespace p
 			return type;
 		}
 	};
-
-	template<typename T>
-	inline TCompiledTypeRegister<T> TCompiledTypeRegister<T>::instance{};
 }    // namespace p

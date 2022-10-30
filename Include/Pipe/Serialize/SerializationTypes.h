@@ -9,6 +9,7 @@ namespace p
 	enum class SerializeFormat : u8
 	{
 		None = 0,
-		Json
+		Json,
+		Binary
 	};
 }    // namespace p

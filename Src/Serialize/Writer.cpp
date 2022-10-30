@@ -3,22 +3,25 @@
 #include "Pipe/Serialize/Writer.h"
 
 #include "Pipe/Core/Checks.h"
+#include "Pipe/Serialize/Formats/BinaryFormat.h"
 #include "Pipe/Serialize/Formats/JsonFormat.h"
 
 
 namespace p
 {
-#define WRITER_SWITCH(func)                                                  \
-	switch (format)                                                          \
-	{                                                                        \
-		case SerializeFormat::Json: GetWriter<SerializeFormat::Json>().func; \
+#define WRITER_SWITCH(func)                                                      \
+	switch (format)                                                              \
+	{                                                                            \
+		case SerializeFormat::Json: GetWriter<SerializeFormat::Json>().func;     \
+		case SerializeFormat::Binary: GetWriter<SerializeFormat::Binary>().func; \
 	}
 
-#define RETURN_WRITER_SWITCH(func, def)                                             \
-	switch (format)                                                                 \
-	{                                                                               \
-		case SerializeFormat::Json: return GetWriter<SerializeFormat::Json>().func; \
-	}                                                                               \
+#define RETURN_WRITER_SWITCH(func, def)                                                 \
+	switch (format)                                                                     \
+	{                                                                                   \
+		case SerializeFormat::Json: return GetWriter<SerializeFormat::Json>().func;     \
+		case SerializeFormat::Binary: return GetWriter<SerializeFormat::Binary>().func; \
+	}                                                                                   \
 	return def
 
 
@@ -37,6 +40,7 @@ namespace p
 		switch (w.format)
 		{
 			case SerializeFormat::Json: w.GetWriter<SerializeFormat::Json>().Write(val);
+			case SerializeFormat::Binary: w.GetWriter<SerializeFormat::Binary>().Write(val);
 		}
 	}
 

@@ -6,22 +6,25 @@
 #include "Pipe/Core/String.h"
 #include "Pipe/ECS/Id.h"
 #include "Pipe/Reflect/TypeId.h"
+#include "Pipe/Serialize/Formats/BinaryFormat.h"
 #include "Pipe/Serialize/Formats/JsonFormat.h"
 
 
 namespace p
 {
-#define READER_SWITCH(func)                                                  \
-	switch (format)                                                          \
-	{                                                                        \
-		case SerializeFormat::Json: GetReader<SerializeFormat::Json>().func; \
+#define READER_SWITCH(func)                                                      \
+	switch (format)                                                              \
+	{                                                                            \
+		case SerializeFormat::Json: GetReader<SerializeFormat::Json>().func;     \
+		case SerializeFormat::Binary: GetReader<SerializeFormat::Binary>().func; \
 	}
 
-#define RETURN_READER_SWITCH(func, def)                                             \
-	switch (format)                                                                 \
-	{                                                                               \
-		case SerializeFormat::Json: return GetReader<SerializeFormat::Json>().func; \
-	}                                                                               \
+#define RETURN_READER_SWITCH(func, def)                                                 \
+	switch (format)                                                                     \
+	{                                                                                   \
+		case SerializeFormat::Json: return GetReader<SerializeFormat::Json>().func;     \
+		case SerializeFormat::Binary: return GetReader<SerializeFormat::Binary>().func; \
+	}                                                                                   \
 	return def
 
 
@@ -40,6 +43,7 @@ namespace p
 		switch (r.format)
 		{
 			case SerializeFormat::Json: r.GetReader<SerializeFormat::Json>().Read(val);
+			case SerializeFormat::Binary: r.GetReader<SerializeFormat::Binary>().Read(val);
 		}
 	}
 

@@ -75,7 +75,7 @@ namespace p
 			}
 		}
 
-		void RegisterCompiledType(TFunction<void()> callback);
+		PIPE_API void RegisterCompiledType(TFunction<void()> callback);
 
 		static PIPE_API TypeRegistry& Get();
 	};

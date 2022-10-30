@@ -136,6 +136,22 @@ go_bandit([]() {
 					AssertThat(value2, Equals(false));
 				});
 
+				it("Can read i8 values", [&]() {
+					JsonFormatReader reader{"{\"alive\": -3}"};
+					Reader& ct = reader;
+					ct.BeginObject();
+					i8 value = 0;
+					ct.Next("alive", value);
+					AssertThat(value, Equals(-3));
+
+					JsonFormatReader reader2{"{\"alive\": -1.344}"};
+					ct = reader2;
+					ct.BeginObject();
+					i8 value2 = 0;
+					ct.Next("alive", value2);
+					AssertThat(value2, Equals(-1));
+				});
+
 				it("Can read u8 values", [&]() {
 					JsonFormatReader reader{"{\"alive\": 3}"};
 					Reader& ct = reader;
@@ -152,38 +168,68 @@ go_bandit([]() {
 					AssertThat(value2, Equals(1));
 				});
 
-				it("Can read u32 values", [&]() {
-					JsonFormatReader reader{"{\"alive\": 35533}"};
+				it("Can read i16 values", [&]() {
+					// Test inbounds and out of bounds values
+					JsonFormatReader reader{Strings::Format(
+					    "{{\"a\":{},\"b\":{},\"c\":{},\"d\":{}}}", Limits<i16>::Max(),
+					    Limits<i16>::Lowest(), Limits<i32>::Max(), Limits<i32>::Lowest())};
 					Reader ct = reader;
 					ct.BeginObject();
-					u32 value = 0;
-					ct.Next("alive", value);
-					AssertThat(value, Equals(35533));
+					i16 value = 0;
+					ct.Next("a", value);
+					AssertThat(value, Equals(Limits<i16>::Max()));
+					ct.Next("b", value);
+					AssertThat(value, Equals(Limits<i16>::Lowest()));
+					ct.Next("c", value);
+					AssertThat(value, Equals(Limits<i16>::Max()));
+					ct.Next("d", value);
+					AssertThat(value, Equals(Limits<i16>::Lowest()));
+				});
 
-
-					JsonFormatReader reader2{"{\"alive\": -5}"};
-
-					ct = reader2;
+				it("Can read u16 values", [&]() {
+					JsonFormatReader reader{Strings::Format("{{\"a\":{},\"b\":{},\"c\":{}}}",
+					    Limits<u16>::Max(), Limits<u16>::Lowest(), -32)};
+					Reader ct = reader;
 					ct.BeginObject();
-					u32 value2 = 0;
-					ct.Next("alive", value2);
-					AssertThat(value2, Equals(0));
+					u16 value = 0;
+					ct.Next("a", value);
+					AssertThat(value, Equals(Limits<u16>::Max()));
+					ct.Next("b", value);
+					AssertThat(value, Equals(Limits<u16>::Lowest()));
+					ct.Next("c", value);
+					AssertThat(value, Equals(0));
 				});
 
 				it("Can read i32 values", [&]() {
-					JsonFormatReader reader{"{\"alive\": 35533}"};
+					// Test inbounds and out of bounds values
+					JsonFormatReader reader{Strings::Format(
+					    "{{\"a\":{},\"b\":{},\"c\":{},\"d\":{}}}", Limits<i32>::Max(),
+					    Limits<i32>::Lowest(), Limits<i64>::Max(), Limits<i64>::Lowest())};
 					Reader ct = reader;
 					ct.BeginObject();
 					i32 value = 0;
-					ct.Next("alive", value);
-					AssertThat(value, Equals(35533));
+					ct.Next("a", value);
+					AssertThat(value, Equals(Limits<i32>::Max()));
+					ct.Next("b", value);
+					AssertThat(value, Equals(Limits<i32>::Lowest()));
+					ct.Next("c", value);
+					AssertThat(value, Equals(Limits<i32>::Max()));
+					ct.Next("d", value);
+					AssertThat(value, Equals(Limits<i32>::Lowest()));
+				});
 
-					JsonFormatReader reader2{"{\"alive\": -35533}"};
-					ct = reader2;
+				it("Can read u32 values", [&]() {
+					JsonFormatReader reader{Strings::Format("{{\"a\":{},\"b\":{},\"c\":{}}}",
+					    Limits<u32>::Max(), Limits<u32>::Lowest(), -32)};
+					Reader ct = reader;
 					ct.BeginObject();
-					i32 value2 = 0;
-					ct.Next("alive", value2);
-					AssertThat(value2, Equals(-35533));
+					u32 value = 0;
+					ct.Next("a", value);
+					AssertThat(value, Equals(Limits<u32>::Max()));
+					ct.Next("b", value);
+					AssertThat(value, Equals(Limits<u32>::Lowest()));
+					ct.Next("c", value);
+					AssertThat(value, Equals(0));
 				});
 
 				it("Can read float values", [&]() {
@@ -271,12 +317,41 @@ go_bandit([]() {
 					AssertThat(writer2.ToString(false), Equals("{\"alive\":false}"));
 				});
 
+				it("Can write i8 values", [&]() {
+					JsonFormatWriter writer{};
+					Writer ct = writer;
+					ct.BeginObject();
+					ct.Next("alive", i8(-3));
+					AssertThat(writer.ToString(false), Equals("{\"alive\":-3}"));
+				});
+
 				it("Can write u8 values", [&]() {
 					JsonFormatWriter writer{};
 					Writer ct = writer;
 					ct.BeginObject();
 					ct.Next("alive", u8(3));
 					AssertThat(writer.ToString(false), Equals("{\"alive\":3}"));
+				});
+
+				it("Can write i16 values", [&]() {
+					JsonFormatWriter writer{};
+					Writer ct = writer;
+					ct.BeginObject();
+					ct.Next("a", i16(-3000));
+					ct.Next("b", Limits<i16>::Max());
+					ct.Next("c", Limits<i16>::Lowest());
+					AssertThat(
+					    writer.ToString(false), Equals("{\"a\":-3000,\"b\":32767,\"c\":-32768}"));
+				});
+
+				it("Can write u16 values", [&]() {
+					JsonFormatWriter writer{};
+					Writer ct = writer;
+					ct.BeginObject();
+					ct.Next("a", u16(3000));
+					ct.Next("b", Limits<u16>::Max());
+					ct.Next("c", Limits<u16>::Lowest());
+					AssertThat(writer.ToString(false), Equals("{\"a\":3000,\"b\":65535,\"c\":0}"));
 				});
 
 				it("Can write u32 values", [&]() {
