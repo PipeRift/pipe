@@ -72,26 +72,29 @@ namespace p
 		PIPE_API explicit JsonFormatReader(String& data);
 		PIPE_API ~JsonFormatReader();
 
-		PIPE_API void BeginObject();
-		PIPE_API void BeginArray(u32& size);
+		PIPE_API void BeginObject() override;
+		PIPE_API void BeginArray(u32& size) override;
 
-		PIPE_API bool EnterNext(StringView name);
-		PIPE_API bool EnterNext();
-		PIPE_API void Leave();
+		PIPE_API bool EnterNext(StringView name) override;
+		PIPE_API bool EnterNext() override;
+		PIPE_API void Leave() override;
 
-		PIPE_API void Read(bool& val);
-		PIPE_API void Read(u8& val);
-		PIPE_API void Read(i32& val);
-		PIPE_API void Read(u32& val);
-		PIPE_API void Read(i64& val);
-		PIPE_API void Read(u64& val);
-		PIPE_API void Read(float& val);
-		PIPE_API void Read(double& val);
-		PIPE_API void Read(StringView& val);
+		PIPE_API void Read(bool& val) override;
+		PIPE_API void Read(i8& val) override;
+		PIPE_API void Read(u8& val) override;
+		PIPE_API void Read(i16& val) override;
+		PIPE_API void Read(u16& val) override;
+		PIPE_API void Read(i32& val) override;
+		PIPE_API void Read(u32& val) override;
+		PIPE_API void Read(i64& val) override;
+		PIPE_API void Read(u64& val) override;
+		PIPE_API void Read(float& val) override;
+		PIPE_API void Read(double& val) override;
+		PIPE_API void Read(StringView& val) override;
 
-		PIPE_API bool IsObject() const;
-		PIPE_API bool IsArray() const;
-		PIPE_API bool IsValid() const
+		PIPE_API bool IsObject() const override;
+		PIPE_API bool IsArray() const override;
+		PIPE_API bool IsValid() const override
 		{
 			return root != nullptr;
 		}
@@ -131,27 +134,32 @@ namespace p
 		PIPE_API JsonFormatWriter();
 		PIPE_API ~JsonFormatWriter();
 
-		PIPE_API bool EnterNext(StringView name);
-		PIPE_API bool EnterNext();
-		PIPE_API void Leave();
+		// BEGIN Writer Interface
+		PIPE_API bool EnterNext(StringView name) override;
+		PIPE_API bool EnterNext() override;
+		PIPE_API void Leave() override;
 
-		PIPE_API void BeginObject();
-		PIPE_API void BeginArray(u32& size);
+		PIPE_API void BeginObject() override;
+		PIPE_API void BeginArray(u32& size) override;
 
-		PIPE_API void Write(bool val);
-		PIPE_API void Write(u8 val);
-		PIPE_API void Write(i32 val);
-		PIPE_API void Write(u32 val);
-		PIPE_API void Write(i64 val);
-		PIPE_API void Write(u64 val);
-		PIPE_API void Write(float val);
-		PIPE_API void Write(double val);
-		PIPE_API void Write(StringView val);
+		PIPE_API void Write(bool val) override;
+		PIPE_API void Write(i8 val) override;
+		PIPE_API void Write(u8 val) override;
+		PIPE_API void Write(i16 val) override;
+		PIPE_API void Write(u16 val) override;
+		PIPE_API void Write(i32 val) override;
+		PIPE_API void Write(u32 val) override;
+		PIPE_API void Write(i64 val) override;
+		PIPE_API void Write(u64 val) override;
+		PIPE_API void Write(float val) override;
+		PIPE_API void Write(double val) override;
+		PIPE_API void Write(StringView val) override;
 
-		PIPE_API bool IsValid() const
+		PIPE_API bool IsValid() const override
 		{
 			return doc != nullptr;
 		}
+		// END Writer Interface
 
 		PIPE_API void Close();
 

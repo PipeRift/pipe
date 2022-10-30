@@ -215,6 +215,25 @@ namespace p
 		val = yyjson_get_bool(current);
 	}
 
+	void JsonFormatReader::Read(i8& val)
+	{
+		if (!yyjson_is_num(current)) [[unlikely]]
+		{
+			val = 0;    // Default to 0
+			return;
+		}
+		switch (unsafe_yyjson_get_subtype(current))
+		{
+			case YYJSON_SUBTYPE_SINT:
+				val = i8(math::Clamp<i64>(
+				    unsafe_yyjson_get_sint(current), Limits<i8>::Lowest(), Limits<i8>::Max()));
+				break;
+			case YYJSON_SUBTYPE_UINT:
+				val = i8(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<i8>::Max()));
+				break;
+			case YYJSON_SUBTYPE_REAL: val = i8(unsafe_yyjson_get_real(current)); break;
+		}
+	}
 	void JsonFormatReader::Read(u8& val)
 	{
 		if (!yyjson_is_num(current)) [[unlikely]]
@@ -224,12 +243,54 @@ namespace p
 		}
 		switch (unsafe_yyjson_get_subtype(current))
 		{
-			case YYJSON_SUBTYPE_UINT: val = u8(unsafe_yyjson_get_uint(current)); break;
-			case YYJSON_SUBTYPE_SINT: val = u8(unsafe_yyjson_get_sint(current)); break;
+			case YYJSON_SUBTYPE_UINT:
+				val = u8(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<u8>::Max()));
+				break;
+			case YYJSON_SUBTYPE_SINT:
+				val = u8(math::Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u8>::Max()));
+				break;
+
 			case YYJSON_SUBTYPE_REAL: val = u8(unsafe_yyjson_get_real(current)); break;
 		}
 	}
+	void JsonFormatReader::Read(i16& val)
+	{
+		if (!yyjson_is_num(current)) [[unlikely]]
+		{
+			val = 0;    // Default to 0
+			return;
+		}
+		switch (unsafe_yyjson_get_subtype(current))
+		{
+			case YYJSON_SUBTYPE_SINT:
+				val = i16(math::Clamp<i64>(
+				    unsafe_yyjson_get_sint(current), Limits<i16>::Lowest(), Limits<i16>::Max()));
+				break;
+			case YYJSON_SUBTYPE_UINT:
+				val = i16(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<i16>::Max()));
+				break;
+			case YYJSON_SUBTYPE_REAL: val = i16(unsafe_yyjson_get_real(current)); break;
+		}
+	}
+	void JsonFormatReader::Read(u16& val)
+	{
+		if (!yyjson_is_num(current)) [[unlikely]]
+		{
+			val = 0u;    // Default to 0
+			return;
+		}
+		switch (unsafe_yyjson_get_subtype(current))
+		{
+			case YYJSON_SUBTYPE_UINT:
+				val = u16(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<u16>::Max()));
+				break;
+			case YYJSON_SUBTYPE_SINT:
+				val = u16(math::Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u16>::Max()));
+				break;
 
+			case YYJSON_SUBTYPE_REAL: val = u16(unsafe_yyjson_get_real(current)); break;
+		}
+	}
 	void JsonFormatReader::Read(i32& val)
 	{
 		if (!yyjson_is_num(current)) [[unlikely]]
@@ -239,12 +300,16 @@ namespace p
 		}
 		switch (unsafe_yyjson_get_subtype(current))
 		{
-			case YYJSON_SUBTYPE_SINT: val = i32(unsafe_yyjson_get_sint(current)); break;
-			case YYJSON_SUBTYPE_UINT: val = i32(unsafe_yyjson_get_uint(current)); break;
+			case YYJSON_SUBTYPE_SINT:
+				val = i32(math::Clamp<i64>(
+				    unsafe_yyjson_get_sint(current), Limits<i32>::Lowest(), Limits<i32>::Max()));
+				break;
+			case YYJSON_SUBTYPE_UINT:
+				val = i32(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<i32>::Max()));
+				break;
 			case YYJSON_SUBTYPE_REAL: val = i32(unsafe_yyjson_get_real(current)); break;
 		}
 	}
-
 	void JsonFormatReader::Read(u32& val)
 	{
 		if (!yyjson_is_num(current)) [[unlikely]]
@@ -254,15 +319,16 @@ namespace p
 		}
 		switch (unsafe_yyjson_get_subtype(current))
 		{
-			case YYJSON_SUBTYPE_UINT: val = u32(unsafe_yyjson_get_uint(current)); break;
+			case YYJSON_SUBTYPE_UINT:
+				val = u32(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<u32>::Max()));
+				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u32(math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
+				val = u32(math::Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u32>::Max()));
 				break;
 
 			case YYJSON_SUBTYPE_REAL: val = u32(unsafe_yyjson_get_real(current)); break;
 		}
 	}
-
 	void JsonFormatReader::Read(i64& val)
 	{
 		if (!yyjson_is_num(current)) [[unlikely]]
@@ -273,11 +339,12 @@ namespace p
 		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_SINT: val = unsafe_yyjson_get_sint(current); break;
-			case YYJSON_SUBTYPE_UINT: val = i64(unsafe_yyjson_get_uint(current)); break;
+			case YYJSON_SUBTYPE_UINT:
+				val = i64(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<i64>::Max()));
+				break;
 			case YYJSON_SUBTYPE_REAL: val = i64(unsafe_yyjson_get_real(current)); break;
 		}
 	}
-
 	void JsonFormatReader::Read(u64& val)
 	{
 		if (!yyjson_is_num(current)) [[unlikely]]
@@ -294,7 +361,6 @@ namespace p
 			case YYJSON_SUBTYPE_REAL: val = u64(unsafe_yyjson_get_real(current)); break;
 		}
 	}
-
 	void JsonFormatReader::Read(float& val)
 	{
 		if (!yyjson_is_num(current)) [[unlikely]]
@@ -309,7 +375,6 @@ namespace p
 			case YYJSON_SUBTYPE_UINT: val = float(unsafe_yyjson_get_uint(current)); break;
 		}
 	}
-
 	void JsonFormatReader::Read(double& val)
 	{
 		if (!yyjson_is_num(current)) [[unlikely]]
@@ -324,7 +389,6 @@ namespace p
 			case YYJSON_SUBTYPE_UINT: val = double(unsafe_yyjson_get_uint(current)); break;
 		}
 	}
-
 	void JsonFormatReader::Read(StringView& val)
 	{
 		if (yyjson_is_str(current))
@@ -539,7 +603,19 @@ namespace p
 	{
 		current = yyjson_mut_bool(doc, val);
 	}
+	void JsonFormatWriter::Write(i8 val)
+	{
+		current = yyjson_mut_sint(doc, val);
+	}
 	void JsonFormatWriter::Write(u8 val)
+	{
+		current = yyjson_mut_uint(doc, val);
+	}
+	void JsonFormatWriter::Write(i16 val)
+	{
+		current = yyjson_mut_sint(doc, val);
+	}
+	void JsonFormatWriter::Write(const u16 val)
 	{
 		current = yyjson_mut_uint(doc, val);
 	}
