@@ -49,11 +49,11 @@ namespace p
 
 	public:
 
+		PIPE_API virtual void BeginObject()              = 0;
+		PIPE_API virtual void BeginArray(u32 size)       = 0;
 		PIPE_API virtual bool EnterNext(StringView name) = 0;
 		PIPE_API virtual bool EnterNext()                = 0;
 		PIPE_API virtual void Leave()                    = 0;
-		PIPE_API virtual void BeginObject()              = 0;
-		PIPE_API virtual void BeginArray(u32& size)      = 0;
 		PIPE_API virtual void Write(bool val)            = 0;
 		PIPE_API virtual void Write(i8 val)              = 0;
 		PIPE_API virtual void Write(u8 val)              = 0;

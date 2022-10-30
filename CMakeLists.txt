@@ -96,7 +96,7 @@ pipe_add_sanitizers(Pipe)
 ################################################################################
 #   Pipe Tests (compiled) executable
 
-if(BUILD_TESTING AND PIPE_BUILD_TESTS)
+if(PIPE_BUILD_TESTS)
     include (CTest)
     add_subdirectory(Tests)
     add_subdirectory(Benchmarks)

@@ -78,7 +78,7 @@ namespace p
 		 * See EnterNext() & Next(value)
 		 * @param size of the array being read
 		 */
-		void BeginArray(u32& size);
+		void BeginArray(u32 size);
 
 		/**
 		 * Enters the scope of the next element of an array.
@@ -148,7 +148,10 @@ namespace p
 
 	// Format writes
 	PIPE_API void Write(Writer& w, bool val);
+	PIPE_API void Write(Writer& w, i8 val);
 	PIPE_API void Write(Writer& w, u8 val);
+	PIPE_API void Write(Writer& w, i16 val);
+	PIPE_API void Write(Writer& w, u16 val);
 	PIPE_API void Write(Writer& w, i32 val);
 	PIPE_API void Write(Writer& w, u32 val);
 	PIPE_API void Write(Writer& w, i64 val);

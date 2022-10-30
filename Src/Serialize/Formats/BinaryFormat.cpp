@@ -11,18 +11,13 @@
 
 namespace p
 {
-	BinaryFormatReader::BinaryFormatReader(TSpan<u8> data) : data{data}, pos{data.Data()} {}
+	BinaryFormatReader::BinaryFormatReader(TSpan<u8> data) : data{data}, pointer{data.Data()} {}
 
 	BinaryFormatReader::~BinaryFormatReader() {}
 
-	void BinaryFormatReader::BeginObject()
-	{
-		// Nothing to do
-	}
-
 	void BinaryFormatReader::BeginArray(u32& size)
 	{
-		NotImplemented;
+		Read(size);
 	}
 
 	bool BinaryFormatReader::EnterNext(StringView)
@@ -37,72 +32,116 @@ namespace p
 		return true;
 	}
 
-	void BinaryFormatReader::Leave()
-	{
-		// Nothing to do
-	}
-
 	void BinaryFormatReader::Read(bool& val)
 	{
-		val = *pos;
-		++pos;
+		CheckMsg(pointer < data.end(), "The read buffer has been exceeded");
+		val = *pointer;
+		++pointer;
 	}
 
 	void BinaryFormatReader::Read(i8& val)
 	{
-		val = *pos;
-		++pos;
+		val = i8(*pointer);
+		++pointer;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 	void BinaryFormatReader::Read(u8& val)
 	{
-		val = *pos;
-		++pos;
+		val = *pointer;
+		++pointer;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(i16& val)
 	{
-		NotImplemented;
+		val = pointer[0];
+		val |= i16(pointer[1]) << 8;
+		pointer += 2;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(u16& val)
 	{
-		val = *pos;
-		++pos;
+		val = pointer[0];
+		val |= u16(pointer[1]) << 8;
+		pointer += 2;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(i32& val)
 	{
-		NotImplemented;
+		val = pointer[0];
+		val |= i32(pointer[1]) << 8;
+		val |= i32(pointer[2]) << 16;
+		val |= i32(pointer[3]) << 24;
+		pointer += 4;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(u32& val)
 	{
-		NotImplemented;
+		val = pointer[0];
+		val |= u32(pointer[1]) << 8;
+		val |= u32(pointer[2]) << 16;
+		val |= u32(pointer[3]) << 24;
+		pointer += 4;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(i64& val)
 	{
-		NotImplemented;
+		val = pointer[0];
+		val |= i64(pointer[1]) << 8;
+		val |= i64(pointer[2]) << 16;
+		val |= i64(pointer[3]) << 24;
+		val |= i64(pointer[4]) << 32;
+		val |= i64(pointer[5]) << 40;
+		val |= i64(pointer[6]) << 48;
+		val |= i64(pointer[7]) << 56;
+		pointer += 8;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(u64& val)
 	{
-		NotImplemented;
+		val = pointer[0];
+		val |= u64(pointer[1]) << 8;
+		val |= u64(pointer[2]) << 16;
+		val |= u64(pointer[3]) << 24;
+		val |= u64(pointer[4]) << 32;
+		val |= u64(pointer[5]) << 40;
+		val |= u64(pointer[6]) << 48;
+		val |= u64(pointer[7]) << 56;
+		pointer += 8;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(float& val)
 	{
-		NotImplemented;
+		p::CopyMem(&val, pointer, 4);
+		pointer += 4;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(double& val)
 	{
-		NotImplemented;
+		p::CopyMem(&val, pointer, 8);
+		pointer += 8;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(StringView& val)
 	{
-		NotImplemented;
+		i32 size = 0;
+		Read(size);
+		const i32 sizeInBytes = size * i32(sizeof(TChar));
+		if (EnsureMsg(pointer + sizeInBytes <= data.end(),
+		        "The size of a string readen exceeds the read buffer!")) [[likely]]
+		{
+			val = StringView{(TChar*)pointer, sizeInBytes};
+			pointer += sizeInBytes;
+			CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
+		}
 	}
 
 	bool BinaryFormatReader::IsObject() const
@@ -123,6 +162,23 @@ namespace p
 	BinaryFormatWriter::~BinaryFormatWriter()
 	{
 		Free(data, capacity);
+	}
+
+	void BinaryFormatWriter::BeginArray(u32 size)
+	{
+		Write(size);
+	}
+
+	bool BinaryFormatWriter::EnterNext(StringView)
+	{
+		// Nothing to do
+		return true;
+	}
+
+	bool BinaryFormatWriter::EnterNext()
+	{
+		// Nothing to do
+		return true;
 	}
 
 	void BinaryFormatWriter::Write(bool val)

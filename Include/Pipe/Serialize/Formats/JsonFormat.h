@@ -140,7 +140,7 @@ namespace p
 		PIPE_API void Leave() override;
 
 		PIPE_API void BeginObject() override;
-		PIPE_API void BeginArray(u32& size) override;
+		PIPE_API void BeginArray(u32 size) override;
 
 		PIPE_API void Write(bool val) override;
 		PIPE_API void Write(i8 val) override;

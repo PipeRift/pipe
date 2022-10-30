@@ -582,7 +582,7 @@ namespace p
 		current = yyjson_mut_obj(doc);
 	}
 
-	void JsonFormatWriter::BeginArray(u32& size)
+	void JsonFormatWriter::BeginArray(u32 size)
 	{
 		Scope& scope = GetScope();
 		if (current) [[unlikely]]

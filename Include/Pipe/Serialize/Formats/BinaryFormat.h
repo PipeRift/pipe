@@ -11,19 +11,19 @@ namespace p
 	struct BinaryFormatReader : public TFormatReader<SerializeFormat::Binary>
 	{
 	private:
-		TSpan<p::u8> data;
-		p::u8* pos = nullptr;
+		TSpan<u8> data;
+		u8* pointer = nullptr;
 
 	public:
-		PIPE_API BinaryFormatReader(TSpan<p::u8> data);
+		PIPE_API BinaryFormatReader(TSpan<u8> data);
 		PIPE_API ~BinaryFormatReader();
 
-		PIPE_API void BeginObject() override;
+		PIPE_API void BeginObject() override {}    // Nothing to do
 		PIPE_API void BeginArray(u32& size) override;
 
-		PIPE_API bool EnterNext(StringView name) override;
-		PIPE_API bool EnterNext() override;
-		PIPE_API void Leave() override;
+		PIPE_API bool EnterNext(StringView name) override;    // Nothing to do
+		PIPE_API bool EnterNext() override;                   // Nothing to do
+		PIPE_API void Leave() override {}                     // Nothing to do
 
 		PIPE_API void Read(bool& val) override;
 		PIPE_API void Read(i8& val) override;
@@ -59,11 +59,11 @@ namespace p
 		PIPE_API ~BinaryFormatWriter();
 
 		// BEGIN Writer Interface
-		PIPE_API bool EnterNext(StringView name) override {}    // Nothing to do
-		PIPE_API bool EnterNext() override {}                   // Nothing to do
-		PIPE_API void Leave() override {}                       // Nothing to do
-		PIPE_API void BeginObject() override {}                 // Nothing to do
-		PIPE_API void BeginArray(u32& size) override {}         // Nothing to do
+		PIPE_API void BeginObject() override {}         // Nothing to do
+		PIPE_API void BeginArray(u32 size) override;    // Nothing to do
+		PIPE_API bool EnterNext(StringView name) override;
+		PIPE_API bool EnterNext() override;
+		PIPE_API void Leave() override {}    // Nothing to do
 		PIPE_API void Write(bool val) override;
 		PIPE_API void Write(i8 val) override;
 		PIPE_API void Write(u8 val) override;

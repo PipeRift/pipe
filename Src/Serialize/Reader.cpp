@@ -12,19 +12,19 @@
 
 namespace p
 {
-#define READER_SWITCH(func)                                                      \
-	switch (format)                                                              \
-	{                                                                            \
-		case SerializeFormat::Json: GetReader<SerializeFormat::Json>().func;     \
-		case SerializeFormat::Binary: GetReader<SerializeFormat::Binary>().func; \
-	}
-
-#define RETURN_READER_SWITCH(func, def)                                                 \
+#define READER_SWITCH(func)                                                             \
 	switch (format)                                                                     \
 	{                                                                                   \
-		case SerializeFormat::Json: return GetReader<SerializeFormat::Json>().func;     \
-		case SerializeFormat::Binary: return GetReader<SerializeFormat::Binary>().func; \
-	}                                                                                   \
+		case SerializeFormat::Json: GetReader<SerializeFormat::Json>().func; break;     \
+		case SerializeFormat::Binary: GetReader<SerializeFormat::Binary>().func; break; \
+	}
+
+#define RETURN_READER_SWITCH(func, def)                                                        \
+	switch (format)                                                                            \
+	{                                                                                          \
+		case SerializeFormat::Json: return GetReader<SerializeFormat::Json>().func; break;     \
+		case SerializeFormat::Binary: return GetReader<SerializeFormat::Binary>().func; break; \
+	}                                                                                          \
 	return def
 
 
@@ -42,8 +42,8 @@ namespace p
 	{
 		switch (r.format)
 		{
-			case SerializeFormat::Json: r.GetReader<SerializeFormat::Json>().Read(val);
-			case SerializeFormat::Binary: r.GetReader<SerializeFormat::Binary>().Read(val);
+			case SerializeFormat::Json: r.GetReader<SerializeFormat::Json>().Read(val); break;
+			case SerializeFormat::Binary: r.GetReader<SerializeFormat::Binary>().Read(val); break;
 		}
 	}
 
@@ -86,7 +86,19 @@ namespace p
 	{
 		ReadFromFormat(r, val);
 	}
+	void Read(Reader& r, i8& val)
+	{
+		ReadFromFormat(r, val);
+	}
 	void Read(Reader& r, u8& val)
+	{
+		ReadFromFormat(r, val);
+	}
+	void Read(Reader& r, i16& val)
+	{
+		ReadFromFormat(r, val);
+	}
+	void Read(Reader& r, u16& val)
 	{
 		ReadFromFormat(r, val);
 	}
