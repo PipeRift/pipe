@@ -80,7 +80,7 @@ target_link_libraries(Pipe PRIVATE
 )
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)
-    target_compile_definitions(Pipe PUBLIC PIPE_ENABLE_ALLOCATION_STACKS=1)
+    target_compile_definitions(Pipe PUBLIC P_ENABLE_ALLOCATION_STACKS=1)
 endif()
 
 if(PIPE_ENABLE_PROFILER)

@@ -76,7 +76,7 @@ namespace p
 
 		mutable std::shared_mutex mutex;
 		TArray<AllocationStats, MemoryStatsAllocator> allocations;
-#if PIPE_ENABLE_ALLOCATION_STACKS
+#if P_ENABLE_ALLOCATION_STACKS
 		TArray<backward::StackTrace<MemoryStatsAllocator>, MemoryStatsAllocator> allocationStacks;
 #endif
 

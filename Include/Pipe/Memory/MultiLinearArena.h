@@ -123,6 +123,7 @@ namespace p
 
 		sizet GetUsedMemory() const
 		{
+			NotImplemented;
 			return 0;
 		}
 	};

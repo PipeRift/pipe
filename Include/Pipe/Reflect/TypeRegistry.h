@@ -64,15 +64,12 @@ namespace p
 
 		void Reset()
 		{
-			if (arena.GetUsedMemory() > 0)    // Prevent multiple deallocations
+			for (auto it : idToTypes)
 			{
-				for (auto it : idToTypes)
-				{
-					it.second->~Type();
-				}
-				idToTypes.Clear();
-				arena.Release();
+				it.second->~Type();
 			}
+			idToTypes.Clear();
+			arena.Release();
 		}
 
 		PIPE_API void RegisterCompiledType(TFunction<void()> callback);

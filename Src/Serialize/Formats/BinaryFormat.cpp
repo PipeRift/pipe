@@ -134,11 +134,11 @@ namespace p
 	{
 		i32 size = 0;
 		Read(size);
-		const i32 sizeInBytes = size * i32(sizeof(TChar));
+		const sizet sizeInBytes = size * sizeof(TChar);
 		if (EnsureMsg(pointer + sizeInBytes <= data.end(),
 		        "The size of a string readen exceeds the read buffer!")) [[likely]]
 		{
-			val = StringView{(TChar*)pointer, sizeInBytes};
+			val = StringView{reinterpret_cast<TChar*>(pointer), sizeInBytes};
 			pointer += sizeInBytes;
 			CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 		}
