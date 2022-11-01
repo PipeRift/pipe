@@ -189,7 +189,7 @@ namespace p::core
 		}
 
 		template<typename Container>    // Intended for TSpan<T>
-		void Append(Container values)
+		void Append(const Container& values)
 		{
 			vector.insert(vector.end(), values.begin(), values.end());
 		}
@@ -249,7 +249,7 @@ namespace p::core
 		}
 
 		template<typename Container>    // Intended for TSpan<T>
-		void InsertRange(i32 index, Container values)
+		void InsertRange(i32 index, const Container& values)
 		{
 			if (IsValidIndex(index))
 			{
@@ -483,7 +483,7 @@ namespace p::core
 		}
 
 		template<typename Container>    // Intended for TSpan<T>
-		i32 RemoveMany(Container items, const bool shouldShrink = true)
+		i32 RemoveMany(const Container& items, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			for (i32 i = 0; i < Size(); ++i)
@@ -523,14 +523,44 @@ namespace p::core
 		}
 
 		/**
+		 * Delete N items at index
+		 * @return true if removed
+		 */
+		bool RemoveNAt(i32 index, i32 count, const bool shouldShrink = true)
+		{
+			if (IsValidIndex(index) && IsValidIndex(index + count))
+			{
+				return RemoveNAtUnsafe(index, count, shouldShrink);
+			}
+			return false;
+		}
+
+		/**
 		 * Delete item at index.
-		 * Unsafe version. Doesn't make sure index is valid!
+		 * Unsafe version. Doesn't make sure index is valid.
 		 * @return true if removed
 		 */
 		bool RemoveAtUnsafe(i32 index, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			vector.erase(vector.begin() + index);
+
+			if (shouldShrink)
+				Shrink();
+
+			return lastSize - Size() > 0;
+		}
+
+		/**
+		 * Delete N items at index.
+		 * Unsafe version. Doesn't make sure index is valid.
+		 * @return true if removed
+		 */
+		bool RemoveNAtUnsafe(i32 index, i32 count, const bool shouldShrink = true)
+		{
+			const i32 lastSize = Size();
+			const auto first   = vector.begin() + index;
+			vector.erase(first, first + count);
 
 			if (shouldShrink)
 				Shrink();
