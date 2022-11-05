@@ -34,9 +34,9 @@ namespace p
 
 	void BinaryFormatReader::Read(bool& val)
 	{
-		CheckMsg(pointer < data.end(), "The read buffer has been exceeded");
 		val = *pointer;
 		++pointer;
+		CheckMsg(pointer <= data.end(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(i8& val)
