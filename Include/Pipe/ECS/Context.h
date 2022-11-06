@@ -89,12 +89,18 @@ namespace p::ecs
 			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
 		}
 
-
 		// Add Components to many entities (if they dont have it already)
 		template<typename... Component>
 		void AddN(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
 		{
 			(Add<Component>(ids), ...);
+		}
+
+		template<typename Component>
+		void AddN(TSpan<const Id> ids, const TSpan<const Component>& values)
+		{
+			Check(ids.Size() == values.Size());
+			AssurePool<Component>().Add(ids.begin(), ids.end(), values.begin());
 		}
 
 		template<typename Component>
