@@ -16,13 +16,13 @@ namespace p::ecs
 	// Link a list of nodes after prevChild in the list of children nodes
 	PIPE_API void AddChildrenAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id node,
 	    TSpan<Id> children, Id prevChild);
-	PIPE_API void TransferChildren(
-	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> children, Id destination);
+	PIPE_API void TransferChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
+	    TSpan<const Id> children, Id destination);
 	// TODO: void TransferAllChildren(Tree& ast, Id origin, Id destination);
 	PIPE_API void RemoveChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TSpan<Id> children, bool keepComponents);
+	    TSpan<const Id> children, bool keepComponents);
 	PIPE_API void RemoveAllChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TSpan<Id> parents, bool keepComponents = false);
+	    TSpan<const Id> parents, bool keepComponents = false);
 
 	PIPE_API TArray<Id>* GetMutChildren(TAccessRef<TWrite<CParent>> access, Id node);
 	PIPE_API const TArray<Id>* GetChildren(TAccessRef<CParent> access, Id node);
