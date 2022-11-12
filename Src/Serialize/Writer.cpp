@@ -3,22 +3,25 @@
 #include "Pipe/Serialize/Writer.h"
 
 #include "Pipe/Core/Checks.h"
+#include "Pipe/Serialize/Formats/BinaryFormat.h"
 #include "Pipe/Serialize/Formats/JsonFormat.h"
 
 
 namespace p
 {
-#define WRITER_SWITCH(func)                                                  \
-	switch (format)                                                          \
-	{                                                                        \
-		case SerializeFormat::Json: GetWriter<SerializeFormat::Json>().func; \
+#define WRITER_SWITCH(func)                                                             \
+	switch (format)                                                                     \
+	{                                                                                   \
+		case SerializeFormat::Json: GetWriter<SerializeFormat::Json>().func; break;     \
+		case SerializeFormat::Binary: GetWriter<SerializeFormat::Binary>().func; break; \
 	}
 
-#define RETURN_WRITER_SWITCH(func, def)                                             \
-	switch (format)                                                                 \
-	{                                                                               \
-		case SerializeFormat::Json: return GetWriter<SerializeFormat::Json>().func; \
-	}                                                                               \
+#define RETURN_WRITER_SWITCH(func, def)                                                        \
+	switch (format)                                                                            \
+	{                                                                                          \
+		case SerializeFormat::Json: return GetWriter<SerializeFormat::Json>().func; break;     \
+		case SerializeFormat::Binary: return GetWriter<SerializeFormat::Binary>().func; break; \
+	}                                                                                          \
 	return def
 
 
@@ -36,7 +39,8 @@ namespace p
 	{
 		switch (w.format)
 		{
-			case SerializeFormat::Json: w.GetWriter<SerializeFormat::Json>().Write(val);
+			case SerializeFormat::Json: w.GetWriter<SerializeFormat::Json>().Write(val); break;
+			case SerializeFormat::Binary: w.GetWriter<SerializeFormat::Binary>().Write(val); break;
 		}
 	}
 
@@ -50,7 +54,7 @@ namespace p
 		RETURN_WRITER_SWITCH(EnterNext(name), false);
 	}
 
-	void Writer::BeginArray(u32& size)
+	void Writer::BeginArray(u32 size)
 	{
 		WRITER_SWITCH(BeginArray(size));
 	}
@@ -69,7 +73,19 @@ namespace p
 	{
 		WriteFromFormat(w, val);
 	}
+	void Write(Writer& w, i8 val)
+	{
+		WriteFromFormat(w, val);
+	}
 	void Write(Writer& w, u8 val)
+	{
+		WriteFromFormat(w, val);
+	}
+	void Write(Writer& w, i16 val)
+	{
+		WriteFromFormat(w, val);
+	}
+	void Write(Writer& w, u16 val)
 	{
 		WriteFromFormat(w, val);
 	}

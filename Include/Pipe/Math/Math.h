@@ -74,6 +74,11 @@ namespace p::math
 		return min + (max - min) * Rand01();
 	}
 
+	inline PIPE_API i32 Random(i32 min, i32 max)
+	{
+		return min + (max - min) * (Rand() / RAND_MAX);
+	}
+
 
 	template<typename T>
 	static constexpr bool IsPosInf(const T x)
@@ -347,6 +352,8 @@ namespace p::math
 	}
 
 	PIPE_API void SinCos(float value, float& outSin, float& outCos);
+	PIPE_API float Sin(float value);
+	PIPE_API float Cos(float value);
 
 	PIPE_API float Atan2(float Y, float X);
 

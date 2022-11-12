@@ -80,7 +80,7 @@ target_link_libraries(Pipe PRIVATE
 )
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)
-    target_compile_definitions(Pipe PUBLIC PIPE_ENABLE_ALLOCATION_STACKS=1)
+    target_compile_definitions(Pipe PUBLIC P_ENABLE_ALLOCATION_STACKS=1)
 endif()
 
 if(PIPE_ENABLE_PROFILER)
@@ -96,7 +96,7 @@ pipe_add_sanitizers(Pipe)
 ################################################################################
 #   Pipe Tests (compiled) executable
 
-if(BUILD_TESTING AND PIPE_BUILD_TESTS)
+if(PIPE_BUILD_TESTS)
     include (CTest)
     add_subdirectory(Tests)
     add_subdirectory(Benchmarks)

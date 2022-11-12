@@ -85,12 +85,12 @@ namespace p::core
 
 		Iterator InsertDefaulted(const KeyType& key)
 		{
-			return map.insert({key, {}}).first;
+			return map.insert({key, ValueType{}}).first;
 		}
 
 		Iterator InsertDefaulted(KeyType&& key)
 		{
-			return map.insert({Move(key), {}}).first;
+			return map.insert({Move(key), ValueType{}}).first;
 		}
 
 		void Append(const TMap<KeyType, ValueType>& other)

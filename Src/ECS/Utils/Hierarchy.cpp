@@ -67,15 +67,15 @@ namespace p::ecs
 		childrenList.InsertRange(prevIndex, children);
 	}
 
-	void TransferChildren(
-	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> children, Id destination)
+	void TransferChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
+	    TSpan<const Id> children, Id destination)
 	{
 		RemoveChildren(access, children, true);
 		AddChildren(access, destination, children);
 	}
 
-	void RemoveChildren(
-	    TAccessRef<TWrite<CParent>, TWrite<CChild>> access, TSpan<Id> children, bool keepComponents)
+	void RemoveChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	    TSpan<const Id> children, bool keepComponents)
 	{
 		TArray<Id> parents;
 		parents.Reserve(children.Size());
@@ -137,8 +137,8 @@ namespace p::ecs
 		}
 	}
 
-	void RemoveAllChildren(
-	    TAccessRef<TWrite<CParent>, TWrite<CChild>> access, TSpan<Id> parents, bool keepComponents)
+	void RemoveAllChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	    TSpan<const Id> parents, bool keepComponents)
 	{
 		if (keepComponents)
 		{

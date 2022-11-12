@@ -36,7 +36,7 @@ namespace p
 			if constexpr (IsArray<U>())
 			{
 				propFlags       = propFlags | Prop_Array;
-				type            = TTypeInstance<typename U::ItemType>::InitType();
+				type            = TCompiledTypeRegister<typename U::ItemType>::InitType();
 				auto* arrayProp = registry.AddProperty<ArrayProperty>();
 
 				arrayProp->getData = [](void* data) {
@@ -50,7 +50,17 @@ namespace p
 				};
 				arrayProp->addItem = [](void* data, void* item) {
 					if (item)
-						static_cast<U*>(data)->Add(*static_cast<typename U::ItemType*>(item));
+					{
+						auto& itemRef = *static_cast<typename U::ItemType*>(item);
+						if constexpr (IsCopyAssignable<typename U::ItemType>)
+						{
+							static_cast<U*>(data)->Add(itemRef);
+						}
+						else
+						{
+							static_cast<U*>(data)->Add(Move(itemRef));
+						}
+					}
 					else
 						static_cast<U*>(data)->Add({});
 				};
@@ -65,21 +75,16 @@ namespace p
 			}
 			else
 			{
-				type     = TTypeInstance<U>::InitType();
+				type     = TCompiledTypeRegister<U>::InitType();
 				property = registry.AddProperty<Property>();
 			}
-			property->owner       = GetType();
+			property->owner       = GetType()->AsData();
 			property->type        = type;
 			property->name        = name;
 			property->access      = access;
 			property->flags       = propFlags;
 			property->displayName = Strings::ToSentenceCase(name.ToString());
-			GetType()->properties.Add(property);
-		}
-
-		TType* GetType() const
-		{
-			return static_cast<TType*>(initializedType);
+			GetType()->AsData()->properties.Add(property);
 		}
 
 	protected:
@@ -89,7 +94,7 @@ namespace p
 			if constexpr (hasParent)
 			{
 				// Parent gets initialized before anything else
-				auto* parent = static_cast<DataType*>(TTypeInstance<Parent>::InitType());
+				auto* parent = static_cast<DataType*>(TCompiledTypeRegister<Parent>::InitType());
 				Check(parent);
 
 				newType = &TypeRegistry::Get().AddType<TType>(GetId());
@@ -135,9 +140,8 @@ namespace p
 	protected:
 		Type* CreateType() override
 		{
-			auto* type = Super::CreateType();
-
-			GetType()->onNew = [](Arena& arena) -> BaseClass* {
+			auto* type             = Super::CreateType();
+			type->AsClass()->onNew = [](Arena& arena) -> BaseClass* {
 				if constexpr (!IsAbstract<T> && !IsSame<T, BaseClass>)
 				{
 					return new (p::Alloc<T>(arena)) T();
@@ -157,9 +161,9 @@ namespace p
 		static_assert(IsStruct<T>(), "Type does not inherit Struct!");
 		static_assert(!(flags & Class_Abstract), "Only classes can use Class_Abstract");
 
-		using Super     = TDataTypeBuilder<T, Parent, flags, TType>;
-		using BuildFunc = TFunction<void(TStructTypeBuilder* builder)>;
+		using Super = TDataTypeBuilder<T, Parent, flags, TType>;
 		using Super::GetType;
+		using BuildFunc = TFunction<void(TStructTypeBuilder* builder)>;
 
 	public:
 		TStructTypeBuilder() = default;
@@ -183,8 +187,11 @@ namespace p
 /** Defines a Class */
 #define CLASS_HEADER_NO_FLAGS(type, parent) CLASS_HEADER_FLAGS(type, parent, p::Type_NoFlag)
 #define CLASS_HEADER_FLAGS(type, parent, flags)                                  \
+private:                                                                         \
+	using ThisType = type;                                                       \
+	static inline p::TCompiledTypeRegister<ThisType> typeRegister{};             \
+                                                                                 \
 public:                                                                          \
-	using ThisType    = type;                                                    \
 	using Super       = parent;                                                  \
 	using BuilderType = p::TClassTypeBuilder<ThisType, Super, GetStaticFlags()>; \
                                                                                  \
@@ -200,6 +207,28 @@ public:                                                                         
 	{                                                                            \
 		return p::GetType<ThisType>();                                           \
 	}
+
+
+/** Defines an Struct */
+#define STRUCT_HEADER_NO_FLAGS(type, parent) STRUCT_HEADER_FLAGS(type, parent, p::Type_NoFlag)
+#define STRUCT_HEADER_FLAGS(type, parent, flags)                                  \
+private:                                                                          \
+	using ThisType = type;                                                        \
+	static inline p::TCompiledTypeRegister<ThisType> typeRegister{};              \
+                                                                                  \
+public:                                                                           \
+	using Super       = parent;                                                   \
+	using BuilderType = p::TStructTypeBuilder<ThisType, Super, GetStaticFlags()>; \
+                                                                                  \
+	static p::StructType* GetStaticType()                                         \
+	{                                                                             \
+		return p::GetType<ThisType>();                                            \
+	}                                                                             \
+	static constexpr p::TypeFlags GetStaticFlags()                                \
+	{                                                                             \
+		return p::InitTypeFlags(flags);                                           \
+	}
+
 
 #define REFLECTION_BODY(buildCode)                                         \
 public:                                                                    \
@@ -234,23 +263,6 @@ private:                                                                   \
                                                                            \
 public:
 
-
-/** Defines an struct */
-#define STRUCT_HEADER_NO_FLAGS(type, parent) STRUCT_HEADER_FLAGS(type, parent, p::Type_NoFlag)
-#define STRUCT_HEADER_FLAGS(type, parent, flags)                                  \
-public:                                                                           \
-	using Super       = parent;                                                   \
-	using ThisType    = type;                                                     \
-	using BuilderType = p::TStructTypeBuilder<ThisType, Super, GetStaticFlags()>; \
-                                                                                  \
-	static p::StructType* GetStaticType()                                         \
-	{                                                                             \
-		return p::GetType<ThisType>();                                            \
-	}                                                                             \
-	static constexpr p::TypeFlags GetStaticFlags()                                \
-	{                                                                             \
-		return p::InitTypeFlags(flags);                                           \
-	}
 
 #define PROPERTY_NO_FLAGS(name) PROPERTY_FLAGS(name, p::Prop_NoFlag)
 #define PROPERTY_FLAGS(name, flags) __PROPERTY_IMPL(name, CAT(__refl_id_, name), flags)

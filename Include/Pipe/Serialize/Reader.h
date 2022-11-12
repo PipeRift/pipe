@@ -143,7 +143,10 @@ namespace p
 
 	// Format reads
 	PIPE_API void Read(Reader& ct, bool& val);
+	PIPE_API void Read(Reader& ct, i8& val);
 	PIPE_API void Read(Reader& ct, u8& val);
+	PIPE_API void Read(Reader& ct, i16& val);
+	PIPE_API void Read(Reader& ct, u16& val);
 	PIPE_API void Read(Reader& ct, i32& val);
 	PIPE_API void Read(Reader& ct, u32& val);
 	PIPE_API void Read(Reader& ct, i64& val);

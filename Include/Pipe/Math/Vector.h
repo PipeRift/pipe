@@ -882,7 +882,13 @@ struct fmt::formatter<p::Vec<2, T>>
 	constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin())
 	{
 		auto begin = ctx.begin();
-		auto end   = begin;
+		if (!begin)
+		{
+			formatStr = "({}, {})";
+			return begin;
+		}
+
+		auto end = begin;
 		while (*begin != '{')
 		{
 			--begin;
@@ -911,7 +917,13 @@ struct fmt::formatter<p::Vec<3, T>>
 	constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin())
 	{
 		auto begin = ctx.begin();
-		auto end   = begin;
+		if (!begin)
+		{
+			formatStr = "({}, {}, {})";
+			return begin;
+		}
+
+		auto end = begin;
 		while (*begin != '{')
 		{
 			--begin;

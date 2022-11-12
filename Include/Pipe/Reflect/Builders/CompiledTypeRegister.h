@@ -4,38 +4,44 @@
 #include "Pipe/Reflect/Builders/StaticInitializers.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
 #include "Pipe/Reflect/Type.h"
+#include "Pipe/Reflect/TypeRegistry.h"
 
 
 namespace p
 {
 	template<typename T>
-	struct TTypeInstance
+	struct TCompiledTypeRegister
 	{
-		static Type* instance;
+		static inline Type* type = nullptr;
+
+		TCompiledTypeRegister()
+		{
+			TypeRegistry::Get().RegisterCompiledType([] {
+				InitType();
+			});
+		}
+
 
 		static Type* InitType()
 		{
 			if constexpr (IsClass<T>() || IsStruct<T>())
 			{
-				instance = T::InitType();
+				type = T::InitType();
 			}
 			else if constexpr (IsReflectedEnum<T>())
 			{
-				instance = reflection::TStaticEnumInitializer<T>::onInit();
+				type = reflection::TStaticEnumInitializer<T>::onInit();
 			}
 			else if constexpr (IsReflectedNative<T>())
 			{
-				instance = reflection::TStaticNativeInitializer<T>::onInit();
+				type = reflection::TStaticNativeInitializer<T>::onInit();
 			}
-			return instance;
+			return type;
 		}
 
 		static Type* GetType()
 		{
-			return instance;
+			return type;
 		}
 	};
-
-	template<typename T>
-	inline Type* TTypeInstance<T>::instance = TTypeInstance<T>::InitType();
 }    // namespace p

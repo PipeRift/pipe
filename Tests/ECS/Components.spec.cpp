@@ -98,7 +98,7 @@ go_bandit([]() {
 			ecs::Context ctx;
 			TArray<ecs::Id> ids{3};
 			ctx.Create(ids);
-			ctx.AddN<NonEmptyComponent>(ids, {2});
+			ctx.AddN(ids, NonEmptyComponent{2});
 
 			for (ecs::Id id : ids)
 			{
@@ -112,7 +112,7 @@ go_bandit([]() {
 			ecs::Context ctx;
 			TArray<ecs::Id> ids{3};
 			ctx.Create(ids);
-			ctx.AddN<NonEmptyComponent>(ids, {2});
+			ctx.AddN(ids, NonEmptyComponent{2});
 
 			NonEmptyComponent::destructed = 0;
 			TSpan<ecs::Id> firstTwo{ids.Data(), ids.Data() + 2};
@@ -123,7 +123,7 @@ go_bandit([]() {
 			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[2]), !Equals(nullptr));
 
 			// Repeat in different order
-			ctx.AddN<NonEmptyComponent>(ids, {2});
+			ctx.AddN(ids, NonEmptyComponent{2});
 
 			NonEmptyComponent::destructed = 0;
 			TSpan<ecs::Id> lastTwo{ids.Data() + 1, ids.Data() + 3};
@@ -151,7 +151,7 @@ go_bandit([]() {
 		it("Components keep state when added", [&]() {
 			ecs::Context ctx;
 			ecs::Id id = ctx.Create();
-			ctx.AddN<NonEmptyComponent>(id, {2});
+			ctx.AddN(id, NonEmptyComponent{2});
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
 			AssertThat(ctx.Get<NonEmptyComponent>(id).a, Equals(2));
 		});
@@ -162,7 +162,7 @@ go_bandit([]() {
 			ecs::Id id = ctxa.Create();
 			ctxa.Add<EmptyComponent, NonEmptyComponent>(id);
 			ecs::Id id2 = ctxa.Create();
-			ctxa.AddN<NonEmptyComponent>(id2, {2});
+			ctxa.AddN(id2, NonEmptyComponent{2});
 
 			ecs::Context ctxb{ctxa};
 			AssertThat(ctxb.Has<EmptyComponent>(id), Is().True());
@@ -195,7 +195,7 @@ go_bandit([]() {
 			ecs::Context ctx;
 			TArray<ecs::Id> ids{3};
 			ctx.Create(ids);
-			ctx.AddN<NonEmptyComponent>(ids, {2});
+			ctx.AddN(ids, NonEmptyComponent{2});
 			ctx.AddN<TestComponent>(ids);
 
 			ctx.Remove<NonEmptyComponent>(ids);

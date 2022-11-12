@@ -51,20 +51,20 @@ namespace p
 			newType.id   = id;
 			newType.name = name;
 
-			const auto entries = magic_enum::enum_entries<T>();
-
-			newType.valueSize = sizeof(T);
-			newType.values.Resize(entries.size() * newType.valueSize);
-			for (u32 i = 0; i < entries.size(); ++i)
+			const auto names = GetEnumNames<T>();
+			newType.names.Reserve(names.size());
+			for (StringView name : names)
 			{
-				// Copy value into the correct entry index
-				memcpy(newType.GetValuePtrByIndex(i), &entries[i].first, newType.valueSize);
+				newType.names.Add(Name{name});
 			}
 
-			newType.names.Reserve(entries.size());
-			for (const auto& entry : entries)
+			const auto values = GetEnumValues<T>();
+			newType.valueSize = sizeof(T);
+			newType.values.Resize(values.size() * newType.valueSize);
+			for (u32 i = 0; i < values.size(); ++i)
 			{
-				newType.names.Add(Name{entry.second});
+				// Copy value into the correct entry index
+				memcpy(newType.GetValuePtrByIndex(i), &values[i], newType.valueSize);
 			}
 			return &newType;
 		}

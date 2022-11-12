@@ -66,6 +66,24 @@ namespace p::core
 			return data[index];
 		}
 
+		template<typename OtherType>
+		bool operator==(const TSpan<OtherType>& other) const
+		{
+			if (Size() != other.Size() || IsEmpty())
+			{
+				return false;
+			}
+
+			for (i32 i = 0; i < Size(); ++i)
+			{
+				if (Data()[i] != other[i])
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
 		T* Data() const
 		{
 			return data;

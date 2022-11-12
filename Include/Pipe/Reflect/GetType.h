@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Pipe/Memory/OwnPtr.h"
-#include "Pipe/Reflect/Builders/TypeInstance.h"
+#include "Pipe/Reflect/Builders/CompiledTypeRegister.h"
 #include "Pipe/Reflect/CoreTypes.h"
 #include "Pipe/Reflect/HasType.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
@@ -19,28 +19,28 @@ namespace p
 	StructType* GetType() requires(IsStruct<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<StructType*>(TTypeInstance<T>::GetType());
+		return static_cast<StructType*>(TCompiledTypeRegister<T>::GetType());
 	}
 
 	template<typename T>
 	ClassType* GetType() requires(IsClass<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<ClassType*>(TTypeInstance<T>::GetType());
+		return static_cast<ClassType*>(TCompiledTypeRegister<T>::GetType());
 	}
 
 	template<typename T>
 	EnumType* GetType() requires(IsReflectedEnum<T>())
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return static_cast<EnumType*>(TTypeInstance<T>::GetType());
+		return static_cast<EnumType*>(TCompiledTypeRegister<T>::GetType());
 	}
 
 	template<typename T>
 	Type* GetType()
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
-		return TTypeInstance<T>::GetType();
+		return TCompiledTypeRegister<T>::GetType();
 	}
 
 	/**
