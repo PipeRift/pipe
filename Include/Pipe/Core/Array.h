@@ -630,7 +630,7 @@ namespace p::core
 		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
-			for (i32 i = Size(); i > 0; --i)
+			for (i32 i = Size() - 1; i > 0; --i)
 			{
 				if (callback(Data()[i]))
 				{
