@@ -10,22 +10,22 @@
 #include "Pipe/Core/Tuples.h"
 #include "Pipe/Memory/STLAllocator.h"
 
+#include <algorithm>
 #include <cassert>
 #include <vector>
 
 
 namespace p::core
 {
-	template<typename Type, typename Allocator = ArenaAllocator>
+	template<typename Type>
 	struct TArray
 	{
 	public:
-		template<typename OtherType, typename OtherAllocator>
+		template<typename OtherType>
 		friend struct TArray;
 
-		using AllocatorType = Allocator;
-		using ItemType      = Type;
-		using VectorType    = std::vector<Type, STLAllocator<Type, AllocatorType>>;
+		using ItemType   = Type;
+		using VectorType = std::vector<Type, STLAllocator<Type>>;
 
 		using Iterator             = typename VectorType::iterator;
 		using ConstIterator        = typename VectorType::const_iterator;
@@ -867,8 +867,8 @@ namespace p::core
 	};
 
 
-	template<typename Type, typename Allocator>
-	void TArray<Type, Allocator>::Swap(i32 firstIndex, i32 secondIndex)
+	template<typename Type>
+	void TArray<Type>::Swap(i32 firstIndex, i32 secondIndex)
 	{
 		if (Size() > 1 && firstIndex != secondIndex && IsValidIndex(firstIndex)
 		    && IsValidIndex(secondIndex))

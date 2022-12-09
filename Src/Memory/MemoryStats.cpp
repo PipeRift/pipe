@@ -9,18 +9,20 @@
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 
+#include <algorithm>
+
 
 namespace p
 {
 	MemoryStats::~MemoryStats()
 	{
-		if (allocations.Size() > 0)
+		if (allocations.size() > 0)
 		{
-			TString<TChar, MemoryStatsAllocator> errorMsg;
+			TString<TChar> errorMsg;
 			Strings::FormatTo(
-			    errorMsg, "MEMORY LEAKS! {} allocations were not freed!", allocations.Size());
+			    errorMsg, "MEMORY LEAKS! {} allocations were not freed!", allocations.size());
 
-			const sizet shown = math::Min(64, allocations.Size());
+			const sizet shown = math::Min<sizet>(64, allocations.size());
 			for (i32 i = 0; i < shown; ++i)
 			{
 				const auto& allocation = allocations[i];
@@ -39,10 +41,10 @@ namespace p
 #endif
 			}
 
-			if (shown < allocations.Size())
+			if (shown < allocations.size())
 			{
 				Strings::FormatTo(
-				    errorMsg, "\n...\n{} more not shown.", allocations.Size() - shown);
+				    errorMsg, "\n...\n{} more not shown.", allocations.size() - shown);
 			}
 			std::puts(errorMsg.data());
 		}
@@ -52,10 +54,14 @@ namespace p
 	{
 		std::unique_lock lock{mutex};
 		used += size;
-		const i32 index = allocations.AddSorted<SortLessAllocationStats>({ptr, size});
+		const AllocationStats item{ptr, size};
+		const auto it = allocations.insert(std::upper_bound(allocations.begin(), allocations.end(),
+		                                       item, SortLessAllocationStats{}),
+		    item);
+		const i32 index = i32(it - allocations.begin());
 
 #if P_ENABLE_ALLOCATION_STACKS
-		allocationStacks.InsertDefaulted(index);
+		allocationStacks.insert(allocationStacks.begin() + index, {});
 		auto& stack = allocationStacks[index];
 		stack.load_here(14 + 3);
 		stack.skip_n_firsts(3);
@@ -67,13 +73,14 @@ namespace p
 	{
 		std::unique_lock lock{mutex};
 		// TracyFreeS(ptr, 8);
-		const i32 index = allocations.FindSortedEqual<void*, SortLessAllocationStats>(ptr);
+		const i32 index = std::binary_search(
+		    allocations.begin(), allocations.end(), ptr, SortLessAllocationStats{});
 		if (index != NO_INDEX)
 		{
 			used -= allocations[index].size;
-			allocations.RemoveAt(index, false);
+			allocations.erase(std::next(allocations.begin(), index));
 #if P_ENABLE_ALLOCATION_STACKS
-			allocationStacks.RemoveAt(index, false);
+			allocationStacks.erase(std::next(allocationStacks.begin(), index));
 #endif
 		}
 	}
