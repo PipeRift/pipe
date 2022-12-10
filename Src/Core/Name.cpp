@@ -4,11 +4,18 @@
 
 #include "Pipe/Serialize/Serialization.h"
 
+#include <mutex>
+#include <shared_mutex>
+
 
 namespace p
 {
 	const String NameTable::noneStr{"none"};
 	const Name::Id Name::noneId{0};
+
+	// Mutex that allows sync reads but waits for registries
+	std::shared_mutex editTableMutex{};
+
 
 	sizet NameTable::Register(StringView str)
 	{
