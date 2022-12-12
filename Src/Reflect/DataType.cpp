@@ -31,6 +31,16 @@ namespace p
 		return false;
 	}
 
+	DataType* DataType::GetParent() const
+	{
+		return parent;
+	}
+
+	bool DataType::IsParentOf(const DataType* other) const
+	{
+		return other && other->IsChildOf(this);
+	}
+
 	const Property* DataType::FindProperty(const Name& propertyName) const
 	{
 		const auto* prop = properties.Find([propertyName](Property* prop) {

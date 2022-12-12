@@ -78,13 +78,13 @@ namespace p
 				type     = TCompiledTypeRegister<U>::InitType();
 				property = registry.AddProperty<Property>();
 			}
-			property->owner       = GetType()->AsData();
+			property->owner       = Cast<DataType>(GetType());
 			property->type        = type;
 			property->name        = name;
 			property->access      = access;
 			property->flags       = propFlags;
 			property->displayName = Strings::ToSentenceCase(name.ToString());
-			GetType()->AsData()->properties.Add(property);
+			property->owner->properties.Add(property);
 		}
 
 	protected:
@@ -140,8 +140,8 @@ namespace p
 	protected:
 		Type* CreateType() override
 		{
-			auto* type             = Super::CreateType();
-			type->AsClass()->onNew = [](Arena& arena) -> BaseClass* {
+			auto* type                   = Super::CreateType();
+			Cast<ClassType>(type)->onNew = [](Arena& arena) -> BaseClass* {
 				if constexpr (!IsAbstract<T> && !IsSame<T, BaseClass>)
 				{
 					return new (p::Alloc<T>(arena)) T();
