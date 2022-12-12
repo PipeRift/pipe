@@ -59,21 +59,6 @@ namespace p
 		}
 	};
 
-	// TODO: Move somewhere else
-	template<typename T, typename S, typename TRet = CopyConst<T, S>>
-	TRet* Cast(S* ptr)
-	{
-		if constexpr (IsSame<T, S>)
-		{
-			return ptr;
-		}
-		else
-		{
-			static_assert(false, "Invalid cast");
-			return nullptr;
-		}
-	}
-
 	template<typename T, typename S, typename TRet = CopyConst<T, S>>
 	TRet* Cast(S* ptr) requires Derived<T, Type>
 	{
