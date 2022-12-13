@@ -10,6 +10,7 @@
 #include "Pipe/Core/Tuples.h"
 #include "Pipe/Memory/STLAllocator.h"
 
+#include <algorithm>
 #include <cassert>
 #include <vector>
 

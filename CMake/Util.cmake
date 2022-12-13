@@ -15,7 +15,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 function(pipe_target_enable_CPP20 target)
-    set_target_properties (${target} PROPERTIES CXX_STANDARD 20)
+    target_compile_features(${target} PRIVATE cxx_std_20)
     if(COMPILER_GCC)
         set_target_properties(${target} PROPERTIES COMPILE_FLAGS "-fconcepts")
     endif()
