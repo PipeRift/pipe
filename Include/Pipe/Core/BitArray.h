@@ -7,11 +7,9 @@
 
 namespace p::core
 {
-	template<typename Allocator = ArenaAllocator>
-	class TBitArray
+	class BitArray
 	{
-		using AllocatorType = Allocator;
-		using ArrayType     = TArray<u32, Allocator>;
+		using ArrayType = TArray<u32>;
 
 	private:
 		/** The number of bits in this array */
@@ -22,34 +20,33 @@ namespace p::core
 
 	public:
 		/** Constructors */
-		TBitArray() : numBits(0) {}
-		TBitArray(i32 newSize) : numBits(newSize), bits{((numBits - 1) >> 5) + 1} {}
-		TBitArray(TBitArray&& other) noexcept
+		BitArray() : numBits(0) {}
+		BitArray(i32 newSize) : numBits(newSize), bits{((numBits - 1) >> 5) + 1} {}
+		BitArray(BitArray&& other) noexcept
 		{
 			numBits       = other.numBits;
 			other.numBits = 0;
 			bits          = Move(other.bits);
 		}
-		TBitArray(const TBitArray& other)
+		BitArray(const BitArray& other)
 		{
 			numBits = other.numBits;
 			bits    = other.bits;
 		}
 
-		TBitArray(u32 newSize, bool value)
+		BitArray(u32 newSize, bool value)
 		    : numBits(newSize), bits{((numBits - 1) >> 5) + 1, value ? 0xffffffff : 0x00000000}
 		{}
-		TBitArray(u32 newSize, u32* data) : numBits{newSize}, bits{data, ((numBits - 1) >> 5) + 1}
-		{}
+		BitArray(u32 newSize, u32* data) : numBits{newSize}, bits{data, ((numBits - 1) >> 5) + 1} {}
 
-		TBitArray& operator=(TBitArray&& other) noexcept
+		BitArray& operator=(BitArray&& other) noexcept
 		{
 			numBits       = other.numBits;
 			other.numBits = 0;
 			bits          = Move(other.bits);
 			return *this;
 		}
-		TBitArray& operator=(const TBitArray& other)
+		BitArray& operator=(const BitArray& other)
 		{
 			numBits = other.numBits;
 			bits    = other.bits;
@@ -150,16 +147,16 @@ namespace p::core
 			return Size() <= 0;
 		}
 
-		TBitArray operator~()
+		BitArray operator~()
 		{
-			TBitArray result(numBits);
+			BitArray result(numBits);
 			for (u32 i = 0; i < bits.Size(); ++i)
 			{
 				result.bits[i] = ~bits[i];
 			}
 			return result;
 		}
-		TBitArray& operator^=(const TBitArray& other)
+		BitArray& operator^=(const BitArray& other)
 		{
 			const i32 minSize = bits.Size() < other.bits.Size() ? bits.Size() : other.bits.Size();
 			for (u32 i = 0; i < minSize; ++i)
@@ -169,7 +166,7 @@ namespace p::core
 			return *this;
 		}
 
-		TBitArray& operator&=(const TBitArray& other)
+		BitArray& operator&=(const BitArray& other)
 		{
 			const i32 minSize = bits.Size() < other.bits.Size() ? bits.Size() : other.bits.Size();
 			for (u32 i = 0; i < minSize; ++i)
@@ -178,7 +175,7 @@ namespace p::core
 			}
 			return *this;
 		}
-		TBitArray& operator|=(const TBitArray& other)
+		BitArray& operator|=(const BitArray& other)
 		{
 			const i32 minSize = bits.Size() < other.bits.Size() ? bits.Size() : other.bits.Size();
 			for (i32 i = 0; i < minSize; ++i)
@@ -187,27 +184,27 @@ namespace p::core
 			}
 			return *this;
 		}
-		TBitArray operator^(const TBitArray& other)
+		BitArray operator^(const BitArray& other)
 		{
-			TBitArray result((numBits < other.numBits) ? numBits : other.numBits);
+			BitArray result((numBits < other.numBits) ? numBits : other.numBits);
 			for (u32 i = 0; i < result.bits.Size(); ++i)
 			{
 				result.bits[i] = bits[i] ^ other.bits[i];
 			}
 			return result;
 		}
-		TBitArray operator&(const TBitArray& other)
+		BitArray operator&(const BitArray& other)
 		{
-			TBitArray result((numBits < other.numBits) ? numBits : other.numBits);
+			BitArray result((numBits < other.numBits) ? numBits : other.numBits);
 			for (u32 i = 0; i < result.bits.Size(); ++i)
 			{
 				result.bits[i] = bits[i] & other.bits[i];
 			}
 			return result;
 		}
-		TBitArray operator|(const TBitArray& other)
+		BitArray operator|(const BitArray& other)
 		{
-			TBitArray result((numBits < other.numBits) ? numBits : other.numBits);
+			BitArray result((numBits < other.numBits) ? numBits : other.numBits);
 			for (u32 i = 0; i < result.bits.Size(); ++i)
 			{
 				result.bits[i] = bits[i] | other.bits[i];
@@ -217,8 +214,7 @@ namespace p::core
 	};
 
 
-	template<typename Allocator>
-	void TBitArray<Allocator>::FillBitArray(u32 pattern)
+	inline void BitArray::FillBitArray(u32 pattern)
 	{
 		for (u32 i = 0; i < bits.Size(); ++i)
 		{
@@ -226,8 +222,7 @@ namespace p::core
 		}
 	}
 
-	template<typename Allocator>
-	i32 TBitArray<Allocator>::GetNextSet(i32 index) const
+	inline i32 BitArray::GetNextSet(i32 index) const
 	{
 		i32 i;
 		for (i = index + 1; i < numBits; ++i)
@@ -244,8 +239,7 @@ namespace p::core
 		return -1;
 	}
 
-	template<typename Allocator>
-	i32 TBitArray<Allocator>::GetPreviousSet(i32 index) const
+	inline i32 BitArray::GetPreviousSet(i32 index) const
 	{
 		i32 i;
 		if (index != 0)
@@ -266,9 +260,6 @@ namespace p::core
 		}
 		return -1;
 	}
-
-
-	using BitArray = TBitArray<>;
 }    // namespace p::core
 
 namespace p

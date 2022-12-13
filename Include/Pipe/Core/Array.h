@@ -17,16 +17,15 @@
 
 namespace p::core
 {
-	template<typename Type, typename Allocator = ArenaAllocator>
+	template<typename Type>
 	struct TArray
 	{
 	public:
-		template<typename OtherType, typename OtherAllocator>
+		template<typename OtherType>
 		friend struct TArray;
 
-		using AllocatorType = Allocator;
-		using ItemType      = Type;
-		using VectorType    = std::vector<Type, STLAllocator<Type, AllocatorType>>;
+		using ItemType   = Type;
+		using VectorType = std::vector<Type, STLAllocator<Type>>;
 
 		using Iterator             = typename VectorType::iterator;
 		using ConstIterator        = typename VectorType::const_iterator;
@@ -487,7 +486,7 @@ namespace p::core
 		i32 RemoveMany(const Container& items, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
-			for (i32 i = 0; i < Size(); ++i)
+			for (i32 i = 0; i < lastSize; ++i)
 			{
 				if (items.Contains(Data()[i]))
 				{
@@ -631,7 +630,7 @@ namespace p::core
 		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
-			for (i32 i = Size() - 1; i > 0; --i)
+			for (i32 i = lastSize - 1; i >= 0; --i)
 			{
 				if (callback(Data()[i]))
 				{
@@ -863,8 +862,8 @@ namespace p::core
 	};
 
 
-	template<typename Type, typename Allocator>
-	void TArray<Type, Allocator>::Swap(i32 firstIndex, i32 secondIndex)
+	template<typename Type>
+	void TArray<Type>::Swap(i32 firstIndex, i32 secondIndex)
 	{
 		if (Size() > 1 && firstIndex != secondIndex && IsValidIndex(firstIndex)
 		    && IsValidIndex(secondIndex))

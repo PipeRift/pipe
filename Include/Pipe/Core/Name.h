@@ -9,8 +9,6 @@
 
 #include <tsl/robin_set.h>
 
-#include <shared_mutex>
-
 
 namespace p::core
 {
@@ -67,15 +65,12 @@ namespace p::core
 		friend Name;
 		static const String noneStr;
 
-
 		// #TODO: Move to TSet
 		using Container     = tsl::robin_set<NameKey, Hash<NameKey>, std::equal_to<NameKey>>;
 		using Iterator      = Container::iterator;
 		using ConstIterator = Container::const_iterator;
 
 		Container table{};
-		// Mutex that allows sync reads but waits for registries
-		mutable std::shared_mutex editTableMutex;
 
 
 		NameTable() = default;
