@@ -26,8 +26,8 @@ namespace p
 	{
 	protected:
 		TypeId id;
-		TypeCategory category = TypeCategory::None;
-		sizet size            = 0;
+		TypeCategory category;
+		sizet size = 0;
 
 #pragma warning(push)
 #pragma warning(disable:4251)
@@ -57,11 +57,21 @@ namespace p
 		{
 			return size;
 		}
-
-		class NativeType* AsNative();
-		class EnumType* AsEnum();
-		class DataType* AsData();
-		class StructType* AsStruct();
-		class ClassType* AsClass();
 	};
+
+	template<typename T, typename S, typename TRet = CopyConst<T, S>>
+	TRet* Cast(S* ptr) requires Derived<T, Type>
+	{
+		static_assert(Derived<T, S, false> || Derived<S, T>, "Casted types are not related!");
+
+		if constexpr (Derived<S, T>)    // Downcasting
+		{
+			return ptr;
+		}
+		else if (ptr && HasFlag(ptr->GetCategory(), T::typeCategory))
+		{
+			return static_cast<TRet*>(ptr);
+		}
+		return nullptr;
+	}
 }    // namespace p

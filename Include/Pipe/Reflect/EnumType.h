@@ -1,9 +1,9 @@
-#pragma once
 // Copyright 2015-2022 Piperift - All rights reserved
-
+#pragma once
 
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Name.h"
+#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/Type.h"
 
 #include <magic_enum.hpp>
@@ -16,7 +16,6 @@ namespace p
 	{
 		return magic_enum::enum_count<T>();
 	}
-
 
 	template<typename T>
 	constexpr std::optional<T> GetEnumValue(StringView str)
@@ -73,9 +72,12 @@ namespace p
 		TArray<u8> values;
 		TArray<Name> names;
 
+	public:
+		static constexpr TypeCategory typeCategory = TypeCategory::Enum;
+
 
 	public:
-		PIPE_API EnumType() : Type(TypeCategory::Enum) {}
+		PIPE_API EnumType() : Type(typeCategory) {}
 
 
 		template<Integral T>

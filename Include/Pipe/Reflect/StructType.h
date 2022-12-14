@@ -1,6 +1,7 @@
 // Copyright 2015-2022 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/DataType.h"
 
 
@@ -9,7 +10,11 @@ namespace p
 	class StructType : public DataType
 	{
 	public:
-		StructType() : DataType(TypeCategory::Struct) {}
+		static constexpr TypeCategory typeCategory = TypeCategory::Struct;
+
+
+	public:
+		StructType() : DataType(typeCategory) {}
 
 		// NOTE: Most of the class comparison functions do actually
 		// call Type to reduce complexity and code duplication.

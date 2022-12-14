@@ -750,13 +750,11 @@ namespace p::core
 		/** OPERATORS */
 	public:
 		/// @returns safely a pointer to an element given an index
-		Type* At(i32 index)
-		    requires(!IsSame<Type, bool>)
+		Type* At(i32 index) requires(!IsSame<Type, bool>)
 		{
 			return IsValidIndex(index) ? Data() + index : nullptr;
 		}
-		const Type* At(i32 index) const
-		    requires(!IsSame<Type, bool>)
+		const Type* At(i32 index) const requires(!IsSame<Type, bool>)
 		{
 			return IsValidIndex(index) ? Data() + index : nullptr;
 		}
@@ -766,8 +764,7 @@ namespace p::core
 		 *
 		 * @returns Reference to indexed element.
 		 */
-		Type& operator[](i32 index)
-		    requires(!IsSame<Type, bool>)
+		Type& operator[](i32 index) requires(!IsSame<Type, bool>)
 		{
 			assert(IsValidIndex(index));
 			return Data()[index];
@@ -780,15 +777,13 @@ namespace p::core
 		 *
 		 * @returns Reference to indexed element.
 		 */
-		const Type& operator[](i32 index) const
-		    requires(!IsSame<Type, bool>)
+		const Type& operator[](i32 index) const requires(!IsSame<Type, bool>)
 		{
 			assert(IsValidIndex(index));
 			return Data()[index];
 		}
 
-		typename VectorType::reference operator[](i32 index)
-		    requires(IsSame<Type, bool>)
+		typename VectorType::reference operator[](i32 index) requires(IsSame<Type, bool>)
 		{
 			assert(IsValidIndex(index));
 			// std::vector of bool can't access Data()
