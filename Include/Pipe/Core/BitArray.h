@@ -34,10 +34,10 @@ namespace p::core
 			bits    = other.bits;
 		}
 
-		BitArray(u32 newSize, bool value)
+		BitArray(i32 newSize, bool value)
 		    : numBits(newSize), bits{((numBits - 1) >> 5) + 1, value ? 0xffffffff : 0x00000000}
 		{}
-		BitArray(u32 newSize, u32* data) : numBits{newSize}, bits{data, ((numBits - 1) >> 5) + 1} {}
+		BitArray(i32 newSize, u32* data) : numBits{newSize}, bits{data, ((numBits - 1) >> 5) + 1} {}
 
 		BitArray& operator=(BitArray&& other) noexcept
 		{
