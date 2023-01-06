@@ -21,7 +21,7 @@ namespace p::core
 	public:
 		/** Constructors */
 		BitArray() : numBits(0) {}
-		BitArray(i32 newSize) : numBits(newSize), bits{((numBits - 1) >> 5) + 1} {}
+		BitArray(i32 newSize) : numBits(newSize), bits(((numBits - 1) >> 5) + 1) {}
 		BitArray(BitArray&& other) noexcept
 		{
 			numBits       = other.numBits;
@@ -35,7 +35,7 @@ namespace p::core
 		}
 
 		BitArray(i32 newSize, bool value)
-		    : numBits(newSize), bits{((numBits - 1) >> 5) + 1, value ? 0xffffffff : 0x00000000}
+		    : numBits(newSize), bits(((numBits - 1) >> 5) + 1, value ? 0xffffffff : 0x00000000)
 		{}
 		BitArray(i32 newSize, u32* data) : numBits{newSize}, bits{data, ((numBits - 1) >> 5) + 1} {}
 
