@@ -37,12 +37,17 @@ function(pipe_target_define_platform target)
 endfunction()
 
 function(pipe_target_shared_output_directory target)
+    if (DEFINED ARGV1)
+        set(suffix "/${ARGV1}")
+    else()
+        set(suffix "")
+    endif()
     set_target_properties(${target}
         PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin"
-        INCLUDES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Include"
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin${suffix}"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin${suffix}"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin${suffix}"
+        INCLUDES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Include${suffix}"
     )
 endfunction()
 
