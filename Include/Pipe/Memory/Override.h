@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 // Includes BEFORE Override.h to avoid conflicts with std::malloc and std::free
 #include "Pipe/Export.h"
