@@ -7,21 +7,22 @@
 namespace p::files
 {
 	template<typename FileIterator = files::Iterator>
-	class FormatFileIterator
+	class LambdaFileIterator
 	{
 	public:
-		StringView format;
+		TFunction<bool(const Path&)> callback;
 		FileIterator fileIterator;
 
-		FormatFileIterator() noexcept = default;
-		explicit FormatFileIterator(StringView format, const Path& path);
 
-		FormatFileIterator(const FormatFileIterator&) noexcept = default;
-		FormatFileIterator(FormatFileIterator&&) noexcept      = default;
-		~FormatFileIterator() noexcept                         = default;
+		LambdaFileIterator() noexcept = default;
+		explicit LambdaFileIterator(const Path& path, TFunction<bool(const Path&)> callback);
 
-		FormatFileIterator& operator=(const FormatFileIterator&) noexcept = default;
-		FormatFileIterator& operator=(FormatFileIterator&&) noexcept      = default;
+		LambdaFileIterator(const LambdaFileIterator&) noexcept = default;
+		LambdaFileIterator(LambdaFileIterator&&) noexcept      = default;
+		~LambdaFileIterator() noexcept                         = default;
+
+		LambdaFileIterator& operator=(const LambdaFileIterator&) noexcept = default;
+		LambdaFileIterator& operator=(LambdaFileIterator&&) noexcept      = default;
 
 		const fs::directory_entry& operator*() const noexcept
 		{
@@ -33,25 +34,25 @@ namespace p::files
 			return fileIterator.operator->();
 		}
 
-		FormatFileIterator& operator++()
+		LambdaFileIterator& operator++()
 		{
 			FindNext();
 			return *this;
 		}
 
-		FormatFileIterator& Increment()
+		LambdaFileIterator& Increment()
 		{
 			FindNext();
 			return *this;
 		}
 
 		// other members as required by [input.iterators]:
-		bool operator==(const FormatFileIterator& rhs) const noexcept
+		bool operator==(const LambdaFileIterator& rhs) const noexcept
 		{
 			return fileIterator == rhs.fileIterator;
 		}
 
-		bool operator!=(const FormatFileIterator& rhs) const noexcept
+		bool operator!=(const LambdaFileIterator& rhs) const noexcept
 		{
 			return fileIterator != rhs.fileIterator;
 		}
@@ -63,13 +64,12 @@ namespace p::files
 
 	private:
 		void FindNext();
-
-		bool IsValidFile(const FileIterator& it);
 	};
 
 	template<typename FileIterator>
-	inline FormatFileIterator<FileIterator>::FormatFileIterator(StringView format, const Path& path)
-	    : format{format}
+	inline LambdaFileIterator<FileIterator>::LambdaFileIterator(
+	    const Path& path, TFunction<bool(const Path&)> callback)
+	    : callback{Move(callback)}
 	{
 		if (!files::Exists(path) || !files::IsFolder(path))
 		{
@@ -78,30 +78,24 @@ namespace p::files
 		fileIterator = FileIterator(path);
 
 		// Iterate to first found asset
-		if (!IsValidFile(fileIterator))
+		if (!callback(fileIterator->path()))
 		{
 			FindNext();
 		}
 	}
 
 	template<typename FileIterator>
-	inline void FormatFileIterator<FileIterator>::FindNext()
+	inline void LambdaFileIterator<FileIterator>::FindNext()
 	{
 		static const FileIterator endIt{};
 		std::error_code error;
 
 		fileIterator.increment(error);
 		// Loop until end or until we find an asset
-		while (fileIterator != endIt && !IsValidFile(fileIterator))
+		while (fileIterator != endIt && !callback(fileIterator->path()))
 		{
 			fileIterator.increment(error);
 		}
-	}
-
-	template<typename FileIterator>
-	bool FormatFileIterator<FileIterator>::IsValidFile(const FileIterator& it)
-	{
-		return it->path().extension() == format;
 	}
 }    // namespace p::files
 
