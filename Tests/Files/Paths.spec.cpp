@@ -46,5 +46,67 @@ go_bandit([]() {
 		it("Executable path is not empty", [&]() {
 			AssertThat(p::PlatformProcess::GetExecutablePath(), !Equals(""));
 		});
+
+		it("Can get extension", [&]() {
+#if P_PLATFORM_WINDOWS
+			AssertThat(p::GetExtension("F:\\SomeFolder\\AnotherFolder.lib"), Equals(".lib"));
+			AssertThat(p::GetExtension("F:\\AnotherFolder.lib"), Equals(".lib"));
+			AssertThat(p::GetExtension("F:\\AnotherFolder."), Equals("."));
+			AssertThat(p::GetExtension("F:\\AnotherFolder"), Equals(""));
+			AssertThat(p::GetExtension("F:\\"), Equals(""));
+			AssertThat(p::HasExtension("F:\\SomeFolder\\AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasExtension("F:\\AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasExtension("F:\\AnotherFolder."), Equals(true));
+			AssertThat(p::HasExtension("F:\\AnotherFolder"), Equals(false));
+			AssertThat(p::HasExtension("F:\\"), Equals(false));
+#elif P_PLATFORM_LINUX
+			AssertThat(p::GetExtension"/var/SomeFolder/AnotherFolder.lib"), Equals(".lib"));
+			AssertThat(p::GetExtension("/var/AnotherFolder.lib"), Equals(".lib"));
+			AssertThat(p::GetExtension("/var/AnotherFolder."), Equals("."));
+			AssertThat(p::GetExtension("/var/AnotherFolder"), Equals(""));
+			AssertThat(p::GetExtension("/var/"), Equals(""));
+			AssertThat(p::HasExtension"/var/SomeFolder/AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasExtension("/var/AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasExtension("/var/AnotherFolder."), Equals(true));
+			AssertThat(p::HasExtension("/var/AnotherFolder"), Equals(false));
+			AssertThat(p::HasExtension("/var/"), Equals(false));
+#endif
+			AssertThat(p::GetExtension("AnotherFolder.lib"), Equals(".lib"));
+			AssertThat(p::GetExtension("AnotherFolder"), Equals(""));
+			AssertThat(p::HasExtension("AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasExtension("AnotherFolder"), Equals(false));
+		});
+
+		it("Can get stem", [&]() {
+#if P_PLATFORM_WINDOWS
+			AssertThat(p::GetStem("F:\\SomeFolder\\AnotherFolder.lib"), Equals("AnotherFolder"));
+			AssertThat(p::GetStem("F:\\AnotherFolder.lib"), Equals("AnotherFolder"));
+			AssertThat(p::GetStem("F:\\AnotherFolder."), Equals("AnotherFolder"));
+			AssertThat(p::GetStem("F:\\AnotherFolder"), Equals("AnotherFolder"));
+			AssertThat(p::GetStem("F:\\"), Equals(""));
+			AssertThat(p::HasStem("F:\\SomeFolder\\AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasStem("F:\\AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasStem("F:\\AnotherFolder."), Equals(true));
+			AssertThat(p::HasStem("F:\\AnotherFolder"), Equals(true));
+			AssertThat(p::HasStem("F:\\"), Equals(false));
+#elif P_PLATFORM_LINUX
+			AssertThat(p::GetStem"/var/SomeFolder/AnotherFolder.lib"), Equals("AnotherFolder"));
+			AssertThat(p::GetStem("/var/AnotherFolder.lib"), Equals("AnotherFolder"));
+			AssertThat(p::GetStem("/var/AnotherFolder."), Equals("AnotherFolder"));
+			AssertThat(p::GetStem("/var/AnotherFolder"), Equals("AnotherFolder"));
+			AssertThat(p::GetStem("/var/"), Equals(""));
+			AssertThat(p::HasStem"/var/SomeFolder/AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasStem("/var/AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasStem("/var/AnotherFolder."), Equals(true));
+			AssertThat(p::HasStem("/var/AnotherFolder"), Equals(true));
+			AssertThat(p::HasStem("/var/"), Equals(false));
+#endif
+			AssertThat(p::GetStem("AnotherFolder.lib"), Equals("AnotherFolder"));
+			AssertThat(p::GetStem("AnotherFolder"), Equals("AnotherFolder"));
+			AssertThat(p::GetStem(""), Equals(""));
+			AssertThat(p::HasStem("AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasStem("AnotherFolder"), Equals(true));
+			AssertThat(p::HasStem(""), Equals(false));
+		});
 	});
 });

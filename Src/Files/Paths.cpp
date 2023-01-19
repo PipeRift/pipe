@@ -7,6 +7,12 @@
 #include "Pipe/Core/PlatformProcess.h"
 
 
+// References:
+// https://github.com/boostorg/filesystem/blob/develop/include/boost/filesystem/path.hpp
+// https://github.com/boostorg/filesystem/blob/develop/src/path.cpp
+// https://github.com/boostorg/filesystem/blob/develop/test/deprecated_test.cpp
+
+
 namespace p::files
 {
 	Path GetBasePath()
@@ -129,6 +135,34 @@ namespace p::files
 		return last;
 	}
 
+	const TChar* FindExtension(const TChar* const first, const TChar* const last)
+	{
+		const sizet size           = last - first;
+		const TChar* filenameFirst = FindFilename(first, last);
+		const sizet filenameSize   = last - filenameFirst;
+
+		if (filenameSize > 0u &&
+		    // Check for "." and ".." filenames
+		    !(filenameFirst[0] == '.'
+		        && (filenameSize == 1u || (filenameSize == 2u && filenameFirst[1u] == '.'))))
+		{
+			const TChar* extensionFirst = last;
+			while (extensionFirst > filenameFirst)
+			{
+				--extensionFirst;
+				if (extensionFirst[0] == '.')
+					break;
+			}
+
+			if (extensionFirst > filenameFirst)
+			{
+				return extensionFirst;
+			}
+		}
+
+		return last;
+	}
+
 	StringView GetRootPathName(const StringView path)
 	{
 		const auto first = path.data();
@@ -181,17 +215,63 @@ namespace p::files
 	{
 		// attempt to parse path as a path and return the filename if it exists; otherwise, an empty
 		// view
-		const auto first    = path.data();
-		const auto last     = first + path.size();
-		const auto filename = FindFilename(first, last);
+		const TChar* first    = path.data();
+		const TChar* last     = first + path.size();
+		const TChar* filename = FindFilename(first, last);
 		return StringView{filename, static_cast<sizet>(last - filename)};
 	}
+
+	StringView GetStem(StringView path)
+	{
+		const TChar* first       = path.data();
+		const TChar* last        = first + path.size();
+		const TChar* stemFirst   = FindFilename(first, last);
+		const sizet filenameSize = last - stemFirst;
+
+		// Check for "." and ".." filenames
+		if (filenameSize > 0u
+		    && !(stemFirst[0] == '.'
+		         && (filenameSize == 1 || (filenameSize == 2 && stemFirst[1] == '.'))))
+		{
+			const TChar* stemLast = last;
+			while (stemLast > stemFirst)
+			{
+				--stemLast;
+				if (stemLast[0] == '.')
+					break;
+			}
+
+			if (stemLast > stemFirst)
+			{
+				return StringView{stemFirst, stemLast};
+			}
+		}
+		return StringView{stemFirst, static_cast<sizet>(last - stemFirst)};
+	}
+
+	bool HasStem(StringView path)
+	{
+		return !GetStem(path).empty();
+	}
+
+	StringView GetExtension(StringView path)
+	{
+		const TChar* first     = path.data();
+		const TChar* last      = first + path.size();
+		const TChar* extension = FindExtension(first, last);
+		return StringView{extension, static_cast<sizet>(last - extension)};
+	}
+
+	bool HasExtension(StringView path)
+	{
+		return !GetExtension(path).empty();
+	}
+
 
 	String GetFilename(const Path& path)
 	{
 		return String{GetFilename(StringView{ToString(path)})};
 	}
-
 	Path ToRelativePath(const Path& path, const Path& parent)
 	{
 		return fs::relative(path, parent);

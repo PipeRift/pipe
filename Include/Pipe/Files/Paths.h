@@ -37,6 +37,7 @@ namespace p::files
 
 	PIPE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
 	PIPE_API const TChar* FindFilename(const TChar* const first, const TChar* last);
+	PIPE_API const TChar* FindExtension(const TChar* const first, const TChar* last);
 
 	// @return root name of a path, or an empty view if missing
 	// E.g: "C:\Folder" -> "C:"
@@ -56,13 +57,20 @@ namespace p::files
 	PIPE_API StringView GetParentPath(StringView path);
 
 	PIPE_API StringView GetFilename(StringView path);
-	PIPE_API String GetFilename(const Path& path);
 	inline StringView GetFilename(const String& path)
 	{
 		return GetFilename(StringView{path});
 	}
+	PIPE_API bool HasFilename(StringView path);
+
+	PIPE_API StringView GetStem(StringView path);
+	PIPE_API bool HasStem(StringView path);
+
+	PIPE_API StringView GetExtension(StringView path);
+	PIPE_API bool HasExtension(StringView path);
 
 
+	PIPE_API String GetFilename(const Path& path);
 	PIPE_API Path ToRelativePath(const Path& path, const Path& parent = GetCurrentPath());
 	PIPE_API Path ToAbsolutePath(const Path& path, const Path& parent = GetCurrentPath());
 	PIPE_API bool IsRelativePath(const Path& path);
