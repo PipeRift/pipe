@@ -74,36 +74,37 @@ namespace p::files
 			return first + 2;
 		}
 
-		if (!IsSlash(first[0]))
+		if (!IsDirectorySeparator(first[0]))
 		{    // all the other root-names start with a slash; check that first because
 			 // we expect paths without a leading slash to be very common
 			return first;
 		}
 
 		// $ means anything other than a slash, including potentially the end of the input
-		if (len >= 4 && IsSlash(first[3]) && (len == 4 || !IsSlash(first[4]))    // \xx\$
-		    && ((IsSlash(first[1]) && (first[2] == L'?' || first[2] == L'.'))    // \\?\$ or \\.\$
-		        || (first[1] == L'?' && first[2] == L'?')))
+		if (len >= 4 && IsDirectorySeparator(first[3])
+		    && (len == 4 || !IsDirectorySeparator(first[4]))    // \xx\$
+		    && ((IsDirectorySeparator(first[1])
+		            && (first[2] == '?' || first[2] == '.'))    // \\?\$ or \\.\$
+		        || (first[1] == '?' && first[2] == '?')))
 		{    // \??\$
 			return first + 3;
 		}
 
-		if (len >= 3 && IsSlash(first[1]) && !IsSlash(first[2]))
+		if (len >= 3 && IsDirectorySeparator(first[1]) && !IsDirectorySeparator(first[2]))
 		{    // \\server
-			return std::find_if(first + 3, last, IsSlash);
+			return std::find_if(first + 3, last, IsDirectorySeparator);
 		}
 
 		// no match
 		return first;
 #else
-		// TODO: Make sure this works
-		if (len > 2 && IsSlash(first[0]) && IsSlash(first[1]) && !IsSlash(first[2])
-		    && std::isprint(first[2]))
+		if (len > 2 && IsDirectorySeparator(first[0]) && IsDirectorySeparator(first[1])
+		    && !IsDirectorySeparator(first[2]) && std::isprint(first[2]))
 		{
 			const TChar* c = first + 3;
 			while (c <= last)
 			{
-				if (IsSlash(*c))
+				if (IsDirectorySeparator(*c))
 				{
 					return c;
 				}
@@ -119,8 +120,16 @@ namespace p::files
 
 	const TChar* FindRelativeChar(const TChar* const first, const TChar* const last)
 	{
+		const TChar* nameEnd;
+		return FindRelativeChar(first, last, nameEnd);
+	}
+
+	const TChar* FindRelativeChar(
+	    const TChar* const first, const TChar* const last, const TChar*& outNameEnd)
+	{
+		outNameEnd = FindRootNameEnd(first, last);
 		// attempt to parse [first, last) as a path and return the start of relative-path
-		return std::find_if_not(FindRootNameEnd(first, last), last, IsSlash);
+		return std::find_if_not(outNameEnd, last, IsDirectorySeparator);
 	}
 
 	const TChar* FindFilename(const TChar* const first, const TChar* last)
@@ -128,7 +137,7 @@ namespace p::files
 		// attempt to parse [first, last) as a path and return the start of filename if it exists;
 		// otherwise, last
 		const auto relativePath = FindRelativeChar(first, last);
-		while (relativePath != last && !IsSlash(last[-1]))
+		while (relativePath != last && !IsDirectorySeparator(last[-1]))
 		{
 			--last;
 		}
@@ -197,13 +206,13 @@ namespace p::files
 		// directory-separator
 		//  to prevent creation of a "magic empty path"
 		//  for example: "/cat/dog"
-		while (relativePath != last && !IsSlash(last[-1]))
+		while (relativePath != last && !IsDirectorySeparator(last[-1]))
 		{
 			// handle case 2 by removing trailing filename, puts us into case 1
 			--last;
 		}
 
-		while (relativePath != last && IsSlash(last[-1]))
+		while (relativePath != last && IsDirectorySeparator(last[-1]))
 		{    // handle case 1 by removing trailing slashes
 			--last;
 		}
@@ -219,6 +228,11 @@ namespace p::files
 		const TChar* last     = first + path.size();
 		const TChar* filename = FindFilename(first, last);
 		return StringView{filename, static_cast<sizet>(last - filename)};
+	}
+
+	bool HasFilename(StringView path)
+	{
+		return !GetFilename(path).empty();
 	}
 
 	StringView GetStem(StringView path)
@@ -262,9 +276,114 @@ namespace p::files
 		return StringView{extension, static_cast<sizet>(last - extension)};
 	}
 
+	void ReplaceExtension(String& path, StringView newExtension)
+	{
+		const TChar* first     = path.data();
+		const TChar* last      = first + path.size();
+		const TChar* extension = FindExtension(first, last);
+		path.erase(extension - first, last - extension);
+
+		if (!newExtension.empty())
+		{
+			if (newExtension[0] != dot)
+				path.push_back(dot);
+			path.append(newExtension);
+		}
+	}
+
 	bool HasExtension(StringView path)
 	{
 		return !GetExtension(path).empty();
+	}
+
+	bool IsAbsolutePath(StringView path)
+	{
+		// Is there any root path?
+		return FindRelativeChar(path.data(), path.data() + path.size()) != path.data();
+	}
+	bool IsRelativePath(StringView path)
+	{
+		return !IsAbsolutePath(path);
+	}
+	bool Exists(StringView path)
+	{
+		// TODO: Prevent the use of Path with custom implementation
+		Path stdPath{path};
+		return std::filesystem::exists(stdPath);
+	}
+
+
+	String JoinPaths(StringView base, StringView relative)
+	{
+		String result{base};
+		AppendToPath(result, relative);
+		return Move(result);
+	}
+	String JoinPaths(StringView base, StringView relative, StringView relative2)
+	{
+		String result{base};
+		AppendToPath(result, relative);
+		AppendToPath(result, relative2);
+		return Move(result);
+	}
+	String JoinPaths(TSpan<StringView> paths)
+	{
+		if (paths.IsEmpty()) [[unlikely]]
+		{
+			return {};
+		}
+		String result{paths[0]};
+		for (i32 i = 1; i < paths.Size(); ++i)
+		{
+			StringView relative = paths[i];
+			AppendToPath(result, relative);
+		}
+		return Move(result);
+	}
+	void AppendToPath(String& base, StringView other)
+	{
+		if (!other.empty())
+		{
+			// Overlapping relative source? Use a copy
+			if (other.data() >= base.data() && other.data() < (base.data() + base.size()))
+			    [[unlikely]]
+			{
+				String rhs(other);
+				AppendToPath(base, rhs);
+				return;
+			}
+
+			const TChar* const otherEnd = other.data() + other.size();
+			const TChar* otherRootNameEnd;
+			const TChar* otherRootEnd = FindRelativeChar(other.data(), otherEnd, otherRootNameEnd);
+
+			// Is absolute?
+			if (otherRootEnd != other.data())
+			{
+				base.assign(other.data(), other.size());
+				return;
+			}
+
+			if (!IsDirectorySeparator(*otherRootNameEnd))
+			{
+				AppendPathSeparatorIfNeeded(base);
+			}
+			base.append(otherRootNameEnd, otherEnd);
+		}
+		else if (HasFilename(base))
+		{
+			base.push_back(preferredSeparator);
+		}
+	}
+
+	bool AppendPathSeparatorIfNeeded(String& path)
+	{
+		if (!path.empty() && !IsElementSeparator(*(path.end() - 1)))
+		{
+			path += preferredSeparator;
+			return true;
+		}
+		return false;
 	}
 
 
@@ -284,16 +403,6 @@ namespace p::files
 			return path;
 		}
 		return parent / path;
-	}
-
-	bool IsRelativePath(const Path& path)
-	{
-		return path.is_relative();
-	}
-
-	bool IsAbsolutePath(const Path& path)
-	{
-		return path.is_absolute();
 	}
 
 

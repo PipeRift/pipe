@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/Platform.h"
+#include "Pipe/Core/Span.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Export.h"
@@ -11,6 +12,18 @@
 
 namespace p::files
 {
+	constexpr TChar separator{'/'};
+#if P_PLATFORM_WINDOWS
+	constexpr TChar preferredSeparator{'\\'};
+#else
+	constexpr TChar preferred_separator{'/'};
+#endif
+	constexpr TChar dot{'.'};
+	constexpr TChar colon{':'};
+
+	namespace detail
+	{}    // namespace detail
+
 	///////////////////////////////////////////////////////////
 	// PATHS
 
@@ -30,12 +43,31 @@ namespace p::files
 	///////////////////////////////////////////////////////////
 	// PATH HELPERS
 
-	inline PIPE_API constexpr bool IsSlash(TChar c)
+	inline PIPE_API constexpr bool IsDirectorySeparator(TChar c)
 	{
-		return c == TX('\\') || c == TX('/');
+		return c == separator
+#if P_PLATFORM_WINDOWS
+		    || c == preferredSeparator
+#endif
+		    ;
+	}
+
+	//  For POSIX, IsDirectorySeparator() and IsElementSeparator() are identical since
+	//  a forward slash is the only valid directory separator and also the only valid
+	//  element separator. For Windows, forward slash and back slash are the possible
+	//  directory separators, but colon (example: "c:foo") is also an element separator.
+	inline PIPE_API constexpr bool IsElementSeparator(TChar c)
+	{
+		return c == separator
+#if P_PLATFORM_WINDOWS
+		    || c == preferredSeparator || c == colon
+#endif
+		    ;
 	}
 
 	PIPE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
+	PIPE_API const TChar* FindRelativeChar(
+	    const TChar* const first, const TChar* const last, const TChar*& outNameEnd);
 	PIPE_API const TChar* FindFilename(const TChar* const first, const TChar* last);
 	PIPE_API const TChar* FindExtension(const TChar* const first, const TChar* last);
 
@@ -67,14 +99,24 @@ namespace p::files
 	PIPE_API bool HasStem(StringView path);
 
 	PIPE_API StringView GetExtension(StringView path);
+	/** Replaces the extension of a path */
+	PIPE_API void ReplaceExtension(String& path, StringView newExtension);
 	PIPE_API bool HasExtension(StringView path);
 
+	PIPE_API bool IsAbsolutePath(StringView path);
+	PIPE_API bool IsRelativePath(StringView path);
+	PIPE_API bool Exists(StringView path);
+
+	PIPE_API String JoinPaths(StringView base, StringView relative);
+	PIPE_API String JoinPaths(StringView base, StringView relative, StringView relative2);
+	PIPE_API String JoinPaths(TSpan<StringView> paths);
+	PIPE_API void AppendToPath(String& base, StringView other);
+
+	PIPE_API bool AppendPathSeparatorIfNeeded(String& path);
 
 	PIPE_API String GetFilename(const Path& path);
 	PIPE_API Path ToRelativePath(const Path& path, const Path& parent = GetCurrentPath());
 	PIPE_API Path ToAbsolutePath(const Path& path, const Path& parent = GetCurrentPath());
-	PIPE_API bool IsRelativePath(const Path& path);
-	PIPE_API bool IsAbsolutePath(const Path& path);
 	PIPE_API String ToString(const Path& path);
 	PIPE_API Path ToPath(StringView pathStr);
 }    // namespace p::files
