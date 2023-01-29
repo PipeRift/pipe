@@ -61,5 +61,21 @@ namespace p::core
 			exit(execl("/usr/bin/xdg-open", "xdg-open", fullPath.data(), (char*)0));
 		}
 	}
+
+	String LinuxPlatformProcess::GetCurrentWorkingPath()
+	{
+		String path;
+		path.reserve(UNIX_MAX_PATH);
+		if (getcwd(path.data(), path.capacity()) != nullptr)
+		{
+			path.resize(std::strlen(path.data()));
+		}
+		return path;
+	}
+
+	bool LinuxPlatformProcess::SetCurrentWorkingPath(StringView path)
+	{
+		chdir(path.data());
+	}
 }    // namespace p::core
 #endif

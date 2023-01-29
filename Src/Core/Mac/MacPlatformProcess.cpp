@@ -45,6 +45,22 @@ namespace p::core
 		return GetExecutablePath();
 	}
 
+	String MacPlatformProcess::GetCurrentWorkingPath()
+	{
+		String path;
+		path.reserve(UNIX_MAX_PATH);
+		if (getcwd(path.data(), path.capacity()) != nullptr)
+		{
+			path.resize(std::strlen(path.data()));
+		}
+		return path;
+	}
+
+	bool MacPlatformProcess::SetCurrentWorkingPath(StringView path)
+	{
+		chdir(path.data());
+	}
+
 	void MacPlatformProcess::ShowFolder(StringView path)
 	{
 		if (!files::Exists(path))

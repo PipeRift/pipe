@@ -12,6 +12,8 @@ namespace p::core
 		static StringView GetExecutableFile();
 		static StringView GetExecutablePath();
 		static StringView GetBasePath();
+		static String GetCurrentWorkingPath();
+		static bool SetCurrentWorkingPath(StringView path);
 
 		static void ShowFolder(StringView path);
 	};

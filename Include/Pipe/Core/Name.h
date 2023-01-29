@@ -179,6 +179,11 @@ namespace p::core
 		Name(const Id& id) : id(id) {}
 	};
 
+
+	inline String ToString(const Name& name)
+	{
+		return name.ToString();
+	}
 }    // namespace p::core
 
 namespace p

@@ -16,7 +16,7 @@ namespace p::files
 #if P_PLATFORM_WINDOWS
 	constexpr TChar preferredSeparator{'\\'};
 #else
-	constexpr TChar preferred_separator{'/'};
+	constexpr TChar preferredSeparator{'/'};
 #endif
 	constexpr TChar dot{'.'};
 	constexpr TChar colon{':'};
@@ -27,23 +27,17 @@ namespace p::files
 	///////////////////////////////////////////////////////////
 	// PATHS
 
-	inline PIPE_API void SetCurrentPath(Path path)
-	{
-		fs::current_path(path);
-	}
+	inline PIPE_API void SetCurrentPath(StringView path);
 
-	inline PIPE_API Path GetCurrentPath()
-	{
-		return fs::current_path();
-	}
+	inline PIPE_API StringView GetCurrentPath();
 
-	PIPE_API Path GetBasePath();
+	PIPE_API StringView GetBasePath();
 
 
 	///////////////////////////////////////////////////////////
 	// PATH HELPERS
 
-	inline PIPE_API constexpr bool IsDirectorySeparator(TChar c)
+	inline PIPE_API constexpr bool IsSeparator(TChar c)
 	{
 		return c == separator
 #if P_PLATFORM_WINDOWS
@@ -52,7 +46,7 @@ namespace p::files
 		    ;
 	}
 
-	//  For POSIX, IsDirectorySeparator() and IsElementSeparator() are identical since
+	//  For POSIX, IsSeparator() and IsElementSeparator() are identical since
 	//  a forward slash is the only valid directory separator and also the only valid
 	//  element separator. For Windows, forward slash and back slash are the possible
 	//  directory separators, but colon (example: "c:foo") is also an element separator.
@@ -114,9 +108,15 @@ namespace p::files
 
 	PIPE_API bool AppendPathSeparatorIfNeeded(String& path);
 
-	PIPE_API String GetFilename(const Path& path);
-	PIPE_API Path ToRelativePath(const Path& path, const Path& parent = GetCurrentPath());
-	PIPE_API Path ToAbsolutePath(const Path& path, const Path& parent = GetCurrentPath());
+	PIPE_API String ToRelativePath(StringView path);
+	PIPE_API String ToAbsolutePath(StringView path);
+	PIPE_API String ToRelativePath(StringView path, StringView parent);
+	PIPE_API String ToAbsolutePath(StringView path, StringView parent);
+
+	String LexicallyRelative(StringView path, StringView base);
+	PIPE_API void SetCanonical(String& path);
+	PIPE_API void SetWeaklyCanonical(String& path);
+
 	PIPE_API String ToString(const Path& path);
 	PIPE_API Path ToPath(StringView pathStr);
 }    // namespace p::files

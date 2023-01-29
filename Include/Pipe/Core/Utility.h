@@ -62,6 +62,15 @@ namespace p::core
 			return predicate(Forward<T>(B), Forward<T>(A));
 		}
 	};
+
+	[[noreturn]] inline void Unreachable()
+	{
+#if __has_builtin(__builtin_unreachable)
+		__builtin_unreachable();
+#elifdef _MSC_VER    // MSVC
+		__assume(false);
+#endif
+	}
 }    // namespace p::core
 
 namespace p
