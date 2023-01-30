@@ -71,7 +71,7 @@ namespace p::core
 		// enough.
 		for (u32 length = 128;;)
 		{
-			buffer.reserve(length);
+			buffer.resize(length);
 #	if PLATFORM_TCHAR_IS_WCHAR
 			length = ::GetCurrentDirectoryW(buffer.capacity(), buffer.data());
 #	else

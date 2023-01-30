@@ -6,6 +6,7 @@
 #include "Pipe/Core/Char.h"
 #include "Pipe/Core/Macros.h"
 #include "Pipe/Core/PlatformProcess.h"
+#include "Pipe/Core/Windows/WindowsPlatformProcess.h"
 
 #include <filesystem>
 
@@ -420,9 +421,20 @@ namespace p::files
 	}
 
 
-	void SetCurrentPath(StringView path) {}
+	static String cachedCWD{};
+	void SetCurrentPath(StringView path)
+	{
+		if (PlatformProcess::SetCurrentWorkingPath(path))
+		{
+			cachedCWD.assign(path);
+		}
+	}
 
-	StringView GetCurrentPath() {}
+	StringView GetCurrentPath()
+	{
+		cachedCWD = Move(PlatformProcess::GetCurrentWorkingPath());
+		return cachedCWD;
+	}
 
 	StringView GetBasePath()
 	{
