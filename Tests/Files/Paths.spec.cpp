@@ -76,7 +76,7 @@ go_bandit([]() {
 			AssertThat(p::GetExtension("F:\\AnotherFolder"), Equals(""));
 			AssertThat(p::GetExtension("F:\\"), Equals(""));
 #elif P_PLATFORM_LINUX
-			AssertThat(p::GetExtension"/var/SomeFolder/AnotherFolder.lib"), Equals(".lib"));
+			AssertThat(p::GetExtension("/var/SomeFolder/AnotherFolder.lib"), Equals(".lib"));
 			AssertThat(p::GetExtension("/var/AnotherFolder.lib"), Equals(".lib"));
 			AssertThat(p::GetExtension("/var/AnotherFolder."), Equals("."));
 			AssertThat(p::GetExtension("/var/AnotherFolder"), Equals(""));
@@ -94,7 +94,7 @@ go_bandit([]() {
 			AssertThat(p::HasExtension("F:\\AnotherFolder"), Equals(false));
 			AssertThat(p::HasExtension("F:\\"), Equals(false));
 #elif P_PLATFORM_LINUX
-			AssertThat(p::HasExtension"/var/SomeFolder/AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasExtension("/var/SomeFolder/AnotherFolder.lib"), Equals(true));
 			AssertThat(p::HasExtension("/var/AnotherFolder.lib"), Equals(true));
 			AssertThat(p::HasExtension("/var/AnotherFolder."), Equals(true));
 			AssertThat(p::HasExtension("/var/AnotherFolder"), Equals(false));
