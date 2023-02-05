@@ -58,7 +58,7 @@ namespace p::core
 
 	bool MacPlatformProcess::SetCurrentWorkingPath(StringView path)
 	{
-		chdir(path.data());
+		return chdir(path.data()) == 0;
 	}
 
 	void MacPlatformProcess::ShowFolder(StringView path)

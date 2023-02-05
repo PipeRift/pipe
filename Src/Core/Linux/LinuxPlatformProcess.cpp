@@ -75,7 +75,7 @@ namespace p::core
 
 	bool LinuxPlatformProcess::SetCurrentWorkingPath(StringView path)
 	{
-		chdir(path.data());
+		return chdir(path.data()) == 0;
 	}
 }    // namespace p::core
 #endif

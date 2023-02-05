@@ -123,8 +123,8 @@ namespace p::files
 
 		void Decrement() noexcept
 		{
-			const const TChar* rEnd   = GetBeforeFront();
-			const const TChar* rStart = GetCurrentTokenStartPos() - 1;
+			const TChar* rEnd   = GetBeforeFront();
+			const TChar* rStart = GetCurrentTokenStartPos() - 1;
 			if (rStart == rEnd)    // we're decrementing the begin
 			{
 				MakeState(State::BeforeBegin);
