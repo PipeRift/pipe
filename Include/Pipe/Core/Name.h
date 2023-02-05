@@ -150,6 +150,11 @@ namespace p::core
 			return id == other.id;
 		}
 
+		bool operator<(const Name& other) const
+		{
+			return id < other.id;
+		}
+
 		bool IsNone() const
 		{
 			return id == noneId;
