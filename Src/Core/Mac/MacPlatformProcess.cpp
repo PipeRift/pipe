@@ -48,7 +48,7 @@ namespace p::core
 	String MacPlatformProcess::GetCurrentWorkingPath()
 	{
 		String path;
-		path.reserve(UNIX_MAX_PATH);
+		path.reserve(PlatformMisc::GetMaxPathLength());
 		if (getcwd(path.data(), path.capacity()) != nullptr)
 		{
 			path.resize(std::strlen(path.data()));
