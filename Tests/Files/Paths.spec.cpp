@@ -137,7 +137,7 @@ go_bandit([]() {
 			AssertThat(p::GetStem("F:\\AnotherFolder"), Equals("AnotherFolder"));
 			AssertThat(p::GetStem("F:\\"), Equals(""));
 #elif P_PLATFORM_LINUX
-			AssertThat(p::GetStem"/var/SomeFolder/AnotherFolder.lib"), Equals("AnotherFolder"));
+			AssertThat(p::GetStem("/var/SomeFolder/AnotherFolder.lib"), Equals("AnotherFolder"));
 			AssertThat(p::GetStem("/var/AnotherFolder.lib"), Equals("AnotherFolder"));
 			AssertThat(p::GetStem("/var/AnotherFolder."), Equals("AnotherFolder"));
 			AssertThat(p::GetStem("/var/AnotherFolder"), Equals("AnotherFolder"));
@@ -156,7 +156,7 @@ go_bandit([]() {
 			AssertThat(p::HasStem("F:\\AnotherFolder"), Equals(true));
 			AssertThat(p::HasStem("F:\\"), Equals(false));
 #elif P_PLATFORM_LINUX
-			AssertThat(p::HasStem"/var/SomeFolder/AnotherFolder.lib"), Equals(true));
+			AssertThat(p::HasStem("/var/SomeFolder/AnotherFolder.lib"), Equals(true));
 			AssertThat(p::HasStem("/var/AnotherFolder.lib"), Equals(true));
 			AssertThat(p::HasStem("/var/AnotherFolder."), Equals(true));
 			AssertThat(p::HasStem("/var/AnotherFolder"), Equals(true));
