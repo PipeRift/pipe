@@ -150,6 +150,11 @@ namespace p::core
 			return id == other.id;
 		}
 
+		bool operator<(const Name& other) const
+		{
+			return id < other.id;
+		}
+
 		bool IsNone() const
 		{
 			return id == noneId;
@@ -179,6 +184,11 @@ namespace p::core
 		Name(const Id& id) : id(id) {}
 	};
 
+
+	inline String ToString(const Name& name)
+	{
+		return name.ToString();
+	}
 }    // namespace p::core
 
 namespace p

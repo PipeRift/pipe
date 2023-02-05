@@ -33,3 +33,12 @@
 // Converts a macro parameter like __LINE__ to an string literal
 #define ENSURE_LITERAL(a) PRIMITIVE_ENSURE_LITERAL(a)
 #define PRIMITIVE_ENSURE_LITERAL(a) #a
+
+
+#if __has_cpp_attribute(fallthrough)
+#	define P_FALLTHROUGH [[fallthrough]]
+#elif __has_attribute(__fallthrough__)
+#	define P_FALLTHROUGH __attribute__((__fallthrough__))
+#else
+#	define P_FALLTHROUGH ((void)0)
+#endif

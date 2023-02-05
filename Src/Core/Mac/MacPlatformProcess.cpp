@@ -13,6 +13,7 @@
 #	include <mach/thread_policy.h>
 #	include <libproc.h>
 #	include <fcntl.h>
+#	include <unistd.h>
 
 
 namespace p::core
@@ -43,6 +44,22 @@ namespace p::core
 	StringView MacPlatformProcess::GetBasePath()
 	{
 		return GetExecutablePath();
+	}
+
+	String MacPlatformProcess::GetCurrentWorkingPath()
+	{
+		String path;
+		path.reserve(PlatformMisc::GetMaxPathLength());
+		if (getcwd(path.data(), path.capacity()) != nullptr)
+		{
+			path.resize(std::strlen(path.data()));
+		}
+		return path;
+	}
+
+	bool MacPlatformProcess::SetCurrentWorkingPath(StringView path)
+	{
+		return chdir(path.data()) == 0;
 	}
 
 	void MacPlatformProcess::ShowFolder(StringView path)
