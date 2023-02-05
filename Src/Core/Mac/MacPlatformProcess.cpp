@@ -13,6 +13,7 @@
 #	include <mach/thread_policy.h>
 #	include <libproc.h>
 #	include <fcntl.h>
+#	include <unistd.h>
 
 
 namespace p::core
