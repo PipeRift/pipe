@@ -6,7 +6,6 @@
 #include "Pipe/Core/Char.h"
 #include "Pipe/Core/Macros.h"
 #include "Pipe/Core/PlatformProcess.h"
-#include "Pipe/Core/Windows/WindowsPlatformProcess.h"
 
 #include <filesystem>
 
