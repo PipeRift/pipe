@@ -44,8 +44,8 @@ function(pipe_target_shared_output_directory target)
     endif()
     set_target_properties(${target}
         PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin${suffix}"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin${suffix}"
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin/Lib${suffix}"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin/Lib${suffix}"
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Bin${suffix}"
         INCLUDES_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Include${suffix}"
     )
