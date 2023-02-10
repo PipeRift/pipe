@@ -24,40 +24,11 @@ namespace p::files
 	namespace detail
 	{}    // namespace detail
 
-	///////////////////////////////////////////////////////////
-	// PATHS
+	PIPE_API void SetCurrentPath(StringView path);
 
-	inline PIPE_API void SetCurrentPath(StringView path);
-
-	inline PIPE_API StringView GetCurrentPath();
+	PIPE_API StringView GetCurrentPath();
 
 	PIPE_API StringView GetBasePath();
-
-
-	///////////////////////////////////////////////////////////
-	// PATH HELPERS
-
-	inline PIPE_API constexpr bool IsSeparator(TChar c)
-	{
-		return c == separator
-#if P_PLATFORM_WINDOWS
-		    || c == preferredSeparator
-#endif
-		    ;
-	}
-
-	//  For POSIX, IsSeparator() and IsElementSeparator() are identical since
-	//  a forward slash is the only valid directory separator and also the only valid
-	//  element separator. For Windows, forward slash and back slash are the possible
-	//  directory separators, but colon (example: "c:foo") is also an element separator.
-	inline PIPE_API constexpr bool IsElementSeparator(TChar c)
-	{
-		return c == separator
-#if P_PLATFORM_WINDOWS
-		    || c == preferredSeparator || c == colon
-#endif
-		    ;
-	}
 
 	PIPE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
 	PIPE_API const TChar* FindRelativeChar(
@@ -116,6 +87,28 @@ namespace p::files
 	String LexicallyRelative(StringView path, StringView base);
 	PIPE_API void SetCanonical(String& path);
 	PIPE_API void SetWeaklyCanonical(String& path);
+
+	inline PIPE_API constexpr bool IsSeparator(TChar c)
+	{
+		return c == separator
+#if P_PLATFORM_WINDOWS
+		    || c == preferredSeparator
+#endif
+		    ;
+	}
+
+	//  For POSIX, IsSeparator() and IsElementSeparator() are identical since
+	//  a forward slash is the only valid directory separator and also the only valid
+	//  element separator. For Windows, forward slash and back slash are the possible
+	//  directory separators, but colon (example: "c:foo") is also an element separator.
+	inline PIPE_API constexpr bool IsElementSeparator(TChar c)
+	{
+		return c == separator
+#if P_PLATFORM_WINDOWS
+		    || c == preferredSeparator || c == colon
+#endif
+		    ;
+	}
 
 	PIPE_API String ToString(const Path& path);
 	PIPE_API Path ToPath(StringView pathStr);
