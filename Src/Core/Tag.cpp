@@ -1,7 +1,6 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
-#include "Pipe/Core/Name.h"
-
+#include "Pipe/Core/Tag.h"
 #include "Pipe/Serialize/Serialization.h"
 
 #include <mutex>
@@ -10,18 +9,18 @@
 
 namespace p
 {
-	const String NameTable::noneStr{"none"};
-	const Name::Id Name::noneId{0};
+	const String TagTable::noneStr{"none"};
+	const Tag::Id Tag::noneId{0};
 
 	// Mutex that allows sync reads but waits for registries
 	std::shared_mutex editTableMutex{};
 
 
-	sizet NameTable::Register(StringView str)
+	sizet TagTable::Register(StringView str)
 	{
 		if (str.empty())
 		{
-			return Name::noneId;
+			return Tag::noneId;
 		}
 
 		static constexpr Hash<StringView> hasher{};
@@ -35,9 +34,9 @@ namespace p
 		return hash;
 	}
 
-	const String& NameTable::Find(sizet hash) const
+	const String& TagTable::Find(sizet hash) const
 	{
-		if (hash == Name::noneId)
+		if (hash == Tag::noneId)
 		{
 			return noneStr;
 		}
@@ -53,20 +52,20 @@ namespace p
 		return noneStr;
 	}
 
-	NameTable& NameTable::Get()
+	TagTable& TagTable::Get()
 	{
-		static NameTable instance{};
+		static TagTable instance{};
 		return instance;
 	}
 
-	void Name::Read(Reader& ct)
+	void Tag::Read(Reader& ct)
 	{
 		String str;
 		ct.Serialize(str);
 
-		*this = Strings::Equals(str, NameTable::noneStr) ? None() : Name(str);
+		*this = Strings::Equals(str, TagTable::noneStr) ? None() : Tag(str);
 	}
-	void Name::Write(Writer& ct) const
+	void Tag::Write(Writer& ct) const
 	{
 		ct.Serialize(ToString());
 	}

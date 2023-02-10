@@ -50,7 +50,7 @@ namespace p
 		PIPE_API DataType* GetParent() const;
 		PIPE_API const TArray<DataType*>& GetChildren() const;
 		PIPE_API void GetChildrenDeep(TArray<DataType*>& outChildren) const;
-		PIPE_API DataType* FindChild(const Name& className) const;
+		PIPE_API DataType* FindChild(const Tag& className) const;
 		PIPE_API bool IsParentOf(const DataType* other) const;
 
 		/** Flags */
@@ -59,7 +59,7 @@ namespace p
 		PIPE_API bool HasAnyFlags(TypeFlags inFlags) const;
 
 		/** Properties */
-		PIPE_API const Property* FindProperty(const Name& propertyName) const;
+		PIPE_API const Property* FindProperty(const Tag& propertyName) const;
 		PIPE_API const TArray<Property*>& GetSelfProperties() const;
 		PIPE_API void GetProperties(TArray<Property*>& outProperties) const;
 

@@ -12,30 +12,30 @@
 
 namespace p::core
 {
-	struct Name;
+	struct Tag;
 
 	/** Represents an string with an already hashed value */
-	struct NameKey
+	struct TagKey
 	{
 		String value;
 		sizet hash = 0;
 
 
-		NameKey(sizet hash) : hash{hash} {}
-		NameKey(StringView value, sizet hash) : value{value}, hash{hash} {}
+		TagKey(sizet hash) : hash{hash} {}
+		TagKey(StringView value, sizet hash) : value{value}, hash{hash} {}
 
-		NameKey(NameKey&& other) noexcept : value{Move(other.value)}, hash{other.hash} {}
-		NameKey(const NameKey& other) = delete;
-		NameKey& operator=(NameKey&& other) noexcept
+		TagKey(TagKey&& other) noexcept : value{Move(other.value)}, hash{other.hash} {}
+		TagKey(const TagKey& other) = delete;
+		TagKey& operator=(TagKey&& other) noexcept
 		{
 			value      = Move(other.value);
 			hash       = other.hash;
 			other.hash = 0;
 			return *this;
 		}
-		NameKey& operator=(const NameKey& other) = delete;
+		TagKey& operator=(const TagKey& other) = delete;
 
-		bool operator==(const NameKey& other) const
+		bool operator==(const TagKey& other) const
 		{
 			return hash == other.hash;
 		}
@@ -48,9 +48,9 @@ namespace p
 
 
 	template<>
-	struct Hash<NameKey>
+	struct Hash<TagKey>
 	{
-		sizet operator()(const NameKey& x) const
+		sizet operator()(const TagKey& x) const
 		{
 			return x.hash;
 		}
@@ -60,25 +60,25 @@ namespace p
 namespace p::core
 {
 	/** Global table storing all names */
-	class NameTable
+	class TagTable
 	{
-		friend Name;
+		friend Tag;
 		static const String noneStr;
 
 		// #TODO: Move to TSet
-		using Container     = tsl::robin_set<NameKey, Hash<NameKey>, std::equal_to<NameKey>>;
+		using Container     = tsl::robin_set<TagKey, Hash<TagKey>, std::equal_to<TagKey>>;
 		using Iterator      = Container::iterator;
 		using ConstIterator = Container::const_iterator;
 
 		Container table{};
 
 
-		NameTable() = default;
+		TagTable() = default;
 
 		sizet Register(StringView string);
 		const String& Find(sizet hash) const;
 
-		static NameTable& Get();
+		static TagTable& Get();
 	};
 
 
@@ -87,9 +87,9 @@ namespace p::core
 	 * Searching, comparing and other operations are way cheaper, but creating (indexing) is more
 	 * expensive.
 	 */
-	struct PIPE_API Name
+	struct PIPE_API Tag
 	{
-		friend NameTable;
+		friend TagTable;
 		using Id = sizet;
 
 	private:
@@ -105,33 +105,33 @@ namespace p::core
 
 
 	public:
-		Name() = default;
-		Name(const TChar* key) : Name(StringView{key}) {}
-		explicit Name(StringView key)
+		Tag() = default;
+		Tag(const TChar* key) : Tag(StringView{key}) {}
+		explicit Tag(StringView key)
 		{
 			// Index this name
-			id = NameTable::Get().Register(key);
+			id = TagTable::Get().Register(key);
 #if P_DEBUG
 			value = ToString();
 #endif
 		}
-		explicit Name(const String& str) : Name(StringView(str)) {}
-		Name(const Name& other)
+		explicit Tag(const String& str) : Tag(StringView(str)) {}
+		Tag(const Tag& other)
 		    : id(other.id)
 #if P_DEBUG
 		    , value(other.value)
 #endif
 		{}
-		Name(Name&& other) noexcept
+		Tag(Tag&& other) noexcept
 		{
 			std::swap(id, other.id);
 #if P_DEBUG
 			std::swap(value, other.value);
 #endif
 		}
-		Name& operator=(const Name& other) = default;
+		Tag& operator=(const Tag& other) = default;
 
-		Name& operator=(Name&& other) noexcept
+		Tag& operator=(Tag&& other) noexcept
 		{
 			std::swap(id, other.id);
 #if P_DEBUG
@@ -142,15 +142,15 @@ namespace p::core
 
 		const String& ToString() const
 		{
-			return NameTable::Get().Find(id);
+			return TagTable::Get().Find(id);
 		}
 
-		bool operator==(const Name& other) const
+		bool operator==(const Tag& other) const
 		{
 			return id == other.id;
 		}
 
-		bool operator<(const Name& other) const
+		bool operator<(const Tag& other) const
 		{
 			return id < other.id;
 		}
@@ -166,26 +166,26 @@ namespace p::core
 		}
 
 
-		static const Name& None()
+		static const Tag& None()
 		{
-			static Name none{noneId};
+			static Tag none{noneId};
 			return none;
 		};
 
 		static const String& NoneStr()
 		{
-			return NameTable::noneStr;
+			return TagTable::noneStr;
 		}
 
 		void Read(Reader& ct);
 		void Write(Writer& ct) const;
 
 	private:
-		Name(const Id& id) : id(id) {}
+		Tag(const Id& id) : id(id) {}
 	};
 
 
-	inline String ToString(const Name& name)
+	inline String ToString(const Tag& name)
 	{
 		return name.ToString();
 	}
@@ -197,16 +197,16 @@ namespace p
 
 
 	template<>
-	struct Hash<Name>
+	struct Hash<Tag>
 	{
-		sizet operator()(const Name& k) const
+		sizet operator()(const Tag& k) const
 		{
 			return k.GetId();
 		}
 	};
 
 	template<>
-	struct TFlags<Name> : public DefaultTFlags
+	struct TFlags<Tag> : public DefaultTFlags
 	{
 		enum
 		{
@@ -214,15 +214,15 @@ namespace p
 		};
 	};
 
-	OVERRIDE_TYPE_NAME(Name)
+	OVERRIDE_TYPE_NAME(Tag)
 }    // namespace p
 
 
 template<>
-struct fmt::formatter<p::Name> : public fmt::formatter<p::StringView>
+struct fmt::formatter<p::Tag> : public fmt::formatter<p::StringView>
 {
 	template<typename FormatContext>
-	auto format(const p::Name& name, FormatContext& ctx)
+	auto format(const p::Tag& name, FormatContext& ctx)
 	{
 		const p::StringView nameStr{name.ToString()};
 		return formatter<p::StringView>::format(nameStr, ctx);

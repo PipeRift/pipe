@@ -4,9 +4,10 @@
 #include <Pipe/Core/Array.h>
 #include <Pipe/Core/Guid.h>
 #include <Pipe/Core/Map.h>
-#include <Pipe/Core/Name.h>
 #include <Pipe/Core/String.h>
+#include <Pipe/Core/Tag.h>
 #include <Pipe/Reflect/Reflection.h>
+
 
 
 using namespace snowhouse;

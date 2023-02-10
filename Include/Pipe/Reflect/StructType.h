@@ -37,9 +37,9 @@ namespace p
 			DataType::GetChildrenDeep(reinterpret_cast<TArray<DataType*>&>(outChildren));
 		}
 
-		PIPE_API StructType* FindChild(const Name& Name) const
+		PIPE_API StructType* FindChild(const Tag& name) const
 		{
-			return static_cast<StructType*>(DataType::FindChild(Name));
+			return static_cast<StructType*>(DataType::FindChild(name));
 		}
 
 		PIPE_API bool IsA(StructType* other) const

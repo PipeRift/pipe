@@ -1,8 +1,8 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Name.h"
 #include "Pipe/Core/String.h"
+#include "Pipe/Core/Tag.h"
 #include "Pipe/Reflect/ReflectionFlags.h"
 #include "Pipe/Reflect/Type.h"
 
@@ -26,7 +26,7 @@ namespace p
 	protected:
 		DataType* owner = nullptr;
 		Type* type      = nullptr;
-		Name name;
+		Tag name;
 
 		AccessFunc* access = nullptr;
 		PropFlags flags    = Prop_NoFlag;
@@ -43,7 +43,7 @@ namespace p
 
 		PIPE_API DataType* GetOwner() const;
 		PIPE_API Type* GetType() const;
-		PIPE_API Name GetName() const;
+		PIPE_API Tag GetName() const;
 		PIPE_API void* GetDataPtr(void* container) const;
 		PIPE_API StringView GetDisplayName() const;
 		PIPE_API bool HasFlag(PropFlags flag) const;
@@ -60,7 +60,7 @@ namespace p
 	{
 		return type;
 	}
-	inline Name Property::GetName() const
+	inline Tag Property::GetName() const
 	{
 		return name;
 	}

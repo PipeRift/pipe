@@ -1,10 +1,10 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Name.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
+#include "Pipe/Core/Tag.h"
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
 
 
@@ -24,7 +24,7 @@ namespace p
 
 	REFLECT_NATIVE_TYPE(StringView);
 	REFLECT_NATIVE_TYPE(String);
-	REFLECT_NATIVE_TYPE(Name);
+	REFLECT_NATIVE_TYPE(Tag);
 
 	OVERRIDE_TYPE_NAME(u8)
 	OVERRIDE_TYPE_NAME(i8)

@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/EnumFlags.h"
-#include "Pipe/Core/Name.h"
+#include "Pipe/Core/Tag.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/Type.h"
 
@@ -70,7 +70,7 @@ namespace p
 		u32 valueSize = 0;
 		// Values contains all values sequentially (according to valueSize)
 		TArray<u8> values;
-		TArray<Name> names;
+		TArray<Tag> names;
 
 	public:
 		static constexpr TypeCategory typeCategory = TypeCategory::Enum;
@@ -86,7 +86,7 @@ namespace p
 			Check(sizeof(T) >= valueSize);
 			memcpy(data, &data, valueSize);
 		}
-		void SetValue(void* data, Name name) const
+		void SetValue(void* data, Tag name) const
 		{
 			i32 index = names.FindIndex(name);
 			if (index != NO_INDEX)
@@ -102,10 +102,10 @@ namespace p
 			return *reinterpret_cast<T*>(data);
 		}
 
-		Name GetName(void* data) const
+		Tag GetName(void* data) const
 		{
 			const i32 index = GetIndexFromValue(data);
-			return index != NO_INDEX ? GetNameByIndex(index) : Name::None();
+			return index != NO_INDEX ? GetNameByIndex(index) : Tag::None();
 		}
 
 		i32 GetIndexFromValue(void* data) const
@@ -132,9 +132,9 @@ namespace p
 		{
 			return *reinterpret_cast<T*>(GetValuePtrByIndex(index));
 		}
-		Name GetNameByIndex(i32 index) const
+		Tag GetNameByIndex(i32 index) const
 		{
-			return names.IsValidIndex(index) ? names[index] : Name::None();
+			return names.IsValidIndex(index) ? names[index] : Tag::None();
 		}
 
 		// Intentionally unsafe function. Do not modify the value!
