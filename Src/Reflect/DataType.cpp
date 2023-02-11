@@ -99,7 +99,7 @@ namespace p
 
 		for (auto* const child : children)
 		{
-			if (child->GetName() == className.ToString())    // TODO: Use Tags
+			if (child->GetName() == className.AsString())    // TODO: Use Tags
 			{
 				return child;
 			}

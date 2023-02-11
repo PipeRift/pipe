@@ -83,7 +83,7 @@ namespace p
 			property->name        = name;
 			property->access      = access;
 			property->flags       = propFlags;
-			property->displayName = Strings::ToSentenceCase(name.ToString());
+			property->displayName = Strings::ToSentenceCase(p::String{name.AsString()});
 			property->owner->properties.Add(property);
 		}
 

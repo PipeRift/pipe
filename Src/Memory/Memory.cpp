@@ -6,13 +6,11 @@
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 
-#include <stddef.h>
+#include <cstring>
 
 
 namespace p
 {
-	static void SwapGreaterThan8(void* a, void* b, sizet Size);
-
 	void MoveMem(void* dest, void* src, sizet size)
 	{
 		memmove(dest, src, size);

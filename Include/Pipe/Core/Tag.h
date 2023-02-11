@@ -3,6 +3,7 @@
 
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Utility.h"
+#include "Pipe/Memory/MultiLinearArena.h"
 #include "Pipe/Reflect/TypeFlags.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 #include "String.h"
@@ -12,74 +13,7 @@
 
 namespace p::core
 {
-	struct Tag;
-
-	/** Represents an string with an already hashed value */
-	struct TagKey
-	{
-		String value;
-		sizet hash = 0;
-
-
-		TagKey(sizet hash) : hash{hash} {}
-		TagKey(StringView value, sizet hash) : value{value}, hash{hash} {}
-
-		TagKey(TagKey&& other) noexcept : value{Move(other.value)}, hash{other.hash} {}
-		TagKey(const TagKey& other) = delete;
-		TagKey& operator=(TagKey&& other) noexcept
-		{
-			value      = Move(other.value);
-			hash       = other.hash;
-			other.hash = 0;
-			return *this;
-		}
-		TagKey& operator=(const TagKey& other) = delete;
-
-		bool operator==(const TagKey& other) const
-		{
-			return hash == other.hash;
-		}
-	};
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-
-
-	template<>
-	struct Hash<TagKey>
-	{
-		sizet operator()(const TagKey& x) const
-		{
-			return x.hash;
-		}
-	};
-}    // namespace p
-
-namespace p::core
-{
-	/** Global table storing all names */
-	class TagTable
-	{
-		friend Tag;
-		static const String noneStr;
-
-		// #TODO: Move to TSet
-		using Container     = tsl::robin_set<TagKey, Hash<TagKey>, std::equal_to<TagKey>>;
-		using Iterator      = Container::iterator;
-		using ConstIterator = Container::const_iterator;
-
-		Container table{};
-
-
-		TagTable() = default;
-
-		sizet Register(StringView string);
-		const String& Find(sizet hash) const;
-
-		static TagTable& Get();
-	};
+	struct TagKey;
 
 
 	/**
@@ -89,106 +23,87 @@ namespace p::core
 	 */
 	struct PIPE_API Tag
 	{
-		friend TagTable;
-		using Id = sizet;
-
 	private:
-		static const Id noneId;
-		Id id = noneId;
-#if P_DEBUG
-
-#	pragma warning(push)
-#	pragma warning(disable:4251)
-		StringView value;    // Only used for debugging purposes
-#	pragma warning(pop)
-#endif
+		sizet hash  = 0;
+		TagKey* key = nullptr;
 
 
 	public:
-		Tag() = default;
+		constexpr Tag() = default;
+		explicit Tag(StringView value);
 		Tag(const TChar* key) : Tag(StringView{key}) {}
-		explicit Tag(StringView key)
-		{
-			// Index this name
-			id = TagTable::Get().Register(key);
-#if P_DEBUG
-			value = ToString();
-#endif
-		}
 		explicit Tag(const String& str) : Tag(StringView(str)) {}
-		Tag(const Tag& other)
-		    : id(other.id)
-#if P_DEBUG
-		    , value(other.value)
-#endif
-		{}
-		Tag(Tag&& other) noexcept
-		{
-			std::swap(id, other.id);
-#if P_DEBUG
-			std::swap(value, other.value);
-#endif
-		}
-		Tag& operator=(const Tag& other) = default;
 
-		Tag& operator=(Tag&& other) noexcept
-		{
-			std::swap(id, other.id);
-#if P_DEBUG
-			std::swap(value, other.value);
-#endif
-			return *this;
-		}
+		Tag(const Tag& other);
+		Tag(Tag&& other) noexcept;
+		Tag& operator=(const Tag& other);
+		Tag& operator=(Tag&& other) noexcept;
+		~Tag();
 
-		const String& ToString() const
-		{
-			return TagTable::Get().Find(id);
-		}
+		StringView AsString() const;
 
 		bool operator==(const Tag& other) const
 		{
-			return id == other.id;
+			return hash == other.hash;
 		}
 
 		bool operator<(const Tag& other) const
 		{
-			return id < other.id;
+			return hash < other.hash;
 		}
 
 		bool IsNone() const
 		{
-			return id == noneId;
+			return key == nullptr;
 		}
 
-		const Id& GetId() const
+		sizet GetHash() const
 		{
-			return id;
+			return hash;
 		}
 
-
-		static const Tag& None()
+		static const Tag None()
 		{
-			static Tag none{noneId};
-			return none;
+			return {};
 		};
-
-		static const String& NoneStr()
-		{
-			return TagTable::noneStr;
-		}
 
 		void Read(Reader& ct);
 		void Write(Writer& ct) const;
 
-	private:
-		Tag(const Id& id) : id(id) {}
+
+		/**
+		 * Frees string data not being used by any tag instances
+		 * @returns number of freed strings
+		 */
+		static i32 FlushInactiveTags();
+
+		/** If enabled, A tag's string data will be instantly freed if no other tag is using it.
+		 * Manual flush will be more performant but FlushInactiveTags must be called periodically to
+		 * free memory. Automatic flush is ENABLED by default.
+		 */
+		static void SetAutomaticFlush(bool enabled);
 	};
 
 
-	inline String ToString(const Tag& name)
+	inline StringView ToString(const Tag& name)
 	{
-		return name.ToString();
+		return name.AsString();
 	}
+
+
+	/** Global table storing all tag string data */
+	class TagTable
+	{
+		friend Tag;
+		struct MultiLinearArena arena;
+		TArray<sizet> hashes;
+		TArray<TagKey*> keys;
+		bool automaticFlush = true;
+
+	public:
+		TagKey* GetOrAddTagKey(sizet hash, StringView value);
+		void FreeTagKey(sizet hash, TagKey* key);
+	};
 }    // namespace p::core
 
 namespace p
@@ -201,7 +116,7 @@ namespace p
 	{
 		sizet operator()(const Tag& k) const
 		{
-			return k.GetId();
+			return k.GetHash();
 		}
 	};
 
@@ -224,7 +139,7 @@ struct fmt::formatter<p::Tag> : public fmt::formatter<p::StringView>
 	template<typename FormatContext>
 	auto format(const p::Tag& name, FormatContext& ctx)
 	{
-		const p::StringView nameStr{name.ToString()};
+		const p::StringView nameStr{name.AsString()};
 		return formatter<p::StringView>::format(nameStr, ctx);
 	}
 };
