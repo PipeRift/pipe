@@ -11,20 +11,42 @@
 
 namespace p::core
 {
-	static TagTable table{};
-	// Mutex that allows sync reads but waits for registries
-	std::shared_mutex editTableMutex{};
-
-
-	struct TagKey
+	struct TagString
 	{
 		u32 activeTags;
 		u32 size;
+
+		TagString(const TagString&) = delete;
 		const TChar* Data() const
 		{
 			return reinterpret_cast<const TChar*>(this + 1);
 		};
 	};
+
+	struct TagStringRef
+	{
+		sizet hash     = 0;
+		TagString* str = nullptr;
+	};
+
+
+	/** Global table storing all tag string data */
+	class TagStringTable
+	{
+		friend Tag;
+		struct MultiLinearArena arena;
+		TArray<TagStringRef> strings;
+		bool automaticFlush = true;
+
+	public:
+		TagString& GetOrAddTagString(sizet hash, StringView value);
+		void FreeTagString(sizet hash, TagString& str);
+	};
+
+
+	static TagStringTable table{};
+	// Makes sure the hashes & keys lists are thread-safe
+	std::shared_mutex stringsListMutex;
 
 
 	Tag::Tag(StringView value)
@@ -32,59 +54,60 @@ namespace p::core
 		if (!value.empty())
 		{
 			hash = Hash<StringView>()(value);
-			key  = table.GetOrAddTagKey(hash, value);
-			++key->activeTags;
+			str  = &table.GetOrAddTagString(hash, value);
+			++str->activeTags;
 		}
 	}
 
-	Tag::Tag(const Tag& other) : hash(other.hash), key(other.key)
+	Tag::Tag(const Tag& other) : hash(other.hash), str(other.str)
 	{
-		if (key)
+		if (str)
 		{
-			++key->activeTags;
+			++str->activeTags;
 		}
 	}
 
 	Tag::Tag(Tag&& other) noexcept
 	{
 		hash       = other.hash;
-		key        = other.key;
+		str        = other.str;
 		other.hash = 0;
-		other.key  = nullptr;
+		other.str  = nullptr;
 	}
 	Tag& Tag::operator=(const Tag& other)
 	{
+		if (this == &other)
+			return *this;
+
+		InternalReset();
 		hash = other.hash;
-		key  = other.key;
-		if (key)
+		str  = other.str;
+		if (str)
 		{
-			++key->activeTags;
+			++str->activeTags;
 		}
 		return *this;
 	}
 	Tag& Tag::operator=(Tag&& other) noexcept
 	{
+		if (this == &other)
+			return *this;
+
+		InternalReset();
 		hash       = other.hash;
-		key        = other.key;
+		str        = other.str;
 		other.hash = 0;
-		other.key  = nullptr;
+		other.str  = nullptr;
 		return *this;
 	}
 	Tag::~Tag()
 	{
-		if (key)
-		{
-			--key->activeTags;
-			if (table.automaticFlush && key->activeTags == 0) [[unlikely]]
-			{
-				table.FreeTagKey(hash, key);
-			}
-		}
+		InternalReset();
 	}
 
 	StringView Tag::AsString() const
 	{
-		return key ? StringView{key->Data(), sizet(key->size)} : StringView{};
+		return str ? StringView{str->Data(), sizet(str->size)} : StringView{};
 	}
 
 	void Tag::Read(Reader& ct)
@@ -98,28 +121,27 @@ namespace p::core
 		ct.Serialize(AsString());
 	}
 
-	constexpr sizet GetKeyAllocSize(sizet dataSize)
+	constexpr sizet GetAllocSize(sizet dataSize)
 	{
 		// +1 for the end character of the string
-		return sizeof(TagKey) + sizeof(TChar) * (dataSize + 1);
+		return sizeof(TagString) + sizeof(TChar) * (dataSize + 1);
 	}
 
 	i32 Tag::FlushInactiveTags()
 	{
-		const i32 initialSize = table.keys.Size();
+		std::unique_lock lock{stringsListMutex};
+		const i32 initialSize = table.strings.Size();
 		for (i32 i = initialSize - 1; i >= 0; --i)
 		{
-			auto* key = table.keys[i];
-			if (key->activeTags == 0)
+			auto* str = table.strings[i].str;
+			if (str->activeTags == 0)
 			{
-				table.arena.Free(key, GetKeyAllocSize(key->size));
-				table.hashes.RemoveAt(i, false);
-				table.keys.RemoveAt(i, false);
+				table.arena.Free(str, GetAllocSize(str->size));
+				table.strings.RemoveAt(i, false);
 			}
 		}
-		table.hashes.Shrink();
-		table.keys.Shrink();
-		return initialSize - table.keys.Size();
+		table.strings.Shrink();
+		return initialSize - table.strings.Size();
 	}
 
 	void Tag::SetAutomaticFlush(bool enabled)
@@ -127,42 +149,67 @@ namespace p::core
 		table.automaticFlush = enabled;
 	}
 
-	TagKey* TagTable::GetOrAddTagKey(sizet hash, StringView value)
+	void Tag::InternalReset()
 	{
-		TagKey* key;
-		auto index = hashes.LowerBound(hash);
-		if (index != NO_INDEX)
+		if (str)
 		{
-			if (hash == hashes[index])
+			--str->activeTags;
+			if (table.automaticFlush && str->activeTags == 0) [[unlikely]]
 			{
-				// Found existing key
-				return keys[index];
+				table.FreeTagString(hash, *str);
 			}
 		}
-		else
+	}
+
+	bool operator<(const TagStringRef& ref, sizet hash)
+	{
+		return ref.hash < hash;
+	}
+	bool operator<(sizet hash, const TagStringRef& ref)
+	{
+		return hash < ref.hash;
+	}
+
+	TagString& TagStringTable::GetOrAddTagString(sizet hash, StringView value)
+	{
+		i32 index;
 		{
-			index = hashes.Size();    // Insert last
+			std::shared_lock lock{stringsListMutex};
+			index = strings.LowerBound(hash);
+			if (index != NO_INDEX)
+			{
+				const auto& ref = strings[index];
+				if (hash == ref.hash)
+				{
+					// Found existing key
+					return *ref.str;
+				}
+			}
+			else
+			{
+				index = strings.Size();    // Insert at the end of the list
+			}
 		}
 
 		const sizet size = value.size();
-		key = reinterpret_cast<TagKey*>(p::Alloc(arena, GetKeyAllocSize(size), alignof(TagKey)));
+		auto* key =
+		    static_cast<TagString*>(p::Alloc(arena, GetAllocSize(size), alignof(TagString)));
 		key->activeTags = 0;
 		key->size       = size;
-
-		auto* data = const_cast<TChar*>(key->Data());
+		// Copy string data
+		auto* const data = const_cast<TChar*>(key->Data());
 		p::CopyMem(data, (void*)value.data(), sizeof(TChar) * size);
 		data[key->size] = '\0';
 
-		hashes.Insert(index, hash);
-		keys.Insert(index, key);
-		return key;
+		std::unique_lock lock{stringsListMutex};
+		strings.Insert(index, {hash, key});
+		return *key;
 	}
 
-	void TagTable::FreeTagKey(sizet hash, TagKey* key)
+	void TagStringTable::FreeTagString(sizet hash, TagString& str)
 	{
-		arena.Free(key, GetKeyAllocSize(key->size));
-		const i32 index = hashes.FindSortedEqual(hash);
-		hashes.RemoveAt(index, false);
-		keys.RemoveAt(index, false);
+		std::unique_lock lock{stringsListMutex};
+		strings.RemoveSorted(hash, {}, false);
+		arena.Free(&str, GetAllocSize(str.size));
 	}
 }    // namespace p::core

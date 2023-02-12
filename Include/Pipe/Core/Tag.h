@@ -8,12 +8,10 @@
 #include "Pipe/Serialize/SerializationFwd.h"
 #include "String.h"
 
-#include <tsl/robin_set.h>
-
 
 namespace p::core
 {
-	struct TagKey;
+	struct TagString;
 
 
 	/**
@@ -24,14 +22,14 @@ namespace p::core
 	struct PIPE_API Tag
 	{
 	private:
-		sizet hash  = 0;
-		TagKey* key = nullptr;
+		sizet hash     = 0;
+		TagString* str = nullptr;
 
 
 	public:
 		constexpr Tag() = default;
 		explicit Tag(StringView value);
-		Tag(const TChar* key) : Tag(StringView{key}) {}
+		Tag(const TChar* str) : Tag(StringView{str}) {}
 		explicit Tag(const String& str) : Tag(StringView(str)) {}
 
 		Tag(const Tag& other);
@@ -54,7 +52,7 @@ namespace p::core
 
 		bool IsNone() const
 		{
-			return key == nullptr;
+			return str == nullptr;
 		}
 
 		sizet GetHash() const
@@ -82,6 +80,9 @@ namespace p::core
 		 * free memory. Automatic flush is ENABLED by default.
 		 */
 		static void SetAutomaticFlush(bool enabled);
+
+	private:
+		void InternalReset();
 	};
 
 
@@ -89,21 +90,6 @@ namespace p::core
 	{
 		return name.AsString();
 	}
-
-
-	/** Global table storing all tag string data */
-	class TagTable
-	{
-		friend Tag;
-		struct MultiLinearArena arena;
-		TArray<sizet> hashes;
-		TArray<TagKey*> keys;
-		bool automaticFlush = true;
-
-	public:
-		TagKey* GetOrAddTagKey(sizet hash, StringView value);
-		void FreeTagKey(sizet hash, TagKey* key);
-	};
 }    // namespace p::core
 
 namespace p
