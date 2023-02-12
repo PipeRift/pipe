@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/Function.h"
-#include "Pipe/Core/Name.h"
+#include "Pipe/Core/Tag.h"
 #include "Pipe/Reflect/Builders/StaticInitializers.h"
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 #include "Pipe/Reflect/EnumType.h"
@@ -55,7 +55,7 @@ namespace p
 			newType.names.Reserve(names.size());
 			for (StringView name : names)
 			{
-				newType.names.Add(Name{name});
+				newType.names.Add(Tag{name});
 			}
 
 			const auto values = GetEnumValues<T>();

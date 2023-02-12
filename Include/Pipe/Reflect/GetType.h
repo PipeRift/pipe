@@ -50,7 +50,7 @@ namespace p
 	 * @returns the type found, if any
 	 */
 	template<typename T>
-	Type* FindType(Name name)
+	Type* FindType(Tag name)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 

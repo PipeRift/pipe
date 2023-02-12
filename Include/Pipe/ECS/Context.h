@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Name.h"
+#include "Pipe/Core/Tag.h"
 #include "Pipe/ECS/Id.h"
 #include "Pipe/ECS/IdRegistry.h"
 #include "Pipe/ECS/Pool.h"

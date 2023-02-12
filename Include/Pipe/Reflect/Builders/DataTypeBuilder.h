@@ -4,7 +4,7 @@
 #include "Pipe/Core/Array.h"
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Macros.h"
-#include "Pipe/Core/Name.h"
+#include "Pipe/Core/Tag.h"
 #include "Pipe/Reflect/ArrayProperty.h"
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 #include "Pipe/Reflect/ClassType.h"
@@ -28,7 +28,7 @@ namespace p
 		TDataTypeBuilder() : TypeBuilder(GetTypeId<T>(), GetTypeName<T>(false)) {}
 
 		template<typename U>
-		void AddProperty(Name name, Property::AccessFunc* access, PropFlags propFlags)
+		void AddProperty(Tag name, Property::AccessFunc* access, PropFlags propFlags)
 		{
 			auto& registry = TypeRegistry::Get();
 			Type* type;
@@ -83,7 +83,7 @@ namespace p
 			property->name        = name;
 			property->access      = access;
 			property->flags       = propFlags;
-			property->displayName = Strings::ToSentenceCase(name.ToString());
+			property->displayName = Strings::ToSentenceCase(p::String{name.AsString()});
 			property->owner->properties.Add(property);
 		}
 

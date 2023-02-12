@@ -47,7 +47,7 @@ namespace p
 			DataType::GetChildrenDeep(reinterpret_cast<TArray<DataType*>&>(outChildren));
 		}
 
-		PIPE_API ClassType* FindChild(const Name& className) const
+		PIPE_API ClassType* FindChild(const Tag& className) const
 		{
 			// Classes only have Class children. It is safe to static_cast.
 			return static_cast<ClassType*>(DataType::FindChild(className));

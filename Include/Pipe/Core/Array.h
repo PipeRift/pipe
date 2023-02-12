@@ -468,9 +468,10 @@ namespace p::core
 			return FindIt(Move(cb)) != vector.end();
 		}
 
-		bool ContainsSorted(const Type& item) const
+		template<typename Value, typename SortPredicate = TLess<>>
+		bool ContainsSorted(const Value& value, SortPredicate sortPredicate = {}) const
 		{
-			return FindSortedEqual(item) != NO_INDEX;
+			return FindSortedEqual(value, sortPredicate) != NO_INDEX;
 		}
 
 		/**
@@ -502,11 +503,11 @@ namespace p::core
 		}
 
 		// Removes an item assuming the array is sorted
-		template<typename SortPredicate = TLess<>>
+		template<typename Value, typename SortPredicate = TLess<>>
 		i32 RemoveSorted(
-		    const Type& item, SortPredicate sortPredicate = {}, const bool shouldShrink = true)
+		    const Value& value, SortPredicate sortPredicate = {}, const bool shouldShrink = true)
 		{
-			return i32(RemoveAt(FindSortedEqual(item, sortPredicate)));
+			return i32(RemoveAt(FindSortedEqual(value, sortPredicate)));
 		}
 
 		/**
