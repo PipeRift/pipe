@@ -67,23 +67,23 @@ namespace p::ecs
 	void BasePool::PopId(Id id)
 	{
 		const Index index = ecs::GetIndex(id);
-		i32& listIndex    = idIndices[index];
+		i32& idIndex      = idIndices[index];
 
-		idList[listIndex] = ecs::NoId;
-		lastRemovedIndex  = listIndex;
-		listIndex         = NO_INDEX;
+		idList[idIndex]  = ecs::NoId;
+		lastRemovedIndex = idIndex;
+		idIndex          = NO_INDEX;
 	}
 
 	void BasePool::PopSwapId(Id id)
 	{
-		const Index index = ecs::GetIndex(id);
-		i32& listIndex    = idIndices[i32(index)];
-
-		// Move last element to current index
-		idIndices[ecs::GetIndex(idList.Last())] = listIndex;
-
-		idList.RemoveAtSwapUnsafe(listIndex);
-		listIndex = NO_INDEX;
+		i32& idIndex = idIndices[ecs::GetIndex(id)];
+		if (idList.RemoveAtSwapUnsafe(idIndex)) [[likely]]
+		{
+			i32& lastIndex = idIndices[ecs::GetIndex(idList.Last())];
+			// Move last element to current index
+			idIndex   = lastIndex;
+			lastIndex = NO_INDEX;
+		}
 	}
 
 	void BasePool::ClearIds()
@@ -93,7 +93,7 @@ namespace p::ecs
 			const auto last = end();
 			for (auto it = begin(); it < last; ++it)
 			{
-				PopId(*it);
+				idIndices[ecs::GetIndex(*it)] = NO_INDEX;
 			}
 		}
 		else
@@ -102,7 +102,7 @@ namespace p::ecs
 			{
 				if (ecs::GetVersion(entity) != ecs::GetVersion(ecs::NoId))
 				{
-					PopId(entity);
+					idIndices[ecs::GetIndex(entity)] = NO_INDEX;
 				}
 			}
 		}
