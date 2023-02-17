@@ -47,12 +47,14 @@ namespace p::ecs
 		Context& operator=(const Context& other) noexcept;
 		Context& operator=(Context&& other) noexcept;
 
-#pragma region ECS API
+#pragma region Entities
 		Id Create();
 		void Create(Id id);
 		void Create(TSpan<Id> ids);
 		void Destroy(Id id);
 		void Destroy(TSpan<const Id> ids);
+
+		void* AddDefaulted(TypeId typeId, Id id);
 
 		// Adds Component to an entity (if the entity doesnt have it already)
 		template<typename C>
@@ -67,13 +69,6 @@ namespace p::ecs
 			Check(IsValid(id));
 			return AssurePool<C>().Add(id, value);
 		}
-		template<typename C, typename... Args>
-		decltype(auto) Add(Id id, Args&&... args)
-		{
-			Check(IsValid(id));
-			return AssurePool<C>().Add(id, Forward<Args>(args)...);
-		}
-
 		// Adds Component to an entity (if the entity doesnt have it already)
 		template<typename... Component>
 		void Add(Id id) requires(sizeof...(Component) > 1)
@@ -89,7 +84,7 @@ namespace p::ecs
 			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
 		}
 
-		// Add Components to many entities (if they dont have it already)
+		// Add Components to many entities (if they don't have it already)
 		template<typename... Component>
 		void AddN(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
 		{
@@ -164,95 +159,15 @@ namespace p::ecs
 			return AssurePool<Component>().GetOrAdd(id);
 		}
 
-
-		template<typename... Component>
-		bool HasAny(Id id) const
-		{
-			return [id](const auto*... cpool) {
-				return ((cpool && cpool->Has(id)) || ...);
-			}(GetPool<Component>()...);
-		}
-
-		template<typename... Component>
-		bool HasAll(Id id) const
-		{
-			return [id](const auto*... cpool) {
-				return ((cpool && cpool->Has(id)) && ...);
-			}(GetPool<Component>()...);
-		}
-
 		template<typename Component>
 		bool Has(Id id) const
 		{
-			return HasAny<Component>(id);
+			const auto* pool = GetPool<Component>();
+			return pool && pool->Has(id);
 		}
 
-		bool IsValid(Id id) const
-		{
-			return idRegistry.IsValid(id);
-		}
-
-		bool IsOrphan(const Id id) const
-		{
-			for (const auto& instance : pools)
-			{
-				if (instance.GetPool()->Has(id))
-				{
-					return false;
-				}
-			}
-			return true;
-		}
-
-		template<typename Static>
-		Static& SetStatic(Static&& value = {});
-
-		template<typename Static>
-		Static& SetStatic(const Static& value);
-
-		template<typename Static>
-		Static& GetOrSetStatic(Static&& newValue = {});
-
-		template<typename Static>
-		Static& GetOrSetStatic(const Static& newValue);
-
-		template<typename Static>
-		bool RemoveStatic();
-
-		template<typename Static>
-		Static& GetStatic()
-		{
-			return *TryGetStatic<Static>();
-		}
-		template<typename Static>
-		const Static& GetStatic() const
-		{
-			return *TryGetStatic<Static>();
-		}
-
-		template<typename Static>
-		Static* TryGetStatic()
-		{
-			const i32 index =
-			    statics.FindSortedEqual<TypeId, SortLessStatics>(GetTypeId<Mut<Static>>());
-			return index != NO_INDEX ? statics[index].GetUnsafe<Static>() : nullptr;
-		}
-		template<typename Static>
-		const Static* TryGetStatic() const
-		{
-			const i32 index =
-			    statics.FindSortedEqual<TypeId, SortLessStatics>(GetTypeId<Mut<Static>>());
-			return index != NO_INDEX ? statics[index].GetUnsafe<Static>() : nullptr;
-		}
-
-		template<typename Static>
-		bool HasStatic() const
-		{
-			const i32 index =
-			    statics.FindSortedEqual<TypeId, SortLessStatics>(GetTypeId<Mut<Static>>());
-			return index != NO_INDEX;
-		}
-
+		bool IsValid(Id id) const;
+		bool IsOrphan(const Id id) const;
 
 		template<typename Callback>
 		void Each(Callback cb) const
@@ -286,15 +201,7 @@ namespace p::ecs
 			(ClearPool<Component>(), ...);
 		}
 
-		void Reset(bool keepStatics = false)
-		{
-			idRegistry = {};
-			pools.Clear();
-			if (!keepStatics)
-			{
-				statics.Clear();
-			}
-		}
+		void Reset(bool keepStatics = false);
 
 		template<typename Component>
 		TBroadcast<Context&, TSpan<const Id>>& OnAdd()
@@ -320,17 +227,64 @@ namespace p::ecs
 			return static_cast<CopyConst<TPool<Mut<T>>, T>*>(GetPool(GetTypeId<Mut<T>>()));
 		}
 
-#pragma endregion ECS API
-
 		const TArray<PoolInstance>& GetPools() const
 		{
 			return pools;
 		}
+#pragma endregion Entities
 
+#pragma region Statics
+		void* TryGetStatic(TypeId typeId);
+		const void* TryGetStatic(TypeId typeId) const;
+		bool HasStatic(TypeId typeId) const;
+		bool RemoveStatic(TypeId typeId);
+
+		template<typename Static>
+		Static& SetStatic(Static&& value = {});
+		template<typename Static>
+		Static& SetStatic(const Static& value);
+		template<typename Static>
+		Static& GetOrSetStatic(Static&& newValue = {});
+		template<typename Static>
+		Static& GetOrSetStatic(const Static& newValue);
+		template<typename Static>
+		Static& GetStatic()
+		{
+			return *TryGetStatic<Static>();
+		}
+		template<typename Static>
+		const Static& GetStatic() const
+		{
+			return *TryGetStatic<Static>();
+		}
+		template<typename Static>
+		Static* TryGetStatic()
+		{
+			return static_cast<Static*>(TryGetStatic(GetTypeId<Mut<Static>>()));
+		}
+		template<typename Static>
+		const Static* TryGetStatic() const
+		{
+			return static_cast<const Static*>(TryGetStatic(GetTypeId<Mut<Static>>()));
+		}
+		template<typename Static>
+		bool HasStatic() const
+		{
+			return HasStatic(GetTypeId<Mut<Static>>());
+		}
+		template<typename Static>
+		bool RemoveStatic()
+		{
+			return RemoveStatic(GetTypeId<Mut<Static>>());
+		}
+#pragma endregion Statics
 
 	private:
 		void CopyFrom(const Context& other);
 		void MoveFrom(Context&& other);
+
+		OwnPtr& FindOrAddStaticPtr(
+		    TArray<OwnPtr>& statics, const TypeId typeId, bool* bAdded = nullptr);
 
 		template<typename T>
 		PoolInstance CreatePoolInstance() const;
@@ -371,91 +325,40 @@ namespace p::ecs
 	template<typename Static>
 	inline Static& Context::SetStatic(Static&& value)
 	{
-		const TypeId typeId = GetTypeId<Static>();
-
-		// Find static first to replace it
-		i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
-		if (index != NO_INDEX)
-		{
-			// Found, replace instance
-			OwnPtr& instance = statics[index];
-			instance         = MakeOwned<Static>(Forward<Static>(value));
-			return *instance.GetUnsafe<Static>();
-		}
-
-		// Not found. return new instance
-		index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Static>(value)));
-		return *statics[index].GetUnsafe<Static>();
+		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
+		ptr         = MakeOwned<Static>(Forward<Static>(value));
+		return *ptr.GetUnsafe<Static>();
 	}
 
 	template<typename Static>
 	inline Static& Context::SetStatic(const Static& value)
 	{
-		const TypeId typeId = GetTypeId<Static>();
-
-		// Find static first to replace it
-		i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
-		if (index != NO_INDEX)
-		{
-			// Found, replace instance
-			OwnPtr& instance = statics[index];
-			instance         = MakeOwned<Static>(value);
-			return *instance.GetUnsafe<Static>();
-		}
-
-		// Not found. return new instance
-		index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(value));
-		return *statics[index].GetUnsafe<Static>();
+		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
+		ptr         = MakeOwned<Static>(value);
+		return *ptr.GetUnsafe<Static>();
 	}
 
 	template<typename Static>
-	inline Static& Context::GetOrSetStatic(Static&& newValue)
+	inline Static& Context::GetOrSetStatic(Static&& value)
 	{
-		const TypeId typeId = GetTypeId<Static>();
-		i32 index           = statics.LowerBound<TypeId, SortLessStatics>(typeId);
-		if (index != NO_INDEX)
+		bool bAdded = false;
+		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
+		if (bAdded)
 		{
-			if (typeId != statics[index].GetId())
-			{
-				// Not found, insert sorted
-				statics.Insert(index, MakeOwned<Static>(Forward<Static>(newValue)));
-			}
-			return *statics[index].GetUnsafe<Static>();
+			ptr = MakeOwned<Static>(Forward<Static>(value));
 		}
-		// Not found, insert sorted
-		index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(Forward<Static>(newValue)));
-		return *statics[index].GetUnsafe<Static>();
+		return *ptr.GetUnsafe<Static>();
 	}
 
 	template<typename Static>
-	inline Static& Context::GetOrSetStatic(const Static& newValue)
+	inline Static& Context::GetOrSetStatic(const Static& value)
 	{
-		const TypeId typeId = GetTypeId<Static>();
-		i32 index           = statics.LowerBound<TypeId, SortLessStatics>(typeId);
-		if (index != NO_INDEX)
+		bool bAdded = false;
+		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
+		if (bAdded)
 		{
-			if (typeId != statics[index].GetId())
-			{
-				// Not found, insert sorted
-				statics.Insert(index, MakeOwned<Static>(newValue));
-			}
-			return *statics[index].GetUnsafe<Static>();
+			ptr = MakeOwned<Static>(value);
 		}
-		// Not found, insert sorted
-		index = statics.AddSorted<SortLessStatics>(MakeOwned<Static>(newValue));
-		return *statics[index].GetUnsafe<Static>();
-	}
-
-	template<typename Static>
-	inline bool Context::RemoveStatic()
-	{
-		const TypeId typeId = GetTypeId<Static>();
-		const i32 index     = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
-		if (index != NO_INDEX)
-		{
-			statics.RemoveAt(index);
-			return true;
-		}
-		return false;
+		return *ptr.GetUnsafe<Static>();
 	}
 }    // namespace p::ecs

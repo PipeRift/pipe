@@ -56,6 +56,19 @@ namespace p::ecs
 			Clear();
 		}
 
+		void* AddDefaulted(Id id) override
+		{
+			if constexpr (p::IsEmpty<T>)
+			{
+				Add(id);
+				return nullptr;
+			}
+			else
+			{
+				return &Add(id);
+			}
+		}
+
 		template<typename... Args>
 		auto Add(Id id, Args&&... args) -> Select<p::IsEmpty<T>, void, T&>
 		{

@@ -28,21 +28,30 @@ go_bandit([]() {
 	describe("ECS.Statics", []() {
 		it("Can set an static", [&]() {
 			ecs::Context ast;
+			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
 			auto& var = ast.SetStatic<StaticType>({4});
 			AssertThat(var.i, Equals(4));
+			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
+			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(false));
 		});
 		it("Can set two statics", [&]() {
 			ecs::Context ast;
+			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
+			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(false));
 			auto& var1 = ast.SetStatic<StaticType>({4});
 			auto& var2 = ast.SetStatic<StaticTypeTwo>({2});
 			AssertThat(var1.i, Equals(4));
 			AssertThat(var2.i, Equals(2));
+			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
+			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(true));
 		});
 		it("Can replace an static", [&]() {
 			ecs::Context ast;
+			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
 			ast.SetStatic<StaticType>({4});
 			ast.SetStatic<StaticType>({2});
 			AssertThat(ast.GetStatic<StaticType>().i, Equals(2));
+			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
 		});
 		it("Can get or set an static", [&]() {
 			ecs::Context ast;
@@ -54,7 +63,9 @@ go_bandit([]() {
 		it("Can remove an static", [&]() {
 			ecs::Context ast;
 			ast.SetStatic<StaticType>();
+			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
 			AssertThat(ast.RemoveStatic<StaticType>(), Is().True());
+			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
 
 			AssertThat(ast.RemoveStatic<StaticType>(), Is().False());
 		});

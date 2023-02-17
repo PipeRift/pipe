@@ -150,11 +150,6 @@ namespace p
 		{
 			return GetPool<C>()->Add(id, value);
 		}
-		template<typename C, typename... Args>
-		decltype(auto) Add(ecs::Id id, Args&&... args)
-		{
-			return GetPool<C>()->Add(id, Forward<Args>(args)...);
-		}
 
 		// Add component to an entities (if they dont have it already)
 		template<typename... C>
