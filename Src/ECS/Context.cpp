@@ -57,8 +57,19 @@ namespace p::ecs
 
 	void* Context::AddDefaulted(TypeId typeId, Id id)
 	{
-		BasePool* pool = GetPool(typeId);
-		return pool ? pool->AddDefaulted(id) : nullptr;
+		if (BasePool* pool = GetPool(typeId))
+		{
+			return pool->AddDefaulted(id);
+		}
+		return nullptr;
+	}
+
+	void Context::Remove(TypeId typeId, Id id)
+	{
+		if (BasePool* pool = GetPool(typeId))
+		{
+			pool->Remove(id);
+		}
 	}
 
 	BasePool* Context::GetPool(TypeId componentId) const

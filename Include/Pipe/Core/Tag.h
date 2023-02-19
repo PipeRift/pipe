@@ -75,9 +75,9 @@ namespace p::core
 		 */
 		static i32 FlushInactiveTags();
 
-		/** If enabled, A tag's string data will be instantly freed if no other tag is using it.
-		 * Manual flush will be more performant but FlushInactiveTags must be called periodically to
-		 * free memory. Automatic flush is ENABLED by default.
+		/** If enabled, a tag's string data will be instantly freed if no other tag is using it.
+		 * Manual flush however will be more performant but FlushInactiveTags must be called
+		 * periodically to free memory. Automatic flush is ENABLED by default.
 		 */
 		static void SetAutomaticFlush(bool enabled);
 

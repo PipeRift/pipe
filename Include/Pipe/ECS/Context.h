@@ -54,7 +54,9 @@ namespace p::ecs
 		void Destroy(Id id);
 		void Destroy(TSpan<const Id> ids);
 
+		// Reflection helpers
 		void* AddDefaulted(TypeId typeId, Id id);
+		void Remove(TypeId typeId, Id id);
 
 		// Adds Component to an entity (if the entity doesnt have it already)
 		template<typename C>
@@ -97,6 +99,7 @@ namespace p::ecs
 			Check(ids.Size() == values.Size());
 			AssurePool<Component>().Add(ids.begin(), ids.end(), values.begin());
 		}
+
 
 		template<typename Component>
 		void Remove(const Id id)
