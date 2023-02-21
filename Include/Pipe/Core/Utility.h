@@ -68,7 +68,7 @@ namespace p::core
 #if __has_builtin(__builtin_unreachable)
 		__builtin_unreachable();
 #elif defined(_MSC_VER)    // MSVC
-		__assume(false);
+		std::abort();
 #endif
 	}
 }    // namespace p::core
