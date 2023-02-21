@@ -11,9 +11,6 @@
 
 namespace p::core
 {
-	struct TagString;
-
-
 	/**
 	 * An string identified by id.
 	 * Searching, comparing and other operations are way cheaper, but creating (indexing) is more
@@ -22,15 +19,15 @@ namespace p::core
 	struct PIPE_API Tag
 	{
 	private:
-		sizet hash     = 0;
-		TagString* str = nullptr;
+		sizet hash       = 0;
+		const TChar* str = nullptr;
 
 
 	public:
 		constexpr Tag() = default;
 		explicit Tag(StringView value);
-		Tag(const TChar* str) : Tag(StringView{str}) {}
-		explicit Tag(const String& str) : Tag(StringView(str)) {}
+		Tag(const TChar* value) : Tag(StringView{value}) {}
+		explicit Tag(const String& value) : Tag(StringView(value)) {}
 
 		Tag(const Tag& other);
 		Tag(Tag&& other) noexcept;
@@ -38,6 +35,8 @@ namespace p::core
 		Tag& operator=(Tag&& other) noexcept;
 		~Tag();
 
+		const TChar* Data() const;
+		u32 Size() const;
 		StringView AsString() const;
 
 		bool operator==(const Tag& other) const
@@ -86,9 +85,9 @@ namespace p::core
 	};
 
 
-	inline StringView ToString(const Tag& name)
+	inline StringView ToString(const Tag& tag)
 	{
-		return name.AsString();
+		return tag.AsString();
 	}
 }    // namespace p::core
 
