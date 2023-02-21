@@ -11,6 +11,14 @@ using namespace p;
 
 go_bandit([]() {
 	describe("Core.Tag", []() {
+		it("Can copy empty", [&]() {
+			Tag tag{};
+			Tag tag2{};
+			AssertThat(tag.GetHash(), Equals(0));
+			AssertThat(tag.IsNone(), Equals(true));
+			AssertThat(tag2.GetHash(), Equals(0));
+			AssertThat(tag2.IsNone(), Equals(true));
+		});
 		it("Can assign from literal", [&]() {
 			Tag tag{"Kiwi"};
 			AssertThat(tag.AsString(), Equals("Kiwi"));

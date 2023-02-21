@@ -11,22 +11,27 @@
 
 namespace p::core
 {
-	struct TagString
+	struct TagHeader
 	{
 		u32 activeTags;
 		u32 size;
 
-		TagString(const TagString&) = delete;
+		TagHeader(const TagHeader&) = delete;
 		const TChar* Data() const
 		{
 			return reinterpret_cast<const TChar*>(this + 1);
 		};
 	};
 
-	struct TagStringRef
+	TagHeader* GetTagHeader(const TChar* data)
+	{
+		return reinterpret_cast<TagHeader*>(const_cast<TChar*>(data)) - 1;
+	}
+
+	struct TagHeaderRef
 	{
 		sizet hash     = 0;
-		TagString* str = nullptr;
+		TagHeader* str = nullptr;
 	};
 
 
@@ -35,12 +40,12 @@ namespace p::core
 	{
 		friend Tag;
 		struct MultiLinearArena arena;
-		TArray<TagStringRef> strings;
+		TArray<TagHeaderRef> strings;
 		bool automaticFlush = true;
 
 	public:
-		TagString& GetOrAddTagString(sizet hash, StringView value);
-		void FreeTagString(sizet hash, TagString& str);
+		TagHeader& GetOrAddTagString(sizet hash, StringView value);
+		void FreeTagString(sizet hash, TagHeader& str);
 	};
 
 
@@ -53,9 +58,10 @@ namespace p::core
 	{
 		if (!value.empty())
 		{
-			hash = Hash<StringView>()(value);
-			str  = &table.GetOrAddTagString(hash, value);
-			++str->activeTags;
+			hash              = Hash<StringView>()(value);
+			TagHeader& header = table.GetOrAddTagString(hash, value);
+			++header.activeTags;
+			str = header.Data();
 		}
 	}
 
@@ -63,7 +69,7 @@ namespace p::core
 	{
 		if (str)
 		{
-			++str->activeTags;
+			++GetTagHeader(str)->activeTags;
 		}
 	}
 
@@ -84,7 +90,7 @@ namespace p::core
 		str  = other.str;
 		if (str)
 		{
-			++str->activeTags;
+			++GetTagHeader(str)->activeTags;
 		}
 		return *this;
 	}
@@ -105,9 +111,21 @@ namespace p::core
 		InternalReset();
 	}
 
+	const TChar* Tag::Data() const
+	{
+		return str;
+	}
+	u32 Tag::Size() const
+	{
+		return str ? GetTagHeader(str)->size : 0;
+	}
 	StringView Tag::AsString() const
 	{
-		return str ? StringView{str->Data(), sizet(str->size)} : StringView{};
+		if (str)
+		{
+			return StringView{str, sizet(GetTagHeader(str)->size)};
+		}
+		return {};
 	}
 
 	void Tag::Read(Reader& ct)
@@ -124,7 +142,7 @@ namespace p::core
 	constexpr sizet GetAllocSize(sizet dataSize)
 	{
 		// +1 for the end character of the string
-		return sizeof(TagString) + sizeof(TChar) * (dataSize + 1);
+		return sizeof(TagHeader) + sizeof(TChar) * (dataSize + 1);
 	}
 
 	i32 Tag::FlushInactiveTags()
@@ -153,24 +171,25 @@ namespace p::core
 	{
 		if (str)
 		{
-			--str->activeTags;
-			if (table.automaticFlush && str->activeTags == 0) [[unlikely]]
+			auto* const header = GetTagHeader(str);
+			--header->activeTags;
+			if (table.automaticFlush && header->activeTags == 0) [[unlikely]]
 			{
-				table.FreeTagString(hash, *str);
+				table.FreeTagString(hash, *header);
 			}
 		}
 	}
 
-	bool operator<(const TagStringRef& ref, sizet hash)
+	bool operator<(const TagHeaderRef& ref, sizet hash)
 	{
 		return ref.hash < hash;
 	}
-	bool operator<(sizet hash, const TagStringRef& ref)
+	bool operator<(sizet hash, const TagHeaderRef& ref)
 	{
 		return hash < ref.hash;
 	}
 
-	TagString& TagStringTable::GetOrAddTagString(sizet hash, StringView value)
+	TagHeader& TagStringTable::GetOrAddTagString(sizet hash, StringView value)
 	{
 		i32 index;
 		{
@@ -192,21 +211,21 @@ namespace p::core
 		}
 
 		const sizet size = value.size();
-		auto* key =
-		    static_cast<TagString*>(p::Alloc(arena, GetAllocSize(size), alignof(TagString)));
-		key->activeTags = 0;
-		key->size       = size;
+		auto* header =
+		    static_cast<TagHeader*>(p::Alloc(arena, GetAllocSize(size), alignof(TagHeader)));
+		header->activeTags = 0;
+		header->size       = size;
 		// Copy string data
-		auto* const data = const_cast<TChar*>(key->Data());
+		auto* const data = const_cast<TChar*>(header->Data());
 		p::CopyMem(data, (void*)value.data(), sizeof(TChar) * size);
-		data[key->size] = '\0';
+		data[header->size] = '\0';
 
 		std::unique_lock lock{stringsListMutex};
-		strings.Insert(index, {hash, key});
-		return *key;
+		strings.Insert(index, {hash, header});
+		return *header;
 	}
 
-	void TagStringTable::FreeTagString(sizet hash, TagString& str)
+	void TagStringTable::FreeTagString(sizet hash, TagHeader& str)
 	{
 		std::unique_lock lock{stringsListMutex};
 		strings.RemoveSorted(hash, {}, false);
