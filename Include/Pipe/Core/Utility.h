@@ -65,10 +65,10 @@ namespace p::core
 
 	[[noreturn]] inline void Unreachable()
 	{
-#if __has_builtin(__builtin_unreachable)
-		__builtin_unreachable();
-#elif defined(_MSC_VER)    // MSVC
+#if defined(_MSC_VER)    // MSVC
 		std::abort();
+#elif __has_builtin(__builtin_unreachable)
+		__builtin_unreachable();
 #endif
 	}
 }    // namespace p::core
