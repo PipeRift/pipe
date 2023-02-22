@@ -25,7 +25,7 @@ namespace p::core
 
 	public:
 		constexpr Tag() = default;
-		explicit Tag(StringView value);
+		Tag(StringView value);
 		Tag(const TChar* value) : Tag(StringView{value}) {}
 		explicit Tag(const String& value) : Tag(StringView(value)) {}
 
