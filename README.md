@@ -19,7 +19,7 @@ If you feel a feature should be added feel free to propose it [creating an issue
 #### Core
 - Containers (Array, Map, Set)
 - Strings (String, StringView, FixedString)
-- Names (hashed unique strings)
+- Tags (hashed unique strings)
 - Compile-time string operations
 - Extensive strings constexpr API
 - Search and Sort algorithms
