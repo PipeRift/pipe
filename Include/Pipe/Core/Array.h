@@ -487,7 +487,7 @@ namespace p::core
 		i32 RemoveMany(const Container& items, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
-			for (i32 i = 0; i < lastSize; ++i)
+			for (i32 i = 0; i < Size(); ++i)
 			{
 				if (items.Contains(Data()[i]))
 				{

@@ -310,7 +310,7 @@ namespace p::ecs
 			{
 				for (i32 i = 0; i < Size(); ++i)
 				{
-					if (idList[i] != ecs::NoId)
+					if (ecs::GetVersion(idList[i]) != ecs::NoVersion)
 					{
 						data.RemoveAt(i);
 					}
