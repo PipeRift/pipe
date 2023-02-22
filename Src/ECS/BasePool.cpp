@@ -3,6 +3,7 @@
 #include "Pipe/ECS/BasePool.h"
 
 #include "Pipe/Core/Limits.h"
+#include "Pipe/ECS/Id.h"
 
 
 namespace p::ecs
@@ -69,7 +70,7 @@ namespace p::ecs
 		const Index index = ecs::GetIndex(id);
 		i32& idIndex      = idIndices[index];
 
-		idList[idIndex]  = ecs::NoId;
+		idList[idIndex]  = ecs::MakeId(index, ecs::NoVersion);    // Mark invalid but keep index
 		lastRemovedIndex = idIndex;
 		idIndex          = NO_INDEX;
 	}
@@ -91,18 +92,18 @@ namespace p::ecs
 		if (lastRemovedIndex == NO_INDEX)
 		{
 			const auto last = end();
-			for (auto it = begin(); it < last; ++it)
+			for (Id id : idList)
 			{
-				idIndices[ecs::GetIndex(*it)] = NO_INDEX;
+				idIndices[ecs::GetIndex(id)] = NO_INDEX;
 			}
 		}
 		else
 		{
-			for (Id entity : *this)
+			for (Id id : idList)
 			{
-				if (ecs::GetVersion(entity) != ecs::GetVersion(ecs::NoId))
+				if (ecs::GetVersion(id) != ecs::NoVersion)
 				{
-					idIndices[ecs::GetIndex(entity)] = NO_INDEX;
+					idIndices[ecs::GetIndex(id)] = NO_INDEX;
 				}
 			}
 		}
