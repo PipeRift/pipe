@@ -122,6 +122,15 @@ namespace p
 			       "use Get(defaultValue) instead.");
 			return value;
 		}
+		/** @return The optional value; undefined when IsSet() returns false. */
+		const Type* TryGet() const
+		{
+			return IsSet() ? &value : nullptr;
+		}
+		Type* TryGet()
+		{
+			return IsSet() ? &value : nullptr;
+		}
 
 		const Type& operator*() const
 		{
