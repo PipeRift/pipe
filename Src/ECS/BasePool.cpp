@@ -17,7 +17,7 @@ namespace p::ecs
 		for (i32 i = 0; i < other.Size(); ++i)
 		{
 			const Id id = other.idList[i];
-			if (id != ecs::NoId)
+			if (ecs::GetVersion(id) != ecs::NoVersion)
 			{
 				EmplaceId(id, true);
 			}
