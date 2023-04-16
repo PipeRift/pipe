@@ -1,12 +1,16 @@
 # Copyright 2015-2023 Piperift - All rights reserved
 
 # CMake version
-cmake_minimum_required (VERSION 3.18)
+cmake_minimum_required (VERSION 3.26)
 
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_CMAKE_API 2182bf5c-ef0d-489a-91da-49dbc3090d2a)
+set(CMAKE_EXPERIMENTAL_CXX_MODULE_DYNDEP 1)
 
 
 ################################################################################
@@ -93,6 +97,9 @@ pipe_target_enable_CPP20(Pipe)
 pipe_add_sanitizers(Pipe)
 pipe_target_shared_output_directory(Pipe)
 #pipe_target_link_time_optimization(Pipe)
+
+
+add_subdirectory(Libs/Memory)
 
 
 ################################################################################
