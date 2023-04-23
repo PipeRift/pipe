@@ -362,7 +362,7 @@ namespace p::core
 			DWORD errorCode = GetLastError();
 			TChar errorMessage[512];
 			PlatformMisc::GetSystemErrorMessage(errorMessage, 512, errorCode);
-			Log::Error("RunProcess failed: {} (0x{:08x})", errorMessage, errorCode);
+			Error("RunProcess failed: {} (0x{:08x})", errorMessage, errorCode);
 			return {};
 		}
 

@@ -84,7 +84,7 @@ namespace p
 		const i32 slotIndex = FindSmallestSlot(size);
 		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size()) [[unlikely]]
 		{
-			// Log::Error("Couldn't fit {} bytes", size);
+			// Error("Couldn't fit {} bytes", size);
 			return nullptr;
 		}
 
@@ -103,7 +103,7 @@ namespace p
 		const i32 slotIndex = FindSmallestSlot(size + (alignment - 1));
 		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size()) [[unlikely]]
 		{
-			// Log::Error("Couldn't fit {} bytes", size);
+			// Error("Couldn't fit {} bytes", size);
 			return nullptr;
 		}
 

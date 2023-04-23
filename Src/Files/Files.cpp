@@ -77,7 +77,7 @@ namespace p::files
 		}
 		if (err && bLogErrors)
 		{
-			Log::Warning(err.message());
+			Warning(err.message());
 		}
 		return bool(err);
 	}

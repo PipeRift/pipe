@@ -8,10 +8,10 @@
 #include <mutex>
 
 
-namespace p::Log
+namespace p
 {
-	PIPE_API void Init(Path logPath = {});
-	PIPE_API void Shutdown();
+	PIPE_API void InitLog(Path logPath = {});
+	PIPE_API void ShutdownLog();
 
 	PIPE_API void Info(StringView msg);
 	PIPE_API void Warning(StringView msg);
@@ -43,4 +43,4 @@ namespace p::Log
 			Error(Strings::Format(format, std::forward<Args>(args)...));
 		}
 	}
-};    // namespace p::Log
+};    // namespace p

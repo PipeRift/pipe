@@ -7,6 +7,6 @@ namespace p::core::Checks
 {
 	void FailedCheckError(const char* msg, sizet size)
 	{
-		Log::Error(StringView{msg, size});
+		Error(StringView{msg, size});
 	}
 }    // namespace p::core::Checks
