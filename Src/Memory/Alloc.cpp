@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #include "Pipe/Memory/Alloc.h"
 
@@ -25,7 +25,7 @@ namespace p
 		// FIX: Profiler reports alloc gets called frequently twice with the same pointer. Seems
 		// related to allocators
 		// TracyAllocS(ptr, size, 12);
-		GetHeapStats()->Add(ptr, size);
+		// GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
 	}
@@ -39,7 +39,7 @@ namespace p
 		void* const ptr = std::aligned_alloc(align, size);
 #endif
 #if P_DEBUG
-		GetHeapStats()->Add(ptr, size);
+		// GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
 	}
@@ -47,11 +47,11 @@ namespace p
 	void* HeapRealloc(void* ptr, sizet size)
 	{
 #if P_DEBUG
-		GetHeapStats()->Remove(ptr);
+		// GetHeapStats()->Remove(ptr);
 #endif
 		ptr = std::realloc(ptr, size);
 #if P_DEBUG
-		GetHeapStats()->Add(ptr, size);
+		// GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
 	}
@@ -59,7 +59,7 @@ namespace p
 	void HeapFree(void* ptr)
 	{
 #if P_DEBUG
-		GetHeapStats()->Remove(ptr);
+		// GetHeapStats()->Remove(ptr);
 #endif
 		std::free(ptr);
 	}

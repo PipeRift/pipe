@@ -1,6 +1,7 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/DataType.h"
 
 
@@ -9,7 +10,11 @@ namespace p
 	class StructType : public DataType
 	{
 	public:
-		StructType() : DataType(TypeCategory::Struct) {}
+		static constexpr TypeCategory typeCategory = TypeCategory::Struct;
+
+
+	public:
+		StructType() : DataType(typeCategory) {}
 
 		// NOTE: Most of the class comparison functions do actually
 		// call Type to reduce complexity and code duplication.
@@ -32,9 +37,9 @@ namespace p
 			DataType::GetChildrenDeep(reinterpret_cast<TArray<DataType*>&>(outChildren));
 		}
 
-		PIPE_API StructType* FindChild(const Name& Name) const
+		PIPE_API StructType* FindChild(const Tag& name) const
 		{
-			return static_cast<StructType*>(DataType::FindChild(Name));
+			return static_cast<StructType*>(DataType::FindChild(name));
 		}
 
 		PIPE_API bool IsA(StructType* other) const

@@ -1,5 +1,5 @@
 
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Platform.h"
@@ -54,6 +54,19 @@ namespace p::ecs
 		~TPool() override
 		{
 			Clear();
+		}
+
+		void* AddDefaulted(Id id) override
+		{
+			if constexpr (p::IsEmpty<T>)
+			{
+				Add(id);
+				return nullptr;
+			}
+			else
+			{
+				return &Add(id);
+			}
 		}
 
 		template<typename... Args>
@@ -297,7 +310,7 @@ namespace p::ecs
 			{
 				for (i32 i = 0; i < Size(); ++i)
 				{
-					if (idList[i] != ecs::NoId)
+					if (ecs::GetVersion(idList[i]) != ecs::NoVersion)
 					{
 						data.RemoveAt(i);
 					}

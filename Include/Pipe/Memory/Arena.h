@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Function.h"
@@ -11,7 +11,7 @@ namespace p
 	class ArenaAllocator;
 	namespace core
 	{
-		template<typename Type, typename Allocator>
+		template<typename Type>
 		struct TArray;
 	}
 	using namespace core;
@@ -97,7 +97,7 @@ namespace p
 		{
 			return 0;
 		}
-		virtual void GetBlocks(TArray<Memory::Block, ArenaAllocator>& outBlocks) const {}
+		virtual void GetBlocks(TArray<Memory::Block>& outBlocks) const {}
 	};
 
 	class PIPE_API ChildArena : public Arena

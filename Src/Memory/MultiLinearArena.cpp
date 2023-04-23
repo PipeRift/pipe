@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #include "Pipe/Memory/MultiLinearArena.h"
 
@@ -88,13 +88,13 @@ namespace p
 	template<sizet blockSize>
 	void LinearBasePool<blockSize>::Release(Arena& parentArena)
 	{
-		insert             = nullptr;
-		LinearBlock* block = freeBlock;
-		while (block)
+		// Iterate backwards all blocks while freeing them
+		insert = nullptr;
+		while (freeBlock != nullptr)
 		{
-			LinearBlock* const blockToRemove = block;
-			block                            = block->last;
-			p::Free(parentArena, blockToRemove->unaligned, GetAllocatedBlockSize());
+			LinearBlock* const block = freeBlock;
+			freeBlock                = freeBlock->last;
+			p::Free(parentArena, block->unaligned, GetAllocatedBlockSize());
 		}
 		freeBlock = nullptr;
 	}

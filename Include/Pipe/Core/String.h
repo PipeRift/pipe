@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #pragma once
 
@@ -23,16 +23,15 @@
 
 namespace p::core
 {
-	template<typename CharType, typename Allocator = ArenaAllocator>
-	using TString =
-	    std::basic_string<CharType, std::char_traits<CharType>, STLAllocator<CharType, Allocator>>;
+	template<typename CharType>
+	using TString = std::basic_string<CharType, std::char_traits<CharType>,
+	    STLAllocator<CharType, ArenaAllocator>>;
 	using String  = TString<TChar>;
 	using WString = TString<WideChar>;
 
-	template<typename CharType, typename Allocator = ArenaAllocator,
-	    sizet inlineSize = fmt::inline_buffer_size>
+	template<typename CharType, sizet inlineSize = fmt::inline_buffer_size>
 	using TStringBuffer =
-	    fmt::basic_memory_buffer<CharType, inlineSize, STLAllocator<CharType, Allocator>>;
+	    fmt::basic_memory_buffer<CharType, inlineSize, STLAllocator<CharType, ArenaAllocator>>;
 	using StringBuffer = TStringBuffer<TChar>;
 
 

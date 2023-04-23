@@ -1,9 +1,9 @@
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
-// Copyright 2015-2022 Piperift - All rights reserved
-
 
 #include "Pipe/Core/EnumFlags.h"
-#include "Pipe/Core/Name.h"
+#include "Pipe/Core/Tag.h"
+#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/Type.h"
 
 #include <magic_enum.hpp>
@@ -16,7 +16,6 @@ namespace p
 	{
 		return magic_enum::enum_count<T>();
 	}
-
 
 	template<typename T>
 	constexpr std::optional<T> GetEnumValue(StringView str)
@@ -71,11 +70,14 @@ namespace p
 		u32 valueSize = 0;
 		// Values contains all values sequentially (according to valueSize)
 		TArray<u8> values;
-		TArray<Name> names;
+		TArray<Tag> names;
+
+	public:
+		static constexpr TypeCategory typeCategory = TypeCategory::Enum;
 
 
 	public:
-		PIPE_API EnumType() : Type(TypeCategory::Enum) {}
+		PIPE_API EnumType() : Type(typeCategory) {}
 
 
 		template<Integral T>
@@ -84,7 +86,7 @@ namespace p
 			Check(sizeof(T) >= valueSize);
 			memcpy(data, &data, valueSize);
 		}
-		void SetValue(void* data, Name name) const
+		void SetValue(void* data, Tag name) const
 		{
 			i32 index = names.FindIndex(name);
 			if (index != NO_INDEX)
@@ -100,10 +102,10 @@ namespace p
 			return *reinterpret_cast<T*>(data);
 		}
 
-		Name GetName(void* data) const
+		Tag GetName(void* data) const
 		{
 			const i32 index = GetIndexFromValue(data);
-			return index != NO_INDEX ? GetNameByIndex(index) : Name::None();
+			return index != NO_INDEX ? GetNameByIndex(index) : Tag::None();
 		}
 
 		i32 GetIndexFromValue(void* data) const
@@ -130,9 +132,9 @@ namespace p
 		{
 			return *reinterpret_cast<T*>(GetValuePtrByIndex(index));
 		}
-		Name GetNameByIndex(i32 index) const
+		Tag GetNameByIndex(i32 index) const
 		{
-			return names.IsValidIndex(index) ? names[index] : Name::None();
+			return names.IsValidIndex(index) ? names[index] : Tag::None();
 		}
 
 		// Intentionally unsafe function. Do not modify the value!

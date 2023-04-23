@@ -1,12 +1,13 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
 #include <Pipe/Core/Array.h>
 #include <Pipe/Core/Guid.h>
 #include <Pipe/Core/Map.h>
-#include <Pipe/Core/Name.h>
 #include <Pipe/Core/String.h>
+#include <Pipe/Core/Tag.h>
 #include <Pipe/Reflect/Reflection.h>
+
 
 
 using namespace snowhouse;

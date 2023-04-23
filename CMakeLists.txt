@@ -1,3 +1,5 @@
+# Copyright 2015-2023 Piperift - All rights reserved
+
 # CMake version
 cmake_minimum_required (VERSION 3.18)
 
@@ -87,9 +89,9 @@ if(PIPE_ENABLE_PROFILER)
     target_compile_definitions(Pipe PUBLIC PIPE_ENABLE_PROFILER=1)
     target_link_libraries(Pipe PUBLIC Tracy)
 endif()
-pipe_target_shared_output_directory(Pipe)
 pipe_target_enable_CPP20(Pipe)
 pipe_add_sanitizers(Pipe)
+pipe_target_shared_output_directory(Pipe)
 #pipe_target_link_time_optimization(Pipe)
 
 

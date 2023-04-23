@@ -1,6 +1,7 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
+#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/Type.h"
 
 
@@ -13,6 +14,10 @@ namespace p
 		friend struct TNativeTypeBuilder;
 
 	public:
-		PIPE_API NativeType() : Type(TypeCategory::Native) {}
+		static constexpr TypeCategory typeCategory = TypeCategory::Native;
+
+
+	public:
+		PIPE_API NativeType() : Type(typeCategory) {}
 	};
 }    // namespace p

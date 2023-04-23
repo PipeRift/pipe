@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #pragma once
 
@@ -31,11 +31,15 @@ namespace p::core
 		using KeyType       = Key;
 		using ValueType     = Value;
 		using AllocatorType = Allocator;
-		using HashMapType   = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>,
-            std::equal_to<KeyType>, STLAllocator<TPair<Key, Value>, AllocatorType>>;
+		using KeyEqual      = std::equal_to<KeyType>;
+		using HashMapType   = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>, KeyEqual,
+            STLAllocator<TPair<Key, Value>, AllocatorType>>;
 
 		using Iterator      = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;
+
+		template<typename U>
+		using HasIsTransparent = tsl::detail_sparse_hash::has_is_transparent<U>;
 
 
 	private:
@@ -128,43 +132,84 @@ namespace p::core
 			// map.resize(sizeNum);
 		}
 
-		Iterator FindIt(const KeyType& item)
+		Iterator FindIt(const KeyType& key)
 		{
-			return map.find(item);
+			return map.find(key);
 		}
 
-		ConstIterator FindIt(const KeyType& item) const
+		Iterator FindIt(const KeyType& key, sizet precalculatedHash)
 		{
-			return map.find(item);
+			return map.find(key, precalculatedHash);
 		}
 
-		ValueType* Find(const KeyType& key)
+		ConstIterator FindIt(const KeyType& key) const
+		{
+			return map.find(key);
+		}
+
+		ConstIterator FindIt(const KeyType& key, sizet precalculatedHash) const
+		{
+			return map.find(key, precalculatedHash);
+		}
+
+		template<typename K>
+		Iterator FindIt(const K& key) requires(HasIsTransparent<KeyEqual>::value)
+		{
+			return map.find(key);
+		}
+
+		template<typename K>
+		Iterator FindIt(const K& key, sizet precalculatedHash) requires(
+		    HasIsTransparent<KeyEqual>::value)
+		{
+			return map.find(key, precalculatedHash);
+		}
+
+		template<typename K>
+		ConstIterator FindIt(const K& key) const requires(HasIsTransparent<KeyEqual>::value)
+		{
+			return map.find(key);
+		}
+
+		template<typename K>
+		ConstIterator FindIt(const K& key, sizet precalculatedHash) const
+		    requires(HasIsTransparent<KeyEqual>::value)
+		{
+			return map.find(key, precalculatedHash);
+		}
+
+		template<typename K>
+		ValueType* Find(const K& key)
 		{
 			Iterator it = FindIt(key);
 			return it != end() ? const_cast<ValueType*>(&it->second) : nullptr;
 		}
 
-		const ValueType* Find(const KeyType& key) const
+		template<typename K>
+		const ValueType* Find(const K& key) const
 		{
 			ConstIterator it = FindIt(key);
 			return it != end() ? &it->second : nullptr;
 		}
 
-		ValueType& FindRef(const KeyType& key)
+		template<typename K>
+		ValueType& FindRef(const K& key)
 		{
 			Iterator it = FindIt(key);
 			assert(it != end() && "Key not found, can't dereference its value");
 			return it->second;
 		}
 
-		const ValueType& FindRef(const KeyType& key) const
+		template<typename K>
+		const ValueType& FindRef(const K& key) const
 		{
 			ConstIterator it = FindIt(key);
 			assert(it != end() && "Key not found, can't dereference its value");
 			return it->second;
 		}
 
-		bool Contains(const KeyType& key) const
+		template<typename K>
+		bool Contains(const K& key) const
 		{
 			return FindIt(key) != map.end();
 		}

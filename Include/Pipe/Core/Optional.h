@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #pragma once
 
@@ -121,6 +121,15 @@ namespace p
 			       "Called Get() on an unset Optional. Please either check IsSet() or "
 			       "use Get(defaultValue) instead.");
 			return value;
+		}
+		/** @return The optional value; undefined when IsSet() returns false. */
+		const Type* TryGet() const
+		{
+			return IsSet() ? &value : nullptr;
+		}
+		Type* TryGet()
+		{
+			return IsSet() ? &value : nullptr;
 		}
 
 		const Type& operator*() const

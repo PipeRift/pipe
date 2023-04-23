@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #if P_PLATFORM_LINUX
 #	include "Pipe/Core/Linux/LinuxPlatformProcess.h"
@@ -60,6 +60,22 @@ namespace p::core
 		{
 			exit(execl("/usr/bin/xdg-open", "xdg-open", fullPath.data(), (char*)0));
 		}
+	}
+
+	String LinuxPlatformProcess::GetCurrentWorkingPath()
+	{
+		String path;
+		path.reserve(PlatformMisc::GetMaxPathLength());
+		if (getcwd(path.data(), path.capacity()) != nullptr)
+		{
+			path.resize(std::strlen(path.data()));
+		}
+		return path;
+	}
+
+	bool LinuxPlatformProcess::SetCurrentWorkingPath(StringView path)
+	{
+		return chdir(path.data()) == 0;
 	}
 }    // namespace p::core
 #endif

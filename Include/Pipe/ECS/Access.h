@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/TypeList.h"
@@ -149,11 +149,6 @@ namespace p
 		decltype(auto) Add(ecs::Id id, const C& value) const requires(IsSame<C, Mut<C>>)
 		{
 			return GetPool<C>()->Add(id, value);
-		}
-		template<typename C, typename... Args>
-		decltype(auto) Add(ecs::Id id, Args&&... args)
-		{
-			return GetPool<C>()->Add(id, Forward<Args>(args)...);
 		}
 
 		// Add component to an entities (if they dont have it already)

@@ -1,8 +1,9 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #include "Pipe/ECS/BasePool.h"
 
 #include "Pipe/Core/Limits.h"
+#include "Pipe/ECS/Id.h"
 
 
 namespace p::ecs
@@ -16,7 +17,7 @@ namespace p::ecs
 		for (i32 i = 0; i < other.Size(); ++i)
 		{
 			const Id id = other.idList[i];
-			if (id != ecs::NoId)
+			if (ecs::GetVersion(id) != ecs::NoVersion)
 			{
 				EmplaceId(id, true);
 			}
@@ -67,23 +68,23 @@ namespace p::ecs
 	void BasePool::PopId(Id id)
 	{
 		const Index index = ecs::GetIndex(id);
-		i32& listIndex    = idIndices[index];
+		i32& idIndex      = idIndices[index];
 
-		idList[listIndex] = ecs::NoId;
-		lastRemovedIndex  = listIndex;
-		listIndex         = NO_INDEX;
+		idList[idIndex]  = ecs::MakeId(index, ecs::NoVersion);    // Mark invalid but keep index
+		lastRemovedIndex = idIndex;
+		idIndex          = NO_INDEX;
 	}
 
 	void BasePool::PopSwapId(Id id)
 	{
-		const Index index = ecs::GetIndex(id);
-		i32& listIndex    = idIndices[i32(index)];
-
-		// Move last element to current index
-		idIndices[ecs::GetIndex(idList.Last())] = listIndex;
-
-		idList.RemoveAtSwapUnsafe(listIndex);
-		listIndex = NO_INDEX;
+		i32& idIndex = idIndices[ecs::GetIndex(id)];
+		if (idList.RemoveAtSwapUnsafe(idIndex)) [[likely]]
+		{
+			i32& lastIndex = idIndices[ecs::GetIndex(idList.Last())];
+			// Move last element to current index
+			idIndex   = lastIndex;
+			lastIndex = NO_INDEX;
+		}
 	}
 
 	void BasePool::ClearIds()
@@ -91,18 +92,18 @@ namespace p::ecs
 		if (lastRemovedIndex == NO_INDEX)
 		{
 			const auto last = end();
-			for (auto it = begin(); it < last; ++it)
+			for (Id id : idList)
 			{
-				PopId(*it);
+				idIndices[ecs::GetIndex(id)] = NO_INDEX;
 			}
 		}
 		else
 		{
-			for (Id entity : *this)
+			for (Id id : idList)
 			{
-				if (ecs::GetVersion(entity) != ecs::GetVersion(ecs::NoId))
+				if (ecs::GetVersion(id) != ecs::NoVersion)
 				{
-					PopId(entity);
+					idIndices[ecs::GetIndex(id)] = NO_INDEX;
 				}
 			}
 		}

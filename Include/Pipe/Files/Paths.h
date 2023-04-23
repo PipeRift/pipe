@@ -1,8 +1,9 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #pragma once
 
 #include "Pipe/Core/Platform.h"
+#include "Pipe/Core/Span.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Export.h"
@@ -11,32 +12,29 @@
 
 namespace p::files
 {
-	///////////////////////////////////////////////////////////
-	// PATHS
+	constexpr TChar separator{'/'};
+#if P_PLATFORM_WINDOWS
+	constexpr TChar preferredSeparator{'\\'};
+#else
+	constexpr TChar preferredSeparator{'/'};
+#endif
+	constexpr TChar dot{'.'};
+	constexpr TChar colon{':'};
 
-	inline PIPE_API void SetCurrentPath(Path path)
-	{
-		fs::current_path(path);
-	}
+	namespace detail
+	{}    // namespace detail
 
-	inline PIPE_API Path GetCurrentPath()
-	{
-		return fs::current_path();
-	}
+	PIPE_API void SetCurrentPath(StringView path);
 
-	PIPE_API Path GetBasePath();
+	PIPE_API StringView GetCurrentPath();
 
-
-	///////////////////////////////////////////////////////////
-	// PATH HELPERS
-
-	inline PIPE_API constexpr bool IsSlash(TChar c)
-	{
-		return c == TX('\\') || c == TX('/');
-	}
+	PIPE_API StringView GetBasePath();
 
 	PIPE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
+	PIPE_API const TChar* FindRelativeChar(
+	    const TChar* const first, const TChar* const last, const TChar*& outNameEnd);
 	PIPE_API const TChar* FindFilename(const TChar* const first, const TChar* last);
+	PIPE_API const TChar* FindExtension(const TChar* const first, const TChar* last);
 
 	// @return root name of a path, or an empty view if missing
 	// E.g: "C:\Folder" -> "C:"
@@ -56,17 +54,62 @@ namespace p::files
 	PIPE_API StringView GetParentPath(StringView path);
 
 	PIPE_API StringView GetFilename(StringView path);
-	PIPE_API String GetFilename(const Path& path);
 	inline StringView GetFilename(const String& path)
 	{
 		return GetFilename(StringView{path});
 	}
+	PIPE_API bool HasFilename(StringView path);
 
+	PIPE_API StringView GetStem(StringView path);
+	PIPE_API bool HasStem(StringView path);
 
-	PIPE_API Path ToRelativePath(const Path& path, const Path& parent = GetCurrentPath());
-	PIPE_API Path ToAbsolutePath(const Path& path, const Path& parent = GetCurrentPath());
-	PIPE_API bool IsRelativePath(const Path& path);
-	PIPE_API bool IsAbsolutePath(const Path& path);
+	PIPE_API StringView GetExtension(StringView path);
+	/** Replaces the extension of a path */
+	PIPE_API void ReplaceExtension(String& path, StringView newExtension);
+	PIPE_API bool HasExtension(StringView path);
+
+	PIPE_API bool IsAbsolutePath(StringView path);
+	PIPE_API bool IsRelativePath(StringView path);
+	PIPE_API bool Exists(StringView path);
+
+	PIPE_API String JoinPaths(StringView base, StringView relative);
+	PIPE_API String JoinPaths(StringView base, StringView relative, StringView relative2);
+	PIPE_API String JoinPaths(TSpan<StringView> paths);
+	PIPE_API void AppendToPath(String& base, StringView other);
+
+	PIPE_API bool AppendPathSeparatorIfNeeded(String& path);
+
+	PIPE_API String ToRelativePath(StringView path);
+	PIPE_API String ToAbsolutePath(StringView path);
+	PIPE_API String ToRelativePath(StringView path, StringView parent);
+	PIPE_API String ToAbsolutePath(StringView path, StringView parent);
+
+	String LexicallyRelative(StringView path, StringView base);
+	PIPE_API void SetCanonical(String& path);
+	PIPE_API void SetWeaklyCanonical(String& path);
+
+	inline PIPE_API constexpr bool IsSeparator(TChar c)
+	{
+		return c == separator
+#if P_PLATFORM_WINDOWS
+		    || c == preferredSeparator
+#endif
+		    ;
+	}
+
+	//  For POSIX, IsSeparator() and IsElementSeparator() are identical since
+	//  a forward slash is the only valid directory separator and also the only valid
+	//  element separator. For Windows, forward slash and back slash are the possible
+	//  directory separators, but colon (example: "c:foo") is also an element separator.
+	inline PIPE_API constexpr bool IsElementSeparator(TChar c)
+	{
+		return c == separator
+#if P_PLATFORM_WINDOWS
+		    || c == preferredSeparator || c == colon
+#endif
+		    ;
+	}
+
 	PIPE_API String ToString(const Path& path);
 	PIPE_API Path ToPath(StringView pathStr);
 }    // namespace p::files

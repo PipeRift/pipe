@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #pragma once
 
@@ -20,7 +20,7 @@ namespace p::files
 	 * can decide to, for example, display last user folder (windows).
 	 * @return selected file path
 	 */
-	PIPE_API Path SelectFileDialog(StringView title, const Path& defaultPath,
+	PIPE_API String SelectFileDialog(StringView title, StringView defaultPath,
 	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}
@@ -35,8 +35,8 @@ namespace p::files
 	 * @param alwaysShowDefaultPath if true dialog will open to default path. Else, the system
 	 * can decide to, for example, display last user folder (windows).
 	 */
-	PIPE_API void SelectFilesDialog(StringView title, const Path& defaultPath,
-	    TArray<Path>& outFiles,
+	PIPE_API void SelectFilesDialog(StringView title, StringView defaultPath,
+	    TArray<String>& outFiles,
 	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}
@@ -51,8 +51,8 @@ namespace p::files
 	 * can decide to, for example, display last user folder (windows).
 	 * @return selected folder path
 	 */
-	PIPE_API Path SelectFolderDialog(
-	    StringView title, const Path& defaultPath, bool alwaysShowDefaultPath = false);
+	PIPE_API String SelectFolderDialog(
+	    StringView title, StringView defaultPath, bool alwaysShowDefaultPath = false);
 
 	/**
 	 * Selects a file path for a file to be saved using a system dialog.
@@ -62,7 +62,7 @@ namespace p::files
 	 * can decide to, for example, display last user folder (windows).
 	 * @return selected file path
 	 */
-	PIPE_API Path SaveFileDialog(StringView title, const Path& defaultPath,
+	PIPE_API String SaveFileDialog(StringView title, StringView defaultPath,
 	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}

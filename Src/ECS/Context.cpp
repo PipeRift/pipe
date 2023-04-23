@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #include "Pipe/ECS/Context.h"
 
@@ -55,6 +55,23 @@ namespace p::ecs
 		}
 	}
 
+	void* Context::AddDefaulted(TypeId typeId, Id id)
+	{
+		if (BasePool* pool = GetPool(typeId))
+		{
+			return pool->AddDefaulted(id);
+		}
+		return nullptr;
+	}
+
+	void Context::Remove(TypeId typeId, Id id)
+	{
+		if (BasePool* pool = GetPool(typeId))
+		{
+			pool->Remove(id);
+		}
+	}
+
 	BasePool* Context::GetPool(TypeId componentId) const
 	{
 		const i32 index = pools.FindSortedEqual(PoolInstance{componentId, {}});
@@ -90,5 +107,75 @@ namespace p::ecs
 
 		// TODO: Move statics
 		// TODO: Cache pools
+	}
+
+	bool Context::IsValid(Id id) const
+	{
+		return idRegistry.IsValid(id);
+	}
+
+	bool Context::IsOrphan(const Id id) const
+	{
+		for (const auto& instance : pools)
+		{
+			if (instance.GetPool()->Has(id))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	void* Context::TryGetStatic(TypeId typeId)
+	{
+		const i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
+		return index != NO_INDEX ? statics[index].Get() : nullptr;
+	}
+	const void* Context::TryGetStatic(TypeId typeId) const
+	{
+		const i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
+		return index != NO_INDEX ? statics[index].Get() : nullptr;
+	}
+	bool Context::HasStatic(TypeId typeId) const
+	{
+		return statics.FindSortedEqual<TypeId, SortLessStatics>(typeId) != NO_INDEX;
+	}
+	bool Context::RemoveStatic(TypeId typeId)
+	{
+		const i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
+		if (index != NO_INDEX)
+		{
+			statics.RemoveAt(index);
+			return true;
+		}
+		return false;
+	}
+
+	void Context::Reset(bool keepStatics)
+	{
+		idRegistry = {};
+		pools.Clear();
+		if (!keepStatics)
+		{
+			statics.Clear();
+		}
+	}
+
+	OwnPtr& Context::FindOrAddStaticPtr(TArray<OwnPtr>& statics, const TypeId typeId, bool* bAdded)
+	{
+		i32 index = statics.LowerBound<TypeId, SortLessStatics>(typeId);
+		if (index == NO_INDEX)
+		{
+			// Insert at the end
+			index = statics.Size();
+		}
+		else if (typeId == statics[index].GetId())
+		{
+			return statics[index];
+		}
+		statics.Insert(index, {});
+		if (bAdded)
+			*bAdded = true;
+		return statics[index];
 	}
 }    // namespace p::ecs

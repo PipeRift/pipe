@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Memory/OwnPtr.h"
@@ -50,7 +50,7 @@ namespace p
 	 * @returns the type found, if any
 	 */
 	template<typename T>
-	Type* FindType(Name name)
+	Type* FindType(Tag name)
 	{
 		static_assert(HasType<T>(), "T is not reflected and doesn't have a type.");
 

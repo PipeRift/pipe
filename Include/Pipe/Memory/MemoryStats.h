@@ -1,8 +1,7 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Backward.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Set.h"
@@ -14,34 +13,33 @@
 
 namespace p
 {
-	// Use a custom allocator that doesn't track allocations. Otherwise tracking stats would loop
-	class MemoryStatsAllocator : public IAllocator
+	// Use a custom arena that doesn't track allocations. Otherwise tracking stats would loop
+	class PIPE_API MemoryStatsArena : public Arena
 	{
 	public:
-		template<typename T>
-		class Typed
+		MemoryStatsArena()
 		{
-		public:
-			T* Alloc(const sizet count)
-			{
-				return static_cast<T*>(std::malloc(sizeof(T) * count));
-			}
+			Interface<MemoryStatsArena, &MemoryStatsArena::Alloc, &MemoryStatsArena::Alloc,
+			    &MemoryStatsArena::Resize, &MemoryStatsArena::Free>();
+		}
+		~MemoryStatsArena() override = default;
 
-			T* Alloc(const sizet count, const sizet align)
-			{
-				return static_cast<T*>(std::malloc(sizeof(T) * count));
-			}
-
-			bool Resize(T* ptr, sizet ptrCount, sizet count)
-			{
-				return false;
-			}
-
-			void Free(T* ptr, sizet count)
-			{
-				std::free(ptr);
-			}
-		};
+		inline void* Alloc(const sizet size)
+		{
+			return std::malloc(size);
+		}
+		inline void* Alloc(const sizet size, const sizet align)
+		{
+			return std::malloc(size);
+		}
+		inline bool Resize(void* ptr, const sizet ptrSize, const sizet size)
+		{
+			return false;
+		}
+		inline void Free(void* ptr, sizet size)
+		{
+			std::free(ptr);
+		}
 	};
 
 
@@ -73,13 +71,11 @@ namespace p
 	struct PIPE_API MemoryStats
 	{
 		sizet used = 0;
-
 		mutable std::shared_mutex mutex;
-		TArray<AllocationStats, MemoryStatsAllocator> allocations;
+		std::vector<AllocationStats> allocations;
 #if P_ENABLE_ALLOCATION_STACKS
-		TArray<backward::StackTrace<MemoryStatsAllocator>, MemoryStatsAllocator> allocationStacks;
+		std::vector<backward::StackTrace<std::allocator>> allocationStacks{};
 #endif
-
 
 		~MemoryStats();
 

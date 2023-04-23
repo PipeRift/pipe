@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #include "Pipe/Reflect/DataType.h"
 
@@ -31,7 +31,17 @@ namespace p
 		return false;
 	}
 
-	const Property* DataType::FindProperty(const Name& propertyName) const
+	DataType* DataType::GetParent() const
+	{
+		return parent;
+	}
+
+	bool DataType::IsParentOf(const DataType* other) const
+	{
+		return other && other->IsChildOf(this);
+	}
+
+	const Property* DataType::FindProperty(const Tag& propertyName) const
 	{
 		const auto* prop = properties.Find([propertyName](Property* prop) {
 			return prop->GetName() == propertyName;
@@ -82,14 +92,14 @@ namespace p
 		}
 	}
 
-	DataType* DataType::FindChild(const Name& className) const
+	DataType* DataType::FindChild(const Tag& className) const
 	{
 		if (className.IsNone())
 			return nullptr;
 
 		for (auto* const child : children)
 		{
-			if (child->GetName() == className.ToString())    // TODO: Use Names
+			if (child->GetName() == className.AsString())    // TODO: Use Tags
 			{
 				return child;
 			}

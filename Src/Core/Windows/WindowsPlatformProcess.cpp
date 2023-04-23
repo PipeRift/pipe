@@ -1,10 +1,11 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #include "Pipe/Core/Platform.h"
 #if P_PLATFORM_WINDOWS
 #	include "Pipe/Files/Paths.h"
 #	include "Pipe/Files/Files.h"
 #	include "Pipe/Core/Windows/WindowsPlatformProcess.h"
+#	include "Pipe/Core/Windows/WindowsPlatformMisc.h"
 #	include "Pipe/Core/String.h"
 #	include "Pipe/Core/Log.h"
 
@@ -61,6 +62,42 @@ namespace p::core
 	StringView WindowsPlatformProcess::GetBasePath()
 	{
 		return GetExecutablePath();
+	}
+
+	String WindowsPlatformProcess::GetCurrentWorkingPath()
+	{
+		String buffer;
+		// Loop in case the variable changes while running, or the buffer isn't large
+		// enough.
+		for (u32 length = 128;;)
+		{
+			buffer.resize(length);
+#	if PLATFORM_TCHAR_IS_WCHAR
+			length = ::GetCurrentDirectoryW(buffer.capacity(), buffer.data());
+#	else
+			length = ::GetCurrentDirectoryA(buffer.capacity(), buffer.data());
+#	endif
+			if (length == 0)
+			{
+				buffer.clear();
+				break;
+			}
+			else if (length < u32(buffer.size()))
+			{
+				buffer.resize(length);
+				break;
+			}
+		}
+		return Move(buffer);
+	}
+
+	bool WindowsPlatformProcess::SetCurrentWorkingPath(StringView path)
+	{
+#	if PLATFORM_TCHAR_IS_WCHAR
+		return ::SetCurrentDirectoryW(path.data());
+#	else
+		return ::SetCurrentDirectoryA(path.data());
+#	endif
 	}
 
 

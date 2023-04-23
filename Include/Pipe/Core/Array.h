@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #pragma once
 
@@ -10,22 +10,22 @@
 #include "Pipe/Core/Tuples.h"
 #include "Pipe/Memory/STLAllocator.h"
 
+#include <algorithm>
 #include <cassert>
 #include <vector>
 
 
 namespace p::core
 {
-	template<typename Type, typename Allocator = ArenaAllocator>
+	template<typename Type>
 	struct TArray
 	{
 	public:
-		template<typename OtherType, typename OtherAllocator>
+		template<typename OtherType>
 		friend struct TArray;
 
-		using AllocatorType = Allocator;
-		using ItemType      = Type;
-		using VectorType    = std::vector<Type, STLAllocator<Type, AllocatorType>>;
+		using ItemType   = Type;
+		using VectorType = std::vector<Type, STLAllocator<Type>>;
 
 		using Iterator             = typename VectorType::iterator;
 		using ConstIterator        = typename VectorType::const_iterator;
@@ -468,9 +468,10 @@ namespace p::core
 			return FindIt(Move(cb)) != vector.end();
 		}
 
-		bool ContainsSorted(const Type& item) const
+		template<typename Value, typename SortPredicate = TLess<>>
+		bool ContainsSorted(const Value& value, SortPredicate sortPredicate = {}) const
 		{
-			return FindSortedEqual(item) != NO_INDEX;
+			return FindSortedEqual(value, sortPredicate) != NO_INDEX;
 		}
 
 		/**
@@ -502,11 +503,11 @@ namespace p::core
 		}
 
 		// Removes an item assuming the array is sorted
-		template<typename SortPredicate = TLess<>>
+		template<typename Value, typename SortPredicate = TLess<>>
 		i32 RemoveSorted(
-		    const Type& item, SortPredicate sortPredicate = {}, const bool shouldShrink = true)
+		    const Value& value, SortPredicate sortPredicate = {}, const bool shouldShrink = true)
 		{
-			return i32(RemoveAt(FindSortedEqual(item, sortPredicate)));
+			return i32(RemoveAt(FindSortedEqual(value, sortPredicate)));
 		}
 
 		/**
@@ -630,7 +631,7 @@ namespace p::core
 		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
-			for (i32 i = Size(); i > 0; --i)
+			for (i32 i = lastSize - 1; i >= 0; --i)
 			{
 				if (callback(Data()[i]))
 				{
@@ -862,8 +863,8 @@ namespace p::core
 	};
 
 
-	template<typename Type, typename Allocator>
-	void TArray<Type, Allocator>::Swap(i32 firstIndex, i32 secondIndex)
+	template<typename Type>
+	void TArray<Type>::Swap(i32 firstIndex, i32 secondIndex)
 	{
 		if (Size() > 1 && firstIndex != secondIndex && IsValidIndex(firstIndex)
 		    && IsValidIndex(secondIndex))

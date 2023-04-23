@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #pragma once
 
@@ -62,6 +62,15 @@ namespace p::core
 			return predicate(Forward<T>(B), Forward<T>(A));
 		}
 	};
+
+	[[noreturn]] inline void Unreachable()
+	{
+#if defined(_MSC_VER)    // MSVC
+		std::abort();
+#elif __has_builtin(__builtin_unreachable)
+		__builtin_unreachable();
+#endif
+	}
 }    // namespace p::core
 
 namespace p

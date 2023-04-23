@@ -1,7 +1,8 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Array.h"
+#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/Builders/CompiledTypeRegister.h"
 #include "Pipe/Reflect/Property.h"
 #include "Pipe/Reflect/ReflectionFlags.h"
@@ -30,9 +31,12 @@ namespace p
 		ReadFunc* read;
 		WriteFunc* write;
 
+	public:
+		static constexpr TypeCategory typeCategory = TypeCategory::Data;
+
 
 	protected:
-		PIPE_API DataType(TypeCategory category) : Type(category | TypeCategory::Data) {}
+		PIPE_API DataType(TypeCategory category) : Type(category | typeCategory) {}
 
 	public:
 		DataType(const DataType&)            = delete;
@@ -46,7 +50,7 @@ namespace p
 		PIPE_API DataType* GetParent() const;
 		PIPE_API const TArray<DataType*>& GetChildren() const;
 		PIPE_API void GetChildrenDeep(TArray<DataType*>& outChildren) const;
-		PIPE_API DataType* FindChild(const Name& className) const;
+		PIPE_API DataType* FindChild(const Tag& className) const;
 		PIPE_API bool IsParentOf(const DataType* other) const;
 
 		/** Flags */
@@ -55,7 +59,7 @@ namespace p
 		PIPE_API bool HasAnyFlags(TypeFlags inFlags) const;
 
 		/** Properties */
-		PIPE_API const Property* FindProperty(const Name& propertyName) const;
+		PIPE_API const Property* FindProperty(const Tag& propertyName) const;
 		PIPE_API const TArray<Property*>& GetSelfProperties() const;
 		PIPE_API void GetProperties(TArray<Property*>& outProperties) const;
 
@@ -71,14 +75,6 @@ namespace p
 		static_assert(
 		    IsStruct<T>() || IsClass<T>(), "IsChildOf only valid with Structs or Classes.");
 		return IsChildOf(static_cast<DataType*>(TCompiledTypeRegister<T>::GetType()));
-	}
-	inline DataType* DataType::GetParent() const
-	{
-		return parent;
-	}
-	inline bool DataType::IsParentOf(const DataType* other) const
-	{
-		return other && other->IsChildOf(this);
 	}
 
 	inline void DataType::Read(Reader& r, void* container)

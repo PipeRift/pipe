@@ -19,7 +19,7 @@ If you feel a feature should be added feel free to propose it [creating an issue
 #### Core
 - Containers (Array, Map, Set)
 - Strings (String, StringView, FixedString)
-- Names (hashed unique strings)
+- Tags (hashed unique strings)
 - Compile-time string operations
 - Extensive strings constexpr API
 - Search and Sort algorithms
@@ -38,7 +38,8 @@ If you feel a feature should be added feel free to propose it [creating an issue
 
 #### Serialization
 - Serialization designed for different formats
-- JSON format serialization
+  - JSON serialization
+  - Binary serialization
 - Automatic serialization of reflection
 
 #### Files
@@ -46,13 +47,25 @@ If you feel a feature should be added feel free to propose it [creating an issue
 - File watching
 
 #### Memory
-- Owned smart pointers
-- Allocators and Arenas
+- OwnPtr: Owned smart pointers
+- UniquePtr
+- Memory Arenas: Allow controlling allocations (without templates)
+  - MonoLinearArena
+  - MultiLinearArena
+  - BestFitArena: Generic arena for any use
+- Memory leak tracking
 
 #### Math
-- Colors
+- Colors (RGBA, HSV, Linear, sRGB...)
 - Vectors, Rotators, Quaternions
 - Time and Duration
+
+#### ECS
+ - ECS library using other modules
+ - Context: An instance of ECS with its entities, components and statics
+ - Components: One instance per entity
+ - Statics: Unique instances of a type
+ - Integration with reflection
 
 
 ## Software Quality

@@ -1,7 +1,8 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Function.h"
+#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Reflect/BaseClass.h"
 #include "Pipe/Reflect/DataType.h"
@@ -19,9 +20,12 @@ namespace p
 		NewFunc onNew;
 		mutable TOwnPtr<BaseClass> defaultValue;
 
+	public:
+		static constexpr TypeCategory typeCategory = TypeCategory::Class;
+
 
 	public:
-		ClassType() : DataType(TypeCategory::Class) {}
+		ClassType() : DataType(typeCategory) {}
 		~ClassType() {}
 
 		PIPE_API BaseClass* New(Arena& arena) const;
@@ -43,7 +47,7 @@ namespace p
 			DataType::GetChildrenDeep(reinterpret_cast<TArray<DataType*>&>(outChildren));
 		}
 
-		PIPE_API ClassType* FindChild(const Name& className) const
+		PIPE_API ClassType* FindChild(const Tag& className) const
 		{
 			// Classes only have Class children. It is safe to static_cast.
 			return static_cast<ClassType*>(DataType::FindChild(className));
@@ -53,7 +57,6 @@ namespace p
 		{
 			return this == other;
 		}
-
 
 		PIPE_API TPtr<BaseClass> GetDefaultPtr() const
 		{

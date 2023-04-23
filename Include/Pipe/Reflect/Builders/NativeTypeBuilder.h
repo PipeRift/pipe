@@ -1,7 +1,7 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Name.h"
+#include "Pipe/Core/Tag.h"
 #include "Pipe/Reflect/Builders/StaticInitializers.h"
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 #include "Pipe/Reflect/NativeType.h"

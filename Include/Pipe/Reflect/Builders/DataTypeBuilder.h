@@ -1,10 +1,10 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Array.h"
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Macros.h"
-#include "Pipe/Core/Name.h"
+#include "Pipe/Core/Tag.h"
 #include "Pipe/Reflect/ArrayProperty.h"
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 #include "Pipe/Reflect/ClassType.h"
@@ -28,7 +28,7 @@ namespace p
 		TDataTypeBuilder() : TypeBuilder(GetTypeId<T>(), GetTypeName<T>(false)) {}
 
 		template<typename U>
-		void AddProperty(Name name, Property::AccessFunc* access, PropFlags propFlags)
+		void AddProperty(Tag name, Property::AccessFunc* access, PropFlags propFlags)
 		{
 			auto& registry = TypeRegistry::Get();
 			Type* type;
@@ -78,13 +78,13 @@ namespace p
 				type     = TCompiledTypeRegister<U>::InitType();
 				property = registry.AddProperty<Property>();
 			}
-			property->owner       = GetType()->AsData();
+			property->owner       = Cast<DataType>(GetType());
 			property->type        = type;
 			property->name        = name;
 			property->access      = access;
 			property->flags       = propFlags;
-			property->displayName = Strings::ToSentenceCase(name.ToString());
-			GetType()->AsData()->properties.Add(property);
+			property->displayName = Strings::ToSentenceCase(p::String{name.AsString()});
+			property->owner->properties.Add(property);
 		}
 
 	protected:
@@ -140,8 +140,8 @@ namespace p
 	protected:
 		Type* CreateType() override
 		{
-			auto* type             = Super::CreateType();
-			type->AsClass()->onNew = [](Arena& arena) -> BaseClass* {
+			auto* type                   = Super::CreateType();
+			Cast<ClassType>(type)->onNew = [](Arena& arena) -> BaseClass* {
 				if constexpr (!IsAbstract<T> && !IsSame<T, BaseClass>)
 				{
 					return new (p::Alloc<T>(arena)) T();

@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 
 #include "Pipe/Memory/Memory.h"
 
@@ -6,13 +6,11 @@
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 
-#include <stddef.h>
+#include <cstring>
 
 
 namespace p
 {
-	static void SwapGreaterThan8(void* a, void* b, sizet Size);
-
 	void MoveMem(void* dest, void* src, sizet size)
 	{
 		memmove(dest, src, size);

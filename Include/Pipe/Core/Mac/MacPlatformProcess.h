@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Generic/GenericPlatformProcess.h"
@@ -12,6 +12,8 @@ namespace p::core
 		static StringView GetExecutableFile();
 		static StringView GetExecutablePath();
 		static StringView GetBasePath();
+		static String GetCurrentWorkingPath();
+		static bool SetCurrentWorkingPath(StringView path);
 
 		static void ShowFolder(StringView path);
 	};

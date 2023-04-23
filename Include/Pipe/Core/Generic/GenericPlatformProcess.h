@@ -1,4 +1,4 @@
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Span.h"
@@ -11,9 +11,11 @@ namespace p::core
 {
 	struct PIPE_API GenericPlatformProcess
 	{
-		static StringView GetExecutableFile() = delete;
-		static StringView GetExecutablePath() = delete;
-		static StringView GetBasePath()       = delete;
+		static StringView GetExecutableFile()              = delete;
+		static StringView GetExecutablePath()              = delete;
+		static StringView GetBasePath()                    = delete;
+		static String GetCurrentWorkingPath()              = delete;
+		static void SetCurrentWorkingPath(StringView path) = delete;
 
 		/** Content saved to compiler or project directories should be rerouted to user directories
 		 * instead **/

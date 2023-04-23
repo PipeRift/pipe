@@ -1,5 +1,5 @@
 
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Broadcast.h"
@@ -169,6 +169,7 @@ namespace p::ecs
 		// Returns the data pointer of a component if contianed
 		virtual void* TryGetVoid(Id id) = 0;
 
+		virtual void* AddDefaulted(Id id)              = 0;
 		virtual bool Remove(Id id)                     = 0;
 		virtual void RemoveUnsafe(Id id)               = 0;
 		virtual i32 Remove(TSpan<const Id> ids)        = 0;

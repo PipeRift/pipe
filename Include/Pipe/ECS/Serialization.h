@@ -1,5 +1,5 @@
 
-// Copyright 2015-2022 Piperift - All rights reserved
+// Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/ECS/Context.h"
@@ -31,12 +31,12 @@ namespace p::ecs
 		void SerializeSingleEntity(Id& entity, TFunction<void(EntityReader&)> onReadPools);
 
 		template<typename T>
-		void SerializeComponent();
+		void SerializePool();
 
 		template<typename... T>
-		void SerializeComponents()
+		void SerializePools()
 		{
-			(SerializeComponent<T>(), ...);
+			(SerializePool<T>(), ...);
 		}
 
 		const TArray<Id>& GetIds() const
@@ -73,12 +73,12 @@ namespace p::ecs
 		void SerializeSingleEntity(Id entity, TFunction<void(EntityWriter&)> onWritePools);
 
 		template<typename T>
-		void SerializeComponent();
+		void SerializePool();
 
 		template<typename... T>
-		void SerializeComponents()
+		void SerializePools()
 		{
-			(SerializeComponent<T>(), ...);
+			(SerializePool<T>(), ...);
 		}
 
 		const TArray<Id>& GetIds() const
@@ -98,13 +98,13 @@ namespace p::ecs
 	};
 
 	template<typename T>
-	inline void EntityReader::SerializeComponent()
+	inline void EntityReader::SerializePool()
 	{
 		if (EnterNext(GetTypeName<T>(false)))
 		{
 			auto& pool = GetContext().AssurePool<T>();
 
-			if (serializingMany)
+			if (serializingMany) [[likely]]
 			{
 				String key;
 				BeginObject();
@@ -146,7 +146,7 @@ namespace p::ecs
 	}
 
 	template<typename T>
-	inline void EntityWriter::SerializeComponent()
+	inline void EntityWriter::SerializePool()
 	{
 		TArray<TPair<i32, Id>> componentIds;    // TODO: Make sure this is needed
 
@@ -174,7 +174,7 @@ namespace p::ecs
 		PushAddFlags(p::WriteFlags_CacheStringKeys);
 		if (EnterNext(GetTypeName<T>(false)))
 		{
-			if (serializingMany)
+			if (serializingMany) [[likely]]
 			{
 				String key;
 				BeginObject();
