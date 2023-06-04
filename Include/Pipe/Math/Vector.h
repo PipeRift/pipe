@@ -30,7 +30,8 @@ namespace p
 		constexpr Vec() : x{0}, y{0} {}
 		constexpr Vec(T x, T y) : x{x}, y{y} {}
 		template<typename T2>
-		explicit constexpr Vec(const Vec<2, T2>& other) requires(std::is_convertible_v<T2, T>)
+		explicit constexpr Vec(const Vec<2, T2>& other)
+		    requires(std::is_convertible_v<T2, T>)
 		    : x{T(other.x)}, y{T(other.y)}
 		{}
 
@@ -86,14 +87,14 @@ namespace p
 			return *this;
 		}
 
-		static T Cross(const Vec& a, const Vec& b) requires(
-		    FloatingPoint<T>)    // 'Cross' accepts only floating-point inputs
+		static T Cross(const Vec& a, const Vec& b)
+		    requires(FloatingPoint<T>)    // 'Cross' accepts only floating-point inputs
 		{
 			return a.x * b.y - b.x * a.y;
 		}
 
-		static T Dot(const Vec& a, const Vec& b) requires(
-		    FloatingPoint<T>)    // 'Dot' accepts only floating-point inputs
+		static T Dot(const Vec& a, const Vec& b)
+		    requires(FloatingPoint<T>)    // 'Dot' accepts only floating-point inputs
 		{
 			const Vec tmp(a * b);
 			return tmp.x + tmp.y;
@@ -288,6 +289,12 @@ namespace p
 		}
 	};
 
+	template<Number T2>
+	constexpr Vec<2, T2> operator/(T2 value, Vec<2, T2> vector)
+	{
+		return {value / vector.x, value / vector.y};
+	}
+
 
 	template<Number T>
 	struct Vec<3, T>
@@ -304,7 +311,8 @@ namespace p
 		constexpr Vec() : x{0}, y{0}, z{0} {}
 		constexpr Vec(T x, T y, T z) : x{x}, y{y}, z{z} {}
 		template<typename T2>
-		explicit constexpr Vec(const Vec<3, T2>& other) requires(std::is_convertible_v<T2, T>)
+		explicit constexpr Vec(const Vec<3, T2>& other)
+		    requires(std::is_convertible_v<T2, T>)
 		    : x{other.x}, y{other.y}, z{other.z}
 		{}
 
@@ -362,14 +370,14 @@ namespace p
 			return *this;
 		}
 
-		static Vec Cross(const Vec& a, const Vec& b) requires(
-		    FloatingPoint<T>)    // 'Cross' accepts only floating-point inputs
+		static Vec Cross(const Vec& a, const Vec& b)
+		    requires(FloatingPoint<T>)    // 'Cross' accepts only floating-point inputs
 		{
 			return {a.y * b.z - b.y * a.z, a.z * b.x - b.z * a.x, a.x * b.y - b.x * a.y};
 		}
 
-		static T Dot(const Vec& a, const Vec& b) requires(
-		    FloatingPoint<T>)    // 'Dot' accepts only floating-point inputs
+		static T Dot(const Vec& a, const Vec& b)
+		    requires(FloatingPoint<T>)    // 'Dot' accepts only floating-point inputs
 		{
 			const Vec tmp(a * b);
 			return tmp.x + tmp.y + tmp.z;
@@ -548,6 +556,13 @@ namespace p
 		}
 	};
 
+	template<Number T2>
+	constexpr Vec<3, T2> operator/(T2 value, Vec<3, T2> vector)
+	{
+		return {value / vector.x, value / vector.y, value / vector.z};
+	}
+
+
 	template<Number T>
 	struct Vec<4, T>
 	{
@@ -564,7 +579,8 @@ namespace p
 		constexpr Vec() : x{0}, y{0}, z{0}, w{0} {}
 		constexpr Vec(T x, T y, T z, T w) : x{x}, y{y}, z{z}, w{w} {}
 		template<typename T2>
-		explicit constexpr Vec(const Vec<4, T2>& other) requires(std::is_convertible_v<T2, T>)
+		explicit constexpr Vec(const Vec<4, T2>& other)
+		    requires(std::is_convertible_v<T2, T>)
 		    : x{other.x}, y{other.y}, z{other.z}, w{other.w}
 		{}
 
@@ -581,8 +597,8 @@ namespace p
 			    && math::NearlyEqual(w, other.w, tolerance);
 		}
 
-		static T Dot(const Vec& a, const Vec& b) requires(
-		    FloatingPoint<T>)    // 'Dot' accepts only floating-point inputs
+		static T Dot(const Vec& a, const Vec& b)
+		    requires(FloatingPoint<T>)    // 'Dot' accepts only floating-point inputs
 		{
 			const Vec tmp(a * b);
 			return (tmp.x + tmp.y) + (tmp.z + tmp.w);
@@ -625,6 +641,12 @@ namespace p
 			return (&this->x)[i];
 		}
 	};
+
+	template<Number T2>
+	constexpr Vec<4, T2> operator/(T2 value, Vec<4, T2> vector)
+	{
+		return {value / vector.x, value / vector.y, value / vector.z, value / vector.w};
+	}
 
 
 	using v2 = Vec<2, float>;
@@ -746,7 +768,8 @@ namespace p
 				return (p.x >= min.x && p.y >= min.y && p.z >= min.z && p.w >= min.w)
 				    && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
 		}
-		constexpr bool Contains(const TAABB& r) const requires(size == 2)
+		constexpr bool Contains(const TAABB& r) const
+		    requires(size == 2)
 		{
 			if constexpr (size == 2)
 				return (r.min.x >= min.x && r.min.y >= min.y)
@@ -806,7 +829,8 @@ namespace p
 		}
 
 
-		constexpr v4 ToV4() const requires(size == 2)
+		constexpr v4 ToV4() const
+		    requires(size == 2)
 		{
 			return {min.x, min.y, max.x, max.y};
 		}
