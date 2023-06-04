@@ -11,17 +11,17 @@
 namespace p::ecs
 {
 	// Link a list of nodes at the end of the parent children list
-	PIPE_API void AddChildren(
-	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id node, TSpan<const Id> children);
+	PIPE_API void Attach(
+	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TSpan<const Id> children);
 	// Link a list of nodes after prevChild in the list of children nodes
-	PIPE_API void AddChildrenAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id node,
+	PIPE_API void AttachAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent,
 	    TSpan<Id> children, Id prevChild);
 	PIPE_API void TransferChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
 	    TSpan<const Id> children, Id destination);
 	// TODO: void TransferAllChildren(Tree& ast, Id origin, Id destination);
-	PIPE_API void RemoveChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	PIPE_API void DetachFromParents(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
 	    TSpan<const Id> children, bool keepComponents);
-	PIPE_API void RemoveAllChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	PIPE_API void DetachAllChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
 	    TSpan<const Id> parents, bool keepComponents = false);
 
 	PIPE_API TArray<Id>* GetMutChildren(TAccessRef<TWrite<CParent>> access, Id node);
@@ -52,8 +52,8 @@ namespace p::ecs
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);
 	// void CopyAndTransferAllChildrenDeep(Tree& ast, Id root, Id otherRoot);
 
-	PIPE_API void Remove(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> nodes);
-	PIPE_API void RemoveDeep(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> nodes);
+	PIPE_API void Remove(
+	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> nodes, bool deep = false);
 
 	/**
 	 * Iterates children nodes making sure child->parent links are correct or fixed

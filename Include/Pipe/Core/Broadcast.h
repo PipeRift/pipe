@@ -74,7 +74,7 @@ namespace p::core
 				return handle;
 			}
 
-			Log::Warning("Couldn't bind delegate");
+			Warning("Couldn't bind delegate");
 			return EventHandle::Invalid();
 		}
 
@@ -96,7 +96,7 @@ namespace p::core
 				}
 			}
 
-			Log::Warning("Couldn't bind delegate");
+			Warning("Couldn't bind delegate");
 			return EventHandle::Invalid();
 		}
 
@@ -117,7 +117,7 @@ namespace p::core
 				return handle;
 			}
 
-			Log::Warning("Couldn't bind delegate");
+			Warning("Couldn't bind delegate");
 			return EventHandle::Invalid();
 		}
 

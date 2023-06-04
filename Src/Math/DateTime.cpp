@@ -13,7 +13,7 @@ namespace p
 
 	const i32 DateTime::DaysPerMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 	const i32 DateTime::DaysToMonth[]  = {
-	     0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+        0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 
 
 	/* DateTime Constructors
@@ -25,7 +25,7 @@ namespace p
 		if (!Validate(year, month, day, hour, minute, second, millisecond))
 		{
 			// LOG Invalid date-time
-			Log::Warning("Created invalid date format.");
+			Warning("Created invalid date format.");
 		}
 
 		value = SysTime{SysDays(Year{year} / month / day) + Hours{hour} + Minutes{minute}

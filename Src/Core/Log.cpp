@@ -21,7 +21,7 @@
 #endif
 
 
-namespace p::Log
+namespace p
 {
 	TOwnPtr<spdlog::logger> generalLogger;
 	TOwnPtr<spdlog::logger> errorLogger;
@@ -60,7 +60,7 @@ namespace p::Log
 #endif
 
 
-	void Init(Path logFile)
+	void InitLog(Path logFile)
 	{
 		TArray<spdlog::sink_ptr> sinks;
 		sinks.Reserve(3);
@@ -113,7 +113,7 @@ namespace p::Log
 		errorLogger->set_pattern("%^[%D %T][%t][%l]%$ %v");
 	}
 
-	void Shutdown()
+	void ShutdownLog()
 	{
 		generalLogger.Delete();
 		errorLogger.Delete();
@@ -133,4 +133,4 @@ namespace p::Log
 	{
 		errorLogger->error(msg);
 	}
-}    // namespace p::Log
+}    // namespace p

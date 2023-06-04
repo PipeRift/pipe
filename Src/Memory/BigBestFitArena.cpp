@@ -66,7 +66,7 @@ namespace p
 		const i32 slotIndex = FindSmallestSlot(size + alignment - 1);
 		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size())
 		{
-			// Log::Error("No slots can fit {} bytes!", size);
+			// Error("No slots can fit {} bytes!", size);
 			return nullptr;
 		}
 

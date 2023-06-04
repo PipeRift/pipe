@@ -182,8 +182,8 @@ namespace p
 
 		if (scope.id >= scope.size)
 		{
-			Log::Error("Tried enter more child scopes than available (Index: {}, Max: {})",
-			    scope.id, scope.size);
+			Error("Tried enter more child scopes than available (Index: {}, Max: {})", scope.id,
+			    scope.size);
 			return false;
 		}
 
@@ -430,7 +430,7 @@ namespace p
 		Scope& scope = GetScope();
 		if (scope.size > 0) [[unlikely]]
 		{
-			Log::Error("Have BeginObject() or BeginArray() been called already in this scope?");
+			Error("Have BeginObject() or BeginArray() been called already in this scope?");
 			return 0;
 		}
 		scope.id     = 0;

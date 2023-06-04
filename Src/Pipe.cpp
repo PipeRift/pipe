@@ -15,11 +15,11 @@ namespace p
 	void Initialize(Path logPath)
 	{
 		TypeRegistry::Initialize();
-		Log::Init(logPath);
+		InitLog(logPath);
 	}
 
 	void Shutdown()
 	{
-		Log::Shutdown();
+		ShutdownLog();
 	}
 };    // namespace p

@@ -20,49 +20,49 @@ namespace p::ecs
 		}
 	}
 
-	void AddChildren(
-	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id node, TSpan<const Id> children)
+	void Attach(
+	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TSpan<const Id> children)
 	{
-		children.Each([&access, node](Id childId) {
+		children.Each([&access, parent](Id childId) {
 			if (auto* cChild = access.TryGet<CChild>(childId))
 			{
-				if (cChild->parent == node
+				if (cChild->parent == parent
 				    || !EnsureMsg(IsNone(cChild->parent),
 				        "A node trying to be linked already has a parent. Consider using "
 				        "TransferChildren()"))
 				{
 					return;
 				}
-				cChild->parent = node;
+				cChild->parent = parent;
 			}
 			else
 			{
-				access.Add<CChild>(childId).parent = node;
+				access.Add<CChild>(childId).parent = parent;
 			}
 		});
-		access.GetOrAdd<CParent>(node).children.Append(children);
+		access.GetOrAdd<CParent>(parent).children.Append(children);
 	}
 
-	void AddChildrenAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id node,
+	void AttachAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent,
 	    TSpan<Id> children, Id prevChild)
 	{
-		children.Each([&access, node](Id child) {
+		children.Each([&access, parent](Id child) {
 			if (auto* cChild = access.TryGet<CChild>(child))
 			{
 				if (EnsureMsg(IsNone(cChild->parent),
 				        "A node trying to be linked already has a parent. Consider using "
 				        "TransferChildren()"))
 				{
-					cChild->parent = node;
+					cChild->parent = parent;
 				}
 			}
 			else
 			{
-				access.Add<CChild>(child).parent = node;
+				access.Add<CChild>(child).parent = parent;
 			}
 		});
 
-		auto& childrenList  = access.GetOrAdd<CParent>(node).children;
+		auto& childrenList  = access.GetOrAdd<CParent>(parent).children;
 		const i32 prevIndex = childrenList.FindIndex(prevChild);
 		childrenList.InsertRange(prevIndex, children);
 	}
@@ -70,11 +70,11 @@ namespace p::ecs
 	void TransferChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
 	    TSpan<const Id> children, Id destination)
 	{
-		RemoveChildren(access, children, true);
-		AddChildren(access, destination, children);
+		DetachFromParents(access, children, true);
+		Attach(access, destination, children);
 	}
 
-	void RemoveChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	void DetachFromParents(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
 	    TSpan<const Id> children, bool keepComponents)
 	{
 		TArray<Id> parents;
@@ -137,7 +137,7 @@ namespace p::ecs
 		}
 	}
 
-	void RemoveAllChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	void DetachAllChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
 	    TSpan<const Id> parents, bool keepComponents)
 	{
 		if (keepComponents)
@@ -314,22 +314,23 @@ namespace p::ecs
 		}
 	}
 
-	void Remove(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> nodes)
+	void Remove(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> nodes, bool deep)
 	{
-		RemoveChildren(access, nodes, true);
+		DetachFromParents(access, nodes, true);
 
-		RemoveAllChildren(access, nodes);
-		access.GetContext().Destroy(nodes);
-	}
-
-	void RemoveDeep(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> nodes)
-	{
-		RemoveChildren(access, nodes, true);
-
-		TArray<Id> allNodes;
-		allNodes.Append(nodes);
-		GetChildrenDeep(access, nodes, allNodes);
-		access.GetContext().Destroy(allNodes);
+		if (deep)
+		{
+			TArray<Id> allNodes;
+			allNodes.Append(nodes);
+			GetChildrenDeep(access, nodes, allNodes);
+			// No children to detach since we will remove all of them
+			access.GetContext().Destroy(allNodes);
+		}
+		else
+		{
+			DetachAllChildren(access, nodes);
+			access.GetContext().Destroy(nodes);
+		}
 	}
 
 
