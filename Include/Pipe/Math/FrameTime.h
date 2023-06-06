@@ -25,8 +25,10 @@ namespace p
 	public:
 		FrameTime() = default;
 
-		void Tick();
+		// Call before tick
+		void PreTick();
 
+		// Call after tick
 		void PostTick();
 
 		void SetFPSCap(u32 maxFPS)

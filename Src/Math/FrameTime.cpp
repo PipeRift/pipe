@@ -9,7 +9,7 @@
 
 namespace p
 {
-	void FrameTime::Tick()
+	void FrameTime::PreTick()
 	{
 		previousTime = currentTime;
 		currentTime  = DateTime::Now();
