@@ -147,6 +147,11 @@ namespace p::core
 			return Size() <= 0;
 		}
 
+		bool operator[](i32 index) const
+		{
+			return IsSet(index);
+		}
+
 		BitArray operator~()
 		{
 			BitArray result(numBits);
