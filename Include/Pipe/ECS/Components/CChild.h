@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/ECS/Id.h"
+#include "Pipe/PipeECS.h"
 #include "Pipe/Reflect/Struct.h"
 
 

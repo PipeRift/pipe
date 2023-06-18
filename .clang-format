@@ -78,6 +78,7 @@ PenaltyReturnTypeOnItsOwnLine: 200
 PointerAlignment: Left
 ReferenceAlignment: Left
 ReflowComments: true
+RequiresClausePosition: WithPreceding
 SortIncludes: CaseInsensitive
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false

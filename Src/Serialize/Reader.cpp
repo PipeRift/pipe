@@ -4,7 +4,7 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/String.h"
-#include "Pipe/ECS/Id.h"
+#include "Pipe/PipeECS.h"
 #include "Pipe/Reflect/TypeId.h"
 #include "Pipe/Serialize/Formats/BinaryFormat.h"
 #include "Pipe/Serialize/Formats/JsonFormat.h"

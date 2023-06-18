@@ -28,9 +28,9 @@ namespace p
 		    : ptr{Move(other.ptr)}
 		{}
 		template<typename T2, typename D2>
-		TUniquePtr(TUniquePtr<T2, D2>&& other) noexcept requires(
-		    !std::is_array_v<
-		        T2> && std::is_assignable_v<D&, D2> && Convertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>)
+		TUniquePtr(TUniquePtr<T2, D2>&& other) noexcept
+		    requires(!std::is_array_v<T2> && std::is_assignable_v<D&, D2>
+		             && Convertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>)
 		    : ptr{Move(other.ptr)}
 		{}
 		template<typename D2 = D>
@@ -43,9 +43,9 @@ namespace p
 			return *this;
 		}
 		template<typename T2 = T, typename D2 = D>
-		TUniquePtr& operator=(TUniquePtr<T2, D2>&& other) noexcept requires(
-		    !std::is_array_v<
-		        T2> && std::is_assignable_v<D&, D2> && Convertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>)
+		TUniquePtr& operator=(TUniquePtr<T2, D2>&& other) noexcept
+		    requires(!std::is_array_v<T2> && std::is_assignable_v<D&, D2>
+		             && Convertible<typename TUniquePtr<T2, D2>::Pointer, Pointer>)
 		{
 			ptr = Move(other.ptr);
 			return *this;
@@ -93,11 +93,12 @@ namespace p
 	}
 
 	template<typename T>
-	TUniquePtr<T> MakeUnique(sizet size) requires(std::is_array_v<T>&& std::extent_v<T> == 0)
+	TUniquePtr<T> MakeUnique(sizet size) requires(std::is_array_v<T> && std::extent_v<T> == 0)
 	{
 		return TUniquePtr<T>{new T[size]()};
 	}
 
 	template<typename T, typename... Args>
-	TUniquePtr<T> MakeUnique(Args&&...) requires(std::extent_v<T> != 0) = delete;
+	TUniquePtr<T> MakeUnique(Args&&...) requires(std::extent_v<T> != 0)
+	= delete;
 }    // namespace p

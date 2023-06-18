@@ -564,7 +564,7 @@ namespace p::core
 		if constexpr (M1 != M2)
 			return true;
 		using lhs_type = std::decay_t<decltype(lhs)>;
-		using sv_type = typename lhs_type::string_view_type;
+		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) != rhs;
 	}
 
@@ -573,7 +573,7 @@ namespace p::core
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
-		using sv_type = typename lhs_type::string_view_type;
+		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) != rhs;
 	}
 
@@ -582,7 +582,7 @@ namespace p::core
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
-		using sv_type = typename rhs_type::string_view_type;
+		using sv_type  = typename rhs_type::string_view_type;
 		return lhs != static_cast<sv_type>(rhs);
 	}
 
@@ -591,7 +591,7 @@ namespace p::core
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
-		using sv_type = typename lhs_type::string_view_type;
+		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) < rhs;
 	}
 
@@ -600,7 +600,7 @@ namespace p::core
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
-		using sv_type = typename lhs_type::string_view_type;
+		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) < rhs;
 	}
 
@@ -609,7 +609,7 @@ namespace p::core
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
-		using sv_type = typename rhs_type::string_view_type;
+		using sv_type  = typename rhs_type::string_view_type;
 		return lhs < static_cast<sv_type>(rhs);
 	}
 
@@ -618,7 +618,7 @@ namespace p::core
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
-		using sv_type = typename lhs_type::string_view_type;
+		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) <= rhs;
 	}
 
@@ -627,7 +627,7 @@ namespace p::core
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
-		using sv_type = typename lhs_type::string_view_type;
+		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) <= rhs;
 	}
 
@@ -636,7 +636,7 @@ namespace p::core
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
-		using sv_type = typename rhs_type::string_view_type;
+		using sv_type  = typename rhs_type::string_view_type;
 		return lhs <= static_cast<sv_type>(rhs);
 	}
 
@@ -645,7 +645,7 @@ namespace p::core
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
-		using sv_type = typename lhs_type::string_view_type;
+		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) > rhs;
 	}
 
@@ -654,7 +654,7 @@ namespace p::core
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
-		using sv_type = typename lhs_type::string_view_type;
+		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) > rhs;
 	}
 
@@ -663,7 +663,7 @@ namespace p::core
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
-		using sv_type = typename rhs_type::string_view_type;
+		using sv_type  = typename rhs_type::string_view_type;
 		return lhs > static_cast<sv_type>(rhs);
 	}
 
@@ -672,7 +672,7 @@ namespace p::core
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
-		using sv_type = typename lhs_type::string_view_type;
+		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) >= rhs;
 	}
 
@@ -681,7 +681,7 @@ namespace p::core
 	    std::basic_string_view<CharType, TTraits> rhs)
 	{
 		using lhs_type = std::decay_t<decltype(lhs)>;
-		using sv_type = typename lhs_type::string_view_type;
+		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) >= rhs;
 	}
 
@@ -690,7 +690,7 @@ namespace p::core
 	    const TFixedString<N, CharType, TTraits>& rhs)
 	{
 		using rhs_type = std::decay_t<decltype(rhs)>;
-		using sv_type = typename rhs_type::string_view_type;
+		using sv_type  = typename rhs_type::string_view_type;
 		return lhs >= static_cast<sv_type>(rhs);
 	}
 

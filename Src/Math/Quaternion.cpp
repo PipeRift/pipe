@@ -57,14 +57,14 @@ namespace p
 			RotatorFromQuat.Pitch() = -90.f;
 			RotatorFromQuat.Yaw()   = math::Atan2(YawY, YawX) * math::RADTODEG;
 			RotatorFromQuat.Roll()  = Rotator::NormalizeAxis(
-			     -RotatorFromQuat.Yaw() - (2.f * math::Atan2(x, w) * math::RADTODEG));
+                -RotatorFromQuat.Yaw() - (2.f * math::Atan2(x, w) * math::RADTODEG));
 		}
 		else if (SingularityTest > SINGULARITY_THRESHOLD)
 		{
 			RotatorFromQuat.Pitch() = 90.f;
 			RotatorFromQuat.Yaw()   = math::Atan2(YawY, YawX) * math::RADTODEG;
 			RotatorFromQuat.Roll()  = Rotator::NormalizeAxis(
-			     RotatorFromQuat.Yaw() - (2.f * math::Atan2(x, w) * math::RADTODEG));
+                RotatorFromQuat.Yaw() - (2.f * math::Atan2(x, w) * math::RADTODEG));
 		}
 		else
 		{

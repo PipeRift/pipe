@@ -6,9 +6,9 @@
 #include "Pipe/Core/Span.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/ECS/BasePool.h"
-#include "Pipe/ECS/Id.h"
 #include "Pipe/ECS/PageBuffer.h"
 #include "Pipe/Memory/UniquePtr.h"
+#include "Pipe/PipeECS.h"
 
 #include <memory>
 
@@ -129,8 +129,8 @@ namespace p::ecs
 		}
 
 		template<typename It, typename CIt>
-		void Add(It first, It last, CIt from) requires(
-		    IsSame<std::decay_t<typename std::iterator_traits<CIt>::value_type>, T>)
+		void Add(It first, It last, CIt from)
+		    requires(IsSame<std::decay_t<typename std::iterator_traits<CIt>::value_type>, T>)
 		{
 			const sizet numToAdd = std::distance(first, last);
 

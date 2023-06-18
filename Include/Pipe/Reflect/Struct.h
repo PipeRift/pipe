@@ -28,8 +28,8 @@ namespace p
 
 
 	template<typename T>
-	void Read(Reader& ct, T& value) requires(
-	    IsStruct<T>() && !TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize)
+	void Read(Reader& ct, T& value)
+	    requires(IsStruct<T>() && !TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize)
 	{
 		ct.BeginObject();
 		ReadWriter common{ct};
@@ -37,8 +37,8 @@ namespace p
 	}
 
 	template<typename T>
-	void Write(Writer& ct, const T& value) requires(
-	    IsStruct<T>() && !TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize)
+	void Write(Writer& ct, const T& value)
+	    requires(IsStruct<T>() && !TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize)
 	{
 		ct.BeginObject();
 		ReadWriter common{ct};

@@ -3,7 +3,7 @@
 #include "Pipe/ECS/BasePool.h"
 
 #include "Pipe/Core/Limits.h"
-#include "Pipe/ECS/Id.h"
+#include "Pipe/PipeECS.h"
 
 
 namespace p::ecs

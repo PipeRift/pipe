@@ -127,15 +127,15 @@ namespace p
 	// Types can be marked as single serialize, so that Serialize() will be called instead of Read
 	// and Write
 	template<typename T>
-	void Read(Reader& ct, T& val) requires(
-	    bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
+	void Read(Reader& ct, T& val)
+	    requires(bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		val.Serialize(commonContext);
 	}
 	template<typename T>
-	void Read(Reader& ct, T& val) requires(
-	    bool(TFlags<T>::HasSingleSerialize && !TFlags<T>::HasMemberSerialize))
+	void Read(Reader& ct, T& val)
+	    requires(bool(TFlags<T>::HasSingleSerialize && !TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		Serialize(commonContext, val);
@@ -144,15 +144,15 @@ namespace p
 	// Types can be marked as single serialize, so that Serialize() will be called instead of Read
 	// and Write
 	template<typename T>
-	void Write(Writer& ct, const T& val) requires(
-	    bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
+	void Write(Writer& ct, const T& val)
+	    requires(bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		const_cast<T&>(val).Serialize(commonContext);
 	}
 	template<typename T>
-	void Write(Writer& ct, const T& val) requires(
-	    bool(TFlags<T>::HasSingleSerialize && !TFlags<T>::HasMemberSerialize))
+	void Write(Writer& ct, const T& val)
+	    requires(bool(TFlags<T>::HasSingleSerialize && !TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		Serialize(commonContext, const_cast<T&>(val));

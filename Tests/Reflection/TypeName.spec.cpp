@@ -9,7 +9,6 @@
 #include <Pipe/Reflect/Reflection.h>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace p;

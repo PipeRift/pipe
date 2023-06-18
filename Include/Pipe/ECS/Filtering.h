@@ -88,8 +88,8 @@ namespace p::ecs
 		ExcludeIf(&access.template AssurePool<const C>(), ids, shouldShrink);
 	}
 	template<typename... C, typename AccessType>
-	void ExcludeIf(const AccessType& access, TArray<Id>& ids,
-	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	void ExcludeIf(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	    requires(sizeof...(C) > 1)
 	{
 		(ExcludeIf<C>(access, ids, shouldShrink), ...);
 	}
@@ -125,8 +125,8 @@ namespace p::ecs
 		ExcludeIfStable(&access.template AssurePool<const C>(), ids, shouldShrink);
 	}
 	template<typename... C, typename AccessType>
-	void ExcludeIfStable(const AccessType& access, TArray<Id>& ids,
-	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	void ExcludeIfStable(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	    requires(sizeof...(C) > 1)
 	{
 		(ExcludeIfStable<C>(access, ids, shouldShrink), ...);
 	}
@@ -146,8 +146,8 @@ namespace p::ecs
 	}
 
 	template<typename... C, typename AccessType>
-	void ExcludeIfNot(const AccessType& access, TArray<Id>& ids,
-	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	void ExcludeIfNot(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	    requires(sizeof...(C) > 1)
 	{
 		(ExcludeIfNot<C>(access, ids, shouldShrink), ...);
 	}
@@ -182,8 +182,8 @@ namespace p::ecs
 	}
 
 	template<typename... C, typename AccessType>
-	void GetIf(const AccessType& access, const TSpan<Id>& source, TArray<Id>& results) requires(
-	    sizeof...(C) > 1)
+	void GetIf(const AccessType& access, const TSpan<Id>& source, TArray<Id>& results)
+	    requires(sizeof...(C) > 1)
 	{
 		GetIf({&access.template AssurePool<const C>()...}, source, results);
 	}

@@ -62,7 +62,7 @@ namespace p
 	};
 
 	template<typename T>
-		requires(IsStruct<T>() || IsClass<T>())
+	requires(IsStruct<T>() || IsClass<T>())
 	struct TSubType : public BaseSubType
 	{
 		TSubType() = default;

@@ -159,8 +159,8 @@ namespace p::core
 		}
 
 		template<typename K>
-		Iterator FindIt(const K& key, sizet precalculatedHash) requires(
-		    HasIsTransparent<KeyEqual>::value)
+		Iterator FindIt(const K& key, sizet precalculatedHash)
+		    requires(HasIsTransparent<KeyEqual>::value)
 		{
 			return map.find(key, precalculatedHash);
 		}

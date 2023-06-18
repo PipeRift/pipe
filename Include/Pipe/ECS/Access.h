@@ -45,7 +45,7 @@ namespace p
 		static constexpr AccessMode mode = AccessMode::Read;
 	};
 	template<typename T>
-		requires Derived<T, TypeAccess>
+	requires Derived<T, TypeAccess>
 	struct TTypeAccessInfo<T>
 	{
 		using Type                       = typename T::Type;

@@ -2,10 +2,9 @@
 #pragma once
 
 #include "Pipe/Core/Tag.h"
-#include "Pipe/ECS/Id.h"
-#include "Pipe/ECS/IdRegistry.h"
 #include "Pipe/ECS/Pool.h"
 #include "Pipe/Memory/UniquePtr.h"
+#include "Pipe/PipeECS.h"
 
 
 namespace p::ecs

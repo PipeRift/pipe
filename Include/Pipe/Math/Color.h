@@ -91,8 +91,8 @@ namespace p
 		constexpr TColor(u8 r, u8 g, u8 b, u8 a = 255) requires(mode == ColorMode::RGBA)
 		    : TColorData<mode>(r, g, b, a)
 		{}
-		constexpr TColor(float r, float g, float b, float a = 1.0f) requires(
-		    mode == ColorMode::Linear || mode == ColorMode::sRGB)
+		constexpr TColor(float r, float g, float b, float a = 1.0f)
+		    requires(mode == ColorMode::Linear || mode == ColorMode::sRGB)
 		    : TColorData<mode>(r, g, b, a)
 		{}
 		constexpr TColor(float h, float s, float v, float a = 1.0f) requires(mode == ColorMode::HSV)

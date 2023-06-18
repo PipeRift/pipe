@@ -39,7 +39,7 @@ namespace p
 
 #define INHERIT_TYPE_FLAGS(type, parent, ...)      \
 	template<typename T>                           \
-		requires p::Derived<T, type>               \
+	requires p::Derived<T, type>                   \
 	struct p::TFlags<T> : public p::TFlags<parent> \
 	{                                              \
 		enum                                       \

@@ -20,7 +20,7 @@ namespace p
 		struct HasRead : std::false_type
 		{};
 		template<typename T>
-			requires IsVoid<decltype(Read(std::declval<struct Reader&>(), std::declval<T&>()))>
+		requires IsVoid<decltype(Read(std::declval<struct Reader&>(), std::declval<T&>()))>
 		struct HasRead<T> : std::true_type
 		{};
 	}    // namespace internal
@@ -168,8 +168,8 @@ namespace p
 	}
 
 	template<typename T>
-	void Read(Reader& ct, T& val) requires(
-	    bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
+	void Read(Reader& ct, T& val)
+	    requires(bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
 	{
 		val.Read(ct);
 	}

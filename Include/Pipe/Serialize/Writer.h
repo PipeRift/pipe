@@ -19,8 +19,7 @@ namespace p
 		struct HasWrite : std::false_type
 		{};
 		template<typename T>
-			requires IsVoid<decltype(Write(
-			    std::declval<struct Writer&>(), std::declval<const T&>()))>
+		requires IsVoid<decltype(Write(std::declval<struct Writer&>(), std::declval<const T&>()))>
 		struct HasWrite<T> : std::true_type
 		{};
 	}    // namespace internal
@@ -173,8 +172,8 @@ namespace p
 	}
 
 	template<typename T>
-	void Write(Writer& w, const T& val) requires(
-	    bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
+	void Write(Writer& w, const T& val)
+	    requires(bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
 	{
 		val.Write(w);
 	}

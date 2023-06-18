@@ -5,9 +5,9 @@
 #include "Pipe/Core/Broadcast.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Span.h"
-#include "Pipe/ECS/Id.h"
 #include "Pipe/ECS/PageBuffer.h"
 #include "Pipe/Memory/UniquePtr.h"
+#include "Pipe/PipeECS.h"
 
 
 namespace p::ecs

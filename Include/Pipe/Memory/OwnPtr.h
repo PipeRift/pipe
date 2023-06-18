@@ -368,15 +368,18 @@ namespace p
 		/** Templates for down-casting */
 
 		template<typename T2>
-		TPtr(const TOwnPtr<T2>& owner) requires Derived<T2, T> : Super(owner)
+		TPtr(const TOwnPtr<T2>& owner) requires Derived<T2, T>
+		    : Super(owner)
 		{}
 
 		template<typename T2>
-		TPtr(const TPtr<T2>& other) requires Derived<T2, T> : Super(other)
+		TPtr(const TPtr<T2>& other) requires Derived<T2, T>
+		    : Super(other)
 		{}
 
 		template<typename T2>
-		TPtr(TPtr<T2>&& other) noexcept requires Derived<T2, T> : Super(Move(other))
+		TPtr(TPtr<T2>&& other) noexcept requires Derived<T2, T>
+		    : Super(Move(other))
 		{}
 
 		template<typename T2>

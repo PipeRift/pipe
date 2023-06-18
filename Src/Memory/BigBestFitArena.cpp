@@ -125,7 +125,7 @@ namespace p
 	{
 		if (allocationEnd == slot.offset + slot.size)    // Slot would become empty
 		{
-			if (allocationStart > slot.offset)    // Slot can still fill alignment gap
+			if (allocationStart > slot.offset)           // Slot can still fill alignment gap
 			{
 				slot.size   = allocationStart - slot.offset;
 				pendingSort = true;

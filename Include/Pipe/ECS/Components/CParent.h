@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/Array.h"
-#include "Pipe/ECS/Id.h"
+#include "Pipe/PipeECS.h"
 #include "Pipe/Reflect/Struct.h"
 
 
