@@ -1,8 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/ECS/Access.h>
-#include <Pipe/ECS/Context.h>
+#include <Pipe/PipeECS.h>
 
 
 using namespace snowhouse;
@@ -20,7 +19,7 @@ go_bandit([]() {
 	describe("ECS.Access", []() {
 		describe("Templated", []() {
 			it("Can cache pools", [&]() {
-				ecs::Context ctx;
+				EntityContext ctx;
 				TAccess<TWrite<TypeA>, TypeB> access{ctx};
 
 				AssertThat(access.GetPool<TypeA>(), Equals(ctx.GetPool<TypeA>()));
@@ -29,11 +28,11 @@ go_bandit([]() {
 			});
 
 			it("Can check if contained", [&]() {
-				ecs::Context ctx;
-				ecs::TPool<TypeA>& pool = ctx.AssurePool<TypeA>();
+				EntityContext ctx;
+				TPool<TypeA>& pool = ctx.AssurePool<TypeA>();
 				TAccess<TWrite<TypeA>> access{ctx};
 				TAccess<TypeA> accessConst{ctx};
-				ecs::Id id = ecs::NoId;
+				Id id = NoId;
 				AssertThat(access.Has<TypeA>(id), Is().False());
 				AssertThat(accessConst.Has<TypeA>(id), Is().False());
 
@@ -51,8 +50,8 @@ go_bandit([]() {
 			});
 
 			it("Can initialize superset", [&]() {
-				ecs::Context ctx;
-				ecs::TPool<TypeA>& typePool = ctx.AssurePool<TypeA>();
+				EntityContext ctx;
+				TPool<TypeA>& typePool = ctx.AssurePool<TypeA>();
 
 				TAccess<TWrite<TypeA>, TWrite<TypeB>> access1{ctx};
 				TAccess<TWrite<TypeA>> superset1{access1};

@@ -28,7 +28,7 @@ struct Dummy
 go_bandit([]() {
 	describe("ECS.PageBuffer", []() {
 		it("Can reserve", [&]() {
-			ecs::TPageBuffer<Dummy, 2> buffer;
+			TPageBuffer<Dummy, 2> buffer;
 
 			AssertThat(buffer.GetPagesSize(), Equals(0));
 			AssertThat(buffer.Capacity(), Equals(0));
@@ -43,7 +43,7 @@ go_bandit([]() {
 		});
 
 		it("Can shrink", [&]() {
-			ecs::TPageBuffer<Dummy, 2> buffer;
+			TPageBuffer<Dummy, 2> buffer;
 			buffer.Reserve(7);
 			AssertThat(buffer.GetPagesSize(), Equals(4));
 
@@ -53,7 +53,7 @@ go_bandit([]() {
 		});
 
 		it("Can insert", [&]() {
-			ecs::TPageBuffer<Dummy, 2> buffer;
+			TPageBuffer<Dummy, 2> buffer;
 			buffer.Reserve(4);
 
 			buffer.Insert(0);
@@ -66,7 +66,7 @@ go_bandit([]() {
 		});
 
 		it("Can remove", [&]() {
-			ecs::TPageBuffer<Dummy, 2> buffer;
+			TPageBuffer<Dummy, 2> buffer;
 			buffer.Reserve(4);
 
 			buffer.Insert(0);
@@ -80,7 +80,7 @@ go_bandit([]() {
 		});
 
 		it("Points to correct page", [&]() {
-			ecs::TPageBuffer<Dummy, 2> buffer;
+			TPageBuffer<Dummy, 2> buffer;
 			buffer.Reserve(7);
 
 			buffer.AssurePage(0);

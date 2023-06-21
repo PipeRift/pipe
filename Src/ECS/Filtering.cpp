@@ -65,7 +65,7 @@ namespace p::ecs
 		if (pool)
 		{
 			results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
-			for (ecs::Id id : source)
+			for (Id id : source)
 			{
 				if (pool->Has(id))
 				{
@@ -89,7 +89,7 @@ namespace p::ecs
 		if (pool)
 		{
 			results.ReserveMore(source.Size());
-			for (ecs::Id id : source)
+			for (Id id : source)
 			{
 				if (!pool->Has(id))
 				{
@@ -111,7 +111,7 @@ namespace p::ecs
 		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
 		for (i32 i = source.Size() - 1; i >= 0; --i)
 		{
-			const ecs::Id id = source[i];
+			const Id id = source[i];
 			if (pool->Has(id))
 			{
 				source.RemoveAtSwapUnsafe(i);
@@ -148,7 +148,7 @@ namespace p::ecs
 		results.ReserveMore(source.Size());
 		for (i32 i = source.Size() - 1; i >= 0; --i)
 		{
-			const ecs::Id id = source[i];
+			const Id id = source[i];
 			if (!pool->Has(id))
 			{
 				source.RemoveAtSwapUnsafe(i);
@@ -197,7 +197,7 @@ namespace p::ecs
 
 		ids.Clear(false);
 		ids.Reserve(iterablePool->Size());
-		for (ecs::Id id : *iterablePool)
+		for (Id id : *iterablePool)
 		{
 			if (!IsNone(id)) [[likely]]
 			{

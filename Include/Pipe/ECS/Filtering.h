@@ -2,8 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/Profiler.h"
-#include "Pipe/ECS/Access.h"
-#include "Pipe/ECS/Context.h"
+#include "Pipe/PipeECS.h"
 
 
 namespace p::ecs
@@ -381,6 +380,6 @@ namespace p::ecs
 	Id GetFirst(const AccessType& access)
 	{
 		const BasePool* pool = access.template GetPool<const C>();
-		return (pool && pool->Size() > 0) ? *pool->begin() : ecs::NoId;
+		return (pool && pool->Size() > 0) ? *pool->begin() : NoId;
 	}
 }    // namespace p::ecs

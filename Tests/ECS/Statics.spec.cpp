@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/ECS/Context.h>
+#include <Pipe/PipeECS.h>
 
 
 using namespace snowhouse;
@@ -27,7 +27,7 @@ struct StaticTypeThree
 go_bandit([]() {
 	describe("ECS.Statics", []() {
 		it("Can set an static", [&]() {
-			ecs::Context ast;
+			EntityContext ast;
 			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
 			auto& var = ast.SetStatic<StaticType>({4});
 			AssertThat(var.i, Equals(4));
@@ -35,7 +35,7 @@ go_bandit([]() {
 			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(false));
 		});
 		it("Can set two statics", [&]() {
-			ecs::Context ast;
+			EntityContext ast;
 			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
 			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(false));
 			auto& var1 = ast.SetStatic<StaticType>({4});
@@ -46,7 +46,7 @@ go_bandit([]() {
 			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(true));
 		});
 		it("Can replace an static", [&]() {
-			ecs::Context ast;
+			EntityContext ast;
 			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
 			ast.SetStatic<StaticType>({4});
 			ast.SetStatic<StaticType>({2});
@@ -54,14 +54,14 @@ go_bandit([]() {
 			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
 		});
 		it("Can get or set an static", [&]() {
-			ecs::Context ast;
+			EntityContext ast;
 			// Can set
 			AssertThat(ast.GetOrSetStatic<StaticType>({4}).i, Equals(4));
 			// Can get
 			AssertThat(ast.GetOrSetStatic<StaticType>({10}).i, Equals(4));
 		});
 		it("Can remove an static", [&]() {
-			ecs::Context ast;
+			EntityContext ast;
 			ast.SetStatic<StaticType>();
 			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
 			AssertThat(ast.RemoveStatic<StaticType>(), Is().True());
@@ -71,7 +71,7 @@ go_bandit([]() {
 		});
 
 		it("Can get statics", [&]() {
-			ecs::Context ast;
+			EntityContext ast;
 			ast.SetStatic<StaticType>({4});
 			ast.SetStatic<StaticTypeTwo>({2});
 			AssertThat(ast.GetStatic<StaticType>().i, Equals(4));

@@ -9,7 +9,7 @@
 #include <memory>
 
 
-namespace p::ecs
+namespace p
 {
 	template<typename Type, i32 PageSize, typename Allocator = ArenaAllocator>
 	struct TPageBuffer
@@ -181,4 +181,4 @@ namespace p::ecs
 			onPageAllocated = Exchange(other.onPageAllocated, {});
 		}
 	};
-}    // namespace p::ecs
+}    // namespace p
