@@ -3,7 +3,7 @@
 #include "Pipe/ECS/Utils/Hierarchy.h"
 
 #include "Pipe/Core/Checks.h"
-#include "Pipe/ECS/Filtering.h"
+#include "Pipe/PipeECS.h"
 
 
 namespace p::ecs
@@ -383,7 +383,7 @@ namespace p::ecs
 
 	void GetRoots(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots)
 	{
-		outRoots = ecs::ListAll<CParent>(access);
-		ecs::ExcludeIf<CChild>(access, outRoots);
+		outRoots = FindAllIdsWith<CParent>(access);
+		ExcludeIdsWith<CChild>(access, outRoots);
 	}
 }    // namespace p::ecs

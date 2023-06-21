@@ -1469,6 +1469,388 @@ namespace p
 
 
 	////////////////////////////////
+	// FILTERING
+	//
+
+	/** Remove ids containing a component from 'ids'. Does not guarantee order. */
+	PIPE_API void ExcludeIdsWith(
+	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+
+	/** Remove ids containing a component from 'ids'. Guarantees order. */
+	PIPE_API void ExcludeIdsWithStable(
+	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+
+	/** Remove ids NOT containing a component from 'ids'. Does not guarantee order. */
+	PIPE_API void ExcludeIdsWithout(
+	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+
+	/** Remove ids NOT containing a component from 'ids'. Guarantees order. */
+	PIPE_API void ExcludeIdsWithoutStable(
+	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+
+
+	/** Find ids containing a component from a list 'source' into 'results'. */
+	PIPE_API void FindIdsWith(const BasePool* pool, const TSpan<Id>& source, TArray<Id>& results);
+	PIPE_API void FindIdsWith(
+	    const TArray<const BasePool*>& pools, const TSpan<Id>& source, TArray<Id>& results);
+
+	/** Find ids NOT containing a component from a list 'source' into 'results'. */
+	PIPE_API void FindIdsWithout(
+	    const BasePool* pool, const TSpan<Id>& source, TArray<Id>& results);
+
+
+	/**
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Does not guarantee order.
+	 */
+	PIPE_API void ExtractIdsWith(const BasePool* pool, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true);
+
+	/**
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Guarantees order.
+	 */
+	PIPE_API void ExtractIdsWithStable(const BasePool* pool, TArray<Id>& source,
+	    TArray<Id>& results, const bool shouldShrink = true);
+
+	/**
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Does not guarantee order.
+	 */
+	PIPE_API void ExtractIdsWithout(const BasePool* pool, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true);
+
+	/**
+	 * Find and remove ids not containing a component from list 'source' into 'results'.
+	 * Guarantees order.
+	 */
+	PIPE_API void ExtractIdsWithoutStable(const BasePool* pool, TArray<Id>& source,
+	    TArray<Id>& results, const bool shouldShrink = true);
+
+
+	/** Find all ids containing all of the components */
+	PIPE_API void FindAllIdsWith(TArray<const BasePool*> pools, TArray<Id>& ids);
+
+	/** Find all ids containing any of the components. Includes possible duplicates */
+	PIPE_API void FindAllIdsWithAny(const TArray<const BasePool*>& pools, TArray<Id>& ids);
+
+	/** Find all ids containing any of the components. Prevents duplicates */
+	PIPE_API void FindAllIdsWithAnyUnique(const TArray<const BasePool*>& pools, TArray<Id>& ids);
+
+
+	// Templated API
+
+	/**
+	 * Remove ids containing a component from 'ids'. Does not guarantee order.
+	 *
+	 * @param access from where to access pools
+	 * @param ids array that will be modified
+	 * @param shouldShrink if true, the ids array will be shrink at the end
+	 * @see ExcludeWithStable(), ExcludeWithout()
+	 */
+	template<typename C, typename AccessType>
+	void ExcludeIdsWith(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	{
+		ExcludeIdsWith(&access.template AssurePool<const C>(), ids, shouldShrink);
+	}
+	template<typename... C, typename AccessType>
+	void ExcludeIdsWith(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	    requires(sizeof...(C) > 1)
+	{
+		(ExcludeIdsWith<C>(access, ids, shouldShrink), ...);
+	}
+
+	template<typename Predicate>
+	void ExcludeIdsWith(TArray<Id>& ids, Predicate predicate, const bool shouldShrink = true)
+	{
+		for (i32 i = ids.Size() - 1; i >= 0; --i)
+		{
+			if (predicate(ids[i]))
+			{
+				ids.RemoveAtSwapUnsafe(i);
+			}
+		}
+		if (shouldShrink)
+		{
+			ids.Shrink();
+		}
+	}
+
+	/**
+	 * Remove ids containing a component from 'ids'. Guarantees order.
+	 *
+	 * @param access from where to access pools
+	 * @param ids array that will be modified
+	 * @param shouldShrink if true, the ids array will be shrink at the end
+	 * @see ExcludeWith(), ExcludeWithoutStable()
+	 */
+	template<typename C, typename AccessType>
+	void ExcludeIdsWithStable(
+	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	{
+		ExcludeIdsWithStable(&access.template AssurePool<const C>(), ids, shouldShrink);
+	}
+	template<typename... C, typename AccessType>
+	void ExcludeIdsWithStable(const AccessType& access, TArray<Id>& ids,
+	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	{
+		(ExcludeIdsWithStable<C>(access, ids, shouldShrink), ...);
+	}
+
+	/**
+	 * Remove ids NOT containing a component from 'ids'. Does not guarantee order.
+	 *
+	 * @param access from where to access pools
+	 * @param ids array that will be modified
+	 * @param shouldShrink if true, the ids array will be shrink at the end
+	 * @see ExcludeWithoutStable(), ExcludeWith()
+	 */
+	template<typename C, typename AccessType>
+	void ExcludeIdsWithout(
+	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	{
+		ExcludeIdsWithout(&access.template AssurePool<const C>(), ids, shouldShrink);
+	}
+
+	template<typename... C, typename AccessType>
+	void ExcludeIdsWithout(const AccessType& access, TArray<Id>& ids,
+	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	{
+		(ExcludeIdsWithout<C>(access, ids, shouldShrink), ...);
+	}
+
+	/**
+	 * Remove ids NOT containing a component from 'ids'. Guarantees order.
+	 *
+	 * @param access from where to access pools
+	 * @param ids array that will be modified
+	 * @param shouldShrink if true, the ids array will be shrink at the end
+	 * @see ExcludeWithout(), ExcludeWithStable()
+	 */
+	template<typename C, typename AccessType>
+	void ExcludeIdsWithoutStable(
+	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	{
+		ExcludeIdsWithoutStable(&access.template AssurePool<const C>(), ids, shouldShrink);
+	}
+	template<typename... C, typename AccessType>
+	void ExcludeIdsWithoutStable(const AccessType& access, TArray<Id>& ids,
+	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	{
+		(ExcludeIdsWithoutStable<C>(access, ids, shouldShrink), ...);
+	}
+
+
+	/** Find ids containing a component from a list 'source' into 'results'. */
+	template<typename C, typename AccessType>
+	void FindIdsWith(const AccessType& access, const TSpan<Id>& source, TArray<Id>& results)
+	{
+		FindIdsWith(&access.template AssurePool<const C>(), source, results);
+	}
+	template<typename... C, typename AccessType>
+	void FindIdsWith(const AccessType& access, const TSpan<Id>& source, TArray<Id>& results)
+	    requires(sizeof...(C) > 1)
+	{
+		FindIdsWith({&access.template AssurePool<const C>()...}, source, results);
+	}
+
+	template<typename... C, typename AccessType>
+	TArray<Id> FindIdsWith(const AccessType& access, const TSpan<Id>& source)
+	{
+		TArray<Id> results;
+		FindIdsWith<C...>(access, source, results);
+		return Move(results);
+	}
+
+	/** Find ids NOT containing a component from a list 'source' into 'results'. */
+	template<typename C, typename AccessType>
+	void FindIdsWithout(const AccessType& access, const TArray<Id>& source, TArray<Id>& results)
+	{
+		FindIdsWithout(&access.template AssurePool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> FindIdsWithout(const AccessType& access, const TArray<Id>& source)
+	{
+		TArray<Id> results;
+		FindIdsWithout<C>(access, source, results);
+		return Move(results);
+	}
+
+	/**
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Does not guarantee order.
+	 */
+	template<typename C, typename AccessType>
+	void ExtractIdsWith(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true)
+	{
+		ExtractIdsWith(&access.template AssurePool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> ExtractIdsWith(
+	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	{
+		TArray<Id> results;
+		ExtractIdsWith<C>(access, source, results);
+		return Move(results);
+	}
+
+	/**
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Guarantees order.
+	 */
+	template<typename C, typename AccessType>
+	void ExtractIdsWithStable(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true)
+	{
+		ExtractIdsWithStable(&access.template AssurePool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> ExtractIdsWithStable(
+	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	{
+		TArray<Id> results;
+		ExtractIdsWithStable<C>(access, source, results);
+		return Move(results);
+	}
+
+	/**
+	 * Find and remove ids containing a component from list 'source' into 'results'.
+	 * Does not guarantee order.
+	 */
+	template<typename C, typename AccessType>
+	void ExtractIdsWithout(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true)
+	{
+		ExtractIdsWithout(&access.template AssurePool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> ExtractIdsWithout(
+	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	{
+		TArray<Id> results;
+		ExtractIdsWithout<C>(access, source, results);
+		return Move(results);
+	}
+
+	/**
+	 * Find and remove ids not containing a component from list 'source' into 'results'.
+	 * Guarantees order.
+	 */
+	template<typename C, typename AccessType>
+	void ExtractIdsWithoutStable(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = true)
+	{
+		ExtractIdsWithoutStable(&access.template AssurePool<const C>(), source, results);
+	}
+	template<typename C, typename AccessType>
+	TArray<Id> ExtractIdsWithoutStable(
+	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	{
+		TArray<Id> results;
+		ExtractIdsWithoutStable<C>(access, source, results);
+		return Move(results);
+	}
+
+
+	/**
+	 * Find all ids containing all of the components
+	 *
+	 * @param access from where to access pools
+	 * @param ids array where matching ids will be added
+	 * @see FindAllIdsWithAny()
+	 */
+	template<typename... C, typename AccessType>
+	void FindAllIdsWith(const AccessType& access, TArray<Id>& ids)
+	{
+		FindAllIdsWith({&access.template AssurePool<const C>()...}, ids);
+	}
+
+
+	/**
+	 * Find all ids containing all of the components
+	 *
+	 * @param access from where to access pools
+	 * @return ids array with matching ids
+	 * @see FindAllIdsWithAny()
+	 */
+	template<typename... C, typename AccessType>
+	TArray<Id> FindAllIdsWith(const AccessType& access)
+	{
+		TArray<Id> ids;
+		FindAllIdsWith<C...>(access, ids);
+		return Move(ids);
+	}
+
+	/**
+	 * Find all ids containing any of the components.
+	 * Includes possible duplicates
+	 *
+	 * @param access from where to access pools
+	 * @param ids array where matching ids will be added
+	 * @see FindAllIdsWith()
+	 */
+	template<typename... C, typename AccessType>
+	void FindAllIdsWithAny(const AccessType& access, TArray<Id>& ids)
+	{
+		FindAllIdsWithAny({&access.template AssurePool<const C>()...}, ids);
+	}
+
+	/**
+	 * Find all ids containing any of the components.
+	 * Prevents duplicates
+	 *
+	 * @param access from where to access pools
+	 * @param ids array where matching ids will be added
+	 * @see FindAllIdsWithAnyUnique()
+	 */
+	template<typename... C, typename AccessType>
+	void FindAllIdsWithAnyUnique(const AccessType& access, TArray<Id>& ids)
+	{
+		FindAllIdsWithAnyUnique({&access.template AssurePool<const C>()...}, ids);
+	}
+
+	/**
+	 * Find all ids containing any of the components.
+	 * Includes possible duplicates
+	 *
+	 * @param access from where to access pools
+	 * @return ids array with matching ids
+	 * @see FindAllIdsWith()
+	 */
+	template<typename... C, typename AccessType>
+	TArray<Id> FindAllIdsWithAny(const AccessType& access)
+	{
+		TArray<Id> ids;
+		FindAllIdsWithAny<C...>(access, ids);
+		return Move(ids);
+	}
+
+	/**
+	 * Find all ids containing any of the components.
+	 * Prevents duplicates
+	 *
+	 * @param access from where to access pools
+	 * @return ids array with matching ids
+	 * @see FindAllIdsWithAny()
+	 */
+	template<typename... C, typename AccessType>
+	TArray<Id> FindAllIdsWithAnyUnique(const AccessType& access)
+	{
+		TArray<Id> ids;
+		FindAllIdsWithAnyUnique<C...>(access, ids);
+		return Move(ids);
+	}
+
+	template<typename C, typename AccessType>
+	Id GetFirstId(const AccessType& access)
+	{
+		const BasePool* pool = access.template GetPool<const C>();
+		return (pool && pool->Size() > 0) ? *pool->begin() : NoId;
+	}
+
+
+	////////////////////////////////
 	// DEFINITIONS
 	//
 

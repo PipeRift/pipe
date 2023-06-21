@@ -11,10 +11,15 @@
 
 namespace p
 {
+	/** List of instances stored in pages of an specific size (N items per page).
+	 * A "buffer" because instances are treated as memory and removing elements does not shift
+	 * elements behind. Growing or shrinking expands the pages of instances but DOES NOT handle
+	 * constructors and destructors. This should be done by the user (Insert, RemoveAt, Swap, etc).
+	 */
 	template<typename Type, i32 PageSize, typename Allocator = ArenaAllocator>
 	struct TPageBuffer
 	{
-		static_assert(!IsVoid<Type>, "PageBuffer's type cant be void");
+		static_assert(!IsVoid<Type>, "PageBuffer's type can't be void");
 
 		template<typename OtherType, i32 OtherPageSize, typename OtherAllocator>
 		friend struct TPageBuffer;
