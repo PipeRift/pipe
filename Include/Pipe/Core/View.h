@@ -10,7 +10,7 @@
 namespace p::core
 {
 	template<typename T>
-	struct TSpan
+	struct TView
 	{
 		using Iterator             = T*;
 		using ConstIterator        = const T*;
@@ -22,34 +22,34 @@ namespace p::core
 		const i32 size = 0;
 
 
-		constexpr TSpan() {}
-		constexpr TSpan(T& value) : data{&value}, size{1} {}
-		constexpr TSpan(T* first, T* last) : data{first}, size{i32(std::distance(first, last))} {}
-		constexpr TSpan(T* data, i32 size) : data{data}, size{size} {}
+		constexpr TView() {}
+		constexpr TView(T& value) : data{&value}, size{1} {}
+		constexpr TView(T* first, T* last) : data{first}, size{i32(std::distance(first, last))} {}
+		constexpr TView(T* data, i32 size) : data{data}, size{size} {}
 
 		template<sizet N>
-		constexpr TSpan(T (&value)[N]) : data{value}, size{N}
+		constexpr TView(T (&value)[N]) : data{value}, size{N}
 		{}
-		constexpr TSpan(std::initializer_list<T> value)
+		constexpr TView(std::initializer_list<T> value)
 		    : data{value.begin()}, size{i32(value.size())}
 		{}
 
-		TSpan(const TArray<Mut<T>>& value) : data{value.Data()}, size{value.Size()} {}
-		TSpan(const TArray<Mut<T>>& value, i32 firstN)
+		TView(const TArray<Mut<T>>& value) : data{value.Data()}, size{value.Size()} {}
+		TView(const TArray<Mut<T>>& value, i32 firstN)
 		    : data{value.Data()}, size{math::Min(value.Size(), firstN)}
 		{}
 
-		TSpan(const TSpan<T>& other) : data{other.data}, size{other.size} {}
-		TSpan& operator=(const TSpan<T>& other)
+		TView(const TView<T>& other) : data{other.data}, size{other.size} {}
+		TView& operator=(const TView<T>& other)
 		{
 			data = other.data;
 			size = other.size;
 			return *this;
 		}
-		TSpan(const TSpan<Mut<T>>& other) requires(IsSame<T, const T>)
+		TView(const TView<Mut<T>>& other) requires(IsSame<T, const T>)
 		    : data{other.data}, size{other.size}
 		{}
-		TSpan& operator=(const TSpan<Mut<T>>& other) requires(IsSame<T, const T>)
+		TView& operator=(const TView<Mut<T>>& other) requires(IsSame<T, const T>)
 		{
 			data = other.data;
 			size = other.size;
@@ -70,7 +70,7 @@ namespace p::core
 		}
 
 		template<typename OtherType>
-		bool operator==(const TSpan<OtherType>& other) const
+		bool operator==(const TView<OtherType>& other) const
 		{
 			if (Size() != other.Size() || IsEmpty())
 			{

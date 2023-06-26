@@ -157,8 +157,8 @@ namespace p::core
 #endif
 
 
-	TOptional<Subprocess> RunProcessEx(TSpan<const char* const> command,
-	    TSpan<const char* const> environment, SubprocessOptions options)
+	TOptional<Subprocess> RunProcessEx(TView<const char* const> command,
+	    TView<const char* const> environment, SubprocessOptions options)
 	{
 		Subprocess instance;
 		instance.options = options;

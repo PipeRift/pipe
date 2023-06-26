@@ -100,8 +100,10 @@ namespace p
 	};
 
 	template<SerializeFormat format>
-	concept HasReader = !IsVoid<typename FormatBind<format>::Reader>;
+	concept HasReader = !
+	IsVoid<typename FormatBind<format>::Reader>;
 
 	template<SerializeFormat format>
-	concept HasWriter = !IsVoid<typename FormatBind<format>::Writer>;
+	concept HasWriter = !
+	IsVoid<typename FormatBind<format>::Writer>;
 }    // namespace p

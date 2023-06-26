@@ -188,7 +188,7 @@ namespace p::core
 			}
 		}
 
-		template<typename Container>    // Intended for TSpan<T>
+		template<typename Container>    // Intended for TView<T>
 		void Append(const Container& values)
 		{
 			vector.insert(vector.end(), values.begin(), values.end());
@@ -248,7 +248,7 @@ namespace p::core
 			}
 		}
 
-		template<typename Container>    // Intended for TSpan<T>
+		template<typename Container>    // Intended for TView<T>
 		void InsertRange(i32 index, const Container& values)
 		{
 			if (IsValidIndex(index))
@@ -483,7 +483,7 @@ namespace p::core
 			return RemoveAt(FindIndex(item), shouldShrink);
 		}
 
-		template<typename Container>    // Intended for TSpan<T>
+		template<typename Container>    // Intended for TView<T>
 		i32 RemoveMany(const Container& items, const bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();

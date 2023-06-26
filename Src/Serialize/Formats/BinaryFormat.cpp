@@ -11,7 +11,7 @@
 
 namespace p
 {
-	BinaryFormatReader::BinaryFormatReader(TSpan<u8> data) : data{data}, pointer{data.Data()} {}
+	BinaryFormatReader::BinaryFormatReader(TView<u8> data) : data{data}, pointer{data.Data()} {}
 
 	BinaryFormatReader::~BinaryFormatReader() {}
 
@@ -285,7 +285,7 @@ namespace p
 		size += valSize;
 	}
 
-	TSpan<p::u8> BinaryFormatWriter::GetData()
+	TView<p::u8> BinaryFormatWriter::GetData()
 	{
 		return {data, size};
 	}

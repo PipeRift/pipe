@@ -506,7 +506,7 @@ namespace p::files
 		if (len >= 4 && IsSeparator(first[3]) && (len == 4 || !IsSeparator(first[4]))    // \xx\$
 		    && ((IsSeparator(first[1]) && (first[2] == '?' || first[2] == '.'))    // \\?\$ or \\.\$
 		        || (first[1] == '?' && first[2] == '?')))
-		{                                                                          // \??\$
+		{    // \??\$
 			return first + 3;
 		}
 
@@ -746,7 +746,7 @@ namespace p::files
 		AppendToPath(result, relative2);
 		return Move(result);
 	}
-	String JoinPaths(TSpan<StringView> paths)
+	String JoinPaths(TView<StringView> paths)
 	{
 		if (paths.IsEmpty()) [[unlikely]]
 		{
