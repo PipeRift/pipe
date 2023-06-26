@@ -27,7 +27,7 @@ namespace p
 	// Arena allocation functions (Find current arena)
 	PIPE_API void* Alloc(sizet size);
 	PIPE_API void* Alloc(sizet size, sizet align);
-	PIPE_API bool Resize(void* ptr, sizet ptrSize, sizet size);
+	PIPE_API bool Realloc(void* ptr, sizet ptrSize, sizet size);
 	PIPE_API void Free(void* ptr, sizet size);
 
 	// Arena allocation functions (Use specific arena)
@@ -42,15 +42,18 @@ namespace p
 		return arena.Alloc(size, align);
 	}
 	template<Derived<Arena> ArenaT>
-	bool Resize(ArenaT& arena, void* ptr, sizet ptrSize, sizet size)
+	bool Realloc(ArenaT& arena, void* ptr, sizet ptrSize, sizet newSize)
 	{
-		return arena.Resize(ptr, ptrSize, size);
+		return arena.Realloc(ptr, ptrSize, newSize);
 	}
 	template<Derived<Arena> ArenaT>
 	void Free(ArenaT& arena, void* ptr, sizet size)
 	{
 		arena.Free(ptr, size);
 	}
+
+
+	// Templated arena allocation functions:
 
 	template<typename T, Derived<Arena> ArenaT>
 	T* Alloc(ArenaT& arena, sizet count = 1) requires(!IsVoid<T>)
@@ -63,9 +66,9 @@ namespace p
 		return static_cast<T*>(Alloc(arena, sizeof(T) * count, align));
 	}
 	template<typename T, Derived<Arena> ArenaT>
-	bool Resize(ArenaT& arena, T* ptr, sizet ptrCount, sizet count) requires(!IsVoid<T>)
+	bool Realloc(ArenaT& arena, T* ptr, sizet ptrCount, sizet newCount) requires(!IsVoid<T>)
 	{
-		return Resize(arena, ptr, sizeof(T) * ptrCount, sizeof(T) * count);
+		return Realloc(arena, ptr, sizeof(T) * ptrCount, sizeof(T) * newCount);
 	}
 	template<typename T, Derived<Arena> ArenaT>
 	void Free(ArenaT& arena, T* ptr, u32 count = 1) requires(!IsVoid<T>)

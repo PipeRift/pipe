@@ -4,6 +4,8 @@
 #include "Pipe/Core/Array.h"
 #include "Pipe/Core/Checks.h"
 
+#include <iterator>
+
 
 namespace p::core
 {
@@ -12,12 +14,13 @@ namespace p::core
 	{
 		using Iterator             = T*;
 		using ConstIterator        = const T*;
-		using ReverseIterator      = T*;
-		using ConstReverseIterator = const T*;
+		using ReverseIterator      = std::reverse_iterator<T*>;
+		using ConstReverseIterator = std::reverse_iterator<const T*>;
 
 
 		T* const data  = nullptr;
 		const i32 size = 0;
+
 
 		constexpr TSpan() {}
 		constexpr TSpan(T& value) : data{&value}, size{1} {}

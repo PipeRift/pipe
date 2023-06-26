@@ -30,21 +30,21 @@ namespace p
 		template<typename T>
 		using TAllocAlignedSignature = void* (T::*)(sizet size, sizet align);
 		template<typename T>
-		using TResizeSignature = bool (T::*)(void* ptr, sizet ptrSize, sizet size);
+		using TReallocSignature = bool (T::*)(void* ptr, sizet ptrSize, sizet size);
 		template<typename T>
 		using TFreeSignature = void (T::*)(void* ptr, sizet size);
 
 	private:
 		TFunction<AllocSignature> doAlloc;
 		TFunction<AllocAlignedSignature> doAllocAligned;
-		TFunction<ResizeSignature> doResize;
+		TFunction<ResizeSignature> doRealloc;
 		TFunction<FreeSignature> doFree;
 
 
 	protected:
 
 		template<typename T, TAllocSignature<T> alloc, TAllocAlignedSignature<T> allocAligned,
-		    TResizeSignature<T> resize, TFreeSignature<T> free>
+		    TReallocSignature<T> resize, TFreeSignature<T> free>
 		inline void Interface()
 		{
 			doAlloc = [](Arena* self, sizet size) {
@@ -53,7 +53,7 @@ namespace p
 			doAllocAligned = [](Arena* self, sizet size, sizet align) {
 				return (static_cast<T*>(self)->*allocAligned)(size, align);
 			};
-			doResize = [](Arena* self, void* ptr, sizet ptrSize, sizet size) {
+			doRealloc = [](Arena* self, void* ptr, sizet ptrSize, sizet size) {
 				return (static_cast<T*>(self)->*resize)(ptr, ptrSize, size);
 			};
 			doFree = [](Arena* self, void* ptr, sizet size) {
@@ -79,9 +79,9 @@ namespace p
 		{
 			return doAllocAligned(this, size, align);
 		}
-		bool Resize(void* ptr, sizet ptrSize, sizet size)
+		bool Realloc(void* ptr, sizet ptrSize, sizet size)
 		{
-			return doResize(this, ptr, ptrSize, size);
+			return doRealloc(this, ptr, ptrSize, size);
 		}
 		void Free(void* ptr, sizet size)
 		{

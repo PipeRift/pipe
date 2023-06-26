@@ -97,7 +97,7 @@ namespace p
 		MultiLinearArena(Arena& parentArena = GetCurrentArena()) : ChildArena(&parentArena)
 		{
 			Interface<MultiLinearArena, &MultiLinearArena::Alloc, &MultiLinearArena::Alloc,
-			    &MultiLinearArena::Resize, &MultiLinearArena::Free>();
+			    &MultiLinearArena::Realloc, &MultiLinearArena::Free>();
 		}
 		~MultiLinearArena() override
 		{
@@ -110,7 +110,7 @@ namespace p
 			return Alloc(size, alignof(std::max_align_t));
 		}
 		void* Alloc(sizet size, sizet align);
-		bool Resize(void* ptr, sizet ptrSize, sizet size)
+		bool Realloc(void* ptr, sizet ptrSize, sizet size)
 		{
 			return false;
 		}

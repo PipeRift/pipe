@@ -20,7 +20,7 @@ namespace p
 		MemoryStatsArena()
 		{
 			Interface<MemoryStatsArena, &MemoryStatsArena::Alloc, &MemoryStatsArena::Alloc,
-			    &MemoryStatsArena::Resize, &MemoryStatsArena::Free>();
+			    &MemoryStatsArena::Realloc, &MemoryStatsArena::Free>();
 		}
 		~MemoryStatsArena() override = default;
 
@@ -32,7 +32,7 @@ namespace p
 		{
 			return std::malloc(size);
 		}
-		inline bool Resize(void* ptr, const sizet ptrSize, const sizet size)
+		inline bool Realloc(void* ptr, const sizet ptrSize, const sizet size)
 		{
 			return false;
 		}

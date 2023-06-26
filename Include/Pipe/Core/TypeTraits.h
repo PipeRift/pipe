@@ -52,15 +52,49 @@ namespace p
 	concept FloatingPoint = std::is_floating_point_v<T>;
 
 	template<typename T>
-	concept IsCopyConstructible = std::is_copy_constructible_v<T>;
+	concept IsTrivial = std::is_trivial_v<T>;
+
 	template<typename T>
-	concept IsCopyAssignable = std::is_copy_assignable_v<T>;
+	concept IsConstructible = std::is_constructible_v<T>;
+	template<typename T>
+	concept IsTriviallyConstructible = std::is_trivially_constructible_v<T>;
+
+	template<typename T>
+	concept IsDefaultConstructible = std::is_default_constructible_v<T>;
+	template<typename T>
+	concept IsTriviallyDefaultConstructible = std::is_trivially_default_constructible_v<T>;
+
+	template<typename T>
+	concept IsCopyConstructible = std::is_copy_constructible_v<T>;
 	template<typename T>
 	concept IsMoveConstructible = std::is_move_constructible_v<T>;
 	template<typename T>
-	concept IsMoveAssignable = std::is_move_assignable_v<T>;
+	concept IsTriviallyCopyConstructible = std::is_trivially_copy_constructible_v<T>;
+	template<typename T>
+	concept IsTriviallyMoveConstructible = std::is_trivially_move_constructible_v<T>;
+
+	template<typename T>
+	concept IsTriviallyCopyable = std::is_trivially_copyable_v<T>;
+
+
 	template<typename To, typename From>
 	concept IsAssignable = std::is_assignable_v<To, From>;
+	template<typename To, typename From>
+	concept IsTriviallyAssignable = std::is_trivially_assignable_v<To, From>;
+	template<typename T>
+	concept IsCopyAssignable = std::is_copy_assignable_v<T>;
+	template<typename T>
+	concept IsMoveAssignable = std::is_move_assignable_v<T>;
+	template<typename T>
+	concept IsTriviallyCopyAssignable = std::is_trivially_copy_assignable_v<T>;
+	template<typename T>
+	concept IsTriviallyMoveAssignable = std::is_trivially_move_assignable_v<T>;
+
+	template<typename T>
+	concept IsDestructible = std::is_destructible_v<T>;
+	template<typename T>
+	concept IsTriviallyDestructible = std::is_trivially_destructible_v<T>;
+
 
 	template<typename T>
 	concept IsAbstract = std::is_abstract_v<T>;
@@ -69,10 +103,12 @@ namespace p
 	concept IsEmpty = std::is_empty_v<T>;
 
 	template<typename T, sizet size>
-	concept IsSmaller = sizeof(T) < size;
+	concept IsSmaller = sizeof(T) <
+	size;
 
 	template<typename T, sizet size>
-	concept IsBigger = sizeof(T) > size;
+	concept IsBigger = sizeof(T) >
+	size;
 
 	template<typename T>
 	concept IsEnum = std::is_enum_v<T>;
@@ -154,7 +190,8 @@ namespace p
 	template<typename T>
 	concept IsConst = std::is_const_v<T>;
 	template<typename T>
-	concept IsMutable = !std::is_const_v<T>;
+	concept IsMutable = !
+	std::is_const_v<T>;
 
 
 	template<typename T, typename Reference>
@@ -169,11 +206,6 @@ namespace p
 	};
 	template<typename T, typename Reference>
 	using CopyConst = typename TCopyConst<T, Reference>::type;
-
-	template<typename T>
-	concept IsTrivial = std::is_trivial<T>::value;
-	template<typename T>
-	concept IsTriviallyCopyable = std::is_trivially_copyable<T>::value;
 }    // namespace p
 
 #define P_DECLARE_IS_TRIVIAL(T, isTrivial)                                                   \

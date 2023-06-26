@@ -98,9 +98,9 @@ namespace p
 		return arena.Alloc(size, align);
 	}
 
-	bool Resize(Arena& arena, void* ptr, sizet ptrSize, sizet size)
+	bool Realloc(Arena& arena, void* ptr, sizet ptrSize, sizet size)
 	{
-		return arena.Resize(ptr, ptrSize, size);
+		return arena.Realloc(ptr, ptrSize, size);
 	}
 
 	void Free(Arena& arena, void* ptr, sizet size)
@@ -118,9 +118,9 @@ namespace p
 		return Alloc(GetCurrentArena(), size, align);
 	}
 
-	bool Resize(void* ptr, sizet ptrSize, sizet size)
+	bool Realloc(void* ptr, sizet ptrSize, sizet size)
 	{
-		return Resize(GetCurrentArena(), ptr, ptrSize, size);
+		return Realloc(GetCurrentArena(), ptr, ptrSize, size);
 	}
 
 	void Free(void* ptr, sizet size)

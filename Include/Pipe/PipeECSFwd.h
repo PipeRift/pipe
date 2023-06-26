@@ -6,8 +6,6 @@
 
 namespace p::ecs
 {
-	struct Context;
-
 	enum class Id : u32;
 
 	template<typename Type>
@@ -27,7 +25,7 @@ namespace p::ecs
 
 
 	struct SortLessStatics;
-	struct Context;
+	struct EntityContext;
 
 	enum class AccessMode : u8;
 	struct TypeAccess;
@@ -44,4 +42,7 @@ namespace p::ecs
 	template<typename... T>
 	using TAccessRef = const TAccess<T...>&;
 	struct Access;
+
+	struct CChild;
+	struct CParent;
 }    // namespace p::ecs

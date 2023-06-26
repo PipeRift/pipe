@@ -12,7 +12,7 @@ namespace p
 	public:
 		HeapArena()
 		{
-			Interface<HeapArena, &HeapArena::Alloc, &HeapArena::Alloc, &HeapArena::Resize,
+			Interface<HeapArena, &HeapArena::Alloc, &HeapArena::Alloc, &HeapArena::Realloc,
 			    &HeapArena::Free>();
 		}
 		~HeapArena() override = default;
@@ -25,7 +25,7 @@ namespace p
 		{
 			return p::HeapAlloc(size, align);
 		}
-		inline bool Resize(void* ptr, const sizet ptrSize, const sizet size)
+		inline bool Realloc(void* ptr, const sizet ptrSize, const sizet size)
 		{
 			return false;
 		}

@@ -59,7 +59,7 @@ namespace p
 
 	BestFitArena::BestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
-		Interface<BestFitArena, &BestFitArena::Alloc, &BestFitArena::Alloc, &BestFitArena::Resize,
+		Interface<BestFitArena, &BestFitArena::Alloc, &BestFitArena::Alloc, &BestFitArena::Realloc,
 		    &BestFitArena::Free>();
 
 		assert(initialSize > 0);
@@ -149,7 +149,7 @@ namespace p
 	void BestFitArena::ReduceSlot(
 	    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd)
 	{
-		if (allocationEnd == slot.End())         // Slot would become empty
+		if (allocationEnd == slot.End())    // Slot would become empty
 		{
 			if (allocationStart > slot.start)    // Slot can still fill alignment gap
 			{

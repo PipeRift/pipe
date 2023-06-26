@@ -33,9 +33,9 @@ namespace p
 				return p::Alloc<T>(*arena, count, align);
 			}
 
-			bool Resize(T* ptr, sizet ptrCount, sizet count)
+			bool Realloc(T* ptr, sizet ptrCount, sizet count)
 			{
-				return p::Resize<T>(*arena, ptr, ptrCount, count);
+				return p::Realloc<T>(*arena, ptr, ptrCount, count);
 			}
 
 			void Free(T* ptr, sizet count)

@@ -33,7 +33,7 @@ namespace p
 		    : ChildArena(&parentArena), insert{externalBlock.data}, block{Move(externalBlock)}
 		{
 			Interface<MonoLinearArena, &MonoLinearArena::Alloc, &MonoLinearArena::Alloc,
-			    &MonoLinearArena::Resize, &MonoLinearArena::Free>();
+			    &MonoLinearArena::Realloc, &MonoLinearArena::Free>();
 		}
 		MonoLinearArena(const sizet blockSize = Memory::MB, Arena& parentArena = GetCurrentArena())
 		    : ChildArena(&parentArena)
@@ -42,7 +42,7 @@ namespace p
 		    , selfAllocated{true}
 		{
 			Interface<MonoLinearArena, &MonoLinearArena::Alloc, &MonoLinearArena::Alloc,
-			    &MonoLinearArena::Resize, &MonoLinearArena::Free>();
+			    &MonoLinearArena::Realloc, &MonoLinearArena::Free>();
 		}
 		~MonoLinearArena() override
 		{
@@ -55,7 +55,7 @@ namespace p
 			return Alloc(size, alignof(std::max_align_t));
 		}
 		void* Alloc(sizet size, sizet align);
-		bool Resize(void* ptr, sizet ptrSize, sizet size)
+		bool Realloc(void* ptr, sizet ptrSize, sizet size)
 		{
 			return false;
 		}

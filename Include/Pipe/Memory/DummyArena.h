@@ -26,7 +26,7 @@ namespace p
 		{
 			return nullptr;
 		}
-		bool Resize(void* ptr, const sizet ptrSize, const sizet size)
+		bool Realloc(void* ptr, const sizet ptrSize, const sizet size)
 		{
 			return false;
 		}

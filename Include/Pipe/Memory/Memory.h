@@ -38,20 +38,102 @@ namespace p
 
 	PIPE_API sizet GetAlignmentPaddingWithHeader(const void* ptr, sizet align, sizet headerSize);
 
-	template<typename T>
-	void MoveConstructItems(T* dest, const T* src, sizet size)
+
+	/**
+	 * @brief
+	 *
+	 * @tparam T
+	 * @tparam destroySourceInPlace
+	 * @param dest destination memory block
+	 * @param src source memory block
+	 * @param count
+	 */
+	template<typename T, bool destroySourceInPlace = false>
+	constexpr void CopyItems(T* dest, const T* src, sizet count)
 	{
-		if constexpr (IsTriviallyCopyable<T>)
+		if constexpr (!std::is_constant_evaluated() && IsTriviallyCopyAssignable<T>)
 		{
-			MoveMem(dest, src, size * sizeof(T));
+			CopyMem(dest, src, count * sizeof(T));
 		}
 		else
 		{
-			T* const end = src + size;
+			const T* const end = src + count;
+			while (src < end)
+			{
+				*dest = *src;
+				if constexpr (destroySourceInPlace)
+				{
+					src->T::~T();
+				}
+				++src;
+				++dest;
+			}
+		}
+	}
+
+	template<typename T, bool destroySourceInPlace = false>
+	constexpr void MoveItems(T* dest, const T* src, sizet count)
+	{
+		if constexpr (!std::is_constant_evaluated() && IsTriviallyMoveAssignable<T>)
+		{
+			MoveMem(dest, src, count * sizeof(T));
+		}
+		else
+		{
+			const T* const end = src + count;
+			while (src < end)
+			{
+				*dest = Move(*src);
+				if constexpr (destroySourceInPlace)
+				{
+					src->T::~T();
+				}
+				++src;
+				++dest;
+			}
+		}
+	}
+
+	template<typename T, bool destroySourceInPlace = false>
+	constexpr void UninitializedCopyItems(T* dest, const T* src, sizet count)
+	{
+		if constexpr (!std::is_constant_evaluated() && IsTriviallyCopyConstructible<T>)
+		{
+			CopyMem(dest, src, count * sizeof(T));
+		}
+		else
+		{
+			const T* const end = src + count;
+			while (src < end)
+			{
+				new (dest) T(*src);
+				if constexpr (destroySourceInPlace)
+				{
+					src->T::~T();
+				}
+				++src;
+				++dest;
+			}
+		}
+	}
+
+	template<typename T, bool destroySourceInPlace = false>
+	constexpr void UninitializedMoveItems(T* dest, const T* src, sizet count)
+	{
+		if constexpr (!std::is_constant_evaluated() && IsTriviallyMoveConstructible<T>)
+		{
+			MoveMem(dest, src, count * sizeof(T));
+		}
+		else
+		{
+			const T* const end = src + count;
 			while (src < end)
 			{
 				new (dest) T(Move(*src));
-				src->T::~T();
+				if constexpr (destroySourceInPlace)
+				{
+					src->T::~T();
+				}
 				++src;
 				++dest;
 			}

@@ -57,7 +57,7 @@ namespace p
 
 		void* Alloc(const sizet size);
 		void* Alloc(const sizet size, sizet align);
-		bool Resize(void* ptr, const sizet ptrSize, const sizet size)
+		bool Realloc(void* ptr, const sizet ptrSize, const sizet size)
 		{
 			return false;
 		}

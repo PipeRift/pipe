@@ -34,7 +34,7 @@ namespace p
 	BigBestFitArena::BigBestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
 		Interface<BigBestFitArena, &BigBestFitArena::Alloc, &BigBestFitArena::Alloc,
-		    &BigBestFitArena::Resize, &BigBestFitArena::Free>();
+		    &BigBestFitArena::Realloc, &BigBestFitArena::Free>();
 
 		assert(initialSize > 0);
 		block.data = p::Alloc(GetParentArena(), initialSize);
@@ -125,7 +125,7 @@ namespace p
 	{
 		if (allocationEnd == slot.offset + slot.size)    // Slot would become empty
 		{
-			if (allocationStart > slot.offset)           // Slot can still fill alignment gap
+			if (allocationStart > slot.offset)    // Slot can still fill alignment gap
 			{
 				slot.size   = allocationStart - slot.offset;
 				pendingSort = true;
