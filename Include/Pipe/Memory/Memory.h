@@ -139,4 +139,22 @@ namespace p
 			}
 		}
 	}
+
+	template<typename T>
+	constexpr void DestroyItems(T* src, sizet count)
+	{
+		if constexpr (!std::is_constant_evaluated() && IsTriviallyDestructible<T>)
+		{
+			// Do nothing. No destruction needed.
+		}
+		else
+		{
+			const T* const end = src + count;
+			while (src < end)
+			{
+				src->T::~T();
+				++src;
+			}
+		}
+	}
 }    // namespace p
