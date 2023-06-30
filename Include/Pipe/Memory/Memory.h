@@ -8,6 +8,58 @@
 
 namespace p
 {
+	namespace Internal
+	{
+		template<typename T>
+		struct TIsCharacterByteOrBool : std::false_type
+		{};
+		template<>
+		struct TIsCharacterByteOrBool<char> : std::true_type
+		{};    // chars are characters
+		template<>
+		struct TIsCharacterByteOrBool<signed char> : std::true_type
+		{};    // signed chars are also characters
+		template<>
+		struct TIsCharacterByteOrBool<unsigned char> : std::true_type
+		{};    // unsigned chars are also characters
+		template<>
+		struct TIsCharacterByteOrBool<char8_t> : std::true_type
+		{};
+		template<>
+		struct TIsCharacterByteOrBool<std::byte> : std::true_type
+		{};
+		template<>
+		struct TIsCharacterByteOrBool<bool> : std::true_type
+		{};
+
+		template<typename T>
+		struct TIsMemsetZeroConstructible
+		{
+			static constexpr bool value =
+			    IsScalar<T> && TIsCharacterByteOrBool<T>::value && !IsVolatile<T>;
+		};
+
+		template<typename T>
+		struct TIsMemsetValueConstructible
+		{
+			static constexpr bool value = IsScalar<T> && !IsVolatile<T> && !IsMemberPointer<T>;
+		};
+
+		template<typename T>
+		bool AreBitsZero(const T& value) requires(IsScalar<T> && !IsMemberPointer<T>)
+		{
+			if constexpr (IsSame<T, nullptr_t>)
+			{
+				return true;
+			}
+			else
+			{
+				constexpr T zero{};
+				return CmpMem(&value, &zero, sizeof(T)) == 0;
+			}
+		}
+	}    // namespace Internal
+
 	namespace Memory
 	{
 		constexpr sizet B  = 1;
@@ -39,17 +91,104 @@ namespace p
 	PIPE_API sizet GetAlignmentPaddingWithHeader(const void* ptr, sizet align, sizet headerSize);
 
 
-	/**
-	 * @brief
-	 *
-	 * @tparam T
-	 * @tparam destroySourceInPlace
-	 * @param dest destination memory block
-	 * @param src source memory block
-	 * @param count
-	 */
+	/** Constructs a number of contiguous items with the default constructor */
+	template<typename T>
+	constexpr void ConstructItems(T* data, sizet count)
+	{
+		if constexpr (!std::is_constant_evaluated()
+		              && Internal::TIsMemsetZeroConstructible<T>::value)
+		{
+			SetMem(data, 0, count * sizeof(T));
+		}
+		else
+		{
+			const T* const end = data + count;
+			while (data < end)
+			{
+				new (data) T();
+				++data;
+			}
+		}
+	}
+
+	/** Constructs a number of contiguous items by copying from a single source item */
+	template<typename T>
+	constexpr void ConstructItems(T* data, sizet count, const T& value)
+	{
+		if constexpr (!std::is_constant_evaluated())
+		{
+			if constexpr (Internal::TIsMemsetValueConstructible<T>::value)
+			{
+				SetMem(data, static_cast<unsigned char>(value), count * sizeof(T));
+				return;
+			}
+			else if constexpr (Internal::TIsMemsetZeroConstructible<T>::value)
+			{
+				if (Internal::AreBitsZero(value))
+				{
+					SetMem(data, 0, count * sizeof(T));
+					return;
+				}
+			}
+		}
+
+		const T* const end = data + count;
+		while (data < end)
+		{
+			new (data) T(value);
+			++data;
+		}
+	}
+
+	/** Constructs a number of contiguous items by copying from source items */
 	template<typename T, bool destroySourceInPlace = false>
-	constexpr void CopyItems(T* dest, const T* src, sizet count)
+	constexpr void CopyConstructItems(T* data, sizet count, const T* values)
+	{
+		if constexpr (!std::is_constant_evaluated() && IsTriviallyCopyConstructible<T>)
+		{
+			CopyMem(data, values, count * sizeof(T));
+		}
+		else
+		{
+			const T* const end = values + count;
+			while (values < end)
+			{
+				new (data) T(*values);
+				if constexpr (destroySourceInPlace)
+				{
+					values->T::~T();
+				}
+				++values;
+				++data;
+			}
+		}
+	}
+
+	template<typename T, bool destroySourceInPlace = false>
+	constexpr void MoveConstructItems(T* data, sizet count, const T* values)
+	{
+		if constexpr (!std::is_constant_evaluated() && IsTriviallyMoveConstructible<T>)
+		{
+			MoveMem(data, values, count * sizeof(T));
+		}
+		else
+		{
+			const T* const end = values + count;
+			while (values < end)
+			{
+				new (data) T(Move(*values));
+				if constexpr (destroySourceInPlace)
+				{
+					values->T::~T();
+				}
+				++values;
+				++data;
+			}
+		}
+	}
+
+	template<typename T, bool destroySourceInPlace = false>
+	constexpr void CopyItems(T* dest, sizet count, const T* src)
 	{
 		if constexpr (!std::is_constant_evaluated() && IsTriviallyCopyAssignable<T>)
 		{
@@ -72,7 +211,7 @@ namespace p
 	}
 
 	template<typename T, bool destroySourceInPlace = false>
-	constexpr void MoveItems(T* dest, const T* src, sizet count)
+	constexpr void MoveItems(T* dest, sizet count, const T* src)
 	{
 		if constexpr (!std::is_constant_evaluated() && IsTriviallyMoveAssignable<T>)
 		{
@@ -94,54 +233,8 @@ namespace p
 		}
 	}
 
-	template<typename T, bool destroySourceInPlace = false>
-	constexpr void UninitializedCopyItems(T* dest, const T* src, sizet count)
-	{
-		if constexpr (!std::is_constant_evaluated() && IsTriviallyCopyConstructible<T>)
-		{
-			CopyMem(dest, src, count * sizeof(T));
-		}
-		else
-		{
-			const T* const end = src + count;
-			while (src < end)
-			{
-				new (dest) T(*src);
-				if constexpr (destroySourceInPlace)
-				{
-					src->T::~T();
-				}
-				++src;
-				++dest;
-			}
-		}
-	}
-
-	template<typename T, bool destroySourceInPlace = false>
-	constexpr void UninitializedMoveItems(T* dest, const T* src, sizet count)
-	{
-		if constexpr (!std::is_constant_evaluated() && IsTriviallyMoveConstructible<T>)
-		{
-			MoveMem(dest, src, count * sizeof(T));
-		}
-		else
-		{
-			const T* const end = src + count;
-			while (src < end)
-			{
-				new (dest) T(Move(*src));
-				if constexpr (destroySourceInPlace)
-				{
-					src->T::~T();
-				}
-				++src;
-				++dest;
-			}
-		}
-	}
-
 	template<typename T>
-	constexpr void DestroyItems(T* src, sizet count)
+	constexpr void DestroyItems(T* data, sizet count)
 	{
 		if constexpr (!std::is_constant_evaluated() && IsTriviallyDestructible<T>)
 		{
@@ -149,11 +242,11 @@ namespace p
 		}
 		else
 		{
-			const T* const end = src + count;
-			while (src < end)
+			const T* const end = data + count;
+			while (data < end)
 			{
-				src->T::~T();
-				++src;
+				data->T::~T();
+				++data;
 			}
 		}
 	}

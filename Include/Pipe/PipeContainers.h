@@ -16,6 +16,12 @@
 
 namespace p
 {
+	constexpr i32 GrowCapacity(i32 capacity, i32 newSize)
+	{
+		const i32 goldenCapacity = i32(capacity * 1.6);
+		return p::math::Max(goldenCapacity, newSize);
+	}
+
 	template<typename Type>
 	struct IRange;
 
@@ -259,7 +265,7 @@ namespace p
 		i32 size   = 0;
 
 
-		// Do not use IRange as a container itself. See TView and TArray.
+		// Do not use IRange as a container itself. See TView and TArray2.
 		IRange() = default;
 
 	public:
@@ -296,19 +302,28 @@ namespace p
 		 */
 		Type& operator[](i32 index) const
 		{
-			check(IsValidIndex(index));
+			Check(IsValidIndex(index));
 			return Data()[index];
 		}
 
 		Type& First() const
 		{
-			check(size != 0);
+			Check(size != 0);
 			return Data()[0];
 		}
 		Type& Last() const
 		{
-			check(size != 0);
+			Check(size != 0);
 			return Data()[size - 1];
+		}
+
+		bool IsValidIndex(i32 index) const
+		{
+			return index >= 0 && index < Size();
+		}
+		bool IsValidIndex(u32 index) const
+		{
+			return index < u32(Size());
 		}
 
 
@@ -535,57 +550,94 @@ namespace p
 	};
 
 	template<typename Type>
-	struct TArray : public IRange<Type>
+	struct TArray2 : public IRange<Type>
 	{
 	public:
 		template<typename OtherType>
-		friend struct TArray;
+		friend struct TArray2;
 
 	private:
 		i32 capacity = 0;
-		Arena& arena;
+		Arena& arena = p::GetCurrentArena();
 
 	public:
-		constexpr TArray(Arena& arena = p::GetCurrentArena()) : arena{arena} {}
+		constexpr TArray2(Arena& arena = p::GetCurrentArena()) : arena{arena} {}
+		constexpr TArray2(i32 count, Arena& arena = p::GetCurrentArena()) : arena{arena}
+		{
+			AddN(count);
+		}
+		constexpr TArray2(i32 count, const Type& value, Arena& arena = p::GetCurrentArena())
+		    : arena{arena}
+		{
+			AddN(count, value);
+		}
+		TArray2(std::initializer_list<Type> initList) {}
+
+
+#pragma region Insertion
+		/*i32 Add(Type&& item)
+		{
+		    vector.push_back(Move(item));
+		    return Size() - 1;
+		}
+
+		i32 Add(const Type& item)
+		{
+		    vector.push_back(item);
+		    return Size() - 1;
+		}*/
+
+		constexpr i32 AddN(i32 count)
+		{
+			const i32 firstIndex = size;
+			if (Ensure(count > 0))
+			{
+				GrowToInsert(count);
+				size += count;
+				ConstructItems(data + firstIndex, count);
+			}
+			return firstIndex;
+		}
+
+		constexpr i32 AddN(i32 count, const Type& item)
+		{
+			const i32 firstIndex = size;
+			if (Ensure(count > 0))
+			{
+				GrowToInsert(count);
+				size += count;
+				ConstructItems(data + firstIndex, count, item);
+			}
+			return firstIndex;
+		}
+
+		/*Type& AddRef(Type&& item)
+		{
+		    return Data()[Add(Move(item))];
+		}
+		Type& AddRef(const Type& item)
+		{
+		    return Data()[Add(item)];
+		}*/
+
+		Type& AddNRef(i32 count)
+		{
+			return Data()[AddN(count)];
+		}
+		Type& AddNRef(i32 count, const Type& item)
+		{
+			return Data()[AddN(count, item)];
+		}
+#pragma endregion Insertion`
+
 
 		/// Grows or shrinks the array´s reserved memory to fit N items, but never under the number
 		/// it already contains.
 		constexpr void Reserve(i32 newCapacity)
 		{
-			if (capacity == newCapacity) [[unlikely]]
+			if (capacity < newCapacity)
 			{
-				return;    // No capacity change, no reason to reallocate.
-			}
-
-			if (size > newCapacity) [[unlikely]]
-			{
-				OnInvalidNum(newCapacity);
-				return;
-			}
-
-			if (newCapacity > 0)
-			{
-				T* newData = p::Alloc(arena, newCapacity);
-				if (capacity > 0)    // There is memory to free and to possibly move/copy
-				{
-					if constexpr (IsMoveConstructible<Type> || !IsCopyConstructible<Type>)
-					{
-						UninitializedMoveItems<T, true>(newData, data, size);
-					}
-					else
-					{
-						UninitializedCopyItems<T, true>(newData, data, size);
-					}
-					Free(arena, data, capacity);
-				}
-				data     = newData;
-				capacity = newCapacity;
-			}
-			else    // Nothing to reserve, just free all memory
-			{
-				Free(arena, data, capacity);
-				data     = nullptr;
-				capacity = 0;
+				Reallocate(newCapacity);
 			}
 		}
 
@@ -597,7 +649,10 @@ namespace p
 		/// Shrinks the array's reserved memory to fit just enough for the elements it contains.
 		constexpr void Shrink()
 		{
-			Reserve(size);
+			if (size != capacity)
+			{
+				Reallocate(size);
+			}
 		}
 
 		constexpr void Resize(i32 sizeNum) {}                       // TODO
@@ -617,10 +672,56 @@ namespace p
 			}
 		}
 
+
 	protected:
+		constexpr void GrowToInsert(i32 extraSize)
+		{
+			const i32 newSize = size + extraSize;
+			if (capacity < newSize)
+			{
+				Reallocate(GrowCapacity(capacity, newSize));
+			}
+		}
+
+		constexpr void Reallocate(i32 newCapacity)
+		{
+			Check(capacity != newCapacity);
+
+			if (size > newCapacity) [[unlikely]]
+			{
+				OnInvalidNum(newCapacity);
+				return;
+			}
+
+			if (newCapacity > 0)
+			{
+				Type* newData = p::Alloc<Type>(arena, newCapacity);
+				if (capacity > 0)    // There is memory to free and to possibly move/copy
+				{
+					if constexpr (IsMoveConstructible<Type> || !IsCopyConstructible<Type>)
+					{
+						MoveConstructItems<Type, true>(newData, size, data);
+					}
+					else
+					{
+						CopyConstructItems<Type, true>(newData, size, data);
+					}
+					Free(arena, data, capacity);
+				}
+				data     = newData;
+				capacity = newCapacity;
+			}
+			else    // Nothing to reserve, just free all memory
+			{
+				Free(arena, data, capacity);
+				data     = nullptr;
+				capacity = 0;
+			}
+		}
+
 		void OnInvalidNum(i32 newSize)
 		{
-			Error("Trying to resize TArray to an invalid size of {}", newSize);
+			Error("Trying to resize TArray2 to an invalid size of {}", newSize);
 		}
 	};
 
@@ -630,7 +731,7 @@ namespace p
 	{
 	public:
 		template<typename OtherType>
-		friend struct TArray;
+		friend struct TArray2;
 
 		static constexpr i32 capacity = Capacity;
 
