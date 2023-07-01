@@ -549,6 +549,130 @@ namespace p
 		};
 	};
 
+#define DECLARE_ARRAY_CONSTRUCTORS_API(ArrayType)                                          \
+	constexpr ArrayType(Arena& arena = p::GetCurrentArena()) : arena{arena}                \
+	{}                                                                                     \
+	constexpr ArrayType(i32 count, Arena& arena = p::GetCurrentArena()) : arena{arena}     \
+	{                                                                                      \
+		AddN(count);                                                                       \
+	}                                                                                      \
+	constexpr ArrayType(i32 count, const Type& value, Arena& arena = p::GetCurrentArena()) \
+	    : arena{arena}                                                                     \
+	{                                                                                      \
+		AddN(count, value);                                                                \
+	}                                                                                      \
+	constexpr ArrayType(std::initializer_list<Type> initList)                              \
+	{                                                                                      \
+		Append(initList.begin(), initlist.end());                                          \
+	}
+
+#define DECLARE_ARRAY_INSERTIONS_API(ArrayType)             \
+	/*i32 Add(Type&& item)                                  \
+	{                                                       \
+	    vector.push_back(Move(item));                       \
+	    return Size() - 1;                                  \
+	}                                                       \
+	i32 Add(const Type& item)                               \
+	{                                                       \
+	    vector.push_back(item);                             \
+	    return Size() - 1;                                  \
+	}*/                                                     \
+                                                            \
+	constexpr i32 AddN(i32 count)                           \
+	{                                                       \
+		const i32 firstIndex = size;                        \
+		if (Ensure(count > 0))                              \
+		{                                                   \
+			GrowToInsert(count);                            \
+			size += count;                                  \
+			ConstructItems(data + firstIndex, count);       \
+		}                                                   \
+		return firstIndex;                                  \
+	}                                                       \
+                                                            \
+	constexpr i32 AddN(i32 count, const Type& item)         \
+	{                                                       \
+		const i32 firstIndex = size;                        \
+		if (Ensure(count > 0))                              \
+		{                                                   \
+			GrowToInsert(count);                            \
+			size += count;                                  \
+			ConstructItems(data + firstIndex, count, item); \
+		}                                                   \
+		return firstIndex;                                  \
+	}                                                       \
+                                                            \
+	/*Type& AddRef(Type&& item)                             \
+	{                                                       \
+	    return Data()[Add(Move(item))];                     \
+	}                                                       \
+	Type& AddRef(const Type& item)                          \
+	{                                                       \
+	    return Data()[Add(item)];                           \
+	}*/                                                     \
+                                                            \
+	Type& AddNRef(i32 count)                                \
+	{                                                       \
+		return Data()[AddN(count)];                         \
+	}                                                       \
+	Type& AddNRef(i32 count, const Type& item)              \
+	{                                                       \
+		return Data()[AddN(count, item)];                   \
+	}
+
+#define DECLARE_ARRAY_REMOVALS_API(ArrayType)                           \
+	/** Empty the array.                                                \
+	 * @param shouldShrink false will not free memory                   \
+	 * @param newCapacity to how many elements the array should         \
+	 */                                                                 \
+	constexpr void Clear(bool shouldShrink = true, u32 newCapacity = 0) \
+	{                                                                   \
+		DestroyItems(data, size);                                       \
+		size = 0;                                                       \
+		if (shouldShrink)                                               \
+		{                                                               \
+			Reallocate(newCapacity);                                    \
+		}                                                               \
+	}
+
+
+#define DECLARE_ARRAY_STORAGE_API(ArrayType)                                                     \
+	/** Grows or shrinks the array´s reserved memory to fit N items, but never under the number \
+	 * it already contains.                                                                      \
+	 */                                                                                          \
+	constexpr void Reserve(i32 newCapacity)                                                      \
+	{                                                                                            \
+		if (capacity < newCapacity)                                                              \
+		{                                                                                        \
+			Reallocate(newCapacity);                                                             \
+		}                                                                                        \
+	}                                                                                            \
+                                                                                                 \
+	constexpr void ReserveMore(i32 extraCapacity)                                                \
+	{                                                                                            \
+		Reserve(size + extraCapacity);                                                           \
+	}                                                                                            \
+                                                                                                 \
+	/** Shrinks the array's reserved memory to fit just enough for the elements it contains.     \
+	 */                                                                                          \
+	constexpr void Shrink()                                                                      \
+	{                                                                                            \
+		if (size != capacity)                                                                    \
+		{                                                                                        \
+			Reallocate(size);                                                                    \
+		}                                                                                        \
+	}                                                                                            \
+                                                                                                 \
+protected:                                                                                       \
+	constexpr void GrowToInsert(i32 extraSize)                                                   \
+	{                                                                                            \
+		const i32 newSize = size + extraSize;                                                    \
+		if (capacity < newSize)                                                                  \
+		{                                                                                        \
+			Reallocate(GrowCapacity(capacity, newSize));                                         \
+		}                                                                                        \
+	}
+
 	template<typename Type>
 	struct TArray2 : public IRange<Type>
 	{
@@ -561,127 +685,88 @@ namespace p
 		Arena& arena = p::GetCurrentArena();
 
 	public:
-		constexpr TArray2(Arena& arena = p::GetCurrentArena()) : arena{arena} {}
-		constexpr TArray2(i32 count, Arena& arena = p::GetCurrentArena()) : arena{arena}
-		{
-			AddN(count);
-		}
-		constexpr TArray2(i32 count, const Type& value, Arena& arena = p::GetCurrentArena())
-		    : arena{arena}
-		{
-			AddN(count, value);
-		}
-		TArray2(std::initializer_list<Type> initList) {}
+		// Functions that don't depend on the allocation strategy but need to be refined equally
+		// across all array types
+		DECLARE_ARRAY_CONSTRUCTORS_API(TArray2)
+		DECLARE_ARRAY_INSERTIONS_API(TArray2)
+		DECLARE_ARRAY_REMOVALS_API(TArray2)
+		DECLARE_ARRAY_STORAGE_API(TArray2)
 
-
-#pragma region Insertion
-		/*i32 Add(Type&& item)
-		{
-		    vector.push_back(Move(item));
-		    return Size() - 1;
-		}
-
-		i32 Add(const Type& item)
-		{
-		    vector.push_back(item);
-		    return Size() - 1;
-		}*/
-
-		constexpr i32 AddN(i32 count)
-		{
-			const i32 firstIndex = size;
-			if (Ensure(count > 0))
-			{
-				GrowToInsert(count);
-				size += count;
-				ConstructItems(data + firstIndex, count);
-			}
-			return firstIndex;
-		}
-
-		constexpr i32 AddN(i32 count, const Type& item)
-		{
-			const i32 firstIndex = size;
-			if (Ensure(count > 0))
-			{
-				GrowToInsert(count);
-				size += count;
-				ConstructItems(data + firstIndex, count, item);
-			}
-			return firstIndex;
-		}
-
-		/*Type& AddRef(Type&& item)
-		{
-		    return Data()[Add(Move(item))];
-		}
-		Type& AddRef(const Type& item)
-		{
-		    return Data()[Add(item)];
-		}*/
-
-		Type& AddNRef(i32 count)
-		{
-			return Data()[AddN(count)];
-		}
-		Type& AddNRef(i32 count, const Type& item)
-		{
-			return Data()[AddN(count, item)];
-		}
-#pragma endregion Insertion`
-
-
-		/// Grows or shrinks the array´s reserved memory to fit N items, but never under the number
-		/// it already contains.
-		constexpr void Reserve(i32 newCapacity)
-		{
-			if (capacity < newCapacity)
-			{
-				Reallocate(newCapacity);
-			}
-		}
-
-		constexpr void ReserveMore(i32 extraCapacity)
-		{
-			Reserve(size + extraCapacity);
-		}
-
-		/// Shrinks the array's reserved memory to fit just enough for the elements it contains.
-		constexpr void Shrink()
-		{
-			if (size != capacity)
-			{
-				Reallocate(size);
-			}
-		}
-
+	public:
 		constexpr void Resize(i32 sizeNum) {}                       // TODO
 		constexpr void Resize(i32 sizeNum, const Type& value) {}    // TODO
 
-		/** Empty the array.
-		 * @param shouldShrink false will not free memory
-		 * @param newCapacity to how many elements the array should
-		 */
-		constexpr void Clear(bool shouldShrink = true, u32 newCapacity = 0)
-		{
-			DestroyItems(data, size);
-			size = 0;
-			if (shouldShrink)
-			{
-				Reserve(newCapacity);
-			}
-		}
-
 
 	protected:
-		constexpr void GrowToInsert(i32 extraSize)
+		constexpr void Reallocate(i32 newCapacity)
 		{
-			const i32 newSize = size + extraSize;
-			if (capacity < newSize)
+			Check(capacity != newCapacity);
+
+			if (size > newCapacity) [[unlikely]]
 			{
-				Reallocate(GrowCapacity(capacity, newSize));
+				OnInvalidNum(newCapacity);
+				return;
+			}
+
+			Type* oldData         = data;
+			const i32 oldCapacity = capacity;
+			if (newCapacity > 0)
+			{
+				data     = p::Alloc<Type>(arena, newCapacity);
+				capacity = newCapacity;
+			}
+			else
+			{
+				data     = nullptr;
+				capacity = 0;
+			}
+
+			if (size > 0) [[likely]]    // There is memory to move/copy
+			{
+				if constexpr (IsMoveConstructible<Type> || !IsCopyConstructible<Type>)
+				{
+					MoveConstructItems<Type, true>(data, size, oldData);
+				}
+				else
+				{
+					CopyConstructItems<Type, true>(data, size, oldData);
+				}
+			}
+
+			if (oldCapacity > 0)
+			{
+				Free(arena, oldData, oldCapacity);
 			}
 		}
+
+		void OnInvalidNum(i32 newSize)
+		{
+			Error("Trying to resize TArray2 to an invalid size of {}", newSize);
+		}
+	};
+
+	/** An array type with a fixed amount of elements. */
+	template<typename Type, i32 InlineCapacity>
+	struct TInlineArray : public IRange<Type>
+	{
+	public:
+		template<typename OtherType>
+		friend struct TArray2;
+
+		i32 capacity = 0;
+		Type inlineBuffer[InlineCapacity];
+		Arena& arena = p::GetCurrentArena();
+
+
+	public:
+		// Functions that don't depend on the allocation strategy but need to be refined equally
+		// across all array types
+		DECLARE_ARRAY_CONSTRUCTORS_API(TInlineArray)
+		DECLARE_ARRAY_INSERTIONS_API(TInlineArray)
+		DECLARE_ARRAY_REMOVALS_API(TInlineArray)
+		DECLARE_ARRAY_STORAGE_API(TInlineArray)
+
+	protected:
 
 		constexpr void Reallocate(i32 newCapacity)
 		{
@@ -693,48 +778,43 @@ namespace p
 				return;
 			}
 
-			if (newCapacity > 0)
+			Type* oldData         = data;
+			const i32 oldCapacity = capacity;
+			if (newCapacity > InlineCapacity)
 			{
-				Type* newData = p::Alloc<Type>(arena, newCapacity);
-				if (capacity > 0)    // There is memory to free and to possibly move/copy
-				{
-					if constexpr (IsMoveConstructible<Type> || !IsCopyConstructible<Type>)
-					{
-						MoveConstructItems<Type, true>(newData, size, data);
-					}
-					else
-					{
-						CopyConstructItems<Type, true>(newData, size, data);
-					}
-					Free(arena, data, capacity);
-				}
-				data     = newData;
+				data     = p::Alloc<Type>(arena, newCapacity);
 				capacity = newCapacity;
 			}
-			else    // Nothing to reserve, just free all memory
+			else
 			{
-				Free(arena, data, capacity);
-				data     = nullptr;
-				capacity = 0;
+				data     = inlineBuffer;
+				capacity = InlineCapacity;
+			}
+
+			if (size > 0 && data != oldData)    // There is memory to move/copy
+			{
+				if constexpr (IsMoveConstructible<Type> || !IsCopyConstructible<Type>)
+				{
+					MoveConstructItems<Type, true>(data, size, oldData);
+				}
+				else
+				{
+					CopyConstructItems<Type, true>(data, size, oldData);
+				}
+			}
+
+			if (oldCapacity > InlineCapacity)    // Only free if we were not using the inline array
+			{
+				Free(arena, oldData, oldCapacity);
 			}
 		}
 
 		void OnInvalidNum(i32 newSize)
 		{
-			Error("Trying to resize TArray2 to an invalid size of {}", newSize);
+			Error("Trying to resize TInlineArray to an invalid size of {}", newSize);
 		}
 	};
 
-	/** An array type with a fixed amount of elements. */
-	template<typename Type, i32 Capacity>
-	struct TFixedArray : public IRange<Type>
-	{
-	public:
-		template<typename OtherType>
-		friend struct TArray2;
-
-		static constexpr i32 capacity = Capacity;
-
-		Type inlineBuffer[capacity];
-	};
+	template<typename T>
+	using TSmallArray = TInlineArray<Type, 5>;
 };    // namespace p
