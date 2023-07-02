@@ -11,6 +11,7 @@
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"
 
+#include <initializer_list>
 #include <iterator>
 
 
@@ -278,12 +279,12 @@ namespace p
 
 		i32 GetMemorySize() const
 		{
-			return Size() * sizeof(Type);
+			return size * sizeof(Type);
 		}
 
 		bool IsEmpty() const
 		{
-			return Size() == 0;
+			return size == 0;
 		}
 		Type* Data() const
 		{
@@ -293,7 +294,7 @@ namespace p
 		/// @returns a pointer to an element given a valid index, otherwise null
 		Type* At(i32 index) const
 		{
-			return IsValidIndex(index) ? Data() + index : nullptr;
+			return IsValidIndex(index) ? data + index : nullptr;
 		}
 
 		/**
@@ -303,27 +304,27 @@ namespace p
 		Type& operator[](i32 index) const
 		{
 			Check(IsValidIndex(index));
-			return Data()[index];
+			return data[index];
 		}
 
 		Type& First() const
 		{
 			Check(size != 0);
-			return Data()[0];
+			return data[0];
 		}
 		Type& Last() const
 		{
 			Check(size != 0);
-			return Data()[size - 1];
+			return data[size - 1];
 		}
 
 		bool IsValidIndex(i32 index) const
 		{
-			return index >= 0 && index < Size();
+			return index >= 0 && index < size;
 		}
 		bool IsValidIndex(u32 index) const
 		{
-			return index < u32(Size());
+			return index < u32(size);
 		}
 
 
@@ -554,71 +555,140 @@ namespace p
 	{}                                                                                     \
 	constexpr ArrayType(i32 count, Arena& arena = p::GetCurrentArena()) : arena{arena}     \
 	{                                                                                      \
-		AddN(count);                                                                       \
+		Assign(count);                                                                     \
 	}                                                                                      \
 	constexpr ArrayType(i32 count, const Type& value, Arena& arena = p::GetCurrentArena()) \
 	    : arena{arena}                                                                     \
 	{                                                                                      \
-		AddN(count, value);                                                                \
+		Assign(count, value);                                                              \
 	}                                                                                      \
 	constexpr ArrayType(std::initializer_list<Type> initList)                              \
 	{                                                                                      \
-		Append(initList.begin(), initlist.end());                                          \
+		Append(Move(initList));                                                            \
 	}
 
-#define DECLARE_ARRAY_INSERTIONS_API(ArrayType)             \
-	/*i32 Add(Type&& item)                                  \
-	{                                                       \
-	    vector.push_back(Move(item));                       \
-	    return Size() - 1;                                  \
-	}                                                       \
-	i32 Add(const Type& item)                               \
-	{                                                       \
-	    vector.push_back(item);                             \
-	    return Size() - 1;                                  \
-	}*/                                                     \
-                                                            \
-	constexpr i32 AddN(i32 count)                           \
-	{                                                       \
-		const i32 firstIndex = size;                        \
-		if (Ensure(count > 0))                              \
-		{                                                   \
-			GrowToInsert(count);                            \
-			size += count;                                  \
-			ConstructItems(data + firstIndex, count);       \
-		}                                                   \
-		return firstIndex;                                  \
-	}                                                       \
-                                                            \
-	constexpr i32 AddN(i32 count, const Type& item)         \
-	{                                                       \
-		const i32 firstIndex = size;                        \
-		if (Ensure(count > 0))                              \
-		{                                                   \
-			GrowToInsert(count);                            \
-			size += count;                                  \
-			ConstructItems(data + firstIndex, count, item); \
-		}                                                   \
-		return firstIndex;                                  \
-	}                                                       \
-                                                            \
-	/*Type& AddRef(Type&& item)                             \
-	{                                                       \
-	    return Data()[Add(Move(item))];                     \
-	}                                                       \
-	Type& AddRef(const Type& item)                          \
-	{                                                       \
-	    return Data()[Add(item)];                           \
-	}*/                                                     \
-                                                            \
-	Type& AddNRef(i32 count)                                \
-	{                                                       \
-		return Data()[AddN(count)];                         \
-	}                                                       \
-	Type& AddNRef(i32 count, const Type& item)              \
-	{                                                       \
-		return Data()[AddN(count, item)];                   \
-	}
+#define DECLARE_ARRAY_INSERTIONS_API(ArrayType)                 \
+	i32 Add()                                                   \
+	{                                                           \
+		Grow(size + 1);                                         \
+		const i32 firstIndex = size;                            \
+		size += 1;                                              \
+		new (data + firstIndex) T();                            \
+		return firstIndex;                                      \
+	}                                                           \
+	i32 Add(Type&& item)                                        \
+	{                                                           \
+		Grow(size + 1);                                         \
+		const i32 firstIndex = size;                            \
+		size += 1;                                              \
+		new (data + firstIndex) T(Move(item));                  \
+		return firstIndex;                                      \
+	}                                                           \
+	i32 Add(const Type& item)                                   \
+	{                                                           \
+		Grow(size + 1);                                         \
+		const i32 firstIndex = size;                            \
+		size += 1;                                              \
+		new (data + firstIndex) T(item);                        \
+		return firstIndex;                                      \
+	}                                                           \
+	Type& AddRef()                                              \
+	{                                                           \
+		return Data()[Add()];                                   \
+	}                                                           \
+	Type& AddRef(Type&& item)                                   \
+	{                                                           \
+		return Data()[Add(Move(item))];                         \
+	}                                                           \
+	Type& AddRef(const Type& item)                              \
+	{                                                           \
+		return Data()[Add(item)];                               \
+	}                                                           \
+                                                                \
+	void Append(i32 count)                                      \
+	{                                                           \
+		if (Ensure(count > 0)) [[likely]]                       \
+		{                                                       \
+			Grow(size + count);                                 \
+			const i32 firstIndex = size;                        \
+			size += count;                                      \
+			ConstructItems(data + firstIndex, count);           \
+		}                                                       \
+	}                                                           \
+                                                                \
+	void Append(i32 count, const Type& item)                    \
+	{                                                           \
+		if (Ensure(count > 0)) [[likely]]                       \
+		{                                                       \
+			Grow(size + count);                                 \
+			const i32 firstIndex = size;                        \
+			size += count;                                      \
+			ConstructItems(data + firstIndex, count, item);     \
+		}                                                       \
+	}                                                           \
+                                                                \
+	void Append(const IRange<Type>& values)                     \
+	{                                                           \
+		Append(values.Data(), values.Size());                   \
+	}                                                           \
+	void Append(std::initializer_list<Type> initList)           \
+	{                                                           \
+		Append(initList.begin(), i32(initList.size()));         \
+	}                                                           \
+	void Append(const Type* values, i32 count)                  \
+	{                                                           \
+		if (Ensure(count > 0)) [[likely]]                       \
+		{                                                       \
+			Grow(size + count);                                 \
+			size += count;                                      \
+			CopyConstructItems(data, count, values);            \
+		}                                                       \
+	}                                                           \
+                                                                \
+	void Assign(i32 count)                                      \
+	{                                                           \
+		if (Ensure(count > 0)) [[likely]]                       \
+		{                                                       \
+			Grow(size + count);                                 \
+			const i32 firstIndex = size;                        \
+			size += count;                                      \
+			ConstructItems(data + firstIndex, count);           \
+		}                                                       \
+	}                                                           \
+	void Assign(i32 count, const Type& item)                    \
+	{                                                           \
+		if (Ensure(count > 0)) [[likely]]                       \
+		{                                                       \
+			Grow(size + count);                                 \
+			const i32 firstIndex = size;                        \
+			size += count;                                      \
+			ConstructItems(data + firstIndex, count, item);     \
+		}                                                       \
+	}                                                           \
+	void Assign(const IRange<Type>& values)                     \
+	{                                                           \
+		Assign(values.Data(), values.Size());                   \
+	}                                                           \
+	constexpr void Assign(std::initializer_list<Type> initList) \
+	{                                                           \
+		Assign(initList.data(), i32(initList.size()));          \
+	}                                                           \
+	void Assign(const Type* values, i32 count)                  \
+	{                                                           \
+		if (Ensure(count > 0)) [[likely]]                       \
+		{                                                       \
+			Clear(true, count);                                 \
+			size += count;                                      \
+			CopyConstructItems(data, count, values);            \
+		}                                                       \
+	}                                                           \
+                                                                \
+	void Insert(i32 atIndex, Type&& item)                       \
+	{}                                                          \
+	void Insert(i32 atIndex, const Type& item)                  \
+	{}                                                          \
+	void Insert(i32 atIndex, const IRange<Type>& values)        \
+	{}
 
 #define DECLARE_ARRAY_REMOVALS_API(ArrayType)                           \
 	/** Empty the array.                                                \
@@ -664,9 +734,8 @@ namespace p
 	}                                                                                            \
                                                                                                  \
 protected:                                                                                       \
-	constexpr void GrowToInsert(i32 extraSize)                                                   \
+	constexpr void Grow(i32 newSize)                                                             \
 	{                                                                                            \
-		const i32 newSize = size + extraSize;                                                    \
 		if (capacity < newSize)                                                                  \
 		{                                                                                        \
 			Reallocate(GrowCapacity(capacity, newSize));                                         \
@@ -698,7 +767,7 @@ protected:                                                                      
 
 
 	protected:
-		constexpr void Reallocate(i32 newCapacity)
+		void Reallocate(i32 newCapacity)
 		{
 			Check(capacity != newCapacity);
 
@@ -750,8 +819,8 @@ protected:                                                                      
 	struct TInlineArray : public IRange<Type>
 	{
 	public:
-		template<typename OtherType>
-		friend struct TArray2;
+		template<typename OtherType, i32 OtherInlineCapacity>
+		friend struct TInlineArray;
 
 		i32 capacity = 0;
 		Type inlineBuffer[InlineCapacity];

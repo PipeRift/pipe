@@ -17,11 +17,11 @@ namespace p
 		}
 		~HeapArena() override = default;
 
-		inline void* Alloc(const sizet size)
+		constexpr void* Alloc(const sizet size)
 		{
 			return p::HeapAlloc(size);
 		}
-		inline void* Alloc(const sizet size, const sizet align)
+		constexpr void* Alloc(const sizet size, const sizet align)
 		{
 			return p::HeapAlloc(size, align);
 		}
@@ -29,7 +29,7 @@ namespace p
 		{
 			return false;
 		}
-		inline void Free(void* ptr, sizet size)
+		constexpr void Free(void* ptr, sizet size)
 		{
 			p::HeapFree(ptr);
 		}

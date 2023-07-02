@@ -22,19 +22,19 @@ go_bandit([]() {
 			TInlineArray<i32, 5> data1{};
 			TInlineArray<i32, 5> data2(3);
 			TInlineArray<i32, 5> data3(3, 0);
-			// TArray2<i32> data4{3, 3, 3, 3};
+			TInlineArray<i32, 5> data4{3, 3, 3, 3};
 
 			AssertThat(data1.Size(), Equals(0));
 			AssertThat(data2.Size(), Equals(3));
 			AssertThat(data3.Size(), Equals(3));
-			// AssertThat(data4.Size(), Equals(4));
+			AssertThat(data4.Size(), Equals(4));
 
 			AssertThat(data2[0], Equals(0));
 			AssertThat(data2[2], Equals(0));
 			AssertThat(data3[0], Equals(0));
 			AssertThat(data3[2], Equals(0));
-			// AssertThat(data4[0], Equals(3));
-			// AssertThat(data4[3], Equals(3));
+			AssertThat(data4[0], Equals(3));
+			AssertThat(data4[3], Equals(3));
 		});
 	});
 });
