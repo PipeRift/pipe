@@ -17,14 +17,23 @@
 
 namespace p
 {
-	constexpr i32 GrowCapacity(i32 capacity, i32 newSize)
-	{
-		const i32 goldenCapacity = i32(capacity * 1.6);
-		return p::math::Max(goldenCapacity, newSize);
-	}
+	////////////////////////////////
+	// FORWARD DECLARATIONS
+	//
 
 	template<typename Type>
 	struct IRange;
+
+	template<typename Type>
+	struct TArray;
+
+	template<typename Type, i32 InlineCapacity>
+	struct TInlineArray;
+
+
+	////////////////////////////////
+	// RANGES
+	//
 
 	template<typename Type>
 	struct TRangeIterator
@@ -550,15 +559,27 @@ namespace p
 		};
 	};
 
+
+	////////////////////////////////
+	// ARRAYS
+	//
+
+	constexpr i32 GrowCapacity(i32 capacity, i32 newSize)
+	{
+		const i32 goldenCapacity = i32(capacity * 1.6);
+		return p::math::Max(goldenCapacity, newSize);
+	}
+
+
 #define DECLARE_ARRAY_CONSTRUCTORS_API(ArrayType)                                          \
-	constexpr ArrayType(Arena& arena = p::GetCurrentArena()) : arena{arena}                \
+	constexpr ArrayType(Arena& arena = p::GetCurrentArena()) : arena{&arena}               \
 	{}                                                                                     \
-	constexpr ArrayType(i32 count, Arena& arena = p::GetCurrentArena()) : arena{arena}     \
+	constexpr ArrayType(i32 count, Arena& arena = p::GetCurrentArena()) : arena{&arena}    \
 	{                                                                                      \
 		Assign(count);                                                                     \
 	}                                                                                      \
 	constexpr ArrayType(i32 count, const Type& value, Arena& arena = p::GetCurrentArena()) \
-	    : arena{arena}                                                                     \
+	    : arena{&arena}                                                                    \
 	{                                                                                      \
 		Assign(count, value);                                                              \
 	}                                                                                      \
@@ -699,7 +720,7 @@ namespace p
 	{                                                                   \
 		DestroyItems(data, size);                                       \
 		size = 0;                                                       \
-		if (shouldShrink)                                               \
+		if (shouldShrink && capacity != newCapacity)                    \
 		{                                                               \
 			Reallocate(newCapacity);                                    \
 		}                                                               \
@@ -733,6 +754,11 @@ namespace p
 		}                                                                                        \
 	}                                                                                            \
                                                                                                  \
+	i32 Capacity() const                                                                         \
+	{                                                                                            \
+		return capacity;                                                                         \
+	}                                                                                            \
+                                                                                                 \
 protected:                                                                                       \
 	constexpr void Grow(i32 newSize)                                                             \
 	{                                                                                            \
@@ -741,6 +767,7 @@ protected:                                                                      
 			Reallocate(GrowCapacity(capacity, newSize));                                         \
 		}                                                                                        \
 	}
+
 
 	template<typename Type>
 	struct TArray2 : public IRange<Type>
@@ -751,7 +778,7 @@ protected:                                                                      
 
 	private:
 		i32 capacity = 0;
-		Arena& arena = p::GetCurrentArena();
+		Arena* arena = &p::GetCurrentArena();
 
 	public:
 		// Functions that don't depend on the allocation strategy but need to be refined equally
@@ -781,7 +808,7 @@ protected:                                                                      
 			const i32 oldCapacity = capacity;
 			if (newCapacity > 0)
 			{
-				data     = p::Alloc<Type>(arena, newCapacity);
+				data     = p::Alloc<Type>(*arena, newCapacity);
 				capacity = newCapacity;
 			}
 			else
@@ -804,7 +831,7 @@ protected:                                                                      
 
 			if (oldCapacity > 0)
 			{
-				Free(arena, oldData, oldCapacity);
+				Free(*arena, oldData, oldCapacity);
 			}
 		}
 
@@ -812,7 +839,28 @@ protected:                                                                      
 		{
 			Error("Trying to resize TArray2 to an invalid size of {}", newSize);
 		}
+
+		void CopyFrom(const IRange<Type>& other)
+		{
+			vector = other.vector;
+		}
+		void MoveFrom(TArray2<Type>&& other)
+		{
+			Clear();
+			data     = other.data;
+			size     = other.size;
+			capacity = other.capacity;
+			arena    = other.arena;    // We pass the arena so that it can be correctly freed
+
+			other.data     = nullptr;
+			other.size     = 0;
+			other.capacity = 0;
+		}
+
+		template<i32 InlineCapacity>
+		void MoveFrom(TInlineArray<Type, InlineCapacity>&& other);
 	};
+
 
 	/** An array type with a fixed amount of elements. */
 	template<typename Type, i32 InlineCapacity>
@@ -824,7 +872,7 @@ protected:                                                                      
 
 		i32 capacity = 0;
 		Type inlineBuffer[InlineCapacity];
-		Arena& arena = p::GetCurrentArena();
+		Arena* arena = &p::GetCurrentArena();
 
 
 	public:
@@ -834,6 +882,13 @@ protected:                                                                      
 		DECLARE_ARRAY_INSERTIONS_API(TInlineArray)
 		DECLARE_ARRAY_REMOVALS_API(TInlineArray)
 		DECLARE_ARRAY_STORAGE_API(TInlineArray)
+
+
+		/** @return true is inline data is being used as the buffer */
+		bool IsDataInline() const
+		{
+			return data == inlineBuffer;
+		}
 
 	protected:
 
@@ -851,7 +906,7 @@ protected:                                                                      
 			const i32 oldCapacity = capacity;
 			if (newCapacity > InlineCapacity)
 			{
-				data     = p::Alloc<Type>(arena, newCapacity);
+				data     = p::Alloc<Type>(*arena, newCapacity);
 				capacity = newCapacity;
 			}
 			else
@@ -872,9 +927,9 @@ protected:                                                                      
 				}
 			}
 
-			if (oldCapacity > InlineCapacity)    // Only free if we were not using the inline array
+			if (oldData != inlineBuffer)    // Only free if we were not using the inline array
 			{
-				Free(arena, oldData, oldCapacity);
+				Free(*arena, oldData, oldCapacity);
 			}
 		}
 
@@ -882,8 +937,96 @@ protected:                                                                      
 		{
 			Error("Trying to resize TInlineArray to an invalid size of {}", newSize);
 		}
+
+	protected:
+		template<i32 OtherInlineCapacity>
+		void MoveFrom(TInlineArray<Type, OtherInlineCapacity>&& other);
+		void MoveFrom(TArray2<Type>&& other);
 	};
 
 	template<typename T>
 	using TSmallArray = TInlineArray<Type, 5>;
+
+
+	////////////////////////////////
+	// DECLARATIONS
+	//
+
+	template<typename Type>
+	template<i32 InlineCapacity>
+	void TArray2<Type>::MoveFrom(TInlineArray<Type, InlineCapacity>&& other)
+	{
+		if (other.IsDataInline())    // We can't move inline buffer, so we move items
+		{
+			Clear(true, other.Size());
+			size = other.size;
+			if constexpr (IsMoveConstructible<Type> || !IsCopyConstructible<Type>)
+			{
+				MoveConstructItems<Type, true>(data, size, other.Data());
+			}
+			else
+			{
+				CopyConstructItems<Type, true>(data, size, other.Data());
+			}
+			other.Clear();
+			return;
+		}
+
+		Clear();
+		data     = other.data;
+		size     = other.size;
+		capacity = other.capacity;
+		arena    = other.arena;    // We pass the arena so that it can be correctly freed
+
+		other.data     = nullptr;
+		other.size     = 0;
+		other.capacity = 0;
+	}
+
+
+	template<typename Type, i32 InlineCapacity>
+	template<i32 OtherInlineCapacity>
+	void TInlineArray<Type, InlineCapacity>::MoveFrom(
+	    TInlineArray<Type, OtherInlineCapacity>&& other)
+	{
+		if (other.IsDataInline())
+		{
+			Clear(true, other.Size());
+			size = other.size;
+			if constexpr (IsMoveConstructible<Type> || !IsCopyConstructible<Type>)
+			{
+				MoveConstructItems<Type, true>(data, size, other.Data());
+			}
+			else
+			{
+				CopyConstructItems<Type, true>(data, size, other.Data());
+			}
+			other.Clear();
+			return;
+		}
+
+		Clear();
+		data     = other.data;
+		size     = other.size;
+		capacity = other.capacity;
+		arena    = other.arena;    // We pass the arena so that it can be correctly freed
+
+		other.data     = nullptr;
+		other.size     = 0;
+		other.capacity = 0;
+	}
+
+	template<typename Type, i32 InlineCapacity>
+	void TInlineArray<Type, InlineCapacity>::MoveFrom(TArray2<Type>&& other)
+	{
+		Clear();
+		data     = other.data;
+		size     = other.size;
+		capacity = other.capacity;
+		arena    = other.arena;    // We pass the arena so that it can be correctly freed
+
+		other.data     = nullptr;
+		other.size     = 0;
+		other.capacity = 0;
+	}
 };    // namespace p
