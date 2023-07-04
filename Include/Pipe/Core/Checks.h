@@ -57,7 +57,6 @@ namespace p
 		return false;                                                                    \
 	}())))
 
-
 #define Ensure(expression) EnsureImpl(, false, expression, "")
 #define EnsureMsg(expression, format, ...) EnsureImpl(&, false, expression, format, ##__VA_ARGS__)
 
