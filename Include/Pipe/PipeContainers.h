@@ -279,25 +279,33 @@ namespace p
 		IRange() = default;
 
 	public:
-		void Swap(i32 firstIndex, i32 secondIndex);
+		Type* Data() const
+		{
+			return data;
+		}
 
 		i32 Size() const
 		{
 			return size;
 		}
 
-		i32 GetMemorySize() const
-		{
-			return size * sizeof(Type);
-		}
-
 		bool IsEmpty() const
 		{
 			return size == 0;
 		}
-		Type* Data() const
+
+		bool IsValidIndex(i32 index) const
 		{
-			return data;
+			return index >= 0 && index < size;
+		}
+		bool IsValidIndex(u32 index) const
+		{
+			return index < u32(size);
+		}
+
+		i32 GetMemorySize() const
+		{
+			return size * sizeof(Type);
 		}
 
 		/// @returns a pointer to an element given a valid index, otherwise null
@@ -327,21 +335,20 @@ namespace p
 			return data[size - 1];
 		}
 
-		bool IsValidIndex(i32 index) const
-		{
-			return index >= 0 && index < size;
-		}
-		bool IsValidIndex(u32 index) const
-		{
-			return index < u32(size);
-		}
-
 
 #pragma region Sort
+		void Swap(i32 firstIndex, i32 secondIndex)
+		{
+			if (IsValidIndex(firstIndex) && IsValidIndex(secondIndex) && firstIndex != secondIndex)
+			{
+				std::iter_swap(data + firstIndex, data + secondIndex);
+			}
+		}
+
 		template<typename Predicate>
 		void Sort(Predicate predicate)
 		{
-			p::Sort(Data(), Size(), predicate);
+			p::Sort(data, size, predicate);
 		}
 
 		void Sort()
@@ -353,7 +360,7 @@ namespace p
 		void SortRange(i32 firstIndex, i32 count, Predicate predicate)
 		{
 			const i32 maxSize = Size() - firstIndex;
-			p::Sort(Data() + firstIndex, math::Min(count, maxSize), TLess<Type>());
+			p::Sort(data + firstIndex, math::Min(count, maxSize), TLess<Type>());
 		}
 
 		void SortRange(i32 firstIndex, i32 count)
@@ -361,6 +368,7 @@ namespace p
 			SortRange(firstIndex, count, TLess<Type>());
 		}
 #pragma endregion Sort
+
 
 #pragma region Search
 		Iterator FindIt(const Type& item) const
@@ -688,6 +696,79 @@ namespace p
 		{
 			return Data()[Add(item)];
 		}
+
+		i32 FindOrAdd(const Type& item) const
+		{
+			const i32 found = FindIndex(item);
+			if (found != NO_INDEX)
+			{
+				return found;
+			}
+			return Add(item);
+		}
+
+		/** Finds or adds an element in a sorted array.
+		 * Much more efficient that FindOrAdd.
+		 * NOTE: Undefined behavior on unsorted arrays!
+		 * @param item to find or add
+		 * @param sortPredicate used to sort the array
+		 * @param insertSorted when true(default) inserts element sorted
+		 * @return index, added
+		 */
+		template<typename SortPredicate = TLess<Type>>
+		i32 FindOrAddSorted(const Type& item, SortPredicate sortPredicate = {},
+		    bool insertSorted = true, bool* outFound = nullptr)
+		{
+			const i32 index = LowerBound(item, sortPredicate);
+			if (index != NO_INDEX)
+			{
+				if (!sortPredicate(item, Data()[index]))    // Equal check, found element
+				{
+					if (outFound)
+						*outFound = false;
+					return index;
+				}
+				else if (insertSorted)
+				{
+					Insert(index, item);
+					if (outFound)
+						*outFound = true;
+					return index;
+				}
+			}
+
+			if (outFound)
+				*outFound = true;
+			return Add(item);
+		}
+
+		template<typename SortPredicate = TLess<Type>>
+		i32 FindOrAddSorted(Type&& item, SortPredicate sortPredicate = {}, bool insertSorted = true,
+		    bool* outFound = nullptr)
+		{
+			const i32 index = LowerBound(item, sortPredicate);
+			if (index != NO_INDEX)
+			{
+				if (!sortPredicate(item, Data()[index]))    // Equal check, found element
+				{
+					if (outFound)
+						*outFound = false;
+					return index;
+				}
+				else if (insertSorted)
+				{
+					Insert(index, Move(item));
+					if (outFound)
+						*outFound = true;
+					return index;
+				}
+			}
+
+			if (outFound)
+				*outFound = true;
+			return Add(Move(item));
+		}
+
 		void Append(i32 count)
 		{
 			GrowEnough(size + count);
@@ -750,7 +831,7 @@ namespace p
 		// TODO
 		void Insert(i32 atIndex, Type&& item) {}
 		void Insert(i32 atIndex, const Type& item) {}
-		void Insert(i32 atIndex, const Type* values, i32 count) {}
+		void Insert(i32 atIndex, const Type* values, i32 count);
 		void Insert(i32 atIndex, const IRange<Type>& values)
 		{
 			Insert(atIndex, values.Data(), values.Size());
@@ -761,8 +842,38 @@ namespace p
 		}
 #pragma endregion Insertions
 
+
 #pragma region Removals
 	public:
+		void RemoveLast()
+		{
+			if (size > 0)
+			{
+				DestroyItems(data + size - 1, 1);
+				--size;
+			}
+		}
+
+		/**
+		 * Remove N last elements from the array
+		 * @param count
+		 */
+		void RemoveLast(i32 count)
+		{
+			if (size < count)
+			{
+				Clear(false);
+			}
+			else if (count > 0)
+			{
+				DestroyItems(data + size - count, count);
+				size -= count;
+			}
+		}
+
+		/** Remove all elements from the array and optionally free memory
+		 * @param shouldShrink true will free used memory
+		 */
 		void Clear(bool shouldShrink = true)
 		{
 			DestroyItems(data, size);
@@ -774,11 +885,13 @@ namespace p
 		}
 #pragma endregion Removals
 
+
 #pragma region Storage
 	public:
+
 		void Reserve(i32 newCapacity)
 		{
-			if (capacity != newCapacity)
+			if (capacity < newCapacity)
 			{
 				Reallocate(newCapacity);
 			}
@@ -786,6 +899,32 @@ namespace p
 		void ReserveMore(i32 extraCapacity)
 		{
 			Reserve(size + extraCapacity);
+		}
+
+		void Resize(i32 newSize)
+		{
+			if (newSize < size)    // Trim
+			{
+				RemoveLast(size - newSize);
+			}
+			else if (newSize > size)    // Append
+			{
+				Append(newSize - size);
+			}
+			// If size doens't change, do nothing
+		}
+
+		void Resize(i32 newSize, const Type& value)
+		{
+			if (newSize < size)    // Trim
+			{
+				RemoveLast(size - newSize, value);
+			}
+			else if (newSize > size)    // Append
+			{
+				Append(newSize - size, value);
+			}
+			// If size doens't change, do nothing
 		}
 
 		void Shrink(i32 minCapacity = 0)
@@ -900,6 +1039,7 @@ namespace p
 
 
 	protected:
+		void InsertUninitialized(i32 atIndex, i32 count);
 		void CopyFrom(const IRange<Type>& other);
 
 		template<u32 OtherInlineCapacity>
@@ -917,6 +1057,25 @@ namespace p
 	////////////////////////////////
 	// DECLARATIONS
 	//
+
+	template<typename Type, u32 InlineCapacity>
+	void TInlineArray<Type, InlineCapacity>::Insert(i32 atIndex, const Type* values, i32 count)
+	{
+		InsertUninitialized(atIndex, count);
+		CopyConstructItems(data + atIndex, count);
+	}
+
+	template<typename Type, u32 InlineCapacity>
+	void TInlineArray<Type, InlineCapacity>::InsertUninitialized(i32 atIndex, i32 count)
+	{
+		// TODO
+		i32 newSize = size + count;
+
+		if (newSize > capacity)
+		{
+			//
+		}
+	}
 
 	template<typename Type, u32 InlineCapacity>
 	void TInlineArray<Type, InlineCapacity>::CopyFrom(const IRange<Type>& other)
