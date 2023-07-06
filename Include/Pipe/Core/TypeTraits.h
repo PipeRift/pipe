@@ -221,6 +221,24 @@ namespace p
 	};
 	template<typename T, typename Reference>
 	using CopyConst = typename TCopyConst<T, Reference>::type;
+
+
+	/** An untyped array of data with compile-time alignment and size derived from another type. */
+	template<typename T>
+	struct TTypeAsBytes
+	{
+		using Type = T;
+		constexpr Type* AsType()
+		{
+			return reinterpret_cast<Type*>(this);
+		}
+		constexpr const Type* AsType() const
+		{
+			return reinterpret_cast<const Type*>(this);
+		}
+
+		alignas(Type) u8 pad[sizeof(Type)];
+	};
 }    // namespace p
 
 #define P_DECLARE_IS_TRIVIAL(T, isTrivial)                                                   \

@@ -17,19 +17,19 @@ namespace p
 		}
 		~HeapArena() override = default;
 
-		constexpr void* Alloc(const sizet size)
+		void* Alloc(const sizet size)
 		{
 			return p::HeapAlloc(size);
 		}
-		constexpr void* Alloc(const sizet size, const sizet align)
+		void* Alloc(const sizet size, const sizet align)
 		{
 			return p::HeapAlloc(size, align);
 		}
-		inline bool Realloc(void* ptr, const sizet ptrSize, const sizet size)
+		bool Realloc(void* ptr, const sizet ptrSize, const sizet size)
 		{
 			return false;
 		}
-		constexpr void Free(void* ptr, sizet size)
+		void Free(void* ptr, sizet size)
 		{
 			p::HeapFree(ptr);
 		}

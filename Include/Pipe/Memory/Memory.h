@@ -3,6 +3,7 @@
 
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/TypeTraits.h"
+#include "Pipe/Core/Utility.h"
 #include "Pipe/Export.h"
 
 
@@ -165,7 +166,7 @@ namespace p
 	}
 
 	template<typename T, bool destroySourceInPlace = false>
-	constexpr void MoveConstructItems(T* data, sizet count, const T* values)
+	constexpr void MoveConstructItems(T* data, sizet count, T* values)
 	{
 		if constexpr (!std::is_constant_evaluated() && IsTriviallyMoveConstructible<T>)
 		{
@@ -176,7 +177,7 @@ namespace p
 			const T* const end = values + count;
 			while (values < end)
 			{
-				new (data) T(Move(*values));
+				new (data) T(Forward<T>(*values));
 				if constexpr (destroySourceInPlace)
 				{
 					values->T::~T();
@@ -184,6 +185,19 @@ namespace p
 				++values;
 				++data;
 			}
+		}
+	}
+
+	template<typename T, bool destroySourceInPlace = false>
+	constexpr void MoveOrCopyConstructItems(T* data, sizet count, T* values)
+	{
+		if constexpr (IsMoveConstructible<T> || !IsCopyConstructible<T>)
+		{
+			MoveConstructItems<T, destroySourceInPlace>(data, count, values);
+		}
+		else
+		{
+			CopyConstructItems<T, destroySourceInPlace>(data, count, values);
 		}
 	}
 
