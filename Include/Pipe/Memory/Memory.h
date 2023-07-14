@@ -247,6 +247,26 @@ namespace p
 		}
 	}
 
+	// Move items [source, source + count) backwards to [..., dest)
+	template<typename T>
+	void MoveItemsBackwards(T* dest, sizet count, T* source)
+	{
+		T* last = source + count;
+		if constexpr (!std::is_constant_evaluated() && IsTriviallyMoveAssignable<T>)
+		{
+			// MoveMem (or std::memmove) is safe in overlapping memory
+			const sizet byteCount = count * sizeof(T);
+			p::MoveMem(dest - byteCount, source, byteCount);
+		}
+		else
+		{
+			while (last != source)
+			{
+				*--dest = Forward<T>(*--last);
+			}
+		}
+	}
+
 	template<typename T>
 	constexpr void DestroyItems(T* data, sizet count)
 	{

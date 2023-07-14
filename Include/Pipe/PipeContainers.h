@@ -838,13 +838,18 @@ namespace p
 		// TODO
 		void Insert(i32 atIndex, Type&& value)
 		{
-			InsertUninitialized(atIndex, count);
-			MoveConstructItems(data + atIndex, count, Forward<Type>(value));
+			InsertUninitialized(atIndex, 1);
+			new (data + atIndex) Type(Forward<Type>(value));
 		}
 		void Insert(i32 atIndex, const Type& value)
 		{
+			InsertUninitialized(atIndex, 1);
+			new (data + atIndex) Type(value);
+		}
+		void Insert(i32 atIndex, i32 count, const Type& value)
+		{
 			InsertUninitialized(atIndex, count);
-			CopyConstructItems(data + atIndex, count, value);
+			ConstructItems(data + atIndex, count, value);
 		}
 		void Insert(i32 atIndex, const Type* values, i32 count)
 		{
@@ -1101,28 +1106,32 @@ namespace p
 		const i32 newSize = size + count;
 		size              = newSize;
 
-		if (newSize > capacity)
+		if (newSize > capacity)    // Reallocate elements
 		{
-			// Reallocate elements
 			Type* oldData         = data;
 			const i32 oldCapacity = capacity;
 			if (AllocNewBuffer(GetGrownCapacity(newSize)))    // Buffer changed
 			{
-				const i32 countBefore = atIndex;
-				const i32 countAfter  = oldSize - atIndex;
-
 				// Move elements before insertion index
-				MoveOrCopyConstructItems<Type, true>(data, countBefore, oldData);
+				MoveOrCopyConstructItems<Type, true>(data, atIndex, oldData);
 
 				// Move elements after insertion index
+				const i32 countToPush = oldSize - atIndex;
 				MoveOrCopyConstructItems<Type, true>(
-				    data + atIndex + count, countAfter, oldData + atIndex);
+				    data + atIndex + count, countToPush, oldData + atIndex);
 			}
 			FreeOldBuffer(oldData, oldCapacity);
 		}
+		else if (atIndex != size)
+		{
+			Type* const ptrToPush = data + atIndex;
+			const i32 countToPush = oldSize - atIndex;
+			// Push elements after insertion index
+			MoveItemsBackwards(ptrToPush + count, countToPush, ptrToPush);
+		}
 		else
 		{
-			// Move trailing elements back
+			// If we insert at end we have nothing else to do
 		}
 	}
 

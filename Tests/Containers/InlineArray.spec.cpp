@@ -290,9 +290,9 @@ go_bandit([]() {
 				MoveType tmp{2};
 				data.Add(Move(tmp));
 				data.Add(MoveType{3});
-				AssertThat(tmp.value, Equals(0));
 				AssertThat(data[0].value, Equals(2));
 				AssertThat(data[1].value, Equals(3));
+				AssertThat(tmp.value, Equals(0));
 			});
 
 			it("Can add by copy", [&]() {
@@ -353,7 +353,114 @@ go_bandit([]() {
 			xit("Can assign", []() {});
 		});
 		describe("Insert", []() {
-			xit("Can insert", []() {});
+			it("Can insert copied value", [&]() {
+				TInlineArray<i32, 0> data;
+				data.Insert(0, 32);    // Insert at empty
+				AssertThat(data.Size(), Equals(1));
+				AssertThat(data[0], Equals(32));
+
+				data.Insert(0, 65);    // Insert at start
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(65));
+				AssertThat(data[1], Equals(32));
+
+				data.Add(85);
+				data.Insert(1, 27);    // Insert in the middle
+				AssertThat(data.Size(), Equals(4));
+				AssertThat(data[1], Equals(27));
+
+				data.Insert(4, 43);    // Insert in the end
+				AssertThat(data.Size(), Equals(5));
+				AssertThat(data[4], Equals(43));
+			});
+
+			it("Can insert many values", [&]() {
+				TInlineArray<i32, 0> data;
+				data.Insert(0, 2, 32);    // Insert at empty
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(32));
+				AssertThat(data[1], Equals(32));
+
+				data.Insert(0, 2, 5);    // Insert at start
+				AssertThat(data.Size(), Equals(4));
+				AssertThat(data[0], Equals(5));
+				AssertThat(data[1], Equals(5));
+				AssertThat(data[2], Equals(32));
+				AssertThat(data[3], Equals(32));
+
+				data.Insert(3, 2, 6);    // Insert in the middle
+				AssertThat(data.Size(), Equals(6));
+				AssertThat(data[3], Equals(6));
+				AssertThat(data[4], Equals(6));
+
+				data.Insert(6, 2, 9);    // Insert in the end
+				AssertThat(data.Size(), Equals(8));
+				AssertThat(data[6], Equals(9));
+				AssertThat(data[7], Equals(9));
+			});
+
+			it("Can insert moved value", [&]() {
+				TInlineArray<MoveType, 0> data;
+				MoveType tmp{34};
+				data.Insert(0, Move(tmp));    // Insert at empty
+				AssertThat(data.Size(), Equals(1));
+				AssertThat(data[0].value, Equals(34));
+				AssertThat(tmp.value, Equals(0));
+
+				MoveType tmp2{4};
+				data.Insert(0, Move(tmp2));    // Insert at start
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0].value, Equals(4));
+				AssertThat(data[1].value, Equals(34));
+				AssertThat(tmp2.value, Equals(0));
+
+				MoveType tmp3{3};
+				data.Add(MoveType{85});
+				data.Insert(1, Move(tmp3));    // Insert in the middle
+				AssertThat(data.Size(), Equals(4));
+				AssertThat(data[1].value, Equals(3));
+				AssertThat(tmp3.value, Equals(0));
+
+				MoveType tmp4{7};
+				data.Insert(4, Move(tmp4));    // Insert in the end
+				AssertThat(data.Size(), Equals(5));
+				AssertThat(data[4].value, Equals(7));
+				AssertThat(tmp4.value, Equals(0));
+			});
+
+			it("Can insert buffer", [&]() {
+				TInlineArray<i32, 0> data;
+				i32 src[]{34, 23, 844};
+				data.Insert(0, src, 3);    // Insert at empty
+				AssertThat(data.Size(), Equals(3));
+				AssertThat(data[0], Equals(34));
+				AssertThat(data[1], Equals(23));
+				AssertThat(data[2], Equals(844));
+
+				i32 src2[]{2, 71, 21};
+				data.Insert(0, src2, 3);    // Insert at start
+				AssertThat(data.Size(), Equals(6));
+				AssertThat(data[0], Equals(2));
+				AssertThat(data[1], Equals(71));
+				AssertThat(data[2], Equals(21));
+				AssertThat(data[3], Equals(34));
+				AssertThat(data[4], Equals(23));
+				AssertThat(data[5], Equals(844));
+
+				i32 src3[]{4, 3, 6};
+				data.Insert(3, src3, 3);    // Insert in the middle
+				AssertThat(data.Size(), Equals(9));
+				AssertThat(data[3], Equals(4));
+				AssertThat(data[4], Equals(3));
+				AssertThat(data[5], Equals(6));
+
+				i32 src4[]{7, 2, 3};
+				data.Insert(9, src4, 3);    // Insert in the end
+				AssertThat(data.Size(), Equals(12));
+				AssertThat(data[9], Equals(7));
+				AssertThat(data[10], Equals(2));
+				AssertThat(data[11], Equals(3));
+			});
 		});
 		describe("Remove", []() {
 			xit("Can remove", []() {});
