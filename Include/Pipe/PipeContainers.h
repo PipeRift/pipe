@@ -10,6 +10,7 @@
 #include "Pipe/Core/Sorting.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"
+#include "Pipe/Memory/Memory.h"
 
 #include <initializer_list>
 #include <iterator>
@@ -22,13 +23,13 @@ namespace p
 	//
 
 	template<typename Type>
-	struct IRange;
-
-	template<typename Type>
-	struct TArray;
+	struct IArray;
 
 	template<typename Type, u32 InlineCapacity>
 	struct TInlineArray;
+
+	template<typename Type>
+	struct TArray;
 
 
 	////////////////////////////////
@@ -48,12 +49,12 @@ namespace p
 	private:
 		Type* ptr = nullptr;
 #if P_DEBUG
-		const IRange<Type>* range = nullptr;
+		const IArray<Type>* range = nullptr;
 #endif
 
 	public:
 		constexpr TRangeIterator() = default;
-		constexpr TRangeIterator(Type* ptr, const IRange<Type>* range) noexcept
+		constexpr TRangeIterator(Type* ptr, const IArray<Type>* range) noexcept
 		    : ptr(ptr)
 #if P_DEBUG
 		    , range(range)
@@ -259,11 +260,11 @@ namespace p
 	};
 
 
-	/** Containers inheriting IRange point to a contiguous list of elements of a type.
+	/** Containers inheriting IArray point to a contiguous list of elements of a type.
 	 * NOTE: Memory might or might not be owned depending on the container itself.
 	 */
 	template<typename Type>
-	struct IRange
+	struct IArray
 	{
 		using Iterator             = typename TRangeIterator<Type>;
 		using ConstIterator        = typename TRangeIterator<const Type>;
@@ -275,8 +276,8 @@ namespace p
 		i32 size   = 0;
 
 
-		// Do not use IRange as a container itself. See TView, TArray and TInlineArray.
-		IRange() = default;
+		// Do not use IArray as a container itself. See TView, TArray and TInlineArray.
+		IArray() = default;
 
 	public:
 		Type* Data() const
@@ -301,6 +302,10 @@ namespace p
 		bool IsValidIndex(u32 index) const
 		{
 			return index < u32(size);
+		}
+		bool IsValidIndexRange(i32 index, i32 count) const
+		{
+			return index >= 0 && (index + count) <= size;
 		}
 
 		i32 GetMemorySize() const
@@ -341,7 +346,30 @@ namespace p
 		{
 			if (IsValidIndex(firstIndex) && IsValidIndex(secondIndex) && firstIndex != secondIndex)
 			{
-				std::iter_swap(data + firstIndex, data + secondIndex);
+				SwapUnsafe(firstIndex, secondIndex);
+			}
+		}
+
+		void Swap(i32 firstIndex, i32 secondIndex, i32 count)
+		{
+			// Check that ranges fit inside the array and don't overlap
+			if (IsValidIndexRange(firstIndex, count) && IsValidIndexRange(secondIndex, count)
+			    && (firstIndex >= (secondIndex + count) || secondIndex >= (firstIndex + count)))
+			{
+				SwapUnsafe(firstIndex, secondIndex, count);
+			}
+		}
+
+		void SwapUnsafe(i32 firstIndex, i32 secondIndex)
+		{
+			::Swap(data[firstIndex], data[secondIndex]);
+		}
+
+		void SwapUnsafe(i32 firstIndex, i32 secondIndex, i32 count)
+		{
+			for (i32 i = 0; i < count; ++i)
+			{
+				::Swap(data[firstIndex + i], data[secondIndex + i]);
 			}
 		}
 
@@ -445,8 +473,8 @@ namespace p
 		}
 
 		/**
-		 * Finds the index of the first element that has a value that is greater than a specified
-		 * value.
+		 * Finds the index of the first element that has a value that is greater than a
+		 * specified value.
 		 *
 		 * @param sortPredicate used to sort the array. Default: a < b
 		 * @return the furthermost iterator i in the range [first, last) such that
@@ -497,7 +525,7 @@ namespace p
 #pragma endregion Search
 
 		template<typename OtherType>
-		bool operator==(const IRange<OtherType>& other) const
+		bool operator==(const IArray<OtherType>& other) const
 		{
 			if (size != other.size || IsEmpty())
 			{
@@ -574,7 +602,7 @@ namespace p
 
 	/** An array type with a fixed amount of elements. */
 	template<typename Type, u32 InlineCapacity>
-	struct TInlineArray : public IRange<Type>
+	struct TInlineArray : public IArray<Type>
 	{
 	public:
 		template<typename OtherType, u32 OtherInlineCapacity>
@@ -655,11 +683,11 @@ namespace p
 			}
 			return *this;
 		}
-		TInlineArray(const IRange<Type>& other)
+		TInlineArray(const IArray<Type>& other)
 		{
 			CopyFrom(other);
 		}
-		TInlineArray<Type, InlineCapacity>& operator=(const IRange<Type>& other)
+		TInlineArray<Type, InlineCapacity>& operator=(const IArray<Type>& other)
 		{
 			if (this != (void*)&other)
 			{
@@ -706,18 +734,42 @@ namespace p
 			return data[Add(value)];
 		}
 
-		i32 FindOrAdd(const Type& value) const
+		template<typename SortPredicate = TLess<Type>>
+		i32 AddSorted(Type&& item, SortPredicate sortPredicate = {})
+		{
+			const i32 index = LowerBound(item, sortPredicate);
+			if (index != NO_INDEX)
+			{
+				Insert(index, Move(item));
+				return index;
+			}
+			return Add(Move(item));
+		}
+
+		template<typename SortPredicate = TLess<Type>>
+		i32 AddSorted(const Type& item, SortPredicate sortPredicate = {})
+		{
+			const i32 index = LowerBound(item, sortPredicate);
+			if (index != NO_INDEX)
+			{
+				Insert(index, item);
+				return index;
+			}
+			return Add(item);
+		}
+
+		i32 AddUnique(const Type& value) const
 		{
 			const i32 found = FindIndex(value);
-			if (found != NO_INDEX)
+			if (found == NO_INDEX)
 			{
-				return found;
+				return Add(value);
 			}
-			return Add(value);
+			return found;
 		}
 
 		/** Finds or adds an element in a sorted array.
-		 * Much more efficient that FindOrAdd.
+		 * Much more efficient that AddUnique (but must be sorted).
 		 * NOTE: Undefined behavior on unsorted arrays!
 		 * @param value to find or add
 		 * @param sortPredicate used to sort the array
@@ -725,7 +777,7 @@ namespace p
 		 * @return index, added
 		 */
 		template<typename SortPredicate = TLess<Type>>
-		i32 FindOrAddSorted(const Type& value, SortPredicate sortPredicate = {},
+		i32 AddUniqueSorted(const Type& value, SortPredicate sortPredicate = {},
 		    bool insertSorted = true, bool* outFound = nullptr)
 		{
 			const i32 index = LowerBound(value, sortPredicate);
@@ -752,7 +804,7 @@ namespace p
 		}
 
 		template<typename SortPredicate = TLess<Type>>
-		i32 FindOrAddSorted(Type&& value, SortPredicate sortPredicate = {},
+		i32 AddUniqueSorted(Type&& value, SortPredicate sortPredicate = {},
 		    bool insertSorted = true, bool* outFound = nullptr)
 		{
 			const i32 index = LowerBound(value, sortPredicate);
@@ -796,7 +848,7 @@ namespace p
 			AddUninitialized(count);
 			CopyConstructItems(data + firstIndex, count, values);
 		}
-		void Append(const IRange<Type>& values)
+		void Append(const IArray<Type>& values)
 		{
 			Append(values.Data(), values.Size());
 		}
@@ -826,7 +878,7 @@ namespace p
 			size = count;
 			CopyConstructItems(data, count, values);
 		}
-		void Assign(const IRange<Type>& values)
+		void Assign(const IArray<Type>& values)
 		{
 			Assign(values.Data(), values.Size());
 		}
@@ -835,7 +887,6 @@ namespace p
 			Assign(initList.begin(), i32(initList.size()));
 		}
 
-		// TODO
 		void Insert(i32 atIndex, Type&& value)
 		{
 			InsertUninitialized(atIndex, 1);
@@ -856,7 +907,7 @@ namespace p
 			InsertUninitialized(atIndex, count);
 			CopyConstructItems(data + atIndex, count, values);
 		}
-		void Insert(i32 atIndex, const IRange<Type>& values)
+		void Insert(i32 atIndex, const IArray<Type>& values)
 		{
 			Insert(atIndex, values.Data(), values.Size());
 		}
@@ -869,12 +920,223 @@ namespace p
 
 #pragma region Removals
 	public:
+		/**
+		 * Delete all items that match another provided item
+		 * @return number of deleted items
+		 */
+		i32 Remove(const Type& item, bool shouldShrink = true)
+		{
+			return RemoveAt(FindIndex(item), shouldShrink);
+		}
+
+		i32 Remove(const IArray<Type>& items, bool shouldShrink = true)
+		{
+			const i32 lastSize = Size();
+			for (i32 i = 0; i < Size(); ++i)
+			{
+				if (items.Contains(Data()[i]))
+				{
+					RemoveAtUnsafe(i, false);
+					--i;    // Repeat same index
+				}
+			}
+			if (shouldShrink)
+			{
+				Shrink();
+			}
+			return lastSize - Size();
+		}
+
+		// Removes an item assuming the array is sorted
+		template<typename OtherType, typename SortPredicate = TLess<>>
+		i32 RemoveSorted(const OtherType& value, SortPredicate sortPredicate = {},
+		    const bool shouldShrink = true)
+		{
+			return i32(RemoveAt(FindSortedEqual(value, sortPredicate)));
+		}
+
+		/**
+		 * Delete item at index
+		 * @return true if removed
+		 */
+		bool RemoveAt(i32 index, const bool shouldShrink = true)
+		{
+			if (IsValidIndex(index))
+			{
+				RemoveAtUnsafe(index, shouldShrink);
+				return true;
+			}
+			return false;
+		}
+
+		/**
+		 * Delete N items at index
+		 * @return true if removed
+		 */
+		bool RemoveAt(i32 index, i32 count, const bool shouldShrink = true)
+		{
+			if (IsValidIndexRange(index, count))
+			{
+				RemoveAtUnsafe(index, count, shouldShrink);
+				return true;
+			}
+			return false;
+		}
+
+		/**
+		 * Delete item at an index by swapping with the last element. Doesn't preserve order.
+		 * Faster than RemoveAt since it doesnt push all remaining elements 1 position forward.
+		 * @return true if removed
+		 */
+		bool RemoveAtSwap(i32 index, const bool shouldShrink = true)
+		{
+			if (IsValidIndex(index))
+			{
+				RemoveAtSwapUnsafe(index, shouldShrink);
+				return true;
+			}
+			return false;
+		}
+
+		/**
+		 * Delete N items at an index by swapping with the last elements. Doesn't preserve order.
+		 * Faster than RemoveAt since it doesnt push all remaining elements N positions forward.
+		 * @return true if removed
+		 */
+		bool RemoveAtSwap(i32 index, i32 count, const bool shouldShrink = true)
+		{
+			if (IsValidIndexRange(index, count))
+			{
+				RemoveAtSwapUnsafe(index, count, shouldShrink);
+				return true;
+			}
+			return false;
+		}
+
+		/**
+		 * Delete item at index.
+		 * Unsafe version. Doesn't make sure index is valid.
+		 * @return true if removed
+		 */
+		void RemoveAtUnsafe(i32 index, const bool shouldShrink = true)
+		{
+			const i32 lastIndex   = index + 1;
+			const i32 countToPull = size - lastIndex;
+			DestroyItems(data + index, 1);
+			MoveItems(data + index, countToPull, data + lastIndex);
+			--size;
+
+			/// @OPTIMIZE: Shrinking can be combined to avoid moving trailing elements twice
+			if (shouldShrink)
+				Shrink();
+		}
+
+		/**
+		 * Delete N items at index.
+		 * Unsafe version. Doesn't make sure index is valid.
+		 * @return true if removed
+		 */
+		void RemoveAtUnsafe(i32 index, i32 count, const bool shouldShrink = true)
+		{
+			const i32 lastIndex   = index + count;
+			const i32 countToPull = size - lastIndex;
+			DestroyItems(data + index, count);
+			MoveItems(data + index, countToPull, data + lastIndex);
+			size -= count;
+
+			/// @OPTIMIZE: Shrinking can be combined to avoid moving trailing elements twice
+			if (shouldShrink)
+				Shrink();
+		}
+
+		/**
+		 * Delete item at an index by swapping with the last element. Doesn't preserve order.
+		 * Faster than RemoveAt since it doesnt push all remaining elements 1 position left.
+		 * Unsafe version. Doesn't make sure index is valid!
+		 * @return true if removed
+		 */
+		void RemoveAtSwapUnsafe(i32 index, const bool shouldShrink = true)
+		{
+			const i32 lastIndex = size - 1;
+			SwapUnsafe(index, lastIndex);
+			RemoveAtUnsafe(lastIndex, shouldShrink);
+		}
+
+		/**
+		 * Delete item at an index by swapping with the last element. Doesn't preserve order.
+		 * Faster than RemoveAt since it doesnt push all remaining elements 1 position left.
+		 * Unsafe version. Doesn't make sure index is valid!
+		 * @return true if removed
+		 */
+		void RemoveAtSwapUnsafe(i32 index, i32 count, const bool shouldShrink = true)
+		{
+			const i32 lastIndex   = size - count;
+			const i32 countToSwap = math::Min(count, lastIndex - index);
+			SwapUnsafe(index, size - countToSwap, countToSwap);    // Dont swap more than those left
+			RemoveAtUnsafe(lastIndex, count, shouldShrink);
+		}
+
+		/**
+		 * Delete all items that match a delegate
+		 * @return number of deleted items
+		 */
+		i32 RemoveIf(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
+		{
+			const i32 lastSize = size;
+			// We remove from the back so that there are less elements to move when removing an
+			// element
+			for (i32 i = lastSize - 1; i >= 0; --i)
+			{
+				if (callback(data[i]))
+				{
+					RemoveAtUnsafe(i, false);
+				}
+			}
+
+			if (shouldShrink)
+			{
+				Shrink();
+			}
+			return lastSize - size;
+		}
+
+		/**
+		 * Delete all items that match a delegate
+		 * @return number of deleted items
+		 */
+		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
+		{
+			const i32 lastSize = size;
+			for (i32 i = lastSize - 1; i >= 0; --i)
+			{
+				if (callback(data[i]))
+				{
+					RemoveAtSwapUnsafe(i);
+				}
+			}
+
+			// First item is checked last to prevent invalid swap
+			if (size > 0 && callback(data[0]))
+			{
+				if (size > 1)
+				{
+					SwapUnsafe(0, size - 1);
+				}
+				RemoveLast();
+			}
+
+			if (shouldShrink)
+			{
+				Shrink();
+			}
+			return lastSize - size;
+		}
+
 		void RemoveLast()
 		{
-			if (size > 0)
+			if (1 <= size)
 			{
-				DestroyItems(data + size - 1, 1);
-				--size;
+				RemoveAtUnsafe(size - 1);
 			}
 		}
 
@@ -884,14 +1146,9 @@ namespace p
 		 */
 		void RemoveLast(i32 count)
 		{
-			if (size < count)
+			if (count <= size)
 			{
-				Clear(false);
-			}
-			else if (count > 0)
-			{
-				DestroyItems(data + size - count, count);
-				size -= count;
+				RemoveAtUnsafe(size - count, count);
 			}
 		}
 
@@ -1072,7 +1329,7 @@ namespace p
 	protected:
 		void AddUninitialized(i32 count);
 		void InsertUninitialized(i32 atIndex, i32 count);
-		void CopyFrom(const IRange<Type>& other);
+		void CopyFrom(const IArray<Type>& other);
 
 		template<u32 OtherInlineCapacity>
 		void MoveFrom(TInlineArray<Type, OtherInlineCapacity>&& other);
@@ -1136,7 +1393,7 @@ namespace p
 	}
 
 	template<typename Type, u32 InlineCapacity>
-	void TInlineArray<Type, InlineCapacity>::CopyFrom(const IRange<Type>& other)
+	void TInlineArray<Type, InlineCapacity>::CopyFrom(const IArray<Type>& other)
 	{
 		Clear(false);
 		Reserve(other.Size());

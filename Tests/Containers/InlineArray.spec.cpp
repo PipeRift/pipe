@@ -463,7 +463,79 @@ go_bandit([]() {
 			});
 		});
 		describe("Remove", []() {
-			xit("Can remove", []() {});
+			it("Can remove at index", []() {
+				TInlineArray<i32, 0> data{1, 2, 3, 4};
+
+				// Check invalid inputs
+				AssertThat(data.RemoveAt(-1), Equals(false));
+				AssertThat(data.RemoveAt(4), Equals(false));
+
+				AssertThat(data.RemoveAt(3), Equals(true));    // Remove last
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3}));
+
+				AssertThat(data.RemoveAt(1), Equals(true));    // Remove in the middle
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 3}));
+
+				AssertThat(data.RemoveAt(0), Equals(true));    // remove first
+				AssertThat(data, Equals(TInlineArray<i32, 0>{3}));
+			});
+
+			it("Can remove many at index", []() {
+				TInlineArray<i32, 0> data{1, 2, 3, 4, 5, 6, 7, 8};
+
+				// Check invalid inputs
+				AssertThat(data.RemoveAt(-1, 2), Equals(false));
+				AssertThat(data.RemoveAt(8, 2), Equals(false));
+				AssertThat(data.RemoveAt(7, 2), Equals(false));
+
+				AssertThat(data.RemoveAt(6, 2), Equals(true));    // Remove last
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3, 4, 5, 6}));
+
+				AssertThat(data.RemoveAt(2, 2), Equals(true));    // Remove in the middle
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 5, 6}));
+
+				AssertThat(data.RemoveAt(0, 2), Equals(true));    // Remove first
+				AssertThat(data, Equals(TInlineArray<i32, 0>{5, 6}));
+			});
+
+			it("Can remove swap at index", []() {
+				TInlineArray<i32, 0> data{1, 2, 3, 4, 5};
+
+				// Check invalid inputs
+				AssertThat(data.RemoveAtSwap(-1), Equals(false));
+				AssertThat(data.RemoveAtSwap(5), Equals(false));
+
+				AssertThat(data.RemoveAtSwap(3), Equals(true));    // Remove last
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3, 5}));
+
+				AssertThat(data.RemoveAtSwap(1), Equals(true));    // Remove swapping
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 5, 3}));
+
+				AssertThat(data.RemoveAtSwap(0), Equals(true));    // Remove first
+				AssertThat(data, Equals(TInlineArray<i32, 0>{3, 5}));
+			});
+
+			it("Can remove swap many at index", []() {
+				TInlineArray<i32, 0> data{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+				// Check invalid inputs
+				AssertThat(data.RemoveAtSwap(-1, 2), Equals(false));
+				AssertThat(data.RemoveAtSwap(10, 2), Equals(false));
+				AssertThat(data.RemoveAtSwap(9, 2), Equals(false));
+
+				AssertThat(data.RemoveAtSwap(8, 2), Equals(true));    // Remove last
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3, 4, 5, 6, 7, 8}));
+
+				AssertThat(data.RemoveAtSwap(1, 2), Equals(true));    // Removes swapping
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 7, 8, 4, 5, 6}));
+
+				AssertThat(
+				    data.RemoveAtSwap(1, 3), Equals(true));    // Removes swapping with less left
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 5, 6}));
+
+				AssertThat(data.RemoveAtSwap(0, 2), Equals(true));    // Remove first
+				AssertThat(data, Equals(TInlineArray<i32, 0>{6}));
+			});
 		});
 	});
 });
