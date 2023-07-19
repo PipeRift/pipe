@@ -4,8 +4,8 @@
 
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Optional.h"
-#include "Pipe/Core/View.h"
 #include "Pipe/Export.h"
+#include "Pipe/PipeArrays.h"
 
 #include <stdio.h>
 #include <string.h>

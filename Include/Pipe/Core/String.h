@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/ArenaAllocator.h"
-#include "Pipe/Reflect/TypeName.h"
+#include "Pipe/Memory/STLAllocator.h"
+#include "Pipe/PipeArrays.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 
 #include <fmt/format.h>
@@ -141,7 +141,6 @@ namespace p
 
 	PIPE_API void Read(p::Reader& ct, p::String& val);
 	PIPE_API void Write(p::Writer& ct, const p::String& val);
-	OVERRIDE_TYPE_NAME(String)
 }    // namespace p
 
 

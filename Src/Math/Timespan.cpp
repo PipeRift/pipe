@@ -94,7 +94,7 @@ namespace p
 
 		if (!HasFractional)
 		{
-			Tokens.AddDefaulted();
+			Tokens.Add();
 		}
 
 		// poor man's token verification
@@ -109,7 +109,7 @@ namespace p
 		// add missing tokens
 		if (Tokens.Size() < 5)
 		{
-			Tokens.InsertDefaulted(0, 5 - Tokens.Size());
+			Tokens.Insert(0, 5 - Tokens.Size(), {});
 		}
 		else if (Tokens.Size() > 5)
 		{

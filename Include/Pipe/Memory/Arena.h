@@ -9,12 +9,8 @@
 namespace p
 {
 	class ArenaAllocator;
-	namespace core
-	{
-		template<typename Type>
-		struct TArray;
-	}
-	using namespace core;
+	template<typename Type, u32 InlineCapacity>
+	struct TInlineArray;
 
 
 	/** Arena defines the API used on all other arena types */
@@ -97,7 +93,7 @@ namespace p
 		{
 			return 0;
 		}
-		virtual void GetBlocks(TArray<Memory::Block>& outBlocks) const {}
+		virtual void GetBlocks(TInlineArray<Memory::Block, 0>& outBlocks) const {}
 	};
 
 	class PIPE_API ChildArena : public Arena

@@ -1,8 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/String.h"
-#include "Pipe/Core/View.h"
+#include "Pipe/PipeArrays.h"
 #include "Pipe/Serialize/Formats/TFormat.h"
 
 

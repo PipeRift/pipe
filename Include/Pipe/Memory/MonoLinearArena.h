@@ -1,7 +1,6 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Limits.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
@@ -9,6 +8,7 @@
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/Block.h"
 #include "Pipe/Memory/Memory.h"
+#include "Pipe/PipeArrays.h"
 
 
 namespace p

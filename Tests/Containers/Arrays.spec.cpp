@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/PipeContainers.h>
+#include <Pipe/PipeArrays.h>
 
 
 using namespace snowhouse;
@@ -248,6 +248,16 @@ go_bandit([]() {
 				AssertThat(source.Data(), Equals(nullptr));
 				AssertThat(target.Data(), !Equals(target.GetInlineBuffer()));
 			});
+		});
+
+		it("Can access data", [&]() {
+			TInlineArray<i32, 0> data1;
+			TInlineArray<i32, 0> data2{1};
+			TInlineArray<i32, 4> data3{1};
+
+			AssertThat(data1.Data(), Equals(nullptr));
+			AssertThat(data2.Data(), !Equals(nullptr));
+			AssertThat(data3.Data(), !Equals(nullptr));
 		});
 
 		describe("Add", []() {
@@ -536,6 +546,90 @@ go_bandit([]() {
 				AssertThat(data.RemoveAtSwap(0, 2), Equals(true));    // Remove first
 				AssertThat(data, Equals(TInlineArray<i32, 0>{6}));
 			});
+		});
+
+		it("Can RemoveLast", [&]() {
+			TArray<i32> data{1, 4, 6};
+			data.RemoveLast();
+			AssertThat(data.Size(), Equals(2));
+			AssertThat(data[0], Equals(1));
+			AssertThat(data[1], Equals(4));
+			AssertThat(data.Capacity(), Equals(2));
+		});
+
+		it("Can RemoveLast N", [&]() {
+			TArray<i32> dataA{1, 4, 6};
+			dataA.RemoveLast(2);
+			AssertThat(dataA.Size(), Equals(1));
+			AssertThat(dataA[0], Equals(1));
+			AssertThat(dataA.Capacity(), Equals(1));
+
+			TArray<i32> dataB{1, 4, 6};
+			dataB.RemoveLast(3);
+			AssertThat(dataB.Size(), Equals(0));
+			AssertThat(dataB.Capacity(), Equals(0));
+		});
+
+		it("Can RemoveIf", [&]() {
+			TArray<i32> data{1, 4, 5, 6};
+
+			AssertThat(data.Size(), Equals(4));
+
+			data.RemoveIf([](i32 v) {
+				return v == 1 || v == 6;
+			});
+			AssertThat(data.Size(), Equals(2));
+			AssertThat(data[0], Equals(4));
+			AssertThat(data[1], Equals(5));
+		});
+
+		it("Can RemoveIfSwap", [&]() {
+			TArray<i32> data{1, 4, 5, 6};
+
+			AssertThat(data.Size(), Equals(4));
+
+			data.RemoveIfSwap([](i32 v) {
+				return v == 1 || v == 6;
+			});
+			AssertThat(data.Size(), Equals(2));
+			AssertThat(data[0], Equals(5));
+			AssertThat(data[1], Equals(4));
+		});
+
+		it("Can Sort", [&]() {
+			TArray<i32> data0{34, 1, 5};
+			data0.Sort();    // Default sort is less
+			AssertThat(data0[0], Equals(1));
+			AssertThat(data0[1], Equals(5));
+			AssertThat(data0[2], Equals(34));
+
+			TArray<i32> data1{34, 1, 5};
+			data1.Sort(TGreater<i32>{});
+			AssertThat(data1[0], Equals(34));
+			AssertThat(data1[1], Equals(5));
+			AssertThat(data1[2], Equals(1));
+		});
+
+		it("Can find in AddUniqueSorted", [&]() {
+			TArray<i32> data{1, 5, 5, 34};
+
+			AssertThat(data.AddUniqueSorted(1), Equals(0));
+			AssertThat(data.AddUniqueSorted(5), Equals(1));
+			AssertThat(data.AddUniqueSorted(34), Equals(3));
+			AssertThat(data.Size(), Equals(4));
+		});
+
+		it("Can add in AddUniqueSorted", [&]() {
+			TArray<i32> data{1, 5, 5, 34};
+
+			AssertThat(data.AddUniqueSorted(2), Equals(1));
+			AssertThat(data.Size(), Equals(5));
+
+			AssertThat(data.AddUniqueSorted(6), Equals(4));
+			AssertThat(data.Size(), Equals(6));
+
+			AssertThat(data.AddUniqueSorted(36), Equals(6));
+			AssertThat(data.Size(), Equals(7));
 		});
 	});
 });

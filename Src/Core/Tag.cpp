@@ -128,17 +128,6 @@ namespace p::core
 		return {};
 	}
 
-	void Tag::Read(Reader& ct)
-	{
-		StringView str;
-		ct.Serialize(str);
-		*this = Tag(str);
-	}
-	void Tag::Write(Writer& ct) const
-	{
-		ct.Serialize(AsString());
-	}
-
 	constexpr sizet GetAllocSize(sizet dataSize)
 	{
 		// +1 for the end character of the string
@@ -230,5 +219,16 @@ namespace p::core
 		std::unique_lock lock{stringsListMutex};
 		strings.RemoveSorted(hash, {}, false);
 		arena.Free(&str, GetAllocSize(str.size));
+	}
+
+	void Read(Reader& ct, Tag& tag)
+	{
+		StringView str;
+		ct.Serialize(str);
+		tag = Tag(str);
+	}
+	void Write(Writer& ct, const Tag& tag)
+	{
+		ct.Serialize(tag.AsString());
 	}
 }    // namespace p::core

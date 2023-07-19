@@ -1,10 +1,10 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/BigBestFitArena.h"
 #include "Pipe/Memory/Block.h"
+#include "Pipe/PipeArrays.h"
 
 
 namespace p

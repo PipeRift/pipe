@@ -3,8 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/Crc.h"
-#include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
-#include "Pipe/Reflect/TypeFlags.h"
+#include "Pipe/Core/String.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 
 
@@ -187,9 +186,6 @@ namespace p::core
 			return a;
 		}
 
-		void Read(Reader& ct);
-		void Write(Writer& ct) const;
-
 		/**
 		 * Guid default string conversion.
 		 */
@@ -275,7 +271,6 @@ namespace p::core
 		static bool ParseExact(const String& GuidString, EGuidFormats Format, Guid& OutGuid);
 
 
-	private:
 		/** Holds the first component. */
 		u32 a = 0;
 
@@ -288,6 +283,10 @@ namespace p::core
 		/** Holds the fourth component. */
 		u32 d = 0;
 	};
+
+
+	PIPE_API void Read(Reader& ct, Guid& guid);
+	PIPE_API void Write(Writer& ct, const Guid& guid);
 }    // namespace p::core
 
 namespace p
@@ -303,15 +302,4 @@ namespace p
 			return Crc::MemCrc32(&k, sizeof(Guid));
 		}
 	};
-
-	template<>
-	struct TFlags<Guid> : public DefaultTFlags
-	{
-		enum
-		{
-			HasMemberSerialize = true
-		};
-	};
 }    // namespace p
-
-REFLECT_NATIVE_TYPE(p::Guid);

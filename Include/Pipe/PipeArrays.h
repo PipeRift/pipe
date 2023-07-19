@@ -4,13 +4,14 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Function.h"
-#include "Pipe/Core/Log.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Search.h"
 #include "Pipe/Core/Sorting.h"
+#include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/Memory.h"
+#include "Pipe/PipeArraysFwd.h"
 
 #include <initializer_list>
 #include <iterator>
@@ -28,16 +29,13 @@ namespace p
 	template<typename Type, u32 InlineCapacity>
 	struct TInlineArray;
 
-	template<typename Type>
-	struct TArray;
-
 
 	////////////////////////////////
 	// RANGES
 	//
 
 	template<typename Type>
-	struct TRangeIterator
+	struct TArrayIterator
 	{
 		using iterator_concept  = std::contiguous_iterator_tag;
 		using iterator_category = std::random_access_iterator_tag;
@@ -46,20 +44,55 @@ namespace p
 		using pointer           = Type*;
 		using reference         = Type&;
 
+		using ContainerType = IArray<Type>;
+
+		template<typename OtherType>
+		friend struct TArrayIterator;
+
+
 	private:
 		Type* ptr = nullptr;
 #if P_DEBUG
-		const IArray<Type>* range = nullptr;
+		const ContainerType* range = nullptr;
 #endif
 
 	public:
-		constexpr TRangeIterator() = default;
-		constexpr TRangeIterator(Type* ptr, const IArray<Type>* range) noexcept
+		constexpr TArrayIterator() = default;
+		constexpr TArrayIterator(Type* ptr, const ContainerType* range) noexcept
 		    : ptr(ptr)
 #if P_DEBUG
 		    , range(range)
 #endif
 		{}
+
+		constexpr TArrayIterator(Type* ptr, const IArray<Mut<Type>>* range) noexcept
+		    requires IsConst<Type>
+		    : ptr(ptr)
+#if P_DEBUG
+		    , range(range)
+#endif
+		{}
+
+		constexpr TArrayIterator(const TArrayIterator<Type>& other)
+		    : ptr(other.ptr)
+#if P_DEBUG
+		    , range(other.range)
+#endif
+		{}
+		constexpr TArrayIterator(const TArrayIterator<Mut<Type>>& other) requires IsConst<Type>
+		    : ptr(other.ptr)
+#if P_DEBUG
+		    , range(reinterpret_cast<const ContainerType*>(other.range))
+#endif
+		{}
+		TArrayIterator& operator=(const TArrayIterator<Type>& other)
+		{
+			ptr = other.ptr;
+#if P_DEBUG
+			range = other.range;
+#endif
+			return *this;
+		}
 
 		constexpr Type& operator*() const noexcept
 		{
@@ -73,67 +106,67 @@ namespace p
 			return ptr;
 		}
 
-		constexpr TRangeIterator& operator++() noexcept
+		constexpr TArrayIterator& operator++() noexcept
 		{
 			Verify();
 			++ptr;
 			return *this;
 		}
 
-		constexpr TRangeIterator operator++(int) noexcept
+		constexpr TArrayIterator operator++(int) noexcept
 		{
-			TRangeIterator tmp = *this;
+			TArrayIterator tmp = *this;
 			++*this;
 			return tmp;
 		}
 
-		constexpr TRangeIterator& operator--() noexcept
+		constexpr TArrayIterator& operator--() noexcept
 		{
 			Verify();
 			--ptr;
 			return *this;
 		}
 
-		constexpr TRangeIterator operator--(int) noexcept
+		constexpr TArrayIterator operator--(int) noexcept
 		{
-			TRangeIterator tmp = *this;
+			TArrayIterator tmp = *this;
 			--*this;
 			return tmp;
 		}
 
-		constexpr TRangeIterator& operator+=(const i32 offset) noexcept
+		constexpr TArrayIterator& operator+=(const i32 offset) noexcept
 		{
 			VerifyOffset(offset);
 			ptr += offset;
 			return *this;
 		}
 
-		constexpr TRangeIterator operator+(const i32 offset) const noexcept
+		constexpr TArrayIterator operator+(const i32 offset) const noexcept
 		{
-			TRangeIterator tmp = *this;
+			TArrayIterator tmp = *this;
 			tmp += offset;
 			return tmp;
 		}
 
-		friend constexpr TRangeIterator operator+(const i32 offset, TRangeIterator next) noexcept
+		friend constexpr TArrayIterator operator+(const i32 offset, TArrayIterator next) noexcept
 		{
 			next += offset;
 			return next;
 		}
 
-		constexpr TRangeIterator& operator-=(const i32 offset) noexcept
+		constexpr TArrayIterator& operator-=(const i32 offset) noexcept
 		{
 			return *this += -offset;
 		}
 
-		constexpr TRangeIterator operator-(const i32 offset) const noexcept
+		constexpr TArrayIterator operator-(const i32 offset) const noexcept
 		{
-			TRangeIterator tmp = *this;
+			TArrayIterator tmp = *this;
 			tmp -= offset;
 			return tmp;
 		}
 
-		constexpr i32 operator-(const TRangeIterator& rhs) const noexcept
+		constexpr i32 operator-(const TArrayIterator& rhs) const noexcept
 		{
 			VerifyRange(rhs);
 			return ptr - rhs.ptr;
@@ -144,13 +177,13 @@ namespace p
 			return ptr[offset];
 		}
 
-		constexpr bool operator==(const TRangeIterator& rhs) const noexcept
+		constexpr bool operator==(const TArrayIterator& rhs) const noexcept
 		{
 			VerifyRange(rhs);
 			return ptr == rhs.ptr;
 		}
 
-		constexpr auto operator<=>(const TRangeIterator& rhs) const noexcept
+		constexpr auto operator<=>(const TArrayIterator& rhs) const noexcept
 		{
 			VerifyRange(rhs);
 			return ptr <=> rhs.ptr;
@@ -158,7 +191,7 @@ namespace p
 
 
 	private:
-		constexpr void Verify()
+		constexpr void Verify() const
 		{
 #if P_DEBUG
 			CheckMsg(ptr, "Iterator is null");
@@ -185,7 +218,7 @@ namespace p
 #endif
 		}
 
-		constexpr void VerifyRange(const TRangeIterator& rhs) const noexcept
+		constexpr void VerifyRange(const TArrayIterator& rhs) const noexcept
 		{
 #if P_DEBUG
 			CheckMsg(range == rhs.range, "Iterators dont share the same range");
@@ -196,64 +229,64 @@ namespace p
 	};
 
 	template<typename Type>
-	class TReverseRangeIterator : public TRangeIterator<Type>
+	class TReverseArrayIterator : public TArrayIterator<Type>
 	{
 	public:
-		using Super = TRangeIterator<Type>;
-		using Super::Super;    // Get constructors from RangeIterator
+		using Super = TArrayIterator<Type>;
+		using Super::Super;    // Get constructors from ArrayIterator
 
 
-		constexpr TReverseRangeIterator& operator++() noexcept
+		constexpr TReverseArrayIterator& operator++() noexcept
 		{
 			return Super::operator--();
 		}
 
-		constexpr TReverseRangeIterator operator++(int) noexcept
+		constexpr TReverseArrayIterator operator++(int) noexcept
 		{
-			TReverseRangeIterator tmp = *this;
+			TReverseArrayIterator tmp = *this;
 			++*this;
 			return tmp;
 		}
 
-		constexpr TReverseRangeIterator& operator--() noexcept
+		constexpr TReverseArrayIterator& operator--() noexcept
 		{
 			return Super::operator++();
 		}
 
-		constexpr TReverseRangeIterator operator--(int) noexcept
+		constexpr TReverseArrayIterator operator--(int) noexcept
 		{
-			TReverseRangeIterator tmp = *this;
+			TReverseArrayIterator tmp = *this;
 			--*this;
 			return tmp;
 		}
 
-		constexpr TReverseRangeIterator& operator+=(const i32 offset) noexcept
+		constexpr TReverseArrayIterator& operator+=(const i32 offset) noexcept
 		{
 			return Super::operator-=(offset);
 		}
 
-		constexpr TReverseRangeIterator operator+(const i32 offset) const noexcept
+		constexpr TReverseArrayIterator operator+(const i32 offset) const noexcept
 		{
 			return Super::operator-(offset);
 		}
 
-		friend constexpr TReverseRangeIterator operator+(
-		    const i32 offset, TReverseRangeIterator next) noexcept
+		friend constexpr TReverseArrayIterator operator+(
+		    const i32 offset, TReverseArrayIterator next) noexcept
 		{
 			return Super::operator-(offset, next);
 		}
 
-		constexpr TReverseRangeIterator& operator-=(const i32 offset) noexcept
+		constexpr TReverseArrayIterator& operator-=(const i32 offset) noexcept
 		{
 			return Super::operator+=(offset);
 		}
 
-		constexpr TReverseRangeIterator operator-(const i32 offset) const noexcept
+		constexpr TReverseArrayIterator operator-(const i32 offset) const noexcept
 		{
 			return Super::operator+(offset);
 		}
 
-		constexpr i32 operator-(const TReverseRangeIterator& rhs) const noexcept
+		constexpr i32 operator-(const TReverseArrayIterator& rhs) const noexcept
 		{
 			return Super::operator+(rhs);
 		}
@@ -266,10 +299,12 @@ namespace p
 	template<typename Type>
 	struct IArray
 	{
-		using Iterator             = typename TRangeIterator<Type>;
-		using ConstIterator        = typename TRangeIterator<const Type>;
-		using ReverseIterator      = typename TReverseRangeIterator<Type>;
-		using ConstReverseIterator = typename TReverseRangeIterator<const Type>;
+		using Iterator             = typename TArrayIterator<Type>;
+		using ConstIterator        = typename TArrayIterator<const Type>;
+		using ReverseIterator      = typename TReverseArrayIterator<Type>;
+		using ConstReverseIterator = typename TReverseArrayIterator<const Type>;
+
+		using ItemType = Type;
 
 	protected:
 		Type* data = nullptr;
@@ -277,44 +312,44 @@ namespace p
 
 
 		// Do not use IArray as a container itself. See TView, TArray and TInlineArray.
-		IArray() = default;
+		constexpr IArray() = default;
 
 	public:
-		Type* Data() const
+		constexpr Type* Data() const
 		{
 			return data;
 		}
 
-		i32 Size() const
+		constexpr i32 Size() const
 		{
 			return size;
 		}
 
-		bool IsEmpty() const
+		constexpr bool IsEmpty() const
 		{
 			return size == 0;
 		}
 
-		bool IsValidIndex(i32 index) const
+		constexpr bool IsValidIndex(i32 index) const
 		{
 			return index >= 0 && index < size;
 		}
-		bool IsValidIndex(u32 index) const
+		constexpr bool IsValidIndex(u32 index) const
 		{
 			return index < u32(size);
 		}
-		bool IsValidIndexRange(i32 index, i32 count) const
+		constexpr bool IsValidIndexRange(i32 index, i32 count) const
 		{
 			return index >= 0 && (index + count) <= size;
 		}
 
-		i32 GetMemorySize() const
+		constexpr i32 GetMemorySize() const
 		{
 			return size * sizeof(Type);
 		}
 
 		/// @returns a pointer to an element given a valid index, otherwise null
-		Type* At(i32 index) const
+		constexpr Type* At(i32 index) const
 		{
 			return IsValidIndex(index) ? data + index : nullptr;
 		}
@@ -323,18 +358,27 @@ namespace p
 		 * Array bracket operator. Returns reference to element at give index.
 		 * @returns reference to indexed element.
 		 */
-		Type& operator[](i32 index) const
+		constexpr Type& operator[](i32 index) const
 		{
 			Check(IsValidIndex(index));
 			return data[index];
 		}
 
-		Type& First() const
+		constexpr operator IArray<const Type>&() requires IsMutable<Type>
+		{
+			return *reinterpret_cast<IArray<Const<Type>>*>(this);
+		}
+		constexpr operator const IArray<const Type>&() const requires IsMutable<Type>
+		{
+			return *reinterpret_cast<const IArray<const Type>*>(this);
+		}
+
+		constexpr Type& First() const
 		{
 			Check(size != 0);
 			return data[0];
 		}
-		Type& Last() const
+		constexpr Type& Last() const
 		{
 			Check(size != 0);
 			return data[size - 1];
@@ -362,14 +406,14 @@ namespace p
 
 		void SwapUnsafe(i32 firstIndex, i32 secondIndex)
 		{
-			::Swap(data[firstIndex], data[secondIndex]);
+			p::Swap(data[firstIndex], data[secondIndex]);
 		}
 
 		void SwapUnsafe(i32 firstIndex, i32 secondIndex, i32 count)
 		{
 			for (i32 i = 0; i < count; ++i)
 			{
-				::Swap(data[firstIndex + i], data[secondIndex + i]);
+				p::Swap(data[firstIndex + i], data[secondIndex + i]);
 			}
 		}
 
@@ -401,12 +445,26 @@ namespace p
 #pragma region Search
 		Iterator FindIt(const Type& value) const
 		{
-			return std::find(begin(), end(), value);
+			for (Type *p = data, *end = data + size; p != end; ++p)
+			{
+				if (*p == value)
+				{
+					return {p, this};
+				}
+			}
+			return end();
 		}
 
 		Iterator FindIt(TFunction<bool(const Type&)> cb) const
 		{
-			return std::find_if(begin(), end(), cb);
+			for (Type *p = data, *end = data + size; p != end; ++p)
+			{
+				if (cb(*p))
+				{
+					return {p, this};
+				}
+			}
+			return end();
 		}
 
 		i32 FindIndex(const Type& value) const
@@ -414,17 +472,17 @@ namespace p
 			ConstIterator found = FindIt(value);
 			if (found != end())
 			{
-				return i32(std::distance(begin(), found));
+				return i32(found - begin());
 			}
 			return NO_INDEX;
 		}
 
 		i32 FindIndex(TFunction<bool(const Type&)> cb) const
 		{
-			ConstIterator it = FindIt(Move(cb));
-			if (it != end())
+			ConstIterator found = FindIt(Move(cb));
+			if (found != end())
 			{
-				return i32(std::distance(begin(), it));
+				return i32(found - begin());
 			}
 			return NO_INDEX;
 		}
@@ -543,38 +601,40 @@ namespace p
 		}
 
 
-		constexpr Iterator begin()
+		template<typename Callback>
+		void Each(Callback cb) const
+		{
+			for (i32 i = 0; i < size; ++i)
+			{
+				cb(data[i]);
+			}
+		}
+
+		template<typename Callback>
+		void EachReverse(Callback cb) const
+		{
+			for (i32 i = size - 1; i >= 0; --i)
+			{
+				cb(data[i]);
+			}
+		}
+
+		constexpr Iterator begin() const
 		{
 			return Iterator(data, this);
 		};
-		constexpr ConstIterator begin() const
-		{
-			return ConstIterator(data, this);
-		};
-		constexpr Iterator end()
+		constexpr Iterator end() const
 		{
 			return Iterator(data + size, this);
 		};
-		constexpr ConstIterator end() const
-		{
-			return ConstIterator(data + size, this);
-		};
 
-		constexpr ReverseIterator rbegin()
+		constexpr ReverseIterator rbegin() const
 		{
 			return ReverseIterator(end());
 		};
-		constexpr ConstReverseIterator rbegin() const
-		{
-			return ConstReverseIterator(end());
-		};
-		constexpr ReverseIterator rend()
+		constexpr ReverseIterator rend() const
 		{
 			return ReverseIterator(begin());
-		};
-		constexpr ConstReverseIterator rend() const
-		{
-			return ConstReverseIterator(begin());
 		};
 
 		constexpr ConstIterator cbegin() const
@@ -608,6 +668,8 @@ namespace p
 		template<typename OtherType, u32 OtherInlineCapacity>
 		friend struct TInlineArray;
 
+		static constexpr i32 inlineCapacity = InlineCapacity;
+
 		i32 capacity = 0;
 		Arena* arena = &p::GetCurrentArena();
 		mutable TTypeAsBytes<Type>
@@ -630,6 +692,13 @@ namespace p
 		constexpr TInlineArray(std::initializer_list<Type> initList)
 		{
 			Assign(Move(initList));
+		}
+		template<typename It>
+		constexpr TInlineArray(
+		    const It& beginIt, const It& endIt, Arena& arena = p::GetCurrentArena())
+		    : arena{&arena}
+		{
+			Append(beginIt, endIt);
 		}
 		TInlineArray(const Type* data, i32 sizeNum, Arena& arena = p::GetCurrentArena())
 		    : arena{&arena}
@@ -668,26 +737,11 @@ namespace p
 			}
 			return *this;
 		}
-		template<u32 OtherInlineCapacity>
-		TInlineArray(const TInlineArray<Type, OtherInlineCapacity>& other)
+		TInlineArray(const IArray<Const<Type>>& other)
 		{
 			CopyFrom(other);
 		}
-		template<u32 OtherInlineCapacity>
-		TInlineArray<Type, InlineCapacity>& operator=(
-		    const TInlineArray<Type, OtherInlineCapacity>& other)
-		{
-			if (this != (void*)&other)
-			{
-				CopyFrom(other);
-			}
-			return *this;
-		}
-		TInlineArray(const IArray<Type>& other)
-		{
-			CopyFrom(other);
-		}
-		TInlineArray<Type, InlineCapacity>& operator=(const IArray<Type>& other)
+		TInlineArray& operator=(const IArray<Const<Type>>& other)
 		{
 			if (this != (void*)&other)
 			{
@@ -758,7 +812,7 @@ namespace p
 			return Add(item);
 		}
 
-		i32 AddUnique(const Type& value) const
+		i32 AddUnique(const Type& value)
 		{
 			const i32 found = FindIndex(value);
 			if (found == NO_INDEX)
@@ -778,7 +832,7 @@ namespace p
 		 */
 		template<typename SortPredicate = TLess<Type>>
 		i32 AddUniqueSorted(const Type& value, SortPredicate sortPredicate = {},
-		    bool insertSorted = true, bool* outFound = nullptr)
+		    bool* outFound = nullptr, bool insertSorted = true)
 		{
 			const i32 index = LowerBound(value, sortPredicate);
 			if (index != NO_INDEX)
@@ -805,7 +859,7 @@ namespace p
 
 		template<typename SortPredicate = TLess<Type>>
 		i32 AddUniqueSorted(Type&& value, SortPredicate sortPredicate = {},
-		    bool insertSorted = true, bool* outFound = nullptr)
+		    bool* outFound = nullptr, bool insertSorted = true)
 		{
 			const i32 index = LowerBound(value, sortPredicate);
 			if (index != NO_INDEX)
@@ -848,13 +902,29 @@ namespace p
 			AddUninitialized(count);
 			CopyConstructItems(data + firstIndex, count, values);
 		}
-		void Append(const IArray<Type>& values)
+		void Append(const IArray<Mut<Type>>& values)
+		{
+			Append(values.Data(), values.Size());
+		}
+		void Append(const IArray<Const<Type>>& values)
 		{
 			Append(values.Data(), values.Size());
 		}
 		void Append(std ::initializer_list<Type> initList)
 		{
-			Append(initList.begin(), i32(initList.size()));
+			const i32 count      = i32(initList.size());
+			const i32 firstIndex = size;
+			AddUninitialized(count);
+			MoveOrCopyConstructItems(data + firstIndex, count, initList.begin());
+		}
+		template<typename It>
+		void Append(const It& beginIt, const It& endIt)
+		{
+			ReserveMore(std::distance(beginIt, endIt));
+			for (It it = beginIt; it != endIt; ++it)
+			{
+				Add(*it);
+			}
 		}
 
 		void Assign(i32 count)
@@ -878,7 +948,11 @@ namespace p
 			size = count;
 			CopyConstructItems(data, count, values);
 		}
-		void Assign(const IArray<Type>& values)
+		void Assign(const IArray<Mut<Type>>& values)
+		{
+			Assign(values.Data(), values.Size());
+		}
+		void Assign(const IArray<Const<Type>>& values)
 		{
 			Assign(values.Data(), values.Size());
 		}
@@ -887,6 +961,11 @@ namespace p
 			Assign(initList.begin(), i32(initList.size()));
 		}
 
+		void Insert(i32 atIndex)
+		{
+			InsertUninitialized(atIndex, 1);
+			new (data + atIndex) Type();
+		}
 		void Insert(i32 atIndex, Type&& value)
 		{
 			InsertUninitialized(atIndex, 1);
@@ -911,10 +990,6 @@ namespace p
 		{
 			Insert(atIndex, values.Data(), values.Size());
 		}
-		void Insert(i32 atIndex, std ::initializer_list<Type> initList)
-		{
-			Insert(atIndex, initList.data(), i32(initList.size()));
-		}
 #pragma endregion Insertions
 
 
@@ -929,7 +1004,25 @@ namespace p
 			return RemoveAt(FindIndex(item), shouldShrink);
 		}
 
-		i32 Remove(const IArray<Type>& items, bool shouldShrink = true)
+		i32 Remove(const IArray<Mut<Type>>& items, bool shouldShrink = true)
+		{
+			const i32 lastSize = Size();
+			for (i32 i = 0; i < Size(); ++i)
+			{
+				if (items.Contains(Data()[i]))
+				{
+					RemoveAtUnsafe(i, false);
+					--i;    // Repeat same index
+				}
+			}
+			if (shouldShrink)
+			{
+				Shrink();
+			}
+			return lastSize - Size();
+		}
+
+		i32 Remove(const IArray<Const<Type>>& items, bool shouldShrink = true)
 		{
 			const i32 lastSize = Size();
 			for (i32 i = 0; i < Size(); ++i)
@@ -1199,7 +1292,7 @@ namespace p
 		{
 			if (newSize < size)    // Trim
 			{
-				RemoveLast(size - newSize, value);
+				RemoveLast(size - newSize);
 			}
 			else if (newSize > size)    // Append
 			{
@@ -1329,7 +1422,7 @@ namespace p
 	protected:
 		void AddUninitialized(i32 count);
 		void InsertUninitialized(i32 atIndex, i32 count);
-		void CopyFrom(const IArray<Type>& other);
+		void CopyFrom(const IArray<Const<Type>>& other);
 
 		template<u32 OtherInlineCapacity>
 		void MoveFrom(TInlineArray<Type, OtherInlineCapacity>&& other);
@@ -1337,10 +1430,70 @@ namespace p
 
 
 	template<typename Type>
-	using TArray2 = TInlineArray<Type, 0>;
+	struct TView : public IArray<Type>
+	{
+		constexpr TView() = default;
+		constexpr TView(Type& value)
+		{
+			data = &value;
+			size = 1;
+		}
+		constexpr TView(Type* first, Type* last)
+		{
+			data = first;
+			size = i32(last - first);
+		}
+		constexpr TView(Type* data, i32 size)
+		{
+			this->data = data;
+			this->size = size;
+		}
 
-	template<typename T>
-	using TSmallArray = TInlineArray<Type, 5>;
+		template<i32 N>
+		constexpr TView(Type (&value)[N])
+		{
+			data = value;
+			size = N;
+		}
+		constexpr TView(std::initializer_list<Type> value)
+		{
+			data = value.begin();
+			size = i32(value.size());
+		}
+
+		constexpr TView(const IArray<Type>& other)
+		{
+			data = other.Data();
+			size = other.Size();
+		}
+		constexpr TView(const IArray<Mut<Type>>& other) requires(IsConst<Type>)
+		{
+			data = other.Data();
+			size = other.Size();
+		}
+		constexpr TView(const IArray<Type>& value, i32 firstN)
+		{
+			data = value.data;
+			size = math::Min(value.size, firstN);
+		}
+		constexpr TView(const IArray<Mut<Type>>& value, i32 firstN) requires(IsConst<Type>)
+		{
+			data = value.data;
+			size = math::Min(value.size, firstN);
+		}
+		constexpr TView& operator=(const IArray<Type>& other)
+		{
+			data = other.Data();
+			size = other.Size();
+			return *this;
+		}
+		constexpr TView& operator=(const IArray<Mut<Type>>& other) requires(IsConst<Type>)
+		{
+			data = other.data;
+			size = other.size;
+			return *this;
+		}
+	};
 
 
 	////////////////////////////////
@@ -1393,7 +1546,7 @@ namespace p
 	}
 
 	template<typename Type, u32 InlineCapacity>
-	void TInlineArray<Type, InlineCapacity>::CopyFrom(const IArray<Type>& other)
+	void TInlineArray<Type, InlineCapacity>::CopyFrom(const IArray<Const<Type>>& other)
 	{
 		Clear(false);
 		Reserve(other.Size());

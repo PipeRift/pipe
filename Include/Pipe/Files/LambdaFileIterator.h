@@ -69,7 +69,7 @@ namespace p::files
 	template<typename FileIterator>
 	inline LambdaFileIterator<FileIterator>::LambdaFileIterator(
 	    const Path& path, TFunction<bool(const Path&)> callback)
-	    : callback{Move(callback)}
+	    : callback{p::Move(callback)}
 	{
 		if (!files::Exists(path) || !files::IsFolder(path))
 		{

@@ -1,7 +1,6 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Map.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/BaseClass.h"
@@ -9,6 +8,9 @@
 
 namespace p
 {
+	template<typename Type, u32 InlineCapacity>
+	struct TInlineArray;
+
 	struct Struct;
 
 	template<typename T>
@@ -29,7 +31,7 @@ namespace p
 		// Check if we are dealing with a TArray
 		if constexpr (HasItemTypeMember<T>::value)
 		{
-			return IsSame<TArray<typename T::ItemType>, T>;
+			return IsSame<T, TInlineArray<typename T::ItemType, 0>>;
 		}
 		return false;
 	}

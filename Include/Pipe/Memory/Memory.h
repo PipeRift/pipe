@@ -225,23 +225,23 @@ namespace p
 	}
 
 	template<typename T, bool destroySourceInPlace = false>
-	constexpr void MoveItems(T* dest, sizet count, const T* src)
+	constexpr void MoveItems(T* dest, sizet count, T* source)
 	{
 		if constexpr (!std::is_constant_evaluated() && IsTriviallyMoveAssignable<T>)
 		{
-			MoveMem(dest, src, count * sizeof(T));
+			MoveMem(dest, source, count * sizeof(T));
 		}
 		else
 		{
-			const T* const end = src + count;
-			while (src < end)
+			const T* const end = source + count;
+			while (source < end)
 			{
-				*dest = Move(*src);
+				*dest = Forward<T>(*source);
 				if constexpr (destroySourceInPlace)
 				{
-					src->T::~T();
+					source->T::~T();
 				}
-				++src;
+				++source;
 				++dest;
 			}
 		}

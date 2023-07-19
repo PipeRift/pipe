@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Memory/ArenaAllocator.h"
+#include "Pipe/PipeArrays.h"
 
 #include <memory>
 

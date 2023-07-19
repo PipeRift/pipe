@@ -3,7 +3,6 @@
 
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/Core/View.h"
 #include "Pipe/Export.h"
 
 

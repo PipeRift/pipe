@@ -8,7 +8,7 @@
 #include <utility>
 
 
-namespace p::core
+namespace p
 {
 	template<typename T>
 	constexpr void Swap(T& a, T& b) noexcept
@@ -71,9 +71,4 @@ namespace p::core
 		__builtin_unreachable();
 #endif
 	}
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p
