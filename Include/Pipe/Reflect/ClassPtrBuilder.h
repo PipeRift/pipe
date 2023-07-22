@@ -45,7 +45,7 @@ namespace p
 			T* ptr               = static_cast<T*>(rawPtr);
 			const sizet typeSize = ptr->GetType()->GetSize();
 			ptr->~T();
-			p::Free(arena, (void*)ptr, typeSize);
+			arena.Free((void*)ptr, typeSize);    // size depends on inheritance!
 		}
 	};
 }    // namespace p

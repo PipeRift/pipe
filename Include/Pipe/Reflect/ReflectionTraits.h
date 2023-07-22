@@ -42,8 +42,7 @@ namespace p
 		// Check if we are dealing with a TAssetPtr
 		if constexpr (HasKeyTypeMember<T>::value && HasValueTypeMember<T>::value)
 		{
-			return IsSame<
-			    TMap<typename T::KeyType, typename T::ValueType, typename T::AllocatorType>, T>;
+			return IsSame<TMap<typename T::KeyType, typename T::ValueType>, T>;
 		}
 		return false;
 	}

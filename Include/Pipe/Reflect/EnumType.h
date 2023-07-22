@@ -4,6 +4,7 @@
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Tag.h"
 #include "Pipe/Core/TypeTraits.h"
+#include "Pipe/PipeArrays.h"
 #include "Pipe/Reflect/Type.h"
 
 #include <magic_enum.hpp>

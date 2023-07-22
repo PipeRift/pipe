@@ -3,12 +3,12 @@
 
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Platform.h"
+#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/Block.h"
 
 
 namespace p
 {
-	class ArenaAllocator;
 	template<typename Type, u32 InlineCapacity>
 	struct TInlineArray;
 
@@ -21,14 +21,6 @@ namespace p
 		using AllocAlignedSignature = void*(Arena*, sizet size, sizet align);
 		using ResizeSignature       = bool(Arena*, void* ptr, sizet ptrSize, sizet size);
 		using FreeSignature         = void(Arena*, void* ptr, sizet size);
-		template<typename T>
-		using TAllocSignature = void* (T::*)(sizet size);
-		template<typename T>
-		using TAllocAlignedSignature = void* (T::*)(sizet size, sizet align);
-		template<typename T>
-		using TReallocSignature = bool (T::*)(void* ptr, sizet ptrSize, sizet size);
-		template<typename T>
-		using TFreeSignature = void (T::*)(void* ptr, sizet size);
 
 	private:
 		TFunction<AllocSignature> doAlloc;
@@ -36,24 +28,30 @@ namespace p
 		TFunction<ResizeSignature> doRealloc;
 		TFunction<FreeSignature> doFree;
 
-
 	protected:
 
-		template<typename T, TAllocSignature<T> alloc, TAllocAlignedSignature<T> allocAligned,
-		    TReallocSignature<T> resize, TFreeSignature<T> free>
-		inline void Interface()
+		template<Derived<Arena, false> T>
+		void SetupInterface()
 		{
 			doAlloc = [](Arena* self, sizet size) {
-				return (static_cast<T*>(self)->*alloc)(size);
+				static_assert(
+				    (void* (T::*)(sizet))(&T::Alloc) != (void* (T::*)(sizet))(&Arena::Alloc)
+				    && "Alloc is not implemented");
+				return static_cast<T*>(self)->Alloc(size);
 			};
 			doAllocAligned = [](Arena* self, sizet size, sizet align) {
-				return (static_cast<T*>(self)->*allocAligned)(size, align);
+				static_assert((void* (T::*)(sizet, sizet))(&T::Alloc)
+				                  != (void* (T::*)(sizet, sizet))(&Arena::Alloc)
+				              && "Alloc(aligned) is not implemented");
+				return static_cast<T*>(self)->Alloc(size, align);
 			};
 			doRealloc = [](Arena* self, void* ptr, sizet ptrSize, sizet size) {
-				return (static_cast<T*>(self)->*resize)(ptr, ptrSize, size);
+				static_assert(&T::Realloc != &Arena::Realloc);
+				return static_cast<T*>(self)->Realloc(ptr, ptrSize, size);
 			};
 			doFree = [](Arena* self, void* ptr, sizet size) {
-				return (static_cast<T*>(self)->*free)(ptr, size);
+				static_assert(&T::Free != &Arena::Free);
+				return static_cast<T*>(self)->Free(ptr, size);
 			};
 		}
 

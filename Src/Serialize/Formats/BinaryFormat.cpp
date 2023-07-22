@@ -2,9 +2,8 @@
 #include "Pipe/Serialize/Formats/BinaryFormat.h"
 
 #include "Pipe/Core/Checks.h"
-#include "Pipe/Core/Log.h"
-#include "Pipe/Core/String.h"
-#include "Pipe/Math/Math.h"
+#include "Pipe/Core/StringView.h"
+#include "Pipe/PipeArrays.h"
 
 #include <yyjson.h>
 
@@ -154,6 +153,11 @@ namespace p
 	{
 		// Binary format does not track scopes
 		return false;
+	}
+
+	bool BinaryFormatReader::IsValid() const
+	{
+		return data.Data() && !data.IsEmpty();
 	}
 
 

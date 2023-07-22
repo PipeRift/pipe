@@ -200,8 +200,7 @@ namespace p::core
 		}
 
 		const sizet size = value.size();
-		auto* header =
-		    static_cast<TagHeader*>(p::Alloc(arena, GetAllocSize(size), alignof(TagHeader)));
+		auto* header = static_cast<TagHeader*>(arena.Alloc(GetAllocSize(size), alignof(TagHeader)));
 		header->activeTags = 0;
 		header->size       = size;
 		// Copy string data

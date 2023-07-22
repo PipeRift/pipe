@@ -566,7 +566,6 @@ namespace p::files
 
 	const TChar* FindExtension(const TChar* const first, const TChar* const last)
 	{
-		const sizet size           = last - first;
 		const TChar* filenameFirst = FindFilename(first, last);
 		const sizet filenameSize   = last - filenameFirst;
 

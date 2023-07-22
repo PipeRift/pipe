@@ -13,7 +13,7 @@ namespace p::math
 		float quotient = (INV_PI * 0.5f) * value;
 		if (value >= 0.0f)
 		{
-			quotient = float(int(quotient + 0.5f));
+			quotient = Round(quotient);
 		}
 		else
 		{
@@ -64,7 +64,7 @@ namespace p::math
 		float quotient = (INV_PI * 0.5f) * value;
 		if (value >= 0.0f)
 		{
-			quotient = float(int(quotient + 0.5f));
+			quotient = Round(quotient);
 		}
 		else
 		{
@@ -76,17 +76,11 @@ namespace p::math
 		float sign;
 		if (y > HALF_PI)
 		{
-			y    = PI - y;
-			sign = -1.0f;
+			y = PI - y;
 		}
 		else if (y < -HALF_PI)
 		{
-			y    = -PI - y;
-			sign = -1.0f;
-		}
-		else
-		{
-			sign = +1.0f;
+			y = -PI - y;
 		}
 		const float y2 = y * y;
 
@@ -106,7 +100,7 @@ namespace p::math
 		float quotient = (INV_PI * 0.5f) * value;
 		if (value >= 0.0f)
 		{
-			quotient = float(int(quotient + 0.5f));
+			quotient = Round(quotient);
 		}
 		else
 		{

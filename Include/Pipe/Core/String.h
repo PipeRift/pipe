@@ -6,7 +6,6 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Memory/ArenaAllocator.h"
 #include "Pipe/Memory/STLAllocator.h"
 #include "Pipe/PipeArrays.h"
 #include "Pipe/Serialize/SerializationFwd.h"
@@ -21,18 +20,16 @@
 #pragma warning(disable:4996)
 
 
-namespace p::core
+namespace p
 {
 	template<typename CharType>
-	using TString = std::basic_string<CharType, std::char_traits<CharType>,
-	    STLAllocator<CharType, ArenaAllocator>>;
+	using TString = std::basic_string<CharType, std::char_traits<CharType>, STLAllocator<CharType>>;
 	using String  = TString<TChar>;
 	using WString = TString<WideChar>;
 
 	template<typename CharType, sizet inlineSize = fmt::inline_buffer_size>
-	using TStringBuffer =
-	    fmt::basic_memory_buffer<CharType, inlineSize, STLAllocator<CharType, ArenaAllocator>>;
-	using StringBuffer = TStringBuffer<TChar>;
+	using TStringBuffer = fmt::basic_memory_buffer<CharType, inlineSize, STLAllocator<CharType>>;
+	using StringBuffer  = TStringBuffer<TChar>;
 
 
 	namespace Strings
@@ -123,11 +120,6 @@ namespace p::core
 			return Move(dest);
 		}
 	};    // namespace Strings
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
 
 
 	template<>

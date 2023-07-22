@@ -351,9 +351,12 @@ namespace p
 		TBroadcast<EntityContext&, TView<const Id>> onRemove;
 
 
-		BasePool(
-		    EntityContext& ast, DeletionPolicy deletionPolicy, Arena& arena = GetCurrentArena())
-		    : arena{&arena}, context{&ast}, deletionPolicy{deletionPolicy}
+		BasePool(EntityContext& ast, DeletionPolicy deletionPolicy, Arena& arena)
+		    : idIndices{arena}
+		    , idList{arena}
+		    , arena{&arena}
+		    , context{&ast}
+		    , deletionPolicy{deletionPolicy}
 		{
 			BindOnPageAllocated();
 		}
@@ -502,18 +505,18 @@ namespace p
 	i32 GetSmallestPool(TView<const BasePool*> pools);
 
 
-	template<typename T, typename Allocator = ArenaAllocator>
+	template<typename T>
 	struct TPool : public BasePool
 	{
-		using AllocatorType = Allocator;
-
 	private:
-		TPageBuffer<T, 1024, AllocatorType> data;
+		TPageBuffer<T, 1024> data;
 
 
 	public:
-		TPool(EntityContext& ast) : BasePool(ast, DeletionPolicy::InPlace), data{} {}
-		TPool(const TPool& other) : BasePool(other)
+		TPool(EntityContext& ast, Arena& arena = GetCurrentArena())
+		    : BasePool(ast, DeletionPolicy::InPlace, arena), data{arena}
+		{}
+		TPool(const TPool& other) : BasePool(other), data{*other.arena}
 		{
 			if constexpr (!p::IsEmpty<T>)
 			{

@@ -5,7 +5,7 @@
 #include <charconv>
 
 
-namespace p::core::Strings
+namespace p::Strings
 {
 	TOptional<u32> ToU32(StringView str)
 	{
@@ -26,4 +26,4 @@ namespace p::core::Strings
 		}
 		return {};
 	}
-}    // namespace p::core::Strings
+}    // namespace p::Strings

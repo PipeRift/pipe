@@ -2,17 +2,17 @@
 #pragma once
 
 #include "Pipe/Core/Limits.h"
-#include "Pipe/Core/TypeTraits.h"
+#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
-#include "Pipe/Memory/ArenaAllocator.h"
+#include "Pipe/Memory/Arena.h"
 
-#include <memory>
+#include <type_traits>
 
 
 namespace p
 {
-	template<typename T, typename Allocator = ArenaAllocator>
+	template<typename T>
 	struct STLAllocator
 	{
 		// STD types
@@ -25,21 +25,21 @@ namespace p
 		template<typename U>
 		struct rebind
 		{
-			using other = STLAllocator<U, Allocator>;
+			using other = STLAllocator<U>;
 		};
 
-		typename Allocator::template Typed<T> allocator{};
+		Arena* arena = nullptr;
 
 
-		STLAllocator()                             = default;
-		STLAllocator(const STLAllocator&) noexcept = default;
+		STLAllocator(Arena& arena = GetCurrentArena()) : arena{&arena} {}
+		STLAllocator(const STLAllocator& other) noexcept : arena{other.arena} {}
 		template<typename U>
-		STLAllocator(const STLAllocator<U, Allocator>&) noexcept
+		STLAllocator(const STLAllocator<U>& other) noexcept : arena{other.arena}
 		{}
 
-		constexpr pointer allocate(size_type size)
+		P_NODISCARD constexpr pointer allocate(size_type size)
 		{
-			return static_cast<pointer>(allocator.Alloc(size));
+			return static_cast<pointer>(p::Alloc<T>(*arena, size));
 		}
 		constexpr pointer allocate(size_type size, const void*)
 		{
@@ -47,7 +47,7 @@ namespace p
 		}
 		constexpr void deallocate(pointer p, size_type n)
 		{
-			allocator.Free(p, n);
+			p::Free<T>(*arena, p, n);
 		}
 
 		using propagate_on_container_copy_assignment = std::true_type;
@@ -72,20 +72,14 @@ namespace p
 		}
 	};
 
-
-	// Single parameter template type for pretemplated allocator arguments
-	// template<typename> typename AllocatorType
-	template<typename T>
-	using STLDefaultAllocator = STLAllocator<T>;
-
-	template<typename T1, typename T2, typename Allocator>
-	bool operator==(const STLAllocator<T1, Allocator>&, const STLAllocator<T2, Allocator>&) noexcept
+	template<typename T1, typename T2>
+	bool operator==(const STLAllocator<T1>& a, const STLAllocator<T2>& b) noexcept
 	{
-		return true;
+		return &a.arena == &b.arena;
 	}
-	template<typename T1, typename T2, typename Allocator>
-	bool operator!=(const STLAllocator<T1, Allocator>&, const STLAllocator<T2, Allocator>&) noexcept
+	template<typename T1, typename T2>
+	bool operator!=(const STLAllocator<T1>& a, const STLAllocator<T2>& b) noexcept
 	{
-		return false;
+		return &a.arena != &b.arena;
 	}
 }    // namespace p

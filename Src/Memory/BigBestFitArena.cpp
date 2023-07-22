@@ -33,11 +33,10 @@ namespace p
 
 	BigBestFitArena::BigBestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
-		Interface<BigBestFitArena, &BigBestFitArena::Alloc, &BigBestFitArena::Alloc,
-		    &BigBestFitArena::Realloc, &BigBestFitArena::Free>();
+		SetupInterface<BigBestFitArena>();
 
 		assert(initialSize > 0);
-		block.data = p::Alloc(GetParentArena(), initialSize);
+		block.data = GetParentArena().Alloc(initialSize);
 		block.size = initialSize;
 		// Set address at end of block. Size is 0
 		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.Size());

@@ -91,8 +91,7 @@ namespace p
 	public:
 		MultiLinearArena(Arena& parentArena = GetCurrentArena()) : ChildArena(&parentArena)
 		{
-			Interface<MultiLinearArena, &MultiLinearArena::Alloc, &MultiLinearArena::Alloc,
-			    &MultiLinearArena::Realloc, &MultiLinearArena::Free>();
+			SetupInterface<MultiLinearArena>();
 		}
 		~MultiLinearArena() override
 		{
@@ -116,7 +115,7 @@ namespace p
 
 		void Grow(sizet size, sizet align = 0);
 
-		sizet GetUsedMemory() const
+		sizet GetUsedMemory() const override
 		{
 			NotImplemented;
 			return 0;

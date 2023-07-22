@@ -22,7 +22,7 @@ namespace p
 	}
 }    // namespace p
 
-namespace p::core::Strings
+namespace p::Strings
 {
 	String ToSentenceCase(const String& value)
 	{
@@ -139,4 +139,4 @@ namespace p::core::Strings
 
 		return Format("{}{}", sizeStr, sizes[scale]);
 	}
-}    // namespace p::core::Strings
+}    // namespace p::Strings

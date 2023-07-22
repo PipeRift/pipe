@@ -32,7 +32,7 @@ void RunArenasBenchmarks()
 			p::HeapArena arenat;
 			p::Arena& arena{arenat};
 			consecutiveAlloc.run("HeapArena", [&arena] {
-				ankerl::nanobench::doNotOptimizeAway(p::Alloc(arena, 16));
+				ankerl::nanobench::doNotOptimizeAway(arena.Alloc(16));
 			});
 		}
 
@@ -40,7 +40,7 @@ void RunArenasBenchmarks()
 			p::MonoLinearArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
 			consecutiveAlloc.run("MonoLinearArena", [&arena] {
-				ankerl::nanobench::doNotOptimizeAway(p::Alloc(arena, 16));
+				ankerl::nanobench::doNotOptimizeAway(arena.Alloc(16));
 			});
 		}
 
@@ -48,7 +48,7 @@ void RunArenasBenchmarks()
 			p::MultiLinearArena arenat{};
 			p::Arena& arena{arenat};
 			consecutiveAlloc.run("MultiLinearArena", [&arena] {
-				ankerl::nanobench::doNotOptimizeAway(p::Alloc(arena, 16));
+				ankerl::nanobench::doNotOptimizeAway(arena.Alloc(16));
 			});
 		}
 
@@ -56,7 +56,7 @@ void RunArenasBenchmarks()
 			p::BestFitArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
 			consecutiveAlloc.run("BestFitArena", [&arena] {
-				ankerl::nanobench::doNotOptimizeAway(p::Alloc(arena, 16));
+				ankerl::nanobench::doNotOptimizeAway(arena.Alloc(16));
 			});
 		}
 
@@ -64,7 +64,7 @@ void RunArenasBenchmarks()
 			p::BestFitArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
 			consecutiveAlloc.run("BigBestFitArena", [&arena] {
-				p::Alloc(arena, 16);
+				arena.Alloc(16);
 			});
 		}
 	}
@@ -102,17 +102,17 @@ void RunArenasBenchmarks()
 			allocated.Reserve(50000);
 			for (p::u32 i = 0; i < 50000; ++i)
 			{
-				allocated.Add(p::Alloc(arena, 16));
+				allocated.Add(arena.Alloc(16));
 			}
 
 			p::i32 i = 0;
 			consecutiveFree.run("HeapArena", [&arena, &i, &allocated] {
-				p::Free(arena, allocated[i], 16);
+				arena.Free(allocated[i], 16);
 				++i;
 			});
 			for (; i < allocated.Size(); ++i)
 			{
-				p::Free(arena, allocated[i], 16);
+				arena.Free(allocated[i], 16);
 			}
 		}
 
@@ -123,17 +123,17 @@ void RunArenasBenchmarks()
 			allocated.Reserve(50000);
 			for (p::u32 i = 0; i < 50000; ++i)
 			{
-				allocated.Add(p::Alloc(arena, 16));
+				allocated.Add(arena.Alloc(16));
 			}
 
 			p::i32 i = 0;
 			consecutiveFree.run("MonoLinearArena", [&arena, &i, &allocated] {
-				p::Free(arena, allocated[i], 16);
+				arena.Free(allocated[i], 16);
 				++i;
 			});
 			for (; i < allocated.Size(); ++i)
 			{
-				p::Free(arena, allocated[i], 16);
+				arena.Free(allocated[i], 16);
 			}
 		}
 
@@ -144,17 +144,17 @@ void RunArenasBenchmarks()
 			allocated.Reserve(50000);
 			for (p::u32 i = 0; i < 50000; ++i)
 			{
-				allocated.Add(p::Alloc(arena, 16));
+				allocated.Add(arena.Alloc(16));
 			}
 
 			p::i32 i = 0;
 			consecutiveFree.run("MultiLinearArena", [&arena, &i, &allocated] {
-				p::Free(arena, allocated[i], 16);
+				arena.Free(allocated[i], 16);
 				++i;
 			});
 			for (; i < allocated.Size(); ++i)
 			{
-				p::Free(arena, allocated[i], 16);
+				arena.Free(allocated[i], 16);
 			}
 		}
 
@@ -165,17 +165,17 @@ void RunArenasBenchmarks()
 			allocated.Reserve(50000);
 			for (p::u32 i = 0; i < 50000; ++i)
 			{
-				allocated.Add(p::Alloc(arena, 16));
+				allocated.Add(arena.Alloc(16));
 			}
 
 			p::i32 i = 0;
 			consecutiveFree.run("BestFitArena", [&arena, &i, &allocated] {
-				p::Free(arena, allocated[i], 16);
+				arena.Free(allocated[i], 16);
 				++i;
 			});
 			for (; i < allocated.Size(); ++i)
 			{
-				p::Free(arena, allocated[i], 16);
+				arena.Free(allocated[i], 16);
 			}
 		}
 
@@ -186,17 +186,17 @@ void RunArenasBenchmarks()
 			allocated.Reserve(50000);
 			for (p::u32 i = 0; i < 50000; ++i)
 			{
-				allocated.Add(p::Alloc(arena, 16));
+				allocated.Add(arena.Alloc(16));
 			}
 
 			p::i32 i = 0;
 			consecutiveFree.run("BigBestFitArena", [&arena, &i, &allocated] {
-				p::Free(arena, allocated[i], 16);
+				arena.Free(allocated[i], 16);
 				++i;
 			});
 			for (; i < allocated.Size(); ++i)
 			{
-				p::Free(arena, allocated[i], 16);
+				arena.Free(allocated[i], 16);
 			}
 		}
 	}
@@ -226,15 +226,15 @@ void RunArenasBenchmarks()
 			p::HeapArena arenat;
 			p::Arena& arena{arenat};
 			allocSequence.run("HeapArena", [&arena] {
-				void* p  = p::Alloc(arena, 16);
-				void* p2 = p::Alloc(arena, 21);
-				p::Free(arena, p, 16);
-				void* p3 = p::Alloc(arena, 8);
-				p::Free(arena, p3, 8);
+				void* p  = arena.Alloc(16);
+				void* p2 = arena.Alloc(21);
+				arena.Free(p, 16);
+				void* p3 = arena.Alloc(8);
+				arena.Free(p3, 8);
 				ankerl::nanobench::doNotOptimizeAway(p);
 				ankerl::nanobench::doNotOptimizeAway(p2);
 				ankerl::nanobench::doNotOptimizeAway(p3);
-				p::Free(arena, p2, 21);
+				arena.Free(p2, 21);
 			});
 		}
 
@@ -242,15 +242,15 @@ void RunArenasBenchmarks()
 			p::MonoLinearArena arenat;
 			p::Arena& arena{arenat};
 			allocSequence.run("MonoLinearArena", [&arena] {
-				void* p  = p::Alloc(arena, 16);
-				void* p2 = p::Alloc(arena, 21);
-				p::Free(arena, p, 16);
-				void* p3 = p::Alloc(arena, 8);
-				p::Free(arena, p3, 8);
+				void* p  = arena.Alloc(16);
+				void* p2 = arena.Alloc(21);
+				arena.Free(p, 16);
+				void* p3 = arena.Alloc(8);
+				arena.Free(p3, 8);
 				ankerl::nanobench::doNotOptimizeAway(p);
 				ankerl::nanobench::doNotOptimizeAway(p2);
 				ankerl::nanobench::doNotOptimizeAway(p3);
-				p::Free(arena, p2, 21);
+				arena.Free(p2, 21);
 			});
 		}
 
@@ -258,15 +258,15 @@ void RunArenasBenchmarks()
 			p::MultiLinearArena arenat;
 			p::Arena& arena{arenat};
 			allocSequence.run("MultiLinearArena", [&arena] {
-				void* p  = p::Alloc(arena, 16);
-				void* p2 = p::Alloc(arena, 21);
-				p::Free(arena, p, 16);
-				void* p3 = p::Alloc(arena, 8);
-				p::Free(arena, p3, 8);
+				void* p  = arena.Alloc(16);
+				void* p2 = arena.Alloc(21);
+				arena.Free(p, 16);
+				void* p3 = arena.Alloc(8);
+				arena.Free(p3, 8);
 				ankerl::nanobench::doNotOptimizeAway(p);
 				ankerl::nanobench::doNotOptimizeAway(p2);
 				ankerl::nanobench::doNotOptimizeAway(p3);
-				p::Free(arena, p2, 21);
+				arena.Free(p2, 21);
 			});
 		}
 
@@ -274,15 +274,15 @@ void RunArenasBenchmarks()
 			p::BestFitArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
 			allocSequence.run("BestFitArena", [&arena] {
-				void* p  = p::Alloc(arena, 16);
-				void* p2 = p::Alloc(arena, 21);
-				p::Free(arena, p, 16);
-				void* p3 = p::Alloc(arena, 8);
-				p::Free(arena, p3, 8);
+				void* p  = arena.Alloc(16);
+				void* p2 = arena.Alloc(21);
+				arena.Free(p, 16);
+				void* p3 = arena.Alloc(8);
+				arena.Free(p3, 8);
 				ankerl::nanobench::doNotOptimizeAway(p);
 				ankerl::nanobench::doNotOptimizeAway(p2);
 				ankerl::nanobench::doNotOptimizeAway(p3);
-				p::Free(arena, p2, 21);
+				arena.Free(p2, 21);
 			});
 		}
 
@@ -290,15 +290,15 @@ void RunArenasBenchmarks()
 			p::BigBestFitArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
 			allocSequence.run("BigBestFitArena", [&arena] {
-				void* p  = p::Alloc(arena, 16);
-				void* p2 = p::Alloc(arena, 21);
-				p::Free(arena, p, 16);
-				void* p3 = p::Alloc(arena, 8);
-				p::Free(arena, p3, 8);
+				void* p  = arena.Alloc(16);
+				void* p2 = arena.Alloc(21);
+				arena.Free(p, 16);
+				void* p3 = arena.Alloc(8);
+				arena.Free(p3, 8);
 				ankerl::nanobench::doNotOptimizeAway(p);
 				ankerl::nanobench::doNotOptimizeAway(p2);
 				ankerl::nanobench::doNotOptimizeAway(p3);
-				p::Free(arena, p2, 21);
+				arena.Free(p2, 21);
 			});
 		}
 	}
@@ -348,14 +348,14 @@ void RunArenasBenchmarks()
 			allocated.Reserve(50000);
 			for (p::u32 i = 0; i < 25000; ++i)
 			{
-				allocated.Add(p::Alloc(arena, 16));
+				allocated.Add(arena.Alloc(16));
 			}
 
 			ankerl::nanobench::Rng rng(122);
 			randomSequence.run("HeapArena", [&arena, &rng, &allocated] {
 				if (rng() & 1U)
 				{
-					void* ptr = p::Alloc(arena, 16);
+					void* ptr = arena.Alloc(16);
 					ankerl::nanobench::doNotOptimizeAway(ptr);
 					allocated.Add(ptr);
 				}
@@ -363,14 +363,14 @@ void RunArenasBenchmarks()
 				{
 					p::u32 index   = rng.bounded(allocated.Size());
 					void* toRemove = allocated[index];
-					p::Free(arena, toRemove, 16);
+					arena.Free(toRemove, 16);
 					allocated.RemoveAtSwapUnsafe(index);
 				}
 			});
 
 			for (void* p : allocated)
 			{
-				p::Free(arena, p, 16);
+				arena.Free(p, 16);
 			}
 		}
 
@@ -381,14 +381,14 @@ void RunArenasBenchmarks()
 			allocated.Reserve(50000);
 			for (p::u32 i = 0; i < 25000; ++i)
 			{
-				allocated.Add(p::Alloc(arena, 16));
+				allocated.Add(arena.Alloc(16));
 			}
 
 			ankerl::nanobench::Rng rng(122);
 			randomSequence.run("MonoLinearArena", [&arena, &rng, &allocated] {
 				if (rng() & 1U)
 				{
-					void* ptr = p::Alloc(arena, 16);
+					void* ptr = arena.Alloc(16);
 					ankerl::nanobench::doNotOptimizeAway(ptr);
 					allocated.Add(ptr);
 				}
@@ -396,14 +396,14 @@ void RunArenasBenchmarks()
 				{
 					p::u32 index   = rng.bounded(allocated.Size());
 					void* toRemove = allocated[index];
-					p::Free(arena, toRemove, 16);
+					arena.Free(toRemove, 16);
 					allocated.RemoveAtSwapUnsafe(index);
 				}
 			});
 
 			for (void* p : allocated)
 			{
-				p::Free(arena, p, 16);
+				arena.Free(p, 16);
 			}
 		}
 
@@ -414,14 +414,14 @@ void RunArenasBenchmarks()
 			allocated.Reserve(50000);
 			for (p::u32 i = 0; i < 25000; ++i)
 			{
-				allocated.Add(p::Alloc(arena, 16));
+				allocated.Add(arena.Alloc(16));
 			}
 
 			ankerl::nanobench::Rng rng(122);
 			randomSequence.run("MultiLinearArena", [&arena, &rng, &allocated] {
 				if (rng() & 1U)
 				{
-					void* ptr = p::Alloc(arena, 16);
+					void* ptr = arena.Alloc(16);
 					ankerl::nanobench::doNotOptimizeAway(ptr);
 					allocated.Add(ptr);
 				}
@@ -429,14 +429,14 @@ void RunArenasBenchmarks()
 				{
 					p::u32 index   = rng.bounded(allocated.Size());
 					void* toRemove = allocated[index];
-					p::Free(arena, toRemove, 16);
+					arena.Free(toRemove, 16);
 					allocated.RemoveAtSwapUnsafe(index);
 				}
 			});
 
 			for (void* p : allocated)
 			{
-				p::Free(arena, p, 16);
+				arena.Free(p, 16);
 			}
 		}
 
@@ -447,14 +447,14 @@ void RunArenasBenchmarks()
 			allocated.Reserve(50000);
 			for (p::u32 i = 0; i < 25000; ++i)
 			{
-				allocated.Add(p::Alloc(arena, 16));
+				allocated.Add(arena.Alloc(16));
 			}
 
 			ankerl::nanobench::Rng rng(122);
 			randomSequence.run("BestFitArena", [&arena, &rng, &allocated] {
 				if (rng() & 1U)
 				{
-					void* ptr = p::Alloc(arena, 16);
+					void* ptr = arena.Alloc(16);
 					ankerl::nanobench::doNotOptimizeAway(ptr);
 					allocated.Add(ptr);
 				}
@@ -462,14 +462,14 @@ void RunArenasBenchmarks()
 				{
 					p::u32 index   = rng.bounded(allocated.Size());
 					void* toRemove = allocated[index];
-					p::Free(arena, toRemove, 16);
+					arena.Free(toRemove, 16);
 					allocated.RemoveAtSwapUnsafe(index);
 				}
 			});
 
 			for (void* p : allocated)
 			{
-				p::Free(arena, p, 16);
+				arena.Free(p, 16);
 			}
 		}
 
@@ -480,14 +480,14 @@ void RunArenasBenchmarks()
 			allocated.Reserve(50000);
 			for (p::u32 i = 0; i < 25000; ++i)
 			{
-				allocated.Add(p::Alloc(arena, 16));
+				allocated.Add(arena.Alloc(16));
 			}
 
 			ankerl::nanobench::Rng rng(122);
 			randomSequence.run("BigBestFitArena", [&arena, &rng, &allocated] {
 				if (rng() & 1U)
 				{
-					void* ptr = p::Alloc(arena, 16);
+					void* ptr = arena.Alloc(16);
 					ankerl::nanobench::doNotOptimizeAway(ptr);
 					allocated.Add(ptr);
 				}
@@ -495,14 +495,14 @@ void RunArenasBenchmarks()
 				{
 					p::u32 index   = rng.bounded(allocated.Size());
 					void* toRemove = allocated[index];
-					p::Free(arena, toRemove, 16);
+					arena.Free(toRemove, 16);
 					allocated.RemoveAtSwapUnsafe(index);
 				}
 			});
 
 			for (void* p : allocated)
 			{
-				p::Free(arena, p, 16);
+				arena.Free(p, 16);
 			}
 		}
 	}
@@ -514,7 +514,7 @@ void RunArenasBenchmarks()
 	    {
 	        p::BigBestFitArena arena{(16 + 8) * size};
 	        complexity1.complexityN(size).run([&] {
-	            p::Alloc(arena, 16);
+	            arena.Alloc(16);
 	        });
 	    }
 	    std::cout << complexity1.complexityBigO() << std::endl;
@@ -525,7 +525,7 @@ void RunArenasBenchmarks()
 	    {
 	        p::BestFitArena arena{16 * size};
 	        complexity2.complexityN(size).run([&] {
-	            p::Alloc(arena, 16);
+	            arena.Alloc(16);
 	        });
 	    }
 	    std::cout << complexity2.complexityBigO() << std::endl;

@@ -261,7 +261,11 @@ namespace p
 
 
 	BasePool::BasePool(const BasePool& other)
-	    : arena{other.arena}, deletionPolicy{other.deletionPolicy}, context{other.context}
+	    : idIndices{*other.arena}
+	    , idList{*other.arena}
+	    , arena{other.arena}
+	    , deletionPolicy{other.deletionPolicy}
+	    , context{other.context}
 	{
 		BindOnPageAllocated();
 		idList.Reserve(other.idList.Size());

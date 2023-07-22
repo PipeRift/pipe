@@ -239,6 +239,34 @@ namespace p
 
 		alignas(Type) u8 pad[sizeof(Type)];
 	};
+
+	template<typename Type, i32 Count>
+	struct TTypeAsBytesArray
+	{
+		TTypeAsBytes<Type> data[Count];
+
+		constexpr Type* Data()
+		{
+			return reinterpret_cast<Type*>(data);
+		}
+		constexpr const Type* Data() const
+		{
+			return reinterpret_cast<const Type*>(data);
+		}
+	};
+
+	template<typename Type>
+	struct TTypeAsBytesArray<Type, 0>
+	{
+		constexpr Type* Data()
+		{
+			return nullptr;
+		}
+		constexpr const Type* Data() const
+		{
+			return nullptr;
+		}
+	};
 }    // namespace p
 
 #define P_DECLARE_IS_TRIVIAL(T, isTrivial)                                                   \

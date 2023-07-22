@@ -664,6 +664,8 @@ namespace p
 	template<typename Type, u32 InlineCapacity>
 	struct TInlineArray : public IArray<Type>
 	{
+		using Super = IArray<Type>;
+
 	public:
 		template<typename OtherType, u32 OtherInlineCapacity>
 		friend struct TInlineArray;
@@ -672,8 +674,8 @@ namespace p
 
 		i32 capacity = 0;
 		Arena* arena = &p::GetCurrentArena();
-		mutable TTypeAsBytes<Type>
-		    inlineBuffer[InlineCapacity];    // Not used if InlineCapacity is 0
+		mutable TTypeAsBytesArray<Type, InlineCapacity>
+		    inlineBuffer;    // Not used if InlineCapacity is 0
 
 
 #pragma region Constructors
@@ -756,42 +758,42 @@ namespace p
 	public:
 		i32 Add()
 		{
-			const i32 firstIndex = size;
+			const i32 firstIndex = Super::size;
 			AddUninitialized(1);
-			new (data + firstIndex) Type();
+			new (Super::data + firstIndex) Type();
 			return firstIndex;
 		}
 		i32 Add(Type&& value)
 		{
-			const i32 firstIndex = size;
+			const i32 firstIndex = Super::size;
 			AddUninitialized(1);
-			new (data + firstIndex) Type(Forward<Type>(value));
+			new (Super::data + firstIndex) Type(Forward<Type>(value));
 			return firstIndex;
 		}
 		i32 Add(const Type& value)
 		{
-			const i32 firstIndex = size;
+			const i32 firstIndex = Super::size;
 			AddUninitialized(1);
-			new (data + firstIndex) Type(value);
+			new (Super::data + firstIndex) Type(value);
 			return firstIndex;
 		}
 		Type& AddRef()
 		{
-			return data[Add()];
+			return Super::data[Add()];
 		}
 		Type& AddRef(Type&& value)
 		{
-			return data[Add(Forward<Type>(value))];
+			return Super::data[Add(Forward<Type>(value))];
 		}
 		Type& AddRef(const Type& value)
 		{
-			return data[Add(value)];
+			return Super::data[Add(value)];
 		}
 
 		template<typename SortPredicate = TLess<Type>>
 		i32 AddSorted(Type&& item, SortPredicate sortPredicate = {})
 		{
-			const i32 index = LowerBound(item, sortPredicate);
+			const i32 index = Super::LowerBound(item, sortPredicate);
 			if (index != NO_INDEX)
 			{
 				Insert(index, Move(item));
@@ -803,7 +805,7 @@ namespace p
 		template<typename SortPredicate = TLess<Type>>
 		i32 AddSorted(const Type& item, SortPredicate sortPredicate = {})
 		{
-			const i32 index = LowerBound(item, sortPredicate);
+			const i32 index = Super::LowerBound(item, sortPredicate);
 			if (index != NO_INDEX)
 			{
 				Insert(index, item);
@@ -814,7 +816,7 @@ namespace p
 
 		i32 AddUnique(const Type& value)
 		{
-			const i32 found = FindIndex(value);
+			const i32 found = Super::FindIndex(value);
 			if (found == NO_INDEX)
 			{
 				return Add(value);
@@ -834,10 +836,10 @@ namespace p
 		i32 AddUniqueSorted(const Type& value, SortPredicate sortPredicate = {},
 		    bool* outFound = nullptr, bool insertSorted = true)
 		{
-			const i32 index = LowerBound(value, sortPredicate);
+			const i32 index = Super::LowerBound(value, sortPredicate);
 			if (index != NO_INDEX)
 			{
-				if (!sortPredicate(value, data[index]))    // Equal check, found element
+				if (!sortPredicate(value, Super::data[index]))    // Equal check, found element
 				{
 					if (outFound)
 						*outFound = false;
@@ -861,10 +863,10 @@ namespace p
 		i32 AddUniqueSorted(Type&& value, SortPredicate sortPredicate = {},
 		    bool* outFound = nullptr, bool insertSorted = true)
 		{
-			const i32 index = LowerBound(value, sortPredicate);
+			const i32 index = Super::LowerBound(value, sortPredicate);
 			if (index != NO_INDEX)
 			{
-				if (!sortPredicate(value, data[index]))    // Equal check, found element
+				if (!sortPredicate(value, Super::data[index]))    // Equal check, found element
 				{
 					if (outFound)
 						*outFound = false;
@@ -886,21 +888,21 @@ namespace p
 
 		void Append(i32 count)
 		{
-			const i32 firstIndex = size;
+			const i32 firstIndex = Super::size;
 			AddUninitialized(count);
-			ConstructItems(data + firstIndex, count);
+			ConstructItems(Super::data + firstIndex, count);
 		}
 		void Append(i32 count, const Type& value)
 		{
-			const i32 firstIndex = size;
+			const i32 firstIndex = Super::size;
 			AddUninitialized(count);
-			ConstructItems(data + firstIndex, count, value);
+			ConstructItems(Super::data + firstIndex, count, value);
 		}
 		void Append(const Type* values, i32 count)
 		{
-			const i32 firstIndex = size;
+			const i32 firstIndex = Super::size;
 			AddUninitialized(count);
-			CopyConstructItems(data + firstIndex, count, values);
+			CopyConstructItems(Super::data + firstIndex, count, values);
 		}
 		void Append(const IArray<Mut<Type>>& values)
 		{
@@ -913,9 +915,9 @@ namespace p
 		void Append(std ::initializer_list<Type> initList)
 		{
 			const i32 count      = i32(initList.size());
-			const i32 firstIndex = size;
+			const i32 firstIndex = Super::size;
 			AddUninitialized(count);
-			MoveOrCopyConstructItems(data + firstIndex, count, initList.begin());
+			MoveOrCopyConstructItems(Super::data + firstIndex, count, initList.begin());
 		}
 		template<typename It>
 		void Append(const It& beginIt, const It& endIt)
@@ -931,22 +933,22 @@ namespace p
 		{
 			Clear(false);
 			Reserve(count);
-			size = count;
-			ConstructItems(data, count);
+			Super::size = count;
+			ConstructItems(Super::data, count);
 		}
 		void Assign(i32 count, const Type& value)
 		{
 			Clear(false);
 			Reserve(count);
-			size = count;
-			ConstructItems(data, count, value);
+			Super::size = count;
+			ConstructItems(Super::data, count, value);
 		}
 		void Assign(const Type* values, i32 count)
 		{
 			Clear(false);
 			Reserve(count);
-			size = count;
-			CopyConstructItems(data, count, values);
+			Super::size = count;
+			CopyConstructItems(Super::data, count, values);
 		}
 		void Assign(const IArray<Mut<Type>>& values)
 		{
@@ -964,27 +966,27 @@ namespace p
 		void Insert(i32 atIndex)
 		{
 			InsertUninitialized(atIndex, 1);
-			new (data + atIndex) Type();
+			new (Super::data + atIndex) Type();
 		}
 		void Insert(i32 atIndex, Type&& value)
 		{
 			InsertUninitialized(atIndex, 1);
-			new (data + atIndex) Type(Forward<Type>(value));
+			new (Super::data + atIndex) Type(Forward<Type>(value));
 		}
 		void Insert(i32 atIndex, const Type& value)
 		{
 			InsertUninitialized(atIndex, 1);
-			new (data + atIndex) Type(value);
+			new (Super::data + atIndex) Type(value);
 		}
 		void Insert(i32 atIndex, i32 count, const Type& value)
 		{
 			InsertUninitialized(atIndex, count);
-			ConstructItems(data + atIndex, count, value);
+			ConstructItems(Super::data + atIndex, count, value);
 		}
 		void Insert(i32 atIndex, const Type* values, i32 count)
 		{
 			InsertUninitialized(atIndex, count);
-			CopyConstructItems(data + atIndex, count, values);
+			CopyConstructItems(Super::data + atIndex, count, values);
 		}
 		void Insert(i32 atIndex, const IArray<Type>& values)
 		{
@@ -1001,15 +1003,15 @@ namespace p
 		 */
 		i32 Remove(const Type& item, bool shouldShrink = true)
 		{
-			return RemoveAt(FindIndex(item), shouldShrink);
+			return RemoveAt(Super::FindIndex(item), shouldShrink);
 		}
 
 		i32 Remove(const IArray<Mut<Type>>& items, bool shouldShrink = true)
 		{
-			const i32 lastSize = Size();
-			for (i32 i = 0; i < Size(); ++i)
+			const i32 lastSize = Super::size;
+			for (i32 i = 0; i < Super::size; ++i)
 			{
-				if (items.Contains(Data()[i]))
+				if (items.Contains(Super::data[i]))
 				{
 					RemoveAtUnsafe(i, false);
 					--i;    // Repeat same index
@@ -1019,15 +1021,15 @@ namespace p
 			{
 				Shrink();
 			}
-			return lastSize - Size();
+			return lastSize - Super::size;
 		}
 
 		i32 Remove(const IArray<Const<Type>>& items, bool shouldShrink = true)
 		{
-			const i32 lastSize = Size();
-			for (i32 i = 0; i < Size(); ++i)
+			const i32 lastSize = Super::size;
+			for (i32 i = 0; i < Super::size; ++i)
 			{
-				if (items.Contains(Data()[i]))
+				if (items.Contains(Super::data[i]))
 				{
 					RemoveAtUnsafe(i, false);
 					--i;    // Repeat same index
@@ -1037,15 +1039,15 @@ namespace p
 			{
 				Shrink();
 			}
-			return lastSize - Size();
+			return lastSize - Super::size;
 		}
 
 		// Removes an item assuming the array is sorted
 		template<typename OtherType, typename SortPredicate = TLess<>>
-		i32 RemoveSorted(const OtherType& value, SortPredicate sortPredicate = {},
+		bool RemoveSorted(const OtherType& value, SortPredicate sortPredicate = {},
 		    const bool shouldShrink = true)
 		{
-			return i32(RemoveAt(FindSortedEqual(value, sortPredicate)));
+			return RemoveAt(Super::FindSortedEqual(value, sortPredicate));
 		}
 
 		/**
@@ -1054,7 +1056,7 @@ namespace p
 		 */
 		bool RemoveAt(i32 index, const bool shouldShrink = true)
 		{
-			if (IsValidIndex(index))
+			if (Super::IsValidIndex(index))
 			{
 				RemoveAtUnsafe(index, shouldShrink);
 				return true;
@@ -1068,7 +1070,7 @@ namespace p
 		 */
 		bool RemoveAt(i32 index, i32 count, const bool shouldShrink = true)
 		{
-			if (IsValidIndexRange(index, count))
+			if (Super::IsValidIndexRange(index, count))
 			{
 				RemoveAtUnsafe(index, count, shouldShrink);
 				return true;
@@ -1083,7 +1085,7 @@ namespace p
 		 */
 		bool RemoveAtSwap(i32 index, const bool shouldShrink = true)
 		{
-			if (IsValidIndex(index))
+			if (Super::IsValidIndex(index))
 			{
 				RemoveAtSwapUnsafe(index, shouldShrink);
 				return true;
@@ -1098,7 +1100,7 @@ namespace p
 		 */
 		bool RemoveAtSwap(i32 index, i32 count, const bool shouldShrink = true)
 		{
-			if (IsValidIndexRange(index, count))
+			if (Super::IsValidIndexRange(index, count))
 			{
 				RemoveAtSwapUnsafe(index, count, shouldShrink);
 				return true;
@@ -1114,10 +1116,10 @@ namespace p
 		void RemoveAtUnsafe(i32 index, const bool shouldShrink = true)
 		{
 			const i32 lastIndex   = index + 1;
-			const i32 countToPull = size - lastIndex;
-			DestroyItems(data + index, 1);
-			MoveItems(data + index, countToPull, data + lastIndex);
-			--size;
+			const i32 countToPull = Super::size - lastIndex;
+			DestroyItems(Super::data + index, 1);
+			MoveItems(Super::data + index, countToPull, Super::data + lastIndex);
+			--Super::size;
 
 			/// @OPTIMIZE: Shrinking can be combined to avoid moving trailing elements twice
 			if (shouldShrink)
@@ -1132,10 +1134,10 @@ namespace p
 		void RemoveAtUnsafe(i32 index, i32 count, const bool shouldShrink = true)
 		{
 			const i32 lastIndex   = index + count;
-			const i32 countToPull = size - lastIndex;
-			DestroyItems(data + index, count);
-			MoveItems(data + index, countToPull, data + lastIndex);
-			size -= count;
+			const i32 countToPull = Super::size - lastIndex;
+			DestroyItems(Super::data + index, count);
+			MoveItems(Super::data + index, countToPull, Super::data + lastIndex);
+			Super::size -= count;
 
 			/// @OPTIMIZE: Shrinking can be combined to avoid moving trailing elements twice
 			if (shouldShrink)
@@ -1150,8 +1152,8 @@ namespace p
 		 */
 		void RemoveAtSwapUnsafe(i32 index, const bool shouldShrink = true)
 		{
-			const i32 lastIndex = size - 1;
-			SwapUnsafe(index, lastIndex);
+			const i32 lastIndex = Super::size - 1;
+			Super::SwapUnsafe(index, lastIndex);
 			RemoveAtUnsafe(lastIndex, shouldShrink);
 		}
 
@@ -1163,9 +1165,10 @@ namespace p
 		 */
 		void RemoveAtSwapUnsafe(i32 index, i32 count, const bool shouldShrink = true)
 		{
-			const i32 lastIndex   = size - count;
+			const i32 lastIndex   = Super::size - count;
 			const i32 countToSwap = math::Min(count, lastIndex - index);
-			SwapUnsafe(index, size - countToSwap, countToSwap);    // Dont swap more than those left
+			Super::SwapUnsafe(
+			    index, Super::size - countToSwap, countToSwap);    // Dont swap more than those left
 			RemoveAtUnsafe(lastIndex, count, shouldShrink);
 		}
 
@@ -1175,12 +1178,12 @@ namespace p
 		 */
 		i32 RemoveIf(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
 		{
-			const i32 lastSize = size;
+			const i32 lastSize = Super::size;
 			// We remove from the back so that there are less elements to move when removing an
 			// element
 			for (i32 i = lastSize - 1; i >= 0; --i)
 			{
-				if (callback(data[i]))
+				if (callback(Super::data[i]))
 				{
 					RemoveAtUnsafe(i, false);
 				}
@@ -1190,7 +1193,7 @@ namespace p
 			{
 				Shrink();
 			}
-			return lastSize - size;
+			return lastSize - Super::size;
 		}
 
 		/**
@@ -1199,21 +1202,21 @@ namespace p
 		 */
 		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
 		{
-			const i32 lastSize = size;
+			const i32 lastSize = Super::size;
 			for (i32 i = lastSize - 1; i >= 0; --i)
 			{
-				if (callback(data[i]))
+				if (callback(Super::data[i]))
 				{
 					RemoveAtSwapUnsafe(i);
 				}
 			}
 
 			// First item is checked last to prevent invalid swap
-			if (size > 0 && callback(data[0]))
+			if (Super::size > 0 && callback(Super::data[0]))
 			{
-				if (size > 1)
+				if (Super::size > 1)
 				{
-					SwapUnsafe(0, size - 1);
+					Super::SwapUnsafe(0, Super::size - 1);
 				}
 				RemoveLast();
 			}
@@ -1222,14 +1225,14 @@ namespace p
 			{
 				Shrink();
 			}
-			return lastSize - size;
+			return lastSize - Super::size;
 		}
 
 		void RemoveLast()
 		{
-			if (1 <= size)
+			if (1 <= Super::size)
 			{
-				RemoveAtUnsafe(size - 1);
+				RemoveAtUnsafe(Super::size - 1);
 			}
 		}
 
@@ -1239,9 +1242,9 @@ namespace p
 		 */
 		void RemoveLast(i32 count)
 		{
-			if (count <= size)
+			if (count <= Super::size)
 			{
-				RemoveAtUnsafe(size - count, count);
+				RemoveAtUnsafe(Super::size - count, count);
 			}
 		}
 
@@ -1250,8 +1253,8 @@ namespace p
 		 */
 		void Clear(bool shouldShrink = true)
 		{
-			DestroyItems(data, size);
-			size = 0;
+			DestroyItems(Super::data, Super::size);
+			Super::size = 0;
 			if (shouldShrink)
 			{
 				Shrink();
@@ -1272,31 +1275,31 @@ namespace p
 		}
 		void ReserveMore(i32 extraCapacity)
 		{
-			Reserve(size + extraCapacity);
+			Reserve(Super::size + extraCapacity);
 		}
 
 		void Resize(i32 newSize)
 		{
-			if (newSize < size)    // Trim
+			if (newSize < Super::size)    // Trim
 			{
-				RemoveLast(size - newSize);
+				RemoveLast(Super::size - newSize);
 			}
-			else if (newSize > size)    // Append
+			else if (newSize > Super::size)    // Append
 			{
-				Append(newSize - size);
+				Append(newSize - Super::size);
 			}
 			// If size doens't change, do nothing
 		}
 
 		void Resize(i32 newSize, const Type& value)
 		{
-			if (newSize < size)    // Trim
+			if (newSize < Super::size)    // Trim
 			{
-				RemoveLast(size - newSize);
+				RemoveLast(Super::size - newSize);
 			}
-			else if (newSize > size)    // Append
+			else if (newSize > Super::size)    // Append
 			{
-				Append(newSize - size, value);
+				Append(newSize - Super::size, value);
 			}
 			// If size doens't change, do nothing
 		}
@@ -1327,7 +1330,7 @@ namespace p
 		{
 			if constexpr (HasInlineBuffer())
 			{
-				return data == inlineBuffer->AsType();
+				return Super::data == inlineBuffer.Data();
 			}
 			return false;
 		}
@@ -1336,7 +1339,7 @@ namespace p
 		{
 			if constexpr (HasInlineBuffer())
 			{
-				return inlineBuffer->AsType();
+				return inlineBuffer.Data();
 			}
 			return nullptr;
 		}
@@ -1364,15 +1367,15 @@ namespace p
 			Check(capacity != newCapacity);
 
 			// Can never reallocate to under our used size
-			if (size > newCapacity) [[unlikely]]
+			if (Super::size > newCapacity) [[unlikely]]
 			{
-				newCapacity = size;
+				newCapacity = Super::size;
 			}
 
 			if (newCapacity > InlineCapacity)
 			{
-				data     = p::Alloc<Type>(*arena, newCapacity);
-				capacity = newCapacity;
+				Super::data = p::Alloc<Type>(*arena, newCapacity);
+				capacity    = newCapacity;
 				return true;
 			}
 
@@ -1380,21 +1383,21 @@ namespace p
 			{
 				if (newCapacity > 0)
 				{
-					Type* oldData = data;
-					data          = inlineBuffer->AsType();
+					Type* oldData = Super::data;
+					Super::data   = inlineBuffer.Data();
 					capacity      = InlineCapacity;
-					return oldData != inlineBuffer->AsType();
+					return oldData != inlineBuffer.Data();
 				}
 			}
 
-			data     = nullptr;
-			capacity = 0;
+			Super::data = nullptr;
+			capacity    = 0;
 			return false;
 		}
 
 		void FreeOldBuffer(Type* oldData, const i32 oldCapacity)
 		{
-			if (HasInlineBuffer() && oldData != inlineBuffer->AsType())
+			if (HasInlineBuffer() && oldData != inlineBuffer.Data())
 			{
 				// Only free memory if we were not using the inline array
 				Free(*arena, oldData, oldCapacity);
@@ -1403,11 +1406,11 @@ namespace p
 
 		void Reallocate(i32 newCapacity)
 		{
-			Type* oldData         = data;
+			Type* oldData         = Super::data;
 			const i32 oldCapacity = capacity;
 			if (AllocNewBuffer(newCapacity))    // Buffer changed
 			{
-				MoveOrCopyConstructItems<Type, true>(data, size, oldData);
+				MoveOrCopyConstructItems<Type, true>(Super::data, Super::size, oldData);
 			}
 			FreeOldBuffer(oldData, oldCapacity);
 		}
@@ -1432,65 +1435,67 @@ namespace p
 	template<typename Type>
 	struct TView : public IArray<Type>
 	{
+		using Super = IArray<Type>;
+
 		constexpr TView() = default;
 		constexpr TView(Type& value)
 		{
-			data = &value;
-			size = 1;
+			Super::data = &value;
+			Super::size = 1;
 		}
 		constexpr TView(Type* first, Type* last)
 		{
-			data = first;
-			size = i32(last - first);
+			Super::data = first;
+			Super::size = i32(last - first);
 		}
-		constexpr TView(Type* data, i32 size)
+		constexpr TView(Type* inData, i32 inSize)
 		{
-			this->data = data;
-			this->size = size;
+			Super::data = inData;
+			Super::size = inSize;
 		}
 
 		template<i32 N>
 		constexpr TView(Type (&value)[N])
 		{
-			data = value;
-			size = N;
+			Super::data = value;
+			Super::size = N;
 		}
 		constexpr TView(std::initializer_list<Type> value)
 		{
-			data = value.begin();
-			size = i32(value.size());
+			Super::data = value.begin();
+			Super::size = i32(value.size());
 		}
 
 		constexpr TView(const IArray<Type>& other)
 		{
-			data = other.Data();
-			size = other.Size();
+			Super::data = other.Data();
+			Super::size = other.Size();
 		}
 		constexpr TView(const IArray<Mut<Type>>& other) requires(IsConst<Type>)
 		{
-			data = other.Data();
-			size = other.Size();
+			Super::data = other.Data();
+			Super::size = other.Size();
 		}
 		constexpr TView(const IArray<Type>& value, i32 firstN)
 		{
-			data = value.data;
-			size = math::Min(value.size, firstN);
+			Super::data = value.data;
+			Super::size = math::Min(value.size, firstN);
 		}
 		constexpr TView(const IArray<Mut<Type>>& value, i32 firstN) requires(IsConst<Type>)
 		{
-			data = value.data;
-			size = math::Min(value.size, firstN);
+			Super::data = value.data;
+			Super::size = math::Min(value.size, firstN);
 		}
 		constexpr TView& operator=(const IArray<Type>& other)
 		{
-			data = other.Data();
-			size = other.Size();
+			Super::data = other.Data();
+			Super::size = other.Size();
 			return *this;
 		}
 		constexpr TView& operator=(const IArray<Mut<Type>>& other) requires(IsConst<Type>)
 		{
-			data = other.data;
-			size = other.size;
+			Super::data = other.data;
+			Super::size = other.size;
 			return *this;
 		}
 	};
@@ -1504,37 +1509,37 @@ namespace p
 	void TInlineArray<Type, InlineCapacity>::AddUninitialized(i32 count)
 	{
 		CheckMsg(count >= 0, "Cant add less than zero elements.");
-		const i32 newSize = size + count;
+		const i32 newSize = Super::size + count;
 		GrowEnough(newSize);
-		size = newSize;
+		Super::size = newSize;
 	}
 
 	template<typename Type, u32 InlineCapacity>
 	void TInlineArray<Type, InlineCapacity>::InsertUninitialized(i32 atIndex, i32 count)
 	{
-		const i32 oldSize = size;
-		const i32 newSize = size + count;
-		size              = newSize;
+		const i32 oldSize = Super::size;
+		const i32 newSize = Super::size + count;
+		Super::size       = newSize;
 
 		if (newSize > capacity)    // Reallocate elements
 		{
-			Type* oldData         = data;
+			Type* oldData         = Super::data;
 			const i32 oldCapacity = capacity;
 			if (AllocNewBuffer(GetGrownCapacity(newSize)))    // Buffer changed
 			{
 				// Move elements before insertion index
-				MoveOrCopyConstructItems<Type, true>(data, atIndex, oldData);
+				MoveOrCopyConstructItems<Type, true>(Super::data, atIndex, oldData);
 
 				// Move elements after insertion index
 				const i32 countToPush = oldSize - atIndex;
 				MoveOrCopyConstructItems<Type, true>(
-				    data + atIndex + count, countToPush, oldData + atIndex);
+				    Super::data + atIndex + count, countToPush, oldData + atIndex);
 			}
 			FreeOldBuffer(oldData, oldCapacity);
 		}
-		else if (atIndex != size)
+		else if (atIndex != Super::size)
 		{
-			Type* const ptrToPush = data + atIndex;
+			Type* const ptrToPush = Super::data + atIndex;
 			const i32 countToPush = oldSize - atIndex;
 			// Push elements after insertion index
 			MoveItemsBackwards(ptrToPush + count, countToPush, ptrToPush);
@@ -1550,8 +1555,8 @@ namespace p
 	{
 		Clear(false);
 		Reserve(other.Size());
-		size = other.Size();
-		CopyConstructItems<Type>(data, size, other.Data());
+		Super::size = other.Size();
+		CopyConstructItems<Type>(Super::data, Super::size, other.Data());
 	}
 
 	template<typename Type, u32 InlineCapacity>
@@ -1562,13 +1567,13 @@ namespace p
 		if (other.UsesInlineBuffer())    // We can't move from an inline buffer, so we move items
 		{
 			Clear(false);
-			size = other.size;
+			Super::size = other.size;
 
-			Type* oldData         = data;
+			Type* oldData         = Super::data;
 			const i32 oldCapacity = capacity;
-			if (AllocNewBuffer(GetGrownCapacity(size)))    // Buffer changed
+			if (AllocNewBuffer(GetGrownCapacity(Super::size)))    // Buffer changed
 			{
-				MoveOrCopyConstructItems<Type, true>(data, size, other.Data());
+				MoveOrCopyConstructItems<Type, true>(Super::data, Super::size, other.Data());
 			}
 			FreeOldBuffer(oldData, oldCapacity);
 			other.Clear();
@@ -1576,10 +1581,10 @@ namespace p
 		else
 		{
 			Clear(true);
-			data     = other.data;
-			size     = other.size;
-			capacity = other.capacity;
-			arena    = other.arena;    // We pass the arena so that it can be correctly freed
+			Super::data = other.data;
+			Super::size = other.size;
+			capacity    = other.capacity;
+			arena       = other.arena;    // We pass the arena so that it can be correctly freed
 
 			other.data     = nullptr;
 			other.size     = 0;
