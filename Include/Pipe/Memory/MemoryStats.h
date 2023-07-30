@@ -3,10 +3,13 @@
 #pragma once
 
 #include "Pipe/Core/Platform.h"
+#include "Pipe/Core/Set.h"
+#include "Pipe/Core/StringView.h"
 #include "Pipe/PipeArrays.h"
-#if P_ENABLE_ALLOCATION_STACKS
-#	include "Pipe/Core/Backward.h"
-#endif
+
+// #if P_ENABLE_ALLOCATION_STACKS
+#include "Pipe/Core/Backward.h"
+// #endif
 
 #include <cstdlib>
 #include <shared_mutex>
@@ -20,7 +23,7 @@ namespace p
 	public:
 		MemoryStatsArena()
 		{
-			SetupInterface<MemoryStatsArena>();
+			Interface<MemoryStatsArena>();
 		}
 
 		inline void* Alloc(const sizet size)
@@ -46,6 +49,19 @@ namespace p
 	{
 		u8* ptr  = nullptr;
 		u64 size = 0;
+
+		bool operator==(const AllocationStats& other) const
+		{
+			return ptr == other.ptr;
+		}
+	};
+	template<>
+	struct Hash<AllocationStats>
+	{
+		sizet operator()(const AllocationStats& k) const
+		{
+			return sizet(k.ptr);
+		}
 	};
 
 	struct PIPE_API SortLessAllocationStats
@@ -69,18 +85,23 @@ namespace p
 
 	struct PIPE_API MemoryStats
 	{
+		MemoryStatsArena arena;
 		sizet used = 0;
 		mutable std::shared_mutex mutex;
 		TArray<AllocationStats> allocations;
 #if P_ENABLE_ALLOCATION_STACKS
-		TArray<backward::StackTrace<std::allocator>> stacks{};
+		// TArray<backward::StackTrace> stacks{};
 #endif
-		MemoryStatsArena arena;
+		TSet<AllocationStats> allAllocations;
 
 		MemoryStats();
 		~MemoryStats();
 
 		void Add(void* ptr, sizet size);
 		void Remove(void* ptr);
+
+	private:
+		void PrintAllocationError(
+		    StringView error, AllocationStats* allocation, const backward::StackTrace* stack);
 	};
 }    // namespace p

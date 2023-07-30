@@ -33,7 +33,7 @@ namespace p
 
 	BigBestFitArena::BigBestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
-		SetupInterface<BigBestFitArena>();
+		Interface<BigBestFitArena>();
 
 		assert(initialSize > 0);
 		block.data = GetParentArena().Alloc(initialSize);

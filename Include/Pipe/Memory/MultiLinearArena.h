@@ -91,7 +91,7 @@ namespace p
 	public:
 		MultiLinearArena(Arena& parentArena = GetCurrentArena()) : ChildArena(&parentArena)
 		{
-			SetupInterface<MultiLinearArena>();
+			Interface<MultiLinearArena>();
 		}
 		~MultiLinearArena() override
 		{

@@ -32,7 +32,7 @@ namespace p
 		MonoLinearArena(Memory::Block externalBlock, Arena& parentArena = GetCurrentArena())
 		    : ChildArena(&parentArena), insert{externalBlock.data}, block{Move(externalBlock)}
 		{
-			SetupInterface<MonoLinearArena>();
+			Interface<MonoLinearArena>();
 		}
 		MonoLinearArena(const sizet blockSize = Memory::MB, Arena& parentArena = GetCurrentArena())
 		    : ChildArena(&parentArena)
@@ -40,7 +40,7 @@ namespace p
 		    , block{insert, blockSize}
 		    , selfAllocated{true}
 		{
-			SetupInterface<MonoLinearArena>();
+			Interface<MonoLinearArena>();
 		}
 		~MonoLinearArena() override
 		{

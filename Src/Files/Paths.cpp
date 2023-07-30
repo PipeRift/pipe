@@ -913,7 +913,7 @@ namespace p::files
 
 	String ToString(const Path& path)
 	{
-		return path.string<TChar, std::char_traits<TChar>, STLAllocator<TChar>>();
+		return path.string<TChar, std::char_traits<TChar>, std::allocator<TChar>>();
 	}
 
 	Path ToPath(StringView pathStr)

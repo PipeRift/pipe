@@ -23,12 +23,13 @@
 namespace p
 {
 	template<typename CharType>
-	using TString = std::basic_string<CharType, std::char_traits<CharType>, STLAllocator<CharType>>;
+	using TString =
+	    std::basic_string<CharType, std::char_traits<CharType>, std::allocator<CharType>>;
 	using String  = TString<TChar>;
 	using WString = TString<WideChar>;
 
 	template<typename CharType, sizet inlineSize = fmt::inline_buffer_size>
-	using TStringBuffer = fmt::basic_memory_buffer<CharType, inlineSize, STLAllocator<CharType>>;
+	using TStringBuffer = fmt::basic_memory_buffer<CharType, inlineSize, std::allocator<CharType>>;
 	using StringBuffer  = TStringBuffer<TChar>;
 
 
@@ -50,7 +51,7 @@ namespace p
 			    std::back_inserter(buffer), fmt::runtime(format), std::forward<Args>(args)...);
 		}
 
-		PIPE_API String ToSentenceCase(const String& value);
+		PIPE_API String ToSentenceCase(StringView value);
 
 		/**
 		 * Breaks up a delimited string into elements of a string array.

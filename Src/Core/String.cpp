@@ -22,24 +22,40 @@ namespace p
 	}
 }    // namespace p
 
+
 namespace p::Strings
 {
-	String ToSentenceCase(const String& value)
+
+	String ToSentenceCase(StringView value)
 	{
-		if (!value.empty())
+		if (value.empty())
 		{
-			// static const std::regex wordToCapital("\b[a-z]");
-			static const Regex spaceCamelCase(TX("([a-zA-Z])(?=[A-Z0-9])"));
-
-			auto result = std::regex_replace(value, spaceCamelCase, TX("$& "));
-			result[0]   = TCharHelpers<TChar>::ToUpper(result[0]);
-
-			return Convert<String, TChar>(result);
+			return {};
 		}
-		else
+
+		String result;
+		result.reserve(value.size());
+
+		const TChar* p    = value.data();
+		const TChar* end  = value.data() + value.size();
+		const TChar* last = end - 1;
+		while (p < last)
 		{
-			return TX("");
+			const TChar* next = p + 1;
+			if (FChar::IsAlpha(*p) && (FChar::IsUpper(*next) || FChar::IsDigit(*next)))
+			{
+				result.push_back(*p);
+				result.push_back(TX(' '));
+				p += 2;
+			}
+			else
+			{
+				result.push_back(*p);
+				++p;
+			}
 		}
+		result[0] = FChar::ToUpper(result[0]);
+		return result;
 	}
 
 	void RemoveFromStart(String& str, sizet size)

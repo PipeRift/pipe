@@ -12,7 +12,7 @@ namespace p
 	public:
 		HeapArena()
 		{
-			SetupInterface<HeapArena>();
+			Interface<HeapArena>();
 		}
 		~HeapArena() override = default;
 

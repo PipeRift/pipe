@@ -9,5 +9,6 @@ pipe_target_enable_CPP20(PipeTests)
 pipe_target_define_platform(PipeTests)
 pipe_target_shared_output_directory(PipeTests)
 target_link_libraries(PipeTests PUBLIC Pipe Bandit)
+pipe_add_sanitizers(PipeTests)
 
 add_test(NAME PipeTests COMMAND $<TARGET_FILE:PipeTests>)

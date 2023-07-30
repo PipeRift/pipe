@@ -31,7 +31,7 @@ namespace p
 	protected:
 
 		template<Derived<Arena, false> T>
-		void SetupInterface()
+		void Interface()
 		{
 			doAlloc = [](Arena* self, sizet size) {
 				static_assert(

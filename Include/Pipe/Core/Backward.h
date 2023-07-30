@@ -788,6 +788,8 @@ private:
 
 class StackTraceImplHolder : public StackTraceImplBase {
 public:
+  StackTraceImplHolder(p::Arena& arena) : _stacktrace{p::STLAllocator<void*>(arena)} {}
+
   size_t size() const {
     return (_stacktrace.size() >= skip_n_firsts())
                ? _stacktrace.size() - skip_n_firsts()
@@ -872,6 +874,7 @@ template <>
 class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
   using Super = StackTraceImplHolder;
 public:
+  using StackTraceImplHolder::StackTraceImplHolder;
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
@@ -917,6 +920,7 @@ template <>
 class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
   using Super = StackTraceImplHolder;
 public:
+  using StackTraceImplHolder::StackTraceImplHolder;
   __attribute__((noinline)) size_t load_here(size_t depth = 32,
                                              void *_context = nullptr,
                                              void *_error_addr = nullptr) {
@@ -1095,6 +1099,7 @@ template <>
 class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
   using Super = StackTraceImplHolder;
 public:
+  using StackTraceImplHolder::StackTraceImplHolder;
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
@@ -1134,6 +1139,7 @@ template <>
 class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
   using Super = StackTraceImplHolder;
 public:
+  using StackTraceImplHolder::StackTraceImplHolder;
   // We have to load the machine type from the image info
   // So we first initialize the resolver, and it tells us this info
   void set_machine_type(DWORD machine_type) { machine_type_ = machine_type; }
@@ -1229,7 +1235,10 @@ private:
 
 #endif
 
-class StackTrace : public StackTraceImpl<system_tag::current_tag> {};
+class StackTrace : public StackTraceImpl<system_tag::current_tag>
+{
+  using StackTraceImpl<system_tag::current_tag>::StackTraceImpl;
+};
 
 /*************** TRACE RESOLVER ***************/
 
@@ -4455,7 +4464,7 @@ private:
     // in the constructor of TraceResolver
     Printer printer;
 
-    StackTrace st;
+    StackTrace st{p::GetCurrentArena()};
     st.set_machine_type(printer.resolver().machine_type());
     st.set_thread_handle(thread_handle());
     st.load_here(32 + skip_frames, ctx());

@@ -9,13 +9,12 @@
 #include "Pipe/Reflect/TypeRegistry.h"
 
 
-
 namespace p
 {
 	void Initialize(Path logPath)
 	{
 		TypeRegistry::Initialize();
-		InitLog(logPath);
+		// InitLog(logPath);
 	}
 
 	void Shutdown()

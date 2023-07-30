@@ -19,7 +19,7 @@ namespace p
 		MultiLinearArena arena{GetCurrentArena()};
 
 		// We map all classes by name in case we need to find them
-		TMap<TypeId, Type*> idToTypes = TMap<TypeId, Type*>(arena);
+		TMap<TypeId, Type*> idToTypes;
 
 		TArray<TFunction<void()>> compiledTypeRegisters;
 		bool initialized = false;
@@ -69,7 +69,7 @@ namespace p
 			{
 				it.second->~Type();
 			}
-			idToTypes.Clear();
+			idToTypes = {};
 			arena.Release();
 		}
 
