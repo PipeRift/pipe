@@ -65,27 +65,13 @@ namespace p
 #endif
 		{}
 
-		constexpr TArrayIterator(Type* ptr, const IArray<Mut<Type>>* range) noexcept
-		    requires IsConst<Type>
-		    : ptr(ptr)
-#if P_DEBUG
-		    , range(range)
-#endif
-		{}
-
-		constexpr TArrayIterator(const TArrayIterator<Type>& other)
+		constexpr TArrayIterator(const TArrayIterator& other)
 		    : ptr(other.ptr)
 #if P_DEBUG
 		    , range(other.range)
 #endif
 		{}
-		constexpr TArrayIterator(const TArrayIterator<Mut<Type>>& other) requires IsConst<Type>
-		    : ptr(other.ptr)
-#if P_DEBUG
-		    , range(reinterpret_cast<const ContainerType*>(other.range))
-#endif
-		{}
-		TArrayIterator& operator=(const TArrayIterator<Type>& other)
+		TArrayIterator& operator=(const TArrayIterator& other)
 		{
 			ptr = other.ptr;
 #if P_DEBUG
@@ -187,6 +173,15 @@ namespace p
 		{
 			VerifyRange(rhs);
 			return ptr <=> rhs.ptr;
+		}
+
+		constexpr operator TArrayIterator<const Type>&() requires IsMutable<Type>
+		{
+			return *reinterpret_cast<TArrayIterator<const Type>*>(this);
+		}
+		constexpr operator const TArrayIterator<const Type>&() const requires IsMutable<Type>
+		{
+			return *reinterpret_cast<TArrayIterator<const Type>*>(this);
 		}
 
 
@@ -364,11 +359,11 @@ namespace p
 			return data[index];
 		}
 
-		constexpr operator IArray<const Type>&() requires IsMutable<Type>
+		constexpr operator IArray<const Type>&() requires(IsMutable<Type>)
 		{
-			return *reinterpret_cast<IArray<Const<Type>>*>(this);
+			return *reinterpret_cast<IArray<const Type>*>(this);
 		}
-		constexpr operator const IArray<const Type>&() const requires IsMutable<Type>
+		constexpr operator const IArray<const Type>&() const requires(IsMutable<Type>)
 		{
 			return *reinterpret_cast<const IArray<const Type>*>(this);
 		}
@@ -386,34 +381,34 @@ namespace p
 
 
 #pragma region Sort
-		void Swap(i32 firstIndex, i32 secondIndex)
+		void Swap(i32 firstIdx, i32 secondIdx)
 		{
-			if (IsValidIndex(firstIndex) && IsValidIndex(secondIndex) && firstIndex != secondIndex)
+			if (IsValidIndex(firstIdx) && IsValidIndex(secondIdx) && firstIdx != secondIdx)
 			{
-				SwapUnsafe(firstIndex, secondIndex);
+				SwapUnsafe(firstIdx, secondIdx);
 			}
 		}
 
-		void Swap(i32 firstIndex, i32 secondIndex, i32 count)
+		void Swap(i32 firstIdx, i32 secondIdx, i32 count)
 		{
 			// Check that ranges fit inside the array and don't overlap
-			if (IsValidIndexRange(firstIndex, count) && IsValidIndexRange(secondIndex, count)
-			    && (firstIndex >= (secondIndex + count) || secondIndex >= (firstIndex + count)))
+			if (IsValidIndexRange(firstIdx, count) && IsValidIndexRange(secondIdx, count)
+			    && (firstIdx >= (secondIdx + count) || secondIdx >= (firstIdx + count)))
 			{
-				SwapUnsafe(firstIndex, secondIndex, count);
+				SwapUnsafe(firstIdx, secondIdx, count);
 			}
 		}
 
-		void SwapUnsafe(i32 firstIndex, i32 secondIndex)
+		void SwapUnsafe(i32 firstIdx, i32 secondIdx)
 		{
-			p::Swap(data[firstIndex], data[secondIndex]);
+			p::Swap(data[firstIdx], data[secondIdx]);
 		}
 
-		void SwapUnsafe(i32 firstIndex, i32 secondIndex, i32 count)
+		void SwapUnsafe(i32 firstIdx, i32 secondIdx, i32 count)
 		{
 			for (i32 i = 0; i < count; ++i)
 			{
-				p::Swap(data[firstIndex + i], data[secondIndex + i]);
+				p::Swap(data[firstIdx + i], data[secondIdx + i]);
 			}
 		}
 
@@ -429,15 +424,15 @@ namespace p
 		}
 
 		template<typename Predicate>
-		void SortRange(i32 firstIndex, i32 count, Predicate predicate)
+		void SortRange(i32 firstIdx, i32 count, Predicate predicate)
 		{
-			const i32 maxSize = Size() - firstIndex;
-			p::Sort(data + firstIndex, math::Min(count, maxSize), TLess<Type>());
+			const i32 maxSize = Size() - firstIdx;
+			p::Sort(data + firstIdx, math::Min(count, maxSize), TLess<Type>());
 		}
 
-		void SortRange(i32 firstIndex, i32 count)
+		void SortRange(i32 firstIdx, i32 count)
 		{
-			SortRange(firstIndex, count, TLess<Type>());
+			SortRange(firstIdx, count, TLess<Type>());
 		}
 #pragma endregion Sort
 
@@ -739,17 +734,21 @@ namespace p
 			}
 			return *this;
 		}
-		TInlineArray(const IArray<Const<Type>>& other)
+		TInlineArray(const IArray<const Type>& other)
 		{
 			CopyFrom(other);
 		}
-		TInlineArray& operator=(const IArray<Const<Type>>& other)
+		TInlineArray& operator=(const IArray<const Type>& other)
 		{
 			if (this != (void*)&other)
 			{
 				CopyFrom(other);
 			}
 			return *this;
+		}
+		~TInlineArray()
+		{
+			Clear(true);
 		}
 #pragma endregion Constructors
 
@@ -758,24 +757,24 @@ namespace p
 	public:
 		i32 Add()
 		{
-			const i32 firstIndex = Super::size;
+			const i32 firstIdx = Super::size;
 			AddUninitialized(1);
-			new (Super::data + firstIndex) Type();
-			return firstIndex;
+			new (Super::data + firstIdx) Type();
+			return firstIdx;
 		}
 		i32 Add(Type&& value)
 		{
-			const i32 firstIndex = Super::size;
+			const i32 firstIdx = Super::size;
 			AddUninitialized(1);
-			new (Super::data + firstIndex) Type(Forward<Type>(value));
-			return firstIndex;
+			new (Super::data + firstIdx) Type(Forward<Type>(value));
+			return firstIdx;
 		}
 		i32 Add(const Type& value)
 		{
-			const i32 firstIndex = Super::size;
+			const i32 firstIdx = Super::size;
 			AddUninitialized(1);
-			new (Super::data + firstIndex) Type(value);
-			return firstIndex;
+			new (Super::data + firstIdx) Type(value);
+			return firstIdx;
 		}
 		Type& AddRef()
 		{
@@ -888,36 +887,32 @@ namespace p
 
 		void Append(i32 count)
 		{
-			const i32 firstIndex = Super::size;
+			const i32 firstIdx = Super::size;
 			AddUninitialized(count);
-			ConstructItems(Super::data + firstIndex, count);
+			ConstructItems(Super::data + firstIdx, count);
 		}
 		void Append(i32 count, const Type& value)
 		{
-			const i32 firstIndex = Super::size;
+			const i32 firstIdx = Super::size;
 			AddUninitialized(count);
-			ConstructItems(Super::data + firstIndex, count, value);
+			ConstructItems(Super::data + firstIdx, count, value);
 		}
 		void Append(const Type* values, i32 count)
 		{
-			const i32 firstIndex = Super::size;
+			const i32 firstIdx = Super::size;
 			AddUninitialized(count);
-			CopyConstructItems(Super::data + firstIndex, count, values);
+			CopyConstructItems(Super::data + firstIdx, count, values);
 		}
-		void Append(const IArray<Mut<Type>>& values)
-		{
-			Append(values.Data(), values.Size());
-		}
-		void Append(const IArray<Const<Type>>& values)
+		void Append(const IArray<const Type>& values)
 		{
 			Append(values.Data(), values.Size());
 		}
 		void Append(std ::initializer_list<Type> initList)
 		{
-			const i32 count      = i32(initList.size());
-			const i32 firstIndex = Super::size;
+			const i32 count    = i32(initList.size());
+			const i32 firstIdx = Super::size;
 			AddUninitialized(count);
-			MoveOrCopyConstructItems(Super::data + firstIndex, count, initList.begin());
+			MoveOrCopyConstructItems(Super::data + firstIdx, count, initList.begin());
 		}
 		template<typename It>
 		void Append(const It& beginIt, const It& endIt)
@@ -950,13 +945,14 @@ namespace p
 			Super::size = count;
 			CopyConstructItems(Super::data, count, values);
 		}
-		void Assign(const IArray<Mut<Type>>& values)
+		void Assign(const IArray<Type>& values)
 		{
-			Assign(values.Data(), values.Size());
+			CopyFrom(values);
 		}
-		void Assign(const IArray<Const<Type>>& values)
+		template<i32 OtherInlineCapacity>
+		void Assign(TInlineArray<Type, OtherInlineCapacity>&& values) requires(IsMutable<Type>)
 		{
-			Assign(values.Data(), values.Size());
+			MoveFrom(Forward<TInlineArray<Type, OtherInlineCapacity>>(values));
 		}
 		void Assign(std ::initializer_list<Type> initList)
 		{
@@ -1024,7 +1020,7 @@ namespace p
 			return lastSize - Super::size;
 		}
 
-		i32 Remove(const IArray<Const<Type>>& items, bool shouldShrink = true)
+		i32 Remove(const IArray<const Type>& items, bool shouldShrink = true)
 		{
 			const i32 lastSize = Super::size;
 			for (i32 i = 0; i < Super::size; ++i)
@@ -1397,7 +1393,7 @@ namespace p
 
 		void FreeOldBuffer(Type* oldData, const i32 oldCapacity)
 		{
-			if (HasInlineBuffer() && oldData != inlineBuffer.Data())
+			if (!HasInlineBuffer() || oldData != inlineBuffer.Data())
 			{
 				// Only free memory if we were not using the inline array
 				Free(*arena, oldData, oldCapacity);
@@ -1425,7 +1421,7 @@ namespace p
 	protected:
 		void AddUninitialized(i32 count);
 		void InsertUninitialized(i32 atIndex, i32 count);
-		void CopyFrom(const IArray<Const<Type>>& other);
+		void CopyFrom(const IArray<const Type>& other);
 
 		template<u32 OtherInlineCapacity>
 		void MoveFrom(TInlineArray<Type, OtherInlineCapacity>&& other);
@@ -1488,8 +1484,8 @@ namespace p
 		}
 		constexpr TView& operator=(const IArray<Type>& other)
 		{
-			Super::data = other.Data();
-			Super::size = other.Size();
+			Super::data = other.data;
+			Super::size = other.size;
 			return *this;
 		}
 		constexpr TView& operator=(const IArray<Mut<Type>>& other) requires(IsConst<Type>)
@@ -1551,7 +1547,7 @@ namespace p
 	}
 
 	template<typename Type, u32 InlineCapacity>
-	void TInlineArray<Type, InlineCapacity>::CopyFrom(const IArray<Const<Type>>& other)
+	void TInlineArray<Type, InlineCapacity>::CopyFrom(const IArray<const Type>& other)
 	{
 		Clear(false);
 		Reserve(other.Size());

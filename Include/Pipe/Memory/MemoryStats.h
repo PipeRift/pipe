@@ -49,19 +49,6 @@ namespace p
 	{
 		u8* ptr  = nullptr;
 		u64 size = 0;
-
-		bool operator==(const AllocationStats& other) const
-		{
-			return ptr == other.ptr;
-		}
-	};
-	template<>
-	struct Hash<AllocationStats>
-	{
-		sizet operator()(const AllocationStats& k) const
-		{
-			return sizet(k.ptr);
-		}
 	};
 
 	struct PIPE_API SortLessAllocationStats
@@ -92,7 +79,7 @@ namespace p
 #if P_ENABLE_ALLOCATION_STACKS
 		// TArray<backward::StackTrace> stacks{};
 #endif
-		TSet<AllocationStats> allAllocations;
+		TArray<AllocationStats> freedAllocations;
 
 		MemoryStats();
 		~MemoryStats();

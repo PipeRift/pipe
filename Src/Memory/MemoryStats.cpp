@@ -21,7 +21,7 @@ namespace p
 #if P_ENABLE_ALLOCATION_STACKS
 	    , stacks{arena}
 #endif
-	    , allAllocations{arena}
+	    , freedAllocations{arena}
 	{}
 
 	MemoryStats::~MemoryStats()
@@ -84,13 +84,11 @@ namespace p
 		i32 index = allocations.AddSorted(item, SortLessAllocationStats{});
 
 #if P_ENABLE_ALLOCATION_STACKS
-		// auto& stack = stacks.Insert(index, {arena});
+		auto& stack = stacks.Insert(index, {arena});
 		backward::StackTrace stack{arena};
 		stack.load_here(14 + 3);
 		stack.skip_n_firsts(3);
-		allAllocations.Insert(static_cast<u8*>(ptr), Move(stack));
 #endif
-		allAllocations.Insert(AllocationStats{static_cast<u8*>(ptr), size});
 	}
 
 	void MemoryStats::Remove(void* ptr)
@@ -99,16 +97,18 @@ namespace p
 		const i32 index = allocations.FindSortedEqual(ptr, SortLessAllocationStats{});
 		if (index != NO_INDEX)
 		{
-			used -= allocations[index].size;
+			AllocationStats& allocation = allocations[index];
+			used -= allocation.size;
+			freedAllocations.AddSorted(Move(allocation), SortLessAllocationStats{});
 			allocations.RemoveAt(index, false);
 #if P_ENABLE_ALLOCATION_STACKS
-			// stacks.RemoveAt(index, false);
+			stacks.RemoveAt(index, false);
 #endif
 		}
 		else
 		{
-			auto* value = allAllocations.Find(AllocationStats{static_cast<u8*>(ptr)});
-			if (value)
+			if (freedAllocations.ContainsSorted(
+			        AllocationStats{static_cast<u8*>(ptr)}, SortLessAllocationStats{}))
 			{
 				std::puts("Freeing a pointer more than once.");
 			}

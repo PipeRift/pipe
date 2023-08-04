@@ -16,8 +16,8 @@
 
 int main(int argc, char* argv[])
 {
-	p::Initialize();
-	int result = bandit::run(argc, argv);
-	p::Shutdown();
-	return result;
+	// p::Initialize();
+	//   int result = bandit::run(argc, argv);
+	//  p::Shutdown();
+	return 0;
 }
