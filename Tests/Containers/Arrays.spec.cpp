@@ -2,7 +2,7 @@
 
 #include <bandit/assertion_frameworks/snowhouse/exceptions.h>
 #include <bandit/bandit.h>
-#include <Pipe/PipeContainers.h>
+#include <Pipe/PipeArrays.h>
 
 
 using namespace snowhouse;
@@ -251,6 +251,16 @@ go_bandit([]() {
 			});
 		});
 
+		it("Can access data", [&]() {
+			TInlineArray<i32, 0> data1;
+			TInlineArray<i32, 0> data2{1};
+			TInlineArray<i32, 4> data3{1};
+
+			AssertThat(data1.Data(), Equals(nullptr));
+			AssertThat(data2.Data(), !Equals(nullptr));
+			AssertThat(data3.Data(), !Equals(nullptr));
+		});
+
 		describe("Add", []() {
 			it("Can add to dynamic", [&]() {
 				TInlineArray<i32, 0> data;
@@ -291,9 +301,9 @@ go_bandit([]() {
 				MoveType tmp{2};
 				data.Add(Move(tmp));
 				data.Add(MoveType{3});
-				AssertThat(tmp.value, Equals(0));
 				AssertThat(data[0].value, Equals(2));
 				AssertThat(data[1].value, Equals(3));
+				AssertThat(tmp.value, Equals(0));
 			});
 
 			it("Can add value by copy", [&]() {
@@ -345,13 +355,13 @@ go_bandit([]() {
 				TInlineArray<i32, 0> data;
 				i32 buffer[]{24, 53};
 				i32 buffer2[]{74, 51};
-				data.Append(2, buffer);
+				data.Append(buffer, 2);
 				AssertThat(data.Size(), Equals(2));
 				AssertThat(data[0], Equals(24));
 				AssertThat(data[1], Equals(53));
-				data.Append(0, nullptr);
+				data.Append(nullptr, 0);
 				AssertThat(data.Size(), Equals(2));
-				data.Append(2, buffer2);
+				data.Append(buffer2, 2);
 				AssertThat(data.Size(), Equals(4));
 				AssertThat(data[2], Equals(74));
 				AssertThat(data[3], Equals(51));
@@ -410,13 +420,13 @@ go_bandit([]() {
 				TInlineArray<i32, 0> data;
 				i32 buffer[]{24, 53};
 				i32 buffer2[]{74, 51};
-				data.Assign(2, buffer);
+				data.Assign(buffer, 2);
 				AssertThat(data.Size(), Equals(2));
 				AssertThat(data[0], Equals(24));
 				AssertThat(data[1], Equals(53));
-				data.Assign(0, nullptr);
+				data.Assign(nullptr, 0);
 				AssertThat(data.Size(), Equals(0));
-				data.Assign(2, buffer2);
+				data.Assign(buffer2, 2);
 				AssertThat(data.Size(), Equals(2));
 				AssertThat(data[0], Equals(74));
 				AssertThat(data[1], Equals(51));
@@ -468,9 +478,274 @@ go_bandit([]() {
 				AssertThat(data.Size(), Equals(1));
 				AssertThat(data[0], Equals(12));
 			});
+
+			it("Can insert copied value", [&]() {
+				TInlineArray<i32, 0> data;
+				data.Insert(0, 32);    // Insert at empty
+				AssertThat(data.Size(), Equals(1));
+				AssertThat(data[0], Equals(32));
+
+				data.Insert(0, 65);    // Insert at start
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(65));
+				AssertThat(data[1], Equals(32));
+
+				data.Add(85);
+				data.Insert(1, 27);    // Insert in the middle
+				AssertThat(data.Size(), Equals(4));
+				AssertThat(data[1], Equals(27));
+
+				data.Insert(4, 43);    // Insert in the end
+				AssertThat(data.Size(), Equals(5));
+				AssertThat(data[4], Equals(43));
+			});
+
+			it("Can insert many values", [&]() {
+				TInlineArray<i32, 0> data;
+				data.Insert(0, 2, 32);    // Insert at empty
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(32));
+				AssertThat(data[1], Equals(32));
+
+				data.Insert(0, 2, 5);    // Insert at start
+				AssertThat(data.Size(), Equals(4));
+				AssertThat(data[0], Equals(5));
+				AssertThat(data[1], Equals(5));
+				AssertThat(data[2], Equals(32));
+				AssertThat(data[3], Equals(32));
+
+				data.Insert(3, 2, 6);    // Insert in the middle
+				AssertThat(data.Size(), Equals(6));
+				AssertThat(data[3], Equals(6));
+				AssertThat(data[4], Equals(6));
+
+				data.Insert(6, 2, 9);    // Insert in the end
+				AssertThat(data.Size(), Equals(8));
+				AssertThat(data[6], Equals(9));
+				AssertThat(data[7], Equals(9));
+			});
+
+			it("Can insert moved value", [&]() {
+				TInlineArray<MoveType, 0> data;
+				MoveType tmp{34};
+				data.Insert(0, Move(tmp));    // Insert at empty
+				AssertThat(data.Size(), Equals(1));
+				AssertThat(data[0].value, Equals(34));
+				AssertThat(tmp.value, Equals(0));
+
+				MoveType tmp2{4};
+				data.Insert(0, Move(tmp2));    // Insert at start
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0].value, Equals(4));
+				AssertThat(data[1].value, Equals(34));
+				AssertThat(tmp2.value, Equals(0));
+
+				MoveType tmp3{3};
+				data.Add(MoveType{85});
+				data.Insert(1, Move(tmp3));    // Insert in the middle
+				AssertThat(data.Size(), Equals(4));
+				AssertThat(data[1].value, Equals(3));
+				AssertThat(tmp3.value, Equals(0));
+
+				MoveType tmp4{7};
+				data.Insert(4, Move(tmp4));    // Insert in the end
+				AssertThat(data.Size(), Equals(5));
+				AssertThat(data[4].value, Equals(7));
+				AssertThat(tmp4.value, Equals(0));
+			});
+
+			it("Can insert buffer", [&]() {
+				TInlineArray<i32, 0> data;
+				i32 src[]{34, 23, 844};
+				data.Insert(0, src, 3);    // Insert at empty
+				AssertThat(data.Size(), Equals(3));
+				AssertThat(data[0], Equals(34));
+				AssertThat(data[1], Equals(23));
+				AssertThat(data[2], Equals(844));
+
+				i32 src2[]{2, 71, 21};
+				data.Insert(0, src2, 3);    // Insert at start
+				AssertThat(data.Size(), Equals(6));
+				AssertThat(data[0], Equals(2));
+				AssertThat(data[1], Equals(71));
+				AssertThat(data[2], Equals(21));
+				AssertThat(data[3], Equals(34));
+				AssertThat(data[4], Equals(23));
+				AssertThat(data[5], Equals(844));
+
+				i32 src3[]{4, 3, 6};
+				data.Insert(3, src3, 3);    // Insert in the middle
+				AssertThat(data.Size(), Equals(9));
+				AssertThat(data[3], Equals(4));
+				AssertThat(data[4], Equals(3));
+				AssertThat(data[5], Equals(6));
+
+				i32 src4[]{7, 2, 3};
+				data.Insert(9, src4, 3);    // Insert in the end
+				AssertThat(data.Size(), Equals(12));
+				AssertThat(data[9], Equals(7));
+				AssertThat(data[10], Equals(2));
+				AssertThat(data[11], Equals(3));
+			});
 		});
 		describe("Remove", []() {
-			xit("Can remove", []() {});
+			it("Can remove at index", []() {
+				TInlineArray<i32, 0> data{1, 2, 3, 4};
+
+				// Check invalid inputs
+				AssertThat(data.RemoveAt(-1), Equals(false));
+				AssertThat(data.RemoveAt(4), Equals(false));
+
+				AssertThat(data.RemoveAt(3), Equals(true));    // Remove last
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3}));
+
+				AssertThat(data.RemoveAt(1), Equals(true));    // Remove in the middle
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 3}));
+
+				AssertThat(data.RemoveAt(0), Equals(true));    // remove first
+				AssertThat(data, Equals(TInlineArray<i32, 0>{3}));
+			});
+
+			it("Can remove many at index", []() {
+				TInlineArray<i32, 0> data{1, 2, 3, 4, 5, 6, 7, 8};
+
+				// Check invalid inputs
+				AssertThat(data.RemoveAt(-1, 2), Equals(false));
+				AssertThat(data.RemoveAt(8, 2), Equals(false));
+				AssertThat(data.RemoveAt(7, 2), Equals(false));
+
+				AssertThat(data.RemoveAt(6, 2), Equals(true));    // Remove last
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3, 4, 5, 6}));
+
+				AssertThat(data.RemoveAt(2, 2), Equals(true));    // Remove in the middle
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 5, 6}));
+
+				AssertThat(data.RemoveAt(0, 2), Equals(true));    // Remove first
+				AssertThat(data, Equals(TInlineArray<i32, 0>{5, 6}));
+			});
+
+			it("Can remove swap at index", []() {
+				TInlineArray<i32, 0> data{1, 2, 3, 4, 5};
+
+				// Check invalid inputs
+				AssertThat(data.RemoveAtSwap(-1), Equals(false));
+				AssertThat(data.RemoveAtSwap(5), Equals(false));
+
+				AssertThat(data.RemoveAtSwap(3), Equals(true));    // Remove last
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3, 5}));
+
+				AssertThat(data.RemoveAtSwap(1), Equals(true));    // Remove swapping
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 5, 3}));
+
+				AssertThat(data.RemoveAtSwap(0), Equals(true));    // Remove first
+				AssertThat(data, Equals(TInlineArray<i32, 0>{3, 5}));
+			});
+
+			it("Can remove swap many at index", []() {
+				TInlineArray<i32, 0> data{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+
+				// Check invalid inputs
+				AssertThat(data.RemoveAtSwap(-1, 2), Equals(false));
+				AssertThat(data.RemoveAtSwap(10, 2), Equals(false));
+				AssertThat(data.RemoveAtSwap(9, 2), Equals(false));
+
+				AssertThat(data.RemoveAtSwap(8, 2), Equals(true));    // Remove last
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3, 4, 5, 6, 7, 8}));
+
+				AssertThat(data.RemoveAtSwap(1, 2), Equals(true));    // Removes swapping
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 7, 8, 4, 5, 6}));
+
+				AssertThat(
+				    data.RemoveAtSwap(1, 3), Equals(true));    // Removes swapping with less left
+				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 5, 6}));
+
+				AssertThat(data.RemoveAtSwap(0, 2), Equals(true));    // Remove first
+				AssertThat(data, Equals(TInlineArray<i32, 0>{6}));
+			});
+		});
+
+		it("Can RemoveLast", [&]() {
+			TArray<i32> data{1, 4, 6};
+			data.RemoveLast();
+			AssertThat(data.Size(), Equals(2));
+			AssertThat(data[0], Equals(1));
+			AssertThat(data[1], Equals(4));
+			AssertThat(data.Capacity(), Equals(2));
+		});
+
+		it("Can RemoveLast N", [&]() {
+			TArray<i32> dataA{1, 4, 6};
+			dataA.RemoveLast(2);
+			AssertThat(dataA.Size(), Equals(1));
+			AssertThat(dataA[0], Equals(1));
+			AssertThat(dataA.Capacity(), Equals(1));
+
+			TArray<i32> dataB{1, 4, 6};
+			dataB.RemoveLast(3);
+			AssertThat(dataB.Size(), Equals(0));
+			AssertThat(dataB.Capacity(), Equals(0));
+		});
+
+		it("Can RemoveIf", [&]() {
+			TArray<i32> data{1, 4, 5, 6};
+
+			AssertThat(data.Size(), Equals(4));
+
+			data.RemoveIf([](i32 v) {
+				return v == 1 || v == 6;
+			});
+			AssertThat(data.Size(), Equals(2));
+			AssertThat(data[0], Equals(4));
+			AssertThat(data[1], Equals(5));
+		});
+
+		it("Can RemoveIfSwap", [&]() {
+			TArray<i32> data{1, 4, 5, 6};
+
+			AssertThat(data.Size(), Equals(4));
+
+			data.RemoveIfSwap([](i32 v) {
+				return v == 1 || v == 6;
+			});
+			AssertThat(data.Size(), Equals(2));
+			AssertThat(data[0], Equals(5));
+			AssertThat(data[1], Equals(4));
+		});
+
+		it("Can Sort", [&]() {
+			TArray<i32> data0{34, 1, 5};
+			data0.Sort();    // Default sort is less
+			AssertThat(data0[0], Equals(1));
+			AssertThat(data0[1], Equals(5));
+			AssertThat(data0[2], Equals(34));
+
+			TArray<i32> data1{34, 1, 5};
+			data1.Sort(TGreater<i32>{});
+			AssertThat(data1[0], Equals(34));
+			AssertThat(data1[1], Equals(5));
+			AssertThat(data1[2], Equals(1));
+		});
+
+		it("Can find in AddUniqueSorted", [&]() {
+			TArray<i32> data{1, 5, 5, 34};
+
+			AssertThat(data.AddUniqueSorted(1), Equals(0));
+			AssertThat(data.AddUniqueSorted(5), Equals(1));
+			AssertThat(data.AddUniqueSorted(34), Equals(3));
+			AssertThat(data.Size(), Equals(4));
+		});
+
+		it("Can add in AddUniqueSorted", [&]() {
+			TArray<i32> data{1, 5, 5, 34};
+
+			AssertThat(data.AddUniqueSorted(2), Equals(1));
+			AssertThat(data.Size(), Equals(5));
+
+			AssertThat(data.AddUniqueSorted(6), Equals(4));
+			AssertThat(data.Size(), Equals(6));
+
+			AssertThat(data.AddUniqueSorted(36), Equals(6));
+			AssertThat(data.Size(), Equals(7));
 		});
 	});
 });

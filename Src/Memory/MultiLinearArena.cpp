@@ -14,7 +14,7 @@ namespace p
 		LinearBlock* const lastBlock = freeBlock;
 
 		// Allocate aligning by blockSize
-		void* ptr = p::Alloc(parentArena, blockSize + sizeof(LinearBlock), GetBlockSize());
+		void* ptr = parentArena.Alloc(blockSize + sizeof(LinearBlock), GetBlockSize());
 
 		void* blockPtr       = (u8*)ptr + GetAlignmentPadding(ptr, GetBlockSize());
 		freeBlock            = new (blockPtr) LinearBlock();
@@ -46,7 +46,7 @@ namespace p
 		{
 			block->last->next = block->next;
 		}
-		p::Free(parentArena, block->unaligned, GetAllocatedBlockSize());
+		parentArena.Free(block->unaligned, GetAllocatedBlockSize());
 	}
 
 	template<sizet blockSize>
@@ -94,7 +94,7 @@ namespace p
 		{
 			LinearBlock* const block = freeBlock;
 			freeBlock                = freeBlock->last;
-			p::Free(parentArena, block->unaligned, GetAllocatedBlockSize());
+			parentArena.Free(block->unaligned, GetAllocatedBlockSize());
 		}
 		freeBlock = nullptr;
 	}
@@ -115,7 +115,7 @@ namespace p
 		}
 		else
 		{
-			return p::Alloc(GetParentArena(), size, align);
+			return GetParentArena().Alloc(size, align);
 		}
 	}
 
@@ -135,7 +135,7 @@ namespace p
 		}
 		else
 		{
-			p::Free(GetParentArena(), ptr, size);
+			GetParentArena().Free(ptr, size);
 		}
 	}
 

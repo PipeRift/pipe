@@ -6,6 +6,9 @@
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 
+/// @OPTIMIZE: Try to remove this include
+#include "Pipe/Core/String.h"
+
 
 namespace p
 {

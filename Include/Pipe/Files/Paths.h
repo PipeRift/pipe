@@ -5,9 +5,9 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/Core/View.h"
 #include "Pipe/Export.h"
 #include "Pipe/Files/STDFileSystem.h"
+#include "Pipe/PipeArrays.h"
 
 
 namespace p::files

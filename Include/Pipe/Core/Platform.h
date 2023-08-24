@@ -150,3 +150,36 @@ namespace p
 #		define P_FORCEINLINE inline __attribute__((always_inline))
 #	endif
 #endif
+
+#if defined(__cplusplus) && (__cplusplus >= 201703)
+#	define P_NODISCARD [[nodiscard]]
+#elif (defined(__GNUC__) && (__GNUC__ >= 4)) \
+    || defined(__clang__)    // includes clang, icc, and clang-cl
+#	define P_NODISCARD __attribute__((warn_unused_result))
+#elif defined(_HAS_NODISCARD)
+#	define P_NODISCARD _NODISCARD
+#elif (_MSC_VER >= 1700)
+#	define P_NODISCARD _Check_return_
+#else
+#	define P_NODISCARD
+#endif
+
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#	if defined(__MINGW32__)
+#		define P_RESTRICT
+#		define P_ATTR_MALLOC __attribute__((malloc))
+#	else
+#		if (_MSC_VER >= 1900) && !defined(__EDG__)
+#			define P_RESTRICT __declspec(allocator) __declspec(restrict)
+#		else
+#			define P_RESTRICT __declspec(restrict)
+#		endif
+#		define P_ATTR_MALLOC
+#	endif
+#elif defined(__GNUC__)    // includes clang and icc
+#	define P_RESTRICT
+#	define P_ATTR_MALLOC __attribute__((malloc))
+#else
+#	define P_RESTRICT
+#	define P_ATTR_MALLOC
+#endif

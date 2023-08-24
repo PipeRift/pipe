@@ -78,7 +78,6 @@
 #define NOINLINE __attribute__((noinline))
 
 #include "Pipe/Memory/STLAllocator.h"
-#include "Pipe/Memory/ArenaAllocator.h"
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
@@ -727,7 +726,7 @@ struct ResolvedTrace : public Trace {
 /*************** STACK TRACE ***************/
 
 // default implemention.
-template<typename Allocator, typename TAG>
+template<typename TAG>
 class StackTraceImpl {
 public:
   size_t size() const { return 0; }
@@ -787,9 +786,10 @@ private:
 };
 
 
-template <typename Allocator>
 class StackTraceImplHolder : public StackTraceImplBase {
 public:
+  StackTraceImplHolder(p::Arena& arena) : _stacktrace{p::STLAllocator<void*>(arena)} {}
+
   size_t size() const {
     return (_stacktrace.size() >= skip_n_firsts())
                ? _stacktrace.size() - skip_n_firsts()
@@ -809,7 +809,7 @@ public:
   }
 
 protected:
-  std::vector<void *, p::STLAllocator<void*, Allocator>> _stacktrace;
+  std::vector<void *, p::STLAllocator<void*>> _stacktrace;
 };
 
 #if BACKWARD_HAS_UNWIND == 1
@@ -870,10 +870,11 @@ template <typename F> size_t unwind(F f, size_t depth) {
 
 } // namespace details
 
-template <typename Allocator>
-class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
-  using Super = StackTraceImplHolder<Allocator>;
+template <>
+class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+  using Super = StackTraceImplHolder;
 public:
+  using StackTraceImplHolder::StackTraceImplHolder;
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
@@ -915,10 +916,11 @@ private:
 
 #elif BACKWARD_HAS_LIBUNWIND == 1
 
-template <typename Allocator>
-class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
-  using Super = StackTraceImplHolder<Allocator>;
+template <>
+class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+  using Super = StackTraceImplHolder;
 public:
+  using StackTraceImplHolder::StackTraceImplHolder;
   __attribute__((noinline)) size_t load_here(size_t depth = 32,
                                              void *_context = nullptr,
                                              void *_error_addr = nullptr) {
@@ -1093,10 +1095,11 @@ public:
 
 #elif defined(BACKWARD_HAS_BACKTRACE)
 
-template <typename Allocator>
-class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
-  using Super = StackTraceImplHolder<Allocator>;
+template <>
+class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+  using Super = StackTraceImplHolder;
 public:
+  using StackTraceImplHolder::StackTraceImplHolder;
   NOINLINE
   size_t load_here(size_t depth = 32, void *context = nullptr,
                    void *error_addr = nullptr) {
@@ -1132,10 +1135,11 @@ public:
 
 #elif defined(BACKWARD_SYSTEM_WINDOWS)
 
-template <typename Allocator>
-class StackTraceImpl<Allocator, system_tag::current_tag> : public StackTraceImplHolder<Allocator> {
-  using Super = StackTraceImplHolder<Allocator>;
+template <>
+class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
+  using Super = StackTraceImplHolder;
 public:
+  using StackTraceImplHolder::StackTraceImplHolder;
   // We have to load the machine type from the image info
   // So we first initialize the resolver, and it tells us this info
   void set_machine_type(DWORD machine_type) { machine_type_ = machine_type; }
@@ -1231,8 +1235,10 @@ private:
 
 #endif
 
-template<typename Allocator = p::ArenaAllocator>
-class StackTrace : public StackTraceImpl<Allocator, system_tag::current_tag> {};
+class StackTrace : public StackTraceImpl<system_tag::current_tag>
+{
+  using StackTraceImpl<system_tag::current_tag>::StackTraceImpl;
+};
 
 /*************** TRACE RESOLVER ***************/
 
@@ -4458,7 +4464,7 @@ private:
     // in the constructor of TraceResolver
     Printer printer;
 
-    StackTrace<> st;
+    StackTrace st{p::GetCurrentArena()};
     st.set_machine_type(printer.resolver().machine_type());
     st.set_thread_handle(thread_handle());
     st.load_here(32 + skip_frames, ctx());

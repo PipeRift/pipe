@@ -10,40 +10,37 @@ namespace p
 	class NativeType;
 
 
-	namespace reflection
+	template<typename T>
+	struct TStaticEnumInitializer
 	{
-		template<typename T>
-		struct TStaticEnumInitializer
-		{
-			static constexpr bool enabled = false;
-			static const TFunction<EnumType*()> onInit;
-		};
+		static constexpr bool enabled = false;
+		static const TFunction<EnumType*()> onInit;
+	};
 
-		template<typename T>
-		inline const TFunction<EnumType*()> TStaticEnumInitializer<T>::onInit{};
+	template<typename T>
+	inline const TFunction<EnumType*()> TStaticEnumInitializer<T>::onInit{};
 
 
-		template<typename T>
-		struct TStaticNativeInitializer
-		{
-			static constexpr bool enabled = false;
-			static const TFunction<NativeType*()> onInit;
-		};
+	template<typename T>
+	struct TStaticNativeInitializer
+	{
+		static constexpr bool enabled = false;
+		static const TFunction<NativeType*()> onInit;
+	};
 
-		template<typename T>
-		inline const TFunction<NativeType*()> TStaticNativeInitializer<T>::onInit{};
-	}    // namespace reflection
+	template<typename T>
+	inline const TFunction<NativeType*()> TStaticNativeInitializer<T>::onInit{};
 
 
 	template<typename T>
 	inline constexpr bool IsReflectedEnum()
 	{
-		return reflection::TStaticEnumInitializer<T>::enabled;
+		return TStaticEnumInitializer<T>::enabled;
 	}
 
 	template<typename T>
 	inline constexpr bool IsReflectedNative()
 	{
-		return reflection::TStaticNativeInitializer<T>::enabled;
+		return TStaticNativeInitializer<T>::enabled;
 	}
 }    // namespace p

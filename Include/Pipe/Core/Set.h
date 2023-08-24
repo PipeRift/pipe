@@ -13,9 +13,9 @@
 #include <type_traits>
 
 
-namespace p::core
+namespace p
 {
-	template<typename Type, typename Allocator = ArenaAllocator>
+	template<typename Type>
 	class TSet
 	{
 		// static_assert(std::is_nothrow_move_constructible<Value>::value ||
@@ -23,12 +23,11 @@ namespace p::core
 		//    "Value type must be nothrow move constructible and/or copy constructible.");
 
 	public:
-		template<typename OtherType, typename OtherAllocator>
+		template<typename OtherType>
 		friend class TSet;
 
-		using AllocatorType = Allocator;
-		using HashSetType =
-		    tsl::sparse_set<Type, Hash<Type>, std::equal_to<Type>, STLAllocator<Type, Allocator>>;
+		using Allocator   = STLAllocator<Type>;
+		using HashSetType = tsl::sparse_set<Type, Hash<Type>, std::equal_to<Type>, Allocator>;
 
 		using Iterator      = typename HashSetType::iterator;
 		using ConstIterator = typename HashSetType::const_iterator;
@@ -39,13 +38,16 @@ namespace p::core
 
 
 	public:
-		TSet() = default;
-		TSet(u32 defaultSize) : set(defaultSize) {}
-		TSet(const Type& item) : set{}
+		TSet(Arena& arena = GetCurrentArena()) : set{Allocator{arena}} {}
+		TSet(u32 defaultSize, Arena& arena = GetCurrentArena()) : set(defaultSize, Allocator{arena})
+		{}
+		TSet(const Type& item, Arena& arena = GetCurrentArena()) : TSet{arena}
 		{
 			Insert(item);
 		}
-		TSet(std::initializer_list<Type> initList) : set{initList.begin(), initList.end()} {}
+		TSet(std::initializer_list<Type> initList, Arena& arena = GetCurrentArena())
+		    : set{initList.begin(), initList.end(), 0, Allocator{arena}}
+		{}
 
 		TSet(TSet&& other) noexcept            = default;
 		TSet(const TSet& other)                = default;
@@ -257,9 +259,4 @@ namespace p::core
 			set = Move(other.set);
 		}
 	};
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

@@ -566,7 +566,6 @@ namespace p::files
 
 	const TChar* FindExtension(const TChar* const first, const TChar* const last)
 	{
-		const sizet size           = last - first;
 		const TChar* filenameFirst = FindFilename(first, last);
 		const sizet filenameSize   = last - filenameFirst;
 
@@ -914,7 +913,7 @@ namespace p::files
 
 	String ToString(const Path& path)
 	{
-		return path.string<TChar, std::char_traits<TChar>, STLAllocator<TChar>>();
+		return path.string<TChar, std::char_traits<TChar>, std::allocator<TChar>>();
 	}
 
 	Path ToPath(StringView pathStr)

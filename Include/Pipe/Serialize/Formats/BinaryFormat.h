@@ -1,8 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/String.h"
-#include "Pipe/Core/View.h"
+#include "Pipe/PipeArraysFwd.h"
 #include "Pipe/Serialize/Formats/TFormat.h"
 
 
@@ -40,10 +39,7 @@ namespace p
 
 		PIPE_API bool IsObject() const override;
 		PIPE_API bool IsArray() const override;
-		PIPE_API bool IsValid() const override
-		{
-			return data.Data() && !data.IsEmpty();
-		}
+		PIPE_API bool IsValid() const override;
 	};
 
 	struct BinaryFormatWriter : public TFormatWriter<SerializeFormat::Binary>

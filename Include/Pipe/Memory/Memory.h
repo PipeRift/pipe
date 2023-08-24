@@ -73,7 +73,7 @@ namespace p
 
 
 	PIPE_API void MoveMem(void* dest, void* src, sizet size);
-	PIPE_API void CopyMem(void* dest, void* src, sizet size);
+	PIPE_API void CopyMem(void* dest, const void* src, sizet size);
 	PIPE_API void SwapMem(void* a, void* b, sizet size);
 	PIPE_API void SetMem(void* dest, u8 value, sizet size);
 	PIPE_API void SetZeroMem(void* dest, sizet size);
@@ -96,8 +96,7 @@ namespace p
 	template<typename T>
 	constexpr void ConstructItems(T* data, sizet count)
 	{
-		if constexpr (!std::is_constant_evaluated()
-		              && Internal::TIsMemsetZeroConstructible<T>::value)
+		if (!std::is_constant_evaluated() && Internal::TIsMemsetZeroConstructible<T>::value)
 		{
 			SetMem(data, 0, count * sizeof(T));
 		}
@@ -116,7 +115,7 @@ namespace p
 	template<typename T>
 	constexpr void ConstructItems(T* data, sizet count, const T& value)
 	{
-		if constexpr (!std::is_constant_evaluated())
+		if (!std::is_constant_evaluated())
 		{
 			if constexpr (Internal::TIsMemsetValueConstructible<T>::value)
 			{
@@ -145,7 +144,7 @@ namespace p
 	template<typename T, bool destroySourceInPlace = false>
 	constexpr void CopyConstructItems(T* data, sizet count, const T* values)
 	{
-		if constexpr (!std::is_constant_evaluated() && IsTriviallyCopyConstructible<T>)
+		if (!std::is_constant_evaluated() && IsTriviallyCopyConstructible<T>)
 		{
 			CopyMem(data, values, count * sizeof(T));
 		}
@@ -168,7 +167,7 @@ namespace p
 	template<typename T, bool destroySourceInPlace = false>
 	constexpr void MoveConstructItems(T* data, sizet count, T* values)
 	{
-		if constexpr (!std::is_constant_evaluated() && IsTriviallyMoveConstructible<T>)
+		if (!std::is_constant_evaluated() && IsTriviallyMoveConstructible<T>)
 		{
 			MoveMem(data, values, count * sizeof(T));
 		}
@@ -204,7 +203,7 @@ namespace p
 	template<typename T, bool destroySourceInPlace = false>
 	constexpr void CopyItems(T* dest, sizet count, const T* src)
 	{
-		if constexpr (!std::is_constant_evaluated() && IsTriviallyCopyAssignable<T>)
+		if (!std::is_constant_evaluated() && IsTriviallyCopyAssignable<T>)
 		{
 			CopyMem(dest, src, count * sizeof(T));
 		}
@@ -225,24 +224,44 @@ namespace p
 	}
 
 	template<typename T, bool destroySourceInPlace = false>
-	constexpr void MoveItems(T* dest, sizet count, const T* src)
+	constexpr void MoveItems(T* dest, sizet count, T* source)
 	{
-		if constexpr (!std::is_constant_evaluated() && IsTriviallyMoveAssignable<T>)
+		if (!std::is_constant_evaluated() && IsTriviallyMoveAssignable<T>)
 		{
-			MoveMem(dest, src, count * sizeof(T));
+			MoveMem(dest, source, count * sizeof(T));
 		}
 		else
 		{
-			const T* const end = src + count;
-			while (src < end)
+			const T* const end = source + count;
+			while (source < end)
 			{
-				*dest = Move(*src);
+				*dest = Forward<T>(*source);
 				if constexpr (destroySourceInPlace)
 				{
-					src->T::~T();
+					source->T::~T();
 				}
-				++src;
+				++source;
 				++dest;
+			}
+		}
+	}
+
+	// Move items [source, source + count) backwards to [..., dest)
+	template<typename T>
+	void MoveItemsBackwards(T* dest, sizet count, T* source)
+	{
+		T* last = source + count;
+		if (!std::is_constant_evaluated() && IsTriviallyMoveAssignable<T>)
+		{
+			// MoveMem (or std::memmove) is safe in overlapping memory
+			const sizet byteCount = count * sizeof(T);
+			p::MoveMem(dest - byteCount, source, byteCount);
+		}
+		else
+		{
+			while (last != source)
+			{
+				*--dest = Forward<T>(*--last);
 			}
 		}
 	}
@@ -250,7 +269,7 @@ namespace p
 	template<typename T>
 	constexpr void DestroyItems(T* data, sizet count)
 	{
-		if constexpr (!std::is_constant_evaluated() && IsTriviallyDestructible<T>)
+		if (!std::is_constant_evaluated() && IsTriviallyDestructible<T>)
 		{
 			// Do nothing. No destruction needed.
 		}

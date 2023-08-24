@@ -261,7 +261,11 @@ namespace p
 
 
 	BasePool::BasePool(const BasePool& other)
-	    : arena{other.arena}, deletionPolicy{other.deletionPolicy}, context{other.context}
+	    : idIndices{*other.arena}
+	    , idList{*other.arena}
+	    , arena{other.arena}
+	    , deletionPolicy{other.deletionPolicy}
+	    , context{other.context}
 	{
 		BindOnPageAllocated();
 		idList.Reserve(other.idList.Size());
@@ -330,13 +334,12 @@ namespace p
 	void BasePool::PopSwapId(Id id)
 	{
 		i32& idIndex = idIndices[GetIdIndex(id)];
-		if (idList.RemoveAtSwapUnsafe(idIndex)) [[likely]]
-		{
-			i32& lastIndex = idIndices[GetIdIndex(idList.Last())];
-			// Move last element to current index
-			idIndex   = lastIndex;
-			lastIndex = NO_INDEX;
-		}
+		idList.RemoveAtSwapUnsafe(idIndex);
+
+		i32& lastIndex = idIndices[GetIdIndex(idList.Last())];
+		// Move last element to current index
+		idIndex   = lastIndex;
+		lastIndex = NO_INDEX;
 	}
 
 	void BasePool::ClearIds()
@@ -489,11 +492,11 @@ namespace p
 		}
 	}
 
-	void* EntityContext::AddDefaulted(TypeId typeId, Id id)
+	void* EntityContext::AddDefault(TypeId typeId, Id id)
 	{
 		if (BasePool* pool = GetPool(typeId))
 		{
-			return pool->AddDefaulted(id);
+			return pool->AddDefault(id);
 		}
 		return nullptr;
 	}
@@ -608,7 +611,7 @@ namespace p
 		{
 			return statics[index];
 		}
-		statics.Insert(index, {});
+		statics.Insert(index);
 		if (bAdded)
 			*bAdded = true;
 		return statics[index];
@@ -947,7 +950,7 @@ namespace p
 
 		auto& childrenList  = access.GetOrAdd<CParent>(parent).children;
 		const i32 prevIndex = childrenList.FindIndex(prevChild);
-		childrenList.InsertRange(prevIndex, children);
+		childrenList.Insert(prevIndex, children);
 	}
 
 	void TransferChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
@@ -994,7 +997,7 @@ namespace p
 
 				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
-					cParent->children.RemoveMany(children);
+					cParent->children.Remove(children);
 				}
 			}
 		}
@@ -1010,7 +1013,7 @@ namespace p
 
 				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
-					cParent->children.RemoveMany(children);
+					cParent->children.Remove(children);
 					if (cParent->children.IsEmpty())
 					{
 						access.Remove<CParent>(parent);
@@ -1138,7 +1141,7 @@ namespace p
 	{
 		outParents.Clear(false);
 
-		TArray<Id> children{childrenIds.begin(), childrenIds.Size()};
+		TArray<Id> children{childrenIds.begin(), childrenIds.end()};
 		TArray<Id> parents;
 
 		while (children.Size() > 0)
@@ -1167,7 +1170,7 @@ namespace p
 	{
 		outParents.Clear(false);
 
-		TArray<Id> children{childrenIds.begin(), childrenIds.Size()};
+		TArray<Id> children{childrenIds};
 		TArray<Id> parents;
 
 		while (children.Size() > 0)

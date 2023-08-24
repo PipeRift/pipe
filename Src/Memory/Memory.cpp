@@ -15,7 +15,7 @@ namespace p
 	{
 		memmove(dest, src, size);
 	}
-	void CopyMem(void* dest, void* src, sizet size)
+	void CopyMem(void* dest, const void* src, sizet size)
 	{
 		memcpy(dest, src, size);
 	}

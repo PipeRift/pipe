@@ -1,26 +1,25 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Tag.h"
 #include "Pipe/Reflect/Builders/StaticInitializers.h"
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 #include "Pipe/Reflect/NativeType.h"
 #include "Pipe/Reflect/TypeId.h"
+#include "Pipe/Reflect/TypeName.h"
 #include "Pipe/Reflect/TypeRegistry.h"
 
 
-#define REFLECT_NATIVE_TYPE(type)                                                                 \
-	template<>                                                                                    \
-	struct p::reflection::TStaticNativeInitializer<type>                                          \
-	{                                                                                             \
-		static constexpr bool enabled = true;                                                     \
-		static const p::TFunction<p::Type*()> onInit;                                             \
-	};                                                                                            \
-	inline const p::TFunction<p::Type*()> p::reflection::TStaticNativeInitializer<type>::onInit = \
-	    []() {                                                                                    \
-		p::TNativeTypeBuilder<type> builder{};                                                    \
-		builder.BeginBuild();                                                                     \
-		return builder.GetType();                                                                 \
+#define REFLECT_NATIVE_TYPE(type)                                                            \
+	template<>                                                                               \
+	struct p::TStaticNativeInitializer<type>                                                 \
+	{                                                                                        \
+		static constexpr bool enabled = true;                                                \
+		static const p::TFunction<p::Type*()> onInit;                                        \
+	};                                                                                       \
+	inline const p::TFunction<p::Type*()> p::TStaticNativeInitializer<type>::onInit = []() { \
+		p::TNativeTypeBuilder<type> builder{};                                               \
+		builder.BeginBuild();                                                                \
+		return builder.GetType();                                                            \
 	};
 
 

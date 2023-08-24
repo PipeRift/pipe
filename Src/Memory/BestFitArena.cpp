@@ -59,11 +59,10 @@ namespace p
 
 	BestFitArena::BestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
-		Interface<BestFitArena, &BestFitArena::Alloc, &BestFitArena::Alloc, &BestFitArena::Realloc,
-		    &BestFitArena::Free>();
+		Interface<BestFitArena>();
 
 		assert(initialSize > 0);
-		block.data = p::Alloc(GetParentArena(), initialSize);
+		block.data = GetParentArena().Alloc(initialSize);
 		block.size = initialSize;
 		// Set address at end of block. Size is 0
 		// freeSlots.SetData(static_cast<u8*>(block.GetData()) + block.Size());
@@ -132,7 +131,7 @@ namespace p
 		if (pendingSort) [[unlikely]]
 		{
 			pendingSort = false;
-			if (float(freeSlots.Size()) / freeSlots.Capacity() < 0.1f)
+			if ((float(freeSlots.Size()) / freeSlots.Capacity()) < 0.1f)
 			{
 				// Dont shrink until there is 90% of unused space
 				freeSlots.Shrink();

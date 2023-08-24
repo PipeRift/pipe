@@ -20,7 +20,7 @@ namespace p
 		}
 
 		// Allocation doesn't fit. Allocate in parent arena
-		return p::Alloc(GetParentArena(), size, align);
+		return GetParentArena().Alloc(size, align);
 	}
 
 	void MonoLinearArena::Free(void* ptr, sizet size)
@@ -35,7 +35,7 @@ namespace p
 		}
 		else
 		{
-			p::Free(GetParentArena(), ptr, size);
+			GetParentArena().Free(ptr, size);
 		}
 	}
 
@@ -46,7 +46,7 @@ namespace p
 		if (selfAllocated && !keepIfSelfAllocated)
 		{
 			// Self allcoated block gets freed
-			p::Free(GetParentArena(), block.data, block.size);
+			GetParentArena().Free(block.data, block.size);
 			block = {};
 		}
 	}

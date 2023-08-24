@@ -1,17 +1,15 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Broadcast.h"
 #include "Pipe/Core/PageBuffer.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/TypeList.h"
 #include "Pipe/Core/TypeTraits.h"
-#include "Pipe/Core/View.h"
 #include "Pipe/Memory/UniquePtr.h"
+#include "Pipe/PipeArrays.h"
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
 #include "Pipe/Reflect/Struct.h"
-#include "Pipe/Serialize/Serialization.h"
 
 
 namespace p
@@ -353,9 +351,12 @@ namespace p
 		TBroadcast<EntityContext&, TView<const Id>> onRemove;
 
 
-		BasePool(
-		    EntityContext& ast, DeletionPolicy deletionPolicy, Arena& arena = GetCurrentArena())
-		    : arena{&arena}, context{&ast}, deletionPolicy{deletionPolicy}
+		BasePool(EntityContext& ast, DeletionPolicy deletionPolicy, Arena& arena)
+		    : idIndices{arena}
+		    , idList{arena}
+		    , arena{&arena}
+		    , context{&ast}
+		    , deletionPolicy{deletionPolicy}
 		{
 			BindOnPageAllocated();
 		}
@@ -379,7 +380,7 @@ namespace p
 		// Returns the data pointer of a component if contianed
 		virtual void* TryGetVoid(Id id) = 0;
 
-		virtual void* AddDefaulted(Id id)              = 0;
+		virtual void* AddDefault(Id id)                = 0;
 		virtual bool Remove(Id id)                     = 0;
 		virtual void RemoveUnsafe(Id id)               = 0;
 		virtual i32 Remove(TView<const Id> ids)        = 0;
@@ -504,18 +505,18 @@ namespace p
 	i32 GetSmallestPool(TView<const BasePool*> pools);
 
 
-	template<typename T, typename Allocator = ArenaAllocator>
+	template<typename T>
 	struct TPool : public BasePool
 	{
-		using AllocatorType = Allocator;
-
 	private:
-		TPageBuffer<T, 1024, AllocatorType> data;
+		TPageBuffer<T, 1024> data;
 
 
 	public:
-		TPool(EntityContext& ast) : BasePool(ast, DeletionPolicy::InPlace), data{} {}
-		TPool(const TPool& other) : BasePool(other)
+		TPool(EntityContext& ast, Arena& arena = GetCurrentArena())
+		    : BasePool(ast, DeletionPolicy::InPlace, arena), data{arena}
+		{}
+		TPool(const TPool& other) : BasePool(other), data{*other.arena}
 		{
 			if constexpr (!p::IsEmpty<T>)
 			{
@@ -543,7 +544,7 @@ namespace p
 			Clear();
 		}
 
-		void* AddDefaulted(Id id) override
+		void* AddDefault(Id id) override
 		{
 			if constexpr (p::IsEmpty<T>)
 			{
@@ -939,7 +940,7 @@ namespace p
 		void Destroy(TView<const Id> ids);
 
 		// Reflection helpers
-		void* AddDefaulted(TypeId typeId, Id id);
+		void* AddDefault(TypeId typeId, Id id);
 		void Remove(TypeId typeId, Id id);
 
 		// Adds Component to an entity (if the entity doesnt have it already)

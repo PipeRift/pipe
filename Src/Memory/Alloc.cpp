@@ -2,10 +2,8 @@
 
 #include "Pipe/Memory/Alloc.h"
 
-#include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Profiler.h"
 #include "Pipe/Memory/Arena.h"
-#include "Pipe/Memory/BigBestFitArena.h"
 #include "Pipe/Memory/HeapArena.h"
 #include "Pipe/Memory/MemoryStats.h"
 
@@ -20,12 +18,12 @@ namespace p
 
 	void* HeapAlloc(sizet size)
 	{
-		void* const ptr = std::malloc(size);
+		void* const ptr = malloc(size);
 #if P_DEBUG
 		// FIX: Profiler reports alloc gets called frequently twice with the same pointer. Seems
 		// related to allocators
-		// TracyAllocS(ptr, size, 12);
-		// GetHeapStats()->Add(ptr, size);
+		// TracyAllocS(ptr, size, 10);
+		GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
 	}
@@ -34,12 +32,13 @@ namespace p
 	{
 #if P_PLATFORM_WINDOWS
 		// TODO: Windows needs _aligned_free in order to use _aligned_alloc()
-		void* const ptr = std::malloc(size);
+		void* const ptr = malloc(size);
 #else
-		void* const ptr = std::aligned_alloc(align, size);
+		void* const ptr = aligned_alloc(align, size);
 #endif
 #if P_DEBUG
-		// GetHeapStats()->Add(ptr, size);
+		// TracyAllocS(ptr, size, 10);
+		GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
 	}
@@ -47,11 +46,13 @@ namespace p
 	void* HeapRealloc(void* ptr, sizet size)
 	{
 #if P_DEBUG
-		// GetHeapStats()->Remove(ptr);
+		GetHeapStats()->Remove(ptr);
+		// TracyFreeS(ptr, 10);
 #endif
-		ptr = std::realloc(ptr, size);
+		ptr = realloc(ptr, size);
 #if P_DEBUG
-		// GetHeapStats()->Add(ptr, size);
+		// TracyAllocS(ptr, size, 10);
+		GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
 	}
@@ -59,9 +60,10 @@ namespace p
 	void HeapFree(void* ptr)
 	{
 #if P_DEBUG
-		// GetHeapStats()->Remove(ptr);
+		// TracyFreeS(ptr, 10);
+		GetHeapStats()->Remove(ptr);
 #endif
-		std::free(ptr);
+		free(ptr);
 	}
 
 
