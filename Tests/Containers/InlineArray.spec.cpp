@@ -1,5 +1,6 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
+#include <bandit/assertion_frameworks/snowhouse/exceptions.h>
 #include <bandit/bandit.h>
 #include <Pipe/PipeContainers.h>
 
@@ -285,7 +286,7 @@ go_bandit([]() {
 				AssertThat(data.Data(), !Equals(data.GetInlineBuffer()));
 			});
 
-			it("Can add by move", [&]() {
+			it("Can add value by move", [&]() {
 				TInlineArray<MoveType, 0> data;
 				MoveType tmp{2};
 				data.Add(Move(tmp));
@@ -295,7 +296,7 @@ go_bandit([]() {
 				AssertThat(data[1].value, Equals(3));
 			});
 
-			it("Can add by copy", [&]() {
+			it("Can add value by copy", [&]() {
 				TInlineArray<i32, 0> data;
 				i32 tmp = 2;
 				data.Add(tmp);
@@ -334,10 +335,26 @@ go_bandit([]() {
 				AssertThat(data[1], Equals(234));
 				data.Append(0, 234);
 				AssertThat(data.Size(), Equals(2));
-				data.Append(2, 234);
+				data.Append(2, 235);
 				AssertThat(data.Size(), Equals(4));
-				AssertThat(data[2], Equals(234));
-				AssertThat(data[3], Equals(234));
+				AssertThat(data[2], Equals(235));
+				AssertThat(data[3], Equals(235));
+			});
+
+			it("Can assign multiple values", [&]() {
+				TInlineArray<i32, 0> data;
+				i32 buffer[]{24, 53};
+				i32 buffer2[]{74, 51};
+				data.Append(2, buffer);
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(24));
+				AssertThat(data[1], Equals(53));
+				data.Append(0, nullptr);
+				AssertThat(data.Size(), Equals(2));
+				data.Append(2, buffer2);
+				AssertThat(data.Size(), Equals(4));
+				AssertThat(data[2], Equals(74));
+				AssertThat(data[3], Equals(51));
 			});
 
 			it("Can append to dynamic", [&]() {
@@ -347,13 +364,110 @@ go_bandit([]() {
 				AssertThat(data.Size(), Equals(2));
 				AssertThat(data[0], Equals(33));
 				AssertThat(data[1], Equals(33));
+				AssertThat(data.Data(), !Equals(data.GetInlineBuffer()));
+			});
+
+			it("Can assign to inline", [&]() {
+				TInlineArray<i32, 4> data;
+				data.Reserve(2);    // Reserve because we are not testing reallocation here
+				data.Append(2, 33);
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(33));
+				AssertThat(data[1], Equals(33));
+				AssertThat(data.Data(), Equals(data.GetInlineBuffer()));
 			});
 		});
 		describe("Assign", []() {
-			xit("Can assign", []() {});
+			it("Can assign defaulted", [&]() {
+				TInlineArray<i32, 0> data;
+				data.Assign(2);
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(0));
+				AssertThat(data[1], Equals(0));
+				data.Assign(0);
+				AssertThat(data.Size(), Equals(0));
+				data.Assign(2);
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(0));
+				AssertThat(data[1], Equals(0));
+			});
+
+			it("Can assign value", [&]() {
+				TInlineArray<i32, 0> data;
+				data.Assign(2, 234);
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(234));
+				AssertThat(data[1], Equals(234));
+				data.Assign(0, 234);
+				AssertThat(data.Size(), Equals(0));
+				data.Assign(2, 235);
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(235));
+				AssertThat(data[1], Equals(235));
+			});
+
+			it("Can assign multiple values", [&]() {
+				TInlineArray<i32, 0> data;
+				i32 buffer[]{24, 53};
+				i32 buffer2[]{74, 51};
+				data.Assign(2, buffer);
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(24));
+				AssertThat(data[1], Equals(53));
+				data.Assign(0, nullptr);
+				AssertThat(data.Size(), Equals(0));
+				data.Assign(2, buffer2);
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(74));
+				AssertThat(data[1], Equals(51));
+			});
+
+			it("Can assign to dynamic", [&]() {
+				TInlineArray<i32, 0> data;
+				data.Reserve(2);    // Reserve because we are not testing reallocation here
+				data.Assign(2, 33);
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(33));
+				AssertThat(data[1], Equals(33));
+				AssertThat(data.Data(), !Equals(data.GetInlineBuffer()));
+			});
+
+			it("Can assign to inline", [&]() {
+				TInlineArray<i32, 4> data;
+				data.Reserve(2);    // Reserve because we are not testing reallocation here
+				data.Assign(2, 33);
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(33));
+				AssertThat(data[1], Equals(33));
+				AssertThat(data.Data(), Equals(data.GetInlineBuffer()));
+			});
 		});
 		describe("Insert", []() {
-			xit("Can insert", []() {});
+			it("Can insert at empty", [&]() {
+				TInlineArray<i32, 0> data;
+				data.Insert(0, 12);
+				AssertThat(data.Size(), Equals(1));
+				AssertThat(data[0], Equals(12));
+
+				data.Insert(0, 21);
+				AssertThat(data.Size(), Equals(1));
+				AssertThat(data[0], Equals(21));
+			});
+
+			it("Can insert at end", [&]() {
+				TInlineArray<i32, 0> data{12, 34};
+				data.Insert(3, 12);
+				AssertThat(data.Size(), Equals(1));
+				AssertThat(data[0], Equals(12));
+			});
+
+			it("Can insert to inline", [&]() {
+				TInlineArray<i32, 4> data;
+				data.Insert(0, 12);
+				data.Insert(0, 21);
+				AssertThat(data.Size(), Equals(1));
+				AssertThat(data[0], Equals(12));
+			});
 		});
 		describe("Remove", []() {
 			xit("Can remove", []() {});

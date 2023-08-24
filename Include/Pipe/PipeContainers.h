@@ -784,7 +784,7 @@ namespace p
 			AddUninitialized(count);
 			ConstructItems(data + firstIndex, count);
 		}
-		void Append(i32 count, const Type& value)
+		void Append(const Type& value, i32 count)
 		{
 			const i32 firstIndex = size;
 			AddUninitialized(count);
@@ -812,7 +812,7 @@ namespace p
 			size = count;
 			ConstructItems(data, count);
 		}
-		void Assign(i32 count, const Type& value)
+		void Assign(const Type& value, i32 count)
 		{
 			Clear(false);
 			Reserve(count);
@@ -838,10 +838,15 @@ namespace p
 		// TODO
 		void Insert(i32 atIndex, Type&& value)
 		{
-			InsertUninitialized(atIndex, count);
-			MoveConstructItems(data + atIndex, count, Forward<Type>(value));
+			InsertUninitialized(atIndex, 1);
+			MoveConstructItems(data + atIndex, 1, Forward<Type>(value));
 		}
 		void Insert(i32 atIndex, const Type& value)
+		{
+			InsertUninitialized(atIndex, 1);
+			CopyConstructItems(data + atIndex, 1, value);
+		}
+		void Insert(i32 atIndex, const Type& value, i32 count)
 		{
 			InsertUninitialized(atIndex, count);
 			CopyConstructItems(data + atIndex, count, value);
