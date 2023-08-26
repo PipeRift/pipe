@@ -52,9 +52,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Init Submodules
-        uses: snickerbockers/submodules-init@v4
+        with:
+          submodules: 'recursive'
 
       - name: Get CMake
         uses: lukka/get-cmake@latest
@@ -65,7 +64,7 @@ jobs:
       - name: Cache Clang
         if: ${{ matrix.compiler == 'clang' }}
         id: cache-llvm
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ runner.temp }}/llvm
           key: llvm-15.0-${{ matrix.os-name }}
@@ -79,7 +78,7 @@ jobs:
 
 
       - name: Cache Build
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: Build
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
