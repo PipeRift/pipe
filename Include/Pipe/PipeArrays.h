@@ -1354,8 +1354,8 @@ namespace p
 
 		constexpr i32 GetGrownCapacity(i32 newSize)
 		{
-			static constexpr double exponentialFactor = 1.6;
-			const i32 desiredCapacity                 = i32(capacity * exponentialFactor);
+			constexpr double exponentialFactor = 1.6;
+			const i32 desiredCapacity          = i32(capacity * exponentialFactor);
 			return p::math::Max(desiredCapacity, newSize);
 		}
 

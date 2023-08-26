@@ -28,29 +28,50 @@ namespace p
 		TFunction<ResizeSignature> doRealloc;
 		TFunction<FreeSignature> doFree;
 
+
+		template<typename T>
+		static consteval bool ImplementsAlloc()
+		{
+			return (void* (T::*)(sizet size))(&T::Alloc)
+			    != (void* (T::*)(sizet size))(&Arena::Alloc);
+		}
+		template<typename T>
+		static consteval bool ImplementsAllocAligned()
+		{
+			return (void* (T::*)(sizet size, sizet align))(&T::Alloc)
+			    != (void* (T::*)(sizet size, sizet align))(&Arena::Alloc);
+		}
+		template<typename T>
+		static consteval bool ImplementsRealloc()
+		{
+			return &T::Realloc != &Arena::Realloc;
+		}
+		template<typename T>
+		static consteval bool ImplementsFree()
+		{
+			return &T::Free != &Arena::Free;
+		}
+
 	protected:
 
 		template<Derived<Arena, false> T>
 		void Interface()
 		{
 			doAlloc = [](Arena* self, sizet size) {
-				static_assert(
-				    (void* (T::*)(sizet))(&T::Alloc) != (void* (T::*)(sizet))(&Arena::Alloc)
-				    && "Alloc is not implemented");
+				static_assert(ImplementsAlloc<T>() && "Alloc is not implemented");
 				return static_cast<T*>(self)->Alloc(size);
 			};
 			doAllocAligned = [](Arena* self, sizet size, sizet align) {
-				static_assert((void* (T::*)(sizet, sizet))(&T::Alloc)
-				                  != (void* (T::*)(sizet, sizet))(&Arena::Alloc)
-				              && "Alloc(aligned) is not implemented");
+				static_assert(ImplementsAllocAligned<T>() && "Alloc (aligned) is not implemented");
 				return static_cast<T*>(self)->Alloc(size, align);
 			};
 			doRealloc = [](Arena* self, void* ptr, sizet ptrSize, sizet size) {
-				static_assert(&T::Realloc != &Arena::Realloc);
+				static_assert(ImplementsRealloc<T>() && "Realloc is not implemented");
 				return static_cast<T*>(self)->Realloc(ptr, ptrSize, size);
 			};
 			doFree = [](Arena* self, void* ptr, sizet size) {
 				static_assert(&T::Free != &Arena::Free);
+				static_assert(ImplementsFree<T>() && "Free is not implemented");
 				return static_cast<T*>(self)->Free(ptr, size);
 			};
 		}
