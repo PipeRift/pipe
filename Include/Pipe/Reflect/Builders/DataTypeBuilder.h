@@ -11,9 +11,11 @@
 #include "Pipe/Reflect/Property.h"
 #include "Pipe/Reflect/StructType.h"
 #include "Pipe/Reflect/TypeId.h"
+#include "Pipe/Reflect/TypeName.h"
 #include "Pipe/Reflect/TypeRegistry.h"
 #include "Pipe/Serialize/Reader.h"
 #include "Pipe/Serialize/Writer.h"
+
 
 
 namespace p
