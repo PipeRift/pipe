@@ -95,6 +95,11 @@ namespace p
 
 	void MemoryStats::Remove(void* ptr)
 	{
+		if (!ptr)
+		{
+			return;
+		}
+
 		// std::unique_lock lock{mutex};
 		const i32 index = p::BinarySearch(
 		    allocations.data(), 0, i32(allocations.size()), ptr, SortLessAllocationStats{});

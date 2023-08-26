@@ -15,6 +15,11 @@ namespace p
 {
 	static Arena* currentArena = nullptr;
 
+	void InitializeMemory()
+	{
+		GetHeapStats();
+		GetHeapArena();
+	}
 
 	void* HeapAlloc(sizet size)
 	{

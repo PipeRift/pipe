@@ -11,6 +11,7 @@ namespace p
 	class Arena;
 	struct MemoryStats;
 
+	void InitializeMemory();
 
 	// Native allocation functions
 	PIPE_API void* HeapAlloc(sizet size);

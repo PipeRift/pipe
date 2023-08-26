@@ -44,6 +44,7 @@ namespace p::core
 		bool automaticFlush = true;
 
 	public:
+		TagStringTable();
 		TagHeader& GetOrAddTagString(sizet hash, StringView value);
 		void FreeTagString(sizet hash, TagHeader& str);
 	};
@@ -176,6 +177,13 @@ namespace p::core
 	bool operator<(sizet hash, const TagHeaderRef& ref)
 	{
 		return hash < ref.hash;
+	}
+
+
+	TagStringTable::TagStringTable()
+	{
+		// Ensure pipe memory is initialized. This guaranties memory is deinitialized before tags
+		InitializeMemory();
 	}
 
 	TagHeader& TagStringTable::GetOrAddTagString(sizet hash, StringView value)

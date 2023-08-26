@@ -6,6 +6,7 @@
 #include "Pipe/Pipe.h"
 
 #include "Pipe/Core/Log.h"
+#include "Pipe/Memory/Alloc.h"
 #include "Pipe/Reflect/TypeRegistry.h"
 
 
@@ -13,6 +14,7 @@ namespace p
 {
 	void Initialize(Path logPath)
 	{
+		InitializeMemory();
 		TypeRegistry::Initialize();
 		InitLog(logPath);
 	}
