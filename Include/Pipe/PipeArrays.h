@@ -80,6 +80,11 @@ namespace p
 			return *this;
 		}
 
+		constexpr Type* GetPtr() const
+		{
+			return ptr;
+		}
+
 		constexpr Type& operator*() const noexcept
 		{
 			Verify();
@@ -318,6 +323,11 @@ namespace p
 		constexpr i32 Size() const
 		{
 			return size;
+		}
+
+		constexpr Type* EndData() const
+		{
+			return data + size;
 		}
 
 		constexpr bool IsEmpty() const
@@ -1393,7 +1403,7 @@ namespace p
 
 		void FreeOldBuffer(Type* oldData, const i32 oldCapacity)
 		{
-			if (!HasInlineBuffer() || oldData != inlineBuffer.Data())
+			if (oldData && (!HasInlineBuffer() || oldData != inlineBuffer.Data()))
 			{
 				// Only free memory if we were not using the inline array
 				Free(*arena, oldData, oldCapacity);
@@ -1513,6 +1523,8 @@ namespace p
 	template<typename Type, u32 InlineCapacity>
 	void TInlineArray<Type, InlineCapacity>::InsertUninitialized(i32 atIndex, i32 count)
 	{
+		Check(atIndex >= 0 && atIndex <= Super::size);
+
 		const i32 oldSize = Super::size;
 		const i32 newSize = Super::size + count;
 		Super::size       = newSize;

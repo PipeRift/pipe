@@ -26,6 +26,7 @@ namespace p
 
 
 	public:
+		TypeRegistry();
 		~TypeRegistry()
 		{
 			Reset();
@@ -63,15 +64,7 @@ namespace p
 			return idToTypes.end();
 		}
 
-		void Reset()
-		{
-			for (auto it : idToTypes)
-			{
-				it.second->~Type();
-			}
-			idToTypes = {};
-			arena.Release();
-		}
+		void Reset();
 
 		PIPE_API void RegisterCompiledType(TFunction<void()> callback);
 

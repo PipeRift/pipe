@@ -460,23 +460,23 @@ go_bandit([]() {
 				AssertThat(data[0], Equals(12));
 
 				data.Insert(0, 21);
-				AssertThat(data.Size(), Equals(1));
+				AssertThat(data.Size(), Equals(2));
 				AssertThat(data[0], Equals(21));
 			});
 
 			it("Can insert at end", [&]() {
 				TInlineArray<i32, 0> data{12, 34};
-				data.Insert(3, 12);
-				AssertThat(data.Size(), Equals(1));
-				AssertThat(data[0], Equals(12));
+				data.Insert(2, 12);
+				AssertThat(data.Size(), Equals(3));
+				AssertThat(data[2], Equals(12));
 			});
 
 			it("Can insert to inline", [&]() {
 				TInlineArray<i32, 4> data;
 				data.Insert(0, 12);
 				data.Insert(0, 21);
-				AssertThat(data.Size(), Equals(1));
-				AssertThat(data[0], Equals(12));
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(21));
 			});
 
 			it("Can insert copied value", [&]() {

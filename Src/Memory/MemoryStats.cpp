@@ -17,22 +17,22 @@
 namespace p
 {
 	MemoryStats::MemoryStats()
-	    : allocations{arena}
+	    : allocations{STLAllocator<AllocationStats>{arena}}
 #if P_ENABLE_ALLOCATION_STACKS
-	    , stacks{arena}
+	    , stacks{STLAllocator<AllocationStats, STLAllocator<backward::StackTrace>>{arena}}
 #endif
-	    , freedAllocations{arena}
+	    , freedAllocations{STLAllocator<AllocationStats>{arena}}
 	{}
 
 	MemoryStats::~MemoryStats()
 	{
-		if (allocations.Size() > 0)
+		if (allocations.size() > 0)
 		{
 			TString<TChar> errorMsg;
 			Strings::FormatTo(
-			    errorMsg, "MEMORY LEAKS! {} allocations were not freed!", allocations.Size());
+			    errorMsg, "MEMORY LEAKS! {} allocations were not freed!", allocations.size());
 
-			const auto shown = math::Min<sizet>(64, allocations.Size());
+			const auto shown = math::Min<sizet>(64, allocations.size());
 			for (i32 i = 0; i < shown; ++i)
 			{
 				PrintAllocationError("", &allocations[i], nullptr);
@@ -41,10 +41,10 @@ namespace p
 #endif
 			}
 
-			if (shown < allocations.Size())
+			if (shown < allocations.size())
 			{
 				Strings::FormatTo(
-				    errorMsg, "\n...\n{} more not shown.", allocations.Size() - shown);
+				    errorMsg, "\n...\n{} more not shown.", allocations.size() - shown);
 			}
 			std::puts(errorMsg.data());
 		}
@@ -81,7 +81,9 @@ namespace p
 		// std::unique_lock lock{mutex};
 		used += size;
 		const AllocationStats item{static_cast<u8*>(ptr), size};
-		i32 index = allocations.AddSorted(item, SortLessAllocationStats{});
+		allocations.insert(std::upper_bound(allocations.begin(), allocations.end(), item,
+		                       SortLessAllocationStats{}),
+		    item);
 
 #if P_ENABLE_ALLOCATION_STACKS
 		auto& stack = stacks.Insert(index, {arena});
@@ -94,21 +96,26 @@ namespace p
 	void MemoryStats::Remove(void* ptr)
 	{
 		// std::unique_lock lock{mutex};
-		const i32 index = allocations.FindSortedEqual(ptr, SortLessAllocationStats{});
+		const i32 index = p::BinarySearch(
+		    allocations.data(), 0, i32(allocations.size()), ptr, SortLessAllocationStats{});
 		if (index != NO_INDEX)
 		{
 			AllocationStats& allocation = allocations[index];
 			used -= allocation.size;
-			freedAllocations.AddSorted(Move(allocation), SortLessAllocationStats{});
-			allocations.RemoveAt(index, false);
+			freedAllocations.insert(
+			    std::upper_bound(freedAllocations.begin(), freedAllocations.end(), allocation,
+			        SortLessAllocationStats{}),
+			    Move(allocation));
+			allocations.erase(allocations.begin() + index);
 #if P_ENABLE_ALLOCATION_STACKS
-			stacks.RemoveAt(index, false);
+			stacks.erase(stacks.begin() + index);
 #endif
 		}
 		else
 		{
-			if (freedAllocations.ContainsSorted(
-			        AllocationStats{static_cast<u8*>(ptr)}, SortLessAllocationStats{}))
+			if (p::BinarySearch(freedAllocations.data(), 0, i32(freedAllocations.size()),
+			        AllocationStats{static_cast<u8*>(ptr)}, SortLessAllocationStats{})
+			    != NO_INDEX)
 			{
 				std::puts("Freeing a pointer more than once.");
 			}
