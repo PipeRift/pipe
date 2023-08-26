@@ -299,10 +299,10 @@ namespace p
 	template<typename Type>
 	struct IArray
 	{
-		using Iterator             = typename TArrayIterator<Type>;
-		using ConstIterator        = typename TArrayIterator<const Type>;
-		using ReverseIterator      = typename TReverseArrayIterator<Type>;
-		using ConstReverseIterator = typename TReverseArrayIterator<const Type>;
+		using Iterator             = TArrayIterator<Type>;
+		using ConstIterator        = TArrayIterator<const Type>;
+		using ReverseIterator      = TReverseArrayIterator<Type>;
+		using ConstReverseIterator = TReverseArrayIterator<const Type>;
 
 		using ItemType = Type;
 
