@@ -129,9 +129,9 @@ namespace p
 	}
 }    // namespace p
 
-#define P_OVERRIDE_TYPE_NAME(type)                                                  \
+#define P_OVERRIDE_TYPE_NAME(type, name)                                            \
 	template<>                                                                      \
 	inline consteval p::StringView p::GetFullTypeName<type>(bool includeNamespaces) \
 	{                                                                               \
-		return TX(#type);                                                           \
+		return TX(name);                                                            \
 	}
