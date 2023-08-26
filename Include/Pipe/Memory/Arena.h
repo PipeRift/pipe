@@ -86,7 +86,6 @@ namespace p
 				return static_cast<T*>(self)->Realloc(ptr, ptrSize, size);
 			};
 			doFree = [](Arena* self, void* ptr, sizet size) {
-				static_assert(&T::Free != &Arena::Free);
 				static_assert(ImplementsFree<T>() && "Free is not implemented");
 				return static_cast<T*>(self)->Free(ptr, size);
 			};
