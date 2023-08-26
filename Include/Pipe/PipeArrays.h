@@ -1328,7 +1328,7 @@ namespace p
 		/** @return true if this array has any capacity for inline data */
 		static consteval bool HasInlineBuffer()
 		{
-			return InlineCapacity > 0;
+			return inlineCapacity > 0;
 		}
 
 		/** @return true is inline data is being used as the buffer */

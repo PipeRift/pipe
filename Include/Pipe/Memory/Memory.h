@@ -49,7 +49,7 @@ namespace p
 		template<typename T>
 		bool AreBitsZero(const T& value) requires(IsScalar<T> && !IsMemberPointer<T>)
 		{
-			if constexpr (IsSame<T, nullptr_t>)
+			if constexpr (IsSame<T, std::nullptr_t>)
 			{
 				return true;
 			}

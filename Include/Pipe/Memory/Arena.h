@@ -32,24 +32,40 @@ namespace p
 		template<typename T>
 		static consteval bool ImplementsAlloc()
 		{
+#if defined(__GCC__)    // GCC won't detect this check as constexpr! :(
+			return true;
+#else
 			return (void* (T::*)(sizet size))(&T::Alloc)
 			    != (void* (T::*)(sizet size))(&Arena::Alloc);
+#endif
 		}
 		template<typename T>
 		static consteval bool ImplementsAllocAligned()
 		{
+#if defined(__GCC__)    // GCC won't detect this check as constexpr! :(
+			return true;
+#else
 			return (void* (T::*)(sizet size, sizet align))(&T::Alloc)
 			    != (void* (T::*)(sizet size, sizet align))(&Arena::Alloc);
+#endif
 		}
 		template<typename T>
 		static consteval bool ImplementsRealloc()
 		{
+#if defined(__GCC__)    // GCC won't detect this check as constexpr! :(
+			return true;
+#else
 			return &T::Realloc != &Arena::Realloc;
+#endif
 		}
 		template<typename T>
 		static consteval bool ImplementsFree()
 		{
+#if defined(__GCC__)    // GCC won't detect this check as constexpr! :(
+			return true;
+#else
 			return &T::Free != &Arena::Free;
+#endif
 		}
 
 	protected:
