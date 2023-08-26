@@ -33,10 +33,7 @@ struct CopyType
 	i32 value = 0;
 
 	CopyType(i32 value) : value(value) {}
-	CopyType(const CopyType& other)
-	{
-		value = other.value;
-	}
+	CopyType(const CopyType& other) : value{other.value} {}
 	CopyType& operator=(const CopyType& other)
 	{
 		value = other.value;
@@ -49,10 +46,7 @@ struct MoveType
 	i32 value = 0;
 
 	MoveType(i32 value) : value(value) {}
-	MoveType(MoveType&& other) noexcept
-	{
-		value = Exchange(other.value, 0);
-	}
+	MoveType(MoveType&& other) noexcept : value{Exchange(other.value, 0)} {}
 	MoveType& operator=(MoveType&& other) noexcept
 	{
 		value = Exchange(other.value, 0);

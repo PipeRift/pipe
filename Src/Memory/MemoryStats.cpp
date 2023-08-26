@@ -58,7 +58,7 @@ namespace p
 
 		if (allocation)
 		{
-			Strings::FormatTo(msg, " ({} {})", (void*)allocation->ptr,
+			Strings::FormatTo(msg, " ({} {})", static_cast<void*>(allocation->ptr),
 			    Strings::ParseMemorySize(allocation->size));
 		}
 

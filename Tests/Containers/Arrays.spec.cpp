@@ -21,11 +21,8 @@ struct MoveType
 	i32 value = 0;
 
 	MoveType(i32 value) : value(value) {}
-	MoveType(MoveType&& other)
-	{
-		value = Exchange(other.value, 0);
-	}
-	MoveType& operator=(MoveType&& other)
+	MoveType(MoveType&& other) noexcept : value{Exchange(other.value, 0)} {}
+	MoveType& operator=(MoveType&& other) noexcept
 	{
 		value = Exchange(other.value, 0);
 		return *this;
