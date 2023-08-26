@@ -90,7 +90,7 @@ jobs:
         run: cmake --build Build --config ${{ matrix.config }}
 
       - name: Upload binaries as artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: ${{ matrix.config == 'Release' && matrix.compiler == 'clang' }} # Only clang artifacts are stored
         with:
           name: pipe-${{ matrix.os-name }}
