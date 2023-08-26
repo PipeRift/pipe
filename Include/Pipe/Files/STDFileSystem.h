@@ -62,7 +62,7 @@ namespace p
 	PIPE_API void Write(p::Writer& ct, const p::Path& value);
 }    // namespace p
 
-REFLECT_NATIVE_TYPE(p::Path);
+P_REFLECT_NATIVE_TYPE(p::Path);
 
 
 // TODO: Finish implementation of formatting of Paths

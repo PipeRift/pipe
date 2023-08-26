@@ -12,21 +12,23 @@
 #include "Pipe/Reflect/Struct.h"
 
 
+////////////////////////////////
+// ENTITY IDS
+//
 namespace p
 {
 	struct EntityContext;
 
 
-	////////////////////////////////
-	// ENTITY IDS
-	//
-
 	/** An Id is an integer composed of both index and version that identifies an entity */
 	enum class Id : u32
 	{
 	};
-	REFLECT_NATIVE_TYPE(Id);
+}    // namespace p
+P_REFLECT_NATIVE_TYPE(p::Id);
 
+namespace p
+{
 	/** IdTraits define properties of an Id type based on its size */
 	template<typename Type>
 	struct IdTraits;
