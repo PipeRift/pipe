@@ -7,6 +7,7 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Tuples.h"
 #include "Pipe/Core/Utility.h"
+#include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/STLAllocator.h"
 
 #include <tsl/sparse_map.h>
@@ -17,7 +18,7 @@
 
 namespace p::core
 {
-	template<typename Key, typename Value, typename Allocator = ArenaAllocator>
+	template<typename Key, typename Value>
 	class TMap
 	{
 		static_assert(std::is_nothrow_move_constructible<Value>::value
@@ -25,15 +26,14 @@ namespace p::core
 		    "Value type must be nothrow move constructible and/or copy constructible.");
 
 	public:
-		template<typename OtherKey, typename OtherValue, typename OtherAllocator>
+		template<typename OtherKey, typename OtherValue>
 		friend class TMap;
 
-		using KeyType       = Key;
-		using ValueType     = Value;
-		using AllocatorType = Allocator;
-		using KeyEqual      = std::equal_to<KeyType>;
-		using HashMapType   = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>, KeyEqual,
-            STLAllocator<TPair<Key, Value>, AllocatorType>>;
+		using KeyType     = Key;
+		using ValueType   = Value;
+		using KeyEqual    = std::equal_to<KeyType>;
+		using Allocator   = STLAllocator<TPair<Key, Value>>;
+		using HashMapType = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>, KeyEqual, Allocator>;
 
 		using Iterator      = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;
@@ -47,14 +47,17 @@ namespace p::core
 
 
 	public:
-		TMap() = default;
-		TMap(u32 defaultSize) : map(defaultSize) {}
-		TMap(const TPair<const KeyType, ValueType>& item) : map{}
+		TMap(Arena& arena = GetCurrentArena()) : map{Allocator{arena}} {}
+		TMap(u32 defaultSize, Arena& arena = GetCurrentArena()) : map(defaultSize, Allocator{arena})
+		{}
+		TMap(const TPair<const KeyType, ValueType>& item, Arena& arena = GetCurrentArena())
+		    : TMap(arena)
 		{
 			Insert(item);
 		}
-		TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList)
-		    : map{initList.begin(), initList.end()}
+		TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList,
+		    Arena& arena = GetCurrentArena())
+		    : map{initList.begin(), initList.end(), 0, Allocator{arena}}
 		{}
 
 		TMap(TMap&& other) noexcept            = default;

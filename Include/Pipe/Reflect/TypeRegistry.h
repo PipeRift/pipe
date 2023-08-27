@@ -4,6 +4,7 @@
 #include "Pipe/Core/Map.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/MultiLinearArena.h"
+#include "Pipe/PipeArrays.h"
 #include "Pipe/Reflect/Type.h"
 #include "Pipe/Reflect/TypeId.h"
 
@@ -18,13 +19,14 @@ namespace p
 		MultiLinearArena arena{GetCurrentArena()};
 
 		// We map all classes by name in case we need to find them
-		TMap<TypeId, Type*> idToTypes{};
+		TMap<TypeId, Type*> idToTypes;
 
 		TArray<TFunction<void()>> compiledTypeRegisters;
 		bool initialized = false;
 
 
 	public:
+		TypeRegistry();
 		~TypeRegistry()
 		{
 			Reset();
@@ -62,15 +64,7 @@ namespace p
 			return idToTypes.end();
 		}
 
-		void Reset()
-		{
-			for (auto it : idToTypes)
-			{
-				it.second->~Type();
-			}
-			idToTypes.Clear();
-			arena.Release();
-		}
+		void Reset();
 
 		PIPE_API void RegisterCompiledType(TFunction<void()> callback);
 

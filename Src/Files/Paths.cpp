@@ -506,7 +506,7 @@ namespace p::files
 		if (len >= 4 && IsSeparator(first[3]) && (len == 4 || !IsSeparator(first[4]))    // \xx\$
 		    && ((IsSeparator(first[1]) && (first[2] == '?' || first[2] == '.'))    // \\?\$ or \\.\$
 		        || (first[1] == '?' && first[2] == '?')))
-		{                                                                          // \??\$
+		{    // \??\$
 			return first + 3;
 		}
 
@@ -566,7 +566,6 @@ namespace p::files
 
 	const TChar* FindExtension(const TChar* const first, const TChar* const last)
 	{
-		const sizet size           = last - first;
 		const TChar* filenameFirst = FindFilename(first, last);
 		const sizet filenameSize   = last - filenameFirst;
 
@@ -746,7 +745,7 @@ namespace p::files
 		AppendToPath(result, relative2);
 		return Move(result);
 	}
-	String JoinPaths(TSpan<StringView> paths)
+	String JoinPaths(TView<StringView> paths)
 	{
 		if (paths.IsEmpty()) [[unlikely]]
 		{
@@ -914,7 +913,7 @@ namespace p::files
 
 	String ToString(const Path& path)
 	{
-		return path.string<TChar, std::char_traits<TChar>, STLAllocator<TChar>>();
+		return path.string<TChar, std::char_traits<TChar>, std::allocator<TChar>>();
 	}
 
 	Path ToPath(StringView pathStr)

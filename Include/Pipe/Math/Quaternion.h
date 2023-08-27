@@ -80,4 +80,4 @@ namespace p
 	void Write(Writer& ct, const Quat& val);
 }    // namespace p
 
-REFLECT_NATIVE_TYPE(p::Quat);
+P_REFLECT_NATIVE_TYPE(p::Quat);

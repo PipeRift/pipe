@@ -1,11 +1,11 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/Core/Array.h>
 #include <Pipe/Core/Greater.h>
 #include <Pipe/Core/Limits.h>
 #include <Pipe/Core/Platform.h>
 #include <Pipe/Core/Search.h>
+#include <Pipe/PipeArrays.h>
 
 #include <cmath>
 

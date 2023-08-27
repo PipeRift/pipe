@@ -1,34 +1,34 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Broadcast.h"
 #include "Pipe/Core/PageBuffer.h"
 #include "Pipe/Core/Platform.h"
-#include "Pipe/Core/Span.h"
 #include "Pipe/Core/TypeList.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/UniquePtr.h"
+#include "Pipe/PipeArrays.h"
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
 #include "Pipe/Reflect/Struct.h"
-#include "Pipe/Serialize/Serialization.h"
 
 
+////////////////////////////////
+// ENTITY IDS
+//
 namespace p
 {
 	struct EntityContext;
 
 
-	////////////////////////////////
-	// ENTITY IDS
-	//
-
 	/** An Id is an integer composed of both index and version that identifies an entity */
 	enum class Id : u32
 	{
 	};
-	REFLECT_NATIVE_TYPE(Id);
+}    // namespace p
+P_REFLECT_NATIVE_TYPE(p::Id);
 
+namespace p
+{
 	/** IdTraits define properties of an Id type based on its size */
 	template<typename Type>
 	struct IdTraits;
@@ -120,9 +120,9 @@ namespace p
 
 
 		Id Create();
-		void Create(TSpan<Id> newIds);
+		void Create(TView<Id> newIds);
 		bool Destroy(Id id);
-		bool Destroy(TSpan<const Id> ids);
+		bool Destroy(TView<const Id> ids);
 		bool IsValid(Id id) const;
 
 		u32 Size() const
@@ -349,13 +349,16 @@ namespace p
 		DeletionPolicy deletionPolicy;
 
 		EntityContext* context = nullptr;
-		TBroadcast<EntityContext&, TSpan<const Id>> onAdd;
-		TBroadcast<EntityContext&, TSpan<const Id>> onRemove;
+		TBroadcast<EntityContext&, TView<const Id>> onAdd;
+		TBroadcast<EntityContext&, TView<const Id>> onRemove;
 
 
-		BasePool(
-		    EntityContext& ast, DeletionPolicy deletionPolicy, Arena& arena = GetCurrentArena())
-		    : arena{&arena}, context{&ast}, deletionPolicy{deletionPolicy}
+		BasePool(EntityContext& ast, DeletionPolicy deletionPolicy, Arena& arena)
+		    : idIndices{arena}
+		    , idList{arena}
+		    , arena{&arena}
+		    , context{&ast}
+		    , deletionPolicy{deletionPolicy}
 		{
 			BindOnPageAllocated();
 		}
@@ -363,12 +366,12 @@ namespace p
 		BasePool(BasePool&& other) noexcept;
 		BasePool& operator=(BasePool&& other) noexcept;
 
-		void OnAdded(TSpan<const Id> ids)
+		void OnAdded(TView<const Id> ids)
 		{
 			onAdd.Broadcast(*context, ids);
 		}
 
-		void OnRemoved(TSpan<const Id> ids)
+		void OnRemoved(TView<const Id> ids)
 		{
 			onRemove.Broadcast(*context, ids);
 		}
@@ -379,11 +382,11 @@ namespace p
 		// Returns the data pointer of a component if contianed
 		virtual void* TryGetVoid(Id id) = 0;
 
-		virtual void* AddDefaulted(Id id)              = 0;
+		virtual void* AddDefault(Id id)                = 0;
 		virtual bool Remove(Id id)                     = 0;
 		virtual void RemoveUnsafe(Id id)               = 0;
-		virtual i32 Remove(TSpan<const Id> ids)        = 0;
-		virtual void RemoveUnsafe(TSpan<const Id> ids) = 0;
+		virtual i32 Remove(TView<const Id> ids)        = 0;
+		virtual void RemoveUnsafe(TView<const Id> ids) = 0;
 
 		inline i32 GetIndexFromId(const Index index) const
 		{
@@ -436,12 +439,12 @@ namespace p
 			return idList.Data();
 		}
 
-		TBroadcast<EntityContext&, TSpan<const Id>>& OnAdd()
+		TBroadcast<EntityContext&, TView<const Id>>& OnAdd()
 		{
 			return onAdd;
 		}
 
-		TBroadcast<EntityContext&, TSpan<const Id>>& OnRemove()
+		TBroadcast<EntityContext&, TView<const Id>>& OnRemove()
 		{
 			return onRemove;
 		}
@@ -501,21 +504,21 @@ namespace p
 	};
 
 
-	i32 GetSmallestPool(TSpan<const BasePool*> pools);
+	i32 GetSmallestPool(TView<const BasePool*> pools);
 
 
-	template<typename T, typename Allocator = ArenaAllocator>
+	template<typename T>
 	struct TPool : public BasePool
 	{
-		using AllocatorType = Allocator;
-
 	private:
-		TPageBuffer<T, 1024, AllocatorType> data;
+		TPageBuffer<T, 1024> data;
 
 
 	public:
-		TPool(EntityContext& ast) : BasePool(ast, DeletionPolicy::InPlace), data{} {}
-		TPool(const TPool& other) : BasePool(other)
+		TPool(EntityContext& ast, Arena& arena = GetCurrentArena())
+		    : BasePool(ast, DeletionPolicy::InPlace, arena), data{arena}
+		{}
+		TPool(const TPool& other) : BasePool(other), data{*other.arena}
 		{
 			if constexpr (!p::IsEmpty<T>)
 			{
@@ -543,7 +546,7 @@ namespace p
 			Clear();
 		}
 
-		void* AddDefaulted(Id id) override
+		void* AddDefault(Id id) override
 		{
 			if constexpr (p::IsEmpty<T>)
 			{
@@ -689,7 +692,7 @@ namespace p
 				PopSwap(id);
 		}
 
-		i32 Remove(TSpan<const Id> ids) override
+		i32 Remove(TView<const Id> ids) override
 		{
 			OnRemoved(ids);
 			i32 removed = 0;
@@ -718,7 +721,7 @@ namespace p
 			return removed;
 		}
 
-		void RemoveUnsafe(TSpan<const Id> ids) override
+		void RemoveUnsafe(TView<const Id> ids) override
 		{
 			OnRemoved(ids);
 			if (deletionPolicy == DeletionPolicy::InPlace)
@@ -934,12 +937,12 @@ namespace p
 #pragma region Entities
 		Id Create();
 		void Create(Id id);
-		void Create(TSpan<Id> ids);
+		void Create(TView<Id> ids);
 		void Destroy(Id id);
-		void Destroy(TSpan<const Id> ids);
+		void Destroy(TView<const Id> ids);
 
 		// Reflection helpers
-		void* AddDefaulted(TypeId typeId, Id id);
+		void* AddDefault(TypeId typeId, Id id);
 		void Remove(TypeId typeId, Id id);
 
 		// Adds Component to an entity (if the entity doesnt have it already)
@@ -965,20 +968,20 @@ namespace p
 
 		// Add Component to many entities (if they dont have it already)
 		template<typename Component>
-		decltype(auto) AddN(TSpan<const Id> ids, const Component& value = {})
+		decltype(auto) AddN(TView<const Id> ids, const Component& value = {})
 		{
 			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
 		}
 
 		// Add Components to many entities (if they don't have it already)
 		template<typename... Component>
-		void AddN(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
+		void AddN(TView<const Id> ids) requires(sizeof...(Component) > 1)
 		{
 			(Add<Component>(ids), ...);
 		}
 
 		template<typename Component>
-		void AddN(TSpan<const Id> ids, const TSpan<const Component>& values)
+		void AddN(TView<const Id> ids, const TView<const Component>& values)
 		{
 			Check(ids.Size() == values.Size());
 			AssurePool<Component>().Add(ids.begin(), ids.end(), values.begin());
@@ -999,7 +1002,7 @@ namespace p
 			(Remove<Component>(id), ...);
 		}
 		template<typename Component>
-		void Remove(TSpan<const Id> ids)
+		void Remove(TView<const Id> ids)
 		{
 			if (auto* pool = GetPool<Component>())
 			{
@@ -1007,7 +1010,7 @@ namespace p
 			}
 		}
 		template<typename... Component>
-		void Remove(TSpan<const Id> ids) requires(sizeof...(Component) > 1)
+		void Remove(TView<const Id> ids) requires(sizeof...(Component) > 1)
 		{
 			(Remove<Component>(ids), ...);
 		}
@@ -1091,13 +1094,13 @@ namespace p
 		void Reset(bool keepStatics = false);
 
 		template<typename Component>
-		TBroadcast<EntityContext&, TSpan<const Id>>& OnAdd()
+		TBroadcast<EntityContext&, TView<const Id>>& OnAdd()
 		{
 			return AssurePool<Component>().OnAdd();
 		}
 
 		template<typename Component>
-		TBroadcast<EntityContext&, TSpan<const Id>>& OnRemove()
+		TBroadcast<EntityContext&, TView<const Id>>& OnRemove()
 		{
 			return AssurePool<Component>().OnRemove();
 		}
@@ -1335,14 +1338,14 @@ namespace p
 
 		// Add component to many entities (if they dont have it already)
 		template<typename C>
-		decltype(auto) AddN(TSpan<const Id> ids, const C& value = {}) const
+		decltype(auto) AddN(TView<const Id> ids, const C& value = {}) const
 		{
 			return GetPool<C>()->Add(ids.begin(), ids.end(), value);
 		}
 
 		// Add components to many entities (if they dont have it already)
 		template<typename... C>
-		void AddN(TSpan<const Id> ids) const
+		void AddN(TView<const Id> ids) const
 		    requires((IsSame<C, Mut<C>> && ...) && sizeof...(C) > 1)
 		{
 			(AddN<C>(ids), ...);
@@ -1363,7 +1366,7 @@ namespace p
 			(Remove<C>(id), ...);
 		}
 		template<typename C>
-		void Remove(TSpan<const Id> ids) const requires(IsSame<C, Mut<C>>)
+		void Remove(TView<const Id> ids) const requires(IsSame<C, Mut<C>>)
 		{
 			if (auto* pool = GetPool<C>())
 			{
@@ -1371,7 +1374,7 @@ namespace p
 			}
 		}
 		template<typename... C>
-		void Remove(TSpan<const Id> ids) const requires(sizeof...(C) > 1)
+		void Remove(TView<const Id> ids) const requires(sizeof...(C) > 1)
 		{
 			(Remove<C>(ids), ...);
 		}
@@ -1493,13 +1496,13 @@ namespace p
 
 
 	/** Find ids containing a component from a list 'source' into 'results'. */
-	PIPE_API void FindIdsWith(const BasePool* pool, const TSpan<Id>& source, TArray<Id>& results);
+	PIPE_API void FindIdsWith(const BasePool* pool, const TView<Id>& source, TArray<Id>& results);
 	PIPE_API void FindIdsWith(
-	    const TArray<const BasePool*>& pools, const TSpan<Id>& source, TArray<Id>& results);
+	    const TArray<const BasePool*>& pools, const TView<Id>& source, TArray<Id>& results);
 
 	/** Find ids NOT containing a component from a list 'source' into 'results'. */
 	PIPE_API void FindIdsWithout(
-	    const BasePool* pool, const TSpan<Id>& source, TArray<Id>& results);
+	    const BasePool* pool, const TView<Id>& source, TArray<Id>& results);
 
 
 	/**
@@ -1646,19 +1649,19 @@ namespace p
 
 	/** Find ids containing a component from a list 'source' into 'results'. */
 	template<typename C, typename AccessType>
-	void FindIdsWith(const AccessType& access, const TSpan<Id>& source, TArray<Id>& results)
+	void FindIdsWith(const AccessType& access, const TView<Id>& source, TArray<Id>& results)
 	{
 		FindIdsWith(&access.template AssurePool<const C>(), source, results);
 	}
 	template<typename... C, typename AccessType>
-	void FindIdsWith(const AccessType& access, const TSpan<Id>& source, TArray<Id>& results)
+	void FindIdsWith(const AccessType& access, const TView<Id>& source, TArray<Id>& results)
 	    requires(sizeof...(C) > 1)
 	{
 		FindIdsWith({&access.template AssurePool<const C>()...}, source, results);
 	}
 
 	template<typename... C, typename AccessType>
-	TArray<Id> FindIdsWith(const AccessType& access, const TSpan<Id>& source)
+	TArray<Id> FindIdsWith(const AccessType& access, const TView<Id>& source)
 	{
 		TArray<Id> results;
 		FindIdsWith<C...>(access, source, results);
@@ -1883,39 +1886,39 @@ namespace p
 
 	// Link a list of nodes at the end of the parent children list
 	PIPE_API void Attach(
-	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TSpan<const Id> children);
+	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TView<const Id> children);
 	// Link a list of nodes after prevChild in the list of children nodes
 	PIPE_API void AttachAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent,
-	    TSpan<Id> children, Id prevChild);
+	    TView<Id> children, Id prevChild);
 	PIPE_API void TransferEntityChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
-	    TSpan<const Id> children, Id destination);
+	    TView<const Id> children, Id destination);
 	// TODO: void TransferAllChildren(Tree& ast, Id origin, Id destination);
 	PIPE_API void DetachFromParents(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TSpan<const Id> children, bool keepComponents);
+	    TView<const Id> children, bool keepComponents);
 	PIPE_API void DetachAllChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TSpan<const Id> parents, bool keepComponents = false);
+	    TView<const Id> parents, bool keepComponents = false);
 
 	PIPE_API const TArray<Id>* GetChildren(TAccessRef<CParent> access, Id node);
 	PIPE_API void GetChildren(
-	    TAccessRef<CParent> access, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes);
+	    TAccessRef<CParent> access, TView<const Id> nodes, TArray<Id>& outLinkedNodes);
 	/**
 	 * Finds all nodes connected recursively.
 	 */
-	PIPE_API void GetChildrenDeep(TAccessRef<CParent> access, TSpan<const Id> roots,
+	PIPE_API void GetChildrenDeep(TAccessRef<CParent> access, TView<const Id> roots,
 	    TArray<Id>& outLinkedNodes, u32 depth = 0);
 	PIPE_API Id GetParent(TAccessRef<CChild> access, Id node);
 	PIPE_API void GetParents(
-	    TAccessRef<CChild> access, TSpan<const Id> children, TArray<Id>& outParents);
+	    TAccessRef<CChild> access, TView<const Id> children, TArray<Id>& outParents);
 	PIPE_API void GetAllParents(TAccessRef<CChild> access, Id node, TArray<Id>& outParents);
 	PIPE_API void GetAllParents(
-	    TAccessRef<CChild> access, TSpan<const Id> childrenIds, TArray<Id>& outParents);
+	    TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents);
 
 	/**
 	 * Find a parent id matching a delegate
 	 */
 	PIPE_API Id FindParent(
 	    TAccessRef<CChild> access, Id child, const TFunction<bool(Id)>& callback);
-	PIPE_API void FindParents(TAccessRef<CChild> access, TSpan<const Id> children,
+	PIPE_API void FindParents(TAccessRef<CChild> access, TView<const Id> children,
 	    TArray<Id>& outParents, const TFunction<bool(Id)>& callback);
 
 	// void Copy(Tree& ast, t TArray<Id>& nodes, TArray<Id>& outNewNodes);
@@ -1923,7 +1926,7 @@ namespace p
 	// void CopyAndTransferAllChildrenDeep(Tree& ast, Id root, Id otherRoot);
 
 	PIPE_API void Remove(
-	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> nodes, bool deep = false);
+	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TView<Id> nodes, bool deep = false);
 
 	/**
 	 * Iterates children nodes making sure child->parent links are correct or fixed
@@ -1932,7 +1935,7 @@ namespace p
 	 * @parents: where to look for children to fix up
 	 * @return true if an incorrect link was found and fixed
 	 */
-	PIPE_API bool FixParentLinks(TAccessRef<TWrite<CChild>, CParent> access, TSpan<Id> parents);
+	PIPE_API bool FixParentLinks(TAccessRef<TWrite<CChild>, CParent> access, TView<Id> parents);
 
 	/**
 	 * Iterates children nodes looking for invalid child->parent links
@@ -1941,7 +1944,7 @@ namespace p
 	 * @parents: where to look for children
 	 * @return true if an incorrect link was found
 	 */
-	PIPE_API bool ValidateParentLinks(TAccessRef<CChild, CParent> access, TSpan<Id> parents);
+	PIPE_API bool ValidateParentLinks(TAccessRef<CChild, CParent> access, TView<Id> parents);
 
 	PIPE_API void GetRoots(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots);
 

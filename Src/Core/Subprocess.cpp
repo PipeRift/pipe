@@ -1,12 +1,12 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #include "Pipe/Core/Subprocess.h"
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Optional.h"
 #include "Pipe/Core/PlatformMisc.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
+#include "Pipe/PipeArrays.h"
 
 
 #if defined(_MSC_VER)
@@ -157,8 +157,8 @@ namespace p::core
 #endif
 
 
-	TOptional<Subprocess> RunProcessEx(TSpan<const char* const> command,
-	    TSpan<const char* const> environment, SubprocessOptions options)
+	TOptional<Subprocess> RunProcessEx(TView<const char* const> command,
+	    TView<const char* const> environment, SubprocessOptions options)
 	{
 		Subprocess instance;
 		instance.options = options;

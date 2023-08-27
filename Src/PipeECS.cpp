@@ -23,7 +23,7 @@ namespace p
 		return id;
 	}
 
-	void IdRegistry::Create(TSpan<Id> newIds)
+	void IdRegistry::Create(TView<Id> newIds)
 	{
 		const i32 availablesUsed = math::Min(newIds.Size(), available.Size());
 		for (i32 i = 0; i < availablesUsed; ++i)
@@ -61,7 +61,7 @@ namespace p
 		return false;
 	}
 
-	bool IdRegistry::Destroy(TSpan<const Id> ids)
+	bool IdRegistry::Destroy(TView<const Id> ids)
 	{
 		available.Reserve(available.Size() + ids.Size());
 		const u32 lastAvailable = available.Size();
@@ -261,7 +261,11 @@ namespace p
 
 
 	BasePool::BasePool(const BasePool& other)
-	    : arena{other.arena}, deletionPolicy{other.deletionPolicy}, context{other.context}
+	    : idIndices{*other.arena}
+	    , idList{*other.arena}
+	    , arena{other.arena}
+	    , deletionPolicy{other.deletionPolicy}
+	    , context{other.context}
 	{
 		BindOnPageAllocated();
 		idList.Reserve(other.idList.Size());
@@ -330,13 +334,12 @@ namespace p
 	void BasePool::PopSwapId(Id id)
 	{
 		i32& idIndex = idIndices[GetIdIndex(id)];
-		if (idList.RemoveAtSwapUnsafe(idIndex)) [[likely]]
-		{
-			i32& lastIndex = idIndices[GetIdIndex(idList.Last())];
-			// Move last element to current index
-			idIndex   = lastIndex;
-			lastIndex = NO_INDEX;
-		}
+		idList.RemoveAtSwapUnsafe(idIndex);
+
+		i32& lastIndex = idIndices[GetIdIndex(idList.Last())];
+		// Move last element to current index
+		idIndex   = lastIndex;
+		lastIndex = NO_INDEX;
 	}
 
 	void BasePool::ClearIds()
@@ -371,7 +374,7 @@ namespace p
 		};
 	}
 
-	i32 GetSmallestPool(TSpan<const BasePool*> pools)
+	i32 GetSmallestPool(TView<const BasePool*> pools)
 	{
 		sizet minSize = Limits<sizet>::Max();
 		i32 minIndex  = NO_INDEX;
@@ -466,7 +469,7 @@ namespace p
 	{
 		return idRegistry.Create();
 	}
-	void EntityContext::Create(TSpan<Id> ids)
+	void EntityContext::Create(TView<Id> ids)
 	{
 		idRegistry.Create(ids);
 	}
@@ -480,7 +483,7 @@ namespace p
 		}
 	}
 
-	void EntityContext::Destroy(TSpan<const Id> ids)
+	void EntityContext::Destroy(TView<const Id> ids)
 	{
 		idRegistry.Destroy(ids);
 		for (auto& pool : pools)
@@ -489,11 +492,11 @@ namespace p
 		}
 	}
 
-	void* EntityContext::AddDefaulted(TypeId typeId, Id id)
+	void* EntityContext::AddDefault(TypeId typeId, Id id)
 	{
 		if (BasePool* pool = GetPool(typeId))
 		{
-			return pool->AddDefaulted(id);
+			return pool->AddDefault(id);
 		}
 		return nullptr;
 	}
@@ -608,7 +611,7 @@ namespace p
 		{
 			return statics[index];
 		}
-		statics.Insert(index, {});
+		statics.Insert(index);
 		if (bAdded)
 			*bAdded = true;
 		return statics[index];
@@ -667,7 +670,7 @@ namespace p
 		    shouldShrink);
 	}
 
-	void FindIdsWith(const BasePool* pool, const TSpan<Id>& source, TArray<Id>& results)
+	void FindIdsWith(const BasePool* pool, const TView<Id>& source, TArray<Id>& results)
 	{
 		ZoneScoped;
 		if (pool)
@@ -683,7 +686,7 @@ namespace p
 		}
 	}
 	void FindIdsWith(
-	    const TArray<const BasePool*>& pools, const TSpan<Id>& source, TArray<Id>& results)
+	    const TArray<const BasePool*>& pools, const TView<Id>& source, TArray<Id>& results)
 	{
 		FindIdsWith(pools.First(), source, results);
 		for (i32 i = 1; i < pools.Size(); ++i)
@@ -692,7 +695,7 @@ namespace p
 		}
 	}
 
-	void FindIdsWithout(const BasePool* pool, const TSpan<Id>& source, TArray<Id>& results)
+	void FindIdsWithout(const BasePool* pool, const TView<Id>& source, TArray<Id>& results)
 	{
 		ZoneScoped;
 		if (pool)
@@ -904,7 +907,7 @@ namespace p
 	}
 
 	void Attach(
-	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TSpan<const Id> children)
+	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TView<const Id> children)
 	{
 		children.Each([&access, parent](Id childId) {
 			if (auto* cChild = access.TryGet<CChild>(childId))
@@ -927,7 +930,7 @@ namespace p
 	}
 
 	void AttachAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent,
-	    TSpan<Id> children, Id prevChild)
+	    TView<Id> children, Id prevChild)
 	{
 		children.Each([&access, parent](Id child) {
 			if (auto* cChild = access.TryGet<CChild>(child))
@@ -947,18 +950,18 @@ namespace p
 
 		auto& childrenList  = access.GetOrAdd<CParent>(parent).children;
 		const i32 prevIndex = childrenList.FindIndex(prevChild);
-		childrenList.InsertRange(prevIndex, children);
+		childrenList.Insert(prevIndex, children);
 	}
 
 	void TransferChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
-	    TSpan<const Id> children, Id destination)
+	    TView<const Id> children, Id destination)
 	{
 		DetachFromParents(access, children, true);
 		Attach(access, destination, children);
 	}
 
 	void DetachFromParents(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TSpan<const Id> children, bool keepComponents)
+	    TView<const Id> children, bool keepComponents)
 	{
 		TArray<Id> parents;
 		parents.Reserve(children.Size());
@@ -994,7 +997,7 @@ namespace p
 
 				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
-					cParent->children.RemoveMany(children);
+					cParent->children.Remove(children);
 				}
 			}
 		}
@@ -1010,7 +1013,7 @@ namespace p
 
 				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
-					cParent->children.RemoveMany(children);
+					cParent->children.Remove(children);
 					if (cParent->children.IsEmpty())
 					{
 						access.Remove<CParent>(parent);
@@ -1021,7 +1024,7 @@ namespace p
 	}
 
 	void DetachAllChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TSpan<const Id> parents, bool keepComponents)
+	    TView<const Id> parents, bool keepComponents)
 	{
 		if (keepComponents)
 		{
@@ -1057,7 +1060,7 @@ namespace p
 		return cParent ? &cParent->children : nullptr;
 	}
 
-	void GetChildren(TAccessRef<CParent> access, TSpan<const Id> nodes, TArray<Id>& outLinkedNodes)
+	void GetChildren(TAccessRef<CParent> access, TView<const Id> nodes, TArray<Id>& outLinkedNodes)
 	{
 		nodes.Each([&access, &outLinkedNodes](Id node) {
 			if (const auto* cParent = access.TryGet<const CParent>(node))
@@ -1068,7 +1071,7 @@ namespace p
 	}
 
 	void GetChildrenDeep(
-	    TAccessRef<CParent> access, TSpan<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth)
+	    TAccessRef<CParent> access, TView<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth)
 	{
 		if (depth == 0)
 		{
@@ -1106,7 +1109,7 @@ namespace p
 		return NoId;
 	}
 
-	void GetParents(TAccessRef<CChild> access, TSpan<const Id> children, TArray<Id>& outParents)
+	void GetParents(TAccessRef<CChild> access, TView<const Id> children, TArray<Id>& outParents)
 	{
 		outParents.Clear(false);
 		for (Id childId : children)
@@ -1134,11 +1137,11 @@ namespace p
 		}
 	}
 	void GetAllParents(
-	    TAccessRef<CChild> access, TSpan<const Id> childrenIds, TArray<Id>& outParents)
+	    TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents)
 	{
 		outParents.Clear(false);
 
-		TArray<Id> children{childrenIds.begin(), childrenIds.Size()};
+		TArray<Id> children{childrenIds.begin(), childrenIds.end()};
 		TArray<Id> parents;
 
 		while (children.Size() > 0)
@@ -1162,12 +1165,12 @@ namespace p
 		}
 		return NoId;
 	}
-	void FindParents(TAccessRef<CChild> access, TSpan<const Id> childrenIds, TArray<Id>& outParents,
+	void FindParents(TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents,
 	    const TFunction<bool(Id)>& callback)
 	{
 		outParents.Clear(false);
 
-		TArray<Id> children{childrenIds.begin(), childrenIds.Size()};
+		TArray<Id> children{childrenIds};
 		TArray<Id> parents;
 
 		while (children.Size() > 0)
@@ -1191,7 +1194,7 @@ namespace p
 		}
 	}
 
-	void Remove(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TSpan<Id> nodes, bool deep)
+	void Remove(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TView<Id> nodes, bool deep)
 	{
 		DetachFromParents(access, nodes, true);
 
@@ -1211,7 +1214,7 @@ namespace p
 	}
 
 
-	bool FixParentLinks(TAccessRef<TWrite<CChild>, CParent> access, TSpan<Id> parents)
+	bool FixParentLinks(TAccessRef<TWrite<CChild>, CParent> access, TView<Id> parents)
 	{
 		bool fixed = false;
 		for (Id parentId : parents)
@@ -1239,7 +1242,7 @@ namespace p
 		return fixed;
 	}
 
-	bool ValidateParentLinks(TAccessRef<CChild, CParent> access, TSpan<Id> parents)
+	bool ValidateParentLinks(TAccessRef<CChild, CParent> access, TView<Id> parents)
 	{
 		for (Id parentId : parents)
 		{

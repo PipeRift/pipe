@@ -1,19 +1,21 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Macros.h"
 #include "Pipe/Core/Tag.h"
+#include "Pipe/PipeArrays.h"
 #include "Pipe/Reflect/ArrayProperty.h"
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 #include "Pipe/Reflect/ClassType.h"
 #include "Pipe/Reflect/Property.h"
 #include "Pipe/Reflect/StructType.h"
 #include "Pipe/Reflect/TypeId.h"
+#include "Pipe/Reflect/TypeName.h"
 #include "Pipe/Reflect/TypeRegistry.h"
 #include "Pipe/Serialize/Reader.h"
 #include "Pipe/Serialize/Writer.h"
+
 
 
 namespace p
@@ -83,7 +85,7 @@ namespace p
 			property->name        = name;
 			property->access      = access;
 			property->flags       = propFlags;
-			property->displayName = Strings::ToSentenceCase(p::String{name.AsString()});
+			property->displayName = Strings::ToSentenceCase(name.AsString());
 			property->owner->properties.Add(property);
 		}
 

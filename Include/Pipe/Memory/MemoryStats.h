@@ -2,10 +2,15 @@
 
 #pragma once
 
-#include "Pipe/Core/Backward.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Set.h"
-#include "Pipe/Memory/IAllocator.h"
+#include "Pipe/Core/StringView.h"
+#include "Pipe/Memory/STLAllocator.h"
+#include "Pipe/PipeArrays.h"
+
+// #if P_ENABLE_ALLOCATION_STACKS
+#include "Pipe/Core/Backward.h"
+// #endif
 
 #include <cstdlib>
 #include <shared_mutex>
@@ -19,10 +24,8 @@ namespace p
 	public:
 		MemoryStatsArena()
 		{
-			Interface<MemoryStatsArena, &MemoryStatsArena::Alloc, &MemoryStatsArena::Alloc,
-			    &MemoryStatsArena::Realloc, &MemoryStatsArena::Free>();
+			Interface<MemoryStatsArena>();
 		}
-		~MemoryStatsArena() override = default;
 
 		inline void* Alloc(const sizet size)
 		{
@@ -45,15 +48,15 @@ namespace p
 
 	struct PIPE_API AllocationStats
 	{
-		void* ptr  = nullptr;
-		sizet size = 0;
+		u8* ptr  = nullptr;
+		u64 size = 0;
 	};
 
 	struct PIPE_API SortLessAllocationStats
 	{
 		bool operator()(const AllocationStats& a, const AllocationStats& b) const
 		{
-			return a.ptr < b.ptr;
+			return a.ptr + a.size < b.ptr;
 		}
 
 		bool operator()(void* a, const AllocationStats& b) const
@@ -63,23 +66,30 @@ namespace p
 
 		bool operator()(const AllocationStats& a, void* b) const
 		{
-			return a.ptr < b;
+			return a.ptr + a.size < b;
 		}
 	};
 
 
 	struct PIPE_API MemoryStats
 	{
+		MemoryStatsArena arena;
 		sizet used = 0;
 		mutable std::shared_mutex mutex;
-		std::vector<AllocationStats> allocations;
+		std::vector<AllocationStats, STLAllocator<AllocationStats>> allocations;
 #if P_ENABLE_ALLOCATION_STACKS
-		std::vector<backward::StackTrace<std::allocator>> allocationStacks{};
+		// std::vector<backward::StackTrace, STLAllocator<backward::StackTrace>> stacks{};
 #endif
+		std::vector<AllocationStats, STLAllocator<AllocationStats>> freedAllocations;
 
+		MemoryStats();
 		~MemoryStats();
 
 		void Add(void* ptr, sizet size);
 		void Remove(void* ptr);
+
+	private:
+		void PrintAllocationError(
+		    StringView error, AllocationStats* allocation, const backward::StackTrace* stack);
 	};
 }    // namespace p

@@ -10,19 +10,18 @@
 #include "Pipe/Reflect/TypeRegistry.h"
 
 
-#define ENUM(type)                                                   \
-	template<>                                                       \
-	struct p::reflection::TStaticEnumInitializer<type>               \
-	{                                                                \
-		static constexpr bool enabled = true;                        \
-		static const p::TFunction<p::EnumType*()> onInit;            \
-	};                                                               \
-	inline const p::TFunction<p::EnumType*()>                        \
-	    p::reflection::TStaticEnumInitializer<type>::onInit = []() { \
-		    p::TEnumTypeBuilder<type> builder{};                     \
-		    builder.BeginBuild();                                    \
-		    return builder.GetType();                                \
-	    };
+#define ENUM(type)                                                                             \
+	template<>                                                                                 \
+	struct p::TStaticEnumInitializer<type>                                                     \
+	{                                                                                          \
+		static constexpr bool enabled = true;                                                  \
+		static const p::TFunction<p::EnumType*()> onInit;                                      \
+	};                                                                                         \
+	inline const p::TFunction<p::EnumType*()> p::TStaticEnumInitializer<type>::onInit = []() { \
+		p::TEnumTypeBuilder<type> builder{};                                                   \
+		builder.BeginBuild();                                                                  \
+		return builder.GetType();                                                              \
+	};
 
 
 namespace p
@@ -61,7 +60,7 @@ namespace p
 			const auto values = GetEnumValues<T>();
 			newType.valueSize = sizeof(T);
 			newType.values.Resize(values.size() * newType.valueSize);
-			for (u32 i = 0; i < values.size(); ++i)
+			for (i32 i = 0; i < values.size(); ++i)
 			{
 				// Copy value into the correct entry index
 				memcpy(newType.GetValuePtrByIndex(i), &values[i], newType.valueSize);

@@ -14,24 +14,6 @@ namespace p
 	/* Guid interface
 	 *****************************************************************************/
 
-	void Guid::Read(Reader& ct)
-	{
-		ct.BeginObject();
-		ct.Next(TX("a"), a);
-		ct.Next(TX("b"), b);
-		ct.Next(TX("c"), c);
-		ct.Next(TX("d"), d);
-	}
-
-	void Guid::Write(Writer& ct) const
-	{
-		ct.BeginObject();
-		ct.Next(TX("a"), a);
-		ct.Next(TX("b"), b);
-		ct.Next(TX("c"), c);
-		ct.Next(TX("d"), d);
-	}
-
 	String Guid::ToString(EGuidFormats Format) const
 	{
 		switch (Format)
@@ -230,5 +212,24 @@ namespace p
 		);*/
 
 		return true;
+	}
+
+
+	void Read(Reader& ct, Guid& guid)
+	{
+		ct.BeginObject();
+		ct.Next(TX("a"), guid.a);
+		ct.Next(TX("b"), guid.b);
+		ct.Next(TX("c"), guid.c);
+		ct.Next(TX("d"), guid.d);
+	}
+
+	void Write(Writer& ct, const Guid& guid)
+	{
+		ct.BeginObject();
+		ct.Next(TX("a"), guid.a);
+		ct.Next(TX("b"), guid.b);
+		ct.Next(TX("c"), guid.c);
+		ct.Next(TX("d"), guid.d);
 	}
 }    // namespace p

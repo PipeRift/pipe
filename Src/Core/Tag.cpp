@@ -44,6 +44,7 @@ namespace p::core
 		bool automaticFlush = true;
 
 	public:
+		TagStringTable();
 		TagHeader& GetOrAddTagString(sizet hash, StringView value);
 		void FreeTagString(sizet hash, TagHeader& str);
 	};
@@ -128,17 +129,6 @@ namespace p::core
 		return {};
 	}
 
-	void Tag::Read(Reader& ct)
-	{
-		StringView str;
-		ct.Serialize(str);
-		*this = Tag(str);
-	}
-	void Tag::Write(Writer& ct) const
-	{
-		ct.Serialize(AsString());
-	}
-
 	constexpr sizet GetAllocSize(sizet dataSize)
 	{
 		// +1 for the end character of the string
@@ -189,6 +179,13 @@ namespace p::core
 		return hash < ref.hash;
 	}
 
+
+	TagStringTable::TagStringTable()
+	{
+		// Ensure pipe memory is initialized. This guaranties memory is deinitialized before tags
+		InitializeMemory();
+	}
+
 	TagHeader& TagStringTable::GetOrAddTagString(sizet hash, StringView value)
 	{
 		i32 index;
@@ -211,8 +208,7 @@ namespace p::core
 		}
 
 		const sizet size = value.size();
-		auto* header =
-		    static_cast<TagHeader*>(p::Alloc(arena, GetAllocSize(size), alignof(TagHeader)));
+		auto* header = static_cast<TagHeader*>(arena.Alloc(GetAllocSize(size), alignof(TagHeader)));
 		header->activeTags = 0;
 		header->size       = size;
 		// Copy string data
@@ -230,5 +226,16 @@ namespace p::core
 		std::unique_lock lock{stringsListMutex};
 		strings.RemoveSorted(hash, {}, false);
 		arena.Free(&str, GetAllocSize(str.size));
+	}
+
+	void Read(Reader& ct, Tag& tag)
+	{
+		StringView str;
+		ct.Serialize(str);
+		tag = Tag(str);
+	}
+	void Write(Writer& ct, const Tag& tag)
+	{
+		ct.Serialize(tag.AsString());
 	}
 }    // namespace p::core

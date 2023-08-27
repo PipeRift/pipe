@@ -1,9 +1,9 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
+#include "Pipe/PipeArrays.h"
 #include "Pipe/Serialize/SerializationTypes.h"
 
 
@@ -100,8 +100,10 @@ namespace p
 	};
 
 	template<SerializeFormat format>
-	concept HasReader = !IsVoid<typename FormatBind<format>::Reader>;
+	concept HasReader = !
+	IsVoid<typename FormatBind<format>::Reader>;
 
 	template<SerializeFormat format>
-	concept HasWriter = !IsVoid<typename FormatBind<format>::Writer>;
+	concept HasWriter = !
+	IsVoid<typename FormatBind<format>::Writer>;
 }    // namespace p

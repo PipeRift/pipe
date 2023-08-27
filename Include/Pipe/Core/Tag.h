@@ -2,11 +2,10 @@
 #pragma once
 
 #include "Pipe/Core/Hash.h"
+#include "Pipe/Core/String.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/MultiLinearArena.h"
-#include "Pipe/Reflect/TypeFlags.h"
 #include "Pipe/Serialize/SerializationFwd.h"
-#include "String.h"
 
 
 namespace p::core
@@ -64,10 +63,6 @@ namespace p::core
 			return {};
 		};
 
-		void Read(Reader& ct);
-		void Write(Writer& ct) const;
-
-
 		/**
 		 * Frees string data not being used by any tag instances
 		 * @returns number of freed strings
@@ -89,12 +84,15 @@ namespace p::core
 	{
 		return tag.AsString();
 	}
+
+
+	PIPE_API void Read(Reader& ct, Tag& tag);
+	PIPE_API void Write(Writer& ct, const Tag& tag);
 }    // namespace p::core
 
 namespace p
 {
 	using namespace p::core;
-
 
 	template<>
 	struct Hash<Tag>
@@ -104,17 +102,6 @@ namespace p
 			return k.GetHash();
 		}
 	};
-
-	template<>
-	struct TFlags<Tag> : public DefaultTFlags
-	{
-		enum
-		{
-			HasMemberSerialize = true
-		};
-	};
-
-	OVERRIDE_TYPE_NAME(Tag)
 }    // namespace p
 
 

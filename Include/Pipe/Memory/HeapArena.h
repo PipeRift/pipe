@@ -12,24 +12,23 @@ namespace p
 	public:
 		HeapArena()
 		{
-			Interface<HeapArena, &HeapArena::Alloc, &HeapArena::Alloc, &HeapArena::Realloc,
-			    &HeapArena::Free>();
+			Interface<HeapArena>();
 		}
 		~HeapArena() override = default;
 
-		inline void* Alloc(const sizet size)
+		void* Alloc(const sizet size)
 		{
 			return p::HeapAlloc(size);
 		}
-		inline void* Alloc(const sizet size, const sizet align)
+		void* Alloc(const sizet size, const sizet align)
 		{
 			return p::HeapAlloc(size, align);
 		}
-		inline bool Realloc(void* ptr, const sizet ptrSize, const sizet size)
+		bool Realloc(void* ptr, const sizet ptrSize, const sizet size)
 		{
 			return false;
 		}
-		inline void Free(void* ptr, sizet size)
+		void Free(void* ptr, sizet size)
 		{
 			p::HeapFree(ptr);
 		}

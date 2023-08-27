@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Platform.h"
-#include "Pipe/Memory/ArenaAllocator.h"
+#include "Pipe/Memory/Arena.h"
+#include "Pipe/PipeArrays.h"
 
 #include <memory>
 
@@ -16,28 +16,27 @@ namespace p
 	 * elements behind. Growing or shrinking expands the pages of instances but DOES NOT handle
 	 * constructors and destructors. This should be done by the user (Insert, RemoveAt, Swap, etc).
 	 */
-	template<typename Type, i32 PageSize, typename Allocator = ArenaAllocator>
+	template<typename Type, i32 PageSize>
 	struct TPageBuffer
 	{
 		static_assert(!IsVoid<Type>, "PageBuffer's type can't be void");
 
-		template<typename OtherType, i32 OtherPageSize, typename OtherAllocator>
+		template<typename OtherType, i32 OtherPageSize>
 		friend struct TPageBuffer;
 
-		using AllocatorType           = Allocator;
 		using ItemType                = Type;
 		static constexpr i32 pageSize = PageSize;
 
 	protected:
 		TArray<Type*> pages;
-		typename Allocator::template Typed<Type> allocator{};
+		Arena* arena = nullptr;
 
 	public:
 		TFunction<void(sizet index, Type* page, i32 size)> onPageAllocated;
 
 
 	public:
-		TPageBuffer() = default;
+		TPageBuffer(Arena& arena) : pages(arena), arena{&arena} {};
 		~TPageBuffer()
 		{
 			Shrink(0);
@@ -96,7 +95,7 @@ namespace p
 				Type* const page = pages[pos];
 				if (page)
 				{
-					allocator.Free(page, pageSize);
+					p::Free(*arena, page, pageSize);
 				}
 			}
 			pages.Resize(from);
@@ -149,7 +148,7 @@ namespace p
 			Type*& page         = pages[pageIndex];
 			if (!page) [[unlikely]]
 			{
-				page = allocator.Alloc(pageSize);
+				page = p::Alloc<Type>(*arena, pageSize);
 				if (onPageAllocated)
 				{
 					onPageAllocated(pageIndex, page, pageSize);
@@ -182,7 +181,7 @@ namespace p
 		{
 			Clear();
 			pages           = Exchange(other.pages, {});
-			allocator       = Exchange(other.allocator, {});
+			arena           = Exchange(other.arena, {});
 			onPageAllocated = Exchange(other.onPageAllocated, {});
 		}
 	};

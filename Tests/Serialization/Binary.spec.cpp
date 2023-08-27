@@ -242,7 +242,7 @@ go_bandit([]() {
 				ct.Next("name", StringView{"Miguel"});
 
 				TArray<u8> expected{6, 0, 0, 0, 'M', 'i', 'g', 'u', 'e', 'l'};
-				AssertThat(writer.GetData(), Equals(TSpan<u8>{expected}));
+				AssertThat(writer.GetData(), Equals(TView<u8>{expected}));
 			});
 
 			it("Can write arrays", [&]() {
@@ -253,7 +253,7 @@ go_bandit([]() {
 				ct.Next(u8(255));
 
 				TArray<u8> expected{2, 0, 0, 0, 255, 255};
-				AssertThat(writer.GetData(), Equals(TSpan<u8>{expected}));
+				AssertThat(writer.GetData(), Equals(TView<u8>{expected}));
 			});
 
 			describe("Types", []() {
@@ -264,7 +264,7 @@ go_bandit([]() {
 					ct.Next("a", true);
 					ct.Next("b", false);
 					TArray<u8> expected{1, 0};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write i8 values", [&]() {
@@ -274,7 +274,7 @@ go_bandit([]() {
 					ct.Next("a", i8(127));
 					ct.Next("b", i8(-128));
 					TArray<u8> expected{127, 128};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write u8 values", [&]() {
@@ -284,7 +284,7 @@ go_bandit([]() {
 					ct.Next("a", u8(0));
 					ct.Next("b", u8(255));
 					TArray<u8> expected{0, 255};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write i16 values", [&]() {
@@ -294,7 +294,7 @@ go_bandit([]() {
 					ct.Next("a", Limits<i16>::Max());
 					ct.Next("b", Limits<i16>::Lowest());
 					TArray<u8> expected{255, 127, 0, 128};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write u16 values", [&]() {
@@ -304,7 +304,7 @@ go_bandit([]() {
 					ct.Next("a", Limits<u16>::Max());
 					ct.Next("b", Limits<u16>::Lowest());
 					TArray<u8> expected{255, 255, 0, 0};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write i32 values", [&]() {
@@ -314,7 +314,7 @@ go_bandit([]() {
 					ct.Next("a", Limits<i32>::Max());
 					ct.Next("b", Limits<i32>::Lowest());
 					TArray<u8> expected{255, 255, 255, 127, 0, 0, 0, 128};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write u32 values", [&]() {
@@ -324,7 +324,7 @@ go_bandit([]() {
 					ct.Next("a", Limits<u32>::Max());
 					ct.Next("b", Limits<u32>::Lowest());
 					TArray<u8> expected{255, 255, 255, 255, 0, 0, 0, 0};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write i64 values", [&]() {
@@ -335,7 +335,7 @@ go_bandit([]() {
 					ct.Next("b", Limits<i64>::Lowest());
 					TArray<u8> expected{
 					    255, 255, 255, 255, 255, 255, 255, 127, 0, 0, 0, 0, 0, 0, 0, 128};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write u64 values", [&]() {
@@ -346,7 +346,7 @@ go_bandit([]() {
 					ct.Next("b", Limits<u64>::Lowest());
 					TArray<u8> expected{
 					    255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write float values", [&]() {
@@ -356,7 +356,7 @@ go_bandit([]() {
 					ct.Next("a", -1.4f);
 					ct.Next("b", 3.5f);
 					TArray<u8> expected{51, 51, 179, 191, 0, 0, 96, 64};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write double values", [&]() {
@@ -367,7 +367,7 @@ go_bandit([]() {
 					ct.Next("b", 3.5);
 					TArray<u8> expected{
 					    102, 102, 102, 102, 102, 102, 246, 191, 0, 0, 0, 0, 0, 0, 12, 64};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 
 				it("Can write StringView values", [&]() {
@@ -376,7 +376,7 @@ go_bandit([]() {
 					ct.BeginObject();
 					ct.Next("a", StringView{"yes"});
 					TArray<u8> expected{3, 0, 0, 0, 'y', 'e', 's'};
-					AssertThat(writer.GetData(), Equals(TSpan<u8>(expected)));
+					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
 				});
 			});
 		});

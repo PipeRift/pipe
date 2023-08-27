@@ -1,8 +1,8 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Platform.h"
+#include "Pipe/PipeArrays.h"
 
 
 namespace p::core

@@ -6,6 +6,9 @@
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 
+/// @OPTIMIZE: Try to remove this include
+#include "Pipe/Core/String.h"
+
 
 namespace p
 {
@@ -885,12 +888,12 @@ namespace p
 	PIPE_API void Write(Writer& ct, const v3_i32& val);
 }    // namespace p
 
-REFLECT_NATIVE_TYPE(p::v2);
-REFLECT_NATIVE_TYPE(p::v2_u32);
-REFLECT_NATIVE_TYPE(p::v2_i32);
-REFLECT_NATIVE_TYPE(p::v3);
-REFLECT_NATIVE_TYPE(p::v3_u32);
-REFLECT_NATIVE_TYPE(p::v3_i32);
+P_REFLECT_NATIVE_TYPE(p::v2);
+P_REFLECT_NATIVE_TYPE(p::v2_u32);
+P_REFLECT_NATIVE_TYPE(p::v2_i32);
+P_REFLECT_NATIVE_TYPE(p::v3);
+P_REFLECT_NATIVE_TYPE(p::v3_u32);
+P_REFLECT_NATIVE_TYPE(p::v3_i32);
 
 
 template<typename T>

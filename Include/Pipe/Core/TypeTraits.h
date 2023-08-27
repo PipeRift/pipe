@@ -39,6 +39,9 @@ namespace p
 	concept Convertible = std::is_same_v<From, To> || std::is_convertible_v<From, To>;
 
 	template<typename T>
+	concept IsScalar = std::is_scalar_v<T>;
+
+	template<typename T>
 	concept Number = std::is_integral_v<T> || std::is_floating_point_v<T>;
 
 	template<typename T>
@@ -113,6 +116,12 @@ namespace p
 	template<typename T>
 	concept IsEnum = std::is_enum_v<T>;
 
+	template<typename T>
+	concept IsPointer = std::is_pointer_v<T>;
+
+	template<typename T>
+	concept IsMemberPointer = std::is_member_pointer_v<T>;
+
 	template<bool UseT, typename T, typename F>
 	using Select = typename std::conditional<UseT, T, F>::type;
 
@@ -183,6 +192,9 @@ namespace p
 	using UnderlyingType = typename std::underlying_type<T>::type;
 
 	template<typename T>
+	using UnwrapEnum = Select<IsEnum<T>, UnderlyingType<T>, T>;
+
+	template<typename T>
 	using Mut = std::remove_const_t<T>;
 	template<typename T>
 	using Const = std::add_const_t<T>;
@@ -192,6 +204,9 @@ namespace p
 	template<typename T>
 	concept IsMutable = !
 	std::is_const_v<T>;
+	template<typename T>
+	concept IsVolatile = !
+	std::is_volatile_v<T>;
 
 
 	template<typename T, typename Reference>
@@ -206,6 +221,52 @@ namespace p
 	};
 	template<typename T, typename Reference>
 	using CopyConst = typename TCopyConst<T, Reference>::type;
+
+
+	/** An untyped array of data with compile-time alignment and size derived from another type. */
+	template<typename T>
+	struct TTypeAsBytes
+	{
+		using Type = T;
+		constexpr Type* AsType()
+		{
+			return reinterpret_cast<Type*>(this);
+		}
+		constexpr const Type* AsType() const
+		{
+			return reinterpret_cast<const Type*>(this);
+		}
+
+		alignas(Type) u8 pad[sizeof(Type)];
+	};
+
+	template<typename Type, i32 Count>
+	struct TTypeAsBytesArray
+	{
+		TTypeAsBytes<Type> data[Count];
+
+		constexpr Type* Data()
+		{
+			return reinterpret_cast<Type*>(data);
+		}
+		constexpr const Type* Data() const
+		{
+			return reinterpret_cast<const Type*>(data);
+		}
+	};
+
+	template<typename Type>
+	struct TTypeAsBytesArray<Type, 0>
+	{
+		constexpr Type* Data()
+		{
+			return nullptr;
+		}
+		constexpr const Type* Data() const
+		{
+			return nullptr;
+		}
+	};
 }    // namespace p
 
 #define P_DECLARE_IS_TRIVIAL(T, isTrivial)                                                   \

@@ -3,11 +3,11 @@
 #pragma once
 
 #include "Pipe/Core/Platform.h"
-#include "Pipe/Core/Span.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Export.h"
 #include "Pipe/Files/STDFileSystem.h"
+#include "Pipe/PipeArrays.h"
 
 
 namespace p::files
@@ -74,7 +74,7 @@ namespace p::files
 
 	PIPE_API String JoinPaths(StringView base, StringView relative);
 	PIPE_API String JoinPaths(StringView base, StringView relative, StringView relative2);
-	PIPE_API String JoinPaths(TSpan<StringView> paths);
+	PIPE_API String JoinPaths(TView<StringView> paths);
 	PIPE_API void AppendToPath(String& base, StringView other);
 
 	PIPE_API bool AppendPathSeparatorIfNeeded(String& path);

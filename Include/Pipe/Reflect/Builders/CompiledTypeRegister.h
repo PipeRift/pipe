@@ -30,11 +30,11 @@ namespace p
 			}
 			else if constexpr (IsReflectedEnum<T>())
 			{
-				type = reflection::TStaticEnumInitializer<T>::onInit();
+				type = TStaticEnumInitializer<T>::onInit();
 			}
 			else if constexpr (IsReflectedNative<T>())
 			{
-				type = reflection::TStaticNativeInitializer<T>::onInit();
+				type = TStaticNativeInitializer<T>::onInit();
 			}
 			return type;
 		}

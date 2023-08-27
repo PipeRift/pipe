@@ -115,7 +115,7 @@ go_bandit([]() {
 			ctx.AddN(ids, NonEmptyComponent{2});
 
 			NonEmptyComponent::destructed = 0;
-			TSpan<Id> firstTwo{ids.Data(), ids.Data() + 2};
+			TView<Id> firstTwo{ids.Data(), ids.Data() + 2};
 			ctx.Remove<NonEmptyComponent>(firstTwo);
 			AssertThat(NonEmptyComponent::destructed, Equals(2));
 			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[0]), Equals(nullptr));
@@ -126,7 +126,7 @@ go_bandit([]() {
 			ctx.AddN(ids, NonEmptyComponent{2});
 
 			NonEmptyComponent::destructed = 0;
-			TSpan<Id> lastTwo{ids.Data() + 1, ids.Data() + 3};
+			TView<Id> lastTwo{ids.Data() + 1, ids.Data() + 3};
 			ctx.Remove<NonEmptyComponent>(lastTwo);
 			AssertThat(NonEmptyComponent::destructed, Equals(2));
 			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[0]), !Equals(nullptr));

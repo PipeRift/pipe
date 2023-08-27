@@ -1,8 +1,8 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/TypeTraits.h"
+#include "Pipe/PipeArrays.h"
 #include "Pipe/Reflect/Builders/CompiledTypeRegister.h"
 #include "Pipe/Reflect/Property.h"
 #include "Pipe/Reflect/ReflectionFlags.h"

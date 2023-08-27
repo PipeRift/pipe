@@ -1,8 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Span.h"
-#include "Pipe/Core/String.h"
+#include "Pipe/PipeArraysFwd.h"
 #include "Pipe/Serialize/Formats/TFormat.h"
 
 
@@ -11,11 +10,11 @@ namespace p
 	struct BinaryFormatReader : public TFormatReader<SerializeFormat::Binary>
 	{
 	private:
-		TSpan<u8> data;
+		TView<u8> data;
 		u8* pointer = nullptr;
 
 	public:
-		PIPE_API BinaryFormatReader(TSpan<u8> data);
+		PIPE_API BinaryFormatReader(TView<u8> data);
 		PIPE_API ~BinaryFormatReader();
 
 		PIPE_API void BeginObject() override {}    // Nothing to do
@@ -40,10 +39,7 @@ namespace p
 
 		PIPE_API bool IsObject() const override;
 		PIPE_API bool IsArray() const override;
-		PIPE_API bool IsValid() const override
-		{
-			return data.Data() && !data.IsEmpty();
-		}
+		PIPE_API bool IsValid() const override;
 	};
 
 	struct BinaryFormatWriter : public TFormatWriter<SerializeFormat::Binary>
@@ -82,7 +78,7 @@ namespace p
 		}
 		// END Writer Interface
 
-		PIPE_API TSpan<p::u8> GetData();
+		PIPE_API TView<p::u8> GetData();
 
 	private:
 		void PreAlloc(p::u32 offset);

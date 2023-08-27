@@ -36,7 +36,7 @@ namespace p
 }
 
 #if P_DEBUG
-#	define P_FORCEINLINE inline                                /* Don't force code to be inline */
+#	define P_FORCEINLINE inline /* Don't force code to be inline */
 #else
 #	define P_FORCEINLINE inline __attribute__((always_inline)) /* Force code to be inline */
 #endif

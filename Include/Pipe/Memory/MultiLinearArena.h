@@ -1,13 +1,8 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Array.h"
-#include "Pipe/Core/Limits.h"
-#include "Pipe/Core/Utility.h"
-#include "Pipe/Math/Math.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"
-#include "Pipe/Memory/Block.h"
 #include "Pipe/Memory/Memory.h"
 
 
@@ -96,8 +91,7 @@ namespace p
 	public:
 		MultiLinearArena(Arena& parentArena = GetCurrentArena()) : ChildArena(&parentArena)
 		{
-			Interface<MultiLinearArena, &MultiLinearArena::Alloc, &MultiLinearArena::Alloc,
-			    &MultiLinearArena::Realloc, &MultiLinearArena::Free>();
+			Interface<MultiLinearArena>();
 		}
 		~MultiLinearArena() override
 		{
@@ -121,7 +115,7 @@ namespace p
 
 		void Grow(sizet size, sizet align = 0);
 
-		sizet GetUsedMemory() const
+		sizet GetUsedMemory() const override
 		{
 			NotImplemented;
 			return 0;

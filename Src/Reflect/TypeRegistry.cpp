@@ -2,9 +2,13 @@
 
 #include "Pipe/Reflect/TypeRegistry.h"
 
+#include "Pipe/Memory/HeapArena.h"
+
 
 namespace p
 {
+	TypeRegistry::TypeRegistry() : idToTypes{GetHeapArena()} {}
+
 	void TypeRegistry::Initialize()
 	{
 		auto& registry = Get();
@@ -37,6 +41,16 @@ namespace p
 		{
 			compiledTypeRegisters.Add(callback);
 		}
+	}
+
+	void TypeRegistry::Reset()
+	{
+		for (auto it : idToTypes)
+		{
+			it.second->~Type();
+		}
+		idToTypes = {GetHeapArena()};
+		arena.Release();
 	}
 
 	TypeRegistry& TypeRegistry::Get()

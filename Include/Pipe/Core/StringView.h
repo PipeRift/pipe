@@ -9,7 +9,7 @@
 #include <string_view>
 
 
-namespace p::core
+namespace p
 {
 	template<typename CharType>
 	using TStringView = std::basic_string_view<CharType, std::char_traits<CharType>>;
@@ -274,11 +274,6 @@ namespace p::core
 
 		// END TChar API
 	}    // namespace Strings
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
 
 
 	template<>

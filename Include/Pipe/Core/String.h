@@ -2,13 +2,12 @@
 
 #pragma once
 
-#include "Pipe/Core/Array.h"
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Memory/ArenaAllocator.h"
-#include "Pipe/Reflect/TypeName.h"
+#include "Pipe/Memory/STLAllocator.h"
+#include "Pipe/PipeArrays.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 
 #include <fmt/format.h>
@@ -21,18 +20,17 @@
 #pragma warning(disable:4996)
 
 
-namespace p::core
+namespace p
 {
 	template<typename CharType>
-	using TString = std::basic_string<CharType, std::char_traits<CharType>,
-	    STLAllocator<CharType, ArenaAllocator>>;
+	using TString =
+	    std::basic_string<CharType, std::char_traits<CharType>, std::allocator<CharType>>;
 	using String  = TString<TChar>;
 	using WString = TString<WideChar>;
 
 	template<typename CharType, sizet inlineSize = fmt::inline_buffer_size>
-	using TStringBuffer =
-	    fmt::basic_memory_buffer<CharType, inlineSize, STLAllocator<CharType, ArenaAllocator>>;
-	using StringBuffer = TStringBuffer<TChar>;
+	using TStringBuffer = fmt::basic_memory_buffer<CharType, inlineSize, std::allocator<CharType>>;
+	using StringBuffer  = TStringBuffer<TChar>;
 
 
 	namespace Strings
@@ -53,7 +51,7 @@ namespace p::core
 			    std::back_inserter(buffer), fmt::runtime(format), std::forward<Args>(args)...);
 		}
 
-		PIPE_API String ToSentenceCase(const String& value);
+		PIPE_API String ToSentenceCase(StringView value);
 
 		/**
 		 * Breaks up a delimited string into elements of a string array.
@@ -123,11 +121,6 @@ namespace p::core
 			return Move(dest);
 		}
 	};    // namespace Strings
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
 
 
 	template<>
@@ -141,7 +134,6 @@ namespace p
 
 	PIPE_API void Read(p::Reader& ct, p::String& val);
 	PIPE_API void Write(p::Writer& ct, const p::String& val);
-	OVERRIDE_TYPE_NAME(String)
 }    // namespace p
 
 
