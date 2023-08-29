@@ -3,6 +3,7 @@
 #include "Pipe/Core/Tag.h"
 
 #include "Pipe/Memory/Memory.h"
+#include "Pipe/Memory/MultiLinearArena.h"
 #include "Pipe/Serialize/Serialization.h"
 
 #include <mutex>
@@ -180,7 +181,7 @@ namespace p::core
 	}
 
 
-	TagStringTable::TagStringTable()
+	TagStringTable::TagStringTable() : strings{arena}
 	{
 		// Ensure pipe memory is initialized. This guaranties memory is deinitialized before tags
 		InitializeMemory();

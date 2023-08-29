@@ -1539,22 +1539,26 @@ namespace p
 				MoveOrCopyConstructItems<Type, true>(Super::data, atIndex, oldData);
 
 				// Move elements after insertion index
-				const i32 countToPush = oldSize - atIndex;
 				MoveOrCopyConstructItems<Type, true>(
-				    Super::data + atIndex + count, countToPush, oldData + atIndex);
+				    Super::data + atIndex + count, oldSize - atIndex, oldData + atIndex);
 			}
 			FreeOldBuffer(oldData, oldCapacity);
 		}
 		else if (atIndex != Super::size)
 		{
+			// Imagine we insert 1 element at the start of "A B":
+			// First we move last trailing elements to unconstructed positions
+			// "A B #" -> "A # B"
+			MoveConstructItems(Super::data + oldSize, count, Super::data + oldSize - count);
+
+			// Then we push the other trailing elements
+			// "A # B" -> "# A B"
 			Type* const ptrToPush = Super::data + atIndex;
-			const i32 countToPush = oldSize - atIndex;
-			// Push elements after insertion index
-			MoveItemsBackwards(ptrToPush + count, countToPush, ptrToPush);
+			MoveItemsBackwards(ptrToPush + count, oldSize - atIndex - count, ptrToPush);
 		}
 		else
 		{
-			// If we insert at end we have nothing else to do
+			// If we insert at the end we have no trailing elements to move
 		}
 	}
 

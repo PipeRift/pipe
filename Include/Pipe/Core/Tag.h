@@ -4,7 +4,6 @@
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Memory/MultiLinearArena.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 
 
