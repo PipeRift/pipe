@@ -148,7 +148,7 @@ namespace p
 	void BestFitArena::ReduceSlot(
 	    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd)
 	{
-		if (allocationEnd == slot.End())    // Slot would become empty
+		if (allocationEnd == slot.End())         // Slot would become empty
 		{
 			if (allocationStart > slot.start)    // Slot can still fill alignment gap
 			{

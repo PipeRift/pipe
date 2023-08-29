@@ -17,7 +17,6 @@
 #include "Pipe/Serialize/Writer.h"
 
 
-
 namespace p
 {
 	template<typename T, typename Parent, TypeFlags flags, typename TType>

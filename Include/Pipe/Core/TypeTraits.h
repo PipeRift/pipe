@@ -106,12 +106,10 @@ namespace p
 	concept IsEmpty = std::is_empty_v<T>;
 
 	template<typename T, sizet size>
-	concept IsSmaller = sizeof(T) <
-	size;
+	concept IsSmaller = sizeof(T) < size;
 
 	template<typename T, sizet size>
-	concept IsBigger = sizeof(T) >
-	size;
+	concept IsBigger = sizeof(T) > size;
 
 	template<typename T>
 	concept IsEnum = std::is_enum_v<T>;
@@ -202,11 +200,9 @@ namespace p
 	template<typename T>
 	concept IsConst = std::is_const_v<T>;
 	template<typename T>
-	concept IsMutable = !
-	std::is_const_v<T>;
+	concept IsMutable = !std::is_const_v<T>;
 	template<typename T>
-	concept IsVolatile = !
-	std::is_volatile_v<T>;
+	concept IsVolatile = !std::is_volatile_v<T>;
 
 
 	template<typename T, typename Reference>
