@@ -1359,14 +1359,6 @@ namespace p
 			return p::math::Max(desiredCapacity, newSize);
 		}
 
-		void GrowEnough(i32 newSize)
-		{
-			if (capacity < newSize)
-			{
-				Reallocate(GetGrownCapacity(newSize));
-			}
-		}
-
 		/** @return true if element data needs to be moved */
 		bool AllocNewBuffer(i32 newCapacity)
 		{
@@ -1514,9 +1506,12 @@ namespace p
 	template<typename Type, u32 InlineCapacity>
 	void TInlineArray<Type, InlineCapacity>::AddUninitialized(i32 count)
 	{
-		CheckMsg(count >= 0, "Cant add less than zero elements.");
+		CheckMsg(count >= 0, "Can't add less than zero elements.");
 		const i32 newSize = Super::size + count;
-		GrowEnough(newSize);
+		if (capacity < newSize)
+		{
+			Reallocate(GetGrownCapacity(newSize));
+		}
 		Super::size = newSize;
 	}
 
