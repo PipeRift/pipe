@@ -1556,7 +1556,7 @@ namespace p
 			}
 			FreeOldBuffer(oldData, oldCapacity);
 		}
-		else if (atIndex != Super::size)
+		else if (atIndex != oldSize)
 		{
 			// Imagine we insert 1 element at the start of "A B":
 			// First we move last trailing elements to unconstructed positions
