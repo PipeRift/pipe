@@ -3,9 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/Platform.h"
-#include "Pipe/Core/Set.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/Memory/STLAllocator.h"
 #include "Pipe/PipeArrays.h"
 
 // #if P_ENABLE_ALLOCATION_STACKS
@@ -76,11 +74,11 @@ namespace p
 		MemoryStatsArena arena;
 		sizet used = 0;
 		mutable std::shared_mutex mutex;
-		std::vector<AllocationStats, STLAllocator<AllocationStats>> allocations;
+		TArray<AllocationStats> allocations;
 #if P_ENABLE_ALLOCATION_STACKS
-		// std::vector<backward::StackTrace, STLAllocator<backward::StackTrace>> stacks{};
+		TArray<backward::StackTrace> stacks;
 #endif
-		std::vector<AllocationStats, STLAllocator<AllocationStats>> freedAllocations;
+		TArray<AllocationStats> freedAllocations;
 
 		MemoryStats();
 		~MemoryStats();

@@ -998,6 +998,23 @@ namespace p
 		{
 			Insert(atIndex, values.Data(), values.Size());
 		}
+
+		Type& InsertRef(i32 atIndex)
+		{
+			Insert(atIndex);
+			return Super::data[atIndex];
+		}
+		Type& InsertRef(i32 atIndex, Type&& value)
+		{
+			Insert(atIndex, Forward<Type>(value));
+			return Super::data[atIndex];
+		}
+		Type& InsertRef(i32 atIndex, const Type& value)
+		{
+			Insert(atIndex, value);
+			return Super::data[atIndex];
+		}
+
 #pragma endregion Insertions
 
 
