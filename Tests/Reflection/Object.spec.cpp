@@ -11,7 +11,7 @@ using namespace p;
 
 class TestClass : public Class
 {
-	CLASS(TestClass, Class);
+	P_CLASS(TestClass, Class);
 
 public:
 	bool bConstructed = false;

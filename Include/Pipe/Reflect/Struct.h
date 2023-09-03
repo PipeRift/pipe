@@ -23,7 +23,7 @@ namespace p
 		{
 			return Type_NoFlag;
 		}
-		REFLECTION_BODY({})
+		P_REFLECTION_BODY({})
 	};
 
 

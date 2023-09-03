@@ -142,7 +142,7 @@ namespace p
 	// Mark an entity as not serialized (it will be entirely ignored by the serializer)
 	struct CNotSerialized : public Struct
 	{
-		STRUCT(CNotSerialized, Struct)
+		P_STRUCT(CNotSerialized, Struct)
 	};
 
 	class PIPE_API EntityReader : public Reader
@@ -1862,9 +1862,9 @@ namespace p
 
 	struct PIPE_API CParent : public Struct
 	{
-		STRUCT(CParent, Struct)
+		P_STRUCT(CParent, Struct)
 
-		PROP(children)
+		P_PROP(children)
 		TArray<Id> children;
 	};
 	PIPE_API void Read(Reader& ct, CParent& val);
@@ -1872,9 +1872,9 @@ namespace p
 
 	struct PIPE_API CChild : public Struct
 	{
-		STRUCT(CChild, Struct)
+		P_STRUCT(CChild, Struct)
 
-		PROP(parent)
+		P_PROP(parent)
 		Id parent = NoId;
 
 		CChild() = default;

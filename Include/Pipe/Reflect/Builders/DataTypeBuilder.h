@@ -186,8 +186,8 @@ namespace p
 
 
 /** Defines a Class */
-#define CLASS_HEADER_NO_FLAGS(type, parent) CLASS_HEADER_FLAGS(type, parent, p::Type_NoFlag)
-#define CLASS_HEADER_FLAGS(type, parent, flags)                                  \
+#define P_CLASS_HEADER_NO_FLAGS(type, parent) P_CLASS_HEADER_FLAGS(type, parent, p::Type_NoFlag)
+#define P_CLASS_HEADER_FLAGS(type, parent, flags)                                \
 private:                                                                         \
 	using ThisType = type;                                                       \
 	static inline p::TCompiledTypeRegister<ThisType> typeRegister{};             \
@@ -211,8 +211,8 @@ public:                                                                         
 
 
 /** Defines an Struct */
-#define STRUCT_HEADER_NO_FLAGS(type, parent) STRUCT_HEADER_FLAGS(type, parent, p::Type_NoFlag)
-#define STRUCT_HEADER_FLAGS(type, parent, flags)                                  \
+#define P_STRUCT_HEADER_NO_FLAGS(type, parent) P_STRUCT_HEADER_FLAGS(type, parent, p::Type_NoFlag)
+#define P_STRUCT_HEADER_FLAGS(type, parent, flags)                                \
 private:                                                                          \
 	using ThisType = type;                                                        \
 	static inline p::TCompiledTypeRegister<ThisType> typeRegister{};              \
@@ -231,7 +231,7 @@ public:                                                                         
 	}
 
 
-#define REFLECTION_BODY(buildCode)                                         \
+#define P_REFLECTION_BODY(buildCode)                                       \
 public:                                                                    \
 	static p::Type* InitType()                                             \
 	{                                                                      \
@@ -265,9 +265,9 @@ private:                                                                   \
 public:
 
 
-#define PROPERTY_NO_FLAGS(name) PROPERTY_FLAGS(name, p::Prop_NoFlag)
-#define PROPERTY_FLAGS(name, flags) __PROPERTY_IMPL(name, CAT(__refl_id_, name), flags)
-#define __PROPERTY_IMPL(name, id_name, flags)                                                     \
+#define P_PROPERTY_NO_FLAGS(name) P_PROPERTY_FLAGS(name, p::Prop_NoFlag)
+#define P_PROPERTY_FLAGS(name, flags) __P_PROPERTY_IMPL(name, CAT(__refl_id_, name), flags)
+#define __P_PROPERTY_IMPL(name, id_name, flags)                                                   \
 	static constexpr p::u32 id_name = decltype(__refl_Counter(p::MetaCounter<255>{}))::value;     \
 	static constexpr p::MetaCounter<(id_name) + 1> __refl_Counter(p::MetaCounter<(id_name) + 1>); \
                                                                                                   \
@@ -297,28 +297,28 @@ public:
 	};
 
 
-#define REFL_INTERNAL_GET_3RD_ARG(arg1, arg2, arg3, ...) arg3
-#define REFL_GET_3RD_ARG(tuple) REFL_INTERNAL_GET_3RD_ARG tuple
+#define P_REFL_INTERNAL_GET_3RD_ARG(arg1, arg2, arg3, ...) arg3
+#define P_REFL_GET_3RD_ARG(tuple) P_REFL_INTERNAL_GET_3RD_ARG tuple
 
-#define REFL_INTERNAL_GET_4TH_ARG(arg1, arg2, arg3, arg4, ...) arg4
-#define REFL_GET_4TH_ARG(tuple) REFL_INTERNAL_GET_4TH_ARG tuple
+#define P_REFL_INTERNAL_GET_4TH_ARG(arg1, arg2, arg3, arg4, ...) arg4
+#define P_REFL_GET_4TH_ARG(tuple) P_REFL_INTERNAL_GET_4TH_ARG tuple
 
-#define TYPE_INVALID(...) static_assert(false, "Invalid type macro. Missing first parameters");
+#define P_TYPE_INVALID(...) static_assert(false, "Invalid type macro. Missing first parameters");
 
-#define TYPE_CHOOSER(TYPE_NO_FLAGS, TYPE_FLAGS, type, parent, ...) \
-	REFL_GET_4TH_ARG((type, parent, __VA_ARGS__, TYPE_FLAGS, TYPE_NO_FLAGS, TYPE_INVALID))
+#define P_TYPE_CHOOSER(TYPE_NO_FLAGS, TYPE_FLAGS, type, parent, ...) \
+	P_REFL_GET_4TH_ARG((type, parent, __VA_ARGS__, TYPE_FLAGS, TYPE_NO_FLAGS, TYPE_INVALID))
 
-#define PROP_CHOOSER(TYPE_NO_FLAGS, TYPE_FLAGS, name, ...) \
-	REFL_GET_3RD_ARG((name, __VA_ARGS__, TYPE_FLAGS, TYPE_NO_FLAGS, TYPE_INVALID))
+#define P_PROP_CHOOSER(TYPE_NO_FLAGS, TYPE_FLAGS, name, ...) \
+	P_REFL_GET_3RD_ARG((name, __VA_ARGS__, TYPE_FLAGS, TYPE_NO_FLAGS, TYPE_INVALID))
 
 
-#define CLASS(type, parent, ...)                                                       \
-	TYPE_CHOOSER(CLASS_HEADER_NO_FLAGS, CLASS_HEADER_FLAGS, type, parent, __VA_ARGS__) \
-	(type, parent, __VA_ARGS__) REFLECTION_BODY({})
+#define P_CLASS(type, parent, ...)                                                           \
+	P_TYPE_CHOOSER(P_CLASS_HEADER_NO_FLAGS, P_CLASS_HEADER_FLAGS, type, parent, __VA_ARGS__) \
+	(type, parent, __VA_ARGS__) P_REFLECTION_BODY({})
 
-#define STRUCT(type, parent, ...)                                                        \
-	TYPE_CHOOSER(STRUCT_HEADER_NO_FLAGS, STRUCT_HEADER_FLAGS, type, parent, __VA_ARGS__) \
-	(type, parent, __VA_ARGS__) REFLECTION_BODY({})
+#define P_STRUCT(type, parent, ...)                                                            \
+	P_TYPE_CHOOSER(P_STRUCT_HEADER_NO_FLAGS, P_STRUCT_HEADER_FLAGS, type, parent, __VA_ARGS__) \
+	(type, parent, __VA_ARGS__) P_REFLECTION_BODY({})
 
-#define PROP(name, ...) \
-	PROP_CHOOSER(PROPERTY_NO_FLAGS, PROPERTY_FLAGS, name, __VA_ARGS__)(name, __VA_ARGS__)
+#define P_PROP(name, ...) \
+	P_PROP_CHOOSER(P_PROPERTY_NO_FLAGS, P_PROPERTY_FLAGS, name, __VA_ARGS__)(name, __VA_ARGS__)

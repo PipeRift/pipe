@@ -29,7 +29,7 @@ namespace p
 			return p::GetType<Class>();
 		}
 
-		REFLECTION_BODY({})
+		P_REFLECTION_BODY({})
 
 	public:
 		template<typename T>

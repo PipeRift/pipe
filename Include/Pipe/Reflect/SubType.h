@@ -11,7 +11,7 @@ namespace p
 {
 	struct PIPE_API BaseSubType : public Struct
 	{
-		STRUCT(BaseSubType, Struct)
+		P_STRUCT(BaseSubType, Struct)
 
 	protected:
 		const Type* type = nullptr;
@@ -47,7 +47,7 @@ namespace p
 
 	struct PIPE_API SubType : public BaseSubType
 	{
-		STRUCT(SubType, BaseSubType)
+		P_STRUCT(SubType, BaseSubType)
 
 		const Type* base = nullptr;
 
