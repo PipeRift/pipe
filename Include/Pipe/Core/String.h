@@ -51,6 +51,28 @@ namespace p
 			    std::back_inserter(buffer), fmt::runtime(format), std::forward<Args>(args)...);
 		}
 
+		template<typename StringType, typename T>
+		inline void ToString(StringType& buffer, T value)
+		{
+			if constexpr (Integral<T>)
+			{
+				// The buffer should be large enough to store the number including the sign
+				// or "false" for bool.
+				constexpr int max_size = fmt::detail::digits10<T>() + 2;
+				buffer.reserve(
+				    buffer.size() + (max_size > 5 ? static_cast<unsigned>(max_size) : 5));
+			}
+			fmt::detail::write<char>(std::back_inserter(buffer), value);
+		}
+
+		template<typename StringType, typename T>
+		inline StringType ToString(T value)
+		{
+			StringType str;
+			ToString(str, value);
+			return str;
+		}
+
 		PIPE_API String ToSentenceCase(StringView value);
 
 		/**
