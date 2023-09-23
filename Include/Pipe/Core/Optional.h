@@ -2,9 +2,8 @@
 
 #pragma once
 
+#include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Utility.h"
-
-#include <optional>
 
 
 namespace p
@@ -110,16 +109,16 @@ namespace p
 		/** @return The optional value; undefined when IsSet() returns false. */
 		const Type& Get() const
 		{
-			assert(IsSet() &&
-			       "Called GetValue() on an unset Optional. Please either check IsSet() or "
-			       "use Get(defaultValue) instead.");
+			CheckMsg(IsSet(),
+			    "Called GetValue() on an unset Optional. Please either check IsSet() or "
+			    "use Get(defaultValue) instead.");
 			return value;
 		}
 		Type& Get()
 		{
-			assert(IsSet() &&
-			       "Called Get() on an unset Optional. Please either check IsSet() or "
-			       "use Get(defaultValue) instead.");
+			CheckMsg(IsSet(),
+			    "Called Get() on an unset Optional. Please either check IsSet() or "
+			    "use Get(defaultValue) instead.");
 			return value;
 		}
 		/** @return The optional value; undefined when IsSet() returns false. */

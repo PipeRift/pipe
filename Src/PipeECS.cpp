@@ -2,6 +2,7 @@
 
 #include "Pipe/PipeECS.h"
 
+#include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Limits.h"
 #include "Pipe/Core/Profiler.h"
 #include "Pipe/Core/Set.h"
@@ -93,7 +94,7 @@ namespace p
 	    TArray<Id>& entities, TFunction<void(EntityReader&)> onReadPools)
 	{
 		TArray<Id> parents;
-		GetParents(context, entities, parents);
+		GetIdParent(context, entities, parents);
 
 		i32 idCount = 0;
 		Next("count", idCount);
@@ -121,7 +122,7 @@ namespace p
 			Leave();
 		}
 
-		FixParentLinks(context, parents);
+		FixParentIdLinks(context, parents);
 	}
 
 	void EntityReader::SerializeEntity(Id& entity, TFunction<void(EntityReader&)> onReadPools)
@@ -133,7 +134,7 @@ namespace p
 
 	void EntityReader::SerializeSingleEntity(Id& entity, TFunction<void(EntityReader&)> onReadPools)
 	{
-		Id parent = GetParent(context, entity);
+		Id parent = GetIdParent(context, entity);
 		if (entity == NoId)
 		{
 			entity = context.Create();
@@ -142,7 +143,7 @@ namespace p
 
 		onReadPools(*this);
 
-		FixParentLinks(context, parent);
+		FixParentIdLinks(context, parent);
 	}
 
 	const TArray<Id>& EntityReader::GetIds() const
@@ -209,7 +210,7 @@ namespace p
 		while (pendingInspection.Size() > 0)
 		{
 			RemoveIgnoredEntities(pendingInspection);
-			GetChildren(context, pendingInspection, currentLinked);
+			GetIdChildren(context, pendingInspection, currentLinked);
 			children.Append(currentLinked);
 			pendingInspection = Move(currentLinked);
 		}
@@ -906,7 +907,7 @@ namespace p
 		}
 	}
 
-	void Attach(
+	void AttachId(
 	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TView<const Id> children)
 	{
 		children.Each([&access, parent](Id childId) {
@@ -914,8 +915,8 @@ namespace p
 			{
 				if (cChild->parent == parent
 				    || !EnsureMsg(IsNone(cChild->parent),
-				        "A node trying to be linked already has a parent. Consider using "
-				        "TransferChildren()"))
+				        "An entity trying to be attached already has a parent. Consider using "
+				        "TransferIdChildren()"))
 				{
 					return;
 				}
@@ -929,15 +930,15 @@ namespace p
 		access.GetOrAdd<CParent>(parent).children.Append(children);
 	}
 
-	void AttachAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent,
-	    TView<Id> children, Id prevChild)
+	void AttachIdAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent,
+	    TView<Id> childrenIds, Id prevChild)
 	{
-		children.Each([&access, parent](Id child) {
+		childrenIds.Each([&access, parent](Id child) {
 			if (auto* cChild = access.TryGet<CChild>(child))
 			{
 				if (EnsureMsg(IsNone(cChild->parent),
-				        "A node trying to be linked already has a parent. Consider using "
-				        "TransferChildren()"))
+				        "An entity trying to be attached already has a parent. Consider using "
+				        "TransferIdChildren()"))
 				{
 					cChild->parent = parent;
 				}
@@ -950,23 +951,23 @@ namespace p
 
 		auto& childrenList  = access.GetOrAdd<CParent>(parent).children;
 		const i32 prevIndex = childrenList.FindIndex(prevChild);
-		childrenList.Insert(prevIndex, children);
+		childrenList.Insert(prevIndex, childrenIds);
 	}
 
-	void TransferChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
-	    TView<const Id> children, Id destination)
+	void TransferIdChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
+	    TView<const Id> childrenIds, Id destination)
 	{
-		DetachFromParents(access, children, true);
-		Attach(access, destination, children);
+		DetachIdParent(access, childrenIds, true);
+		AttachId(access, destination, childrenIds);
 	}
 
-	void DetachFromParents(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TView<const Id> children, bool keepComponents)
+	void DetachIdParent(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	    TView<const Id> childrenIds, bool keepComponents)
 	{
 		TArray<Id> parents;
-		parents.Reserve(children.Size());
+		parents.Reserve(childrenIds.Size());
 
-		children.Each([&access, &parents](Id child) {
+		childrenIds.Each([&access, &parents](Id child) {
 			if (auto* cChild = access.TryGet<CChild>(child))
 			{
 				parents.Add(cChild->parent);
@@ -976,7 +977,7 @@ namespace p
 
 		if (!keepComponents)
 		{
-			children.Each([&access](Id child) {
+			childrenIds.Each([&access](Id child) {
 				access.Remove<CChild>(child);
 			});
 		}
@@ -997,7 +998,7 @@ namespace p
 
 				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
-					cParent->children.Remove(children);
+					cParent->children.Remove(childrenIds);
 				}
 			}
 		}
@@ -1013,7 +1014,7 @@ namespace p
 
 				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
-					cParent->children.Remove(children);
+					cParent->children.Remove(childrenIds);
 					if (cParent->children.IsEmpty())
 					{
 						access.Remove<CParent>(parent);
@@ -1023,7 +1024,7 @@ namespace p
 		}
 	}
 
-	void DetachAllChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	void DetachIdChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
 	    TView<const Id> parents, bool keepComponents)
 	{
 		if (keepComponents)
@@ -1054,65 +1055,52 @@ namespace p
 		}
 	}
 
-	const TArray<Id>* GetChildren(TAccessRef<CParent> access, Id node)
+	const TArray<Id>* GetIdChildren(TAccessRef<CParent> access, Id node)
 	{
 		auto* cParent = access.TryGet<const CParent>(node);
 		return cParent ? &cParent->children : nullptr;
 	}
 
-	void GetChildren(TAccessRef<CParent> access, TView<const Id> nodes, TArray<Id>& outLinkedNodes)
+	void GetIdChildren(
+	    TAccessRef<CParent> access, TView<const Id> parentIds, TArray<Id>& outChildrenIds)
 	{
-		nodes.Each([&access, &outLinkedNodes](Id node) {
-			if (const auto* cParent = access.TryGet<const CParent>(node))
+		parentIds.Each([&access, &outChildrenIds](Id id) {
+			if (const auto* cParent = access.TryGet<const CParent>(id))
 			{
-				outLinkedNodes.Append(cParent->children);
+				outChildrenIds.Append(cParent->children);
 			}
 		});
 	}
 
-	void GetChildrenDeep(
-	    TAccessRef<CParent> access, TView<const Id> roots, TArray<Id>& outLinkedNodes, u32 depth)
+	void GetAllIdChildren(TAccessRef<CParent> access, TView<const Id> parentIds,
+	    TArray<Id>& outChildrenIds, u32 depth)
 	{
-		if (depth == 0)
+		Check(depth > 0);
+
+		TArray<Id> currentLinked{};
+		TArray<Id> pendingInspection;
+		pendingInspection.Append(parentIds);
+		while (pendingInspection.Size() > 0 && --depth >= 0)
 		{
-			TArray<Id> currentLinked{};
-			TArray<Id> pendingInspection;
-			pendingInspection.Append(roots);
-			while (pendingInspection.Size() > 0)
-			{
-				GetChildren(access, pendingInspection, currentLinked);
-				outLinkedNodes.Append(currentLinked);
-				pendingInspection = Move(currentLinked);
-			}
-		}
-		else
-		{
-			TArray<Id> currentLinked{};
-			TArray<Id> pendingInspection;
-			pendingInspection.Append(roots);
-			while (pendingInspection.Size() > 0 && depth > 0)
-			{
-				GetChildren(access, pendingInspection, currentLinked);
-				outLinkedNodes.Append(currentLinked);
-				pendingInspection = Move(currentLinked);
-				--depth;
-			}
+			GetIdChildren(access, pendingInspection, currentLinked);
+			outChildrenIds.Append(currentLinked);
+			pendingInspection = Move(currentLinked);
 		}
 	}
 
-	Id GetParent(TAccessRef<CChild> access, Id node)
+	Id GetIdParent(TAccessRef<CChild> access, Id childId)
 	{
-		if (const auto* cChild = access.TryGet<const CChild>(node))
+		if (const auto* cChild = access.TryGet<const CChild>(childId))
 		{
 			return cChild->parent;
 		}
 		return NoId;
 	}
 
-	void GetParents(TAccessRef<CChild> access, TView<const Id> children, TArray<Id>& outParents)
+	void GetIdParent(TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents)
 	{
 		outParents.Clear(false);
-		for (Id childId : children)
+		for (Id childId : childrenIds)
 		{
 			const auto* child = access.TryGet<const CChild>(childId);
 			if (child && !IsNone(child->parent))
@@ -1121,43 +1109,28 @@ namespace p
 			}
 		}
 	}
-	void GetAllParents(TAccessRef<CChild> access, Id node, TArray<Id>& outParents)
-	{
-		outParents.Clear(false);
-
-		TArray<Id> children{node};
-		TArray<Id> parents;
-
-		while (children.Size() > 0)
-		{
-			GetParents(access, children, parents);
-			outParents.Append(parents);
-			Swap(children, parents);
-			parents.Clear(false);
-		}
-	}
-	void GetAllParents(
+	void GetAllIdParents(
 	    TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents)
 	{
 		outParents.Clear(false);
 
-		TArray<Id> children{childrenIds.begin(), childrenIds.end()};
-		TArray<Id> parents;
+		TArray<Id> currentIds{childrenIds.begin(), childrenIds.end()};
+		TArray<Id> parentIds;
 
-		while (children.Size() > 0)
+		while (currentIds.Size() > 0)
 		{
-			GetParents(access, children, parents);
-			outParents.Append(parents);
-			Swap(children, parents);
-			parents.Clear(false);
+			GetIdParent(access, currentIds, parentIds);
+			outParents.Append(parentIds);
+			Swap(currentIds, parentIds);
+			parentIds.Clear(false);
 		}
 	}
 
-	Id FindParent(TAccessRef<CChild> access, Id childId, const TFunction<bool(Id)>& callback)
+	Id FindIdParent(TAccessRef<CChild> access, Id childId, const TFunction<bool(Id)>& callback)
 	{
 		while (!IsNone(childId))
 		{
-			childId = GetParent(access, childId);
+			childId = GetIdParent(access, childId);
 			if (callback(childId))
 			{
 				return childId;
@@ -1165,56 +1138,56 @@ namespace p
 		}
 		return NoId;
 	}
-	void FindParents(TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents,
-	    const TFunction<bool(Id)>& callback)
+	void FindIdParents(TAccessRef<CChild> access, TView<const Id> childrenIds,
+	    TArray<Id>& outParentIds, const TFunction<bool(Id)>& callback)
 	{
-		outParents.Clear(false);
+		outParentIds.Clear(false);
 
-		TArray<Id> children{childrenIds};
-		TArray<Id> parents;
+		TArray<Id> currentIds{childrenIds};
+		TArray<Id> parentIds;
 
-		while (children.Size() > 0)
+		while (currentIds.Size() > 0)
 		{
-			GetParents(access, children, parents);
-			for (i32 i = 0; i < parents.Size();)
+			GetIdParent(access, currentIds, parentIds);
+			for (i32 i = 0; i < parentIds.Size();)
 			{
-				const Id parentId = parents[i];
+				const Id parentId = parentIds[i];
 				if (callback(parentId))
 				{
-					outParents.Add(parentId);
-					parents.RemoveAtSwap(i, false);
+					outParentIds.Add(parentId);
+					parentIds.RemoveAtSwap(i, false);
 				}
 				else
 				{
 					++i;
 				}
 			}
-			Swap(children, parents);
-			parents.Clear(false);
+			Swap(currentIds, parentIds);
+			parentIds.Clear(false);
 		}
 	}
 
-	void Remove(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TView<Id> nodes, bool deep)
+	void RemoveId(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TView<Id> ids, bool deep)
 	{
-		DetachFromParents(access, nodes, true);
+		DetachIdParent(access, ids, true);
 
 		if (deep)
 		{
-			TArray<Id> allNodes;
-			allNodes.Append(nodes);
-			GetChildrenDeep(access, nodes, allNodes);
+			TArray<Id> allIds;
+			allIds.Append(ids);
+			GetAllIdChildren(access, ids, allIds);
 			// No children to detach since we will remove all of them
-			access.GetContext().Destroy(allNodes);
+			access.GetContext().Destroy(allIds);
 		}
 		else
 		{
-			DetachAllChildren(access, nodes);
-			access.GetContext().Destroy(nodes);
+			DetachIdChildren(access, ids);
+			access.GetContext().Destroy(ids);
 		}
 	}
 
 
-	bool FixParentLinks(TAccessRef<TWrite<CChild>, CParent> access, TView<Id> parents)
+	bool FixParentIdLinks(TAccessRef<TWrite<CChild>, CParent> access, TView<Id> parents)
 	{
 		bool fixed = false;
 		for (Id parentId : parents)
@@ -1242,7 +1215,7 @@ namespace p
 		return fixed;
 	}
 
-	bool ValidateParentLinks(TAccessRef<CChild, CParent> access, TView<Id> parents)
+	bool ValidateParentIdLinks(TAccessRef<CChild, CParent> access, TView<Id> parents)
 	{
 		for (Id parentId : parents)
 		{
@@ -1261,7 +1234,7 @@ namespace p
 		return true;
 	}
 
-	void GetRoots(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots)
+	void GetRootIds(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots)
 	{
 		outRoots = FindAllIdsWith<CParent>(access);
 		ExcludeIdsWith<CChild>(access, outRoots);

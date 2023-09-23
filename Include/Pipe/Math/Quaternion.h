@@ -76,8 +76,8 @@ namespace p
 		return {-x, -y, -z, w};
 	}
 
-	void Read(Reader& ct, Quat& val);
-	void Write(Writer& ct, const Quat& val);
+	PIPE_API void Read(Reader& ct, Quat& val);
+	PIPE_API void Write(Writer& ct, const Quat& val);
 }    // namespace p
 
 P_REFLECT_NATIVE_TYPE(p::Quat);

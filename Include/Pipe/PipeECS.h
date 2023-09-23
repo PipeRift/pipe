@@ -1885,47 +1885,60 @@ namespace p
 
 
 	// Link a list of nodes at the end of the parent children list
-	PIPE_API void Attach(
+	PIPE_API void AttachId(
 	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TView<const Id> children);
 	// Link a list of nodes after prevChild in the list of children nodes
-	PIPE_API void AttachAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent,
-	    TView<Id> children, Id prevChild);
-	PIPE_API void TransferEntityChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
-	    TView<const Id> children, Id destination);
+	PIPE_API void AttachIdAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent,
+	    TView<Id> childrenIds, Id prevChild);
+	PIPE_API void TransferIdChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
+	    TView<const Id> childrenIds, Id destination);
 	// TODO: void TransferAllChildren(Tree& ast, Id origin, Id destination);
-	PIPE_API void DetachFromParents(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TView<const Id> children, bool keepComponents);
-	PIPE_API void DetachAllChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	PIPE_API void DetachIdParent(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	    TView<const Id> childrenIds, bool keepComponents);
+	PIPE_API void DetachIdChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
 	    TView<const Id> parents, bool keepComponents = false);
 
-	PIPE_API const TArray<Id>* GetChildren(TAccessRef<CParent> access, Id node);
-	PIPE_API void GetChildren(
-	    TAccessRef<CParent> access, TView<const Id> nodes, TArray<Id>& outLinkedNodes);
-	/**
-	 * Finds all nodes connected recursively.
+	/** Obtain direct children ids from the provided parent Id. Examples:
+	 * - Children of A (where A->B->C) is B.
+	 * - Children of A (where A->B, A->C) are B and C.
 	 */
-	PIPE_API void GetChildrenDeep(TAccessRef<CParent> access, TView<const Id> roots,
-	    TArray<Id>& outLinkedNodes, u32 depth = 0);
-	PIPE_API Id GetParent(TAccessRef<CChild> access, Id node);
-	PIPE_API void GetParents(
-	    TAccessRef<CChild> access, TView<const Id> children, TArray<Id>& outParents);
-	PIPE_API void GetAllParents(TAccessRef<CChild> access, Id node, TArray<Id>& outParents);
-	PIPE_API void GetAllParents(
+	PIPE_API const TArray<Id>* GetIdChildren(TAccessRef<CParent> access, Id node);
+
+	/** Obtain direct children ids from the provided parent Ids. Examples:
+	 * - Children of A (where A->B->C) is B.
+	 * - Children of A (where A->B, A->C) are B and C.
+	 * - Children of A and B (where A->B->C) are B, C.
+	 */
+	PIPE_API void GetIdChildren(
+	    TAccessRef<CParent> access, TView<const Id> nodes, TArray<Id>& outChildrenIds);
+
+	/** Obtain all children ids from the provided parent Ids. Examples:
+	 * - All children of A (where A->B->C) are B and C.
+	 * - All children of A and D (where A->B->C, D->E->F) are B, C, E and F.
+	 * - All children of A and B (where A->B->C->D) are B, C, D, C, D (duplicates are not handled).
+	 */
+	PIPE_API void GetAllIdChildren(TAccessRef<CParent> access, TView<const Id> parentIds,
+	    TArray<Id>& outChildrenIds, u32 depth = 1);
+
+	PIPE_API Id GetIdParent(TAccessRef<CChild> access, Id childId);
+	PIPE_API void GetIdParent(
+	    TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents);
+	PIPE_API void GetAllIdParents(
 	    TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents);
 
 	/**
 	 * Find a parent id matching a delegate
 	 */
-	PIPE_API Id FindParent(
+	PIPE_API Id FindIdParent(
 	    TAccessRef<CChild> access, Id child, const TFunction<bool(Id)>& callback);
-	PIPE_API void FindParents(TAccessRef<CChild> access, TView<const Id> children,
+	PIPE_API void FindIdParents(TAccessRef<CChild> access, TView<const Id> childrenIds,
 	    TArray<Id>& outParents, const TFunction<bool(Id)>& callback);
 
 	// void Copy(Tree& ast, t TArray<Id>& nodes, TArray<Id>& outNewNodes);
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);
 	// void CopyAndTransferAllChildrenDeep(Tree& ast, Id root, Id otherRoot);
 
-	PIPE_API void Remove(
+	PIPE_API void RemoveId(
 	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TView<Id> nodes, bool deep = false);
 
 	/**
@@ -1935,7 +1948,7 @@ namespace p
 	 * @parents: where to look for children to fix up
 	 * @return true if an incorrect link was found and fixed
 	 */
-	PIPE_API bool FixParentLinks(TAccessRef<TWrite<CChild>, CParent> access, TView<Id> parents);
+	PIPE_API bool FixParentIdLinks(TAccessRef<TWrite<CChild>, CParent> access, TView<Id> parents);
 
 	/**
 	 * Iterates children nodes looking for invalid child->parent links
@@ -1944,9 +1957,9 @@ namespace p
 	 * @parents: where to look for children
 	 * @return true if an incorrect link was found
 	 */
-	PIPE_API bool ValidateParentLinks(TAccessRef<CChild, CParent> access, TView<Id> parents);
+	PIPE_API bool ValidateParentIdLinks(TAccessRef<CChild, CParent> access, TView<Id> parents);
 
-	PIPE_API void GetRoots(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots);
+	PIPE_API void GetRootIds(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots);
 
 
 	////////////////////////////////
