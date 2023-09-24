@@ -27,7 +27,7 @@ namespace p
 			u32 weakCount = 0;
 			Arena& arena;
 
-			PtrWeakCounter(Arena& arena, Deleter* deleter) : arena{arena}, deleter(deleter) {}
+			PtrWeakCounter(Arena& arena, Deleter* deleter) : deleter(deleter), arena{arena} {}
 			bool IsSet() const
 			{
 				return deleter != nullptr;

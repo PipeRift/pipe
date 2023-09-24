@@ -30,7 +30,7 @@ function(pipe_target_define_platform target)
         target_compile_definitions(${target} PUBLIC P_PLATFORM_MACOS=1)
     endif()
 
-    target_compile_definitions(${target} PRIVATE
+    target_compile_definitions(${target} PUBLIC
         $<$<CONFIG:Debug>:P_DEBUG>
         $<$<CONFIG:Release>:P_RELEASE>
     )

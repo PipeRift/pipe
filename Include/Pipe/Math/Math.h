@@ -11,17 +11,17 @@
 
 namespace p::math
 {
-	constexpr float PI{3.14159265358979323846f};
+	constexpr float PI       = 3.14159265358979323846f;
 	constexpr float HALF_PI  = PI * 0.5f;
 	constexpr float INV_PI   = 1.f / PI;
 	constexpr float RADTODEG = 180.f / PI;
 	constexpr float DEGTORAD = PI / 180.f;
 
-	constexpr float SMALL_NUMBER{1.e-4f};
-	constexpr float SMALLER_NUMBER{0.00001f};
-	constexpr float VERY_SMALL_NUMBER{1.e-8f};
-	constexpr float BIG_NUMBER{3.4e+38f};
-	constexpr float EULER{2.71828182845904523536f};
+	constexpr float SMALL_NUMBER      = 1.e-4f;
+	constexpr float SMALLER_NUMBER    = 0.00001f;
+	constexpr float VERY_SMALL_NUMBER = 1.e-8f;
+	constexpr float BIG_NUMBER        = 3.4e+38f;
+	constexpr float EULER             = 2.71828182845904523536f;
 
 
 	template<typename Type>
