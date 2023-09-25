@@ -5,19 +5,19 @@
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Optional.h"
 #include "Pipe/Export.h"
-#include "Pipe/PipeArrays.h"
+#include "PipeArrays.h"
 
 #include <stdio.h>
 #include <string.h>
 
 
 #if !defined(_MSC_VER)
-#	include <signal.h>
-#	include <spawn.h>
-#	include <stdlib.h>
-#	include <sys/types.h>
-#	include <sys/wait.h>
-#	include <unistd.h>
+	#include <signal.h>
+	#include <spawn.h>
+	#include <stdlib.h>
+	#include <sys/types.h>
+	#include <sys/wait.h>
+	#include <unistd.h>
 #endif
 
 
@@ -52,8 +52,8 @@ namespace p::core
 
 
 #ifdef __clang__
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Wpadded"
+	#pragma clang diagnostic push
+	#pragma clang diagnostic ignored "-Wpadded"
 #endif
 	struct PIPE_API Subprocess
 	{
@@ -80,7 +80,7 @@ namespace p::core
 		~Subprocess();
 	};
 #ifdef __clang__
-#	pragma clang diagnostic pop
+	#pragma clang diagnostic pop
 #endif
 
 

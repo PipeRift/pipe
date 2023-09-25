@@ -3,7 +3,7 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/PipeArrays.h"
+#include "PipeArrays.h"
 
 #include <yyjson.h>
 

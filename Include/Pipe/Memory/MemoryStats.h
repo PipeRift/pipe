@@ -4,7 +4,7 @@
 
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/PipeArrays.h"
+#include "PipeArrays.h"
 
 // #if P_ENABLE_ALLOCATION_STACKS
 #include "Pipe/Core/Backward.h"
@@ -16,34 +16,6 @@
 
 namespace p
 {
-	// Use a custom arena that doesn't track allocations. Otherwise tracking stats would loop
-	class PIPE_API MemoryStatsArena : public Arena
-	{
-	public:
-		MemoryStatsArena()
-		{
-			Interface<MemoryStatsArena>();
-		}
-
-		inline void* Alloc(const sizet size)
-		{
-			return std::malloc(size);
-		}
-		inline void* Alloc(const sizet size, const sizet align)
-		{
-			return std::malloc(size);
-		}
-		inline bool Realloc(void* ptr, const sizet ptrSize, const sizet size)
-		{
-			return false;
-		}
-		inline void Free(void* ptr, sizet size)
-		{
-			std::free(ptr);
-		}
-	};
-
-
 	struct PIPE_API AllocationStats
 	{
 		u8* ptr  = nullptr;
@@ -68,10 +40,8 @@ namespace p
 		}
 	};
 
-
 	struct PIPE_API MemoryStats
 	{
-		MemoryStatsArena arena;
 		sizet used = 0;
 		mutable std::shared_mutex mutex;
 		TArray<AllocationStats> allocations;

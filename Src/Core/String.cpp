@@ -3,7 +3,6 @@
 #include "Pipe/Core/String.h"
 
 #include "Pipe/Core/Char.h"
-#include "Pipe/Core/Regex.h"
 #include "Pipe/Math/Math.h"
 #include "Pipe/Serialize/Serialization.h"
 

@@ -4,7 +4,7 @@
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/BigBestFitArena.h"
 #include "Pipe/Memory/Block.h"
-#include "Pipe/PipeArrays.h"
+#include "PipeArrays.h"
 
 
 namespace p

@@ -68,7 +68,6 @@ target_link_libraries(Pipe PUBLIC
     date::date
     efsw
     fmt::fmt
-    yyjson
     robin_hood
     tsl::robin_map
     tsl::sparse_map
@@ -79,6 +78,7 @@ target_link_libraries(Pipe PUBLIC
 target_link_libraries(Pipe PRIVATE
     portable_file_dialogs
     spdlog
+    yyjson
 )
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)

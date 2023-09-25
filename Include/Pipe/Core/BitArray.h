@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/Platform.h"
-#include "Pipe/PipeArrays.h"
+#include "PipeArrays.h"
 
 
 namespace p::core

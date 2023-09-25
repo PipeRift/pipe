@@ -1,6 +1,6 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
-#include "Pipe/PipeECS.h"
+#include "PipeECS.h"
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Limits.h"

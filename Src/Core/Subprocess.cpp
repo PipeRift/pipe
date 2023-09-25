@@ -6,12 +6,12 @@
 #include "Pipe/Core/PlatformMisc.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/PipeArrays.h"
+#include "PipeArrays.h"
 
 
 #if defined(_MSC_VER)
-#	include <Windows.h>
-#	include <io.h>
+	#include <Windows.h>
+	#include <io.h>
 #else
 extern char** environ;
 #endif
@@ -123,16 +123,16 @@ namespace p::core
 		__declspec(thread) static long index = 0;
 		const long unique                    = index++;
 
-#	if _MSC_VER < 1900
-#		pragma warning(push, 1)
-#		pragma warning(disable:4996)
+	#if _MSC_VER < 1900
+		#pragma warning(push, 1)
+		#pragma warning(disable:4996)
 		_snprintf(name, sizeof(name) - 1, "\\\\.\\pipe\\sheredom_subprocess_h.%08lx.%08lx.%ld",
 		    ::GetCurrentProcessId(), ::GetCurrentThreadId(), unique);
-#		pragma warning(pop)
-#	else
+		#pragma warning(pop)
+	#else
 		snprintf(name, sizeof(name) - 1, R"(\\.\pipe\sheredom_subprocess_h.%08lx.%08lx.%ld)",
 		    ::GetCurrentProcessId(), ::GetCurrentThreadId(), unique);
-#	endif
+	#endif
 
 		*readPipe = ::CreateNamedPipeA(name, pipeAccessInbound | fileFlagOverlapped,
 		    pipeTypeByte | pipeWait, 1, 4096, 4096, 0,
@@ -411,15 +411,15 @@ namespace p::core
 		}
 		else
 		{
-#	ifdef __clang__
-#		pragma clang diagnostic push
-#		pragma clang diagnostic ignored "-Wcast-qual"
-#		pragma clang diagnostic ignored "-Wold-style-cast"
-#	endif
+	#ifdef __clang__
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wcast-qual"
+		#pragma clang diagnostic ignored "-Wold-style-cast"
+	#endif
 			usedEnvironment = (char* const*)posixEnvironment.Data();
-#	ifdef __clang__
-#		pragma clang diagnostic pop
-#	endif
+	#ifdef __clang__
+		#pragma clang diagnostic pop
+	#endif
 		}
 
 		if (pipe(stdinfd) != 0)
@@ -497,11 +497,11 @@ namespace p::core
 			}
 		}
 
-#	ifdef __clang__
-#		pragma clang diagnostic push
-#		pragma clang diagnostic ignored "-Wcast-qual"
-#		pragma clang diagnostic ignored "-Wold-style-cast"
-#	endif
+	#ifdef __clang__
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wcast-qual"
+		#pragma clang diagnostic ignored "-Wold-style-cast"
+	#endif
 		if (HasFlag(options, SubprocessOptions::SearchUserPath))
 		{
 			if (posix_spawnp(&child, posixCommand[0], &actions, nullptr,
@@ -522,9 +522,9 @@ namespace p::core
 				return {};
 			}
 		}
-#	ifdef __clang__
-#		pragma clang diagnostic pop
-#	endif
+	#ifdef __clang__
+		#pragma clang diagnostic pop
+	#endif
 
 		// Close the stdin read end
 		close(stdinfd[0]);

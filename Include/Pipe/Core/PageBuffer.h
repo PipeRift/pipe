@@ -4,7 +4,7 @@
 
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Memory/Arena.h"
-#include "Pipe/PipeArrays.h"
+#include "PipeArrays.h"
 
 #include <memory>
 

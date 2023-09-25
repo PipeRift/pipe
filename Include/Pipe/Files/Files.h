@@ -4,7 +4,7 @@
 
 #include "Pipe/Core/String.h"
 #include "Pipe/Files/STDFileSystem.h"
-#include "Pipe/PipeArrays.h"
+#include "PipeArrays.h"
 
 
 namespace p::files

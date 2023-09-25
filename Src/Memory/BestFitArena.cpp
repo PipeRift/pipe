@@ -2,15 +2,13 @@
 
 #include "Pipe/Memory/BestFitArena.h"
 
-#include "Pipe/Core/Greater.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Profiler.h"
-#include "Pipe/Core/Search.h"
-#include "Pipe/Core/Sorting.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Memory.h"
+#include "PipeAlgorithms.h"
 
 
 namespace p
@@ -148,7 +146,7 @@ namespace p
 	void BestFitArena::ReduceSlot(
 	    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd)
 	{
-		if (allocationEnd == slot.End())         // Slot would become empty
+		if (allocationEnd == slot.End())    // Slot would become empty
 		{
 			if (allocationStart > slot.start)    // Slot can still fill alignment gap
 			{

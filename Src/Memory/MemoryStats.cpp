@@ -3,9 +3,6 @@
 #include "Pipe/Memory/MemoryStats.h"
 
 #include "Pipe/Core/Backward.h"
-#include "Pipe/Core/Checks.h"
-#include "Pipe/Core/FixedString.h"
-#include "Pipe/Core/Heap.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
@@ -16,12 +13,42 @@
 
 namespace p
 {
+	// Use a custom arena that doesn't track allocations. Otherwise tracking stats would loop
+	class PIPE_API MemoryStatsArena : public Arena
+	{
+	public:
+		MemoryStatsArena()
+		{
+			Interface<MemoryStatsArena>();
+		}
+
+		inline void* Alloc(const sizet size)
+		{
+			return std::malloc(size);
+		}
+		inline void* Alloc(const sizet size, const sizet align)
+		{
+			return std::malloc(size);
+		}
+		inline bool Realloc(void* ptr, const sizet ptrSize, const sizet size)
+		{
+			return false;
+		}
+		inline void Free(void* ptr, sizet size)
+		{
+			std::free(ptr);
+		}
+	};
+
+	static MemoryStatsArena memStatsArena;
+
+
 	MemoryStats::MemoryStats()
-	    : allocations{arena}
+	    : allocations{memStatsArena}
 #if P_ENABLE_ALLOCATION_STACKS
 	    , stacks{arena}
 #endif
-	    , freedAllocations{arena}
+	    , freedAllocations{memStatsArena}
 	{}
 
 	MemoryStats::~MemoryStats()

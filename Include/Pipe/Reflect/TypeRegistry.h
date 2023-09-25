@@ -4,9 +4,10 @@
 #include "Pipe/Core/Map.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/MultiLinearArena.h"
-#include "Pipe/PipeArrays.h"
 #include "Pipe/Reflect/Type.h"
 #include "Pipe/Reflect/TypeId.h"
+#include "PipeArrays.h"
+
 
 
 namespace p

@@ -3,10 +3,11 @@
 #include "Pipe/Memory/NewDelete.h"
 //  Override as first include
 
+#include "Pipe.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Memory/Alloc.h"
-#include "Pipe/Pipe.h"
 #include "Pipe/Reflect/TypeRegistry.h"
+
 
 
 namespace p

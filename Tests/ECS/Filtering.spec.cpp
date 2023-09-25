@@ -3,7 +3,7 @@
 #include "bandit/grammar.h"
 
 #include <bandit/bandit.h>
-#include <Pipe/PipeECS.h>
+#include <PipeECS.h>
 
 
 using namespace snowhouse;

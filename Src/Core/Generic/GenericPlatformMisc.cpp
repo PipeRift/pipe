@@ -4,8 +4,7 @@
 
 #include "Pipe/Core/Guid.h"
 #include "Pipe/Core/PlatformMisc.h"
-#include "Pipe/Math/DateTime.h"
-#include "Pipe/Math/Timespan.h"
+#include "Pipe/Math/Time.h"
 
 
 namespace p::core

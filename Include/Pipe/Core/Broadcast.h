@@ -1,15 +1,55 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "EventHandle.h"
 #include "Function.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Reflect/Class.h"
 
 
-namespace p::core
+namespace p
 {
+	struct PIPE_API EventHandle
+	{
+	private:
+		static u64 counter;
+
+		static u64 NewId()
+		{
+			if (counter == 0)
+				++counter;
+			return counter++;
+		}
+
+		u64 id;
+
+		/** Used for invalidation */
+		EventHandle(u64 customId) : id(customId) {}
+
+	public:
+		static EventHandle Invalid()
+		{
+			return {0};
+		}
+
+		EventHandle() : id(NewId()) {}
+
+		u64 Id() const
+		{
+			return id;
+		}
+
+		bool IsValid() const
+		{
+			return id != 0;
+		}
+		operator bool() const
+		{
+			return IsValid();
+		}
+	};
+
+
 	template<typename... Params>
 	class TBroadcast
 	{
@@ -43,7 +83,7 @@ namespace p::core
 	public:
 		TBroadcast()                           = default;
 		explicit TBroadcast(const TBroadcast&) = default;
-		TBroadcast(TBroadcast&&)               = default;
+		TBroadcast(TBroadcast&&) noexcept      = default;
 
 		/** Broadcast to all binded functions */
 		void Broadcast(const Params&... params)
@@ -173,7 +213,7 @@ namespace p::core
 			Broadcast(Forward<Params>(params)...);
 		}
 	};
-}    // namespace p::core
+}    // namespace p
 
 namespace p
 {

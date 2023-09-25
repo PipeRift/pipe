@@ -4,10 +4,11 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/String.h"
-#include "Pipe/PipeECS.h"
 #include "Pipe/Reflect/TypeId.h"
 #include "Pipe/Serialize/Formats/BinaryFormat.h"
 #include "Pipe/Serialize/Formats/JsonFormat.h"
+#include "PipeECS.h"
+
 
 
 namespace p

@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "Pipe/Core/Crc.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Serialize/SerializationFwd.h"
+#include "PipeAlgorithms.h"
+
 
 
 namespace p::core
@@ -299,7 +300,7 @@ namespace p
 	{
 		sizet operator()(const Guid& k) const
 		{
-			return Crc::MemCrc32(&k, sizeof(Guid));
+			return MemCrc32(&k, sizeof(Guid));
 		}
 	};
 }    // namespace p

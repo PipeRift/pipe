@@ -2,12 +2,13 @@
 #pragma once
 
 #include "Pipe/Core/TypeTraits.h"
-#include "Pipe/PipeArrays.h"
 #include "Pipe/Reflect/Builders/CompiledTypeRegister.h"
 #include "Pipe/Reflect/Property.h"
 #include "Pipe/Reflect/ReflectionFlags.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
 #include "Pipe/Reflect/Type.h"
+#include "PipeArrays.h"
+
 
 
 namespace p

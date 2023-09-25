@@ -7,13 +7,14 @@
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/STLAllocator.h"
-#include "Pipe/PipeArrays.h"
 #include "Pipe/Serialize/SerializationFwd.h"
+#include "PipeArrays.h"
 
 #include <fmt/format.h>
 #include <utf8.h>
 
 #include <string>
+
 
 
 #pragma warning(push)

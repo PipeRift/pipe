@@ -776,7 +776,7 @@ namespace p
 	template<ColorMode mode>
 	TColor<mode> TColor<mode>::MakeFromColorTemperature(float temp)
 	{
-		temp = Clamp(temp, 1000.0f, 15000.0f);
+		temp = p::Clamp(temp, 1000.0f, 15000.0f);
 
 		// Approximate Planckian locus in CIE 1960 UCS
 		const float u = (0.860117757f + 1.54118254e-4f * temp + 1.28641212e-7f * temp * temp)

@@ -1,12 +1,11 @@
 // Copyright 2015-2023 Piperift - All rights reserved
-// Based on Unreal Engine 4 Crc
 
-#include "Pipe/Core/Crc.h"
+#include "PipeAlgorithms.h"
 
 #include "Pipe/Memory/Memory.h"
 
 
-namespace p::core::Crc
+namespace p
 {
 	/** CRC 32 polynomial */
 	enum
@@ -356,4 +355,4 @@ namespace p::core::Crc
 
 		return ~CRC;
 	}
-}    // namespace p::core::Crc
+};    // namespace p

@@ -2,14 +2,12 @@
 
 #include "Pipe/Memory/BigBestFitArena.h"
 
-#include "Pipe/Core/Greater.h"
 #include "Pipe/Core/Log.h"
-#include "Pipe/Core/Search.h"
-#include "Pipe/Core/Sorting.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Math/Math.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Memory.h"
+#include "PipeAlgorithms.h"
 
 
 namespace p

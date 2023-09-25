@@ -4,7 +4,6 @@
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Macros.h"
 #include "Pipe/Core/Tag.h"
-#include "Pipe/PipeArrays.h"
 #include "Pipe/Reflect/ArrayProperty.h"
 #include "Pipe/Reflect/Builders/TypeBuilder.h"
 #include "Pipe/Reflect/ClassType.h"
@@ -15,6 +14,8 @@
 #include "Pipe/Reflect/TypeRegistry.h"
 #include "Pipe/Serialize/Reader.h"
 #include "Pipe/Serialize/Writer.h"
+#include "PipeArrays.h"
+
 
 
 namespace p

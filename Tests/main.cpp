@@ -4,8 +4,9 @@
 //  Override as first include
 
 #include <bandit/bandit.h>
+#include <Pipe.h>
 #include <Pipe/Core/Backward.h>
-#include <Pipe/Pipe.h>
+
 
 
 // namespace backward

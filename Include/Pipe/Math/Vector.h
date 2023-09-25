@@ -103,7 +103,7 @@ namespace p
 
 		constexpr Vec Floor() const
 		{
-			return {Floor(x), Floor(y)};
+			return {p::Floor(x), p::Floor(y)};
 		}
 
 		static Vec Mid(Vec one, Vec other)
@@ -383,7 +383,7 @@ namespace p
 
 		constexpr Vec Floor() const
 		{
-			return {Floor(x), Floor(y), Floor(z)};
+			return {p::Floor(x), p::Floor(y), p::Floor(z)};
 		}
 
 		static Vec Mid(Vec one, Vec other)
@@ -868,6 +868,8 @@ namespace p
 		PIPE_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
 		PIPE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
 	}    // namespace Vectors
+
+	PIPE_API v2 EvaluateCubicBezier(v2 p0, v2 p1, v2 p2, v2 p3, float t);
 
 	PIPE_API void Read(Reader& ct, v2& val);
 	PIPE_API void Write(Writer& ct, v2 val);

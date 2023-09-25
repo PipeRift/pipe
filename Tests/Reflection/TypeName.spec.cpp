@@ -5,8 +5,9 @@
 #include <Pipe/Core/Map.h>
 #include <Pipe/Core/String.h>
 #include <Pipe/Core/Tag.h>
-#include <Pipe/PipeArrays.h>
 #include <Pipe/Reflect/Reflection.h>
+#include <PipeArrays.h>
+
 
 
 using namespace snowhouse;

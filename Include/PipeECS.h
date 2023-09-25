@@ -7,9 +7,10 @@
 #include "Pipe/Core/TypeList.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/UniquePtr.h"
-#include "Pipe/PipeArrays.h"
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
 #include "Pipe/Reflect/Struct.h"
+#include "PipeArrays.h"
+
 
 
 ////////////////////////////////

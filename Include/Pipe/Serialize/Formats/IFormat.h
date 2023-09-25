@@ -3,8 +3,9 @@
 
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/PipeArrays.h"
 #include "Pipe/Serialize/SerializationTypes.h"
+#include "PipeArrays.h"
+
 
 
 namespace p
@@ -100,8 +101,10 @@ namespace p
 	};
 
 	template<SerializeFormat format>
-	concept HasReader = !IsVoid<typename FormatBind<format>::Reader>;
+	concept HasReader = !
+	IsVoid<typename FormatBind<format>::Reader>;
 
 	template<SerializeFormat format>
-	concept HasWriter = !IsVoid<typename FormatBind<format>::Writer>;
+	concept HasWriter = !
+	IsVoid<typename FormatBind<format>::Writer>;
 }    // namespace p

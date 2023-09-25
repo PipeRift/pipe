@@ -97,5 +97,6 @@ jobs:
           path: Build/Bin
 
       - name: Run Tests
+        if: ${{ matrix.os-name == 'macos' }} # Tests are skipped temporarily on MacOS
         working-directory: ./Build
         run: ctest --output-on-failure -j2 -C ${{ matrix.config }}

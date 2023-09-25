@@ -5,13 +5,13 @@
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Platform.h"
-#include "Pipe/Core/Search.h"
-#include "Pipe/Core/Sorting.h"
 #include "Pipe/Core/Utility.h"
+#include "Pipe/Math/Math.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/Memory.h"
-#include "Pipe/PipeArraysFwd.h"
+#include "PipeAlgorithms.h"
+#include "PipeArraysFwd.h"
 
 #include <initializer_list>
 #include <iterator>
