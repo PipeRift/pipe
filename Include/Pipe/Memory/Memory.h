@@ -63,12 +63,20 @@ namespace p
 
 	namespace Memory
 	{
+		// Kilobyte, Megabyte, Gigabyte...
 		constexpr sizet B  = 1;
 		constexpr sizet KB = 1024;
 		constexpr sizet MB = KB * 1024;
 		constexpr sizet GB = MB * 1024;
 		constexpr sizet TB = GB * 1024;
 		constexpr sizet PB = TB * 1024;
+
+		// Kilobit, Megabit, Gigabit...
+		constexpr sizet Kb = KB / 8;
+		constexpr sizet Mb = MB / 8;
+		constexpr sizet Gb = GB / 8;
+		constexpr sizet Tb = TB / 8;
+		constexpr sizet Pb = PB / 8;
 	}    // namespace Memory
 
 
