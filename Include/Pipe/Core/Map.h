@@ -5,7 +5,7 @@
 #include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Platform.h"
-#include "Pipe/Core/Tuples.h"
+#include "Pipe/Core/Templates.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/STLAllocator.h"

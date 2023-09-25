@@ -2,25 +2,93 @@
 
 #pragma once
 
-#include "Pipe/Core/Chrono.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/String.h"
+
+// TODO: Move all chrono & date uses to cpp
+#include <date/date.h>
+
+#include <chrono>
 
 
 namespace p
 {
+	namespace Chrono = std::chrono;
+
+	// decimals of microseconds
+	using DecMicroseconds = Chrono::duration<i64, std::ratio<1, 10'000'000>>;
+
+	using SysClock    = Chrono::system_clock;
+	using SysTime     = Chrono::time_point<SysClock, DecMicroseconds>;
+	using SysDuration = Chrono::duration<SysClock, DecMicroseconds>;
+
+
+	using Nanoseconds  = Chrono::nanoseconds;
+	using Microseconds = Chrono::microseconds;
+	using Milliseconds = Chrono::milliseconds;
+	using Seconds      = Chrono::seconds;
+	using Minutes      = Chrono::minutes;
+	using Hours        = Chrono::hours;
+
+	using YearMonthDay = date::year_month_day;
+	using Day          = date::day;
+	using Days         = date::days;
+	using Month        = date::month;
+	using Months       = date::months;
+	using Year         = date::year;
+	using Years        = date::years;
+	using WeekDay      = date::weekday;
+	using LocalDays    = date::local_days;
+
+	using SysDays = date::sys_days;
+
+	constexpr const Month January   = date::January;
+	constexpr const Month February  = date::February;
+	constexpr const Month March     = date::March;
+	constexpr const Month April     = date::April;
+	constexpr const Month May       = date::May;
+	constexpr const Month June      = date::June;
+	constexpr const Month July      = date::July;
+	constexpr const Month August    = date::August;
+	constexpr const Month September = date::September;
+	constexpr const Month October   = date::October;
+	constexpr const Month November  = date::November;
+	constexpr const Month December  = date::December;
+
+	constexpr const WeekDay Monday    = date::Monday;
+	constexpr const WeekDay Tuesday   = date::Tuesday;
+	constexpr const WeekDay Wednesday = date::Wednesday;
+	constexpr const WeekDay Thursday  = date::Thursday;
+	constexpr const WeekDay Friday    = date::Friday;
+	constexpr const WeekDay Saturday  = date::Saturday;
+	constexpr const WeekDay Sunday    = date::Sunday;
+
+	constexpr const Month Jan = date::jan;
+	constexpr const Month Feb = date::feb;
+	constexpr const Month Mar = date::mar;
+	constexpr const Month Apr = date::apr;
+	// constexpr const Month May = date::may; Already defined
+	constexpr const Month Jun = date::jun;
+	constexpr const Month Jul = date::jul;
+	constexpr const Month Aug = date::aug;
+	constexpr const Month Sep = date::sep;
+	constexpr const Month Oct = date::oct;
+	constexpr const Month Nov = date::nov;
+	constexpr const Month Dec = date::dec;
+
+
 	/**
 	 * Enumerates the days of the week in 7-day calendars.
 	 */
 	enum class DayOfWeek
 	{
-		Monday = 0,
-		Tuesday,
-		Wednesday,
-		Thursday,
-		Friday,
-		Saturday,
-		Sunday
+		Sunday    = 0,
+		Monday    = 1,
+		Tuesday   = 2,
+		Wednesday = 3,
+		Thursday  = 4,
+		Friday    = 5,
+		Saturday  = 6
 	};
 
 
@@ -1286,7 +1354,7 @@ namespace p
 		 */
 		template<typename DstDuration, typename SrcDuration, typename DstClock, typename SrcClock,
 		    typename DstTime = Chrono::time_point<DstClock, DstDuration>,
-		    typename SrcTime = Chrono::time_point<SrcClock, SrcDuration> >
+		    typename SrcTime = Chrono::time_point<SrcClock, SrcDuration>>
 		static DstTime InternalCastClock(const SrcTime tp,
 		    const SrcDuration tolerance = DecMicroseconds{1}, const i32 limit = 10)
 		{
