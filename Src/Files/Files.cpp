@@ -3,7 +3,6 @@
 #include "Pipe/Files/Files.h"
 
 #include "Pipe/Core/Log.h"
-#include "Pipe/Core/Profiler.h"
 #include "Pipe/Files/Paths.h"
 
 #include <fstream>
@@ -13,8 +12,6 @@ namespace p::files
 {
 	bool LoadStringFile(const Path& path, String& result, sizet extraPadding)
 	{
-		ZoneScoped;
-
 		if (!Exists(path) || !IsFile(path))
 		{
 			return false;
@@ -51,8 +48,6 @@ namespace p::files
 
 	bool SaveStringFile(const Path& path, StringView data)
 	{
-		ZoneScopedNC("SaveStringFile", 0xBB45D1);
-
 		if (!IsFile(path))
 		{
 			return false;

@@ -2,7 +2,6 @@
 
 #include "Pipe/Memory/Alloc.h"
 
-#include "Pipe/Core/Profiler.h"
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/HeapArena.h"
 #include "Pipe/Memory/MemoryStats.h"
@@ -25,9 +24,6 @@ namespace p
 	{
 		void* const ptr = malloc(size);
 #if P_DEBUG
-		// FIX: Profiler reports alloc gets called frequently twice with the same pointer. Seems
-		// related to allocators
-		// TracyAllocS(ptr, size, 10);
 		GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
@@ -42,7 +38,6 @@ namespace p
 		void* const ptr = aligned_alloc(align, size);
 #endif
 #if P_DEBUG
-		// TracyAllocS(ptr, size, 10);
 		GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
@@ -52,11 +47,9 @@ namespace p
 	{
 #if P_DEBUG
 		GetHeapStats()->Remove(ptr);
-		// TracyFreeS(ptr, 10);
 #endif
 		ptr = realloc(ptr, size);
 #if P_DEBUG
-		// TracyAllocS(ptr, size, 10);
 		GetHeapStats()->Add(ptr, size);
 #endif
 		return ptr;
@@ -65,7 +58,6 @@ namespace p
 	void HeapFree(void* ptr)
 	{
 #if P_DEBUG
-		// TracyFreeS(ptr, 10);
 		GetHeapStats()->Remove(ptr);
 #endif
 		free(ptr);

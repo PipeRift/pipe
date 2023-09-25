@@ -4,7 +4,6 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Limits.h"
-#include "Pipe/Core/Profiler.h"
 #include "Pipe/Core/Set.h"
 
 
@@ -621,7 +620,6 @@ namespace p
 
 	void ExcludeIdsWith(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
-		ZoneScoped;
 		for (i32 i = ids.Size() - 1; i >= 0; --i)
 		{
 			if (pool->Has(ids[i]))
@@ -637,7 +635,6 @@ namespace p
 
 	void ExcludeIdsWithStable(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
-		ZoneScoped;
 		ids.RemoveIf(
 		    [pool](Id id) {
 			return pool->Has(id);
@@ -647,7 +644,6 @@ namespace p
 
 	void ExcludeIdsWithout(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
-		ZoneScoped;
 		for (i32 i = ids.Size() - 1; i >= 0; --i)
 		{
 			if (!pool->Has(ids[i]))
@@ -663,7 +659,6 @@ namespace p
 
 	void ExcludeIdsWithoutStable(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
-		ZoneScoped;
 		ids.RemoveIf(
 		    [pool](Id id) {
 			return !pool->Has(id);
@@ -673,7 +668,6 @@ namespace p
 
 	void FindIdsWith(const BasePool* pool, const TView<Id>& source, TArray<Id>& results)
 	{
-		ZoneScoped;
 		if (pool)
 		{
 			results.ReserveMore(Min(i32(pool->Size()), source.Size()));
@@ -698,7 +692,6 @@ namespace p
 
 	void FindIdsWithout(const BasePool* pool, const TView<Id>& source, TArray<Id>& results)
 	{
-		ZoneScoped;
 		if (pool)
 		{
 			results.ReserveMore(source.Size());
@@ -720,7 +713,6 @@ namespace p
 	void ExtractIdsWith(
 	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
-		ZoneScoped;
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		for (i32 i = source.Size() - 1; i >= 0; --i)
 		{
@@ -740,7 +732,6 @@ namespace p
 	void ExtractIdsWithStable(
 	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
-		ZoneScoped;
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		source.RemoveIf(
 		    [pool, &results](Id id) {
@@ -757,7 +748,6 @@ namespace p
 	void ExtractIdsWithout(
 	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
-		ZoneScoped;
 		results.ReserveMore(source.Size());
 		for (i32 i = source.Size() - 1; i >= 0; --i)
 		{
@@ -777,7 +767,6 @@ namespace p
 	void ExtractIdsWithoutStable(
 	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
-		ZoneScoped;
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		source.RemoveIf(
 		    [pool, &results](Id id) {
@@ -793,7 +782,6 @@ namespace p
 
 	void FindAllIdsWith(TArray<const BasePool*> pools, TArray<Id>& ids)
 	{
-		ZoneScoped;
 		for (const BasePool* pool : pools)
 		{
 			if (!EnsureMsg(pool,
@@ -828,7 +816,6 @@ namespace p
 
 	void FindAllIdsWithAny(const TArray<const BasePool*>& pools, TArray<Id>& ids)
 	{
-		ZoneScoped;
 		for (const BasePool* pool : pools)
 		{
 			if (!EnsureMsg(pool,
@@ -848,7 +835,6 @@ namespace p
 
 	void FindAllIdsWithAnyUnique(const TArray<const BasePool*>& pools, TArray<Id>& ids)
 	{
-		ZoneScoped;
 		i32 maxPossibleSize = 0;
 		for (const BasePool* pool : pools)
 		{

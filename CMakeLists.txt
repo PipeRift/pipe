@@ -22,7 +22,6 @@ set(PIPE_IS_PROJECT OFF)
 endif()
 option(PIPE_BUILD_SHARED "Build shared libraries" ON)
 option(PIPE_BUILD_TESTS "Build Pipe tests" ${PIPE_IS_PROJECT})
-option(PIPE_ENABLE_PROFILER "Should profiler recording be included in the build?" ON)
 option(PIPE_ENABLE_ALLOCATION_STACKS "Should allocation call stacks be tracked?" OFF)
 option(PIPE_BUILD_WARNINGS "Enable compiler warnings" OFF)
 option(PIPE_ENABLE_CLANG_TOOLS "Enable clang-tidy and clang-format" ${PIPE_IS_PROJECT})
@@ -71,7 +70,6 @@ target_link_libraries(Pipe PUBLIC
     robin_hood
     tsl::robin_map
     tsl::sparse_map
-    Tracy
     magic_enum
     utf8cpp
 )
@@ -85,10 +83,6 @@ if(PIPE_ENABLE_ALLOCATION_STACKS)
     target_compile_definitions(Pipe PUBLIC P_ENABLE_ALLOCATION_STACKS=1)
 endif()
 
-if(PIPE_ENABLE_PROFILER)
-    target_compile_definitions(Pipe PUBLIC PIPE_ENABLE_PROFILER=1)
-    target_link_libraries(Pipe PUBLIC Tracy)
-endif()
 pipe_target_enable_CPP20(Pipe)
 pipe_add_sanitizers(Pipe)
 pipe_target_shared_output_directory(Pipe)

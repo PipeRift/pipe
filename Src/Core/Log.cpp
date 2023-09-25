@@ -2,7 +2,6 @@
 
 #include "Pipe/Core/Log.h"
 
-#include "Pipe/Core/Profiler.h"
 #include "Pipe/Files/Files.h"
 #include "Pipe/Files/Paths.h"
 #include "Pipe/Memory/OwnPtr.h"
@@ -17,7 +16,7 @@
 
 
 #if P_PLATFORM_WINDOWS
-#	include <spdlog/details/windows_include.h>
+	#include <spdlog/details/windows_include.h>
 #endif
 
 
@@ -25,39 +24,6 @@ namespace p
 {
 	TOwnPtr<spdlog::logger> generalLogger;
 	TOwnPtr<spdlog::logger> errorLogger;
-
-
-#if P_ENABLE_PROFILER
-	template<typename Mutex>
-	class ProfilerSink : public spdlog::sinks::base_sink<Mutex>
-	{
-		using Super = spdlog::sinks::base_sink<Mutex>;
-
-	public:
-		ProfilerSink() : Super()
-		{
-			Super::set_pattern("%^[%t][%l]%$ %v");
-		}
-
-	protected:
-		void sink_it_(const spdlog::details::log_msg& msg) override
-		{
-			// log_msg is a struct containing the log entry info like level,
-			// timestamp, thread id etc. msg.raw contains pre formatted log
-
-			// If needed (very likely but not mandatory), the sink formats the
-			// message before sending it to its final destination:
-			spdlog::memory_buf_t formatted;
-			Super::formatter_->format(msg, formatted);
-
-			TracyMessage(formatted.data(), formatted.size());    // Send to profiler
-		}
-
-		void flush_() override {}
-	};
-	using ProfilerSink_mt = ProfilerSink<std::mutex>;
-	using ProfilerSink_st = ProfilerSink<spdlog::details::null_mutex>;
-#endif
 
 
 	void InitLog(Path logFile)
@@ -78,10 +44,6 @@ namespace p
 #else
 		cliSink->set_color(spdlog::level::info, cliSink->white);
 		cliErrSink->set_color(spdlog::level::warn, cliSink->yellow);
-#endif
-		// Profiler
-#if P_ENABLE_PROFILER
-		sinks.Add(std::make_shared<ProfilerSink_mt>());
 #endif
 
 		// File

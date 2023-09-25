@@ -2,7 +2,6 @@
 
 #include "Pipe/Files/FileDialog.h"
 
-#include "Pipe/Core/Profiler.h"
 #include "Pipe/Files/Paths.h"
 
 #include <portable-file-dialogs.h>

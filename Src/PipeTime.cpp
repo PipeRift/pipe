@@ -4,7 +4,6 @@
 
 #include "Pipe/Core/Char.h"
 #include "Pipe/Core/Log.h"
-#include "Pipe/Core/Profiler.h"
 
 #include <thread>
 
@@ -587,9 +586,6 @@ namespace p
 		const float extraTimeForFPSCAP = minFrameTime - secondsPassed;
 		if (extraTimeForFPSCAP > 0.0f)
 		{
-			// Cap FPS with a delay
-			ZoneScopedNC("Sleep", 0xD15545);
-
 			Chrono::duration<float, Chrono::seconds::period> sleepPeriod{extraTimeForFPSCAP};
 			std::this_thread::sleep_for(sleepPeriod);
 		}
