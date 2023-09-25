@@ -1,8 +1,8 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
-#include "Pipe/Math/Math.h"
+#include "PipeMath.h"
 
-#include "Pipe/Math/Vector.h"
+#include "PipeVectors.h"
 
 
 namespace p

@@ -4,7 +4,7 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Math/Math.h"
+#include "PipeMath.h"
 
 #include <cstring>
 

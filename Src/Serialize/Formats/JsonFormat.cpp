@@ -4,7 +4,7 @@
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/String.h"
-#include "Pipe/Math/Math.h"
+#include "PipeMath.h"
 
 #include <yyjson.h>
 

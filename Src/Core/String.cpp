@@ -3,8 +3,9 @@
 #include "Pipe/Core/String.h"
 
 #include "Pipe/Core/Char.h"
-#include "Pipe/Math/Math.h"
 #include "Pipe/Serialize/Serialization.h"
+#include "PipeMath.h"
+
 
 
 namespace p

@@ -6,15 +6,16 @@
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Math/Math.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/Memory.h"
 #include "PipeAlgorithms.h"
 #include "PipeArraysFwd.h"
+#include "PipeMath.h"
 
 #include <initializer_list>
 #include <iterator>
+
 
 
 namespace p

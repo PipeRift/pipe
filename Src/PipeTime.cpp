@@ -1,9 +1,12 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
-#include "Pipe/Math/Time.h"
+#include "PipeTime.h"
 
 #include "Pipe/Core/Char.h"
 #include "Pipe/Core/Log.h"
+#include "Pipe/Core/Profiler.h"
+
+#include <thread>
 
 
 namespace p
@@ -563,5 +566,32 @@ namespace p
 		    && (Day <= DaysInMonth(Year, Month)) && (Hour >= 0) && (Hour <= 23) && (Minute >= 0)
 		    && (Minute <= 59) && (Second >= 0) && (Second <= 59) && (Millisecond >= 0)
 		    && (Millisecond <= 999);
+	}
+
+
+	void FrameTime::PreTick()
+	{
+		previousTime = currentTime;
+		currentTime  = DateTime::Now();
+
+		// Avoid too big delta times
+		realDeltaTime = Min(0.15f, (currentTime - previousTime).GetTotalSeconds());
+
+		// Apply time dilation
+		deltaTime = realDeltaTime * timeDilation;
+	}
+
+	void FrameTime::PostTick()
+	{
+		const float secondsPassed      = (DateTime::Now() - currentTime).GetTotalSeconds();
+		const float extraTimeForFPSCAP = minFrameTime - secondsPassed;
+		if (extraTimeForFPSCAP > 0.0f)
+		{
+			// Cap FPS with a delay
+			ZoneScopedNC("Sleep", 0xD15545);
+
+			Chrono::duration<float, Chrono::seconds::period> sleepPeriod{extraTimeForFPSCAP};
+			std::this_thread::sleep_for(sleepPeriod);
+		}
 	}
 }    // namespace p

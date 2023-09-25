@@ -4,10 +4,11 @@
 
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Math/Math.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Memory.h"
 #include "PipeAlgorithms.h"
+#include "PipeMath.h"
+
 
 
 namespace p

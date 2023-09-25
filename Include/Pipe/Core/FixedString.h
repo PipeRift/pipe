@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/StringView.h"
-#include "Pipe/Math/Math.h"
+#include "PipeMath.h"
 
 #include <array>
 #include <iterator>

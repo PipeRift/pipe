@@ -871,6 +871,117 @@ namespace p
 
 	PIPE_API v2 EvaluateCubicBezier(v2 p0, v2 p1, v2 p2, v2 p3, float t);
 
+
+	struct PIPE_API Rotator : public v3
+	{
+		using v3::v3;
+
+		Rotator() {}
+		Rotator(const v3& vector) : v3{vector} {}
+
+		float Pitch() const
+		{
+			return y;
+		}
+		float Yaw() const
+		{
+			return z;
+		}
+		float Roll() const
+		{
+			return x;
+		}
+
+		float& Pitch()
+		{
+			return y;
+		}
+		float& Yaw()
+		{
+			return z;
+		}
+		float& Roll()
+		{
+			return x;
+		}
+
+		/**
+		 * Clamps an angle to the range of [0, 360).
+		 *
+		 * @param Angle The angle to clamp.
+		 * @return The clamped angle.
+		 */
+		static float ClampAxis(float Angle);
+
+		/**
+		 * Clamps an angle to the range of (-180, 180].
+		 *
+		 * @param Angle The Angle to clamp.
+		 * @return The clamped angle.
+		 */
+		static float NormalizeAxis(float Angle);
+	};
+
+
+	struct PIPE_API Quat
+	{
+	public:
+		float x;
+		float y;
+		float z;
+		float w;
+
+	public:
+		// Default constructor (uninitialized)
+		constexpr Quat() {}
+		constexpr Quat(float x, float y, float z, float w) : x{x}, y{y}, z{z}, w{w} {}
+
+		v3 Rotate(const v3& vector) const;
+		v3 Unrotate(const v3& vector) const;
+
+		Rotator ToRotator() const;
+		Rotator ToRotatorRad() const;
+
+		v3 GetForward() const;
+		v3 GetRight() const;
+		v3 GetUp() const;
+
+		Quat Inverse() const;
+
+		float* Data()
+		{
+			return &x;
+		}
+		const float* Data() const
+		{
+			return &x;
+		}
+
+		bool Equals(const Quat& other, float tolerance = smallNumber) const;
+
+		void Normalize(float tolerance = smallNumber);
+
+		static Quat FromRotator(Rotator rotator);
+
+		static Quat FromRotatorRad(Rotator rotator);
+
+		static Quat Between(const v3& a, const v3& b);
+		static Quat BetweenNormals(const v3& a, const v3& b);
+		static Quat LookAt(const v3& origin, const v3& dest);
+
+		static constexpr Quat Identity()
+		{
+			return {1, 0, 0, 0};
+		}
+
+		template<typename T>
+		v3 operator*(const v3& v)
+		{
+			return Rotate(v);
+		}
+	};
+
+
 	PIPE_API void Read(Reader& ct, v2& val);
 	PIPE_API void Write(Writer& ct, v2 val);
 	PIPE_API void Read(Reader& ct, v2_u32& val);
@@ -883,6 +994,8 @@ namespace p
 	PIPE_API void Write(Writer& ct, const v3_u32& val);
 	PIPE_API void Read(Reader& ct, v3_i32& val);
 	PIPE_API void Write(Writer& ct, const v3_i32& val);
+	PIPE_API void Read(Reader& ct, Quat& val);
+	PIPE_API void Write(Writer& ct, const Quat& val);
 }    // namespace p
 
 P_REFLECT_NATIVE_TYPE(p::v2);
@@ -891,6 +1004,7 @@ P_REFLECT_NATIVE_TYPE(p::v2_i32);
 P_REFLECT_NATIVE_TYPE(p::v3);
 P_REFLECT_NATIVE_TYPE(p::v3_u32);
 P_REFLECT_NATIVE_TYPE(p::v3_i32);
+P_REFLECT_NATIVE_TYPE(p::Quat);
 
 
 template<typename T>

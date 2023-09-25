@@ -3,12 +3,13 @@
 
 #include "Pipe/Core/Limits.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Math/Math.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/Block.h"
 #include "Pipe/Memory/Memory.h"
 #include "PipeArrays.h"
+#include "PipeMath.h"
+
 
 
 namespace p

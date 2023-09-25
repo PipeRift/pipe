@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/Math/Vector.h>
+#include <PipeVectors.h>
 
 
 using namespace snowhouse;

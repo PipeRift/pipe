@@ -5,7 +5,7 @@
 #include "Pipe/Core/Backward.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Math/Math.h"
+#include "PipeMath.h"
 
 #include <algorithm>
 #include <mutex>
@@ -40,15 +40,20 @@ namespace p
 		}
 	};
 
-	static MemoryStatsArena memStatsArena;
+	// Getter to ensure readiness at static init time
+	MemoryStatsArena& GetStateArena()
+	{
+		static MemoryStatsArena arena;
+		return arena;
+	}
 
 
 	MemoryStats::MemoryStats()
-	    : allocations{memStatsArena}
+	    : allocations{GetStateArena()}
 #if P_ENABLE_ALLOCATION_STACKS
 	    , stacks{arena}
 #endif
-	    , freedAllocations{memStatsArena}
+	    , freedAllocations{GetStateArena()}
 	{}
 
 	MemoryStats::~MemoryStats()
