@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/Utility.h"
+#include "PipeMath.h"
 
 
 namespace p
