@@ -54,7 +54,7 @@ namespace p
 
 		constexpr T Length() const
 		{
-			return math::Sqrt(LengthSquared());
+			return Sqrt(LengthSquared());
 		}
 
 		constexpr T LengthSquared() const
@@ -64,17 +64,16 @@ namespace p
 
 		static T Distance(const Vec& one, const Vec& other)
 		{
-			return math::Sqrt(DistanceSqrt(one, other));
+			return Sqrt(DistanceSqrt(one, other));
 		}
 		static T DistanceSqrt(const Vec& one, const Vec& other)
 		{
-			return math::Square(other.x - one.x) + math::Square(other.y - one.y);
+			return Square(other.x - one.x) + Square(other.y - one.y);
 		}
 
-		bool Equals(const Vec& other, float tolerance = math::SMALL_NUMBER) const
+		bool Equals(const Vec& other, float tolerance = smallNumber) const
 		{
-			return math::NearlyEqual(x, other.x, tolerance)
-			    && math::NearlyEqual(y, other.y, tolerance);
+			return NearlyEqual(x, other.x, tolerance) && NearlyEqual(y, other.y, tolerance);
 		}
 
 		Vec& Normalize()
@@ -82,7 +81,7 @@ namespace p
 			const T length = Length();
 			if (length > 0.f)
 			{
-				const float scale = math::InvSqrt(length);
+				const float scale = InvSqrt(length);
 				x *= scale;
 				y *= scale;
 			}
@@ -104,7 +103,7 @@ namespace p
 
 		constexpr Vec Floor() const
 		{
-			return {math::Floor(x), math::Floor(y)};
+			return {Floor(x), Floor(y)};
 		}
 
 		static Vec Mid(Vec one, Vec other)
@@ -119,11 +118,11 @@ namespace p
 
 		static constexpr Vec FromAngle(float angle)
 		{
-			return FromAngleRad(angle * math::DEGTORAD);
+			return FromAngleRad(angle * degToRad);
 		}
 		constexpr Vec Rotate(float angle) const
 		{
-			return RotateRad(angle * math::DEGTORAD);
+			return RotateRad(angle * degToRad);
 		}
 
 		static constexpr Vec FromAngleRad(float angle)
@@ -140,11 +139,11 @@ namespace p
 
 		constexpr float AngleRad() const
 		{
-			return math::Atan2(y, x);
+			return Atan2(y, x);
 		}
 		constexpr float Angle() const
 		{
-			return AngleRad() * math::RADTODEG;
+			return AngleRad() * radToDeg;
 		}
 
 		T* Data()
@@ -333,7 +332,7 @@ namespace p
 
 		constexpr T Length() const
 		{
-			return math::Sqrt(LengthSquared());
+			return Sqrt(LengthSquared());
 		}
 
 		constexpr T LengthSquared() const
@@ -343,19 +342,17 @@ namespace p
 
 		static T Distance(const Vec& one, const Vec& other)
 		{
-			return math::Sqrt(DistanceSqrt(one, other));
+			return Sqrt(DistanceSqrt(one, other));
 		}
 		static T DistanceSqrt(const Vec& one, const Vec& other)
 		{
-			return math::Square(other.x - one.x) + math::Square(other.y - one.y)
-			     + math::Square(other.z - one.z);
+			return Square(other.x - one.x) + Square(other.y - one.y) + Square(other.z - one.z);
 		}
 
-		bool Equals(const Vec& other, float tolerance = math::SMALL_NUMBER) const
+		bool Equals(const Vec& other, float tolerance = smallNumber) const
 		{
-			return math::NearlyEqual(x, other.x, tolerance)
-			    && math::NearlyEqual(y, other.y, tolerance)
-			    && math::NearlyEqual(z, other.z, tolerance);
+			return NearlyEqual(x, other.x, tolerance) && NearlyEqual(y, other.y, tolerance)
+			    && NearlyEqual(z, other.z, tolerance);
 		}
 
 		Vec& Normalize()
@@ -363,7 +360,7 @@ namespace p
 			const T lengthSqrt = LengthSquared();
 			if (lengthSqrt > 0.f)
 			{
-				const float scale = math::InvSqrt(lengthSqrt);
+				const float scale = InvSqrt(lengthSqrt);
 				x *= scale;
 				y *= scale;
 				z *= scale;
@@ -386,7 +383,7 @@ namespace p
 
 		constexpr Vec Floor() const
 		{
-			return {math::Floor(x), math::Floor(y), math::Floor(z)};
+			return {Floor(x), Floor(y), Floor(z)};
 		}
 
 		static Vec Mid(Vec one, Vec other)
@@ -589,12 +586,10 @@ namespace p
 			return {x, y, z};
 		}
 
-		bool Equals(const Vec& other, float tolerance = math::SMALL_NUMBER) const
+		bool Equals(const Vec& other, float tolerance = smallNumber) const
 		{
-			return math::NearlyEqual(x, other.x, tolerance)
-			    && math::NearlyEqual(y, other.y, tolerance)
-			    && math::NearlyEqual(z, other.z, tolerance)
-			    && math::NearlyEqual(w, other.w, tolerance);
+			return NearlyEqual(x, other.x, tolerance) && NearlyEqual(y, other.y, tolerance)
+			    && NearlyEqual(z, other.z, tolerance) && NearlyEqual(w, other.w, tolerance);
 		}
 
 		static T Dot(const Vec& a, const Vec& b)
@@ -606,7 +601,7 @@ namespace p
 
 		constexpr Vec Floor() const
 		{
-			return {math::Floor(x), math::Floor(y), math::Floor(z), math::Floor(w)};
+			return {Floor(x), Floor(y), Floor(z), Floor(w)};
 		}
 
 		static Vec Mid(Vec one, Vec other)
@@ -683,11 +678,11 @@ namespace p
 		{
 			for (u32 i = 0; i < size; ++i)
 			{
-				min[i] = math::Clamp(min[i], other.min[i], other.max[i]);
+				min[i] = Clamp(min[i], other.min[i], other.max[i]);
 			}
 			for (u32 i = 0; i < size; ++i)
 			{
-				max[i] = math::Clamp(max[i], other.min[i], other.max[i]);
+				max[i] = Clamp(max[i], other.min[i], other.max[i]);
 			}
 		}
 
@@ -818,11 +813,11 @@ namespace p
 		Vec<size, T> Clamp(const Vec<size, T>& point)
 		{
 			Vec<size, T> clamped;
-			clamped.x = p::math::Clamp(point.x, min.x, max.x);
-			clamped.y = p::math::Clamp(point.y, min.y, max.y);
+			clamped.x = p::Clamp(point.x, min.x, max.x);
+			clamped.y = p::Clamp(point.y, min.y, max.y);
 			if constexpr (size >= 3)
 			{
-				clamped.z = p::math::Clamp(point.z, min.z, max.z);
+				clamped.z = p::Clamp(point.z, min.z, max.z);
 			}
 			return clamped;
 		}
@@ -869,7 +864,7 @@ namespace p
 		// however, in practice if you have 0 scale, and relative transform doesn't make much
 		// sense anymore because you should be instead of showing gigantic infinite mesh also
 		// returning BIG_NUMBER causes sequential NaN issues by multiplying so we hardcode as 0
-		PIPE_API v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = math::SMALL_NUMBER);
+		PIPE_API v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = smallNumber);
 		PIPE_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
 		PIPE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
 	}    // namespace Vectors

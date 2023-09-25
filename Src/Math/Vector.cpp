@@ -12,7 +12,7 @@ namespace p
 	float Rotator::ClampAxis(float angle)
 	{
 		// returns angle in the range (-360,360)
-		angle = math::Mod(angle, 360.f);
+		angle = Mod(angle, 360.f);
 		if (angle < 0.f)
 		{
 			// shift to [0,360) range
@@ -117,17 +117,17 @@ namespace p
 	v3 Vectors::GetSafeScaleReciprocal(const v3& scale, float tolerance)
 	{
 		v3 safeReciprocalScale;
-		if (math::Abs(scale.x) <= tolerance)
+		if (Abs(scale.x) <= tolerance)
 			safeReciprocalScale.x = 0.f;
 		else
 			safeReciprocalScale.x = 1 / scale.x;
 
-		if (math::Abs(scale.y) <= tolerance)
+		if (Abs(scale.y) <= tolerance)
 			safeReciprocalScale.y = 0.f;
 		else
 			safeReciprocalScale.y = 1 / scale.y;
 
-		if (math::Abs(scale.z) <= tolerance)
+		if (Abs(scale.z) <= tolerance)
 			safeReciprocalScale.z = 0.f;
 		else
 			safeReciprocalScale.z = 1 / scale.z;
@@ -141,7 +141,7 @@ namespace p
 
 		const float dot    = v2::Dot(a - point, ab);
 		const float length = ab.LengthSquared();
-		const float delta  = math::Clamp(-dot / length, 0.0f, 1.0f);
+		const float delta  = Clamp(-dot / length, 0.0f, 1.0f);
 		return a + (ab * delta);
 	}
 
@@ -151,7 +151,7 @@ namespace p
 
 		const float dot    = v3::Dot(a - point, ab);
 		const float length = ab.LengthSquared();
-		const float delta  = math::Clamp(-dot / length, 0.f, 1.f);
+		const float delta  = Clamp(-dot / length, 0.f, 1.f);
 		return a + (ab * delta);
 	}
 }    // namespace p

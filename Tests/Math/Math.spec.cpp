@@ -248,78 +248,78 @@ go_bandit([]() {
 		});
 
 		it("Can check Infinite", [&]() {
-			AssertThat(math::IsInf(0.0), Equals(false));
-			AssertThat(math::IsInf(-0.0), Equals(false));
-			AssertThat(math::IsInf(1.0), Equals(false));
-			AssertThat(math::IsInf(-1.0), Equals(false));
+			AssertThat(IsInf(0.0), Equals(false));
+			AssertThat(IsInf(-0.0), Equals(false));
+			AssertThat(IsInf(1.0), Equals(false));
+			AssertThat(IsInf(-1.0), Equals(false));
 
 			static constexpr double dInfinite = Limits<double>::Infinity();
-			AssertThat(math::IsInf(dInfinite), Equals(true));
-			AssertThat(math::IsInf(-dInfinite), Equals(true));
-			AssertThat(math::IsPosInf(-dInfinite), Equals(false));
-			AssertThat(math::IsNegInf(dInfinite), Equals(false));
-			AssertThat(math::IsInf(Limits<double>::Max()), Equals(false));
-			AssertThat(math::IsInf(Limits<double>::Lowest()), Equals(false));
-			AssertThat(math::IsInf(double(math::BIG_NUMBER)), Equals(false));
+			AssertThat(IsInf(dInfinite), Equals(true));
+			AssertThat(IsInf(-dInfinite), Equals(true));
+			AssertThat(IsPosInf(-dInfinite), Equals(false));
+			AssertThat(IsNegInf(dInfinite), Equals(false));
+			AssertThat(IsInf(Limits<double>::Max()), Equals(false));
+			AssertThat(IsInf(Limits<double>::Lowest()), Equals(false));
+			AssertThat(IsInf(double(bigNumber)), Equals(false));
 		});
 
 		it("Can check NAN", [&]() {
-			AssertThat(math::IsNAN(0.0), Equals(false));
-			AssertThat(math::IsNAN(Limits<double>::QuietNaN()), Equals(true));
+			AssertThat(IsNAN(0.0), Equals(false));
+			AssertThat(IsNAN(Limits<double>::QuietNaN()), Equals(true));
 		});
 
 		describe("Roundings", []() {
 			it("Can Floor", [&]() {
-				AssertThat(math::Floor(0.0), Equals(std::floor(0.0)));
-				AssertThat(math::Floor(-0.0), Equals(std::floor(-0.0)));
-				AssertThat(math::Floor(4.2), Equals(std::floor(4.2)));
-				AssertThat(math::Floor(4.5), Equals(std::floor(4.5)));
-				AssertThat(math::Floor(4.7), Equals(std::floor(4.7)));
-				AssertThat(math::Floor(5.0), Equals(std::floor(5.0)));
-				AssertThat(math::Floor(-4.2), Equals(std::floor(-4.2)));
-				AssertThat(math::Floor(-4.7), Equals(std::floor(-4.7)));
-				AssertThat(math::Floor(-5.0), Equals(std::floor(-5.0)));
-				AssertThat(math::Floor(99999999999999999 + 0.5), Equals(99999999999999999));
+				AssertThat(Floor(0.0), Equals(std::floor(0.0)));
+				AssertThat(Floor(-0.0), Equals(std::floor(-0.0)));
+				AssertThat(Floor(4.2), Equals(std::floor(4.2)));
+				AssertThat(Floor(4.5), Equals(std::floor(4.5)));
+				AssertThat(Floor(4.7), Equals(std::floor(4.7)));
+				AssertThat(Floor(5.0), Equals(std::floor(5.0)));
+				AssertThat(Floor(-4.2), Equals(std::floor(-4.2)));
+				AssertThat(Floor(-4.7), Equals(std::floor(-4.7)));
+				AssertThat(Floor(-5.0), Equals(std::floor(-5.0)));
+				AssertThat(Floor(99999999999999999 + 0.5), Equals(99999999999999999));
 
 				static constexpr double dInfinite = Limits<double>::Infinity();
-				AssertThat(math::Floor(-dInfinite), Equals(std::floor(-dInfinite)));
-				AssertThat(math::Floor(dInfinite), Equals(std::floor(dInfinite)));
-				AssertThat(math::IsNAN(math::Floor(Limits<double>::QuietNaN())), Equals(true));
+				AssertThat(Floor(-dInfinite), Equals(std::floor(-dInfinite)));
+				AssertThat(Floor(dInfinite), Equals(std::floor(dInfinite)));
+				AssertThat(IsNAN(Floor(Limits<double>::QuietNaN())), Equals(true));
 			});
 			it("Can Ceil", [&]() {
-				AssertThat(math::Ceil(0.0), Equals(std::ceil(0.0)));
-				AssertThat(math::Ceil(-0.0), Equals(std::ceil(-0.0)));
-				AssertThat(math::Ceil(4.2), Equals(std::ceil(4.2)));
-				AssertThat(math::Ceil(4.5), Equals(std::ceil(4.5)));
-				AssertThat(math::Ceil(4.7), Equals(std::ceil(4.7)));
-				AssertThat(math::Ceil(5.0), Equals(std::ceil(5.0)));
-				AssertThat(math::Ceil(-4.2), Equals(std::ceil(-4.2)));
-				AssertThat(math::Ceil(-4.7), Equals(std::ceil(-4.7)));
-				AssertThat(math::Ceil(-5.0), Equals(std::ceil(-5.0)));
-				AssertThat(math::Ceil(99999999999999999 - 0.5), Equals(99999999999999999));
+				AssertThat(Ceil(0.0), Equals(std::ceil(0.0)));
+				AssertThat(Ceil(-0.0), Equals(std::ceil(-0.0)));
+				AssertThat(Ceil(4.2), Equals(std::ceil(4.2)));
+				AssertThat(Ceil(4.5), Equals(std::ceil(4.5)));
+				AssertThat(Ceil(4.7), Equals(std::ceil(4.7)));
+				AssertThat(Ceil(5.0), Equals(std::ceil(5.0)));
+				AssertThat(Ceil(-4.2), Equals(std::ceil(-4.2)));
+				AssertThat(Ceil(-4.7), Equals(std::ceil(-4.7)));
+				AssertThat(Ceil(-5.0), Equals(std::ceil(-5.0)));
+				AssertThat(Ceil(99999999999999999 - 0.5), Equals(99999999999999999));
 
 				static constexpr double dInfinite = Limits<double>::Infinity();
-				AssertThat(math::Ceil(-dInfinite), Equals(std::ceil(-dInfinite)));
-				AssertThat(math::Ceil(dInfinite), Equals(std::ceil(dInfinite)));
-				AssertThat(math::IsNAN(math::Ceil(Limits<double>::QuietNaN())), Equals(true));
+				AssertThat(Ceil(-dInfinite), Equals(std::ceil(-dInfinite)));
+				AssertThat(Ceil(dInfinite), Equals(std::ceil(dInfinite)));
+				AssertThat(IsNAN(Ceil(Limits<double>::QuietNaN())), Equals(true));
 			});
 
 			it("Can Round", [&]() {
-				AssertThat(math::Round(0.0), Equals(std::round(0.0)));
-				AssertThat(math::Round(-0.0), Equals(std::round(-0.0)));
-				AssertThat(math::Round(4.2), Equals(std::round(4.2)));
-				AssertThat(math::Round(4.5), Equals(std::round(4.5)));
-				AssertThat(math::Round(4.7), Equals(std::round(4.7)));
-				AssertThat(math::Round(5.0), Equals(std::round(5.0)));
-				AssertThat(math::Round(-4.2), Equals(std::round(-4.2)));
-				AssertThat(math::Round(-4.7), Equals(std::round(-4.7)));
-				AssertThat(math::Round(-5.0), Equals(std::round(-5.0)));
-				AssertThat(math::Round(99999999999999999 - 0.4), Equals(99999999999999999));
+				AssertThat(Round(0.0), Equals(std::round(0.0)));
+				AssertThat(Round(-0.0), Equals(std::round(-0.0)));
+				AssertThat(Round(4.2), Equals(std::round(4.2)));
+				AssertThat(Round(4.5), Equals(std::round(4.5)));
+				AssertThat(Round(4.7), Equals(std::round(4.7)));
+				AssertThat(Round(5.0), Equals(std::round(5.0)));
+				AssertThat(Round(-4.2), Equals(std::round(-4.2)));
+				AssertThat(Round(-4.7), Equals(std::round(-4.7)));
+				AssertThat(Round(-5.0), Equals(std::round(-5.0)));
+				AssertThat(Round(99999999999999999 - 0.4), Equals(99999999999999999));
 
 				static constexpr double dInfinite = Limits<double>::Infinity();
-				AssertThat(math::Round(-dInfinite), Equals(std::round(-dInfinite)));
-				AssertThat(math::Round(dInfinite), Equals(std::round(dInfinite)));
-				AssertThat(math::IsNAN(math::Round(Limits<double>::QuietNaN())), Equals(true));
+				AssertThat(Round(-dInfinite), Equals(std::round(-dInfinite)));
+				AssertThat(Round(dInfinite), Equals(std::round(dInfinite)));
+				AssertThat(IsNAN(Round(Limits<double>::QuietNaN())), Equals(true));
 			});
 		});
 	});

@@ -5,12 +5,12 @@
 #include "Pipe/Math/Vector.h"
 
 
-namespace p::math
+namespace p
 {
 	void SinCos(float value, float& outSin, float& outCos)
 	{
 		// Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
-		float quotient = (INV_PI * 0.5f) * value;
+		float quotient = (invPi * 0.5f) * value;
 		if (value >= 0.0f)
 		{
 			quotient = Round(quotient);
@@ -19,18 +19,18 @@ namespace p::math
 		{
 			quotient = (float)((int)(quotient - 0.5f));
 		}
-		float y = value - (2.0f * PI) * quotient;
+		float y = value - (2.0f * pi) * quotient;
 
 		// Map y to [-pi/2,pi/2] with sin(y) = sin(value).
 		float sign;
-		if (y > HALF_PI)
+		if (y > halfPi)
 		{
-			y    = PI - y;
+			y    = pi - y;
 			sign = -1.0f;
 		}
-		else if (y < -HALF_PI)
+		else if (y < -halfPi)
 		{
-			y    = -PI - y;
+			y    = -pi - y;
 			sign = -1.0f;
 		}
 		else
@@ -61,7 +61,7 @@ namespace p::math
 	float Sin(float value)
 	{
 		// Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
-		float quotient = (INV_PI * 0.5f) * value;
+		float quotient = (invPi * 0.5f) * value;
 		if (value >= 0.0f)
 		{
 			quotient = Round(quotient);
@@ -70,17 +70,17 @@ namespace p::math
 		{
 			quotient = (float)((int)(quotient - 0.5f));
 		}
-		float y = value - (2.0f * PI) * quotient;
+		float y = value - (2.0f * pi) * quotient;
 
 		// Map y to [-pi/2,pi/2] with sin(y) = sin(value).
 		float sign;
-		if (y > HALF_PI)
+		if (y > halfPi)
 		{
-			y = PI - y;
+			y = pi - y;
 		}
-		else if (y < -HALF_PI)
+		else if (y < -halfPi)
 		{
-			y = -PI - y;
+			y = -pi - y;
 		}
 		const float y2 = y * y;
 
@@ -97,7 +97,7 @@ namespace p::math
 	float Cos(float value)
 	{
 		// Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
-		float quotient = (INV_PI * 0.5f) * value;
+		float quotient = (invPi * 0.5f) * value;
 		if (value >= 0.0f)
 		{
 			quotient = Round(quotient);
@@ -106,18 +106,18 @@ namespace p::math
 		{
 			quotient = (float)((int)(quotient - 0.5f));
 		}
-		float y = value - (2.0f * PI) * quotient;
+		float y = value - (2.0f * pi) * quotient;
 
 		// Map y to [-pi/2,pi/2] with sin(y) = sin(value).
 		float sign;
-		if (y > HALF_PI)
+		if (y > halfPi)
 		{
-			y    = PI - y;
+			y    = pi - y;
 			sign = -1.0f;
 		}
-		else if (y < -HALF_PI)
+		else if (y < -halfPi)
 		{
-			y    = -PI - y;
+			y    = -pi - y;
 			sign = -1.0f;
 		}
 		else
@@ -169,8 +169,8 @@ namespace p::math
 		t0 = t0 * t4 + c[6];
 		t3 = t0 * t3;
 
-		t3 = yAbsBigger ? (0.5f * PI) - t3 : t3;
-		t3 = (X < 0.0f) ? PI - t3 : t3;
+		t3 = yAbsBigger ? (0.5f * pi) - t3 : t3;
+		t3 = (X < 0.0f) ? pi - t3 : t3;
 		t3 = (Y < 0.0f) ? -t3 : t3;
 
 		return t3;
@@ -208,4 +208,4 @@ namespace p::math
 		}
 		return NormalizeAngle(a);    // Already in range
 	}
-}    // namespace p::math
+}    // namespace p

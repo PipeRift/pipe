@@ -25,7 +25,7 @@ namespace p::core
 		}
 
 		Stack recursionStack[32] = {
-		    {first, first + size - 1, u32(math::Log(float(size)) * 2.f)}
+		    {first, first + size - 1, u32(Log(float(size)) * 2.f)}
         };
 		Stack current, inner;
 

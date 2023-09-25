@@ -225,11 +225,11 @@ namespace p
 		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_SINT:
-				val = i8(math::Clamp<i64>(
+				val = i8(Clamp<i64>(
 				    unsafe_yyjson_get_sint(current), Limits<i8>::Lowest(), Limits<i8>::Max()));
 				break;
 			case YYJSON_SUBTYPE_UINT:
-				val = i8(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<i8>::Max()));
+				val = i8(Min<u64>(unsafe_yyjson_get_uint(current), Limits<i8>::Max()));
 				break;
 			case YYJSON_SUBTYPE_REAL: val = i8(unsafe_yyjson_get_real(current)); break;
 		}
@@ -244,10 +244,10 @@ namespace p
 		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_UINT:
-				val = u8(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<u8>::Max()));
+				val = u8(Min<u64>(unsafe_yyjson_get_uint(current), Limits<u8>::Max()));
 				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u8(math::Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u8>::Max()));
+				val = u8(Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u8>::Max()));
 				break;
 
 			case YYJSON_SUBTYPE_REAL: val = u8(unsafe_yyjson_get_real(current)); break;
@@ -263,11 +263,11 @@ namespace p
 		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_SINT:
-				val = i16(math::Clamp<i64>(
+				val = i16(Clamp<i64>(
 				    unsafe_yyjson_get_sint(current), Limits<i16>::Lowest(), Limits<i16>::Max()));
 				break;
 			case YYJSON_SUBTYPE_UINT:
-				val = i16(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<i16>::Max()));
+				val = i16(Min<u64>(unsafe_yyjson_get_uint(current), Limits<i16>::Max()));
 				break;
 			case YYJSON_SUBTYPE_REAL: val = i16(unsafe_yyjson_get_real(current)); break;
 		}
@@ -282,10 +282,10 @@ namespace p
 		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_UINT:
-				val = u16(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<u16>::Max()));
+				val = u16(Min<u64>(unsafe_yyjson_get_uint(current), Limits<u16>::Max()));
 				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u16(math::Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u16>::Max()));
+				val = u16(Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u16>::Max()));
 				break;
 
 			case YYJSON_SUBTYPE_REAL: val = u16(unsafe_yyjson_get_real(current)); break;
@@ -301,11 +301,11 @@ namespace p
 		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_SINT:
-				val = i32(math::Clamp<i64>(
+				val = i32(Clamp<i64>(
 				    unsafe_yyjson_get_sint(current), Limits<i32>::Lowest(), Limits<i32>::Max()));
 				break;
 			case YYJSON_SUBTYPE_UINT:
-				val = i32(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<i32>::Max()));
+				val = i32(Min<u64>(unsafe_yyjson_get_uint(current), Limits<i32>::Max()));
 				break;
 			case YYJSON_SUBTYPE_REAL: val = i32(unsafe_yyjson_get_real(current)); break;
 		}
@@ -320,10 +320,10 @@ namespace p
 		switch (unsafe_yyjson_get_subtype(current))
 		{
 			case YYJSON_SUBTYPE_UINT:
-				val = u32(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<u32>::Max()));
+				val = u32(Min<u64>(unsafe_yyjson_get_uint(current), Limits<u32>::Max()));
 				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u32(math::Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u32>::Max()));
+				val = u32(Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u32>::Max()));
 				break;
 
 			case YYJSON_SUBTYPE_REAL: val = u32(unsafe_yyjson_get_real(current)); break;
@@ -340,7 +340,7 @@ namespace p
 		{
 			case YYJSON_SUBTYPE_SINT: val = unsafe_yyjson_get_sint(current); break;
 			case YYJSON_SUBTYPE_UINT:
-				val = i64(math::Min<u64>(unsafe_yyjson_get_uint(current), Limits<i64>::Max()));
+				val = i64(Min<u64>(unsafe_yyjson_get_uint(current), Limits<i64>::Max()));
 				break;
 			case YYJSON_SUBTYPE_REAL: val = i64(unsafe_yyjson_get_real(current)); break;
 		}
@@ -356,7 +356,7 @@ namespace p
 		{
 			case YYJSON_SUBTYPE_UINT: val = unsafe_yyjson_get_uint(current); break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u64(math::Max<i64>(unsafe_yyjson_get_sint(current), 0));
+				val = u64(Max<i64>(unsafe_yyjson_get_sint(current), 0));
 				break;
 			case YYJSON_SUBTYPE_REAL: val = u64(unsafe_yyjson_get_real(current)); break;
 		}

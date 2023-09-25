@@ -2046,7 +2046,7 @@ namespace p
 		auto* pool = context.GetPool<const T>();
 		if (pool)
 		{
-			componentIds.Reserve(math::Min(i32(pool->Size()), ids.Size()));
+			componentIds.Reserve(Min(i32(pool->Size()), ids.Size()));
 			for (i32 i = 0; i < ids.Size(); ++i)
 			{
 				const Id id = ids[i];

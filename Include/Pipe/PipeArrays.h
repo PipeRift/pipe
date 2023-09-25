@@ -437,7 +437,7 @@ namespace p
 		void SortRange(i32 firstIdx, i32 count, Predicate predicate)
 		{
 			const i32 maxSize = Size() - firstIdx;
-			p::Sort(data + firstIdx, math::Min(count, maxSize), TLess<Type>());
+			p::Sort(data + firstIdx, Min(count, maxSize), TLess<Type>());
 		}
 
 		void SortRange(i32 firstIdx, i32 count)
@@ -1189,7 +1189,7 @@ namespace p
 		void RemoveAtSwapUnsafe(i32 index, i32 count, const bool shouldShrink = true)
 		{
 			const i32 lastIndex   = Super::size - count;
-			const i32 countToSwap = math::Min(count, lastIndex - index);
+			const i32 countToSwap = Min(count, lastIndex - index);
 			Super::SwapUnsafe(
 			    index, Super::size - countToSwap, countToSwap);    // Dont swap more than those left
 			RemoveAtUnsafe(lastIndex, count, shouldShrink);
@@ -1373,7 +1373,7 @@ namespace p
 		{
 			constexpr double exponentialFactor = 1.6;
 			const i32 desiredCapacity          = i32(capacity * exponentialFactor);
-			return p::math::Max(desiredCapacity, newSize);
+			return Max(desiredCapacity, newSize);
 		}
 
 		/** @return true if element data needs to be moved */
@@ -1494,12 +1494,12 @@ namespace p
 		constexpr TView(const IArray<Type>& value, i32 firstN)
 		{
 			Super::data = value.data;
-			Super::size = math::Min(value.size, firstN);
+			Super::size = Min(value.size, firstN);
 		}
 		constexpr TView(const IArray<Mut<Type>>& value, i32 firstN) requires(IsConst<Type>)
 		{
 			Super::data = value.data;
-			Super::size = math::Min(value.size, firstN);
+			Super::size = Min(value.size, firstN);
 		}
 		constexpr TView& operator=(const IArray<Type>& other)
 		{

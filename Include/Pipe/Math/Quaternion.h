@@ -46,9 +46,9 @@ namespace p
 			return &x;
 		}
 
-		bool Equals(const Quat& other, float tolerance = math::SMALL_NUMBER) const;
+		bool Equals(const Quat& other, float tolerance = smallNumber) const;
 
-		void Normalize(float tolerance = math::SMALL_NUMBER);
+		void Normalize(float tolerance = smallNumber);
 
 		static Quat FromRotator(Rotator rotator);
 

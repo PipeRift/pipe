@@ -31,30 +31,22 @@ namespace p
 			{
 				switch (*format)
 				{
-					case TX('d'): Strings::FormatTo(result, TX("{}"), math::Abs(GetDays())); break;
-					case TX('D'):
-						Strings::FormatTo(result, TX("{:08i}"), math::Abs(GetDays()));
-						break;
-					case TX('h'):
-						Strings::FormatTo(result, TX("{:02i}"), math::Abs(GetHours()));
-						break;
-					case TX('m'):
-						Strings::FormatTo(result, TX("{:02i}"), math::Abs(GetMinutes()));
-						break;
-					case TX('s'):
-						Strings::FormatTo(result, TX("{:02i}"), math::Abs(GetSeconds()));
-						break;
+					case TX('d'): Strings::FormatTo(result, TX("{}"), Abs(GetDays())); break;
+					case TX('D'): Strings::FormatTo(result, TX("{:08i}"), Abs(GetDays())); break;
+					case TX('h'): Strings::FormatTo(result, TX("{:02i}"), Abs(GetHours())); break;
+					case TX('m'): Strings::FormatTo(result, TX("{:02i}"), Abs(GetMinutes())); break;
+					case TX('s'): Strings::FormatTo(result, TX("{:02i}"), Abs(GetSeconds())); break;
 					case TX('f'):
-						Strings::FormatTo(result, TX("{:03i}"), math::Abs(GetFractionMilli()));
+						Strings::FormatTo(result, TX("{:03i}"), Abs(GetFractionMilli()));
 						break;
 					case TX('u'):
-						Strings::FormatTo(result, TX("{:06i}"), math::Abs(GetFractionMicro()));
+						Strings::FormatTo(result, TX("{:06i}"), Abs(GetFractionMicro()));
 						break;
 					case TX('t'):
-						Strings::FormatTo(result, TX("{:07i}"), math::Abs(GetFractionTicks()));
+						Strings::FormatTo(result, TX("{:07i}"), Abs(GetFractionTicks()));
 						break;
 					case TX('n'):
-						Strings::FormatTo(result, TX("{:09i}"), math::Abs(GetFractionNano()));
+						Strings::FormatTo(result, TX("{:09i}"), Abs(GetFractionNano()));
 						break;
 					default: result += *format;
 				}

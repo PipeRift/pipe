@@ -60,7 +60,7 @@ namespace p
 	void* BigBestFitArena::Alloc(const sizet size, sizet alignment)
 	{
 		// We always use at least 8 bytes of alignment for the header
-		alignment = math::Max(alignment, minAlignment);
+		alignment = Max(alignment, minAlignment);
 
 		const i32 slotIndex = FindSmallestSlot(size + alignment - 1);
 		if (slotIndex == NO_INDEX || slotIndex >= freeSlots.Size())
@@ -124,7 +124,7 @@ namespace p
 	{
 		if (allocationEnd == slot.offset + slot.size)    // Slot would become empty
 		{
-			if (allocationStart > slot.offset)           // Slot can still fill alignment gap
+			if (allocationStart > slot.offset)    // Slot can still fill alignment gap
 			{
 				slot.size   = allocationStart - slot.offset;
 				pendingSort = true;

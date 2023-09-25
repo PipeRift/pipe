@@ -43,7 +43,6 @@ namespace p::core
 	template<typename CharType = TChar>
 	inline PIPE_API constexpr sizet GetStringHash(const CharType* str, sizet size)
 	{
-		sizet i = 0;
 		// 32/64 bit architecture switch
 		if constexpr (sizeof(sizet) < 64)
 		{

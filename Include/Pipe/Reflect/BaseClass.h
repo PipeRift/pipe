@@ -34,7 +34,7 @@ namespace p
 	{
 		TPtr<BaseClass> self;
 		TPtr<BaseClass> owner;
-		static TPtr<BaseClass> nextOwner;
+		static inline TPtr<BaseClass> nextOwner;
 
 
 		ClassOwnership() : self{}, owner{Move(nextOwner)} {}

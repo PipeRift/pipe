@@ -26,7 +26,7 @@ namespace p
 
 	void IdRegistry::Create(TView<Id> newIds)
 	{
-		const i32 availablesUsed = math::Min(newIds.Size(), available.Size());
+		const i32 availablesUsed = Min(newIds.Size(), available.Size());
 		for (i32 i = 0; i < availablesUsed; ++i)
 		{
 			const Index index = available.Last();
@@ -100,7 +100,7 @@ namespace p
 		Next("count", idCount);
 		ids.Resize(i32(idCount));
 		// Create or assign root ids
-		const i32 maxSize = math::Min(entities.Size(), ids.Size());
+		const i32 maxSize = Min(entities.Size(), ids.Size());
 		for (i32 i = 0; i < maxSize; ++i)
 		{
 			Id& entity = entities[i];
@@ -676,7 +676,7 @@ namespace p
 		ZoneScoped;
 		if (pool)
 		{
-			results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
+			results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 			for (Id id : source)
 			{
 				if (pool->Has(id))
@@ -721,7 +721,7 @@ namespace p
 	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		ZoneScoped;
-		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
+		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		for (i32 i = source.Size() - 1; i >= 0; --i)
 		{
 			const Id id = source[i];
@@ -741,7 +741,7 @@ namespace p
 	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		ZoneScoped;
-		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
+		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		source.RemoveIf(
 		    [pool, &results](Id id) {
 			if (pool->Has(id))
@@ -778,7 +778,7 @@ namespace p
 	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		ZoneScoped;
-		results.ReserveMore(math::Min(i32(pool->Size()), source.Size()));
+		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		source.RemoveIf(
 		    [pool, &results](Id id) {
 			if (!pool->Has(id))

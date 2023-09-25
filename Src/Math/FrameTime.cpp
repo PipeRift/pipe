@@ -15,7 +15,7 @@ namespace p
 		currentTime  = DateTime::Now();
 
 		// Avoid too big delta times
-		realDeltaTime = math::Min(0.15f, (currentTime - previousTime).GetTotalSeconds());
+		realDeltaTime = Min(0.15f, (currentTime - previousTime).GetTotalSeconds());
 
 		// Apply time dilation
 		deltaTime = realDeltaTime * timeDilation;

@@ -32,7 +32,7 @@ namespace p
 			Strings::FormatTo(
 			    errorMsg, "MEMORY LEAKS! {} allocations were not freed!", allocations.Size());
 
-			const auto shown = math::Min<sizet>(64, allocations.Size());
+			const auto shown = Min<sizet>(64, allocations.Size());
 			for (i32 i = 0; i < shown; ++i)
 			{
 				PrintAllocationError("", &allocations[i], nullptr);

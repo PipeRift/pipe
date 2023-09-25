@@ -9,19 +9,19 @@
 #include <cmath>
 
 
-namespace p::math
+namespace p
 {
-	constexpr float PI       = 3.14159265358979323846f;
-	constexpr float HALF_PI  = PI * 0.5f;
-	constexpr float INV_PI   = 1.f / PI;
-	constexpr float RADTODEG = 180.f / PI;
-	constexpr float DEGTORAD = PI / 180.f;
+	constexpr float pi       = 3.14159265358979323846f;
+	constexpr float halfPi   = pi * 0.5f;
+	constexpr float invPi    = 1.f / pi;
+	constexpr float radToDeg = 180.f / pi;
+	constexpr float degToRad = pi / 180.f;
 
-	constexpr float SMALL_NUMBER      = 1.e-4f;
-	constexpr float SMALLER_NUMBER    = 0.00001f;
-	constexpr float VERY_SMALL_NUMBER = 1.e-8f;
-	constexpr float BIG_NUMBER        = 3.4e+38f;
-	constexpr float EULER             = 2.71828182845904523536f;
+	constexpr float smallNumber     = 1.e-4f;
+	constexpr float smallerNumber   = 0.00001f;
+	constexpr float verySmallNumber = 1.e-8f;
+	constexpr float bigNumber       = 3.4e+38f;
+	constexpr float euler           = 2.71828182845904523536f;
 
 
 	template<typename Type>
@@ -371,31 +371,31 @@ namespace p::math
 		// FastASin(0.0f) == 0.0f. For comparison:
 		//		Half PI				== 1.57079632679f == 0x3fC90FDB
 		//		FastAsin Half PI	== 1.5707963050f  == 0x3fC90FDA
-		static constexpr float fastAsinHalfPI = 1.5707963050f;
+		static constexpr float fastAsinHalfPi = 1.5707963050f;
 
 		// Clamp input to [-1,1].
 		bool nonnegative = (Value >= 0.0f);
-		float x          = math::Abs(Value);
+		float x          = Abs(Value);
 		float omx        = 1.0f - x;
 		if (omx < 0.0f)
 		{
 			omx = 0.0f;
 		}
-		float root = math::Sqrt(omx);
+		float root = Sqrt(omx);
 		// 7-degree minimax approximation
 		// clang-format off
 			float result = ((((((-0.0012624911f * x + 0.0066700901f)
 				* x - 0.0170881256f) * x + 0.0308918810f)
 				* x - 0.0501743046f) * x + 0.0889789874f)
-				* x - 0.2145988016f) * x + fastAsinHalfPI;
+				* x - 0.2145988016f) * x + fastAsinHalfPi;
 		// clang-format on
 
 		result *= root;    // acos(|x|)
 		// acos(x) = pi - acos(-x) when x < 0, asin(x) = pi/2 - acos(x)
-		return (nonnegative ? fastAsinHalfPI - result : result - fastAsinHalfPI);
+		return (nonnegative ? fastAsinHalfPi - result : result - fastAsinHalfPi);
 	}
 
-	inline PIPE_API bool NearlyEqual(float a, float b, float tolerance = SMALL_NUMBER)
+	inline PIPE_API bool NearlyEqual(float a, float b, float tolerance = smallNumber)
 	{
 		return Abs(b - a) <= tolerance;
 	}
@@ -461,4 +461,4 @@ namespace p::math
 	PIPE_API float NormalizeAngle(float a);
 
 	PIPE_API float ClampAngle(float a, float min, float max);
-}    // namespace p::math
+}    // namespace p

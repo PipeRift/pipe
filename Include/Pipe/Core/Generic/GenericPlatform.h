@@ -61,17 +61,17 @@ namespace p::core
 		// An 8-bit character type - In-memory only. 8-bit representation. Should
 		// really be char8_t but making this the generic option is easier for
 		// compilers which don't fully support C++11 yet (i.e. MSVC).
-		using Char8 = char8_t;
+		using Char8 = unsigned char;
 
 		// A 16-bit character type - In-memory only. 16-bit representation. Should
 		// really be char16_t but making this the generic option is easier for
 		// compilers which don't fully support C++11 yet (i.e. MSVC).
-		using Char16 = char16_t;
+		using Char16 = unsigned short int;
 
 		// A 32-bit character type - In-memory only.  32-bit representation.  Should
 		// really be char32_t but making this the generic option is easier for
 		// compilers which don't fully support C++11 yet (i.e. MSVC).
-		using Char32 = char32_t;
+		using Char32 = unsigned int;
 
 		// A switchable character - In-memory only.
 		// Either AnsiChar or WideChar
@@ -101,31 +101,31 @@ namespace p
 
 
 #ifndef PLATFORM_TCHAR_IS_WCHAR
-#	define PLATFORM_TCHAR_IS_WCHAR 0
+	#define PLATFORM_TCHAR_IS_WCHAR 0
 #endif
 #ifndef PLATFORM_TCHAR_IS_CHAR8
-#	define PLATFORM_TCHAR_IS_CHAR8 0
+	#define PLATFORM_TCHAR_IS_CHAR8 0
 #endif
 #ifndef PLATFORM_TCHAR_IS_CHAR16
-#	define PLATFORM_TCHAR_IS_CHAR16 0
+	#define PLATFORM_TCHAR_IS_CHAR16 0
 #endif
 #ifndef PLATFORM_TCHAR_IS_CHAR32
-#	define PLATFORM_TCHAR_IS_CHAR32 0
+	#define PLATFORM_TCHAR_IS_CHAR32 0
 #endif
 
 
 #ifndef LIKELY
-#	if (defined(__clang__) || defined(__GNUC__)) && (P_PLATFORM_LINUX)
-#		define LIKELY(x) __builtin_expect(!!(x), 1)
-#	else
-#		define LIKELY(x) (x)
-#	endif
+	#if (defined(__clang__) || defined(__GNUC__)) && (P_PLATFORM_LINUX)
+		#define LIKELY(x) __builtin_expect(!!(x), 1)
+	#else
+		#define LIKELY(x) (x)
+	#endif
 #endif
 
 #ifndef UNLIKELY
-#	if (defined(__clang__) || defined(__GNUC__)) && (P_PLATFORM_LINUX)
-#		define UNLIKELY(x) __builtin_expect(!!(x), 0)
-#	else
-#		define UNLIKELY(x) (x)
-#	endif
+	#if (defined(__clang__) || defined(__GNUC__)) && (P_PLATFORM_LINUX)
+		#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+	#else
+		#define UNLIKELY(x) (x)
+	#endif
 #endif
