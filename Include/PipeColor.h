@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "Math.h"
 #include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Reflect/NativeType.h"
 #include "Pipe/Serialize/Reader.h"
 #include "Pipe/Serialize/Writer.h"
+#include "PipeMath.h"
 #include "PipeVectors.h"
 
 
