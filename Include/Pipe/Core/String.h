@@ -16,7 +16,6 @@
 #include <string>
 
 
-
 #pragma warning(push)
 #pragma warning(disable:4996)
 
@@ -146,14 +145,10 @@ namespace p
 	};    // namespace Strings
 
 
-	template<>
-	struct Hash<String>
+	inline sizet GetHash(const String& str)
 	{
-		sizet operator()(const String& str) const
-		{
-			return GetStringHash(str.data());
-		}
-	};
+		return GetStringHash(str.data());
+	}
 
 	PIPE_API void Read(p::Reader& ct, p::String& val);
 	PIPE_API void Write(p::Writer& ct, const p::String& val);

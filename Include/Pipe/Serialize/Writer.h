@@ -190,7 +190,7 @@ namespace p
 	}
 
 	template<typename T>
-	void Write(Writer& w, T& val) requires IsEnum<T>
+	void Write(Writer& w, T& val) requires Enum<T>
 	{
 		if constexpr (GetEnumSize<T>() > 0)
 		{

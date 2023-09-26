@@ -16,7 +16,7 @@
 // https://github.com/boostorg/filesystem/blob/develop/test/deprecated_test.cpp
 
 
-namespace p::files
+namespace p
 {
 	bool IsDriveLetter(const TChar c)
 	{
@@ -506,7 +506,7 @@ namespace p::files
 		if (len >= 4 && IsSeparator(first[3]) && (len == 4 || !IsSeparator(first[4]))    // \xx\$
 		    && ((IsSeparator(first[1]) && (first[2] == '?' || first[2] == '.'))    // \\?\$ or \\.\$
 		        || (first[1] == '?' && first[2] == '?')))
-		{                                                                          // \??\$
+		{    // \??\$
 			return first + 3;
 		}
 
@@ -922,4 +922,4 @@ namespace p::files
 		path.assign(pathStr);
 		return path;
 	}
-}    // namespace p::files
+}    // namespace p

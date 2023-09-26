@@ -12,11 +12,11 @@ namespace p
 	{
 		p::String str;
 		ct.Serialize(str);
-		value = p::ToPath(str);
+		value = ToPath(str);
 	}
 
 	void Write(p::Writer& ct, const p::Path& value)
 	{
-		ct.Serialize(p::ToString(value));
+		ct.Serialize(ToString(value));
 	}
 }    // namespace p

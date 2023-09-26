@@ -10,7 +10,7 @@
 #include <shared_mutex>
 
 
-namespace p::core
+namespace p
 {
 	struct TagHeader
 	{
@@ -60,7 +60,7 @@ namespace p::core
 	{
 		if (!value.empty())
 		{
-			hash              = Hash<StringView>()(value);
+			hash              = p::GetHash(value);
 			TagHeader& header = table.GetOrAddTagString(hash, value);
 			++header.activeTags;
 			str = header.Data();
@@ -239,4 +239,4 @@ namespace p::core
 	{
 		ct.Serialize(tag.AsString());
 	}
-}    // namespace p::core
+}    // namespace p

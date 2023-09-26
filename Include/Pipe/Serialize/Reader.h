@@ -187,7 +187,7 @@ namespace p
 	}
 
 	template<typename T>
-	void Read(Reader& ct, T& val) requires(IsEnum<T>)
+	void Read(Reader& ct, T& val) requires(Enum<T>)
 	{
 		if constexpr (GetEnumSize<T>() > 0)
 		{
