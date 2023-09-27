@@ -67,11 +67,6 @@ namespace p
 		}
 	}
 
-	template<Enum T>
-	sizet GetHash(const T& value) noexcept
-	{
-		return GetHash(static_cast<UnderlyingType<T>>(value));
-	}
 
 	template<Number T>
 	sizet GetHash(const T& value) noexcept requires(!Enum<T>)
@@ -86,6 +81,11 @@ namespace p
 #endif
 	}
 
+	template<Enum T>
+	sizet GetHash(const T& value) noexcept
+	{
+		return GetHash(static_cast<UnderlyingType<T>>(value));
+	}
 
 	template<typename T>
 	sizet GetHash(T* ptr) noexcept
@@ -106,11 +106,11 @@ namespace p
 	}
 
 	template<typename T>
-	struct Hash
+	struct HashResolver
 	{
 		sizet operator()(const T& v) const
 		{
-			return p::GetHash(v);
+			return GetHash(v);
 		}
 	};
 }    // namespace p

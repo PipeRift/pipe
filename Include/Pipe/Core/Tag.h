@@ -8,7 +8,6 @@
 #include "Pipe/Serialize/SerializationFwd.h"
 
 
-
 namespace p
 {
 	/**
@@ -54,11 +53,6 @@ namespace p
 			return str == nullptr;
 		}
 
-		sizet GetHash() const
-		{
-			return hash;
-		}
-
 		static const Tag None()
 		{
 			return {};
@@ -76,6 +70,11 @@ namespace p
 		 */
 		static void SetAutomaticFlush(bool enabled);
 
+		friend inline sizet GetHash(const Tag& tag)
+		{
+			return tag.hash;
+		}
+
 	private:
 		void InternalReset();
 	};
@@ -89,11 +88,6 @@ namespace p
 
 	PIPE_API void Read(Reader& ct, Tag& tag);
 	PIPE_API void Write(Writer& ct, const Tag& tag);
-
-	inline sizet GetHash(const Tag& tag)
-	{
-		return tag.GetHash();
-	}
 }    // namespace p
 
 

@@ -276,12 +276,12 @@ namespace p
 	}    // namespace Strings
 
 
-	sizet GetHash(const StringView& str)
+	inline sizet GetHash(const StringView& str)
 	{
 		return GetStringHash(str.data(), str.size());
 	};
 
-	sizet GetHash(const TChar* str)
+	inline sizet GetHash(const TChar* str)
 	{
 		return GetStringHash(str);
 	};

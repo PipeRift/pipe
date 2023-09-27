@@ -865,13 +865,13 @@ namespace p
 
 
 	template<ColorMode mode>
-	sizet GetHash(const TColor<mode>& color)
+	inline sizet GetHash(const TColor<mode>& color)
 	{
 		return HashBytes(&color, sizeof(TColor<mode>));
 	}
 
 	template<>
-	sizet GetHash<ColorMode::RGBA>(const TColor<ColorMode::RGBA>& color)
+	inline sizet GetHash<ColorMode::RGBA>(const TColor<ColorMode::RGBA>& color)
 	{
 		return color.DWColor();
 	};

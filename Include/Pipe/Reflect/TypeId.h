@@ -53,6 +53,11 @@ namespace p
 		}
 	};
 
+	inline sizet GetHash(const TypeId& id)
+	{
+		return GetHash(id.GetId());
+	}
+
 	inline std::ostream& operator<<(std::ostream& stream, TypeId typeId)
 	{
 		stream << "TypeId(id=" << typeId.GetId() << ")";
@@ -65,10 +70,6 @@ namespace p
 		return TypeId{p::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
 	}
 
-	static sizet GetHash(TypeId id)
-	{
-		return GetHash(id.GetId());
-	}
 }    // namespace p
 
 
