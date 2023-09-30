@@ -10,7 +10,6 @@
 #include <magic_enum.hpp>
 
 
-
 namespace p
 {
 	template<typename T>
@@ -88,9 +87,9 @@ namespace p
 			Check(sizeof(T) >= valueSize);
 			memcpy(data, &data, valueSize);
 		}
-		void SetValue(void* data, Tag name) const
+		void SetValue(void* data, Tag valueName) const
 		{
-			i32 index = names.FindIndex(name);
+			i32 index = names.FindIndex(valueName);
 			if (index != NO_INDEX)
 			{
 				SetValueFromIndex(data, index);

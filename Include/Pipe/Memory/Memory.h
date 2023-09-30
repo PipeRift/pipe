@@ -184,7 +184,7 @@ namespace p
 			const T* const end = values + count;
 			while (values < end)
 			{
-				new (data) T(Forward<T>(*values));
+				new (data) T(p::Forward<T>(*values));
 				if constexpr (destroySourceInPlace)
 				{
 					values->T::~T();
@@ -243,7 +243,7 @@ namespace p
 			const T* const end = source + count;
 			while (source < end)
 			{
-				*dest = Forward<T>(*source);
+				*dest = p::Forward<T>(*source);
 				if constexpr (destroySourceInPlace)
 				{
 					source->T::~T();
@@ -269,7 +269,7 @@ namespace p
 			T* lastSource = source + count;
 			while (lastSource != source)
 			{
-				*--lastDest = Forward<T>(*--lastSource);
+				*--lastDest = p::Forward<T>(*--lastSource);
 			}
 		}
 	}

@@ -7,11 +7,11 @@
 #include "PipeArrays.h"
 
 
-
 namespace p
 {
 	struct IFormatReader
 	{
+		virtual ~IFormatReader()                         = default;
 		PIPE_API virtual void BeginObject()              = 0;
 		PIPE_API virtual void BeginArray(u32& size)      = 0;
 		PIPE_API virtual bool EnterNext(StringView name) = 0;
@@ -49,7 +49,7 @@ namespace p
 		TArray<sizet> flagStack;
 
 	public:
-
+		virtual ~IFormatWriter()                         = default;
 		PIPE_API virtual void BeginObject()              = 0;
 		PIPE_API virtual void BeginArray(u32 size)       = 0;
 		PIPE_API virtual bool EnterNext(StringView name) = 0;

@@ -71,7 +71,7 @@ namespace p
 		template<typename U, typename... Args>
 		void construct(U* p, Args&&... args)
 		{
-			::new (p) U(Forward<Args>(args)...);
+			::new (p) U(p::Forward<Args>(args)...);
 		}
 		template<typename U>
 		void destroy(U* p) noexcept

@@ -99,11 +99,11 @@ namespace p
 
 		bool IsReading() const
 		{
-			return reader;
+			return reader != nullptr;
 		}
 		bool IsWriting() const
 		{
-			return writer;
+			return writer != nullptr;
 		}
 
 		Reader& GetRead() const

@@ -17,7 +17,6 @@
 #include <iterator>
 
 
-
 namespace p
 {
 	////////////////////////////////
@@ -777,7 +776,7 @@ namespace p
 		{
 			const i32 firstIdx = Super::size;
 			AddUninitialized(1);
-			new (Super::data + firstIdx) Type(Forward<Type>(value));
+			new (Super::data + firstIdx) Type(p::Forward<Type>(value));
 			return firstIdx;
 		}
 		i32 Add(const Type& value)
@@ -793,7 +792,7 @@ namespace p
 		}
 		Type& AddRef(Type&& value)
 		{
-			return Super::data[Add(Forward<Type>(value))];
+			return Super::data[Add(p::Forward<Type>(value))];
 		}
 		Type& AddRef(const Type& value)
 		{

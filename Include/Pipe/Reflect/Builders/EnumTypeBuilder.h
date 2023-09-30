@@ -50,11 +50,11 @@ namespace p
 			newType.id   = id;
 			newType.name = name;
 
-			const auto names = GetEnumNames<T>();
-			newType.names.Reserve(names.size());
-			for (StringView name : names)
+			const auto valueNames = GetEnumNames<T>();
+			newType.names.Reserve(valueNames.size());
+			for (StringView valueName : valueNames)
 			{
-				newType.names.Add(Tag{name});
+				newType.names.Add(Tag{valueName});
 			}
 
 			const auto values = GetEnumValues<T>();

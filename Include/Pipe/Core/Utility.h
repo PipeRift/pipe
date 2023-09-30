@@ -25,14 +25,14 @@ namespace p
 
 	// Forward an lvalue as either an lvalue or an rvalue
 	template<typename T>
-	constexpr T&& Forward(std::remove_reference_t<T>& arg) noexcept
+	constexpr T&& Forward(typename std::remove_reference_t<T>& arg)
 	{
 		return static_cast<T&&>(arg);
 	}
 
 	// Forward an rvalue as an rvalue
-	template<class T>
-	constexpr T&& Forward(std::remove_reference_t<T>&& arg) noexcept
+	template<typename T>
+	constexpr T&& Forward(typename std::remove_reference_t<T>&& arg)
 	{
 		static_assert(!std::is_lvalue_reference_v<T>, "Bad Forward call");
 		return static_cast<T&&>(arg);

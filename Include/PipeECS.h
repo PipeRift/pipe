@@ -357,8 +357,8 @@ namespace p
 		    : idIndices{arena}
 		    , idList{arena}
 		    , arena{&arena}
-		    , context{&ast}
 		    , deletionPolicy{deletionPolicy}
+		    , context{&ast}
 		{
 			BindOnPageAllocated();
 		}
@@ -776,7 +776,7 @@ namespace p
 
 		TUniquePtr<BasePool> Clone() override
 		{
-			return MakeUnique<TPool<T>>(*this);
+			return p::MakeUnique<TPool<T>>(*this);
 		}
 
 		void Reserve(sizet size)
