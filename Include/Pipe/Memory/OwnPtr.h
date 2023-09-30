@@ -84,6 +84,14 @@ namespace p
 
 		void Delete();
 
+		void* GetRaw()
+		{
+			return value;
+		}
+		const void* GetRaw() const
+		{
+			return value;
+		}
 
 	protected:
 		BaseOwnPtr() = default;
@@ -139,6 +147,15 @@ namespace p
 			Reset();
 			return *this;
 		};
+
+		void* GetRaw()
+		{
+			return value;
+		}
+		const void* GetRaw() const
+		{
+			return value;
+		}
 
 	protected:
 		Ptr() = default;
@@ -588,4 +605,14 @@ namespace p
 	//	using Elem = std::remove_extent_t<T>;
 	//	return {Builder::NewArray(size)};
 	//}
+
+
+	inline sizet GetHash(const OwnPtr& ptr) noexcept
+	{
+		return GetHash(ptr.GetRaw());
+	}
+	inline sizet GetHash(const Ptr& ptr) noexcept
+	{
+		return GetHash(ptr.GetRaw());
+	}
 }    // namespace p

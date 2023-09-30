@@ -1,11 +1,12 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
-#include <cstring>
 #if P_PLATFORM_WINDOWS
-#	include "Pipe/Core/Windows/WindowsPlatformMisc.h"
-#	include "Pipe/Core/Checks.h"
+	#include "Pipe/Core/Windows/WindowsPlatformMisc.h"
 
-#	include <Windows.h>
+	#include "Pipe/Core/Checks.h"
+	#include <cstring>
+
+	#include <Windows.h>
 
 
 namespace p::core

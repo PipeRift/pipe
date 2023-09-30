@@ -29,11 +29,12 @@ namespace p::core
 		template<typename OtherKey, typename OtherValue>
 		friend class TMap;
 
-		using KeyType     = Key;
-		using ValueType   = Value;
-		using KeyEqual    = std::equal_to<KeyType>;
-		using Allocator   = STLAllocator<TPair<Key, Value>>;
-		using HashMapType = tsl::sparse_map<KeyType, ValueType, Hash<KeyType>, KeyEqual, Allocator>;
+		using KeyType   = Key;
+		using ValueType = Value;
+		using KeyEqual  = std::equal_to<KeyType>;
+		using Allocator = STLAllocator<TPair<Key, Value>>;
+		using HashMapType =
+		    tsl::sparse_map<KeyType, ValueType, HashResolver<KeyType>, KeyEqual, Allocator>;
 
 		using Iterator      = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;

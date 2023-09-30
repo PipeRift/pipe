@@ -26,8 +26,9 @@ namespace p
 		template<typename OtherType>
 		friend class TSet;
 
-		using Allocator   = STLAllocator<Type>;
-		using HashSetType = tsl::sparse_set<Type, Hash<Type>, std::equal_to<Type>, Allocator>;
+		using Allocator = STLAllocator<Type>;
+		using HashSetType =
+		    tsl::sparse_set<Type, HashResolver<Type>, std::equal_to<Type>, Allocator>;
 
 		using Iterator      = typename HashSetType::iterator;
 		using ConstIterator = typename HashSetType::const_iterator;

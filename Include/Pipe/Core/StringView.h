@@ -276,21 +276,13 @@ namespace p
 	}    // namespace Strings
 
 
-	template<>
-	struct Hash<StringView>
+	inline sizet GetHash(const StringView& str)
 	{
-		sizet operator()(const StringView& str) const
-		{
-			return GetStringHash(str.data(), str.size());
-		}
+		return GetStringHash(str.data(), str.size());
 	};
 
-	template<>
-	struct Hash<const TChar*>
+	inline sizet GetHash(const TChar* str)
 	{
-		sizet operator()(const TChar* str) const
-		{
-			return GetStringHash(str);
-		}
+		return GetStringHash(str);
 	};
 }    // namespace p

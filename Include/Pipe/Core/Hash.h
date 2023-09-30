@@ -3,16 +3,16 @@
 #pragma once
 
 #include "Pipe/Core/Platform.h"
+#include "Pipe/Core/TypeTraits.h"
 
-#include <robin_hood.h>
+#include <functional>
 
 
-namespace p::core
+namespace p
 {
-	inline PIPE_API sizet HashBytes(void const* ptr, sizet const len) noexcept
-	{
-		return robin_hood::hash_bytes(ptr, len);
-	}
+	PIPE_API sizet HashBytes(void const* ptr, sizet const len);
+	PIPE_API sizet HashInt(u64 x);
+
 
 	// FNV String hash
 	// Use offset and prime based on the architecture (64bit or 32bit)
@@ -40,6 +40,7 @@ namespace p::core
 			return static_cast<sizet>(result);
 		}
 	}
+
 	template<typename CharType = TChar>
 	inline PIPE_API constexpr sizet GetStringHash(const CharType* str, sizet size)
 	{
@@ -65,19 +66,39 @@ namespace p::core
 			return static_cast<sizet>(result);
 		}
 	}
-}    // namespace p::core
 
-namespace p
-{
-	template<typename T>
-	struct Hash : robin_hood::hash<T>
+
+	template<Number T>
+	sizet GetHash(const T& value) noexcept requires(!Enum<T>)
 	{
-		sizet operator()(const T& obj) const
+#if defined(__GNUC__) && !defined(__clang__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
+		return HashInt(static_cast<u64>(value));
+#if defined(__GNUC__) && !defined(__clang__)
+	#pragma GCC diagnostic pop
+#endif
+	}
+
+	template<Enum T>
+	sizet GetHash(const T& value) noexcept
+	{
+		return GetHash(static_cast<UnderlyingType<T>>(value));
+	}
+
+	template<typename T>
+	sizet GetHash(T* ptr) noexcept
+	{
+		return HashInt(reinterpret_cast<sizet>(ptr));
+	}
+
+	template<typename T>
+	struct HashResolver
+	{
+		sizet operator()(const T& v) const
 		{
-			return robin_hood::hash<T>::operator()(obj);
+			return GetHash(v);
 		}
 	};
-
-
-	using namespace p::core;
 }    // namespace p

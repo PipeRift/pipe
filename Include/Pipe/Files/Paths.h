@@ -10,7 +10,7 @@
 #include "PipeArrays.h"
 
 
-namespace p::files
+namespace p
 {
 	constexpr TChar separator{'/'};
 #if P_PLATFORM_WINDOWS
@@ -112,9 +112,4 @@ namespace p::files
 
 	PIPE_API String ToString(const Path& path);
 	PIPE_API Path ToPath(StringView pathStr);
-}    // namespace p::files
-
-namespace p
-{
-	using namespace p::files;
-}
+}    // namespace p

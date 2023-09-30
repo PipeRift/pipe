@@ -32,7 +32,7 @@ namespace p::internal
 
 
 #define EnsureImpl(capture, always, expression, ...)                                   \
-	(LIKELY(!!(expression)) || ([capture]() {                                          \
+	(P_LIKELY(!!(expression)) || ([capture]() {                                        \
 		static bool executed = false;                                                  \
 		if (always || !executed)                                                       \
 		{                                                                              \
@@ -42,7 +42,7 @@ namespace p::internal
 		return false;                                                                  \
 	}()) && ([capture]() {                                                             \
 		p::internal::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
-		DEBUG_PLATFORM_BREAK();                                                        \
+		P_DEBUG_PLATFORM_BREAK();                                                      \
 		return false;                                                                  \
 	}()))
 
@@ -50,19 +50,19 @@ namespace p::internal
 #define EnsureMsg(expression, format, ...) EnsureImpl(&, false, expression, format, ##__VA_ARGS__)
 
 #ifndef Check
-#	if P_RELEASE
-#		define CheckImpl(expression, ...)
-#	else
-#		define CheckImpl(expression, ...)                                                     \
+	#if P_RELEASE
+		#define CheckImpl(expression, ...)
+	#else
+		#define CheckImpl(expression, ...)                                                     \
 			if (!(expression)) [[unlikely]]                                                    \
 			{                                                                                  \
 				p::internal::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
-				DEBUG_PLATFORM_BREAK();                                                        \
+				P_DEBUG_PLATFORM_BREAK();                                                      \
 			}
-#	endif
+	#endif
 
-#	define Check(expression) CheckImpl(expression, "")
-#	define CheckMsg(expression, format, ...) CheckImpl(expression, format, ##__VA_ARGS__)
+	#define Check(expression) CheckImpl(expression, "")
+	#define CheckMsg(expression, format, ...) CheckImpl(expression, format, ##__VA_ARGS__)
 #endif
 
 

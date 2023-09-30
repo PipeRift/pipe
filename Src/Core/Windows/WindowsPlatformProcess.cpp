@@ -1,15 +1,16 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
-#include "Pipe/Core/Platform.h"
 #if P_PLATFORM_WINDOWS
-#	include "Pipe/Files/Paths.h"
-#	include "Pipe/Files/Files.h"
-#	include "Pipe/Core/Windows/WindowsPlatformProcess.h"
-#	include "Pipe/Core/Windows/WindowsPlatformMisc.h"
-#	include "Pipe/Core/String.h"
-#	include "Pipe/Core/Log.h"
+	#include "Pipe/Core/Windows/WindowsPlatformProcess.h"
 
-#	include <Windows.h>
+	#include "Pipe/Files/Paths.h"
+	#include "Pipe/Files/Files.h"
+	#include "Pipe/Core/Platform.h"
+	#include "Pipe/Core/Windows/WindowsPlatformMisc.h"
+	#include "Pipe/Core/String.h"
+	#include "Pipe/Core/Log.h"
+
+	#include <Windows.h>
 
 
 namespace p::core
@@ -45,11 +46,11 @@ namespace p::core
 	StringView WindowsPlatformProcess::GetExecutableFile()
 	{
 		static const auto filePath = GetStringFromWindowsAPI<String>([](TChar* buffer, sizet size) {
-#	if PLATFORM_TCHAR_IS_WCHAR
+	#if PLATFORM_TCHAR_IS_WCHAR
 			return GetModuleFileNameW(nullptr, buffer, u32(size));
-#	else
+	#else
 			return GetModuleFileNameA(nullptr, buffer, u32(size));
-#	endif
+	#endif
 		});
 		return filePath;
 	}
@@ -72,11 +73,11 @@ namespace p::core
 		for (u32 length = 128;;)
 		{
 			buffer.resize(length);
-#	if PLATFORM_TCHAR_IS_WCHAR
+	#if PLATFORM_TCHAR_IS_WCHAR
 			length = ::GetCurrentDirectoryW(buffer.capacity(), buffer.data());
-#	else
+	#else
 			length = ::GetCurrentDirectoryA(buffer.capacity(), buffer.data());
-#	endif
+	#endif
 			if (length == 0)
 			{
 				buffer.clear();
@@ -93,11 +94,11 @@ namespace p::core
 
 	bool WindowsPlatformProcess::SetCurrentWorkingPath(StringView path)
 	{
-#	if PLATFORM_TCHAR_IS_WCHAR
+	#if PLATFORM_TCHAR_IS_WCHAR
 		return ::SetCurrentDirectoryW(path.data());
-#	else
+	#else
 		return ::SetCurrentDirectoryA(path.data());
-#	endif
+	#endif
 	}
 
 

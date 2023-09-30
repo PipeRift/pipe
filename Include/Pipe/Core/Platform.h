@@ -3,32 +3,32 @@
 #pragma once
 
 #ifndef P_PLATFORM_WINDOWS
-#	if defined(_WIN64)
-#		define P_PLATFORM_WINDOWS 1
-#	elif defined(_WIN32)
-#		define P_PLATFORM_WINDOWS 1
-#	endif
+	#if defined(_WIN64)
+		#define P_PLATFORM_WINDOWS 1
+	#elif defined(_WIN32)
+		#define P_PLATFORM_WINDOWS 1
+	#endif
 #endif
 #ifndef P_PLATFORM_LINUX
-#	if defined(__linux__)
-#		define P_PLATFORM_LINUX 1
-#	endif
+	#if defined(__linux__)
+		#define P_PLATFORM_LINUX 1
+	#endif
 #endif
 #ifndef P_PLATFORM_MACOS
-#	if defined(__APPLE__)
-#		define P_PLATFORM_MACOS 1
-#	endif
+	#if defined(__APPLE__)
+		#define P_PLATFORM_MACOS 1
+	#endif
 #endif
 
 
 #if P_PLATFORM_WINDOWS
-#	include "Pipe/Core/Windows/WindowsPlatform.h"
+	#include "Pipe/Core/Windows/WindowsPlatform.h"
 #elif P_PLATFORM_LINUX
-#	include "Pipe/Core/Linux/LinuxPlatform.h"
+	#include "Pipe/Core/Linux/LinuxPlatform.h"
 #elif P_PLATFORM_MACOS
-#	include "Pipe/Core/Mac/MacPlatform.h"
+	#include "Pipe/Core/Mac/MacPlatform.h"
 #else
-#	error Unknown platform
+	#error Unknown platform
 #endif
 
 
@@ -108,78 +108,78 @@ namespace p
 
 
 #if !defined(TX)
-#	if PLATFORM_TCHAR_IS_WCHAR
-#		define TX(x) L##x
-#	elif PLATFORM_TCHAR_IS_CHAR8
-#		define TX(x) x
-#	elif PLATFORM_TCHAR_IS_CHAR16
-#		define TX(x) u##x
-#	elif PLATFORM_TCHAR_IS_CHAR32
-#		define TX(x) U##x
-#	else
-#		define TX(x) x
-#	endif
+	#if PLATFORM_TCHAR_IS_WCHAR
+		#define TX(x) L##x
+	#elif PLATFORM_TCHAR_IS_CHAR8
+		#define TX(x) x
+	#elif PLATFORM_TCHAR_IS_CHAR16
+		#define TX(x) u##x
+	#elif PLATFORM_TCHAR_IS_CHAR32
+		#define TX(x) U##x
+	#else
+		#define TX(x) x
+	#endif
 #endif
 
 #undef UNIQUE_FUNCTION_ID
 #if defined(_MSC_VER)
-#	define UNIQUE_FUNCTION_ID __FUNCSIG__
+	#define UNIQUE_FUNCTION_ID __FUNCSIG__
 #else
-#	if defined(__GNUG__)
-#		define UNIQUE_FUNCTION_ID __PRETTY_FUNCTION__
-#	endif
+	#if defined(__GNUG__)
+		#define UNIQUE_FUNCTION_ID __PRETTY_FUNCTION__
+	#endif
 #endif
 
 #if P_RELEASE
-#	define DEBUG_PLATFORM_BREAK()
+	#define P_DEBUG_PLATFORM_BREAK()
 #else
-#	define DEBUG_PLATFORM_BREAK() PLATFORM_BREAK()
+	#define P_DEBUG_PLATFORM_BREAK() P_PLATFORM_BREAK()
 #endif
 
 #define DISABLE_OPTIMIZATION DISABLE_OPTIMIZATION_ACTUAL
 #if P_DEBUG
-#	define ENABLE_OPTIMIZATION DISABLE_OPTIMIZATION_ACTUAL
+	#define ENABLE_OPTIMIZATION DISABLE_OPTIMIZATION_ACTUAL
 #else
-#	define ENABLE_OPTIMIZATION ENABLE_OPTIMIZATION_ACTUAL
+	#define ENABLE_OPTIMIZATION ENABLE_OPTIMIZATION_ACTUAL
 #endif
 
 #ifndef P_FORCEINLINE
-#	if defined(_MSC_VER)
-#		define P_FORCEINLINE __forceinline
-#	else
-#		define P_FORCEINLINE inline __attribute__((always_inline))
-#	endif
+	#if defined(_MSC_VER)
+		#define P_FORCEINLINE __forceinline
+	#else
+		#define P_FORCEINLINE inline __attribute__((always_inline))
+	#endif
 #endif
 
 #if defined(__cplusplus) && (__cplusplus >= 201703)
-#	define P_NODISCARD [[nodiscard]]
+	#define P_NODISCARD [[nodiscard]]
 #elif (defined(__GNUC__) && (__GNUC__ >= 4)) \
     || defined(__clang__)    // includes clang, icc, and clang-cl
-#	define P_NODISCARD __attribute__((warn_unused_result))
+	#define P_NODISCARD __attribute__((warn_unused_result))
 #elif defined(_HAS_NODISCARD)
-#	define P_NODISCARD _NODISCARD
+	#define P_NODISCARD _NODISCARD
 #elif (_MSC_VER >= 1700)
-#	define P_NODISCARD _Check_return_
+	#define P_NODISCARD _Check_return_
 #else
-#	define P_NODISCARD
+	#define P_NODISCARD
 #endif
 
 #if defined(_MSC_VER) || defined(__MINGW32__)
-#	if defined(__MINGW32__)
-#		define P_RESTRICT
-#		define P_ATTR_MALLOC __attribute__((malloc))
-#	else
-#		if (_MSC_VER >= 1900) && !defined(__EDG__)
-#			define P_RESTRICT __declspec(allocator) __declspec(restrict)
-#		else
-#			define P_RESTRICT __declspec(restrict)
-#		endif
-#		define P_ATTR_MALLOC
-#	endif
+	#if defined(__MINGW32__)
+		#define P_RESTRICT
+		#define P_ATTR_MALLOC __attribute__((malloc))
+	#else
+		#if (_MSC_VER >= 1900) && !defined(__EDG__)
+			#define P_RESTRICT __declspec(allocator) __declspec(restrict)
+		#else
+			#define P_RESTRICT __declspec(restrict)
+		#endif
+		#define P_ATTR_MALLOC
+	#endif
 #elif defined(__GNUC__)    // includes clang and icc
-#	define P_RESTRICT
-#	define P_ATTR_MALLOC __attribute__((malloc))
+	#define P_RESTRICT
+	#define P_ATTR_MALLOC __attribute__((malloc))
 #else
-#	define P_RESTRICT
-#	define P_ATTR_MALLOC
+	#define P_RESTRICT
+	#define P_ATTR_MALLOC
 #endif

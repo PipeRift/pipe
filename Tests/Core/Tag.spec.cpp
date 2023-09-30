@@ -14,9 +14,9 @@ go_bandit([]() {
 		it("Can copy empty", [&]() {
 			Tag tag{};
 			Tag tag2{};
-			AssertThat(tag.GetHash(), Equals(0));
+			AssertThat(p::GetHash(tag), Equals(0));
 			AssertThat(tag.IsNone(), Equals(true));
-			AssertThat(tag2.GetHash(), Equals(0));
+			AssertThat(p::GetHash(tag2), Equals(0));
 			AssertThat(tag2.IsNone(), Equals(true));
 		});
 		it("Can assign from literal", [&]() {
@@ -63,8 +63,8 @@ go_bandit([]() {
 		it("Contains correct hashes", [&]() {
 			Tag tagKiwi{"Kiwi"};
 			Tag tagKiwi2{"Kiwi"};
-			AssertThat(tagKiwi.GetHash(), Equals(tagKiwi2.GetHash()));
-			AssertThat(tagKiwi.GetHash(), Equals(GetStringHash("Kiwi")));
+			AssertThat(p::GetHash(tagKiwi), Equals(p::GetHash(tagKiwi2)));
+			AssertThat(p::GetHash(tagKiwi), Equals(p::GetHash("Kiwi")));
 		});
 
 		it("Can copy tag", [&]() {

@@ -7,7 +7,6 @@
 #include "PipeAlgorithms.h"
 
 
-
 namespace p::core
 {
 	/**
@@ -294,13 +293,8 @@ namespace p
 {
 	using namespace p::core;
 
-
-	template<>
-	struct Hash<Guid>
+	inline sizet GetHash(const Guid& guid)
 	{
-		sizet operator()(const Guid& k) const
-		{
-			return MemCrc32(&k, sizeof(Guid));
-		}
+		return MemCrc32(&guid, sizeof(Guid));
 	};
 }    // namespace p

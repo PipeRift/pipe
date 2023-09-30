@@ -3,11 +3,12 @@
 
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/String.h"
+#include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 
 
-namespace p::core
+namespace p
 {
 	/**
 	 * An string identified by id.
@@ -84,23 +85,13 @@ namespace p::core
 		return tag.AsString();
 	}
 
+	inline sizet GetHash(const Tag& tag)
+	{
+		return tag.GetHash();
+	}
 
 	PIPE_API void Read(Reader& ct, Tag& tag);
 	PIPE_API void Write(Writer& ct, const Tag& tag);
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-
-	template<>
-	struct Hash<Tag>
-	{
-		sizet operator()(const Tag& k) const
-		{
-			return k.GetHash();
-		}
-	};
 }    // namespace p
 
 

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/Hash.h"
+#include "Pipe/Core/Platform.h"
 
 #include <fmt/format.h>
 
@@ -52,6 +53,11 @@ namespace p
 		}
 	};
 
+	inline sizet GetHash(const TypeId& id)
+	{
+		return GetHash(id.GetId());
+	}
+
 	inline std::ostream& operator<<(std::ostream& stream, TypeId typeId)
 	{
 		stream << "TypeId(id=" << typeId.GetId() << ")";
@@ -64,16 +70,6 @@ namespace p
 		return TypeId{p::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
 	}
 
-
-	template<>
-	struct Hash<TypeId>
-	{
-		sizet operator()(const TypeId& id) const
-		{
-			const Hash<u64> hasher{};
-			return hasher(id.GetId());
-		}
-	};
 }    // namespace p
 
 

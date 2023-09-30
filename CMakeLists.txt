@@ -67,7 +67,6 @@ target_link_libraries(Pipe PUBLIC
     date::date
     efsw
     fmt::fmt
-    robin_hood
     tsl::robin_map
     tsl::sparse_map
     magic_enum
@@ -77,6 +76,7 @@ target_link_libraries(Pipe PRIVATE
     portable_file_dialogs
     spdlog
     yyjson
+    robin_hood
 )
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)

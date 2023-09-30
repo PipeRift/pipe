@@ -114,18 +114,18 @@ namespace p
 #endif
 
 
-#ifndef LIKELY
+#ifndef P_LIKELY
 	#if (defined(__clang__) || defined(__GNUC__)) && (P_PLATFORM_LINUX)
-		#define LIKELY(x) __builtin_expect(!!(x), 1)
+		#define P_LIKELY(x) __builtin_expect(!!(x), 1)
 	#else
-		#define LIKELY(x) (x)
+		#define P_LIKELY(x) (x)
 	#endif
 #endif
 
-#ifndef UNLIKELY
+#ifndef P_UNLIKELY
 	#if (defined(__clang__) || defined(__GNUC__)) && (P_PLATFORM_LINUX)
-		#define UNLIKELY(x) __builtin_expect(!!(x), 0)
+		#define P_UNLIKELY(x) __builtin_expect(!!(x), 0)
 	#else
-		#define UNLIKELY(x) (x)
+		#define P_UNLIKELY(x) (x)
 	#endif
 #endif

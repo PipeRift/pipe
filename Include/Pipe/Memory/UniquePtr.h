@@ -101,4 +101,10 @@ namespace p
 	template<typename T, typename... Args>
 	TUniquePtr<T> MakeUnique(Args&&...) requires(std::extent_v<T> != 0)
 	= delete;
+
+	template<typename T>
+	sizet GetHash(const TUniquePtr<T>& ptr) noexcept
+	{
+		return GetHash(ptr.Get());
+	}
 }    // namespace p

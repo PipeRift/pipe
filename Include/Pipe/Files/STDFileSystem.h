@@ -48,15 +48,10 @@ namespace p
 {
 	using namespace p::files;
 
-
-	template<>
-	struct Hash<Path>
+	inline sizet GetHash(const Path& path)
 	{
-		sizet operator()(const Path& path) const
-		{
-			return GetStringHash(path.c_str());
-		}
-	};
+		return GetStringHash(path.c_str());
+	}
 
 	PIPE_API void Read(p::Reader& ct, p::Path& value);
 	PIPE_API void Write(p::Writer& ct, const p::Path& value);
