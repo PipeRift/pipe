@@ -10,8 +10,8 @@
 
 namespace p
 {
-	PIPE_API sizet HashBytes(void const* ptr, sizet const len) noexcept;
-	PIPE_API sizet HashInt(u64 x) noexcept;
+	PIPE_API sizet HashBytes(void const* ptr, sizet const len);
+	PIPE_API sizet HashInt(u64 x);
 
 
 	// FNV String hash
@@ -91,18 +91,6 @@ namespace p
 	sizet GetHash(T* ptr) noexcept
 	{
 		return HashInt(reinterpret_cast<sizet>(ptr));
-	}
-
-	template<typename T>
-	sizet GetHash(const std::unique_ptr<T>& ptr) noexcept
-	{
-		return GetHash(ptr.get());
-	}
-
-	template<typename T>
-	sizet GetHash(const std::shared_ptr<T>& ptr) noexcept
-	{
-		return GetHash(ptr.get());
 	}
 
 	template<typename T>

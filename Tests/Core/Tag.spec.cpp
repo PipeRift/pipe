@@ -14,7 +14,7 @@ go_bandit([]() {
 		it("Can copy empty", [&]() {
 			Tag tag{};
 			Tag tag2{};
-			AssertThat(p::GetHash(tag)), Equals(0));
+			AssertThat(p::GetHash(tag), Equals(0));
 			AssertThat(tag.IsNone(), Equals(true));
 			AssertThat(p::GetHash(tag2), Equals(0));
 			AssertThat(tag2.IsNone(), Equals(true));
