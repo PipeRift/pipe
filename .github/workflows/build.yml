@@ -12,7 +12,7 @@ on:
 jobs:
   Build:
     name: ${{ matrix.os-name }} (${{ matrix.compiler }}, ${{ matrix.config }})
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os-name }}-latest
     strategy:
       fail-fast: false
       matrix:
@@ -20,25 +20,30 @@ jobs:
         config: [Release, Debug]
         include:
           - name: windows-msvc
-            os: windows-latest
             os-name: windows
             compiler: msvc-17
+            cxx: cl
+            cc: cl
           - name: windows-clang
-            os: windows-latest
             os-name: windows
             compiler: clang-16
+            cxx: clang-cl
+            cc: clang-cl
           - name: linux-clang
-            os: ubuntu-latest
             os-name: linux
             compiler: clang-16
+            cxx: clang++
+            cc: clang
           - name: linux-gcc
-            os: ubuntu-latest
             os-name: linux
             compiler: gcc-13
+            cxx: g++
+            cc: gcc
           - name: macos-clang
-            os: macos-latest
             os-name: macos
-            compiler: clang-15
+            compiler: clang-16
+            cxx: clang++
+            cc: clang
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -49,7 +54,7 @@ jobs:
         uses: aminya/setup-cpp@v1
         with:
           compiler: ${{ matrix.compiler }}
-          vcvarsall: ${{ contains(matrix.os, 'windows') }}
+          vcvarsall: ${{ matrix.os-name == 'windows' }}
           cmake: true
 
       - name: Cache Build
@@ -59,7 +64,7 @@ jobs:
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
-        run: cmake -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{matrix.cxx}}
 
       - name: Build
         run: cmake --build Build --config ${{ matrix.config }}
