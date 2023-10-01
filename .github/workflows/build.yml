@@ -41,8 +41,8 @@ jobs:
             os: ubuntu-latest
             os-name: linux
             compiler: gcc
-            cxx: g++-10
-            cc: gcc-10
+            cxx: g++-12
+            cc: gcc-12
           - name: macos-clang
             os: macos-latest
             os-name: macos
@@ -67,12 +67,12 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ runner.temp }}/llvm
-          key: llvm-16.0-${{ matrix.os-name }}
+          key: llvm-16-${{ matrix.os-name }}
       - name: Install Clang
         if: ${{ matrix.compiler == 'clang' }}
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "16.0"
+          version: "16.0.6"
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
