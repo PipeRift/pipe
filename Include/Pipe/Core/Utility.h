@@ -49,10 +49,14 @@ namespace p
 
 	[[noreturn]] inline void Unreachable()
 	{
-#if defined(_MSC_VER)    // MSVC
-		abort();
-#elif __has_builtin(__builtin_unreachable)
+#if defined(__GNUC__)
 		__builtin_unreachable();
+#elif defined(__has_builtin)
+	#if __has_builtin(__builtin_unreachable)
+		__builtin_unreachable();
+	#endif
+#elif defined(_MSC_VER)
+		__assume(false);
 #endif
 	}
 
