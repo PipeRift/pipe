@@ -6,9 +6,10 @@
 #include "Pipe/Serialize/SerializationFwd.h"
 #include "PipeMath.h"
 
-
 /// @OPTIMIZE: Try to remove this include
 #include "Pipe/Core/String.h"
+
+#include <format>
 
 
 namespace p
@@ -1009,14 +1010,14 @@ P_REFLECT_NATIVE_TYPE(p::Quat);
 
 
 template<typename T>
-struct fmt::formatter<p::Vec<2, T>>
+struct std::formatter<p::Vec<2, T>>
 {
 	p::String formatStr;
 
 	constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin())
 	{
 		auto begin = ctx.begin();
-		if (!begin)
+		if (begin == ctx.end())
 		{
 			formatStr = "({}, {})";
 			return begin;
@@ -1032,26 +1033,26 @@ struct fmt::formatter<p::Vec<2, T>>
 			++end;
 		}
 		const p::StringView valueFormat{begin, end + 1};
-		formatStr = fmt::format("({}, {})", valueFormat, valueFormat);
+		formatStr = std::format("({}, {})", valueFormat, valueFormat);
 		return end;
 	}
 
 	template<typename FormatContext>
 	auto format(const p::Vec<2, T>& v, FormatContext& ctx)
 	{
-		return format_to(ctx.out(), fmt::runtime(formatStr), v.x, v.y);
+		return std::vformat_to(ctx.out(), formatStr, std::make_format_args(v.x, v.y));
 	}
 };
 
 template<typename T>
-struct fmt::formatter<p::Vec<3, T>>
+struct std::formatter<p::Vec<3, T>>
 {
 	p::String formatStr;
 
 	constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin())
 	{
 		auto begin = ctx.begin();
-		if (!begin)
+		if (begin == ctx.end())
 		{
 			formatStr = "({}, {}, {})";
 			return begin;
@@ -1067,12 +1068,12 @@ struct fmt::formatter<p::Vec<3, T>>
 			++end;
 		}
 		const p::StringView valueFormat{begin, end + 1};
-		formatStr = fmt::format("({}, {}, {})", valueFormat, valueFormat, valueFormat);
+		formatStr = std::format("({}, {}, {})", valueFormat, valueFormat, valueFormat);
 		return end;
 	}
 	template<typename FormatContext>
 	auto format(const p::Vec<3, T>& v, FormatContext& ctx)
 	{
-		return format_to(ctx.out(), fmt::runtime(formatStr), v.x, v.y, v.z);
+		return vformat_to(ctx.out(), formatStr, std::make_format_args(v.x, v.y, v.z));
 	}
 };

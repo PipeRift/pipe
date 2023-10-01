@@ -66,7 +66,6 @@ target_compile_definitions(Pipe PRIVATE NOMINMAX)
 target_link_libraries(Pipe PUBLIC
     date::date
     efsw
-    fmt::fmt
     tsl::robin_map
     tsl::sparse_map
     magic_enum

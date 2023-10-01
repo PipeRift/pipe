@@ -4,8 +4,7 @@
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Platform.h"
 
-#include <fmt/format.h>
-
+#include <format>
 #include <iostream>
 
 
@@ -74,7 +73,7 @@ namespace p
 
 
 template<>
-struct fmt::formatter<p::TypeId> : public fmt::formatter<p::u64>
+struct std::formatter<p::TypeId> : public std::formatter<p::u64>
 {
 	template<typename FormatContext>
 	auto format(const p::TypeId& typeId, FormatContext& ctx)

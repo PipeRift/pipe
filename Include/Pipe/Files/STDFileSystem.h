@@ -9,6 +9,7 @@
 #include "Pipe/Serialize/SerializationFwd.h"
 
 #include <filesystem>
+#include <format>
 
 
 namespace p::files
@@ -62,7 +63,7 @@ P_REFLECT_NATIVE_TYPE(p::Path);
 
 // TODO: Finish implementation of formatting of Paths
 /*template <>
-struct fmt::formatter<p::Path> : public fmt::formatter<p::PathView>
+struct std::formatter<p::Path> : public std::formatter<p::PathView>
 {
     template <typename FormatContext>
     auto format(const p::Path& path, FormatContext& ctx)

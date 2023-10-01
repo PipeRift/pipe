@@ -4,7 +4,7 @@
 
 #include "Pipe/Core/Platform.h"
 
-#include <fmt/format.h>
+#include <format>
 
 
 namespace p::internal
@@ -18,13 +18,14 @@ namespace p::internal
 		std::string msg;
 		if (!format)
 		{
-			msg = fmt::format(fmt::runtime("Failed check \"{}\" at {}:{}"), expr, file, line);
+			msg = std::format("Failed check \"{}\" at {}:{}", expr, file, line);
 		}
 		else
 		{
-			const std::string descriptiveFormat = fmt::format(
-			    fmt::runtime("{} \n(Failed check \"{}\" at {}:{})"), format, expr, file, line);
-			msg = fmt::format(fmt::runtime(descriptiveFormat), std::forward<Args>(args)...);
+			const std::string descriptiveFormat =
+			    std::format("{} \n(Failed check \"{}\" at {}:{})", format, expr, file, line);
+			msg =
+			    std::vformat(descriptiveFormat, std::make_format_args(std::forward<Args>(args)...));
 		}
 		FailedCheckError(msg.c_str(), msg.size());
 	}

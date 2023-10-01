@@ -3,6 +3,8 @@
 
 #include "Pipe/Core/Generic/GenericPlatform.h"
 
+#include <intrin.h>
+
 #include <cstddef>
 
 

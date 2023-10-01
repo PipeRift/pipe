@@ -4,9 +4,6 @@
 [submodule "Extern/Bandit"]
 	path = Extern/Bandit
 	url = https://github.com/banditcpp/bandit
-[submodule "Extern/fmt"]
-	path = Extern/fmt
-	url = https://github.com/fmtlib/fmt.git
 [submodule "Extern/date"]
 	path = Extern/date
 	url = https://github.com/HowardHinnant/date.git

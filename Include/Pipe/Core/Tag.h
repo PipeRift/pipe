@@ -7,6 +7,8 @@
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Serialize/SerializationFwd.h"
 
+#include <format>
+
 
 namespace p
 {
@@ -96,7 +98,7 @@ namespace p
 
 
 template<>
-struct fmt::formatter<p::Tag> : public fmt::formatter<p::StringView>
+struct std::formatter<p::Tag> : public std::formatter<p::StringView>
 {
 	template<typename FormatContext>
 	auto format(const p::Tag& name, FormatContext& ctx)

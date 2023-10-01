@@ -16,9 +16,6 @@ if(PLATFORM_LINUX)
     set_target_properties(efsw PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
-add_subdirectory(fmt)
-set_target_properties (fmt PROPERTIES FOLDER Extern)
-
 add_subdirectory(robin_hood)
 
 add_subdirectory(robin-map)

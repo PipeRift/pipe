@@ -10,9 +10,9 @@
 #include "Pipe/Serialize/SerializationFwd.h"
 #include "PipeArrays.h"
 
-#include <fmt/format.h>
 #include <utf8.h>
 
+#include <format>
 #include <string>
 
 
@@ -28,10 +28,13 @@ namespace p
 	using String  = TString<TChar>;
 	using WString = TString<WideChar>;
 
-	template<typename CharType, sizet inlineSize = fmt::inline_buffer_size>
-	using TStringBuffer = fmt::basic_memory_buffer<CharType, inlineSize, std::allocator<CharType>>;
-	using StringBuffer  = TStringBuffer<TChar>;
-
+#if defined(_MSC_VER)    // MSVC does not seem to define std::basic_format_string in v17.4.0
+	template<typename... Args>
+	using FormatString = std::_Basic_format_string<TChar, Args...>;
+#else
+	template<typename... Args>
+	using FormatString = std::basic_format_string<TChar, Args...>;
+#endif
 
 	namespace Strings
 	{
@@ -39,30 +42,38 @@ namespace p
 		inline StringType Format(StringView format, Args... args)
 		{
 			String str;
-			fmt::format_to(
-			    std::back_inserter(str), fmt::runtime(format), std::forward<Args>(args)...);
+			std::vformat_to(
+			    std::back_inserter(str), format, std::make_format_args(p::Forward<Args>(args)...));
 			return Move(str);
 		}
 
 		template<typename StringType, typename... Args>
 		inline void FormatTo(StringType& buffer, StringView format, Args... args)
 		{
-			fmt::format_to(
-			    std::back_inserter(buffer), fmt::runtime(format), std::forward<Args>(args)...);
+			std::vformat_to(std::back_inserter(buffer), format,
+			    std::make_format_args(p::Forward<Args>(args)...));
+		}
+
+		// Format an string using a compile time format
+		template<typename StringType = String, typename... Args>
+		inline StringType Format(FormatString<Args...> format, Args... args)
+		{
+			String str;
+			std::format_to(std::back_inserter(str), format, p::Forward<Args>(args)...);
+			return Move(str);
+		}
+
+		// Format into an existing string using a compile time format
+		template<typename StringType, typename... Args>
+		inline void FormatTo(StringType& buffer, FormatString<Args...> format, Args... args)
+		{
+			std::format_to(std::back_inserter(buffer), format, p::Forward<Args>(args)...);
 		}
 
 		template<typename StringType, typename T>
-		inline void ToString(StringType& buffer, T value)
+		inline void ToString(StringType& buffer, T value, FormatString<T> format = "{}")
 		{
-			if constexpr (Integral<T>)
-			{
-				// The buffer should be large enough to store the number including the sign
-				// or "false" for bool.
-				constexpr int max_size = fmt::detail::digits10<T>() + 2;
-				buffer.reserve(
-				    buffer.size() + (max_size > 5 ? static_cast<unsigned>(max_size) : 5));
-			}
-			fmt::detail::write<char>(std::back_inserter(buffer), value);
+			std::format_to(std::back_inserter(buffer), format, p::Forward(value));
 		}
 
 		template<typename StringType, typename T>
