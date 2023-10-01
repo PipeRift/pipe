@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
+        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang, macos-gcc]
         config: [Release, Debug]
         include:
           - name: windows-msvc
@@ -75,14 +75,14 @@ jobs:
           path: ${{ runner.temp }}/llvm
           key: llvm-16-${{ matrix.os-name }}
       - name: Install Clang
-        if: ${{ matrix.compiler == 'clang' }}
+        if: ${{ matrix.compiler == 'clang' && matrix.os-name != 'macos' }}
         uses: KyleMayes/install-llvm-action@v1
         with:
           version: "16.0"
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
       - name: Install LLVM (Homebrew)
-        if: ${{ matrix.os-name == 'macos' }}
+        if: ${{ matrix.compiler == 'clang' && matrix.os-name == 'macos' }}
         run: |
             brew install llvm@16
             echo /usr/local/opt/llvm@${{ matrix.llvm-version }}/bin >> $GITHUB_PATH
