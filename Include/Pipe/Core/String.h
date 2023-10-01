@@ -28,13 +28,8 @@ namespace p
 	using String  = TString<TChar>;
 	using WString = TString<WideChar>;
 
-#if defined(_MSC_VER)    // MSVC does not seem to define std::basic_format_string in v17.4.0
-	template<typename... Args>
-	using FormatString = std::_Basic_format_string<TChar, Args...>;
-#else
 	template<typename... Args>
 	using FormatString = std::basic_format_string<TChar, Args...>;
-#endif
 
 	namespace Strings
 	{

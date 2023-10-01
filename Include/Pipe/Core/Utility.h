@@ -66,7 +66,7 @@ namespace p
 	[[noreturn]] inline void Unreachable()
 	{
 #if defined(_MSC_VER)    // MSVC
-		std::abort();
+		abort();
 #elif __has_builtin(__builtin_unreachable)
 		__builtin_unreachable();
 #endif
