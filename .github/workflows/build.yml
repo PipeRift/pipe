@@ -75,14 +75,17 @@ jobs:
           version: "16.0"
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-      #- name: Install LLVM (macos)
-      #  if: ${{ matrix.compiler == 'clang' && matrix.os-name == 'macos' }}
-      #  run: |
-      #    brew install llvm@16
-      #    echo /usr/local/opt/llvm@16/bin >> $GITHUB_PATH
+      - name: Install LLVM (macos)
+        if: ${{ matrix.compiler == 'clang' && matrix.os-name == 'macos' }}
+        run: |
+          brew install llvm@16
+          echo /usr/local/opt/llvm@16/bin >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=/usr/local/opt/llvm@16/lib/:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          echo "DYLD_LIBRARY_PATH=/usr/local/opt/llvm@16/lib/:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
+
 
       - name: Install GCC (linux)
-        if: ${{ matrix.compiler == 'gcc' && matrix.os-name == 'linux' }}
+        if: ${{ matrix.os-name == 'linux' }}
         run: |
           sudo apt install g++-13 gcc-13 -y
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
