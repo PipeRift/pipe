@@ -38,7 +38,7 @@ jobs:
           - name: macos-clang
             os: macos-latest
             os-name: macos
-            compiler: clang-17
+            compiler: clang-15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
