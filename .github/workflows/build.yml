@@ -62,7 +62,7 @@ jobs:
         if: ${{ matrix.compiler == 'cl' }}
 
       - name: Cache Clang
-        if: ${{ matrix.compiler == 'clang' }}
+        if: ${{ matrix.compiler == 'clang' && matrix.os-name != 'macos' }}
         id: cache-llvm
         uses: actions/cache@v3
         with:
@@ -75,11 +75,11 @@ jobs:
           version: "16.0"
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
-      #- name: Install LLVM (macos)
-      #  if: ${{ matrix.compiler == 'clang' && matrix.os-name == 'macos' }}
-      #  run: |
-      #      brew install llvm@16
-      #      echo /usr/local/opt/llvm@16/bin >> $GITHUB_PATH
+      - name: Install LLVM (macos)
+        if: ${{ matrix.compiler == 'clang' && matrix.os-name == 'macos' }}
+        run: |
+          brew install llvm@16
+          echo /usr/local/opt/llvm@16/bin >> $GITHUB_PATH
 
       - name: Install GCC (linux)
         if: ${{ matrix.os-name == 'linux' }}
