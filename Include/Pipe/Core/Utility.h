@@ -55,4 +55,19 @@ namespace p
 		__builtin_unreachable();
 #endif
 	}
+
+	template<typename Predicate>
+	class ReversePredicate
+	{
+		const Predicate& predicate;
+
+	public:
+		ReversePredicate(const Predicate& predicate) : predicate(predicate) {}
+
+		template<typename T>
+		bool operator()(T&& A, T&& B) const
+		{
+			return predicate(p::Forward<T>(B), p::Forward<T>(A));
+		}
+	};
 }    // namespace p

@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang, macos-gcc]
+        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
         config: [Release, Debug]
         include:
           - name: windows-msvc
@@ -49,12 +49,6 @@ jobs:
             compiler: clang
             cxx: clang++
             cc: clang
-          - name: macos-gcc
-            os: macos-latest
-            os-name: macos
-            compiler: gcc
-            cxx: g++-13
-            cc: gcc-13
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -93,9 +87,6 @@ jobs:
           sudo apt install g++-13 gcc-13 -y
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 13
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
-      - name: Install GCC (macos)
-        if: ${{ matrix.os-name == 'macos' && matrix.compiler == 'gcc' }}
-        run: brew install gcc@13
 
       - name: Cache Build
         uses: actions/cache@v3

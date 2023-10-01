@@ -285,21 +285,6 @@ namespace p
 	};
 	template<typename T>
 	using RemoveReference = typename TRemoveReference<T>::Type;
-
-	template<typename Predicate>
-	class ReversePredicate
-	{
-		const Predicate& predicate;
-
-	public:
-		ReversePredicate(const Predicate& predicate) : predicate(predicate) {}
-
-		template<typename T>
-		bool operator()(T&& A, T&& B) const
-		{
-			return predicate(Forward<T>(B), Forward<T>(A));
-		}
-	};
 }    // namespace p
 
 #define P_DECLARE_IS_TRIVIAL(T, isTrivial)                                                   \
