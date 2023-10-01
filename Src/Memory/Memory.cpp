@@ -69,7 +69,7 @@ namespace p
 	{
 		memset(dest, 0, size);
 	}
-	i32 CmpMem(void* a, void* b, sizet size)
+	i32 CmpMem(const void* a, const void* b, sizet size)
 	{
 		return memcmp(a, b, size);
 	}

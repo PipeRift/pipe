@@ -85,7 +85,7 @@ namespace p
 		void SetValue(void* data, T value) const
 		{
 			Check(sizeof(T) >= valueSize);
-			memcpy(data, &data, valueSize);
+			CopyMem(data, &data, valueSize);
 		}
 		void SetValue(void* data, Tag valueName) const
 		{
@@ -114,7 +114,7 @@ namespace p
 			for (i32 i = 0; i < Size(); ++i)
 			{
 				const void* valuePtr = GetValuePtrByIndex(i);
-				if (memcmp(data, valuePtr, valueSize) == 0)
+				if (CmpMem(data, valuePtr, valueSize) == 0)
 				{
 					// Value matches
 					return i;
@@ -125,7 +125,7 @@ namespace p
 		void SetValueFromIndex(void* data, i32 index) const
 		{
 			const void* valuePtr = GetValuePtrByIndex(index);
-			memcpy(data, valuePtr, valueSize);
+			CopyMem(data, valuePtr, valueSize);
 		}
 
 		template<Integral T>

@@ -85,7 +85,7 @@ namespace p
 	PIPE_API void SwapMem(void* a, void* b, sizet size);
 	PIPE_API void SetMem(void* dest, u8 value, sizet size);
 	PIPE_API void SetZeroMem(void* dest, sizet size);
-	PIPE_API i32 CmpMem(void* a, void* b, sizet size);
+	PIPE_API i32 CmpMem(const void* a, const void* b, sizet size);
 
 	/**
 	 * @return the previous pointer of 'ptr' aligned to blockSize

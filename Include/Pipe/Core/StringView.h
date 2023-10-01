@@ -6,6 +6,7 @@
 #include "Pipe/Core/Optional.h"
 #include "Pipe/Core/Platform.h"
 
+#include <cstring>
 #include <string_view>
 
 
