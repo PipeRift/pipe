@@ -44,7 +44,7 @@ jobs:
             cxx: g++-13
             cc: gcc-13
           - name: macos-clang
-            os: macos-latest
+            os: macos-13
             os-name: macos
             compiler: clang
             cxx: clang++
