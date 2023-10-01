@@ -79,7 +79,7 @@ jobs:
         if: ${{ matrix.compiler == 'clang' && matrix.os-name == 'macos' }}
         run: |
             brew install llvm@16
-            echo /usr/local/opt/llvm@${{ matrix.llvm-version }}/bin >> $GITHUB_PATH
+            echo /usr/local/opt/llvm@16/bin >> $GITHUB_PATH
 
       - name: Install GCC (linux)
         if: ${{ matrix.os-name == 'linux' }}
