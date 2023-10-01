@@ -2,22 +2,20 @@
 
 #include "Pipe/Memory/Block.h"
 
-#include "Pipe/Core/Checks.h"
-
-#include <cstring>
+#include "Pipe/Core/Utility.h"
 
 
 namespace p::Memory
 {
 	Block::Block(Block&& other) noexcept
 	{
-		data = std::exchange(other.data, nullptr);
-		size = std::exchange(other.size, 0);
+		data = Exchange(other.data, nullptr);
+		size = Exchange(other.size, 0);
 	}
 	Block& Block::operator=(Block&& other) noexcept
 	{
-		data = std::exchange(other.data, nullptr);
-		size = std::exchange(other.size, 0);
+		data = Exchange(other.data, nullptr);
+		size = Exchange(other.size, 0);
 		return *this;
 	}
 }    // namespace p::Memory

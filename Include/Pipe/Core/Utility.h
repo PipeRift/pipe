@@ -4,7 +4,6 @@
 
 #include "Pipe/Core/TypeTraits.h"
 
-#include <type_traits>
 #include <utility>
 
 
@@ -18,21 +17,21 @@ namespace p
 
 	// Forward arg as movable
 	template<typename T>
-	constexpr std::remove_reference_t<T>&& Move(T&& arg) noexcept
+	constexpr RemoveReference<T>&& Move(T&& arg) noexcept
 	{
-		return static_cast<std::remove_reference_t<T>&&>(arg);
+		return static_cast<RemoveReference<T>&&>(arg);
 	}
 
 	// Forward an lvalue as either an lvalue or an rvalue
 	template<typename T>
-	constexpr T&& Forward(typename std::remove_reference_t<T>& arg)
+	constexpr T&& Forward(RemoveReference<T>& arg)
 	{
 		return static_cast<T&&>(arg);
 	}
 
 	// Forward an rvalue as an rvalue
 	template<typename T>
-	constexpr T&& Forward(typename std::remove_reference_t<T>&& arg)
+	constexpr T&& Forward(RemoveReference<T>&& arg)
 	{
 		static_assert(!std::is_lvalue_reference_v<T>, "Bad Forward call");
 		return static_cast<T&&>(arg);
@@ -47,21 +46,6 @@ namespace p
 		value      = Forward<OtherT>(newValue);
 		return oldValue;
 	}
-
-	template<typename Predicate>
-	class ReversePredicate
-	{
-		const Predicate& predicate;
-
-	public:
-		ReversePredicate(const Predicate& predicate) : predicate(predicate) {}
-
-		template<typename T>
-		bool operator()(T&& A, T&& B) const
-		{
-			return predicate(Forward<T>(B), Forward<T>(A));
-		}
-	};
 
 	[[noreturn]] inline void Unreachable()
 	{
