@@ -34,7 +34,6 @@ add_subdirectory(utfcpp)
 add_subdirectory(yyjson)
 
 if(PLATFORM_LINUX)
-    set_target_properties(fmt PROPERTIES POSITION_INDEPENDENT_CODE ON)
     set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
     set_target_properties(yyjson PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
