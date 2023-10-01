@@ -41,14 +41,20 @@ jobs:
             os: ubuntu-latest
             os-name: linux
             compiler: gcc
-            cxx: g++-12
-            cc: gcc-12
+            cxx: g++-13
+            cc: gcc-13
           - name: macos-clang
             os: macos-latest
             os-name: macos
             compiler: clang
             cxx: clang++
             cc: clang
+          - name: macos-gcc
+            os: macos-latest
+            os-name: macos
+            compiler: gcc
+            cxx: g++-13
+            cc: gcc-13
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -72,10 +78,18 @@ jobs:
         if: ${{ matrix.compiler == 'clang' }}
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "16.0.6"
+          version: "16.0"
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
+      - name: Install LLVM (Homebrew)
+        if: ${{ matrix.os-name == 'macos' }}
+        run: |
+            brew install llvm@16
+            echo /usr/local/opt/llvm@${{ matrix.llvm-version }}/bin >> $GITHUB_PATH
 
+      - name: Install GCC
+        if: ${{ matrix.compiler == 'gcc' }}
+        run: brew install gcc@13
 
       - name: Cache Build
         uses: actions/cache@v3
