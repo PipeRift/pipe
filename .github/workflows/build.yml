@@ -47,8 +47,8 @@ jobs:
           - name: macos-gcc
             os-name: macos
             compiler: gcc-13
-            cxx: g++
-            cc: gcc
+            cxx: /usr/bin/g++
+            cc: /usr/bin/gcc
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
