@@ -67,12 +67,12 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ runner.temp }}/llvm
-          key: llvm-15.0-${{ matrix.os-name }}
+          key: llvm-16.0-${{ matrix.os-name }}
       - name: Install Clang
         if: ${{ matrix.compiler == 'clang' }}
         uses: KyleMayes/install-llvm-action@v1
         with:
-          version: "15.0"
+          version: "16.0"
           directory: ${{ runner.temp }}/llvm
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
