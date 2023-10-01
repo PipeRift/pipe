@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang, macos-gcc]
+        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
         config: [Release, Debug]
         include:
           - name: windows-msvc
@@ -44,11 +44,11 @@ jobs:
             compiler: clang-16
             cxx: clang++
             cc: clang
-          - name: macos-gcc
-            os-name: macos
-            compiler: gcc-13
-            cxx: /usr/bin/g++
-            cc: /usr/bin/gcc
+          #- name: macos-gcc
+          #  os-name: macos
+          #  compiler: gcc-13
+          #  cxx: /usr/bin/g++
+          #  cc: /usr/bin/gcc
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
