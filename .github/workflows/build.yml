@@ -61,6 +61,7 @@ jobs:
           compiler: ${{ matrix.compiler }}
           vcvarsall: ${{ matrix.os-name == 'windows' }}
           cmake: true
+          ninja: true
 
       - name: Cache Build
         uses: actions/cache@v3
