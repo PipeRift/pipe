@@ -5,18 +5,18 @@
 
 #include "Pipe.h"
 #include "Pipe/Core/Log.h"
+#include "Pipe/Files/Paths.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Reflect/TypeRegistry.h"
 
 
-
 namespace p
 {
-	void Initialize(Path logPath)
+	void Initialize(StringView logPath)
 	{
 		InitializeMemory();
 		TypeRegistry::Initialize();
-		InitLog(logPath);
+		InitLog(ToPath(logPath));
 	}
 
 	void Shutdown()
