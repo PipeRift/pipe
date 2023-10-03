@@ -12,7 +12,7 @@ on:
 jobs:
   Build:
     name: ${{ matrix.os-name }} (${{ matrix.compiler }}, ${{ matrix.config }})
-    runs-on: ${{ matrix.os-name }}-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -20,31 +20,37 @@ jobs:
         config: [Release, Debug]
         include:
           - name: windows-msvc
+            os: windows-latest
             os-name: windows
             compiler: msvc-17
             cxx: cl
             cc: cl
           - name: windows-clang
+            os: windows-latest
             os-name: windows
             compiler: clang-16
             cxx: clang-cl
             cc: clang-cl
           - name: linux-clang
+            os: ubuntu-latest
             os-name: linux
             compiler: clang-16
             cxx: clang++
             cc: clang
           - name: linux-gcc
+            os: ubuntu-latest
             os-name: linux
             compiler: gcc-13
             cxx: g++
             cc: gcc
           - name: macos-clang
+            os: macos-latest
             os-name: macos
             compiler: clang-16
             cxx: clang++
             cc: clang
           #- name: macos-gcc
+          #  os: macos-latest
           #  os-name: macos
           #  compiler: gcc-13
           #  cxx: /usr/bin/g++
