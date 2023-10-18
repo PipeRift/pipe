@@ -42,8 +42,8 @@ namespace p
 	    IsMoveConstructible<T>&& IsAssignable<T&, OtherT>)
 	{
 		// assign _New_val to _Val, return previous _Val
-		T oldValue = Forward<T>(value);
-		value      = Forward<OtherT>(newValue);
+		T oldValue = p::Forward<T>(value);
+		value      = p::Forward<OtherT>(newValue);
 		return oldValue;
 	}
 

@@ -25,6 +25,11 @@ namespace p
 			return id;
 		}
 
+		constexpr bool IsValid() const
+		{
+			return id != 0;
+		}
+
 		constexpr auto operator==(const TypeId& other) const
 		{
 			return id == other.id;

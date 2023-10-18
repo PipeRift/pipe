@@ -24,8 +24,8 @@ namespace p
 		TOptional() : isSet(false) {}
 
 		/** Construct an Type with a valid value. */
-		TOptional(const Type& value, bool isSet = true) : isSet{isSet}, value{value} {}
-		TOptional(Type&& value, bool isSet = true) : isSet{isSet}, value{Move(value)} {}
+		TOptional(const Type& value, bool isSet = true) : value{value}, isSet{isSet} {}
+		TOptional(Type&& value, bool isSet = true) : value{Move(value)}, isSet{isSet} {}
 
 		/** Copy/Move construction */
 		TOptional(const TOptional& other) : isSet(other.isSet)

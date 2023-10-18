@@ -720,7 +720,7 @@ namespace p
 		template<u32 OtherInlineCapacity>
 		TInlineArray(TInlineArray<Type, OtherInlineCapacity>&& other)
 		{
-			MoveFrom(Forward<TInlineArray<Type, OtherInlineCapacity>>(other));
+			MoveFrom(p::Forward<TInlineArray<Type, OtherInlineCapacity>>(other));
 		}
 		template<u32 OtherInlineCapacity>
 		TInlineArray<Type, InlineCapacity>& operator=(
@@ -728,7 +728,7 @@ namespace p
 		{
 			if (this != (void*)&other)
 			{
-				MoveFrom(Forward<TInlineArray<Type, OtherInlineCapacity>>(other));
+				MoveFrom(p::Forward<TInlineArray<Type, OtherInlineCapacity>>(other));
 			}
 			return *this;
 		}
@@ -883,7 +883,7 @@ namespace p
 				}
 				else if (insertSorted)
 				{
-					Insert(index, Forward<Type>(value));
+					Insert(index, p::Forward<Type>(value));
 					if (outFound)
 						*outFound = true;
 					return index;
@@ -892,7 +892,7 @@ namespace p
 
 			if (outFound)
 				*outFound = true;
-			return Add(Forward<Type>(value));
+			return Add(p::Forward<Type>(value));
 		}
 
 		void Append(i32 count)
@@ -962,7 +962,7 @@ namespace p
 		template<i32 OtherInlineCapacity>
 		void Assign(TInlineArray<Type, OtherInlineCapacity>&& values) requires(IsMutable<Type>)
 		{
-			MoveFrom(Forward<TInlineArray<Type, OtherInlineCapacity>>(values));
+			MoveFrom(p::Forward<TInlineArray<Type, OtherInlineCapacity>>(values));
 		}
 		void Assign(std ::initializer_list<Type> initList)
 		{
@@ -977,7 +977,7 @@ namespace p
 		void Insert(i32 atIndex, Type&& value)
 		{
 			InsertUninitialized(atIndex, 1);
-			new (Super::data + atIndex) Type(Forward<Type>(value));
+			new (Super::data + atIndex) Type(p::Forward<Type>(value));
 		}
 		void Insert(i32 atIndex, const Type& value)
 		{
@@ -1006,7 +1006,7 @@ namespace p
 		}
 		Type& InsertRef(i32 atIndex, Type&& value)
 		{
-			Insert(atIndex, Forward<Type>(value));
+			Insert(atIndex, p::Forward<Type>(value));
 			return Super::data[atIndex];
 		}
 		Type& InsertRef(i32 atIndex, const Type& value)
