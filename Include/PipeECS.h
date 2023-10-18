@@ -2175,3 +2175,16 @@ namespace p
 		return *ptr.GetUnsafe<Static>();
 	}
 }    // namespace p
+
+template<>
+struct std::formatter<p::Id> : public std::formatter<p::u64>
+{
+	p::StringView formatStr = "{}:{}";
+
+	template<typename FormatContext>
+	auto format(p::Id id, FormatContext& ctx)
+	{
+		return std::vformat_to(
+		    ctx.out(), formatStr, std::make_format_args(p::GetIdIndex(id), p::GetIdVersion(id)));
+	}
+};
