@@ -141,9 +141,7 @@ namespace p
 
 	// Mark an entity as not serialized (it will be entirely ignored by the serializer)
 	struct CNotSerialized : public Struct
-	{
-		P_STRUCT(CNotSerialized, Struct)
-	};
+	{};
 
 	class PIPE_API EntityReader : public Reader
 	{
@@ -566,7 +564,7 @@ namespace p
 			{
 				if (Has(id))
 				{
-					return (Get(id) = T{Forward<Args>(args)...});
+					return (Get(id) = T{p::Forward<Args>(args)...});
 				}
 			}
 
@@ -574,7 +572,7 @@ namespace p
 			if constexpr (!p::IsEmpty<T>)
 			{
 				data.Reserve(index + 1u);
-				T* const value = data.Insert(index, Forward<Args>(args)...);
+				T* const value = data.Insert(index, p::Forward<Args>(args)...);
 				OnAdded({id});
 				return *value;
 			}
@@ -950,7 +948,7 @@ namespace p
 		decltype(auto) Add(Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
 		{
 			Check(IsValid(id));
-			return AssurePool<C>().Add(id, Forward<C>(value));
+			return AssurePool<C>().Add(id, p::Forward<C>(value));
 		}
 		template<typename C>
 		decltype(auto) Add(Id id, const C& value) const requires(IsSame<C, Mut<C>>)
@@ -1321,7 +1319,7 @@ namespace p
 		template<typename C>
 		decltype(auto) Add(Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
 		{
-			return GetPool<C>()->Add(id, Forward<C>(value));
+			return GetPool<C>()->Add(id, p::Forward<C>(value));
 		}
 		template<typename C>
 		decltype(auto) Add(Id id, const C& value) const requires(IsSame<C, Mut<C>>)
@@ -2139,7 +2137,7 @@ namespace p
 	inline Static& EntityContext::SetStatic(Static&& value)
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
-		ptr         = MakeOwned<Static>(Forward<Static>(value));
+		ptr         = MakeOwned<Static>(p::Forward<Static>(value));
 		return *ptr.GetUnsafe<Static>();
 	}
 
