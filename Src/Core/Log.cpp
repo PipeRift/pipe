@@ -50,7 +50,7 @@ namespace p
 		if (!logFile.empty())
 		{
 			Path logFolder = logFile;
-			if (files::IsFile(logFile))
+			if (IsFile(logFile))
 			{
 				logFolder.remove_filename();
 			}
@@ -58,7 +58,7 @@ namespace p
 			{
 				logFile /= "log.txt";
 			}
-			files::CreateFolder(logFolder, true);
+			CreateFolder(logFolder, true);
 
 			sinks.Add(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
 			    ToString(logFile).c_str(), 1048576 * 5, 3));

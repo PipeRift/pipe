@@ -9,7 +9,6 @@
 #include <PipeArrays.h>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace p;
@@ -65,7 +64,7 @@ go_bandit([]() {
 		describe("Containers", []() {
 			it("Can get TArray names", [&]() {
 				AssertThat(GetTypeName<TArray<Guid>>(), Equals("TArray"));
-				AssertThat(GetFullTypeName<TArray<Guid>>(), Equals("TArray<p::core::Guid>"));
+				AssertThat(GetFullTypeName<TArray<Guid>>(), Equals("TArray<p::Guid>"));
 				AssertThat(GetFullTypeName<TArray<Guid>>(false), Equals("TArray<Guid>"));
 			});
 
@@ -78,7 +77,7 @@ go_bandit([]() {
 
 
 				auto namespaceName = GetFullTypeName<TMap<u8, Guid>>();
-				AssertThat(namespaceName, Equals("TMap<u8, p::core::Guid>"));
+				AssertThat(namespaceName, Equals("TMap<u8, p::Guid>"));
 				auto noNamespaceName = GetFullTypeName<TMap<u8, Guid>>(false);
 				AssertThat(noNamespaceName, Equals("TMap<u8, Guid>"));
 			});

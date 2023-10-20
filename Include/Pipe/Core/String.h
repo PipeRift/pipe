@@ -20,6 +20,19 @@
 #pragma warning(disable:4996)
 
 
+// Support for std::format of pointers
+template<typename T>
+requires(!p::IsVoid<T> && !p::IsChar<T>)
+struct std::formatter<const T*> : public std::formatter<const void*>
+{
+	template<typename FormatContext>
+	auto format(const T* ptr, FormatContext& ctx)
+	{
+		return formatter<const void*>::format(ptr, ctx);
+	}
+};
+
+
 namespace p
 {
 	template<typename CharType>
@@ -68,7 +81,7 @@ namespace p
 		template<typename StringType, typename T>
 		inline void ToString(StringType& buffer, T value, FormatString<T> format = "{}")
 		{
-			std::format_to(std::back_inserter(buffer), format, p::Forward(value));
+			std::format_to(std::back_inserter(buffer), format, p::Forward<T>(value));
 		}
 
 		template<typename StringType, typename T>
@@ -159,6 +172,5 @@ namespace p
 	PIPE_API void Read(p::Reader& ct, p::String& val);
 	PIPE_API void Write(p::Writer& ct, const p::String& val);
 }    // namespace p
-
 
 #pragma warning(pop)

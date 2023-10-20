@@ -9,7 +9,7 @@
 #include <locale>
 
 
-namespace p::core
+namespace p
 {
 	/*-----------------------------------------------------------------------------
 	    Character type functions.
@@ -284,9 +284,4 @@ namespace p::core
 	{
 		return ::strtol(str, end, radix);
 	}
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

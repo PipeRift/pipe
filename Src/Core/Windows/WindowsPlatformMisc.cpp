@@ -9,7 +9,7 @@
 	#include <Windows.h>
 
 
-namespace p::core
+namespace p
 {
 	bool AreLongPathsEnabled()
 	{
@@ -53,5 +53,5 @@ namespace p::core
 		}
 		return buffer;
 	}
-}    // namespace p::core
+}    // namespace p
 #endif

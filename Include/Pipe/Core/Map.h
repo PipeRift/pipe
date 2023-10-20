@@ -16,8 +16,17 @@
 #include <type_traits>
 
 
-namespace p::core
+namespace p
 {
+	template<typename T>
+	struct TMapHash
+	{
+		sizet operator()(const T& v) const
+		{
+			return GetHash(v);
+		}
+	};
+
 	template<typename Key, typename Value>
 	class TMap
 	{
@@ -34,7 +43,7 @@ namespace p::core
 		using KeyEqual  = std::equal_to<KeyType>;
 		using Allocator = STLAllocator<TPair<Key, Value>>;
 		using HashMapType =
-		    tsl::sparse_map<KeyType, ValueType, HashResolver<KeyType>, KeyEqual, Allocator>;
+		    tsl::sparse_map<KeyType, ValueType, TMapHash<KeyType>, KeyEqual, Allocator>;
 
 		using Iterator      = typename HashMapType::iterator;
 		using ConstIterator = typename HashMapType::const_iterator;
@@ -331,9 +340,4 @@ namespace p::core
 			map = Move(other.map);
 		}
 	};
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

@@ -15,6 +15,15 @@
 
 namespace p
 {
+	template<typename T>
+	struct TSetHash
+	{
+		sizet operator()(const T& v) const
+		{
+			return GetHash(v);
+		}
+	};
+
 	template<typename Type>
 	class TSet
 	{
@@ -26,9 +35,8 @@ namespace p
 		template<typename OtherType>
 		friend class TSet;
 
-		using Allocator = STLAllocator<Type>;
-		using HashSetType =
-		    tsl::sparse_set<Type, HashResolver<Type>, std::equal_to<Type>, Allocator>;
+		using Allocator   = STLAllocator<Type>;
+		using HashSetType = tsl::sparse_set<Type, TSetHash<Type>, std::equal_to<Type>, Allocator>;
 
 		using Iterator      = typename HashSetType::iterator;
 		using ConstIterator = typename HashSetType::const_iterator;

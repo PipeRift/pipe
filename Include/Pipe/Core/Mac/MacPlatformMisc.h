@@ -4,7 +4,7 @@
 #include "Pipe/Core/Generic/GenericPlatformMisc.h"
 
 
-namespace p::core
+namespace p
 {
 	struct MacPlatformMisc : public GenericPlatformMisc
 	{
@@ -15,9 +15,4 @@ namespace p::core
 	};
 
 	using PlatformMisc = MacPlatformMisc;
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

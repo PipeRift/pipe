@@ -12,17 +12,27 @@ namespace p
 	namespace Internal
 	{
 		template<class T>
-		struct IsRValueReference : std::false_type
+		struct TIsRValueReference : std::false_type
 		{};
 		template<class T>
-		struct IsRValueReference<T&&> : std::true_type
+		struct TIsRValueReference<T&&> : std::true_type
 		{};
 
 		template<class T>
-		struct IsLValueReference : std::false_type
+		struct TIsLValueReference : std::false_type
 		{};
 		template<class T>
-		struct IsLValueReference<T&> : std::true_type
+		struct TIsLValueReference<T&> : std::true_type
+		{};
+
+		template<typename T>
+		struct TIsChar : std::false_type
+		{};
+		template<>
+		struct TIsChar<AnsiChar> : std::true_type
+		{};
+		template<>
+		struct TIsChar<WideChar> : std::true_type
 		{};
 	}    // namespace Internal
 
@@ -132,9 +142,12 @@ namespace p
 	using ValueOrRef = typename std::conditional<ShouldPassByValue<T>, T, const T&>::type;
 
 	template<typename T>
-	concept IsRValueRef = Internal::IsRValueReference<T>::value;
+	concept IsRValueRef = Internal::TIsRValueReference<T>::value;
 	template<typename T>
-	concept IsLValueRef = Internal::IsLValueReference<T>::value;
+	concept IsLValueRef = Internal::TIsLValueReference<T>::value;
+
+	template<typename T>
+	concept IsChar = Internal::TIsChar<T>::value;
 
 	template<typename T>
 	struct HasTypeMember

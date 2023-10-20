@@ -92,13 +92,4 @@ namespace p
 	{
 		return HashInt(reinterpret_cast<sizet>(ptr));
 	}
-
-	template<typename T>
-	struct HashResolver
-	{
-		sizet operator()(const T& v) const
-		{
-			return GetHash(v);
-		}
-	};
 }    // namespace p

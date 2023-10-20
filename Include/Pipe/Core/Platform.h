@@ -32,41 +32,36 @@
 #endif
 
 
-namespace p::core
+namespace p
 {
 	/////////////////////////////////////////////////////////////
 	// Define platform types as global types
 
 	// Unsigned base types
-
 	// An 8-bit unsigned integer
-	using u8 = PlatformTypes::uint8;
+	using u8 = std::uint8_t;
 	// A 16-bit unsigned integer
-	using u16 = PlatformTypes::uint16;
+	using u16 = std::uint16_t;
 	// A 32-bit unsigned integer
-	using u32 = PlatformTypes::uint32;
+	using u32 = std::uint32_t;
 	// A 64-bit unsigned integer
-	using u64 = PlatformTypes::uint64;
-
+	using u64 = std::uint64_t;
 
 	// Signed base types
-
 	// An 8-bit signed integer
-	using i8 = PlatformTypes::int8;
+	using i8 = std::int8_t;
 	/// A 16-bit signed integer
-	using i16 = PlatformTypes::int16;
+	using i16 = std::int16_t;
 	/// A 32-bit signed integer
-	using i32 = PlatformTypes::int32;
+	using i32 = std::int32_t;
 	/// A 64-bit signed integer
-	using i64 = PlatformTypes::int64;
-
+	using i64 = std::int64_t;
 	/// A 32-bit floating point number
-	using f32 = PlatformTypes::float32;
+	using f32 = float;
 	/// A 64-bit floating point number
-	using f64 = PlatformTypes::float64;
+	using f64 = double;
 
 	//  Character types
-
 	// An ANSI character. Normally a signed type.
 	using AnsiChar = PlatformTypes::AnsiChar;
 	// A wide character. Normally a signed type.
@@ -99,12 +94,7 @@ namespace p::core
 
 
 	constexpr i32 NO_INDEX = -1;
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p
 
 
 #if !defined(TX)

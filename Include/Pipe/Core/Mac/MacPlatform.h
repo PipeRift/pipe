@@ -9,7 +9,7 @@
 #define P_PLATFORM_MACOS_USE_CHAR16 0
 
 
-namespace p::core
+namespace p
 {
 	/**
 	 * Mac specific types
@@ -28,12 +28,8 @@ namespace p::core
 	};
 
 	using PlatformTypes = MacPlatformTypes;
-}    // namespace p::core
+}    // namespace p
 
-namespace p
-{
-	using namespace p::core;
-}
 
 #if P_DEBUG
 	#define P_FORCEINLINE inline /* Don't force code to be inline */
