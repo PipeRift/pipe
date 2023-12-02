@@ -34,6 +34,12 @@ namespace p
 		template<>
 		struct TIsChar<WideChar> : std::true_type
 		{};
+		template<>
+		struct TIsChar<const AnsiChar> : std::true_type
+		{};
+		template<>
+		struct TIsChar<const WideChar> : std::true_type
+		{};
 	}    // namespace Internal
 
 	template<typename T>

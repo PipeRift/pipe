@@ -4,6 +4,7 @@
 
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Platform.h"
+#include "Pipe/Core/STDFormat.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/STLAllocator.h"
@@ -12,25 +13,11 @@
 
 #include <utf8.h>
 
-#include <format>
 #include <string>
 
 
 #pragma warning(push)
 #pragma warning(disable:4996)
-
-
-// Support for std::format of pointers
-template<typename T>
-requires(!p::IsVoid<T> && !p::IsChar<T>)
-struct std::formatter<const T*> : public std::formatter<const void*>
-{
-	template<typename FormatContext>
-	auto format(const T* ptr, FormatContext& ctx)
-	{
-		return formatter<const void*>::format(ptr, ctx);
-	}
-};
 
 
 namespace p
