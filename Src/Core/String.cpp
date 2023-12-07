@@ -7,7 +7,6 @@
 #include "PipeMath.h"
 
 
-
 namespace p
 {
 	void Read(p::Reader& ct, p::String& val)
@@ -39,21 +38,20 @@ namespace p::Strings
 		const TChar* p    = value.data();
 		const TChar* end  = value.data() + value.size();
 		const TChar* last = end - 1;
-		while (p < last)
+		for (; p < last; ++p)
 		{
 			const TChar* next = p + 1;
 			if (FChar::IsAlpha(*p) && (FChar::IsUpper(*next) || FChar::IsDigit(*next)))
 			{
 				result.push_back(*p);
 				result.push_back(TX(' '));
-				p += 2;
 			}
 			else
 			{
 				result.push_back(*p);
-				++p;
 			}
 		}
+		result.push_back(*p);    // Last letter
 		result[0] = FChar::ToUpper(result[0]);
 		return result;
 	}
