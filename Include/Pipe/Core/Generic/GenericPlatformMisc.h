@@ -5,7 +5,7 @@
 #include "Pipe/Export.h"
 
 
-namespace p::core
+namespace p
 {
 	struct Guid;
 
@@ -14,7 +14,7 @@ namespace p::core
 	 */
 	struct PIPE_API GenericPlatformMisc
 	{
-		static void CreateGuid(core::Guid& guid);
+		static void CreateGuid(Guid& guid);
 
 		static constexpr u32 GetMaxPathLength()
 		{
@@ -28,7 +28,7 @@ namespace p::core
 			return u32(GetCycles64());
 		}
 	};
-}    // namespace p::core
+}    // namespace p
 
 namespace p
 {

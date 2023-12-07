@@ -7,7 +7,7 @@
 #include "PipeAlgorithms.h"
 
 
-namespace p::core
+namespace p
 {
 	/**
 	 * Enumerates known GUID formats.
@@ -287,11 +287,6 @@ namespace p::core
 
 	PIPE_API void Read(Reader& ct, Guid& guid);
 	PIPE_API void Write(Writer& ct, const Guid& guid);
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
 
 	inline sizet GetHash(const Guid& guid)
 	{
