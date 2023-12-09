@@ -9,6 +9,36 @@
 
 namespace p
 {
+	String ToString(Id id)
+	{
+		if (id == NoId)
+		{
+			return "none";
+		}
+		return Strings::Format("{}:{}", p::GetIdIndex(id), p::GetIdVersion(id));
+	}
+
+	Id IdFromString(String str)
+	{
+		if (str == "none")
+		{
+			return NoId;
+		}
+		const sizet pos = Strings::Find(str, ":");
+		if (pos != StringView::npos)
+		{
+			auto idx = Strings::ToNumber<IdTraits<Id>::Index>({str.data(), str.data() + pos});
+			auto v   = Strings::ToNumber<IdTraits<Id>::Version>(
+                {str.data() + pos + 1, str.data() + str.size()});
+			if (idx && v)
+			{
+				return MakeId(*idx, *v);
+			}
+		}
+		return NoId;
+	}
+
+
 	Id IdRegistry::Create()
 	{
 		if (!available.IsEmpty())
@@ -85,7 +115,14 @@ namespace p
 	bool IdRegistry::IsValid(Id id) const
 	{
 		const Index index = GetIdIndex(id);
-		return entities.IsValidIndex(index) && entities[index] == id;
+		return entities.IsValidIndex(index) && entities[p::i32(index)] == id;
+	}
+
+	bool IdRegistry::WasRemoved(Id id) const
+	{
+		const Index index = GetIdIndex(id);
+		return entities.IsValidIndex(index)
+		    && GetIdVersion(entities[p::i32(index)]) > GetIdVersion(id);
 	}
 
 
@@ -549,6 +586,11 @@ namespace p
 	bool EntityContext::IsValid(Id id) const
 	{
 		return idRegistry.IsValid(id);
+	}
+
+	bool EntityContext::WasRemoved(Id id) const
+	{
+		return idRegistry.WasRemoved(id);
 	}
 
 	bool EntityContext::IsOrphan(const Id id) const

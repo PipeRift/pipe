@@ -96,26 +96,9 @@ namespace p
 		return GetIdVersion(id) == GetIdVersion(NoId);
 	}
 
-	static String ToString(Id id)
-	{
-		return Strings::Format("{}:{}", p::GetIdIndex(id), p::GetIdVersion(id));
-	}
+	PIPE_API String ToString(Id id);
 
-	static Id IdFromString(String str)
-	{
-		const sizet pos = Strings::Find(str, ":");
-		if (pos != StringView::npos)
-		{
-			auto idx = Strings::ToNumber<IdTraits<Id>::Index>({str.data(), str.data() + pos});
-			auto v   = Strings::ToNumber<IdTraits<Id>::Version>(
-                {str.data() + pos + 1, str.data() + str.size()});
-			if (idx && v)
-			{
-				return MakeId(*idx, *v);
-			}
-		}
-		return NoId;
-	}
+	PIPE_API Id IdFromString(String str);
 
 
 	/** IdRegistry tracks the existance and versioning of ids. Used internally by the ECS context */
@@ -145,6 +128,7 @@ namespace p
 		bool Destroy(Id id);
 		bool Destroy(TView<const Id> ids);
 		bool IsValid(Id id) const;
+		bool WasRemoved(Id id) const;
 
 		u32 Size() const
 		{
@@ -1078,6 +1062,7 @@ namespace p
 		}
 
 		bool IsValid(Id id) const;
+		bool WasRemoved(Id id) const;
 		bool IsOrphan(const Id id) const;
 
 		template<typename Callback>
