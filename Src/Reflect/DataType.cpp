@@ -63,6 +63,11 @@ namespace p
 		outProperties.Append(GetSelfProperties());
 	}
 
+	bool DataType::IsEmpty() const
+	{
+		return properties.Size() <= 0 && (!parent || parent->IsEmpty());
+	}
+
 	bool DataType::HasFlag(TypeFlags flag) const
 	{
 		return HasAnyFlags(flag);

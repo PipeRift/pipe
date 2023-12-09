@@ -96,6 +96,27 @@ namespace p
 		return GetIdVersion(id) == GetIdVersion(NoId);
 	}
 
+	static String ToString(Id id)
+	{
+		return Strings::Format("{}:{}", p::GetIdIndex(id), p::GetIdVersion(id));
+	}
+
+	static Id IdFromString(String str)
+	{
+		const sizet pos = Strings::Find(str, ":");
+		if (pos != StringView::npos)
+		{
+			auto idx = Strings::ToNumber<IdTraits<Id>::Index>({str.data(), str.data() + pos});
+			auto v   = Strings::ToNumber<IdTraits<Id>::Version>(
+                {str.data() + pos + 1, str.data() + str.size()});
+			if (idx && v)
+			{
+				return MakeId(*idx, *v);
+			}
+		}
+		return NoId;
+	}
+
 
 	/** IdRegistry tracks the existance and versioning of ids. Used internally by the ECS context */
 	struct PIPE_API IdRegistry
@@ -2179,12 +2200,10 @@ namespace p
 template<>
 struct std::formatter<p::Id> : public std::formatter<p::u64>
 {
-	p::StringView formatStr = "{}:{}";
-
 	template<typename FormatContext>
 	auto format(p::Id id, FormatContext& ctx)
 	{
 		return std::vformat_to(
-		    ctx.out(), formatStr, std::make_format_args(p::GetIdIndex(id), p::GetIdVersion(id)));
+		    ctx.out(), "{}:{}", std::make_format_args(p::GetIdIndex(id), p::GetIdVersion(id)));
 	}
 };
