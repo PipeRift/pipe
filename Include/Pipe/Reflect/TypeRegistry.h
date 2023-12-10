@@ -11,6 +11,12 @@
 
 namespace p
 {
+	struct TypeFactory
+	{
+		TypeFactory() {}
+	};
+
+
 	class TypeRegistry
 	{
 		using ConstIterator = TMap<TypeId, Type*>::ConstIterator;
@@ -21,7 +27,11 @@ namespace p
 		// We map all classes by name in case we need to find them
 		TMap<TypeId, Type*> idToTypes;
 
+		TArray<TypeId> ids;
+		TArray<i32> parentIndices;
+
 		TArray<TFunction<void()>> compiledTypeRegisters;
+		TArray<TypeFactory*> typeFactories;
 		bool initialized = false;
 
 
@@ -40,7 +50,9 @@ namespace p
 		{
 			auto* ptr = new (p::Alloc<TType>(arena)) TType();
 			idToTypes.Insert(id, ptr);
-			return *ptr;
+
+			i32 index = ids.AddSorted(id);
+			parentIndices return *ptr;
 		}
 
 
@@ -69,5 +81,27 @@ namespace p
 		PIPE_API void RegisterCompiledType(TFunction<void()> callback);
 
 		static PIPE_API TypeRegistry& Get();
+
+
+		template<typename T>
+		void RegisterType()
+		{
+			if constexpr (HasSuperMember<T>::value)
+			{
+				RegisterType<T::Super>();
+			}
+			TypeId id = GetTypeId<T>();
+			i32 index = ids.AddSorted(id);
+			parentIndices.InsertRef(index);
+		}
 	};
+
+
+	template<typename T>
+	struct TTypeFactory : public TypeFactory
+	{
+		TTypeFactory() {}
+	};
+
+	// TTypeFactory<MyType> myTypeFactory{};
 }    // namespace p
