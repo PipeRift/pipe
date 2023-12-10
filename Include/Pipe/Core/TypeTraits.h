@@ -208,6 +208,19 @@ namespace p
 	};
 
 	template<typename T>
+	struct HasSuperMember
+	{
+	private:
+		template<typename V>
+		static void Impl(decltype(typename V::Super(), int()));
+		template<typename V>
+		static bool Impl(char);
+
+	public:
+		static const bool value = IsVoid<decltype(Impl<T>(0))>;
+	};
+
+	template<typename T>
 	using UnderlyingType = typename std::underlying_type<T>::type;
 
 	template<typename T>
