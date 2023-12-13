@@ -214,8 +214,3 @@ namespace p
 		}
 	};
 }    // namespace p
-
-namespace p
-{
-	using namespace p::core;
-}

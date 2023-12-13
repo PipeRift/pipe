@@ -12,7 +12,7 @@
 #include <format>
 
 
-namespace p::files
+namespace p
 {
 	namespace fs = std::filesystem;
 
@@ -41,13 +41,6 @@ namespace p::files
 	{
 		return {path.c_str()};
 	}
-
-}    // namespace p::files
-
-
-namespace p
-{
-	using namespace p::files;
 
 	inline sizet GetHash(const Path& path)
 	{

@@ -6,7 +6,7 @@
 #include <magic_enum.hpp>
 
 
-namespace p::core
+namespace p
 {
 	namespace EnumOperators
 	{
@@ -61,7 +61,7 @@ namespace p::core
 		rawValue &= ~static_cast<UnderlyingType<E>>(flags);
 		value = static_cast<E>(rawValue);
 	}
-}    // namespace p::core
+}    // namespace p
 
 #define P_DEFINE_FLAG_OPERATORS(Type)                       \
 	constexpr p::UnderlyingType<Type> operator*(Type value) \
@@ -72,8 +72,3 @@ namespace p::core
 	{                                                       \
 		return static_cast<Type>(*lhs | *rhs);              \
 	}
-
-namespace p
-{
-	using namespace p::core;
-}

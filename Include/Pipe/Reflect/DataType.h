@@ -10,7 +10,6 @@
 #include "PipeArrays.h"
 
 
-
 namespace p
 {
 	/** Smallest reflection type that contains all basic class or struct data */
@@ -63,6 +62,7 @@ namespace p
 		PIPE_API const Property* FindProperty(const Tag& propertyName) const;
 		PIPE_API const TArray<Property*>& GetSelfProperties() const;
 		PIPE_API void GetProperties(TArray<Property*>& outProperties) const;
+		PIPE_API bool IsEmpty() const;
 
 		/** Serialization */
 		PIPE_API void Read(Reader& r, void* container);

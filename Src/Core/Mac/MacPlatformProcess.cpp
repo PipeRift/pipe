@@ -1,22 +1,22 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #if P_PLATFORM_MACOS
-#	include "Pipe/Core/Mac/MacPlatformProcess.h"
-#	include "Pipe/Core/PlatformMisc.h"
-#	include "Pipe/Core/String.h"
-#	include "Pipe/Core/FixedString.h"
-#	include "Pipe/Files/Paths.h"
-#	include "Pipe/Files/Files.h"
+	#include "Pipe/Core/Mac/MacPlatformProcess.h"
+	#include "Pipe/Core/PlatformMisc.h"
+	#include "Pipe/Core/String.h"
+	#include "Pipe/Core/FixedString.h"
+	#include "Pipe/Files/Paths.h"
+	#include "Pipe/Files/Files.h"
 
-#	include <mach-o/dyld.h>
-#	include <mach/thread_act.h>
-#	include <mach/thread_policy.h>
-#	include <libproc.h>
-#	include <fcntl.h>
-#	include <unistd.h>
+	#include <mach-o/dyld.h>
+	#include <mach/thread_act.h>
+	#include <mach/thread_policy.h>
+	#include <libproc.h>
+	#include <fcntl.h>
+	#include <unistd.h>
 
 
-namespace p::core
+namespace p
 {
 	StringView MacPlatformProcess::GetExecutableFile()
 	{
@@ -72,5 +72,5 @@ namespace p::core
 		NotImplemented;
 		return;
 	}
-}    // namespace p::core
+}    // namespace p
 #endif

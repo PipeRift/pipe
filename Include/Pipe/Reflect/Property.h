@@ -44,7 +44,7 @@ namespace p
 		PIPE_API DataType* GetOwner() const;
 		PIPE_API Type* GetType() const;
 		PIPE_API Tag GetName() const;
-		PIPE_API void* GetDataPtr(void* container) const;
+		PIPE_API void* GetPtrInContainer(void* container) const;
 		PIPE_API StringView GetDisplayName() const;
 		PIPE_API bool HasFlag(PropFlags flag) const;
 		PIPE_API bool HasAllFlags(PropFlags inFlags) const;
@@ -64,7 +64,7 @@ namespace p
 	{
 		return name;
 	}
-	inline void* Property::GetDataPtr(void* container) const
+	inline void* Property::GetPtrInContainer(void* container) const
 	{
 		return access ? access(container) : nullptr;
 	}

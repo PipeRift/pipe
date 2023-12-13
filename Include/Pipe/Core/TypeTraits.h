@@ -12,17 +12,33 @@ namespace p
 	namespace Internal
 	{
 		template<class T>
-		struct IsRValueReference : std::false_type
+		struct TIsRValueReference : std::false_type
 		{};
 		template<class T>
-		struct IsRValueReference<T&&> : std::true_type
+		struct TIsRValueReference<T&&> : std::true_type
 		{};
 
 		template<class T>
-		struct IsLValueReference : std::false_type
+		struct TIsLValueReference : std::false_type
 		{};
 		template<class T>
-		struct IsLValueReference<T&> : std::true_type
+		struct TIsLValueReference<T&> : std::true_type
+		{};
+
+		template<typename T>
+		struct TIsChar : std::false_type
+		{};
+		template<>
+		struct TIsChar<AnsiChar> : std::true_type
+		{};
+		template<>
+		struct TIsChar<WideChar> : std::true_type
+		{};
+		template<>
+		struct TIsChar<const AnsiChar> : std::true_type
+		{};
+		template<>
+		struct TIsChar<const WideChar> : std::true_type
 		{};
 	}    // namespace Internal
 
@@ -132,9 +148,12 @@ namespace p
 	using ValueOrRef = typename std::conditional<ShouldPassByValue<T>, T, const T&>::type;
 
 	template<typename T>
-	concept IsRValueRef = Internal::IsRValueReference<T>::value;
+	concept IsRValueRef = Internal::TIsRValueReference<T>::value;
 	template<typename T>
-	concept IsLValueRef = Internal::IsLValueReference<T>::value;
+	concept IsLValueRef = Internal::TIsLValueReference<T>::value;
+
+	template<typename T>
+	concept IsChar = Internal::TIsChar<T>::value;
 
 	template<typename T>
 	struct HasTypeMember
@@ -186,6 +205,19 @@ namespace p
 
 	public:
 		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
+	};
+
+	template<typename T>
+	struct HasSuperMember
+	{
+	private:
+		template<typename V>
+		static void Impl(decltype(typename V::Super(), int()));
+		template<typename V>
+		static bool Impl(char);
+
+	public:
+		static const bool value = IsVoid<decltype(Impl<T>(0))>;
 	};
 
 	template<typename T>

@@ -5,7 +5,7 @@
 #include "PipeArrays.h"
 
 
-namespace p::core
+namespace p
 {
 	class BitArray
 	{
@@ -264,9 +264,4 @@ namespace p::core
 		}
 		return -1;
 	}
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

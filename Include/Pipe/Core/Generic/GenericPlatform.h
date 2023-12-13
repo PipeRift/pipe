@@ -3,6 +3,8 @@
 
 #include "Pipe/Export.h"
 
+#include <cstdint>
+
 
 namespace p::core
 {
@@ -34,21 +36,6 @@ namespace p::core
 	 */
 	struct PIPE_API GenericPlatformTypes
 	{
-		// Unsigned base types.
-		using uint8  = unsigned char;         // 8-bit  unsigned.
-		using uint16 = unsigned short int;    // 16-bit unsigned.
-		using uint32 = unsigned int;          // 32-bit unsigned.
-		using uint64 = unsigned long long;    // 64-bit unsigned.
-
-		// Signed base types.
-		using int8  = signed char;         // 8-bit  signed.
-		using int16 = signed short int;    // 16-bit signed.
-		using int32 = signed int;          // 32-bit signed.
-		using int64 = signed long long;    // 64-bit signed.
-
-		using float32 = float;
-		using float64 = double;
-
 		// Character types.
 		// An ANSI character - 8-bit fixed-width representation of 7-bit characters.
 		using AnsiChar = char;
@@ -78,10 +65,10 @@ namespace p::core
 		using TChar = AnsiChar;
 
 		// unsigned int the same size as a pointer
-		using uPtr = SelectIntPointerType<uint32, uint64, sizeof(void*)>::TIntPointer;
+		using uPtr = SelectIntPointerType<std::uint32_t, std::uint64_t, sizeof(void*)>::TIntPointer;
 
 		// signed int the same size as a pointer
-		using iPtr = SelectIntPointerType<int32, int64, sizeof(void*)>::TIntPointer;
+		using iPtr = SelectIntPointerType<std::int32_t, std::int64_t, sizeof(void*)>::TIntPointer;
 
 		// unsigned int the same size as a pointer
 		using sizet = uPtr;
@@ -89,7 +76,7 @@ namespace p::core
 		// signed int the same size as a pointer
 		using ssizet = iPtr;
 
-		using TYPE_OF_NULL    = int32;
+		using TYPE_OF_NULL    = std::int32_t;
 		using TYPE_OF_NULLPTR = decltype(nullptr);
 	};
 }    // namespace p::core

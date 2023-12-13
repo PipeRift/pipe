@@ -17,11 +17,11 @@ namespace p
 	{
 	private:
 		Type value;
-		bool isSet;
+		bool isSet = false;
 
 	public:
 		/** Construct an Type with no value; i.e. unset */
-		TOptional() : isSet(false) {}
+		TOptional() = default;
 
 		/** Construct an Type with a valid value. */
 		TOptional(const Type& value, bool isSet = true) : value{value}, isSet{isSet} {}

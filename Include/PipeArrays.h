@@ -1021,7 +1021,7 @@ namespace p
 #pragma region Removals
 	public:
 		/**
-		 * Delete all items that match another provided item
+		 * Delete the first item that match another provided item
 		 * @return number of deleted items
 		 */
 		i32 Remove(const Type& item, bool shouldShrink = true)

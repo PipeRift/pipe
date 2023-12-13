@@ -269,9 +269,38 @@ namespace p
 			return Length<TChar>(str);
 		}
 
-		PIPE_API TOptional<u32> ToU32(StringView str);
+		template<Number T>
+		TOptional<T> ToNumber(StringView str);
 
+		PIPE_API TOptional<float> ToFloat(StringView str);
+		PIPE_API TOptional<double> ToDouble(StringView str);
+		PIPE_API TOptional<u32> ToU32(StringView str);
 		PIPE_API TOptional<i32> ToI32(StringView str);
+		PIPE_API TOptional<u64> ToU64(StringView str);
+		PIPE_API TOptional<i64> ToI64(StringView str);
+
+		/** Begin ToNumber spetializations */
+		template<>
+		PIPE_API TOptional<float> ToNumber<float>(StringView str);
+		template<>
+		PIPE_API TOptional<double> ToNumber<double>(StringView str);
+		template<>
+		PIPE_API TOptional<u8> ToNumber<u8>(StringView str);
+		template<>
+		PIPE_API TOptional<i8> ToNumber<i8>(StringView str);
+		template<>
+		PIPE_API TOptional<u16> ToNumber<u16>(StringView str);
+		template<>
+		PIPE_API TOptional<i16> ToNumber<i16>(StringView str);
+		template<>
+		PIPE_API TOptional<u32> ToNumber<u32>(StringView str);
+		template<>
+		PIPE_API TOptional<i32> ToNumber<i32>(StringView str);
+		template<>
+		PIPE_API TOptional<u64> ToNumber<u64>(StringView str);
+		template<>
+		PIPE_API TOptional<i64> ToNumber<i64>(StringView str);
+		/** End ToNumber spetializations */
 
 		// END TChar API
 	}    // namespace Strings

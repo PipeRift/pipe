@@ -1,18 +1,18 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #if P_PLATFORM_LINUX
-#	include "Pipe/Core/Linux/LinuxPlatformProcess.h"
-#	include "Pipe/Core/PlatformMisc.h"
-#	include "Pipe/Core/String.h"
-#	include "Pipe/Core/FixedString.h"
-#	include "Pipe/Core/Log.h"
-#	include "Pipe/Files/Paths.h"
-#	include "Pipe/Files/Files.h"
+	#include "Pipe/Core/Linux/LinuxPlatformProcess.h"
+	#include "Pipe/Core/PlatformMisc.h"
+	#include "Pipe/Core/String.h"
+	#include "Pipe/Core/FixedString.h"
+	#include "Pipe/Core/Log.h"
+	#include "Pipe/Files/Paths.h"
+	#include "Pipe/Files/Files.h"
 
-#	include <unistd.h>
+	#include <unistd.h>
 
 
-namespace p::core
+namespace p
 {
 	StringView LinuxPlatformProcess::GetExecutableFile()
 	{
@@ -77,5 +77,5 @@ namespace p::core
 	{
 		return chdir(path.data()) == 0;
 	}
-}    // namespace p::core
+}    // namespace p
 #endif

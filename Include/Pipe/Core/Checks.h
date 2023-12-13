@@ -3,67 +3,56 @@
 #pragma once
 
 #include "Pipe/Core/Platform.h"
-
-#include <format>
+#include "Pipe/Core/STDFormat.h"
 
 
 namespace p::internal
 {
-	PIPE_API void FailedCheckError(const char* msg, sizet size);
+	PIPE_API void FailedCheckError(
+	    const AnsiChar* expr, const AnsiChar* file, u32 line, const char* text);
 
-	template<typename... Args>
-	void FailedCheckError(
-	    const AnsiChar* expr, const AnsiChar* file, u32 line, const char* format, Args... args)
+	inline void FailedCheckError(
+	    const AnsiChar* expr, const AnsiChar* file, u32 line, const std::string& text)
 	{
-		std::string msg;
-		if (!format)
-		{
-			msg = std::format("Failed check \"{}\" at {}:{}", expr, file, line);
-		}
-		else
-		{
-			const std::string descriptiveFormat =
-			    std::format("{} \n(Failed check \"{}\" at {}:{})", format, expr, file, line);
-			msg =
-			    std::vformat(descriptiveFormat, std::make_format_args(std::forward<Args>(args)...));
-		}
-		FailedCheckError(msg.c_str(), msg.size());
+		// Ensure string is not destroyed while using it
+		FailedCheckError(expr, file, line, text.c_str());
 	}
 }    // namespace p::internal
 
 
-#define EnsureImpl(capture, always, expression, ...)                                   \
-	(P_LIKELY(!!(expression)) || ([capture]() {                                        \
-		static bool executed = false;                                                  \
-		if (always || !executed)                                                       \
-		{                                                                              \
-			executed = true;                                                           \
-			return true;                                                               \
-		}                                                                              \
-		return false;                                                                  \
-	}()) && ([capture]() {                                                             \
-		p::internal::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
-		P_DEBUG_PLATFORM_BREAK();                                                      \
-		return false;                                                                  \
+#define EnsureImpl(capture, always, expression, text)                         \
+	(P_LIKELY(!!(expression)) || ([capture]() {                               \
+		static bool executed = false;                                         \
+		if (always || !executed)                                              \
+		{                                                                     \
+			executed = true;                                                  \
+			return true;                                                      \
+		}                                                                     \
+		return false;                                                         \
+	}()) && ([capture]() {                                                    \
+		p::internal::FailedCheckError(#expression, __FILE__, __LINE__, text); \
+		P_DEBUG_PLATFORM_BREAK();                                             \
+		return false;                                                         \
 	}()))
 
 #define Ensure(expression) EnsureImpl(, false, expression, "")
-#define EnsureMsg(expression, format, ...) EnsureImpl(&, false, expression, format, ##__VA_ARGS__)
+#define EnsureMsg(expression, msg, ...) \
+	EnsureImpl(&, false, expression, std::format(msg, ##__VA_ARGS__))
 
 #ifndef Check
 	#if P_RELEASE
 		#define CheckImpl(expression, ...)
 	#else
-		#define CheckImpl(expression, ...)                                                     \
-			if (!(expression)) [[unlikely]]                                                    \
-			{                                                                                  \
-				p::internal::FailedCheckError(#expression, __FILE__, __LINE__, ##__VA_ARGS__); \
-				P_DEBUG_PLATFORM_BREAK();                                                      \
+		#define CheckImpl(expression, text)                                           \
+			if (!(expression)) [[unlikely]]                                           \
+			{                                                                         \
+				p::internal::FailedCheckError(#expression, __FILE__, __LINE__, text); \
+				P_DEBUG_PLATFORM_BREAK();                                             \
 			}
 	#endif
 
 	#define Check(expression) CheckImpl(expression, "")
-	#define CheckMsg(expression, format, ...) CheckImpl(expression, format, ##__VA_ARGS__)
+	#define CheckMsg(expression, msg, ...) CheckImpl(expression, std::format(msg, ##__VA_ARGS__))
 #endif
 
 

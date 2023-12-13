@@ -292,8 +292,8 @@ namespace p
 			case MonthOfYear::December: MonthStr = TX("Dec"); break;
 		}
 
-		return Strings::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr.c_str(),
-		    GetDay(), MonthStr.c_str(), GetYear(), GetHour(), GetMinute(), GetSecond());
+		return Strings::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr, GetDay(),
+		    MonthStr, GetYear(), GetHour(), GetMinute(), GetSecond());
 	}
 
 

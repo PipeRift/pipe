@@ -7,7 +7,7 @@
 #include "PipeTime.h"
 
 
-namespace p::core
+namespace p
 {
 	void GenericPlatformMisc::CreateGuid(Guid& guid)
 	{
@@ -37,4 +37,4 @@ namespace p::core
 		return Chrono::floor<Chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch())
 		    .count();
 	}
-}    // namespace p::core
+}    // namespace p

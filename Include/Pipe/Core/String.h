@@ -4,6 +4,7 @@
 
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Platform.h"
+#include "Pipe/Core/STDFormat.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/STLAllocator.h"
@@ -12,7 +13,6 @@
 
 #include <utf8.h>
 
-#include <format>
 #include <string>
 
 
@@ -68,7 +68,7 @@ namespace p
 		template<typename StringType, typename T>
 		inline void ToString(StringType& buffer, T value, FormatString<T> format = "{}")
 		{
-			std::format_to(std::back_inserter(buffer), format, p::Forward(value));
+			std::format_to(std::back_inserter(buffer), format, p::Forward<T>(value));
 		}
 
 		template<typename StringType, typename T>
@@ -159,6 +159,5 @@ namespace p
 	PIPE_API void Read(p::Reader& ct, p::String& val);
 	PIPE_API void Write(p::Writer& ct, const p::String& val);
 }    // namespace p
-
 
 #pragma warning(pop)

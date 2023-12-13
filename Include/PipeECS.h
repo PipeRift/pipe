@@ -96,6 +96,10 @@ namespace p
 		return GetIdVersion(id) == GetIdVersion(NoId);
 	}
 
+	PIPE_API String ToString(Id id);
+
+	PIPE_API Id IdFromString(String str);
+
 
 	/** IdRegistry tracks the existance and versioning of ids. Used internally by the ECS context */
 	struct PIPE_API IdRegistry
@@ -124,6 +128,7 @@ namespace p
 		bool Destroy(Id id);
 		bool Destroy(TView<const Id> ids);
 		bool IsValid(Id id) const;
+		bool WasRemoved(Id id) const;
 
 		u32 Size() const
 		{
@@ -1055,6 +1060,7 @@ namespace p
 		}
 
 		bool IsValid(Id id) const;
+		bool WasRemoved(Id id) const;
 		bool IsOrphan(const Id id) const;
 
 		template<typename Callback>
@@ -2173,3 +2179,18 @@ namespace p
 		return *ptr.GetUnsafe<Static>();
 	}
 }    // namespace p
+
+template<>
+struct std::formatter<p::Id> : public std::formatter<p::u64>
+{
+	template<typename FormatContext>
+	auto format(p::Id id, FormatContext& ctx)
+	{
+		if (id == p::NoId)
+		{
+			return std::format_to(ctx.out(), "none");
+		}
+		return std::vformat_to(
+		    ctx.out(), "{}:{}", std::make_format_args(p::GetIdIndex(id), p::GetIdVersion(id)));
+	}
+};
