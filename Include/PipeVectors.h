@@ -1038,7 +1038,7 @@ struct std::formatter<p::Vec<2, T>>
 	}
 
 	template<typename FormatContext>
-	auto format(const p::Vec<2, T>& v, FormatContext& ctx)
+	auto format(const p::Vec<2, T>& v, FormatContext& ctx) const
 	{
 		return std::vformat_to(ctx.out(), formatStr, std::make_format_args(v.x, v.y));
 	}
@@ -1072,7 +1072,7 @@ struct std::formatter<p::Vec<3, T>>
 		return end;
 	}
 	template<typename FormatContext>
-	auto format(const p::Vec<3, T>& v, FormatContext& ctx)
+	auto format(const p::Vec<3, T>& v, FormatContext& ctx) const
 	{
 		return vformat_to(ctx.out(), formatStr, std::make_format_args(v.x, v.y, v.z));
 	}

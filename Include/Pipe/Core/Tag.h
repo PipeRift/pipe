@@ -100,7 +100,7 @@ template<>
 struct std::formatter<p::Tag> : public std::formatter<p::StringView>
 {
 	template<typename FormatContext>
-	auto format(const p::Tag& name, FormatContext& ctx)
+	auto format(const p::Tag& name, FormatContext& ctx) const
 	{
 		const p::StringView nameStr{name.AsString()};
 		return formatter<p::StringView>::format(nameStr, ctx);

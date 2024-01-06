@@ -81,7 +81,7 @@ template<>
 struct std::formatter<p::TypeId> : public std::formatter<p::u64>
 {
 	template<typename FormatContext>
-	auto format(const p::TypeId& typeId, FormatContext& ctx)
+	auto format(const p::TypeId& typeId, FormatContext& ctx) const
 	{
 		return formatter<p::u64>::format(typeId.GetId(), ctx);
 	}

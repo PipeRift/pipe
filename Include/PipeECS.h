@@ -2186,7 +2186,7 @@ template<>
 struct std::formatter<p::Id> : public std::formatter<p::u64>
 {
 	template<typename FormatContext>
-	auto format(p::Id id, FormatContext& ctx)
+	auto format(p::Id id, FormatContext& ctx) const
 	{
 		if (id == p::NoId)
 		{
