@@ -59,7 +59,7 @@ P_REFLECT_NATIVE_TYPE(p::Path);
 struct std::formatter<p::Path> : public std::formatter<p::PathView>
 {
     template <typename FormatContext>
-    auto format(const p::Path& path, FormatContext& ctx)
+    auto format(const p::Path& path, FormatContext& ctx) const
     {
         return formatter<p::PathView>::format(p::ToPathView(path), ctx);
     }
