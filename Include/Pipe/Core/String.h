@@ -96,6 +96,8 @@ namespace p
 		PIPE_API void RemoveFromStart(String& str, sizet size);
 		PIPE_API void RemoveFromEnd(String& str, sizet size);
 
+		PIPE_API bool RemoveCharFromEnd(String& str, TChar c);
+
 		PIPE_API i32 Split(const String& str, TArray<String>& tokens, const TChar delim);
 
 		PIPE_API bool Split(const String& str, String& a, String& b, const TChar* delim);

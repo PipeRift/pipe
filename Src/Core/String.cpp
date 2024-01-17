@@ -66,6 +66,16 @@ namespace p::Strings
 		str.resize(str.size() - size);
 	}
 
+	bool RemoveCharFromEnd(String& str, TChar c)
+	{
+		if (EndsWith(str, c))
+		{
+			str.resize(str.size() - 1);
+			return true;
+		}
+		return false;
+	}
+
 	i32 Split(const String& str, TArray<String>& tokens, const TChar delim)
 	{
 		sizet current, previous = 0;
