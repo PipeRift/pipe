@@ -189,6 +189,11 @@ namespace p
 			return *reinterpret_cast<TArrayIterator<const Type>*>(this);
 		}
 
+		constexpr operator Type*() const
+		{
+			return ptr;
+		}
+
 
 	private:
 		constexpr void Verify() const
