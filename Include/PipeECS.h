@@ -567,23 +567,25 @@ namespace p
 		template<typename... Args>
 		auto Add(Id id, Args&&... args) -> Select<p::IsEmpty<T>, void, T&>
 		{
-			if constexpr (!p::IsEmpty<T>)
+			if (Has(id))
 			{
-				if (Has(id))
+				if constexpr (!p::IsEmpty<T>)
 				{
 					return (Get(id) = T{Forward<Args>(args)...});
 				}
 			}
-
-			const auto index = EmplaceId(id, false);
-			if constexpr (!p::IsEmpty<T>)
+			else
 			{
-				data.Reserve(index + 1u);
-				T* const value = data.Insert(index, Forward<Args>(args)...);
+				const auto index = EmplaceId(id, false);
+				if constexpr (!p::IsEmpty<T>)
+				{
+					data.Reserve(index + 1u);
+					T* const value = data.Insert(index, Forward<Args>(args)...);
+					OnAdded({id});
+					return *value;
+				}
 				OnAdded({id});
-				return *value;
 			}
-			OnAdded({id});
 		}
 
 		template<typename It>
