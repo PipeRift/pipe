@@ -1138,11 +1138,15 @@ namespace p
 		bool RemoveStatic(TypeId typeId);
 
 		template<typename Static>
-		Static& SetStatic(Static&& value = {});
+		Static& SetStatic();
+		template<typename Static>
+		Static& SetStatic(Static&& value);
 		template<typename Static>
 		Static& SetStatic(const Static& value);
 		template<typename Static>
-		Static& GetOrSetStatic(Static&& newValue = {});
+		Static& GetOrSetStatic();
+		template<typename Static>
+		Static& GetOrSetStatic(Static&& newValue);
 		template<typename Static>
 		Static& GetOrSetStatic(const Static& newValue);
 		template<typename Static>
@@ -2144,10 +2148,18 @@ namespace p
 	}
 
 	template<typename Static>
+	inline Static& EntityContext::SetStatic()
+	{
+		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
+		ptr         = MakeOwned<Static>();
+		return *ptr.GetUnsafe<Static>();
+	}
+
+	template<typename Static>
 	inline Static& EntityContext::SetStatic(Static&& value)
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
-		ptr         = MakeOwned<Static>(Forward<Static>(value));
+		ptr         = MakeOwned<Static>(p::Forward<Static>(value));
 		return *ptr.GetUnsafe<Static>();
 	}
 
@@ -2156,6 +2168,18 @@ namespace p
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
 		ptr         = MakeOwned<Static>(value);
+		return *ptr.GetUnsafe<Static>();
+	}
+
+	template<typename Static>
+	inline Static& EntityContext::GetOrSetStatic()
+	{
+		bool bAdded = false;
+		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
+		if (bAdded)
+		{
+			ptr = MakeOwned<Static>();
+		}
 		return *ptr.GetUnsafe<Static>();
 	}
 

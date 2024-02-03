@@ -5,48 +5,24 @@
 #include "Pipe/Core/Checks.h"
 
 
-namespace p::files
+namespace p
 {
-	efsw::FileWatcher FileWatcher::fileWatcher{};
-
-
-	void FileWatcher::Listener::handleFileAction(FileWatchId watchid, const std::string& dir,
+	void FileWatchListener::handleFileAction(FileWatchId watchid, const std::string& dir,
 	    const std::string& filename, efsw::Action action, std::string oldFilename)
 	{
-		// NOTE: Just for testing
-		if (self.allowedExtensions.Size())
+		/*if (allowedExtensions.Size())
 		{
-			bool validExtension = false;
-			for (const auto& extension : self.allowedExtensions)
-			{
-				validExtension |= Strings::EndsWith(filename, extension);
-			}
-			if (!validExtension)
-			{
-				return;
-			}
-		}
-
-		switch (action)
-		{
-			case efsw::Actions::Add:
-				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Added"
-				          << std::endl;
-				break;
-			case efsw::Actions::Delete:
-				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Delete"
-				          << std::endl;
-				break;
-			case efsw::Actions::Modified:
-				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Modified"
-				          << std::endl;
-				break;
-			case efsw::Actions::Moved:
-				std::cout << "DIR (" << dir << ") FILE (" << filename << ") has event Moved from ("
-				          << oldFilename << ")" << std::endl;
-				break;
-			default: std::cout << "Should never happen!" << std::endl;
-		}
+		    bool validExtension = false;
+		    for (const auto& extension : allowedExtensions)
+		    {
+		        validExtension |= Strings::EndsWith(filename, extension);
+		    }
+		    if (!validExtension)
+		    {
+		        return;
+		    }
+		}*/
+		callback(dir, filename, FileWatchAction(action), oldFilename);
 	}
 
 	FileWatcher::~FileWatcher()
@@ -54,43 +30,38 @@ namespace p::files
 		Reset();
 	}
 
+
 	void FileWatcher::StartAsync()
 	{
 		fileWatcher.watch();
 	}
 
-	FileWatchId FileWatcher::AddPath(StringView path, bool recursive)
+	FileWatchId FileWatcher::ListenPath(StringView path, bool recursive, FileWatchCallback callback)
 	{
-		FileWatchId id = fileWatcher.addWatch(std::string{path}, &listener, recursive);
-		watches.Add(id);
-		return id;
+		auto listener       = MakeOwned<FileWatchListener>(Move(callback));
+		FileWatchId watchId = fileWatcher.addWatch(std::string{path}, listener.Get(), recursive);
+		listener->watchId   = watchId;
+		listeners.Add(Move(listener));
+		return watchId;
 	}
 
-	void FileWatcher::RemovePath(StringView path)
-	{
-		fileWatcher.removeWatch(std::string{path});
-	}
-
-	void FileWatcher::RemovePath(FileWatchId id)
+	void FileWatcher::StopListeningPath(FileWatchId id)
 	{
 		fileWatcher.removeWatch(id);
-		watches.Remove(id);
+		listeners.RemoveIfSwap([id](const auto& listener) {
+			return !listener || listener->watchId == id;
+		});
 	}
 
 	void FileWatcher::Reset()
 	{
-		for (FileWatchId id : watches)
+		for (const auto& listener : listeners)
 		{
-			fileWatcher.removeWatch(id);
+			if (listener)
+			{
+				fileWatcher.removeWatch(listener->watchId);
+			}
 		}
-		watches.Clear();
+		listeners.Clear();
 	}
-
-	void FileWatcher::AddExtension(StringView extension)
-	{
-		if (EnsureMsg(extension.size() <= 7, "A filtered extension can't be longer than 8 chars"))
-		{
-			allowedExtensions.AddUnique(extension);
-		}
-	}
-}    // namespace p::files
+}    // namespace p
