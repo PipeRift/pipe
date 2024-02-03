@@ -7,7 +7,7 @@
 
 namespace p
 {
-	void FileWatchListener::handleFileAction(FileWatchId watchid, const std::string& dir,
+	void FileWatchListener::handleFileAction(FileListenerId watchid, const std::string& dir,
 	    const std::string& filename, efsw::Action action, std::string oldFilename)
 	{
 		/*if (allowedExtensions.Size())
@@ -36,16 +36,17 @@ namespace p
 		fileWatcher.watch();
 	}
 
-	FileWatchId FileWatcher::ListenPath(StringView path, bool recursive, FileWatchCallback callback)
+	FileListenerId FileWatcher::ListenPath(
+	    StringView path, bool recursive, FileWatchCallback callback)
 	{
-		auto listener       = MakeOwned<FileWatchListener>(Move(callback));
-		FileWatchId watchId = fileWatcher.addWatch(std::string{path}, listener.Get(), recursive);
-		listener->watchId   = watchId;
+		auto listener          = MakeOwned<FileWatchListener>(Move(callback));
+		FileListenerId watchId = fileWatcher.addWatch(std::string{path}, listener.Get(), recursive);
+		listener->watchId      = watchId;
 		listeners.Add(Move(listener));
 		return watchId;
 	}
 
-	void FileWatcher::StopListeningPath(FileWatchId id)
+	void FileWatcher::StopListening(FileListenerId id)
 	{
 		fileWatcher.removeWatch(id);
 		listeners.RemoveIfSwap([id](const auto& listener) {

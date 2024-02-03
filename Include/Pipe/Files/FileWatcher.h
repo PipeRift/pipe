@@ -19,7 +19,7 @@ namespace p
 		Moved    = efsw::Actions::Moved
 	};
 
-	using FileWatchId       = efsw::WatchID;
+	using FileListenerId    = efsw::WatchID;
 	using FileWatchCallback = std::function<void(
 	    StringView path, StringView filename, FileWatchAction action, StringView oldFilename)>;
 
@@ -29,19 +29,19 @@ namespace p
 		friend struct FileWatcher;
 
 	private:
-		FileWatchId watchId;
+		FileListenerId watchId;
 		FileWatchCallback callback;
 
 	public:
 		FileWatchListener(FileWatchCallback callback) : callback{Move(callback)} {}
 
-		bool operator==(FileWatchId other) const
+		bool operator==(FileListenerId other) const
 		{
 			return watchId == other;
 		}
 
 	private:
-		void handleFileAction(FileWatchId watchid, const std::string& dir,
+		void handleFileAction(FileListenerId watchid, const std::string& dir,
 		    const std::string& filename, efsw::Action action, std::string oldFilename) override;
 	};
 
@@ -57,8 +57,8 @@ namespace p
 		FileWatcher(const FileWatcher& other)            = delete;
 		FileWatcher& operator=(const FileWatcher& other) = delete;
 
-		FileWatchId ListenPath(StringView path, bool recursive, FileWatchCallback callback);
-		void StopListeningPath(FileWatchId id);
+		FileListenerId ListenPath(StringView path, bool recursive, FileWatchCallback callback);
+		void StopListening(FileListenerId id);
 		void Reset();
 
 		void StartAsync();
