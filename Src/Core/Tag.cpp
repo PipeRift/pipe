@@ -162,7 +162,7 @@ namespace p
 	{
 		if (str)
 		{
-			auto* const header = GetTagHeader(str);
+			TagHeader* const header = GetTagHeader(str);
 			--header->activeTags;
 			if (table.automaticFlush && header->activeTags == 0) [[unlikely]]
 			{
