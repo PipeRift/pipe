@@ -1,7 +1,6 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Function.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/Block.h"
@@ -23,10 +22,10 @@ namespace p
 		using FreeSignature         = void(Arena*, void* ptr, sizet size);
 
 	private:
-		TFunction<AllocSignature> doAlloc;
-		TFunction<AllocAlignedSignature> doAllocAligned;
-		TFunction<ResizeSignature> doRealloc;
-		TFunction<FreeSignature> doFree;
+		AllocSignature* doAlloc               = nullptr;
+		AllocAlignedSignature* doAllocAligned = nullptr;
+		ResizeSignature* doRealloc            = nullptr;
+		FreeSignature* doFree                 = nullptr;
 
 
 		template<typename T>
