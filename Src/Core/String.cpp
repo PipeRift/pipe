@@ -65,6 +65,13 @@ namespace p::Strings
 	{
 		str.resize(str.size() - size);
 	}
+	void RemoveFromEnd(String& str, StringView subStr)
+	{
+		if (EndsWith(str, subStr))
+		{
+			RemoveFromEnd(str, subStr.size());
+		}
+	}
 
 	bool RemoveCharFromEnd(String& str, TChar c)
 	{
