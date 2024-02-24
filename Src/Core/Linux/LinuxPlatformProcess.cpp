@@ -57,11 +57,11 @@ namespace p
 				struct passwd* userInfo = getpwuid(geteuid());
 				if (userInfo && userInfo->pw_dir && userInfo->pw_dir[0] != '\0')
 				{
-					userHomePath = Strings::Convert<String>(TStringView<char>{UserInfo->pw_dir});
+					userHomePath = Strings::Convert<String>(TStringView<char>{userInfo->pw_dir});
 				}
 				else
 				{
-					userHomePath = LinuxPlatformProcess::UserTempDir();
+					userHomePath = GetUserTempPath();
 					p::Warning(
 					    "Could get determine user home directory. Using temporary directory: {}",
 					    userHomePath);
@@ -79,10 +79,10 @@ namespace p
 			FILE* FilePtr = popen("xdg-user-dir DOCUMENTS", "r");
 			if (FilePtr)
 			{
-				char docPath[GetMaxPathLength()];
-				if (fgets(docPath, GetMaxPathLength(), FilePtr) != nullptr)
+				char docPath[PlatformMisc::GetMaxPathLength()];
+				if (fgets(docPath, PlatformMisc::GetMaxPathLength(), FilePtr) != nullptr)
 				{
-					size_t docLen = strlen(DocPath) - 1;
+					size_t docLen = strlen(docPath) - 1;
 					if (docLen > 0)
 					{
 						docPath[cocLen] = '\0';
@@ -117,10 +117,10 @@ namespace p
 		static String appSettingsPath;
 		if (appSettingsPath.empty())
 		{
-			appSettingsPath = PlatformProcess::GetUserHome();
+			appSettingsPath = PlatformProcess::GetUserHomePath();
 			AppendToPath(appSettingsPath, ".config/");
 		}
-		return Result;
+		return appSettingsPath;
 	}
 
 	void LinuxPlatformProcess::ShowFolder(StringView path)

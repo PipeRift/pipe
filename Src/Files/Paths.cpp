@@ -664,7 +664,7 @@ namespace p
 		const TChar* first    = path.data();
 		const TChar* last     = first + path.size();
 		const TChar* filename = FindFilename(first, last);
-		path.erase(static_cast<size_t>(filename - first));
+		path.erase(static_cast<sizet>(filename - first));
 	}
 
 	void RemoveFilename(StringView& path)
@@ -672,7 +672,7 @@ namespace p
 		const TChar* first    = path.data();
 		const TChar* last     = first + path.size();
 		const TChar* filename = FindFilename(first, last);
-		path                  = {first, filename - first};
+		path                  = StringView{first, static_cast<sizet>(filename - first)};
 	}
 
 	StringView GetStem(StringView path)

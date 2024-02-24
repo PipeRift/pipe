@@ -67,7 +67,25 @@ namespace p
 		return GetExecutablePath();
 	}
 
-	StringView WindowsPlatformProcess::GetUserPath() {}
+	StringView WindowsPlatformProcess::GetUserPath()
+	{
+		static String userPath;
+		if (userPath.empty())
+		{
+			// get the local AppData directory
+			WideChar* path = nullptr;
+			HRESULT Ret    = SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &path);
+			if (SUCCEEDED(Ret))
+			{
+				// make the base user dir path
+				userPath = Strings::Convert<String>(TStringView<WideChar>{path});
+				std::replace(userPath.begin(), userPath.end(), '\\', '/');
+				userPath.push_back('/');
+				CoTaskMemFree(path);
+			}
+		}
+		return userPath;
+	}
 
 	StringView WindowsPlatformProcess::GetUserSettingsPath()
 	{
