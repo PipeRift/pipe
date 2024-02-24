@@ -47,7 +47,7 @@ jobs:
           - name: macos-clang
             os: macos-14
             os-name: macos
-            compiler: clang
+            compiler: clang-16
             cxx: clang++
             cc: clang
           #- name: macos-gcc
