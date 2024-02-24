@@ -10,12 +10,12 @@ namespace p::files
 	class LambdaFileIterator
 	{
 	public:
-		TFunction<bool(const Path&)> callback;
+		TFunction<bool(StringView)> callback;
 		FileIterator fileIterator;
 
 
 		LambdaFileIterator() noexcept = default;
-		explicit LambdaFileIterator(const Path& path, TFunction<bool(const Path&)> callback);
+		explicit LambdaFileIterator(StringView path, TFunction<bool(StringView)> callback);
 
 		LambdaFileIterator(const LambdaFileIterator&) noexcept = default;
 		LambdaFileIterator(LambdaFileIterator&&) noexcept      = default;
@@ -68,17 +68,17 @@ namespace p::files
 
 	template<typename FileIterator>
 	inline LambdaFileIterator<FileIterator>::LambdaFileIterator(
-	    const Path& path, TFunction<bool(const Path&)> callback)
+	    StringView path, TFunction<bool(StringView)> callback)
 	    : callback{p::Move(callback)}
 	{
 		if (!files::Exists(path) || !files::IsFolder(path))
 		{
 			return;
 		}
-		fileIterator = FileIterator(path);
+		fileIterator = FileIterator(ToSTDPath(path));
 
 		// Iterate to first found asset
-		if (!callback(fileIterator->path()))
+		if (!callback(ToString(fileIterator->path())))
 		{
 			FindNext();
 		}
@@ -92,7 +92,7 @@ namespace p::files
 
 		fileIterator.increment(error);
 		// Loop until end or until we find an asset
-		while (fileIterator != endIt && !callback(fileIterator->path()))
+		while (fileIterator != endIt && !callback(ToString(fileIterator->path())))
 		{
 			fileIterator.increment(error);
 		}

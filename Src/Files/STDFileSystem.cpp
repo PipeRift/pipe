@@ -12,7 +12,7 @@ namespace p
 	{
 		p::String str;
 		ct.Serialize(str);
-		value = ToPath(str);
+		value = ToSTDPath(str);
 	}
 
 	void Write(p::Writer& ct, const p::Path& value)

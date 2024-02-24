@@ -10,9 +10,14 @@ namespace p::core
 {
 	struct PIPE_API GenericPlatformProcess
 	{
-		static StringView GetExecutableFile()              = delete;
-		static StringView GetExecutablePath()              = delete;
-		static StringView GetBasePath()                    = delete;
+		static StringView GetExecutableFile() = delete;
+		static StringView GetExecutablePath() = delete;
+		static StringView GetBasePath()       = delete;
+
+		static StringView GetUserPath();
+		static StringView GetUserSettingsPath();
+		static StringView GetAppSettingsPath();
+
 		static String GetCurrentWorkingPath()              = delete;
 		static void SetCurrentWorkingPath(StringView path) = delete;
 

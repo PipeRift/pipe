@@ -79,7 +79,7 @@ target_link_libraries(Pipe PRIVATE
 )
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)
-    target_compile_definitions(Pipe PUBLIC P_ENABLE_ALLOCATION_STACKS=1)
+    target_compile_definitions(Pipe PUBLIC P_ENABLE_ALLOCATION_STACKS=0)
 endif()
 
 pipe_target_enable_CPP20(Pipe)

@@ -11,6 +11,8 @@
 	#include "Pipe/Core/Log.h"
 
 	#include <Windows.h>
+	#include <combaseapi.h>
+	#include <shlobj.h> /* SHGetKnownFolderPath(), FOLDERID_... */
 
 
 namespace p
@@ -63,6 +65,47 @@ namespace p
 	StringView WindowsPlatformProcess::GetBasePath()
 	{
 		return GetExecutablePath();
+	}
+
+	StringView WindowsPlatformProcess::GetUserPath() {}
+
+	StringView WindowsPlatformProcess::GetUserSettingsPath()
+	{
+		static String userSettingsPath;
+		if (userSettingsPath.size() <= 0)
+		{
+			// get the local AppData directory
+			WideChar* path = nullptr;
+			HRESULT Ret    = SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &path);
+			if (SUCCEEDED(Ret))
+			{
+				// make the base user dir path
+				userSettingsPath = Strings::Convert<String>(TStringView<WideChar>{path});
+				std::replace(userSettingsPath.begin(), userSettingsPath.end(), '\\', '/');
+				userSettingsPath.push_back('/');
+				CoTaskMemFree(path);
+			}
+		}
+		return userSettingsPath;
+	}
+
+	StringView WindowsPlatformProcess::GetAppSettingsPath()
+	{
+		static String appSettingsPath;
+		if (!appSettingsPath.size())
+		{
+			// get the local AppData directory
+			WideChar* path = nullptr;
+			HRESULT Ret    = SHGetKnownFolderPath(FOLDERID_ProgramData, 0, NULL, &path);
+			if (SUCCEEDED(Ret))
+			{
+				// make the base user dir path
+				appSettingsPath = Strings::Convert<String>(TStringView<WideChar>{path});
+				std::replace(appSettingsPath.begin(), appSettingsPath.end(), '\\', '/');
+				CoTaskMemFree(path);
+			}
+		}
+		return appSettingsPath;
 	}
 
 	String WindowsPlatformProcess::GetCurrentWorkingPath()

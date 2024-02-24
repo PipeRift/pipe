@@ -440,6 +440,11 @@ namespace p
 		return PlatformProcess::GetBasePath();
 	}
 
+	StringView GetUserSettingsPath()
+	{
+		return PlatformProcess::GetUserSettingsPath();
+	}
+
 #if P_PLATFORM_WINDOWS
 	bool HasDriveLetterPrefix(const TChar* const first, const TChar* const last)
 	{
@@ -654,6 +659,22 @@ namespace p
 		return !GetFilename(path).empty();
 	}
 
+	void RemoveFilename(String& path)
+	{
+		const TChar* first    = path.data();
+		const TChar* last     = first + path.size();
+		const TChar* filename = FindFilename(first, last);
+		path.erase(static_cast<size_t>(filename - first));
+	}
+
+	void RemoveFilename(StringView& path)
+	{
+		const TChar* first    = path.data();
+		const TChar* last     = first + path.size();
+		const TChar* filename = FindFilename(first, last);
+		path                  = {first, filename - first};
+	}
+
 	StringView GetStem(StringView path)
 	{
 		const TChar* first       = path.data();
@@ -743,6 +764,15 @@ namespace p
 		String result{base};
 		AppendToPath(result, relative);
 		AppendToPath(result, relative2);
+		return Move(result);
+	}
+	String JoinPaths(
+	    StringView base, StringView relative, StringView relative2, StringView relative3)
+	{
+		String result{base};
+		AppendToPath(result, relative);
+		AppendToPath(result, relative2);
+		AppendToPath(result, relative3);
 		return Move(result);
 	}
 	String JoinPaths(TView<StringView> paths)
@@ -901,14 +931,14 @@ namespace p
 	{
 		// TODO: Implement natively
 		// https://github.com/boostorg/filesystem/blob/develop/src/operations.cpp#L2407
-		path = ToString(std::filesystem::canonical(ToPath(path)));
+		path = ToString(std::filesystem::canonical(ToSTDPath(path)));
 	}
 
 	void SetWeaklyCanonical(String& path)
 	{
 		// TODO: Implement natively
 		// https://github.com/boostorg/filesystem/blob/develop/src/operations.cpp#L4434
-		path = ToString(std::filesystem::weakly_canonical(ToPath(path)));
+		path = ToString(std::filesystem::weakly_canonical(ToSTDPath(path)));
 	}
 
 	String ToString(const Path& path)
@@ -916,7 +946,7 @@ namespace p
 		return path.string<TChar, std::char_traits<TChar>, std::allocator<TChar>>();
 	}
 
-	Path ToPath(StringView pathStr)
+	Path ToSTDPath(StringView pathStr)
 	{
 		Path path;
 		path.assign(pathStr);

@@ -12,6 +12,12 @@ namespace p::core
 		static StringView GetExecutableFile();
 		static StringView GetExecutablePath();
 		static StringView GetBasePath();
+
+		static StringView GetUserHomePath();
+		static StringView GetUserPath();
+		static StringView GetUserSettingsPath();
+		static StringView GetAppSettingsPath();
+
 		static String GetCurrentWorkingPath();
 		static bool SetCurrentWorkingPath(StringView path);
 

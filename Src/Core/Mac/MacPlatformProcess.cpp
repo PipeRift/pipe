@@ -46,6 +46,58 @@ namespace p
 		return GetExecutablePath();
 	}
 
+
+	StringView MacPlatformProcess::GetUserHomePath()
+	{
+		static String userHomePath;
+		if (userHomePath.empty())
+		{
+			@autoreleasepool
+			{
+				userHomePath = String{[NSHomeDirectory() UTF8String]};
+			}
+		}
+		return userHomePath;
+	}
+
+	StringView MacPlatformProcess::GetUserPath()
+	{
+		static String userPath;
+		if (userPath.empty())
+		{
+			@autoreleasepool
+			{
+				NSString* DocumentsFolder = [NSSearchPathForDirectoriesInDomains(
+				    NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+				userPath                  = String{[DocumentsFolder UTF8String]};
+				userPath.push_back('/');
+			}
+		}
+		return userPath;
+	}
+
+	StringView MacPlatformProcess::GetUserSettingsPath()
+	{
+		return GetAppSettingsPath();
+	}
+
+	StringView MacPlatformProcess::GetAppSettingsPath()
+	{
+		static String appSettingsPath;
+		if (appSettingsPath.empty())
+		{
+			@autoreleasepool
+			{
+				NSString* ApplicationSupportFolder = [NSSearchPathForDirectoriesInDomains(
+				    NSApplicationSupportDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+				userPath                           = String{[ApplicationSupportFolder UTF8String]};
+				userPath.push_back('/');
+			}
+		}
+		return appSettingsPath;
+	}
+
+
 	String MacPlatformProcess::GetCurrentWorkingPath()
 	{
 		String path;

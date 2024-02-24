@@ -41,6 +41,88 @@ namespace p
 		return GetExecutablePath();
 	}
 
+	StringView LinuxPlatformProcess::GetUserHomePath()
+	{
+		static String userHomePath;
+		if (userHomePath.size() <= 0)
+		{
+			// Try user $HOME var first
+			const char* varValue = secure_getenv("HOME");
+			if (varValue && varValue[0] != '\0')
+			{
+				userHomePath = Strings::Convert<String>(TStringView<char>{varValue});
+			}
+			else
+			{
+				struct passwd* userInfo = getpwuid(geteuid());
+				if (userInfo && userInfo->pw_dir && userInfo->pw_dir[0] != '\0')
+				{
+					userHomePath = Strings::Convert<String>(TStringView<char>{UserInfo->pw_dir});
+				}
+				else
+				{
+					userHomePath = LinuxPlatformProcess::UserTempDir();
+					p::Warning(
+					    "Could get determine user home directory. Using temporary directory: {}",
+					    userHomePath);
+				}
+			}
+		}
+		return userHomePath;
+	}
+
+	StringView LinuxPlatformProcess::GetUserPath()
+	{
+		static String userPath;
+		if (userPath.size() <= 0)
+		{
+			FILE* FilePtr = popen("xdg-user-dir DOCUMENTS", "r");
+			if (FilePtr)
+			{
+				char docPath[GetMaxPathLength()];
+				if (fgets(docPath, GetMaxPathLength(), FilePtr) != nullptr)
+				{
+					size_t docLen = strlen(DocPath) - 1;
+					if (docLen > 0)
+					{
+						DocPath[DocLen] = '\0';
+						userPath        = Strings::Convert<String>(TStringView<char>{docPath});
+						userPath.push_back('/');
+					}
+				}
+				pclose(FilePtr);
+			}
+
+			// if xdg-user-dir did not work, use $HOME
+			if (userPath.size <= 0)
+			{
+				userPath = FPlatformProcess::GetUserHomePath();
+				Paths::AppendToPath(userPath, "Documents");
+			}
+		}
+		return userPath;
+	}
+
+	StringView LinuxPlatformProcess::GetUserSettingsPath()
+	{
+		// Like on Mac we use the same folder for UserSettingsPath and AppSettingsPath
+		// $HOME/.config/
+		return GetAppSettingsPath();
+	}
+
+	StringView LinuxPlatformProcess::GetAppSettingsPath()
+	{
+		// Where pipe stores settings and configuration data.
+		// On linux this is $HOME/.config/
+		static String appSettingsPath;
+		if (appSettingsPath.size() <= 0)
+		{
+			appSettingsPath = FPlatformProcess::GetUserHome();
+			Paths::AppendToPath(appSettingsPath, ".config/");
+		}
+		return Result;
+	}
+
 	void LinuxPlatformProcess::ShowFolder(StringView path)
 	{
 		if (!files::Exists(path))
