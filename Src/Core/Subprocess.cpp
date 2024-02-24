@@ -17,7 +17,7 @@ extern char** environ;
 #endif
 
 
-namespace p::core
+namespace p
 {
 #if defined(_MSC_VER)
 	struct SubprocessInfo
@@ -858,4 +858,4 @@ namespace p::core
 			return nullptr;
 		}
 	}
-}    // namespace p::core
+}    // namespace p

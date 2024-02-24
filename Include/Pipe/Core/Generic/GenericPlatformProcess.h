@@ -6,7 +6,7 @@
 #include "Pipe/Export.h"
 
 
-namespace p::core
+namespace p
 {
 	struct PIPE_API GenericPlatformProcess
 	{
@@ -15,6 +15,8 @@ namespace p::core
 		static StringView GetBasePath()       = delete;
 
 		static StringView GetUserPath();
+		static StringView GetUserTempPath();
+		static StringView GetUserHomePath();
 		static StringView GetUserSettingsPath();
 		static StringView GetAppSettingsPath();
 
@@ -29,9 +31,4 @@ namespace p::core
 		}
 		static void ShowFolder(StringView path);
 	};
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

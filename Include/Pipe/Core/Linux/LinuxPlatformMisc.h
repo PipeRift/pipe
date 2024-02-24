@@ -18,8 +18,3 @@ namespace p
 
 	using PlatformMisc = LinuxPlatformMisc;
 }    // namespace p
-
-namespace p
-{
-	using namespace p::core;
-}

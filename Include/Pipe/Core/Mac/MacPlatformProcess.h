@@ -5,7 +5,7 @@
 #include "Pipe/Export.h"
 
 
-namespace p::core
+namespace p
 {
 	struct PIPE_API MacPlatformProcess : public GenericPlatformProcess
 	{
@@ -13,8 +13,9 @@ namespace p::core
 		static StringView GetExecutablePath();
 		static StringView GetBasePath();
 
-		static StringView GetUserHomePath();
 		static StringView GetUserPath();
+		static StringView GetUserTempPath();
+		static StringView GetUserHomePath();
 		static StringView GetUserSettingsPath();
 		static StringView GetAppSettingsPath();
 
@@ -24,9 +25,4 @@ namespace p::core
 		static void ShowFolder(StringView path);
 	};
 	using PlatformProcess = MacPlatformProcess;
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

@@ -41,16 +41,68 @@ namespace p
 		return GetExecutablePath();
 	}
 
+	StringView LinuxPlatformProcess::GetUserPath()
+	{
+		static String userPath;
+		if (userPath.empty())
+		{
+			FILE* FilePtr = popen("xdg-user-dir DOCUMENTS", "r");
+			if (FilePtr)
+			{
+				char docPath[PlatformMisc::GetMaxPathLength()];
+				if (fgets(docPath, PlatformMisc::GetMaxPathLength(), FilePtr) != nullptr)
+				{
+					size_t docLen = strlen(docPath) - 1;
+					if (docLen > 0)
+					{
+						docPath[docLen] = '\0';
+						userPath        = Strings::Convert<String>(TStringView<char>{docPath});
+						userPath.push_back('/');
+					}
+				}
+				pclose(FilePtr);
+			}
+
+			// if xdg-user-dir did not work, use $HOME
+			if (userPath.empty())
+			{
+				userPath = PlatformProcess::GetUserHomePath();
+				AppendToPath(userPath, "Documents");
+			}
+		}
+		return userPath;
+	}
+
+	StringView LinuxPlatformProcess::GetUserTempPath()
+	{
+		// Use $TMPDIR if its set otherwise fallback to /var/tmp as Windows defaults to %TEMP% which
+		// does not get cleared on reboot.
+		static String userTempPath;
+		if (userTempPath.empty())
+		{
+			const char* dirValue = secure_getenv("TMPDIR");
+			if (dirValue)
+			{
+				userTempPath = Strings::Convert<String>(TStringView<char>{dirValue});
+			}
+			else
+			{
+				userTempPath = "/var/tmp";
+			}
+		}
+		return userTempPath;
+	}
+
 	StringView LinuxPlatformProcess::GetUserHomePath()
 	{
 		static String userHomePath;
 		if (userHomePath.empty())
 		{
 			// Try user $HOME var first
-			const char* varValue = secure_getenv("HOME");
-			if (varValue && varValue[0] != '\0')
+			const char* dirValue = secure_getenv("HOME");
+			if (dirValue && dirValue[0] != '\0')
 			{
-				userHomePath = Strings::Convert<String>(TStringView<char>{varValue});
+				userHomePath = Strings::Convert<String>(TStringView<char>{dirValue});
 			}
 			else
 			{
@@ -69,38 +121,6 @@ namespace p
 			}
 		}
 		return userHomePath;
-	}
-
-	StringView LinuxPlatformProcess::GetUserPath()
-	{
-		static String userPath;
-		if (userPath.empty())
-		{
-			FILE* FilePtr = popen("xdg-user-dir DOCUMENTS", "r");
-			if (FilePtr)
-			{
-				char docPath[PlatformMisc::GetMaxPathLength()];
-				if (fgets(docPath, PlatformMisc::GetMaxPathLength(), FilePtr) != nullptr)
-				{
-					size_t docLen = strlen(docPath) - 1;
-					if (docLen > 0)
-					{
-						docPath[cocLen] = '\0';
-						userPath        = Strings::Convert<String>(TStringView<char>{docPath});
-						userPath.push_back('/');
-					}
-				}
-				pclose(FilePtr);
-			}
-
-			// if xdg-user-dir did not work, use $HOME
-			if (userPath.empty())
-			{
-				userPath = PlatformProcess::GetUserHomePath();
-				AppendToPath(userPath, "Documents");
-			}
-		}
-		return userPath;
 	}
 
 	StringView LinuxPlatformProcess::GetUserSettingsPath()

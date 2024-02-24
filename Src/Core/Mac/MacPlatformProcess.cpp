@@ -46,6 +46,15 @@ namespace p
 		return GetExecutablePath();
 	}
 
+	const TCHAR* MacPlatformProcess::GetUserTempPath()
+	{
+		static String userTempDir;
+		if (userTempDir.empty())
+		{
+			userTempDir = NSTemporaryDirectory();
+		}
+		return userTempDir;
+	}
 
 	StringView MacPlatformProcess::GetUserHomePath()
 	{

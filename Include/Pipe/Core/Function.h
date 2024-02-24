@@ -6,7 +6,7 @@
 #include <type_traits>
 
 
-namespace p::core
+namespace p
 {
 	template<typename>
 	struct TFunction;    // intentionally not defined
@@ -70,9 +70,4 @@ namespace p::core
 			return dispatcher != other.dispatcher || target != other.target;
 		}
 	};
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

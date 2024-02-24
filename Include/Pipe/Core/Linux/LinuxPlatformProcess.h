@@ -13,8 +13,9 @@ namespace p
 		static StringView GetExecutablePath();
 		static StringView GetBasePath();
 
-		static StringView GetUserHomePath();
 		static StringView GetUserPath();
+		static StringView GetUserTempPath();
+		static StringView GetUserHomePath();
 		static StringView GetUserSettingsPath();
 		static StringView GetAppSettingsPath();
 

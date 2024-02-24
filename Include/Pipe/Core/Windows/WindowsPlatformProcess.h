@@ -5,7 +5,7 @@
 #include "Pipe/Export.h"
 
 
-namespace p::core
+namespace p
 {
 	struct PIPE_API WindowsPlatformProcess : public GenericPlatformProcess
 	{
@@ -14,6 +14,7 @@ namespace p::core
 		static StringView GetBasePath();
 
 		static StringView GetUserPath();
+		static StringView GetUserTempPath();
 		static StringView GetUserSettingsPath();
 		static StringView GetAppSettingsPath();
 
@@ -23,9 +24,4 @@ namespace p::core
 		static void ShowFolder(StringView path);
 	};
 	using PlatformProcess = WindowsPlatformProcess;
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

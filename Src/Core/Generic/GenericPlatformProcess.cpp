@@ -6,9 +6,15 @@
 #include "Pipe/Core/PlatformProcess.h"
 
 
-namespace p::core
+namespace p
 {
 	StringView GenericPlatformProcess::GetUserPath()
+	{
+		// default to the base directory
+		return PlatformProcess::GetBasePath();
+	}
+
+	StringView GenericPlatformProcess::GetUserTempPath()
 	{
 		// default to the base directory
 		return PlatformProcess::GetBasePath();
@@ -30,4 +36,4 @@ namespace p::core
 	{
 		Error("ShowFolder not implemented on this platform");
 	}
-}    // namespace p::core
+}    // namespace p

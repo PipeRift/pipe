@@ -5,7 +5,7 @@
 #include "Pipe/Core/StringView.h"
 
 
-namespace p::core
+namespace p
 {
 	/**
 	 * Windows specific types
@@ -18,9 +18,4 @@ namespace p::core
 	};
 
 	using PlatformMisc = WindowsPlatformMisc;
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p
