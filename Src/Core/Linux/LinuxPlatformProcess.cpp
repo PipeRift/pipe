@@ -10,7 +10,7 @@
 	#include "Pipe/Files/Files.h"
 
 	#include <unistd.h>
-
+	#include <pwd.h>
 
 namespace p
 {
@@ -44,7 +44,7 @@ namespace p
 	StringView LinuxPlatformProcess::GetUserHomePath()
 	{
 		static String userHomePath;
-		if (userHomePath.size() <= 0)
+		if (userHomePath.empty())
 		{
 			// Try user $HOME var first
 			const char* varValue = secure_getenv("HOME");
@@ -74,7 +74,7 @@ namespace p
 	StringView LinuxPlatformProcess::GetUserPath()
 	{
 		static String userPath;
-		if (userPath.size() <= 0)
+		if (userPath.empty())
 		{
 			FILE* FilePtr = popen("xdg-user-dir DOCUMENTS", "r");
 			if (FilePtr)
@@ -85,7 +85,7 @@ namespace p
 					size_t docLen = strlen(DocPath) - 1;
 					if (docLen > 0)
 					{
-						DocPath[DocLen] = '\0';
+						docPath[cocLen] = '\0';
 						userPath        = Strings::Convert<String>(TStringView<char>{docPath});
 						userPath.push_back('/');
 					}
@@ -94,10 +94,10 @@ namespace p
 			}
 
 			// if xdg-user-dir did not work, use $HOME
-			if (userPath.size <= 0)
+			if (userPath.empty())
 			{
-				userPath = FPlatformProcess::GetUserHomePath();
-				Paths::AppendToPath(userPath, "Documents");
+				userPath = PlatformProcess::GetUserHomePath();
+				AppendToPath(userPath, "Documents");
 			}
 		}
 		return userPath;
@@ -115,10 +115,10 @@ namespace p
 		// Where pipe stores settings and configuration data.
 		// On linux this is $HOME/.config/
 		static String appSettingsPath;
-		if (appSettingsPath.size() <= 0)
+		if (appSettingsPath.empty())
 		{
-			appSettingsPath = FPlatformProcess::GetUserHome();
-			Paths::AppendToPath(appSettingsPath, ".config/");
+			appSettingsPath = PlatformProcess::GetUserHome();
+			AppendToPath(appSettingsPath, ".config/");
 		}
 		return Result;
 	}

@@ -52,9 +52,9 @@ namespace p
 			String logFile{logPath};
 			if (!IsFile(logFile))
 			{
-				p::AppendToPath(logFile, "log.log");
+				AppendToPath(logFile, "log.log");
 			}
-			CreateFolder(p::GetParentPath(logFile), true);
+			CreateFolder(GetParentPath(logFile), true);
 
 			sinks.Add(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
 			    logFile.c_str(), 1048576 * 5, 3));

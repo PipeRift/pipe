@@ -72,7 +72,7 @@ namespace p
 	StringView WindowsPlatformProcess::GetUserSettingsPath()
 	{
 		static String userSettingsPath;
-		if (userSettingsPath.size() <= 0)
+		if (userSettingsPath.empty())
 		{
 			// get the local AppData directory
 			WideChar* path = nullptr;
