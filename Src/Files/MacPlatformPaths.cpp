@@ -1,7 +1,8 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #if P_PLATFORM_MACOS
-	#include "Pipe/Core/Mac/MacPlatformProcess.h"
+	#include "Pipe/Files/MacPlatformPaths.h"
+
 	#include "Pipe/Core/PlatformMisc.h"
 	#include "Pipe/Core/String.h"
 	#include "Pipe/Core/FixedString.h"
@@ -18,12 +19,12 @@
 
 namespace p
 {
-	StringView MacPlatformProcess::GetExecutableFile()
+	StringView MacPlatformPaths::GetExecutableFile()
 	{
 		static String filePath;
 		if (filePath.empty())
 		{
-			TFixedString<PlatformMisc::GetMaxPathLength(), char> rawPath{};
+			TFixedString<GetMaxPathLength(), char> rawPath{};
 			u32 size{rawPath.size()};
 			if (_NSGetExecutablePath(rawPath.data(), &size) != 0)
 			{
@@ -36,17 +37,17 @@ namespace p
 		}
 		return filePath;
 	}
-	StringView MacPlatformProcess::GetExecutablePath()
+	StringView MacPlatformPaths::GetExecutablePath()
 	{
 		return GetParentPath(GetExecutableFile());
 	}
 
-	StringView MacPlatformProcess::GetBasePath()
+	StringView MacPlatformPaths::GetBasePath()
 	{
 		return GetExecutablePath();
 	}
 
-	const TCHAR* MacPlatformProcess::GetUserTempPath()
+	const TCHAR* MacPlatformPaths::GetUserTempPath()
 	{
 		static String userTempDir;
 		if (userTempDir.empty())
@@ -56,7 +57,7 @@ namespace p
 		return userTempDir;
 	}
 
-	StringView MacPlatformProcess::GetUserHomePath()
+	StringView MacPlatformPaths::GetUserHomePath()
 	{
 		static String userHomePath;
 		if (userHomePath.empty())
@@ -69,7 +70,7 @@ namespace p
 		return userHomePath;
 	}
 
-	StringView MacPlatformProcess::GetUserPath()
+	StringView MacPlatformPaths::GetUserPath()
 	{
 		static String userPath;
 		if (userPath.empty())
@@ -85,12 +86,12 @@ namespace p
 		return userPath;
 	}
 
-	StringView MacPlatformProcess::GetUserSettingsPath()
+	StringView MacPlatformPaths::GetUserSettingsPath()
 	{
 		return GetAppSettingsPath();
 	}
 
-	StringView MacPlatformProcess::GetAppSettingsPath()
+	StringView MacPlatformPaths::GetAppSettingsPath()
 	{
 		static String appSettingsPath;
 		if (appSettingsPath.empty())
@@ -107,10 +108,10 @@ namespace p
 	}
 
 
-	String MacPlatformProcess::GetCurrentWorkingPath()
+	StringView MacPlatformPaths::GetCurrentPath()
 	{
-		String path;
-		path.reserve(PlatformMisc::GetMaxPathLength());
+		static String path;
+		path.reserve(GetMaxPathLength());
 		if (getcwd(path.data(), path.capacity()) != nullptr)
 		{
 			path.resize(std::strlen(path.data()));
@@ -118,12 +119,12 @@ namespace p
 		return path;
 	}
 
-	bool MacPlatformProcess::SetCurrentWorkingPath(StringView path)
+	bool MacPlatformPaths::SetCurrentPath(StringView path)
 	{
 		return chdir(path.data()) == 0;
 	}
 
-	void MacPlatformProcess::ShowFolder(StringView path)
+	void MacPlatformPaths::ShowFolder(StringView path)
 	{
 		if (!files::Exists(path))
 		{

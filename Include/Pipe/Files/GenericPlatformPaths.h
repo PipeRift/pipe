@@ -1,15 +1,19 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Export.h"
 
 
 namespace p
 {
-	struct PIPE_API GenericPlatformProcess
+	struct PIPE_API GenericPlatformPaths
 	{
+		static constexpr u32 GetMaxPathLength()
+		{
+			return 128;
+		}
+
 		static StringView GetExecutableFile() = delete;
 		static StringView GetExecutablePath() = delete;
 		static StringView GetBasePath()       = delete;
@@ -20,8 +24,8 @@ namespace p
 		static StringView GetUserSettingsPath();
 		static StringView GetAppSettingsPath();
 
-		static String GetCurrentWorkingPath()              = delete;
-		static void SetCurrentWorkingPath(StringView path) = delete;
+		static StringView GetCurrentPath()          = delete;
+		static void SetCurrentPath(StringView path) = delete;
 
 		/** Content saved to compiler or project directories should be rerouted to user directories
 		 * instead **/

@@ -1,12 +1,12 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #if P_PLATFORM_WINDOWS
-	#include "Pipe/Core/Windows/WindowsPlatformProcess.h"
+	#include "Pipe/Files/WindowsPlatformPaths.h"
 
 	#include "Pipe/Files/Paths.h"
 	#include "Pipe/Files/Files.h"
 	#include "Pipe/Core/Platform.h"
-	#include "Pipe/Core/Windows/WindowsPlatformMisc.h"
+	#include "Pipe/Core/WindowsPlatformMisc.h"
 	#include "Pipe/Core/String.h"
 	#include "Pipe/Core/Log.h"
 
@@ -17,57 +17,48 @@
 
 namespace p
 {
-	template<typename StringType, typename TStringGetterFunc>
-	StringType GetStringFromWindowsAPI(TStringGetterFunc stringGetter, int initialSize = MAX_PATH)
+	bool AreLongPathsEnabled()
 	{
-		if (initialSize <= 0)
+		if (HMODULE Handle = GetModuleHandle(TEXT("ntdll.dll")))
 		{
-			initialSize = MAX_PATH;
+			using EnabledFunction = BOOLEAN(NTAPI*)();
+			auto RtlAreLongPathsEnabled =
+			    (EnabledFunction)(void*)GetProcAddress(Handle, "RtlAreLongPathsEnabled");
+
+			return RtlAreLongPathsEnabled != nullptr && RtlAreLongPathsEnabled();
 		}
-
-		StringType result(initialSize, 0);
-		for (;;)
-		{
-			auto length = stringGetter(result.data(), result.length());
-			if (length == 0)
-			{
-				return {};
-			}
-
-			if (length < result.length() - 1)
-			{
-				result.resize(length);
-				result.shrink_to_fit();
-				return result;
-			}
-
-			result.resize(result.length() * 2);
-		}
+		return false;
 	}
 
-	StringView WindowsPlatformProcess::GetExecutableFile()
+	u32 WindowsPlatformPaths::GetMaxPathLength()
 	{
-		static const auto filePath = GetStringFromWindowsAPI<String>([](TChar* buffer, sizet size) {
-	#if PLATFORM_TCHAR_IS_WCHAR
-			return GetModuleFileNameW(nullptr, buffer, u32(size));
-	#else
-			return GetModuleFileNameA(nullptr, buffer, u32(size));
-	#endif
-		});
-		return filePath;
+		static const u32 maxPath = AreLongPathsEnabled() ? 32767 : MAX_PATH;
+		return maxPath;
 	}
 
-	StringView WindowsPlatformProcess::GetExecutablePath()
+	StringView WindowsPlatformPaths::GetExecutableFile()
+	{
+		static String executablePath;
+		if (executablePath.empty())
+		{
+			GetStringFromWindowsAPI(executablePath, [](char* buffer, sizet capacity) {
+				return GetModuleFileNameA(nullptr, buffer, u32(capacity));
+			});
+		}
+		return executablePath;
+	}
+
+	StringView WindowsPlatformPaths::GetExecutablePath()
 	{
 		return GetParentPath(GetExecutableFile());
 	}
 
-	StringView WindowsPlatformProcess::GetBasePath()
+	StringView WindowsPlatformPaths::GetBasePath()
 	{
 		return GetExecutablePath();
 	}
 
-	StringView WindowsPlatformProcess::GetUserPath()
+	StringView WindowsPlatformPaths::GetUserPath()
 	{
 		static String userPath;
 		if (userPath.empty())
@@ -87,7 +78,7 @@ namespace p
 		return userPath;
 	}
 
-	StringView WindowsPlatformProcess::GetUserTempPath()
+	StringView WindowsPlatformPaths::GetUserTempPath()
 	{
 		static String userTempPath;
 		if (userTempPath.empty())
@@ -108,7 +99,7 @@ namespace p
 		return userTempPath;
 	}
 
-	StringView WindowsPlatformProcess::GetUserSettingsPath()
+	StringView WindowsPlatformPaths::GetUserSettingsPath()
 	{
 		static String userSettingsPath;
 		if (userSettingsPath.empty())
@@ -128,7 +119,7 @@ namespace p
 		return userSettingsPath;
 	}
 
-	StringView WindowsPlatformProcess::GetAppSettingsPath()
+	StringView WindowsPlatformPaths::GetAppSettingsPath()
 	{
 		static String appSettingsPath;
 		if (!appSettingsPath.size())
@@ -147,34 +138,16 @@ namespace p
 		return appSettingsPath;
 	}
 
-	String WindowsPlatformProcess::GetCurrentWorkingPath()
+	StringView WindowsPlatformPaths::GetCurrentPath()
 	{
-		String buffer;
-		// Loop in case the variable changes while running, or the buffer isn't large
-		// enough.
-		for (u32 length = 128;;)
-		{
-			buffer.resize(length);
-	#if PLATFORM_TCHAR_IS_WCHAR
-			length = ::GetCurrentDirectoryW(buffer.capacity(), buffer.data());
-	#else
-			length = ::GetCurrentDirectoryA(buffer.capacity(), buffer.data());
-	#endif
-			if (length == 0)
-			{
-				buffer.clear();
-				break;
-			}
-			else if (length < u32(buffer.size()))
-			{
-				buffer.resize(length);
-				break;
-			}
-		}
-		return Move(buffer);
+		static String path;
+		GetStringFromWindowsAPI(path, [](char* buffer, sizet capacity) {
+			return ::GetCurrentDirectoryA(capacity, buffer);
+		});
+		return path;
 	}
 
-	bool WindowsPlatformProcess::SetCurrentWorkingPath(StringView path)
+	bool WindowsPlatformPaths::SetCurrentPath(StringView path)
 	{
 	#if PLATFORM_TCHAR_IS_WCHAR
 		return ::SetCurrentDirectoryW(path.data());
@@ -184,7 +157,7 @@ namespace p
 	}
 
 
-	void WindowsPlatformProcess::ShowFolder(StringView path)
+	void WindowsPlatformPaths::ShowFolder(StringView path)
 	{
 		if (!files::Exists(path))
 		{

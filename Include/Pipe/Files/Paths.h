@@ -22,14 +22,6 @@ namespace p
 	constexpr TChar colon{':'};
 
 
-	PIPE_API void SetCurrentPath(StringView path);
-
-	PIPE_API StringView GetCurrentPath();
-
-	PIPE_API StringView GetBasePath();
-
-	PIPE_API StringView GetUserSettingsPath();
-
 	PIPE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
 	PIPE_API const TChar* FindRelativeChar(
 	    const TChar* const first, const TChar* const last, const TChar*& outNameEnd);

@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Generic/GenericPlatform.h"
+#include "Pipe/Core/GenericPlatform.h"
 
 #define P_PLATFORM_LINUX_USE_CHAR16 0
 

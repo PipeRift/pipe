@@ -1,8 +1,9 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/Core/PlatformProcess.h>
 #include <Pipe/Files/Paths.h>
+#include <Pipe/Files/PlatformPaths.h>
+
 
 
 using namespace snowhouse;
@@ -65,7 +66,7 @@ go_bandit([]() {
 		});
 
 		it("Executable path is not empty", [&]() {
-			AssertThat(p::PlatformProcess::GetExecutablePath(), !Equals(""));
+			AssertThat(p::PlatformPaths::GetExecutablePath(), !Equals(""));
 		});
 
 		it("Can get extension", [&]() {

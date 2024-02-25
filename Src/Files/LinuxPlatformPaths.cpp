@@ -1,7 +1,8 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #if P_PLATFORM_LINUX
-	#include "Pipe/Core/Linux/LinuxPlatformProcess.h"
+	#include "Pipe/Files/LinuxPlatformPaths.h"
+
 	#include "Pipe/Core/PlatformMisc.h"
 	#include "Pipe/Core/String.h"
 	#include "Pipe/Core/FixedString.h"
@@ -14,12 +15,12 @@
 
 namespace p
 {
-	StringView LinuxPlatformProcess::GetExecutableFile()
+	StringView LinuxPlatformPaths::GetExecutableFile()
 	{
 		static String path;
 		if (path.empty())
 		{
-			TFixedString<PlatformMisc::GetMaxPathLength(), char> rawPath{};
+			TFixedString<GetMaxPathLength(), char> rawPath{};
 			if (readlink("/proc/self/exe", rawPath.data(), rawPath.size() - 1) == -1)
 			{
 				// readlink() failed. Unreachable
@@ -31,17 +32,17 @@ namespace p
 		}
 		return path;
 	}
-	StringView LinuxPlatformProcess::GetExecutablePath()
+	StringView LinuxPlatformPaths::GetExecutablePath()
 	{
 		return GetParentPath(GetExecutableFile());
 	}
 
-	StringView LinuxPlatformProcess::GetBasePath()
+	StringView LinuxPlatformPaths::GetBasePath()
 	{
 		return GetExecutablePath();
 	}
 
-	StringView LinuxPlatformProcess::GetUserPath()
+	StringView LinuxPlatformPaths::GetUserPath()
 	{
 		static String userPath;
 		if (userPath.empty())
@@ -49,8 +50,8 @@ namespace p
 			FILE* FilePtr = popen("xdg-user-dir DOCUMENTS", "r");
 			if (FilePtr)
 			{
-				char docPath[PlatformMisc::GetMaxPathLength()];
-				if (fgets(docPath, PlatformMisc::GetMaxPathLength(), FilePtr) != nullptr)
+				char docPath[GetMaxPathLength()];
+				if (fgets(docPath, GetMaxPathLength(), FilePtr) != nullptr)
 				{
 					size_t docLen = strlen(docPath) - 1;
 					if (docLen > 0)
@@ -66,14 +67,14 @@ namespace p
 			// if xdg-user-dir did not work, use $HOME
 			if (userPath.empty())
 			{
-				userPath = PlatformProcess::GetUserHomePath();
+				userPath = PlatformPaths::GetUserHomePath();
 				AppendToPath(userPath, "Documents");
 			}
 		}
 		return userPath;
 	}
 
-	StringView LinuxPlatformProcess::GetUserTempPath()
+	StringView LinuxPlatformPaths::GetUserTempPath()
 	{
 		// Use $TMPDIR if its set otherwise fallback to /var/tmp as Windows defaults to %TEMP% which
 		// does not get cleared on reboot.
@@ -93,7 +94,7 @@ namespace p
 		return userTempPath;
 	}
 
-	StringView LinuxPlatformProcess::GetUserHomePath()
+	StringView LinuxPlatformPaths::GetUserHomePath()
 	{
 		static String userHomePath;
 		if (userHomePath.empty())
@@ -123,27 +124,27 @@ namespace p
 		return userHomePath;
 	}
 
-	StringView LinuxPlatformProcess::GetUserSettingsPath()
+	StringView LinuxPlatformPaths::GetUserSettingsPath()
 	{
 		// Like on Mac we use the same folder for UserSettingsPath and AppSettingsPath
 		// $HOME/.config/
 		return GetAppSettingsPath();
 	}
 
-	StringView LinuxPlatformProcess::GetAppSettingsPath()
+	StringView LinuxPlatformPaths::GetAppSettingsPath()
 	{
 		// Where pipe stores settings and configuration data.
 		// On linux this is $HOME/.config/
 		static String appSettingsPath;
 		if (appSettingsPath.empty())
 		{
-			appSettingsPath = PlatformProcess::GetUserHomePath();
+			appSettingsPath = PlatformPaths::GetUserHomePath();
 			AppendToPath(appSettingsPath, ".config/");
 		}
 		return appSettingsPath;
 	}
 
-	void LinuxPlatformProcess::ShowFolder(StringView path)
+	void LinuxPlatformPaths::ShowFolder(StringView path)
 	{
 		if (!files::Exists(path))
 		{
@@ -164,10 +165,10 @@ namespace p
 		}
 	}
 
-	String LinuxPlatformProcess::GetCurrentWorkingPath()
+	StringView LinuxPlatformPaths::GetCurrentPath()
 	{
-		String path;
-		path.reserve(PlatformMisc::GetMaxPathLength());
+		static String path;
+		path.reserve(GetMaxPathLength());
 		if (getcwd(path.data(), path.capacity()) != nullptr)
 		{
 			path.resize(std::strlen(path.data()));
@@ -175,7 +176,7 @@ namespace p
 		return path;
 	}
 
-	bool LinuxPlatformProcess::SetCurrentWorkingPath(StringView path)
+	bool LinuxPlatformPaths::SetCurrentPath(StringView path)
 	{
 		return chdir(path.data()) == 0;
 	}
