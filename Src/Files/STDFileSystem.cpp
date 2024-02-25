@@ -2,6 +2,7 @@
 
 #include "Pipe/Files/STDFileSystem.h"
 
+#include "Pipe/Files/Files.h"
 #include "Pipe/Files/Paths.h"
 #include "Pipe/Serialize/Serialization.h"
 
@@ -18,5 +19,23 @@ namespace p
 	void Write(p::Writer& ct, const p::Path& value)
 	{
 		ct.Serialize(ToString(value));
+	}
+
+	PathIterator CreatePathIterator(StringView path)
+	{
+		if (!files::IsFolder(path))
+		{
+			return {};
+		}
+		return PathIterator{path};
+	}
+
+	RecursivePathIterator CreateRecursivePathIterator(StringView path)
+	{
+		if (!files::Exists(path) || !files::IsFolder(path))
+		{
+			return {};
+		}
+		return RecursivePathIterator{path};
 	}
 }    // namespace p

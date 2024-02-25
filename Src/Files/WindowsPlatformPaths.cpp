@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #if P_PLATFORM_WINDOWS
-	#include "Pipe/Files/WindowsPlatformPaths.h"
+	#include "Pipe/Files/PlatformPaths.h"
 
 	#include "Pipe/Files/Paths.h"
 	#include "Pipe/Files/Files.h"
@@ -30,6 +30,34 @@ namespace p
 		return false;
 	}
 
+	template<typename StringType, typename TStringGetterFunc>
+	static void GetStringFromWindowsAPI(
+	    StringType& result, TStringGetterFunc stringGetter, u32 initialSize = 128)
+	{
+		if (initialSize <= 0)
+		{
+			initialSize = 128;    // MAX_PATH. Not worth including Windows.h
+		}
+
+		for (u32 length = initialSize;;)
+		{
+			result.resize(length);
+			length = stringGetter(result.data(), result.size());
+			if (length == 0)
+			{
+				result.clear();
+				break;
+			}
+			else if (length <= u32(result.size()))
+			{
+				result.resize(length);
+				result.shrink_to_fit();
+				break;
+			}
+		}
+	}
+
+
 	u32 WindowsPlatformPaths::GetMaxPathLength()
 	{
 		static const u32 maxPath = AreLongPathsEnabled() ? 32767 : MAX_PATH;
@@ -41,8 +69,8 @@ namespace p
 		static String executablePath;
 		if (executablePath.empty())
 		{
-			GetStringFromWindowsAPI(executablePath, [](char* buffer, sizet capacity) {
-				return GetModuleFileNameA(nullptr, buffer, u32(capacity));
+			GetStringFromWindowsAPI(executablePath, [](char* buffer, sizet size) {
+				return GetModuleFileNameA(nullptr, buffer, u32(size));
 			});
 		}
 		return executablePath;
@@ -141,8 +169,8 @@ namespace p
 	StringView WindowsPlatformPaths::GetCurrentPath()
 	{
 		static String path;
-		GetStringFromWindowsAPI(path, [](char* buffer, sizet capacity) {
-			return ::GetCurrentDirectoryA(capacity, buffer);
+		GetStringFromWindowsAPI(path, [](char* buffer, sizet size) {
+			return ::GetCurrentDirectoryA(size, buffer);
 		});
 		return path;
 	}

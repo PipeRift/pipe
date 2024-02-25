@@ -10,11 +10,6 @@
 
 namespace p::files
 {
-	using Iterator          = fs::directory_iterator;
-	using RecursiveIterator = fs::recursive_directory_iterator;
-	using SpaceInfo         = fs::space_info;
-
-
 	/** Path API */
 
 	PIPE_API bool ExistsAsFile(const Path& path);
@@ -39,9 +34,6 @@ namespace p::files
 	PIPE_API bool Exists(StringView path);
 	PIPE_API bool IsFolder(StringView path);
 	PIPE_API bool IsFile(StringView path);
-
-	PIPE_API Iterator CreateIterator(StringView path);
-	PIPE_API RecursiveIterator CreateRecursiveIterator(StringView path);
 }    // namespace p::files
 
 namespace p

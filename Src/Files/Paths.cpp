@@ -1,13 +1,11 @@
 // Copyright 2015-2023 Piperift - All rights reserved
-// Some functions are adaptations to StringView from std::filesystem
+// Some functions are adaptations for StringView from std::filesystem
 
 #include "Pipe/Files/Paths.h"
 
 #include "Pipe/Core/Char.h"
 #include "Pipe/Core/Macros.h"
 #include "Pipe/Files/PlatformPaths.h"
-
-#include <filesystem>
 
 
 // References:

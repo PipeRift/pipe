@@ -141,22 +141,4 @@ namespace p::files
 	{
 		return !path.empty() && HasExtension(path);
 	}
-
-	Iterator CreateIterator(StringView path)
-	{
-		if (!IsFolder(path))
-		{
-			return {};
-		}
-		return Iterator{path};
-	}
-
-	RecursiveIterator CreateRecursiveIterator(StringView path)
-	{
-		if (!Exists(path) || !IsFolder(path))
-		{
-			return {};
-		}
-		return RecursiveIterator{path};
-	}
 }    // namespace p::files

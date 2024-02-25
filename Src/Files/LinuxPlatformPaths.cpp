@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #if P_PLATFORM_LINUX
-	#include "Pipe/Files/LinuxPlatformPaths.h"
+	#include "Pipe/Files/PlatformPaths.h"
 
 	#include "Pipe/Core/PlatformMisc.h"
 	#include "Pipe/Core/String.h"
