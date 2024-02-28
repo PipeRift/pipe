@@ -8,7 +8,7 @@
 #include "PipeArrays.h"
 
 
-namespace p::files
+namespace p
 {
 	/** Path API */
 
@@ -34,9 +34,4 @@ namespace p::files
 	PIPE_API bool Exists(StringView path);
 	PIPE_API bool IsFolder(StringView path);
 	PIPE_API bool IsFile(StringView path);
-}    // namespace p::files
-
-namespace p
-{
-	using namespace p::files;
-}
+}    // namespace p

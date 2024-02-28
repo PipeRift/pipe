@@ -23,7 +23,7 @@ namespace p
 
 	PathIterator CreatePathIterator(StringView path)
 	{
-		if (!files::IsFolder(path))
+		if (!IsFolder(path))
 		{
 			return {};
 		}
@@ -32,7 +32,7 @@ namespace p
 
 	RecursivePathIterator CreateRecursivePathIterator(StringView path)
 	{
-		if (!files::Exists(path) || !files::IsFolder(path))
+		if (!Exists(path) || !IsFolder(path))
 		{
 			return {};
 		}

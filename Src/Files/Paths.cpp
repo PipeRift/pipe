@@ -729,12 +729,6 @@ namespace p
 	{
 		return !IsAbsolutePath(path);
 	}
-	bool Exists(StringView path)
-	{
-		// TODO: Prevent the use of Path with custom implementation
-		Path stdPath{path};
-		return std::filesystem::exists(stdPath);
-	}
 
 
 	String JoinPaths(StringView base, StringView relative)

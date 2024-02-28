@@ -229,17 +229,17 @@ namespace p
 
 	void WindowsPlatformPaths::ShowFolder(StringView path)
 	{
-		if (!files::Exists(path))
+		if (!Exists(path))
 		{
 			return;
 		}
 
-		if (files::IsFolder(path))
+		if (IsFolder(path))
 		{
 			const String fullPath{path};
 			::ShellExecuteA(nullptr, "explore", fullPath.data(), nullptr, nullptr, SW_SHOWNORMAL);
 		}
-		else if (files::IsFile(path))
+		else if (IsFile(path))
 		{
 			String parameters = Strings::Format("/select,{}", path);
 			::ShellExecuteA(
@@ -380,12 +380,12 @@ namespace p
 
 	void LinuxPlatformPaths::ShowFolder(StringView path)
 	{
-		if (!files::Exists(path))
+		if (!Exists(path))
 		{
 			return;
 		}
 
-		if (!files::IsFolder(path))
+		if (!IsFolder(path))
 		{
 			path = GetParentPath(path);
 		}
@@ -524,7 +524,7 @@ namespace p
 
 	void MacPlatformPaths::ShowFolder(StringView path)
 	{
-		if (!files::Exists(path))
+		if (!Exists(path))
 		{
 			return;
 		}

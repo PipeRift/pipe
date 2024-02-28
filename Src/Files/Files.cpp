@@ -8,9 +8,8 @@
 #include <fstream>
 
 
-namespace p::files
+namespace p
 {
-
 	bool ExistsAsFile(const Path& path)
 	{
 		return fs::is_regular_file(path);
@@ -129,6 +128,7 @@ namespace p::files
 
 	bool Exists(StringView path)
 	{
+		// TODO: Prevent the use of Path with custom implementation
 		return fs::exists(ToSTDPath(path));
 	}
 
@@ -141,4 +141,4 @@ namespace p::files
 	{
 		return !path.empty() && HasExtension(path);
 	}
-}    // namespace p::files
+}    // namespace p

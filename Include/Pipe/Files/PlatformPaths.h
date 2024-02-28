@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Export.h"
 

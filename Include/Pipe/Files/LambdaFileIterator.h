@@ -4,7 +4,7 @@
 #include "Pipe/Files/Files.h"
 
 
-namespace p::files
+namespace p
 {
 	template<typename Iterator = PathIterator>
 	class LambdaFileIterator
@@ -71,7 +71,7 @@ namespace p::files
 	    StringView path, TFunction<bool(StringView)> callback)
 	    : callback{p::Move(callback)}
 	{
-		if (!files::Exists(path) || !files::IsFolder(path))
+		if (!Exists(path) || !IsFolder(path))
 		{
 			return;
 		}
@@ -97,9 +97,4 @@ namespace p::files
 			fileIterator.increment(error);
 		}
 	}
-}    // namespace p::files
-
-namespace p
-{
-	using namespace p::files;
-}
+}    // namespace p
