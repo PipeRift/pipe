@@ -21,7 +21,7 @@
 #endif
 
 
-namespace p::core
+namespace p
 {
 	enum class PIPE_API SubprocessOptions
 	{
@@ -218,10 +218,4 @@ namespace p::core
 	 * function should be used for both the standard output and error combined.
 	 */
 	PIPE_API FILE* GetProcessCerr(const Subprocess* process);
-}    // namespace p::core
-
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

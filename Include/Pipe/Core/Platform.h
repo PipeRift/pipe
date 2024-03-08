@@ -22,11 +22,11 @@
 
 
 #if P_PLATFORM_WINDOWS
-	#include "Pipe/Core/Windows/WindowsPlatform.h"
+	#include "Pipe/Core/WindowsPlatform.h"
 #elif P_PLATFORM_LINUX
-	#include "Pipe/Core/Linux/LinuxPlatform.h"
+	#include "Pipe/Core/LinuxPlatform.h"
 #elif P_PLATFORM_MACOS
-	#include "Pipe/Core/Mac/MacPlatform.h"
+	#include "Pipe/Core/MacPlatform.h"
 #else
 	#error Unknown platform
 #endif

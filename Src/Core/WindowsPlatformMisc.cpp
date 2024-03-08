@@ -1,7 +1,7 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
 #if P_PLATFORM_WINDOWS
-	#include "Pipe/Core/Windows/WindowsPlatformMisc.h"
+	#include "Pipe/Core/WindowsPlatformMisc.h"
 
 	#include "Pipe/Core/Checks.h"
 	#include <cstring>
@@ -11,25 +11,6 @@
 
 namespace p
 {
-	bool AreLongPathsEnabled()
-	{
-		if (HMODULE Handle = GetModuleHandle(TEXT("ntdll.dll")))
-		{
-			using EnabledFunction = BOOLEAN(NTAPI*)();
-			auto RtlAreLongPathsEnabled =
-			    (EnabledFunction)(void*)GetProcAddress(Handle, "RtlAreLongPathsEnabled");
-
-			return RtlAreLongPathsEnabled != nullptr && RtlAreLongPathsEnabled();
-		}
-		return false;
-	}
-
-	u32 WindowsPlatformMisc::GetMaxPathLength()
-	{
-		static const u32 maxPath = AreLongPathsEnabled() ? 32767 : MAX_PATH;
-		return maxPath;
-	}
-
 	const TChar* WindowsPlatformMisc::GetSystemErrorMessage(TChar* buffer, i32 size, i32 error)
 	{
 		Check(buffer && size);

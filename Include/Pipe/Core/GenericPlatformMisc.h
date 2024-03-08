@@ -16,11 +16,6 @@ namespace p
 	{
 		static void CreateGuid(Guid& guid);
 
-		static constexpr u32 GetMaxPathLength()
-		{
-			return 128;
-		}
-
 		static u64 GetCycles64();
 
 		static u32 GetCycles()
@@ -29,8 +24,3 @@ namespace p
 		}
 	};
 }    // namespace p
-
-namespace p
-{
-	using namespace p::core;
-}

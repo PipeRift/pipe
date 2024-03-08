@@ -2,13 +2,12 @@
 
 #include "Pipe/Memory/BigBestFitArena.h"
 
-#include "Pipe/Core/Log.h"
+#include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Memory.h"
 #include "PipeAlgorithms.h"
 #include "PipeMath.h"
-
 
 
 namespace p
@@ -34,7 +33,7 @@ namespace p
 	{
 		Interface<BigBestFitArena>();
 
-		assert(initialSize > 0);
+		Check(initialSize > 0);
 		block.data = GetParentArena().Alloc(initialSize);
 		block.size = initialSize;
 		// Set address at end of block. Size is 0

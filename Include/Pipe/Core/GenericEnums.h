@@ -3,7 +3,7 @@
 #pragma once
 
 
-namespace p::core
+namespace p
 {
 	enum class YesNo : bool
 	{
@@ -17,9 +17,4 @@ namespace p::core
 	{
 		return v == YesNo::No;
 	}
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p

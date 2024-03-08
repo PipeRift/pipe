@@ -21,14 +21,6 @@ namespace p
 	constexpr TChar dot{'.'};
 	constexpr TChar colon{':'};
 
-	namespace detail
-	{}    // namespace detail
-
-	PIPE_API void SetCurrentPath(StringView path);
-
-	PIPE_API StringView GetCurrentPath();
-
-	PIPE_API StringView GetBasePath();
 
 	PIPE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
 	PIPE_API const TChar* FindRelativeChar(
@@ -59,6 +51,8 @@ namespace p
 		return GetFilename(StringView{path});
 	}
 	PIPE_API bool HasFilename(StringView path);
+	PIPE_API void RemoveFilename(String& path);
+	PIPE_API void RemoveFilename(StringView& path);
 
 	PIPE_API StringView GetStem(StringView path);
 	PIPE_API bool HasStem(StringView path);
@@ -74,6 +68,8 @@ namespace p
 
 	PIPE_API String JoinPaths(StringView base, StringView relative);
 	PIPE_API String JoinPaths(StringView base, StringView relative, StringView relative2);
+	PIPE_API String JoinPaths(
+	    StringView base, StringView relative, StringView relative2, StringView relative3);
 	PIPE_API String JoinPaths(TView<StringView> paths);
 	PIPE_API void AppendToPath(String& base, StringView other);
 
@@ -111,5 +107,5 @@ namespace p
 	}
 
 	PIPE_API String ToString(const Path& path);
-	PIPE_API Path ToPath(StringView pathStr);
+	PIPE_API std::filesystem::path ToSTDPath(StringView pathStr);
 }    // namespace p
