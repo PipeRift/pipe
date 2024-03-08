@@ -1,6 +1,6 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 
-#include "Pipe/Core/Generic/GenericPlatformMisc.h"
+#include "Pipe/Core/GenericPlatformMisc.h"
 
 #include "Pipe/Core/Guid.h"
 #include "Pipe/Core/PlatformMisc.h"

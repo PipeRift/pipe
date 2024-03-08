@@ -6,7 +6,7 @@
 #include <cstdint>
 
 
-namespace p::core
+namespace p
 {
 	//---------------------------------------------------------------------
 	// Utility for automatically setting up the pointer-sized integer type
@@ -79,12 +79,7 @@ namespace p::core
 		using TYPE_OF_NULL    = std::int32_t;
 		using TYPE_OF_NULLPTR = decltype(nullptr);
 	};
-}    // namespace p::core
-
-namespace p
-{
-	using namespace p::core;
-}
+}    // namespace p
 
 
 #ifndef PLATFORM_TCHAR_IS_WCHAR

@@ -65,6 +65,23 @@ namespace p::Strings
 	{
 		str.resize(str.size() - size);
 	}
+	void RemoveFromEnd(String& str, StringView subStr)
+	{
+		if (EndsWith(str, subStr))
+		{
+			RemoveFromEnd(str, subStr.size());
+		}
+	}
+
+	bool RemoveCharFromEnd(String& str, TChar c)
+	{
+		if (EndsWith(str, c))
+		{
+			str.resize(str.size() - 1);
+			return true;
+		}
+		return false;
+	}
 
 	i32 Split(const String& str, TArray<String>& tokens, const TChar delim)
 	{

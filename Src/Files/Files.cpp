@@ -8,109 +8,8 @@
 #include <fstream>
 
 
-namespace p::files
+namespace p
 {
-	bool LoadStringFile(const Path& path, String& result, sizet extraPadding)
-	{
-		if (!Exists(path) || !IsFile(path))
-		{
-			return false;
-		}
-
-		// Clean string and reserve it
-		result = {};
-
-		std::ifstream file(path);
-		file.seekg(0, std::ios::end);
-		const sizet size = sizet(file.tellg());
-		if (size > 0)
-		{
-			result.reserve(size + extraPadding);
-
-			file.seekg(0, std::ios::beg);
-			result.assign(std::istreambuf_iterator<TChar>(file), std::istreambuf_iterator<TChar>());
-		}
-		return !result.empty();
-	}
-
-	bool CreateFolder(const Path& path, bool bRecursive)
-	{
-		if (IsFolder(path) && !Exists(path))
-		{
-			if (bRecursive)
-			{
-				CreateFolder(path.parent_path(), bRecursive);
-			}
-			return fs::create_directory(path);
-		}
-		return false;
-	}
-
-	bool SaveStringFile(const Path& path, StringView data)
-	{
-		if (!IsFile(path))
-		{
-			return false;
-		}
-
-		std::basic_ofstream<TChar> file(path);
-		file.write(data.data(), data.size());
-		file.close();
-		return true;
-	}
-
-	bool Delete(const Path& path, bool bExcludeIfNotEmpty, bool bLogErrors)
-	{
-		std::error_code err;
-		if (bExcludeIfNotEmpty)
-		{
-			fs::remove_all(path, err);
-		}
-		else
-		{
-			fs::remove(path, err);
-		}
-		if (err && bLogErrors)
-		{
-			Warning(err.message());
-		}
-		return bool(err);
-	}
-
-	Iterator CreateIterator(const Path& path)
-	{
-		if (!IsFolder(path))
-		{
-			return {};
-		}
-		return Iterator{path};
-	}
-
-	RecursiveIterator CreateRecursiveIterator(const Path& path)
-	{
-		if (!Exists(path) || !IsFolder(path))
-		{
-			return {};
-		}
-		return RecursiveIterator{path};
-	}
-
-
-	bool Exists(const Path& path)
-	{
-		return fs::exists(path);
-	}
-
-	bool IsFolder(const Path& path)
-	{
-		return !path.empty() && !path.has_extension();
-	}
-
-	bool IsFile(const Path& path, bool /*bCheckOnDisk*/)
-	{
-		return !path.empty() && path.has_extension();
-	}
-
 	bool ExistsAsFile(const Path& path)
 	{
 		return fs::is_regular_file(path);
@@ -126,62 +25,120 @@ namespace p::files
 		return fs::space(target);
 	}
 
-	bool Copy(const Path& origin, const Path& destination, CopyOptions options)
+
+	/** String API */
+
+	bool CreateFolder(StringView path, bool bRecursive)
+	{
+		if (IsFolder(path) && !Exists(path))
+		{
+			if (bRecursive)
+			{
+				CreateFolder(p::GetParentPath(path), bRecursive);
+			}
+			return fs::create_directory(path);
+		}
+		return false;
+	}
+
+	bool Delete(StringView path, bool bExcludeIfNotEmpty, bool bLogErrors)
+	{
+		std::error_code err;
+		if (bExcludeIfNotEmpty)
+		{
+			fs::remove_all(ToSTDPath(path), err);
+		}
+		else
+		{
+			fs::remove(ToSTDPath(path), err);
+		}
+		if (err && bLogErrors)
+		{
+			Warning(err.message());
+		}
+		return bool(err);
+	}
+
+	bool Copy(StringView origin, StringView destination, CopyOptions options)
 	{
 		if (IsFolder(origin) && ExistsAsFolder(origin))
 		{
 			const auto stdOptions = static_cast<fs::copy_options>(*(options));
 			std::error_code err;
-			fs::copy(origin, destination, stdOptions, err);
+			fs::copy(ToSTDPath(origin), ToSTDPath(destination), stdOptions, err);
 			return !err;
 		}
 		else if (IsFile(origin) && ExistsAsFile(origin))
 		{
 			const auto stdOptions = static_cast<fs::copy_options>(*(options));
 			std::error_code err;
-			fs::copy_file(origin, destination, stdOptions, err);
+			fs::copy_file(ToSTDPath(origin), ToSTDPath(destination), stdOptions, err);
 			return !err;
 		}
 		return false;
 	}
 
-	bool Move(const Path& origin, const Path& destination)
+	bool Move(StringView origin, StringView destination)
 	{
 		return Rename(origin, destination);
 	}
 
-	bool Rename(const Path& origin, const Path& destination)
+	bool Rename(StringView origin, StringView destination)
 	{
 		std::error_code err;
-		fs::rename(origin, destination, err);
+		fs::rename(ToSTDPath(origin), ToSTDPath(destination), err);
 		return !err;
 	}
 
-
-	/** String API */
-
-	bool LoadStringFile(const String& path, String& result, sizet extraPadding)
+	bool LoadStringFile(StringView path, String& result, sizet extraPadding)
 	{
-		return LoadStringFile(ToPath(path), result, extraPadding);
+		if (!Exists(path) || !IsFile(path))
+		{
+			return false;
+		}
+
+		// Clean string and reserve it
+		result = {};
+
+		std::ifstream file(String{path});
+		file.seekg(0, std::ios::end);
+		const sizet size = sizet(file.tellg());
+		if (size > 0)
+		{
+			result.reserve(size + extraPadding);
+
+			file.seekg(0, std::ios::beg);
+			result.assign(std::istreambuf_iterator<TChar>(file), std::istreambuf_iterator<TChar>());
+		}
+		return !result.empty();
 	}
 
-	bool SaveStringFile(const String& path, StringView data)
+	bool SaveStringFile(StringView path, StringView data)
 	{
-		return SaveStringFile(ToPath(path), data);
+		if (!IsFile(path))
+		{
+			return false;
+		}
+
+		std::basic_ofstream<TChar> file(String{path});
+		file.write(data.data(), data.size());
+		file.close();
+		return true;
 	}
 
-	bool Exists(const String& path)
+	bool Exists(StringView path)
 	{
-		return Exists(ToPath(path));
+		// TODO: Prevent the use of Path with custom implementation
+		return fs::exists(ToSTDPath(path));
 	}
 
-	bool IsFolder(const String& path)
+	bool IsFolder(StringView path)
 	{
-		return IsFolder(ToPath(path));
+		return !path.empty() && !HasExtension(path);
 	}
 
-	bool IsFile(const String& path)
+	bool IsFile(StringView path)
 	{
-		return IsFile(ToPath(path));
+		return !path.empty() && HasExtension(path);
 	}
-}    // namespace p::files
+}    // namespace p

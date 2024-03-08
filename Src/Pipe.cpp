@@ -16,7 +16,7 @@ namespace p
 	{
 		InitializeMemory();
 		TypeRegistry::Initialize();
-		InitLog(ToPath(logPath));
+		InitLog(logPath);
 	}
 
 	void Shutdown()

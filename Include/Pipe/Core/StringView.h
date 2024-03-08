@@ -135,6 +135,17 @@ namespace p
 		}
 
 		template<typename CharType>
+		constexpr TStringView<CharType> RemoveCharFromEnd(
+		    const TStringView<CharType> str, CharType c)
+		{
+			if (EndsWith(str, c))
+			{
+				return RemoveFromEnd(str, 1);
+			}
+			return str;
+		}
+
+		template<typename CharType>
 		constexpr TStringView<CharType> FrontSubstr(TStringView<CharType> str, sizet size)
 		{
 			if (str.size() <= size)
@@ -238,6 +249,7 @@ namespace p
 			return RemoveFromStart<TChar>(str, subStr);
 		}
 
+
 		PIPE_API constexpr StringView RemoveFromEnd(const StringView str, sizet size)
 		{
 			return RemoveFromEnd<TChar>(str, size);
@@ -246,6 +258,11 @@ namespace p
 		PIPE_API constexpr StringView RemoveFromEnd(const StringView str, const StringView subStr)
 		{
 			return RemoveFromEnd<TChar>(str, subStr);
+		}
+
+		PIPE_API constexpr StringView RemoveCharFromEnd(const StringView str, const TChar c)
+		{
+			return RemoveCharFromEnd<TChar>(str, c);
 		}
 
 		PIPE_API constexpr StringView FrontSubstr(StringView str, sizet size)

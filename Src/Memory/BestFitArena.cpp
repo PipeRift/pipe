@@ -2,7 +2,7 @@
 
 #include "Pipe/Memory/BestFitArena.h"
 
-#include "Pipe/Core/Log.h"
+#include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Memory.h"
@@ -58,7 +58,7 @@ namespace p
 	{
 		Interface<BestFitArena>();
 
-		assert(initialSize > 0);
+		Check(initialSize > 0);
 		block.data = GetParentArena().Alloc(initialSize);
 		block.size = initialSize;
 		// Set address at end of block. Size is 0

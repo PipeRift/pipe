@@ -4,18 +4,18 @@
 #include "Pipe/Files/Files.h"
 
 
-namespace p::files
+namespace p
 {
-	template<typename FileIterator = files::Iterator>
+	template<typename Iterator = PathIterator>
 	class LambdaFileIterator
 	{
 	public:
-		TFunction<bool(const Path&)> callback;
-		FileIterator fileIterator;
+		TFunction<bool(StringView)> callback;
+		Iterator fileIterator;
 
 
 		LambdaFileIterator() noexcept = default;
-		explicit LambdaFileIterator(const Path& path, TFunction<bool(const Path&)> callback);
+		explicit LambdaFileIterator(StringView path, TFunction<bool(StringView)> callback);
 
 		LambdaFileIterator(const LambdaFileIterator&) noexcept = default;
 		LambdaFileIterator(LambdaFileIterator&&) noexcept      = default;
@@ -66,40 +66,35 @@ namespace p::files
 		void FindNext();
 	};
 
-	template<typename FileIterator>
-	inline LambdaFileIterator<FileIterator>::LambdaFileIterator(
-	    const Path& path, TFunction<bool(const Path&)> callback)
+	template<typename Iterator>
+	inline LambdaFileIterator<Iterator>::LambdaFileIterator(
+	    StringView path, TFunction<bool(StringView)> callback)
 	    : callback{p::Move(callback)}
 	{
-		if (!files::Exists(path) || !files::IsFolder(path))
+		if (!Exists(path) || !IsFolder(path))
 		{
 			return;
 		}
-		fileIterator = FileIterator(path);
+		fileIterator = Iterator(ToSTDPath(path));
 
 		// Iterate to first found asset
-		if (!callback(fileIterator->path()))
+		if (!callback(ToString(fileIterator->path())))
 		{
 			FindNext();
 		}
 	}
 
-	template<typename FileIterator>
-	inline void LambdaFileIterator<FileIterator>::FindNext()
+	template<typename Iterator>
+	inline void LambdaFileIterator<Iterator>::FindNext()
 	{
-		static const FileIterator endIt{};
+		static const Iterator endIt{};
 		std::error_code error;
 
 		fileIterator.increment(error);
 		// Loop until end or until we find an asset
-		while (fileIterator != endIt && !callback(fileIterator->path()))
+		while (fileIterator != endIt && !callback(ToString(fileIterator->path())))
 		{
 			fileIterator.increment(error);
 		}
 	}
-}    // namespace p::files
-
-namespace p
-{
-	using namespace p::files;
-}
+}    // namespace p

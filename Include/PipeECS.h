@@ -565,23 +565,25 @@ namespace p
 		template<typename... Args>
 		auto Add(Id id, Args&&... args) -> Select<p::IsEmpty<T>, void, T&>
 		{
-			if constexpr (!p::IsEmpty<T>)
+			if (Has(id))
 			{
-				if (Has(id))
+				if constexpr (!p::IsEmpty<T>)
 				{
 					return (Get(id) = T{p::Forward<Args>(args)...});
 				}
 			}
-
-			const auto index = EmplaceId(id, false);
-			if constexpr (!p::IsEmpty<T>)
+			else
 			{
-				data.Reserve(index + 1u);
-				T* const value = data.Insert(index, p::Forward<Args>(args)...);
+				const auto index = EmplaceId(id, false);
+				if constexpr (!p::IsEmpty<T>)
+				{
+					data.Reserve(index + 1u);
+					T* const value = data.Insert(index, Forward<Args>(args)...);
+					OnAdded({id});
+					return *value;
+				}
 				OnAdded({id});
-				return *value;
 			}
-			OnAdded({id});
 		}
 
 		template<typename It>
@@ -1134,11 +1136,15 @@ namespace p
 		bool RemoveStatic(TypeId typeId);
 
 		template<typename Static>
-		Static& SetStatic(Static&& value = {});
+		Static& SetStatic();
+		template<typename Static>
+		Static& SetStatic(Static&& value);
 		template<typename Static>
 		Static& SetStatic(const Static& value);
 		template<typename Static>
-		Static& GetOrSetStatic(Static&& newValue = {});
+		Static& GetOrSetStatic();
+		template<typename Static>
+		Static& GetOrSetStatic(Static&& newValue);
 		template<typename Static>
 		Static& GetOrSetStatic(const Static& newValue);
 		template<typename Static>
@@ -2140,6 +2146,14 @@ namespace p
 	}
 
 	template<typename Static>
+	inline Static& EntityContext::SetStatic()
+	{
+		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
+		ptr         = MakeOwned<Static>();
+		return *ptr.GetUnsafe<Static>();
+	}
+
+	template<typename Static>
 	inline Static& EntityContext::SetStatic(Static&& value)
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
@@ -2152,6 +2166,18 @@ namespace p
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
 		ptr         = MakeOwned<Static>(value);
+		return *ptr.GetUnsafe<Static>();
+	}
+
+	template<typename Static>
+	inline Static& EntityContext::GetOrSetStatic()
+	{
+		bool bAdded = false;
+		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
+		if (bAdded)
+		{
+			ptr = MakeOwned<Static>();
+		}
 		return *ptr.GetUnsafe<Static>();
 	}
 
@@ -2184,7 +2210,7 @@ template<>
 struct std::formatter<p::Id> : public std::formatter<p::u64>
 {
 	template<typename FormatContext>
-	auto format(p::Id id, FormatContext& ctx)
+	auto format(p::Id id, FormatContext& ctx) const
 	{
 		if (id == p::NoId)
 		{

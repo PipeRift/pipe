@@ -3,14 +3,13 @@
 #pragma once
 
 #include "Pipe/Core/String.h"
-#include "Pipe/Files/STDFileSystem.h"
 
 #include <mutex>
 
 
 namespace p
 {
-	PIPE_API void InitLog(Path logPath = {});
+	PIPE_API void InitLog(StringView logPath = {});
 	PIPE_API void ShutdownLog();
 
 	PIPE_API void Info(StringView msg);

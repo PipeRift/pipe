@@ -19,6 +19,10 @@ namespace p
 	using Path     = fs::path;
 	using PathView = TStringView<Path::value_type>;
 
+	using PathIterator          = fs::directory_iterator;
+	using RecursivePathIterator = fs::recursive_directory_iterator;
+	using SpaceInfo             = fs::space_info;
+
 	enum class CopyOptions
 	{
 		None         = i32(fs::copy_options::none),
@@ -49,18 +53,9 @@ namespace p
 
 	PIPE_API void Read(p::Reader& ct, p::Path& value);
 	PIPE_API void Write(p::Writer& ct, const p::Path& value);
+
+	PIPE_API PathIterator CreatePathIterator(StringView path);
+	PIPE_API RecursivePathIterator CreateRecursivePathIterator(StringView path);
 }    // namespace p
 
 P_REFLECT_NATIVE_TYPE(p::Path);
-
-
-// TODO: Finish implementation of formatting of Paths
-/*template <>
-struct std::formatter<p::Path> : public std::formatter<p::PathView>
-{
-    template <typename FormatContext>
-    auto format(const p::Path& path, FormatContext& ctx)
-    {
-        return formatter<p::PathView>::format(p::ToPathView(path), ctx);
-    }
-};*/

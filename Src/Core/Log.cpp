@@ -26,7 +26,7 @@ namespace p
 	TOwnPtr<spdlog::logger> errorLogger;
 
 
-	void InitLog(Path logFile)
+	void InitLog(StringView logPath)
 	{
 		TArray<spdlog::sink_ptr> sinks;
 		sinks.Reserve(3);
@@ -47,21 +47,17 @@ namespace p
 #endif
 
 		// File
-		if (!logFile.empty())
+		if (!logPath.empty())
 		{
-			Path logFolder = logFile;
-			if (IsFile(logFile))
+			String logFile{logPath};
+			if (!IsFile(logFile))
 			{
-				logFolder.remove_filename();
+				AppendToPath(logFile, "log.log");
 			}
-			else
-			{
-				logFile /= "log.txt";
-			}
-			CreateFolder(logFolder, true);
+			CreateFolder(GetParentPath(logFile), true);
 
 			sinks.Add(std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-			    ToString(logFile).c_str(), 1048576 * 5, 3));
+			    logFile.c_str(), 1048576 * 5, 3));
 		}
 
 		// Loggers /////////////////////////////////////////

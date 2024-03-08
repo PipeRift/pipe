@@ -1,14 +1,14 @@
 // Copyright 2015-2023 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Generic/GenericPlatform.h"
+#include "Pipe/Core/GenericPlatform.h"
 
 #include <intrin.h>
 
 #include <cstddef>
 
 
-namespace p::core
+namespace p
 {
 	/**
 	 * Windows specific types
@@ -19,12 +19,8 @@ namespace p::core
 	};
 
 	using PlatformTypes = WindowsPlatformTypes;
-}    // namespace p::core
+}    // namespace p
 
-namespace p
-{
-	using namespace p::core;
-}
 
 #define P_FORCEINLINE __forceinline     /* Force code to be inline */
 #define P_NOINLINE __declspec(noinline) /* Force code to not be inlined */

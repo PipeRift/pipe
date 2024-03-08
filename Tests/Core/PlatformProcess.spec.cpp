@@ -4,7 +4,7 @@
 #include "Pipe/Core/Subprocess.h"
 
 #include <bandit/bandit.h>
-#include <Pipe/Core/PlatformProcess.h>
+#include <Pipe/Files/PlatformPaths.h>
 
 
 using namespace snowhouse;

@@ -7,26 +7,32 @@
 		#define P_PLATFORM_WINDOWS 1
 	#elif defined(_WIN32)
 		#define P_PLATFORM_WINDOWS 1
+	#else
+		#define P_PLATFORM_WINDOWS 0
 	#endif
 #endif
 #ifndef P_PLATFORM_LINUX
 	#if defined(__linux__)
 		#define P_PLATFORM_LINUX 1
+	#else
+		#define P_PLATFORM_LINUX 0
 	#endif
 #endif
 #ifndef P_PLATFORM_MACOS
 	#if defined(__APPLE__)
 		#define P_PLATFORM_MACOS 1
+	#else
+		#define P_PLATFORM_MACOS 0
 	#endif
 #endif
 
 
 #if P_PLATFORM_WINDOWS
-	#include "Pipe/Core/Windows/WindowsPlatform.h"
+	#include "Pipe/Core/WindowsPlatform.h"
 #elif P_PLATFORM_LINUX
-	#include "Pipe/Core/Linux/LinuxPlatform.h"
+	#include "Pipe/Core/LinuxPlatform.h"
 #elif P_PLATFORM_MACOS
-	#include "Pipe/Core/Mac/MacPlatform.h"
+	#include "Pipe/Core/MacPlatform.h"
 #else
 	#error Unknown platform
 #endif
