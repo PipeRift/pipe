@@ -578,7 +578,7 @@ namespace p
 				if constexpr (!p::IsEmpty<T>)
 				{
 					data.Reserve(index + 1u);
-					T* const value = data.Insert(index, Forward<Args>(args)...);
+					T* const value = data.Insert(index, p::Forward<Args>(args)...);
 					OnAdded({id});
 					return *value;
 				}
