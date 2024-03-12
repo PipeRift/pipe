@@ -55,7 +55,7 @@ namespace p
 	{
 	protected:
 		using Method   = void(Params...);
-		using Function = TFunction<void(Params...)>;
+		using Function = std::function<void(Params...)>;
 
 		using MethodPtr = void (*)(Params...);
 		template<typename Type>
