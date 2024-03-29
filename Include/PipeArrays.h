@@ -690,14 +690,12 @@ namespace p
 
 #pragma region Constructors
 	public:
-		constexpr TInlineArray(Arena& arena = p ::GetCurrentArena()) : arena{&arena} {}
-		constexpr TInlineArray(i32 initialSize, Arena& arena = p::GetCurrentArena()) : arena{&arena}
+		constexpr TInlineArray() = default;
+		constexpr TInlineArray(i32 initialSize)
 		{
 			Assign(initialSize);
 		}
-		constexpr TInlineArray(
-		    i32 initialSize, const Type& value, Arena& arena = p::GetCurrentArena())
-		    : arena{&arena}
+		constexpr TInlineArray(i32 initialSize, const Type& value)
 		{
 			Assign(initialSize, value);
 		}
@@ -706,22 +704,46 @@ namespace p
 			Assign(Move(initList));
 		}
 		template<typename It>
-		constexpr TInlineArray(
-		    const It& beginIt, const It& endIt, Arena& arena = p::GetCurrentArena())
-		    : arena{&arena}
+		constexpr TInlineArray(const It& beginIt, const It& endIt)
 		{
 			Append(beginIt, endIt);
 		}
-		TInlineArray(const Type* data, i32 sizeNum, Arena& arena = p::GetCurrentArena())
-		    : arena{&arena}
+		TInlineArray(const Type* data, i32 sizeNum)
 		{
 			Assign(data, sizeNum);
 		}
-		TInlineArray(const Type* first, const Type* last, Arena& arena = p::GetCurrentArena())
-		    : arena{&arena}
+		TInlineArray(const Type* first, const Type* last)
 		{
 			Assign(first, std::distance(first, last));
 		}
+
+		constexpr TInlineArray(Arena& arena) : arena{&arena} {}
+		constexpr TInlineArray(Arena& arena, i32 initialSize) : arena{&arena}
+		{
+			Assign(initialSize);
+		}
+		constexpr TInlineArray(Arena& arena, i32 initialSize, const Type& value) : arena{&arena}
+		{
+			Assign(initialSize, value);
+		}
+		constexpr TInlineArray(Arena& arena, std::initializer_list<Type> initList) : arena{&arena}
+		{
+			Assign(Move(initList));
+		}
+		template<typename It>
+		constexpr TInlineArray(Arena& arena, const It& beginIt, const It& endIt) : arena{&arena}
+		{
+			Append(beginIt, endIt);
+		}
+		TInlineArray(Arena& arena, const Type* data, i32 sizeNum) : arena{&arena}
+		{
+			Assign(data, sizeNum);
+		}
+		TInlineArray(Arena& arena, const Type* first, const Type* last) : arena{&arena}
+		{
+			Assign(first, std::distance(first, last));
+		}
+
 		template<u32 OtherInlineCapacity>
 		TInlineArray(TInlineArray<Type, OtherInlineCapacity>&& other)
 		{

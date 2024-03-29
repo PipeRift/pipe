@@ -5,7 +5,6 @@
 #include "PipeArraysFwd.h"
 
 
-
 namespace p
 {
 	struct BinaryFormatReader : public TFormatReader<SerializeFormat::Binary>
@@ -46,13 +45,14 @@ namespace p
 	struct BinaryFormatWriter : public TFormatWriter<SerializeFormat::Binary>
 	{
 	private:
-		p::u8* data     = nullptr;
-		p::i32 size     = 0;
-		p::i32 capacity = 0;
+		Arena& arena;
+		u8* data     = nullptr;
+		i32 size     = 0;
+		i32 capacity = 0;
 
 
 	public:
-		PIPE_API BinaryFormatWriter();
+		PIPE_API BinaryFormatWriter(Arena& arena = p::GetCurrentArena());
 		PIPE_API ~BinaryFormatWriter();
 
 		// BEGIN Writer Interface
