@@ -255,14 +255,14 @@ namespace p
 			const TColor<ColorMode::RGBA> color{r, g, b, a};
 			return TColor{color};
 		}
-		static constexpr TColor FromHEX(u32 value)
+		static constexpr TColor FromHex(u32 value)
 		{
 			const TColor<ColorMode::RGBA> color{u8(value >> 16), u8(value >> 8), u8(value >> 0)};
 			return TColor{color};
 		}
 
-		// Same as FromHEX() but taking into account alpha value
-		static constexpr TColor HexAlpha(u32 value)
+		// Same as FromHex() but taking into account alpha value
+		static constexpr TColor FromHexAlpha(u32 value)
 		{
 			const TColor<ColorMode::RGBA> color{
 			    u8(value >> 24), u8(value >> 16), u8(value >> 8), u8(value >> 0)};
