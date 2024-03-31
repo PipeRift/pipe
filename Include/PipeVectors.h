@@ -646,9 +646,12 @@ namespace p
 	}
 
 
-	using v2 = Vec<2, float>;
-	using v3 = Vec<3, float>;
-	using v4 = Vec<4, float>;
+	using v2  = Vec<2, float>;
+	using v3  = Vec<3, float>;
+	using v4  = Vec<4, float>;
+	using v2d = Vec<2, double>;
+	using v3d = Vec<3, double>;
+	using v4d = Vec<4, double>;
 
 	using v2_u8 = Vec<2, u8>;
 	using v3_u8 = Vec<3, u8>;
