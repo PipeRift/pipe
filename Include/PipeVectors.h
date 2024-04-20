@@ -136,7 +136,7 @@ namespace p
 		{
 			const float aCos = std::cos(angle);
 			const float aSin = std::sin(angle);
-			return {x * aCos - y * aSin, x * aSin + y * aCos};
+			return {T(x * aCos - y * aSin), T(x * aSin + y * aCos)};
 		}
 
 		constexpr float AngleRad() const
