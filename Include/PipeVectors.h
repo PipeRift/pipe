@@ -80,10 +80,10 @@ namespace p
 
 		Vec& Normalize()
 		{
-			const T length = Length();
-			if (length > 0.f)
+			const T lengthSquared = LengthSquared();
+			if (lengthSquared > 0.f)
 			{
-				const float scale = InvSqrt(length);
+				const float scale = InvSqrt(lengthSquared);
 				x *= scale;
 				y *= scale;
 			}

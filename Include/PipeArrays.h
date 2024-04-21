@@ -1278,23 +1278,15 @@ namespace p
 			return lastSize - Super::size;
 		}
 
-		void RemoveLast()
-		{
-			if (1 <= Super::size)
-			{
-				RemoveAtUnsafe(Super::size - 1);
-			}
-		}
-
 		/**
 		 * Remove N last elements from the array
 		 * @param count
 		 */
-		void RemoveLast(i32 count)
+		void RemoveLast(i32 count = 1, const bool shouldShrink = true)
 		{
 			if (count <= Super::size)
 			{
-				RemoveAtUnsafe(Super::size - count, count);
+				RemoveAtUnsafe(Super::size - count, count, shouldShrink);
 			}
 		}
 
@@ -1328,11 +1320,11 @@ namespace p
 			Reserve(Super::size + extraCapacity);
 		}
 
-		void Resize(i32 newSize)
+		void Resize(i32 newSize, const bool shouldShrink = true)
 		{
 			if (newSize < Super::size)    // Trim
 			{
-				RemoveLast(Super::size - newSize);
+				RemoveLast(Super::size - newSize, shouldShrink);
 			}
 			else if (newSize > Super::size)    // Append
 			{
@@ -1341,11 +1333,11 @@ namespace p
 			// If size doens't change, do nothing
 		}
 
-		void Resize(i32 newSize, const Type& value)
+		void Resize(i32 newSize, const Type& value, const bool shouldShrink = true)
 		{
 			if (newSize < Super::size)    // Trim
 			{
-				RemoveLast(Super::size - newSize);
+				RemoveLast(Super::size - newSize, shouldShrink);
 			}
 			else if (newSize > Super::size)    // Append
 			{
