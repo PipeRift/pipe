@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #pragma once
 
@@ -745,10 +745,10 @@ namespace p
 	{
 	protected:
 		/** Holds the days per month in a non-leap year. */
-		static const i32 DaysPerMonth[];
+		static const u32 DaysPerMonth[];
 
 		/** Holds the cumulative days per month in a non-leap year. */
-		static const i32 DaysToMonth[];
+		static const u32 DaysToMonth[];
 
 #pragma warning(push)
 #pragma warning(disable:4251)

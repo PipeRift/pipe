@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Platform.h"
@@ -6,10 +6,8 @@
 #include "Pipe/Core/Templates.h"
 #include "Pipe/Reflect/EnumType.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
-#include "Pipe/Reflect/Type.h"
 #include "Pipe/Reflect/TypeFlags.h"
-#include "Pipe/Serialize/Formats/IFormat.h"
-#include "Pipe/Serialize/SerializationTypes.h"
+#include "Pipe/Serialize/SerializationFwd.h"
 
 
 namespace p
@@ -25,16 +23,14 @@ namespace p
 		{};
 	}    // namespace internal
 
+
 	template<typename T>
 	static constexpr bool Readable = internal::template HasRead<T>::value;
 
 
 	struct PIPE_API Reader
 	{
-		template<SerializeFormat format>
-		friend struct TFormatReader;
-
-		SerializeFormat format      = SerializeFormat::None;
+		friend IFormatReader;
 		IFormatReader* formatReader = nullptr;
 
 
@@ -135,64 +131,65 @@ namespace p
 			return false;
 		}
 
-	public:
-		template<SerializeFormat format>
-		typename FormatBind<format>::Reader& GetReader() requires(HasReader<format>);
+		inline IFormatReader& GetFormat()
+		{
+			return *formatReader;
+		}
 	};
 
 
 	// Format reads
-	PIPE_API void Read(Reader& ct, bool& val);
-	PIPE_API void Read(Reader& ct, i8& val);
-	PIPE_API void Read(Reader& ct, u8& val);
-	PIPE_API void Read(Reader& ct, i16& val);
-	PIPE_API void Read(Reader& ct, u16& val);
-	PIPE_API void Read(Reader& ct, i32& val);
-	PIPE_API void Read(Reader& ct, u32& val);
-	PIPE_API void Read(Reader& ct, i64& val);
-	PIPE_API void Read(Reader& ct, u64& val);
-	PIPE_API void Read(Reader& ct, float& val);
-	PIPE_API void Read(Reader& ct, double& val);
-	PIPE_API void Read(Reader& ct, StringView& val);
+	PIPE_API void Read(Reader& r, bool& val);
+	PIPE_API void Read(Reader& r, i8& val);
+	PIPE_API void Read(Reader& r, u8& val);
+	PIPE_API void Read(Reader& r, i16& val);
+	PIPE_API void Read(Reader& r, u16& val);
+	PIPE_API void Read(Reader& r, i32& val);
+	PIPE_API void Read(Reader& r, u32& val);
+	PIPE_API void Read(Reader& r, i64& val);
+	PIPE_API void Read(Reader& r, u64& val);
+	PIPE_API void Read(Reader& r, float& val);
+	PIPE_API void Read(Reader& r, double& val);
+	PIPE_API void Read(Reader& r, StringView& val);
 
 	// Pipe types reads
-	PIPE_API void Read(Reader& ct, Type*& val);
+	PIPE_API void Read(Reader& r, Type*& val);
 	PIPE_API void Read(Reader& r, TypeId& val);
 
 	template<typename T1, typename T2>
-	void Read(Reader& ct, TPair<T1, T2>& val)
+	void Read(Reader& r, TPair<T1, T2>& val)
 	{
-		ct.BeginObject();
-		ct.Next("first", val.first);
-		ct.Next("second", val.second);
+		r.BeginObject();
+		r.Next("first", val.first);
+		r.Next("second", val.second);
 	}
 
 	template<typename T>
-	void Read(Reader& ct, T& val)
+	void Read(Reader& r, T& val)
 	    requires(bool(TFlags<T>::HasMemberSerialize && !TFlags<T>::HasSingleSerialize))
 	{
-		val.Read(ct);
+		val.Read(r);
 	}
 
 	template<typename T>
-	void Read(Reader& ct, T& val) requires(IsArray<T>())
+	void Read(Reader& r, T& val) requires(IsArray<T>())
 	{
 		u32 size;
-		ct.BeginArray(size);
+		r.BeginArray(size);
 		val.Resize(size);
 		for (u32 i = 0; i < size; ++i)
 		{
-			ct.Next(val[i]);
+			r.Next(val[i]);
 		}
 	}
 
 	template<typename T>
-	void Read(Reader& ct, T& val) requires(Enum<T>)
+	void Read(Reader& r, T& val) requires(Enum<T>)
 	{
 		if constexpr (GetEnumSize<T>() > 0)
 		{
 			StringView typeStr;
-			ct.Serialize(typeStr);
+			r.Serialize(typeStr);
 			if (std::optional<T> value = GetEnumValue<T>(typeStr))
 			{
 				val = value.value();

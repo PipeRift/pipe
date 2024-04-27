@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #include "Pipe/Serialize/Formats/JsonFormat.h"
 
 #include "Pipe/Core/Checks.h"
@@ -52,15 +52,6 @@ bool yyjson_mut_obj_add_val(
 
 namespace p
 {
-	u64 GetKeyTag(sizet size)
-	{
-		return (((u64)size) << YYJSON_TAG_BIT) | YYJSON_TYPE_STR;
-	}
-	bool CheckKey(yyjson_val* key, const StringView& name)
-	{
-		return memcmp(key->uni.ptr, name.data(), name.size()) == 0;
-	}
-
 	JsonFormatReader::JsonFormatReader(StringView data)
 	{
 		InternalInit((char*)data.data(), data.length(), false);
@@ -444,16 +435,14 @@ namespace p
 	bool JsonFormatReader::FindNextKey(
 	    u32 firstId, yyjson_val* firstKey, StringView name, u32& outIndex, yyjson_val*& outValue)
 	{
-		const Scope& scope = GetScope();
-		const u64 tag      = GetKeyTag(name.size());
-
 		// Get key of the current value. See yyjson_obj_foreach
 		auto* key = firstKey;
 		u32 i;
 		// Iterate [firstId, last]
+		const Scope& scope = GetScope();
 		for (i = firstId; i < scope.size; ++i)
 		{
-			if (key->tag == tag && CheckKey(key, name))
+			if (unsafe_yyjson_equals_strn(key, name.data(), name.size()))
 			{
 				outIndex = i;
 				outValue = key + 1;
@@ -466,7 +455,7 @@ namespace p
 		key = unsafe_yyjson_get_first(scope.parent);
 		for (i = 0; i < firstId; ++i)
 		{
-			if (key->tag == tag && CheckKey(key, name))
+			if (unsafe_yyjson_equals_strn(key, name.data(), name.size()))
 			{
 				outIndex = i;
 				outValue = key + 1;

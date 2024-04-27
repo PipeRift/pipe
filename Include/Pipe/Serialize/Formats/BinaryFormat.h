@@ -1,13 +1,13 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Serialize/Formats/TFormat.h"
+#include "Pipe/Serialize/Formats/IFormat.h"
 #include "PipeArraysFwd.h"
 
 
 namespace p
 {
-	struct BinaryFormatReader : public TFormatReader<SerializeFormat::Binary>
+	struct BinaryFormatReader : public IFormatReader
 	{
 	private:
 		TView<u8> data;
@@ -42,7 +42,7 @@ namespace p
 		PIPE_API bool IsValid() const override;
 	};
 
-	struct BinaryFormatWriter : public TFormatWriter<SerializeFormat::Binary>
+	struct BinaryFormatWriter : public IFormatWriter
 	{
 	private:
 		Arena& arena;
@@ -83,13 +83,5 @@ namespace p
 
 	private:
 		void PreAlloc(p::u32 offset);
-	};
-
-
-	template<>
-	struct FormatBind<SerializeFormat::Binary>
-	{
-		using Reader = BinaryFormatReader;
-		using Writer = BinaryFormatWriter;
 	};
 }    // namespace p

@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Platform.h"
@@ -7,8 +7,7 @@
 #include "Pipe/Reflect/EnumType.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
 #include "Pipe/Reflect/TypeFlags.h"
-#include "Pipe/Serialize/Formats/IFormat.h"
-#include "Pipe/Serialize/SerializationTypes.h"
+#include "Pipe/Serialize/SerializationFwd.h"
 
 
 namespace p
@@ -24,15 +23,22 @@ namespace p
 		{};
 	}    // namespace internal
 
+
+	enum WriteFlags : size_t
+	{
+		WriteFlags_None              = 0,
+		WriteFlags_CacheStringKeys   = 1 << 0,
+		WriteFlags_CacheStringValues = 1 << 1,
+		WriteFlags_CacheStrings      = WriteFlags_CacheStringKeys | WriteFlags_CacheStringValues
+	};
+
+
 	template<typename T>
 	static constexpr bool Writable = internal::template HasWrite<T>::value;
 
 	struct PIPE_API Writer
 	{
-		template<SerializeFormat format>
-		friend struct TFormatWriter;
-
-		SerializeFormat format      = SerializeFormat::None;
+		friend IFormatWriter;
 		IFormatWriter* formatWriter = nullptr;
 
 
@@ -127,21 +133,14 @@ namespace p
 			return true;
 		}
 
-		void PushAddFlags(WriteFlags flags)
-		{
-			formatWriter->PushAddFlags(flags);
-		}
-		void PushRemoveFlags(WriteFlags flags)
-		{
-			formatWriter->PushRemoveFlags(flags);
-		}
-		void PopFlags()
-		{
-			formatWriter->PopFlags();
-		}
+		void PushAddFlags(WriteFlags flags);
+		void PushRemoveFlags(WriteFlags flags);
+		void PopFlags();
 
-		template<SerializeFormat format>
-		typename FormatBind<format>::Writer& GetWriter() requires(HasWriter<format>);
+		inline IFormatWriter& GetFormat()
+		{
+			return *formatWriter;
+		}
 	};
 
 

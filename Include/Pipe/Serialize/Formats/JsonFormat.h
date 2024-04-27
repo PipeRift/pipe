@@ -1,8 +1,8 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/String.h"
-#include "Pipe/Serialize/Formats/TFormat.h"
+#include "Pipe/Serialize/Formats/IFormat.h"
 
 
 struct yyjson_doc;
@@ -13,7 +13,7 @@ struct yyjson_mut_val;
 
 namespace p
 {
-	struct JsonFormatReader : public TFormatReader<SerializeFormat::Json>
+	struct JsonFormatReader : public IFormatReader
 	{
 		enum class ReadErrorCode : u32
 		{
@@ -115,7 +115,7 @@ namespace p
 	};
 
 
-	struct JsonFormatWriter : public TFormatWriter<SerializeFormat::Json>
+	struct JsonFormatWriter : public IFormatWriter
 	{
 	private:
 		struct Scope
@@ -169,13 +169,5 @@ namespace p
 		Scope& GetScope();
 		void PushScope(StringView key);
 		void PopScope();
-	};
-
-
-	template<>
-	struct FormatBind<SerializeFormat::Json>
-	{
-		using Reader = JsonFormatReader;
-		using Writer = JsonFormatWriter;
 	};
 }    // namespace p

@@ -1,9 +1,8 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include "PipeTime.h"
 
 #include "Pipe/Core/Char.h"
-#include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Log.h"
 
 #include <thread>
@@ -159,9 +158,8 @@ namespace p
 
 	void Timespan::Assign(i32 days, i32 hours, i32 minutes, i32 seconds, i32 fractionNano)
 	{
-		duration = Chrono::floor<DecMicroseconds>(
-		    Days{days} + Chrono::hours{hours} + Chrono::minutes{minutes} + Chrono::seconds{seconds}
-		    + Chrono::nanoseconds{fractionNano});
+		duration = Chrono::floor<DecMicroseconds>(Days{days} + Hours{hours} + Minutes{minutes}
+		                                          + Seconds{seconds} + Nanoseconds{fractionNano});
 	}
 
 	Timespan Timespan::FromHours(i32 hours)
@@ -183,8 +181,8 @@ namespace p
 	/* DateTime constants
 	 *****************************************************************************/
 
-	const i32 DateTime::DaysPerMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-	const i32 DateTime::DaysToMonth[]  = {
+	const u32 DateTime::DaysPerMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	const u32 DateTime::DaysToMonth[]  = {
         0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 
 
@@ -229,12 +227,9 @@ namespace p
 
 	u32 DateTime::GetDayOfYear() const
 	{
-		auto timeDays = Chrono::floor<Days>(value);
-		const YearMonthDay ymd{timeDays};
+		const YearMonthDay ymd = GetDateComponents();
 
-		return (
-		    timeDays.time_since_epoch() - LocalDays{ymd.year() / January / 1}.time_since_epoch())
-		    .count();
+		return DaysToMonth[u32(ymd.month()) - 1] + u32(ymd.day());
 	}
 
 
@@ -254,7 +249,7 @@ namespace p
 
 	u32 DateTime::GetMonth() const
 	{
-		return (u32)YearMonthDay{Chrono::floor<Days>(value)}.month();
+		return (u32)GetDateComponents().month();
 	}
 
 	i32 DateTime::GetYear() const

@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "nanobench.h"
@@ -11,7 +11,6 @@ using namespace ankerl;
 #include <Pipe/Memory/MonoLinearArena.h>
 #include <Pipe/Memory/MultiLinearArena.h>
 #include <PipeTime.h>
-
 
 
 void RunArenasBenchmarks()

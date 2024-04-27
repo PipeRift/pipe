@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         config: [Release, Debug]
-        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
+        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang, macos-gcc]
         include:
           - name: windows-msvc
             os: windows-latest
@@ -53,7 +53,7 @@ jobs:
           - name: macos-gcc
             os: macos-14
             os-name: macos
-            compiler: gcc-13
+            compiler: gcc
             cxx: /usr/bin/g++
             cc: /usr/bin/gcc
     steps:
@@ -63,7 +63,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
+        uses: aminya/setup-cpp
         with:
           compiler: ${{ matrix.compiler }}
           vcvarsall: ${{ matrix.os-name == 'windows' }}
