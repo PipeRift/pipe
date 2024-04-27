@@ -181,8 +181,8 @@ namespace p
 	/* DateTime constants
 	 *****************************************************************************/
 
-	const u32 DateTime::DaysPerMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-	const u32 DateTime::DaysToMonth[]  = {
+	const u32 DateTime::daysPerMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	const u32 DateTime::daysToMonth[]  = {
         0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 
 
@@ -198,8 +198,24 @@ namespace p
 			Warning("Created invalid date format.");
 		}
 
-		value = SysTime{SysDays(Year{year} / month / day) + Hours{hour} + Minutes{minute}
-		                + Seconds{second} + Milliseconds{millisecond}};
+		p::i32 totalDays = 0;
+		if ((month > 2) && IsLeapYear(year))
+		{
+			++totalDays;
+		}
+
+		--year;     // the current year is not a full year yet
+		--month;    // the current month is not a full month yet
+
+		totalDays += year * 365;
+		totalDays += year / 4;              // leap year day every four years...
+		totalDays -= year / 100;            // ...except every 100 years...
+		totalDays += year / 400;            // ...but also every 400 years
+		totalDays += daysToMonth[month];    // days in this year up to last month
+		totalDays += day - 1;               // days in this month minus today
+
+		value = SysTime{Days{totalDays} + Hours{hour} + Minutes{minute} + Seconds{second}
+		                + Milliseconds{millisecond}};
 	}
 
 
@@ -229,7 +245,7 @@ namespace p
 	{
 		const YearMonthDay ymd = GetDateComponents();
 
-		return DaysToMonth[u32(ymd.month()) - 1] + u32(ymd.day());
+		return daysToMonth[u32(ymd.month()) - 1] + u32(ymd.day());
 	}
 
 
@@ -365,7 +381,7 @@ namespace p
 			return 29;
 		}
 
-		return DaysPerMonth[Month];
+		return daysPerMonth[Month];
 	}
 
 	i32 DateTime::DaysInYear(i32 Year)

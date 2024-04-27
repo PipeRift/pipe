@@ -152,9 +152,9 @@ namespace p
 		 * @param Seconds The seconds component.
 		 * @see FromHours, FromMinutes, FromSeconds
 		 */
-		Timespan(i32 Hours, i32 Minutes, i32 Seconds) : duration{}
+		Timespan(i32 hours, i32 minutes, i32 seconds) : duration{}
 		{
-			Assign(0, Hours, Minutes, Seconds, 0);
+			Assign(0, hours, minutes, seconds, 0);
 		}
 
 		/**
@@ -169,9 +169,9 @@ namespace p
 		 * @param Seconds The seconds component.
 		 * @see FromDays, FromHours, FromMinutes, FromSeconds
 		 */
-		Timespan(i32 Days, i32 Hours, i32 Minutes, i32 Seconds) : duration{}
+		Timespan(i32 days, i32 hours, i32 minutes, i32 seconds) : duration{}
 		{
-			Assign(Days, Hours, Minutes, Seconds, 0);
+			Assign(days, hours, minutes, seconds, 0);
 		}
 
 		/**
@@ -745,10 +745,10 @@ namespace p
 	{
 	protected:
 		/** Holds the days per month in a non-leap year. */
-		static const u32 DaysPerMonth[];
+		static const u32 daysPerMonth[];
 
 		/** Holds the cumulative days per month in a non-leap year. */
-		static const u32 DaysToMonth[];
+		static const u32 daysToMonth[];
 
 #pragma warning(push)
 #pragma warning(disable:4251)
@@ -786,8 +786,8 @@ namespace p
 		 * @param Second The second (optional).
 		 * @param Millisecond The millisecond (optional).
 		 */
-		DateTime(i32 Year, i32 Month, i32 Day, i32 Hour = 0, i32 Minute = 0, i32 Second = 0,
-		    i32 Millisecond = 0);
+		DateTime(i32 year, i32 month, i32 day, i32 hour = 0, i32 minute = 0, i32 second = 0,
+		    i32 millisecond = 0);
 
 	public:
 		/**
