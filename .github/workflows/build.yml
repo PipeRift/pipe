@@ -121,7 +121,7 @@ jobs:
           path: Install/Windows
 
       - name: Upload all
-          uses: actions/upload-artifact@v3
-          with:
-            name: pipe-all-install
-            path: Install
+        uses: actions/upload-artifact@v3
+        with:
+          name: pipe-all-install
+          path: Install
