@@ -103,20 +103,3 @@ jobs:
         if: ${{ matrix.os-name != 'macos' }} # Tests are skipped temporarily on MacOS
         working-directory: ./Build
         run: ctest --output-on-failure -j2 -C ${{ matrix.config }}
-
-  Deploy:
-    needs: Build
-    if: ${{ always() }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download installation
-        uses: actions/download-artifact@v4
-        with:
-          name: pipe-linux-install
-          path: Install/Linux
-
-      - name: Download installation
-        uses: actions/download-artifact@v4
-        with:
-          name: pipe-windows-install
-          path: Install/Windows
