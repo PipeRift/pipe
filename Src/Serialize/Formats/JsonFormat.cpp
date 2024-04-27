@@ -13,7 +13,7 @@ static void* yyjson_malloc(void* ctx, p::sizet size)
 {
 	return p::HeapAlloc(size);
 }
-static void* yyjson_realloc(void* ctx, void* ptr, p::sizet size)
+static void* yyjson_realloc(void* ctx, void* ptr, p::sizet oldSize, p::sizet size)
 {
 	return p::HeapRealloc(ptr, size);
 }

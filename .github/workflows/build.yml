@@ -58,7 +58,7 @@ jobs:
           #  cc: /usr/bin/gcc
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
 
@@ -71,7 +71,7 @@ jobs:
           ninja: true
 
       - name: Cache Build
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: Build
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
@@ -93,3 +93,6 @@ jobs:
         if: ${{ matrix.os-name != 'macos' }} # Tests are skipped temporarily on MacOS
         working-directory: ./Build
         run: ctest --output-on-failure -j2 -C ${{ matrix.config }}
+
+  Deploy:
+    needs: Build
