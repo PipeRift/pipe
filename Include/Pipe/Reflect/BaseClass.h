@@ -3,7 +3,7 @@
 
 #include "BaseStruct.h"
 #include "Pipe/Memory/OwnPtr.h"
-#include "Pipe/Serialize/SerializationFwd.h"
+#include "PipeSerializeFwd.h"
 
 
 namespace p

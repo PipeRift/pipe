@@ -3,7 +3,7 @@
 #include "PipeVectors.h"
 
 #include "Pipe/Core/PlatformMisc.h"
-#include "Pipe/Serialize/Serialization.h"
+#include "PipeSerialize.h"
 
 
 namespace p

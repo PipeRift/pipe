@@ -4,7 +4,7 @@
 
 #include "Pipe/Core/Char.h"
 #include "Pipe/Core/PlatformMisc.h"
-#include "Pipe/Serialize/Serialization.h"
+#include "PipeSerialize.h"
 
 #include <cstdio>
 

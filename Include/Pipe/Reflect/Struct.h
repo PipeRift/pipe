@@ -4,7 +4,7 @@
 #include "BaseStruct.h"
 #include "Pipe/Reflect/Reflection.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
-#include "Pipe/Serialize/Serialization.h"
+#include "PipeSerialize.h"
 
 
 namespace p

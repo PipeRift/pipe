@@ -3,8 +3,9 @@
 #pragma once
 
 #include "Pipe/Core/String.h"
-#include "Pipe/Serialize/SerializationFwd.h"
 #include "PipeAlgorithms.h"
+#include "PipeSerializeFwd.h"
+
 
 
 namespace p

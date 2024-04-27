@@ -6,7 +6,7 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
-#include "Pipe/Serialize/SerializationFwd.h"
+#include "PipeSerializeFwd.h"
 
 #include <filesystem>
 #include <format>

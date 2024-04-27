@@ -57,7 +57,7 @@ namespace p
 	}
 
 	template<typename T>
-	constexpr bool HasType() requires(IsArray<T>())
+	constexpr bool HasType() requires(IsArrayView<T>())
 	{
 		return HasType<typename T::ItemType>();
 	}

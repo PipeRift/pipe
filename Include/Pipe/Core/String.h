@@ -8,12 +8,13 @@
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/STLAllocator.h"
-#include "Pipe/Serialize/SerializationFwd.h"
 #include "PipeArrays.h"
+#include "PipeSerializeFwd.h"
 
 #include <utf8.h>
 
 #include <string>
+
 
 
 #pragma warning(push)

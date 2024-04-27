@@ -8,7 +8,6 @@
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/UniquePtr.h"
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
-#include "Pipe/Reflect/Struct.h"
 #include "PipeArrays.h"
 
 
@@ -145,7 +144,7 @@ namespace p
 	//
 
 	// Mark an entity as not serialized (it will be entirely ignored by the serializer)
-	struct CNotSerialized : public Struct
+	struct CNotSerialized
 	{};
 
 	class PIPE_API EntityReader : public Reader
@@ -1870,25 +1869,16 @@ namespace p
 	// HIERARCHY
 	//
 
-	struct PIPE_API CParent : public Struct
+	struct PIPE_API CParent
 	{
-		P_STRUCT(CParent, Struct)
-
-		P_PROP(children)
 		TArray<Id> children;
 	};
 	PIPE_API void Read(Reader& ct, CParent& val);
 	PIPE_API void Write(Writer& ct, const CParent& val);
 
-	struct PIPE_API CChild : public Struct
+	struct PIPE_API CChild
 	{
-		P_STRUCT(CChild, Struct)
-
-		P_PROP(parent)
 		Id parent = NoId;
-
-		CChild() = default;
-		CChild(Id parent) : parent(parent) {}
 	};
 	PIPE_API void Read(Reader& ct, CChild& val);
 	PIPE_API void Write(Writer& ct, const CChild& val);

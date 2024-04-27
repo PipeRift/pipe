@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Pipe/Export.h"
-#include "Pipe/Serialize/SerializationFwd.h"
+#include "PipeSerializeFwd.h"
 
 
 namespace p

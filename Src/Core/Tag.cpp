@@ -4,7 +4,7 @@
 
 #include "Pipe/Memory/Memory.h"
 #include "Pipe/Memory/MultiLinearArena.h"
-#include "Pipe/Serialize/Serialization.h"
+#include "PipeSerialize.h"
 
 #include <mutex>
 #include <shared_mutex>

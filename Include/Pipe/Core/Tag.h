@@ -4,7 +4,7 @@
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Serialize/SerializationFwd.h"
+#include "PipeSerializeFwd.h"
 
 #include <format>
 

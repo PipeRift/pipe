@@ -1234,7 +1234,7 @@ namespace p
 					}
 					else
 					{
-						access.Add<CChild>(childId, parentId);
+						access.Add<CChild>(childId, {parentId});
 						fixed = true;
 					}
 				}
