@@ -47,7 +47,7 @@ jobs:
           - name: macos-clang
             os: macos-14
             os-name: macos
-            compiler: clang@16
+            compiler: clang-16
             cxx: clang++
             cc: clang
     steps:
@@ -67,10 +67,10 @@ jobs:
       - name: (MacOS) Install clang through brew
         if: matrix.os-name == 'macos' && contains(matrix.compiler, 'clang')
         run: |
-          brew install ${{ matrix.compiler }}
-          echo "CC=/usr/local/opt/${{ matrix.compiler }}/bin/clang" >> $GITHUB_ENV
-          echo "CXX=/usr/local/opt/${{ matrix.compiler }}/bin/clang++" >> $GITHUB_ENV
-          echo "PATH=/usr/local/opt/${{ matrix.compiler }}/bin:$PATH" >> $GITHUB_ENV
+          brew install llvm@16
+          echo "CC=/usr/local/opt/llvm@16/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/local/opt/llvm@16/bin/clang++" >> $GITHUB_ENV
+          echo "PATH=/usr/local/opt/llvm@16/bin:$PATH" >> $GITHUB_ENV
 
       - name: Cache Build
         uses: actions/cache@v4

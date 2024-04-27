@@ -5,6 +5,7 @@
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Templates.h"
+#include "Pipe/Reflect/EnumType.h"
 #include "Pipe/Reflect/ReflectionTraits.h"
 #include "Pipe/Reflect/Type.h"
 #include "Pipe/Reflect/TypeFlags.h"
