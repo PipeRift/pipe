@@ -80,10 +80,10 @@ namespace p
 
 		Vec& Normalize()
 		{
-			const T length = Length();
-			if (length > 0.f)
+			const T lengthSquared = LengthSquared();
+			if (lengthSquared > 0.f)
 			{
-				const float scale = InvSqrt(length);
+				const float scale = InvSqrt(lengthSquared);
 				x *= scale;
 				y *= scale;
 			}
@@ -136,7 +136,7 @@ namespace p
 		{
 			const float aCos = std::cos(angle);
 			const float aSin = std::sin(angle);
-			return {x * aCos - y * aSin, x * aSin + y * aCos};
+			return {T(x * aCos - y * aSin), T(x * aSin + y * aCos)};
 		}
 
 		constexpr float AngleRad() const
@@ -646,9 +646,12 @@ namespace p
 	}
 
 
-	using v2 = Vec<2, float>;
-	using v3 = Vec<3, float>;
-	using v4 = Vec<4, float>;
+	using v2  = Vec<2, float>;
+	using v3  = Vec<3, float>;
+	using v4  = Vec<4, float>;
+	using v2d = Vec<2, double>;
+	using v3d = Vec<3, double>;
+	using v4d = Vec<4, double>;
 
 	using v2_u8 = Vec<2, u8>;
 	using v3_u8 = Vec<3, u8>;

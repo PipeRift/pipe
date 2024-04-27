@@ -161,11 +161,13 @@ namespace p
 	}
 
 
-	BinaryFormatWriter::BinaryFormatWriter() : data{static_cast<u8*>(Alloc(64))}, capacity{64} {}
+	BinaryFormatWriter::BinaryFormatWriter(Arena& arena)
+	    : arena{arena}, data{static_cast<u8*>(Alloc<u8>(arena, 64))}, capacity{64}
+	{}
 
 	BinaryFormatWriter::~BinaryFormatWriter()
 	{
-		Free(data, capacity);
+		Free(arena, data, capacity);
 	}
 
 	void BinaryFormatWriter::BeginArray(u32 size)
@@ -302,9 +304,9 @@ namespace p
 			capacity *= 2;    // Grow capacity exponentially
 			u8* oldData = data;
 
-			data = static_cast<u8*>(Alloc(capacity));
+			data = static_cast<u8*>(Alloc<u8>(arena, capacity));
 			MoveMem(data, oldData, size);
-			Free(oldData, oldCapacity);
+			Free<u8>(arena, oldData, oldCapacity);
 		}
 	}
 }    // namespace p

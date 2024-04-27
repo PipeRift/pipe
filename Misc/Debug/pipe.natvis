@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+.natvis file for Visual Studio debugger.
+Purpose: provide nicer views on data types used by Pipe.
+
+To enable:
+* include file in your VS project (most recommended: not intrusive and always kept up to date!)
+* or copy in %USERPROFILE%\Documents\Visual Studio XXXX\Visualizers (current user)
+* or copy in %VsInstallDirectory%\Common7\Packages\Debugger\Visualizers (all users)
+
+More information at:
+https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2019
+-->
+
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="p::TInlineArray&lt;*,*&gt;">
+        <DisplayString>{{size={size} capacity={capacity}}}</DisplayString>
+        <Expand>
+            <Item Name="size">size</Item>
+            <Item Name="capacity">capacity</Item>
+            <Item Name="arena">arena</Item>
+            <ArrayItems>
+                <Size>size</Size>
+                <ValuePointer>data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <Type Name="p::TView&lt;*&gt;">
+        <DisplayString>{{size={size}}}</DisplayString>
+        <Expand>
+            <Item Name="size">size</Item>
+            <ArrayItems>
+                <Size>size</Size>
+                <ValuePointer>data</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="p::Vec&lt;2,*&gt;">
+        <DisplayString>{{x={x,g} y={y,g}}}</DisplayString>
+    </Type>
+
+    <Type Name="p::Vec&lt;3,*&gt;">
+        <DisplayString>{{x={x,g} y={y,g} z={z,g}}}</DisplayString>
+    </Type>
+
+    <Type Name="p::Vec&lt;4,*&gt;">
+        <DisplayString>{{x={x,g} y={y,g} z={z,g} w={w,g}}}</DisplayString>
+    </Type>
+
+    <Type Name="p::TRect&lt;*&gt;">
+        <DisplayString>{{min=({min.x,g} {min.y,g}) max=({max.x,g} {max.y,g}) size=({max.x-min.x,g}
+            {max.y-min.y,g})}}</DisplayString>
+        <Expand>
+            <Item Name="min">min</Item>
+            <Item Name="max">max</Item>
+            <Item Name="[Width]">max.x - min.x</Item>
+            <Item Name="[Height]">max.y - min.y</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="p::TBox&lt;*&gt;">
+        <DisplayString>{{min=({min.x,g} {min.y,g} {min.z,g}) max=({max.x,g} {max.y,g} {max.z,g})
+            size=({max.x-min.x,g} {max.y-min.y,g} {max.z-min.z,g})}}</DisplayString>
+        <Expand>
+            <Item Name="min">min</Item>
+            <Item Name="max">max</Item>
+            <Item Name="[Width]">max.x - min.x</Item>
+            <Item Name="[Height]">max.y - min.y</Item>
+            <Item Name="[Depth]">max.z - min.z</Item>
+        </Expand>
+    </Type>
+
+    <Type Name="p::Tag">
+        <DisplayString>{str,na}</DisplayString>
+        <StringView>str,na</StringView>
+    </Type>
+
+    <Type Name="p::TColor&lt;0&gt;">
+        <DisplayString>#{(r &lt;&lt; 24) | (g &lt;&lt; 16) | (g &lt;&lt; 8) | (a &lt;&lt; 0),Xb}</DisplayString>
+        <Expand>
+            <Item Name="r">r</Item>
+            <Item Name="g">g</Item>
+            <Item Name="b">b</Item>
+            <Item Name="a">a</Item>
+        </Expand>
+    </Type>
+    <Type Name="p::TColor&lt;1&gt;">
+        <DisplayString>{{r={r,g} g={g,g} b={b,g} a={a,g}}}</DisplayString>
+        <Expand>
+            <Item Name="r">r</Item>
+            <Item Name="g">g</Item>
+            <Item Name="b">b</Item>
+            <Item Name="a">a</Item>
+        </Expand>
+    </Type>
+    <Type Name="p::TColor&lt;2&gt;">
+        <DisplayString>{{r={r,g} g={g,g} b={b,g} a={a,g}}}</DisplayString>
+        <Expand>
+            <Item Name="r">r</Item>
+            <Item Name="g">g</Item>
+            <Item Name="b">b</Item>
+            <Item Name="a">a</Item>
+        </Expand>
+    </Type>
+    <Type Name="p::TColor&lt;3&gt;">
+        <DisplayString>{{h={h,g} s={s,g} v={v,g} a={a,g}}}</DisplayString>
+        <Expand>
+            <Item Name="h">h</Item>
+            <Item Name="s">s</Item>
+            <Item Name="v">v</Item>
+            <Item Name="a">a</Item>
+        </Expand>
+    </Type>
+</AutoVisualizer>
