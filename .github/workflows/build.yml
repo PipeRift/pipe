@@ -77,7 +77,7 @@ jobs:
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
-        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{matrix.cxx}}
+        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{matrix.cxx}} -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/Install
 
       - name: Build
         run: cmake --build Build --config ${{ matrix.config }}
@@ -88,6 +88,16 @@ jobs:
         with:
           name: pipe-${{ matrix.os-name }}
           path: Build/Bin
+
+      - name: Install
+        run: cmake --install Build --config ${{ matrix.config }}
+
+      - name: Upload installation
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.config == 'Release' && contains(matrix.compiler, 'clang') }} # Only clang artifacts are stored
+        with:
+          name: pipe-${{ matrix.os-name }}-install
+          path: Install
 
       - name: Run Tests
         if: ${{ matrix.os-name != 'macos' }} # Tests are skipped temporarily on MacOS
