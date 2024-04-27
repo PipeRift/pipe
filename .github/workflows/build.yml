@@ -106,6 +106,7 @@ jobs:
 
   Deploy:
     needs: Build
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
       - name: Download installation
