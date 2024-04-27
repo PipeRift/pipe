@@ -48,7 +48,7 @@ namespace p
 	static constexpr bool Writable = internal::template HasWrite<T>::value;
 
 
-	enum WriteFlags : size_t
+	enum WriteFlags : sizet
 	{
 		WriteFlags_None              = 0,
 		WriteFlags_CacheStringKeys   = 1 << 0,

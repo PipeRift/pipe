@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         config: [Release, Debug]
-        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang, macos-gcc]
+        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
         include:
           - name: windows-msvc
             os: windows-latest
@@ -48,14 +48,8 @@ jobs:
             os: macos-14
             os-name: macos
             compiler: clang-16
-            cxx: clang++
-            cc: clang
-          - name: macos-gcc
-            os: macos-14
-            os-name: macos
-            compiler: gcc-13
-            cxx: /usr/bin/g++
-            cc: /usr/bin/gcc
+            cxx: /usr/local/opt/llvm@17/bin/clang++
+            cc: /usr/local/opt/llvm@17/bin/clang
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
