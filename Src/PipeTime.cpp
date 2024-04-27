@@ -3,6 +3,7 @@
 #include "PipeTime.h"
 
 #include "Pipe/Core/Char.h"
+#include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Log.h"
 
 #include <thread>
@@ -231,7 +232,8 @@ namespace p
 		auto timeDays = Chrono::floor<Days>(value);
 		const YearMonthDay ymd{timeDays};
 
-		return (timeDays.time_since_epoch() - LocalDays{ymd.year() / Jan / 1}.time_since_epoch())
+		return (
+		    timeDays.time_since_epoch() - LocalDays{ymd.year() / January / 1}.time_since_epoch())
 		    .count();
 	}
 
@@ -361,7 +363,7 @@ namespace p
 
 	i32 DateTime::DaysInMonth(i32 Year, i32 Month)
 	{
-		assert((Month >= 1) && (Month <= 12));
+		Check((Month >= 1) && (Month <= 12));
 
 		if ((Month == 2) && IsLeapYear(Year))
 		{

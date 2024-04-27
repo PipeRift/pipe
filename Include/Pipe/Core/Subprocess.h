@@ -23,7 +23,7 @@
 
 namespace p
 {
-	enum class PIPE_API SubprocessOptions
+	enum class SubprocessOptions
 	{
 		None = 0,
 

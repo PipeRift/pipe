@@ -14,6 +14,7 @@ namespace p
 	{                                                                                   \
 		case SerializeFormat::Json: GetWriter<SerializeFormat::Json>().func; break;     \
 		case SerializeFormat::Binary: GetWriter<SerializeFormat::Binary>().func; break; \
+		default: break;                                                                 \
 	}
 
 #define RETURN_WRITER_SWITCH(func, def)                                                        \
@@ -21,6 +22,7 @@ namespace p
 	{                                                                                          \
 		case SerializeFormat::Json: return GetWriter<SerializeFormat::Json>().func; break;     \
 		case SerializeFormat::Binary: return GetWriter<SerializeFormat::Binary>().func; break; \
+		default: break;                                                                        \
 	}                                                                                          \
 	return def
 
@@ -41,6 +43,7 @@ namespace p
 		{
 			case SerializeFormat::Json: w.GetWriter<SerializeFormat::Json>().Write(val); break;
 			case SerializeFormat::Binary: w.GetWriter<SerializeFormat::Binary>().Write(val); break;
+			default: break;
 		}
 	}
 

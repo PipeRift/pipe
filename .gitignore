@@ -1,5 +1,6 @@
 .vs
 .clangd
+.cache
 Build
 Saved
 .vscode/c_cpp_properties.json

@@ -15,9 +15,7 @@ namespace p
 
 	public:
 		PropertyHandle(const Property& property, void* data) : property{property}, data{data} {}
-
-		PropertyHandle(const PropertyHandle& other)            = default;
-		PropertyHandle& operator=(const PropertyHandle& other) = default;
+		PropertyHandle(const PropertyHandle& other) = default;
 
 		const Property& GetProperty() const
 		{

@@ -64,8 +64,6 @@ target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
 target_link_libraries(Pipe PUBLIC
-    date::date
-    efsw
     tsl::robin_map
     tsl::sparse_map
     magic_enum
@@ -76,6 +74,7 @@ target_link_libraries(Pipe PRIVATE
     spdlog
     yyjson
     robin_hood
+    efsw
 )
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)

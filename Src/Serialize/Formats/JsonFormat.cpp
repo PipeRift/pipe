@@ -414,7 +414,8 @@ namespace p
 		yyjson_read_flag flags = insitu ? YYJSON_READ_INSITU : 0;
 		yyjson_read_err err;
 
-		if (doc = yyjson_read_opts(data, size, flags, &yyjsonAllocator, &err))
+		doc = yyjson_read_opts(data, size, flags, &yyjsonAllocator, &err);
+		if (doc)
 		{
 			root = yyjson_doc_get_root(doc);
 			PushScope(root);

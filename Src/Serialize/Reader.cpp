@@ -10,7 +10,6 @@
 #include "PipeECS.h"
 
 
-
 namespace p
 {
 #define READER_SWITCH(func)                                                             \
@@ -18,6 +17,7 @@ namespace p
 	{                                                                                   \
 		case SerializeFormat::Json: GetReader<SerializeFormat::Json>().func; break;     \
 		case SerializeFormat::Binary: GetReader<SerializeFormat::Binary>().func; break; \
+		default: break;                                                                 \
 	}
 
 #define RETURN_READER_SWITCH(func, def)                                                        \
@@ -25,6 +25,7 @@ namespace p
 	{                                                                                          \
 		case SerializeFormat::Json: return GetReader<SerializeFormat::Json>().func; break;     \
 		case SerializeFormat::Binary: return GetReader<SerializeFormat::Binary>().func; break; \
+		default: break;                                                                        \
 	}                                                                                          \
 	return def
 
@@ -45,6 +46,7 @@ namespace p
 		{
 			case SerializeFormat::Json: r.GetReader<SerializeFormat::Json>().Read(val); break;
 			case SerializeFormat::Binary: r.GetReader<SerializeFormat::Binary>().Read(val); break;
+			default: break;
 		}
 	}
 

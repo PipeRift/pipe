@@ -34,7 +34,7 @@ namespace p
 		PIPE_API virtual bool IsValid() const            = 0;
 	};
 
-	enum PIPE_API WriteFlags
+	enum WriteFlags
 	{
 		WriteFlags_None              = 0,
 		WriteFlags_CacheStringKeys   = 1 << 0,

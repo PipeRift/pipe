@@ -7,9 +7,6 @@ add_subdirectory(portable-file-dialogs)
 add_library(Bandit INTERFACE)
 target_include_directories(Bandit INTERFACE Bandit)
 
-add_subdirectory(date)
-pipe_target_disable_all_warnings(date INTERFACE)
-
 add_subdirectory(efsw)
 pipe_target_disable_all_warnings(efsw PRIVATE)
 if(PLATFORM_LINUX)
