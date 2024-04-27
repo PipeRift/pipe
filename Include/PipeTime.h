@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/String.h"
 
@@ -1342,7 +1343,7 @@ namespace p
 		static DstTime InternalCastClock(const SrcTime tp,
 		    const SrcDuration tolerance = DecMicroseconds{1}, const i32 limit = 10)
 		{
-			assert(limit > 0);
+			Check(limit > 0);
 			auto itercnt = 0;
 			auto src_now = SrcTime{};
 			auto dst_now = DstTime{};
