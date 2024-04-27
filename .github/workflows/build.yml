@@ -53,7 +53,7 @@ jobs:
           - name: macos-gcc
             os: macos-14
             os-name: macos
-            compiler: gcc
+            compiler: gcc-13
             cxx: /usr/bin/g++
             cc: /usr/bin/gcc
     steps:
@@ -65,10 +65,18 @@ jobs:
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
-          compiler: ${{ matrix.compiler }}
+          compiler: ${{ (matrix.os-name != 'macos' || !contains(matrix.compiler, 'clang')) && matrix.compiler || '' }}
           vcvarsall: ${{ matrix.os-name == 'windows' }}
           cmake: true
           ninja: true
+
+      - name: (MacOS) Install clang through brew
+        if: matrix.os-name == 'macos' && contains(matrix.compiler, 'clang')
+        run: |
+          brew install llvm@17
+          echo "CC=/usr/local/opt/llvm@17/bin/clang" >> $GITHUB_ENV
+          echo "CXX=/usr/local/opt/llvm@17/bin/clang++" >> $GITHUB_ENV
+          echo "PATH=/usr/local/opt/llvm/bin:$PATH" >> $GITHUB_ENV
 
       - name: Cache Build
         uses: actions/cache@v4

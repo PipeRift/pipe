@@ -13,6 +13,7 @@
 #include "Pipe/Reflect/TypeName.h"
 #include "Pipe/Reflect/TypeRegistry.h"
 #include "PipeArrays.h"
+#include "PipeSerialize.h"
 
 
 namespace p
