@@ -83,7 +83,7 @@ jobs:
         run: cmake --build Build --config ${{ matrix.config }}
 
       - name: Upload binaries as artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ matrix.config == 'Release' && contains(matrix.compiler, 'clang') }} # Only clang artifacts are stored
         with:
           name: pipe-${{ matrix.os-name }}
@@ -93,7 +93,7 @@ jobs:
         run: cmake --install Build --config ${{ matrix.config }}
 
       - name: Upload installation
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ matrix.config == 'Release' && contains(matrix.compiler, 'clang') }} # Only clang artifacts are stored
         with:
           name: pipe-${{ matrix.os-name }}-install
@@ -110,19 +110,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download installation
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: pipe-linux-install
           path: Install/Linux
 
       - name: Download installation
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: pipe-windows-install
           path: Install/Windows
 
       - name: Upload all
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pipe-all-install
           path: Install
