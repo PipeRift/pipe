@@ -48,8 +48,8 @@ jobs:
             os: macos-14
             os-name: macos
             compiler: clang-16
-            cxx: clang++
-            cc: clang
+            cxx: /usr/local/opt/llvm@16/bin/clang++
+            cc: /usr/local/opt/llvm@16/bin/clang
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
