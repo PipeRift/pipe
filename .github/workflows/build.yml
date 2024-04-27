@@ -63,7 +63,7 @@ jobs:
           submodules: 'recursive'
 
       - name: Setup Cpp
-        uses: aminya/setup-cpp
+        uses: aminya/setup-cpp@v1
         with:
           compiler: ${{ matrix.compiler }}
           vcvarsall: ${{ matrix.os-name == 'windows' }}
@@ -103,3 +103,26 @@ jobs:
         if: ${{ matrix.os-name != 'macos' }} # Tests are skipped temporarily on MacOS
         working-directory: ./Build
         run: ctest --output-on-failure -j2 -C ${{ matrix.config }}
+
+  Deploy:
+    needs: Build
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download installation
+        uses: actions/download-artifact@v4
+        with:
+          name: pipe-linux-install
+          path: Install/Linux
+
+      - name: Download installation
+        uses: actions/download-artifact@v4
+        with:
+          name: pipe-windows-install
+          path: Install/Windows
+
+      - name: Upload all
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipe-all-install
+          path: Install
