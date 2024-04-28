@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Map.h"
@@ -8,8 +8,12 @@
 
 namespace p
 {
+	template<typename Type>
+	struct IArray;
+
 	template<typename Type, u32 InlineCapacity>
 	struct TInlineArray;
+
 
 	struct Struct;
 
@@ -25,13 +29,31 @@ namespace p
 		return Derived<T, BaseClass, false>;    // && IsDefined<struct TCompiledTypeRegister<T>>();
 	}
 
+	template<typename T, typename = int>
+	struct HasInlineCapacityMember : std::false_type
+	{};
+	template<typename T>
+	struct HasInlineCapacityMember<T, decltype((void)T::inlineCapacity, 0)> : std::true_type
+	{};
+
 	template<typename T>
 	inline constexpr bool IsArray()
 	{
 		// Check if we are dealing with a TArray
+		if constexpr (HasItemTypeMember<T>::value && HasInlineCapacityMember<T>::value)
+		{
+			return Derived<T, TInlineArray<typename T::ItemType, T::inlineCapacity>>;
+		}
+		return false;
+	}
+
+	template<typename T>
+	inline constexpr bool IsArrayView()
+	{
+		// Check if we are dealing with a TArray
 		if constexpr (HasItemTypeMember<T>::value)
 		{
-			return IsSame<T, TInlineArray<typename T::ItemType, 0>>;
+			return Derived<T, IArray<typename T::ItemType>>;
 		}
 		return false;
 	}

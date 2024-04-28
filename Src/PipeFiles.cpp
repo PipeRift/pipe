@@ -6,10 +6,39 @@
 
 #include <portable-file-dialogs.h>
 
+#include <efsw/efsw.hpp>
+
 
 namespace p
 {
 #pragma region FileWatch
+	static_assert(p::u8(FileWatchAction::Add) == efsw::Actions::Add);
+	static_assert(p::u8(FileWatchAction::Delete) == efsw::Actions::Delete);
+	static_assert(p::u8(FileWatchAction::Modified) == efsw::Actions::Modified);
+	static_assert(p::u8(FileWatchAction::Moved) == efsw::Actions::Moved);
+
+	struct FileWatchListener : public efsw::FileWatchListener
+	{
+		friend struct FileWatcher;
+
+	private:
+		FileListenerId watchId;
+		FileWatchCallback callback;
+
+	public:
+		FileWatchListener(FileWatchCallback callback) : callback{Move(callback)} {}
+
+		bool operator==(FileListenerId other) const
+		{
+			return watchId == other;
+		}
+
+	private:
+		void handleFileAction(FileListenerId watchid, const std::string& dir,
+		    const std::string& filename, efsw::Action action, std::string oldFilename) override;
+	};
+
+
 	void FileWatchListener::handleFileAction(FileListenerId watchid, const std::string& dir,
 	    const std::string& filename, efsw::Action action, std::string oldFilename)
 	{
@@ -28,6 +57,7 @@ namespace p
 		callback(dir, filename, FileWatchAction(action), oldFilename);
 	}
 
+	FileWatcher::FileWatcher() : fileWatcher{MakeOwned<efsw::FileWatcher>()} {}
 	FileWatcher::~FileWatcher()
 	{
 		Reset();
@@ -35,22 +65,23 @@ namespace p
 
 	void FileWatcher::StartAsync()
 	{
-		fileWatcher.watch();
+		fileWatcher.Get<efsw::FileWatcher>()->watch();
 	}
 
 	FileListenerId FileWatcher::ListenPath(
 	    StringView path, bool recursive, FileWatchCallback callback)
 	{
 		auto listener          = MakeOwned<FileWatchListener>(Move(callback));
-		FileListenerId watchId = fileWatcher.addWatch(std::string{path}, listener.Get(), recursive);
-		listener->watchId      = watchId;
+		FileListenerId watchId = fileWatcher.Get<efsw::FileWatcher>()->addWatch(
+		    std::string{path}, listener.Get(), recursive);
+		listener->watchId = watchId;
 		listeners.Add(Move(listener));
 		return watchId;
 	}
 
 	void FileWatcher::StopListening(FileListenerId id)
 	{
-		fileWatcher.removeWatch(id);
+		fileWatcher.Get<efsw::FileWatcher>()->removeWatch(id);
 		listeners.RemoveIfSwap([id](const auto& listener) {
 			return !listener || listener->watchId == id;
 		});
@@ -62,7 +93,7 @@ namespace p
 		{
 			if (listener)
 			{
-				fileWatcher.removeWatch(listener->watchId);
+				fileWatcher.Get<efsw::FileWatcher>()->removeWatch(listener->watchId);
 			}
 		}
 		listeners.Clear();

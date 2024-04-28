@@ -1,9 +1,9 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include "PipeVectors.h"
 
 #include "Pipe/Core/PlatformMisc.h"
-#include "Pipe/Serialize/Serialization.h"
+#include "PipeSerialize.h"
 
 
 namespace p

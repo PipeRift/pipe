@@ -1,9 +1,8 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/PlatformPaths.h>
-
 
 
 using namespace snowhouse;

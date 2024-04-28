@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include <Pipe/Memory/NewDelete.h>
 //  Override as first include
@@ -6,7 +6,6 @@
 #include <bandit/bandit.h>
 #include <Pipe.h>
 #include <Pipe/Core/Backward.h>
-
 
 
 // namespace backward

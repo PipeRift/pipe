@@ -1,10 +1,10 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "BaseClass.h"
 #include "ClassPtrBuilder.h"
 #include "Pipe/Reflect/Reflection.h"
-#include "Pipe/Serialize/Serialization.h"
+#include "PipeSerialize.h"
 
 
 namespace p

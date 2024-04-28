@@ -1,10 +1,10 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include "Pipe/Core/Tag.h"
 
 #include "Pipe/Memory/Memory.h"
 #include "Pipe/Memory/MultiLinearArena.h"
-#include "Pipe/Serialize/Serialization.h"
+#include "PipeSerialize.h"
 
 #include <mutex>
 #include <shared_mutex>

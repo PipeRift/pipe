@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include "PipeTime.h"
 
@@ -14,10 +14,10 @@ namespace p
 	{
 		if (GetDays() == 0)
 		{
-			return ToString(TX("%h:%m:%s.%f"));
+			return ToString("%h:%m:%s.%f");
 		}
 
-		return ToString(TX("%d.%h:%m:%s.%f"));
+		return ToString("%d.%h:%m:%s.%f");
 	}
 
 
@@ -25,31 +25,23 @@ namespace p
 	{
 		String result;
 
-		result += (*this < Timespan::Zero()) ? TX('-') : TX('+');
+		result += (*this < Timespan::Zero()) ? '-' : '+';
 
-		while (*format != TX('\0'))
+		while (*format != '\0')
 		{
-			if ((*format == TX('%')) && (*++format != TX('\0')))
+			if ((*format == '%') && (*++format != '\0'))
 			{
 				switch (*format)
 				{
-					case TX('d'): Strings::FormatTo(result, TX("{}"), Abs(GetDays())); break;
-					case TX('D'): Strings::FormatTo(result, TX("{:08i}"), Abs(GetDays())); break;
-					case TX('h'): Strings::FormatTo(result, TX("{:02i}"), Abs(GetHours())); break;
-					case TX('m'): Strings::FormatTo(result, TX("{:02i}"), Abs(GetMinutes())); break;
-					case TX('s'): Strings::FormatTo(result, TX("{:02i}"), Abs(GetSeconds())); break;
-					case TX('f'):
-						Strings::FormatTo(result, TX("{:03i}"), Abs(GetFractionMilli()));
-						break;
-					case TX('u'):
-						Strings::FormatTo(result, TX("{:06i}"), Abs(GetFractionMicro()));
-						break;
-					case TX('t'):
-						Strings::FormatTo(result, TX("{:07i}"), Abs(GetFractionTicks()));
-						break;
-					case TX('n'):
-						Strings::FormatTo(result, TX("{:09i}"), Abs(GetFractionNano()));
-						break;
+					case 'd': Strings::FormatTo(result, "{}", Abs(GetDays())); break;
+					case 'D': Strings::FormatTo(result, "{:08i}", Abs(GetDays())); break;
+					case 'h': Strings::FormatTo(result, "{:02i}", Abs(GetHours())); break;
+					case 'm': Strings::FormatTo(result, "{:02i}", Abs(GetMinutes())); break;
+					case 's': Strings::FormatTo(result, "{:02i}", Abs(GetSeconds())); break;
+					case 'f': Strings::FormatTo(result, "{:03i}", Abs(GetFractionMilli())); break;
+					case 'u': Strings::FormatTo(result, "{:06i}", Abs(GetFractionMicro())); break;
+					case 't': Strings::FormatTo(result, "{:07i}", Abs(GetFractionTicks())); break;
+					case 'n': Strings::FormatTo(result, "{:09i}", Abs(GetFractionNano())); break;
 					default: result += *format;
 				}
 			}
@@ -73,18 +65,18 @@ namespace p
 		// @todo gmp: implement stricter FTimespan parsing; this implementation is too forgiving
 
 		// get string tokens
-		const bool HasFractional = Strings::Contains(TimespanString, TX('.'))
-		                        || Strings::Contains(TimespanString, TX(','));
+		const bool HasFractional =
+		    Strings::Contains(TimespanString, '.') || Strings::Contains(TimespanString, ',');
 		String TokenString = TimespanString;
-		Strings::Replace(TokenString, TX('.'), TX(':'));
-		Strings::Replace(TokenString, TX(','), TX(':'));
+		Strings::Replace(TokenString, '.', ':');
+		Strings::Replace(TokenString, ',', ':');
 
-		const bool Negative = TokenString[0] == TX('-');
-		Strings::Replace(TokenString, TX('-'), TX(':'));
-		Strings::Replace(TokenString, TX('+'), TX(':'));
+		const bool Negative = TokenString[0] == '-';
+		Strings::Replace(TokenString, '-', ':');
+		Strings::Replace(TokenString, '+', ':');
 
 		TArray<String> Tokens;
-		Strings::Split(TokenString, Tokens, TX(':'));
+		Strings::Split(TokenString, Tokens, ':');
 
 		if (!HasFractional)
 		{
@@ -121,7 +113,7 @@ namespace p
 			}
 			else if (FractionalLen < 9)
 			{
-				Tokens[4] += Strings::FrontSubstr({TX("000000000")}, 9 - FractionalLen);
+				Tokens[4] += Strings::FrontSubstr({"000000000"}, 9 - FractionalLen);
 			}
 		}
 
@@ -158,9 +150,8 @@ namespace p
 
 	void Timespan::Assign(i32 days, i32 hours, i32 minutes, i32 seconds, i32 fractionNano)
 	{
-		duration = Chrono::floor<DecMicroseconds>(
-		    Days{days} + Chrono::hours{hours} + Chrono::minutes{minutes} + Chrono::seconds{seconds}
-		    + Chrono::nanoseconds{fractionNano});
+		duration = Chrono::floor<DecMicroseconds>(Days{days} + Hours{hours} + Minutes{minutes}
+		                                          + Seconds{seconds} + Nanoseconds{fractionNano});
 	}
 
 	Timespan Timespan::FromHours(i32 hours)
@@ -182,8 +173,8 @@ namespace p
 	/* DateTime constants
 	 *****************************************************************************/
 
-	const i32 DateTime::DaysPerMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-	const i32 DateTime::DaysToMonth[]  = {
+	const u32 DateTime::daysPerMonth[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+	const u32 DateTime::daysToMonth[]  = {
         0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 
 
@@ -199,8 +190,15 @@ namespace p
 			Warning("Created invalid date format.");
 		}
 
-		value = SysTime{SysDays(Year{year} / month / day) + Hours{hour} + Minutes{minute}
-		                + Seconds{second} + Milliseconds{millisecond}};
+		year -= month <= 2;
+		const int century = (year >= 0 ? year : year - 99) / 100;
+		month += (month > 2 ? static_cast<unsigned int>(-3) : 9);    // [0, 11]
+		const int dayOfYear = static_cast<int>(((979 * month + 19) >> 5) + day) - 1;
+		auto daysSinceCivil =
+		    Days{((1461 * year) >> 2) - century + (century >> 2) + dayOfYear - 719468};
+
+		value = SysTime{daysSinceCivil + Hours{hour} + Minutes{minute} + Seconds{second}
+		                + Milliseconds{millisecond}};
 	}
 
 
@@ -228,11 +226,9 @@ namespace p
 
 	u32 DateTime::GetDayOfYear() const
 	{
-		auto timeDays = Chrono::floor<Days>(value);
-		const YearMonthDay ymd{timeDays};
+		const YearMonthDay ymd = GetDateComponents();
 
-		return (timeDays.time_since_epoch() - LocalDays{ymd.year() / Jan / 1}.time_since_epoch())
-		    .count();
+		return daysToMonth[u32(ymd.month()) - 1] + u32(ymd.day());
 	}
 
 
@@ -252,7 +248,7 @@ namespace p
 
 	u32 DateTime::GetMonth() const
 	{
-		return (u32)YearMonthDay{Chrono::floor<Days>(value)}.month();
+		return (u32)GetDateComponents().month();
 	}
 
 	i32 DateTime::GetYear() const
@@ -267,45 +263,45 @@ namespace p
 
 		switch (GetDayOfWeek())
 		{
-			case DayOfWeek::Monday: DayStr = TX("Mon"); break;
-			case DayOfWeek::Tuesday: DayStr = TX("Tue"); break;
-			case DayOfWeek::Wednesday: DayStr = TX("Wed"); break;
-			case DayOfWeek::Thursday: DayStr = TX("Thu"); break;
-			case DayOfWeek::Friday: DayStr = TX("Fri"); break;
-			case DayOfWeek::Saturday: DayStr = TX("Sat"); break;
-			case DayOfWeek::Sunday: DayStr = TX("Sun"); break;
+			case DayOfWeek::Monday: DayStr = "Mon"; break;
+			case DayOfWeek::Tuesday: DayStr = "Tue"; break;
+			case DayOfWeek::Wednesday: DayStr = "Wed"; break;
+			case DayOfWeek::Thursday: DayStr = "Thu"; break;
+			case DayOfWeek::Friday: DayStr = "Fri"; break;
+			case DayOfWeek::Saturday: DayStr = "Sat"; break;
+			case DayOfWeek::Sunday: DayStr = "Sun"; break;
 		}
 
 		switch (GetMonthOfYear())
 		{
-			case MonthOfYear::January: MonthStr = TX("Jan"); break;
-			case MonthOfYear::February: MonthStr = TX("Feb"); break;
-			case MonthOfYear::March: MonthStr = TX("Mar"); break;
-			case MonthOfYear::April: MonthStr = TX("Apr"); break;
-			case MonthOfYear::May: MonthStr = TX("May"); break;
-			case MonthOfYear::June: MonthStr = TX("Jun"); break;
-			case MonthOfYear::July: MonthStr = TX("Jul"); break;
-			case MonthOfYear::August: MonthStr = TX("Aug"); break;
-			case MonthOfYear::September: MonthStr = TX("Sep"); break;
-			case MonthOfYear::October: MonthStr = TX("Oct"); break;
-			case MonthOfYear::November: MonthStr = TX("Nov"); break;
-			case MonthOfYear::December: MonthStr = TX("Dec"); break;
+			case MonthOfYear::January: MonthStr = "Jan"; break;
+			case MonthOfYear::February: MonthStr = "Feb"; break;
+			case MonthOfYear::March: MonthStr = "Mar"; break;
+			case MonthOfYear::April: MonthStr = "Apr"; break;
+			case MonthOfYear::May: MonthStr = "May"; break;
+			case MonthOfYear::June: MonthStr = "Jun"; break;
+			case MonthOfYear::July: MonthStr = "Jul"; break;
+			case MonthOfYear::August: MonthStr = "Aug"; break;
+			case MonthOfYear::September: MonthStr = "Sep"; break;
+			case MonthOfYear::October: MonthStr = "Oct"; break;
+			case MonthOfYear::November: MonthStr = "Nov"; break;
+			case MonthOfYear::December: MonthStr = "Dec"; break;
 		}
 
-		return Strings::Format(TX("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT"), DayStr, GetDay(),
+		return Strings::Format("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT", DayStr, GetDay(),
 		    MonthStr, GetYear(), GetHour(), GetMinute(), GetSecond());
 	}
 
 
 	String DateTime::ToIso8601() const
 	{
-		return ToString(TX("%Y-%m-%dT%H:%M:%S.%sZ"));
+		return ToString("%Y-%m-%dT%H:%M:%S.%sZ");
 	}
 
 
 	String DateTime::ToString() const
 	{
-		return ToString(TX("%Y.%m.%d-%H.%M.%S"));
+		return ToString("%Y.%m.%d-%H.%M.%S");
 	}
 
 
@@ -316,30 +312,24 @@ namespace p
 
 		if (format != nullptr)
 		{
-			while (*format != TX('\0'))
+			while (*format != '\0')
 			{
-				if ((*format == TX('%')) && (*(++format) != TX('\0')))
+				if ((*format == '%') && (*(++format) != '\0'))
 				{
 					switch (*format)
 					{
-						case TX('a'): result += IsMorning() ? TX("am") : TX("pm"); break;
-						case TX('A'): result += IsMorning() ? TX("AM") : TX("PM"); break;
-						case TX('d'): Strings::FormatTo(result, TX("{:02i}"), GetDay()); break;
-						case TX('D'):
-							Strings::FormatTo(result, TX("{:03i}"), GetDayOfYear());
-							break;
-						case TX('m'): Strings::FormatTo(result, TX("{:02i}"), GetMonth()); break;
-						case TX('y'):
-							Strings::FormatTo(result, TX("{:02i}"), GetYear() % 100);
-							break;
-						case TX('Y'): Strings::FormatTo(result, TX("{:04i}"), GetYear()); break;
-						case TX('h'): Strings::FormatTo(result, TX("{:02i}"), GetHour12()); break;
-						case TX('H'): Strings::FormatTo(result, TX("{:02i}"), GetHour()); break;
-						case TX('M'): Strings::FormatTo(result, TX("{:02i}"), GetMinute()); break;
-						case TX('S'): Strings::FormatTo(result, TX("{:02i}"), GetSecond()); break;
-						case TX('s'):
-							Strings::FormatTo(result, TX("{:03i}"), GetMillisecond());
-							break;
+						case 'a': result += IsMorning() ? "am" : "pm"; break;
+						case 'A': result += IsMorning() ? "AM" : "PM"; break;
+						case 'd': Strings::FormatTo(result, "{:02i}", GetDay()); break;
+						case 'D': Strings::FormatTo(result, "{:03i}", GetDayOfYear()); break;
+						case 'm': Strings::FormatTo(result, "{:02i}", GetMonth()); break;
+						case 'y': Strings::FormatTo(result, "{:02i}", GetYear() % 100); break;
+						case 'Y': Strings::FormatTo(result, "{:04i}", GetYear()); break;
+						case 'h': Strings::FormatTo(result, "{:02i}", GetHour12()); break;
+						case 'H': Strings::FormatTo(result, "{:02i}", GetHour()); break;
+						case 'M': Strings::FormatTo(result, "{:02i}", GetMinute()); break;
+						case 'S': Strings::FormatTo(result, "{:02i}", GetSecond()); break;
+						case 's': Strings::FormatTo(result, "{:03i}", GetMillisecond()); break;
 						default: result += *format;
 					}
 				}
@@ -361,14 +351,14 @@ namespace p
 
 	i32 DateTime::DaysInMonth(i32 Year, i32 Month)
 	{
-		assert((Month >= 1) && (Month <= 12));
+		Check((Month >= 1) && (Month <= 12));
 
 		if ((Month == 2) && IsLeapYear(Year))
 		{
 			return 29;
 		}
 
-		return DaysPerMonth[Month];
+		return daysPerMonth[Month];
 	}
 
 	i32 DateTime::DaysInYear(i32 Year)
@@ -401,7 +391,7 @@ namespace p
 
 		// split up on a single delimiter
 		TArray<String> Tokens;
-		Strings::Split(fixedString, Tokens, TX(' '));
+		Strings::Split(fixedString, Tokens, ' ');
 
 		// make sure it parsed it properly (within reason)
 		if ((Tokens.Size() < 6) || (Tokens.Size() > 7))
@@ -443,7 +433,7 @@ namespace p
 		// get date
 		Year = FChar::StrtoI32(ptr, &Next, 10);
 
-		if ((Next <= ptr) || (*Next == TX('\0')))
+		if ((Next <= ptr) || (*Next == '\0'))
 		{
 			return false;
 		}
@@ -451,7 +441,7 @@ namespace p
 		ptr   = Next + 1;    // skip separator
 		Month = FChar::StrtoI32(ptr, &Next, 10);
 
-		if ((Next <= ptr) || (*Next == TX('\0')))
+		if ((Next <= ptr) || (*Next == '\0'))
 		{
 			return false;
 		}
@@ -465,14 +455,14 @@ namespace p
 		}
 
 		// check whether this is date and time
-		if (*Next == TX('T'))
+		if (*Next == 'T')
 		{
 			ptr = Next + 1;
 
 			// parse time
 			Hour = FChar::StrtoI32(ptr, &Next, 10);
 
-			if ((Next <= ptr) || (*Next == TX('\0')))
+			if ((Next <= ptr) || (*Next == '\0'))
 			{
 				return false;
 			}
@@ -480,7 +470,7 @@ namespace p
 			ptr    = Next + 1;    // skip separator
 			Minute = FChar::StrtoI32(ptr, &Next, 10);
 
-			if ((Next <= ptr) || (*Next == TX('\0')))
+			if ((Next <= ptr) || (*Next == '\0'))
 			{
 				return false;
 			}
@@ -494,7 +484,7 @@ namespace p
 			}
 
 			// check for milliseconds
-			if (*Next == TX('.'))
+			if (*Next == '.')
 			{
 				ptr         = Next + 1;
 				Millisecond = FChar::StrtoI32(ptr, &Next, 10);
@@ -512,7 +502,7 @@ namespace p
 			}
 
 			// see if the timezone offset is included
-			if (*Next == TX('+') || *Next == TX('-'))
+			if (*Next == '+' || *Next == '-')
 			{
 				// include the separator since it's + or -
 				ptr = Next;
@@ -520,7 +510,7 @@ namespace p
 				// parse the timezone offset
 				TzHour = FChar::StrtoI32(ptr, &Next, 10);
 
-				if ((Next <= ptr) || (*Next == TX('\0')))
+				if ((Next <= ptr) || (*Next == '\0'))
 				{
 					return false;
 				}
@@ -533,12 +523,12 @@ namespace p
 					return false;
 				}
 			}
-			else if ((*Next != TX('\0')) && (*Next != TX('Z')))
+			else if ((*Next != '\0') && (*Next != 'Z'))
 			{
 				return false;
 			}
 		}
-		else if (*Next != TX('\0'))
+		else if (*Next != '\0')
 		{
 			return false;
 		}

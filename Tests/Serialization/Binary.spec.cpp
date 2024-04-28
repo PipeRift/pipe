@@ -1,8 +1,7 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/Serialize/Formats/BinaryFormat.h>
-#include <Pipe/Serialize/Serialization.h>
+#include <PipeSerialize.h>
 
 
 using namespace snowhouse;

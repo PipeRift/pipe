@@ -3,48 +3,31 @@ name: publish-release
 on:
   push:
     tags:
+      - 'v*.*'
       - 'v*.*.*'
 
 jobs:
-  build:
+  Build:
     uses: ./.github/workflows/build.yml
 
-  publish:
-    name: ${{ matrix.name }} (${{ matrix.config }})
-    needs: build
-    runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        name: [Windows, Linux, MacOS]
-        config: [Release]
-        include:
-          - name: Windows
-            os: windows-latest
-            os-name: windows
-          - name: Linux
-            os: ubuntu-latest
-            os-name: linux
-          - name: MacOS
-            os: macos-latest
-            os-name: macos
+  Publish:
+    needs: Build
+    runs-on: ubuntu-latest
     steps:
       - name: Download Pipe build
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
-          name: pipe-${{ matrix.os-name }}
-          path: pipe
+          name: Pipe
+          path: Pipe
 
       - name: Package
-        uses: thedoctor0/zip-release@master
+        uses: thedoctor0/zip-release@0.7.6
         with:
           type: 'zip'
-          path: 'pipe'
-          filename: 'pipe-${{ matrix.os-name }}.zip'
+          path: 'Pipe'
+          filename: 'Pipe.zip'
 
       - name: Upload Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          files: pipe-${{ matrix.os-name }}.zip
+          files: Pipe.zip
