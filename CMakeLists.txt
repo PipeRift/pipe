@@ -58,7 +58,7 @@ generate_export_header(Pipe
     EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Pipe/Export.h)
 pipe_target_define_platform(Pipe)
 
-target_include_directories(Pipe PUBLIC Include)
+target_include_directories(Pipe PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>)
 file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
@@ -112,3 +112,29 @@ if(PIPE_ENABLE_CLANG_TOOLS)
         add_custom_target(ClangTidy COMMAND ${CLANG_TIDY_EXE} -p=./Build ${ALL_SOURCE_FILES} --fix)
     endif()
 endif()
+
+
+################################################################################
+#   Install
+include(GNUInstallDirs)
+
+install(TARGETS Pipe robin_map magic_enum
+    EXPORT PipeTargets
+    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+install(EXPORT PipeTargets
+    FILE pipe-config.cmake
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/pipe"
+)
+install(FILES $<TARGET_PDB_FILE:Pipe> DESTINATION "${CMAKE_INSTALL_BINDIR}" OPTIONAL)
+
+file(GLOB_RECURSE PIPE_HEADER_FILES CONFIGURE_DEPENDS Pipe*.h)
+install(FILES ${PIPE_HEADER_FILES} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+install(DIRECTORY Include/Pipe
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+        FILES_MATCHING
+        PATTERN "*.h"
+)

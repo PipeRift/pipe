@@ -24,7 +24,7 @@ add_subdirectory(sparse-map)
 
 
 add_library(magic_enum INTERFACE)
-target_include_directories(magic_enum INTERFACE magic_enum)
+target_include_directories(magic_enum INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/magic_enum>)
 
 add_subdirectory(utfcpp)
 

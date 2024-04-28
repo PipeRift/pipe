@@ -79,7 +79,7 @@ jobs:
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
-        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{matrix.cxx}} -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/Install
+        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{matrix.cxx}}
 
       - name: Build
         run: cmake --build Build --config ${{ matrix.config }}
@@ -92,7 +92,7 @@ jobs:
           path: Build/Bin
 
       - name: Install
-        run: cmake --install Build --config ${{ matrix.config }}
+        run: cmake --install Build --config ${{ matrix.config }} --prefix ${{ github.workspace }}/Install
 
       - name: Upload installation
         uses: actions/upload-artifact@v4
