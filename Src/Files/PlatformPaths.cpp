@@ -423,7 +423,7 @@ namespace p
 		if (filePath.empty())
 		{
 			TFixedString<GetMaxPathLength(), char> rawPath{};
-			u32 size{rawPath.size()};
+			u32 size = u32(rawPath.size());
 			if (_NSGetExecutablePath(rawPath.data(), &size) != 0)
 			{
 				// Failed to retrive a path
@@ -445,7 +445,7 @@ namespace p
 		return GetExecutablePath();
 	}
 
-	const TCHAR* MacPlatformPaths::GetUserTempPath()
+	StringView MacPlatformPaths::GetUserTempPath()
 	{
 		static String userTempDir;
 		if (userTempDir.empty())
@@ -455,13 +455,13 @@ namespace p
 		return userTempDir;
 	}
 
+	// clang-format off
 	StringView MacPlatformPaths::GetUserHomePath()
 	{
 		static String userHomePath;
 		if (userHomePath.empty())
 		{
-			@autoreleasepool
-			{
+			@autoreleasepool {
 				userHomePath = String{[NSHomeDirectory() UTF8String]};
 			}
 		}
@@ -473,8 +473,7 @@ namespace p
 		static String userPath;
 		if (userPath.empty())
 		{
-			@autoreleasepool
-			{
+			@autoreleasepool {
 				NSString* DocumentsFolder = [NSSearchPathForDirectoriesInDomains(
 				    NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
 				userPath                  = String{[DocumentsFolder UTF8String]};
@@ -494,8 +493,7 @@ namespace p
 		static String appSettingsPath;
 		if (appSettingsPath.empty())
 		{
-			@autoreleasepool
-			{
+			@autoreleasepool {
 				NSString* ApplicationSupportFolder = [NSSearchPathForDirectoriesInDomains(
 				    NSApplicationSupportDirectory, NSUserDomainMask, YES) objectAtIndex:0];
 				userPath                           = String{[ApplicationSupportFolder UTF8String]};
@@ -504,6 +502,7 @@ namespace p
 		}
 		return appSettingsPath;
 	}
+	// clang-format on
 
 
 	StringView MacPlatformPaths::GetCurrentPath()

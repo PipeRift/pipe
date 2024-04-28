@@ -36,8 +36,8 @@ namespace p
 		auto const* const data64 = static_cast<const u64*>(ptr);
 		u64 h                    = seed ^ (len * m);
 
-		size_t const n_blocks = len / 8;
-		for (size_t i = 0; i < n_blocks; ++i)
+		sizet const n_blocks = len / 8;
+		for (sizet i = 0; i < n_blocks; ++i)
 		{
 			auto k = UnalignedLoad<u64>(data64 + i);
 
