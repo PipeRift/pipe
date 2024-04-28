@@ -68,9 +68,12 @@ jobs:
         if: matrix.os-name == 'macos' && contains(matrix.compiler, 'clang')
         run: |
           brew install llvm@16
-          echo "CC=/usr/local/opt/llvm@16/bin/clang" >> $GITHUB_ENV
-          echo "CXX=/usr/local/opt/llvm@16/bin/clang++" >> $GITHUB_ENV
-          echo "PATH=/usr/local/opt/llvm@16/bin:$PATH" >> $GITHUB_ENV
+          export LLVM_DIR="$(brew --prefix llvm@16)/lib/cmake"
+          echo "CC=$(brew --prefix llvm@16)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@16)/bin/clang++" >> $GITHUB_ENV
+          echo "$(brew --prefix llvm@16)/bin" >> $GITHUB_PATH
+          echo "PATH=$(brew --prefix llvm@16)/bin:$PATH" >> $GITHUB_ENV
+          brew link --overwrite llvm@16
 
       - name: Cache Build
         uses: actions/cache@v4
@@ -79,7 +82,7 @@ jobs:
           key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
-        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{matrix.cxx}}
+        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
       - name: Build
         run: cmake --build Build --config ${{ matrix.config }}
