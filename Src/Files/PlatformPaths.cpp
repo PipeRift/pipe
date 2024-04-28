@@ -450,20 +450,17 @@ namespace p
 		static String userTempDir;
 		if (userTempDir.empty())
 		{
-			userTempDir = NSTemporaryDirectory();
+			userTempDir = String{[NSTemporaryDirectory() UTF8String]};
 		}
 		return userTempDir;
 	}
 
-	// clang-format off
 	StringView MacPlatformPaths::GetUserHomePath()
 	{
 		static String userHomePath;
 		if (userHomePath.empty())
 		{
-			@autoreleasepool {
-				userHomePath = String{[NSHomeDirectory() UTF8String]};
-			}
+			userHomePath = String{[NSHomeDirectory() UTF8String]};
 		}
 		return userHomePath;
 	}
@@ -473,12 +470,10 @@ namespace p
 		static String userPath;
 		if (userPath.empty())
 		{
-			@autoreleasepool {
-				NSString* DocumentsFolder = [NSSearchPathForDirectoriesInDomains(
-				    NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-				userPath                  = String{[DocumentsFolder UTF8String]};
-				userPath.push_back('/');
-			}
+			NSString* DocumentsFolder = [NSSearchPathForDirectoriesInDomains(
+			    NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+			userPath                  = String{[DocumentsFolder UTF8String]};
+			userPath.push_back('/');
 		}
 		return userPath;
 	}
@@ -493,16 +488,13 @@ namespace p
 		static String appSettingsPath;
 		if (appSettingsPath.empty())
 		{
-			@autoreleasepool {
-				NSString* ApplicationSupportFolder = [NSSearchPathForDirectoriesInDomains(
-				    NSApplicationSupportDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-				userPath                           = String{[ApplicationSupportFolder UTF8String]};
-				userPath.push_back('/');
-			}
+			NSString* ApplicationSupportFolder = [NSSearchPathForDirectoriesInDomains(
+			    NSApplicationSupportDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+			userPath                           = String{[ApplicationSupportFolder UTF8String]};
+			userPath.push_back('/');
 		}
 		return appSettingsPath;
 	}
-	// clang-format on
 
 
 	StringView MacPlatformPaths::GetCurrentPath()
