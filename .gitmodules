@@ -1,6 +1,3 @@
-[submodule "Extern/robin_hood"]
-	path = Extern/robin_hood
-	url = https://github.com/martinus/robin-hood-hashing
 [submodule "Extern/Bandit"]
 	path = Extern/Bandit
 	url = https://github.com/banditcpp/bandit

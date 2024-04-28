@@ -77,8 +77,8 @@ target_link_libraries(Pipe PRIVATE
     portable_file_dialogs
     spdlog
     yyjson
-    robin_hood
     efsw
+    fast_float
 )
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)

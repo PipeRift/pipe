@@ -2,7 +2,7 @@
 
 #include "Pipe/Core/StringView.h"
 
-#include <charconv>
+#include <fast_float.h>
 
 
 namespace p::Strings
@@ -11,31 +11,13 @@ namespace p::Strings
 	TOptional<T> InternalToNumber(StringView str)
 	{
 		T val;
-		if constexpr (FloatingPoint<T>)
-		{
 #if __cpp_lib_to_chars >= 202306L
-			if (std::from_chars(
-			        str.data(), str.data() + str.size(), val, std::chars_format::general))
+		if (fast_float::from_chars(str.data(), str.data() + str.size(), val))
 #else
-			if (std::from_chars(
-			        str.data(), str.data() + str.size(), val, std::chars_format::general)
-			        .ec
-			    == std::errc{})
+		if (fast_float::from_chars(str.data(), str.data() + str.size(), val).ec == std::errc{})
 #endif
-			{
-				return val;
-			}
-		}
-		else
 		{
-#if __cpp_lib_to_chars >= 202306L
-			if (std::from_chars(str.data(), str.data() + str.size(), val))
-#else
-			if (std::from_chars(str.data(), str.data() + str.size(), val).ec == std::errc{})
-#endif
-			{
-				return val;
-			}
+			return val;
 		}
 		return {};
 	}
