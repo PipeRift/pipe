@@ -48,8 +48,8 @@ jobs:
             os: macos-14
             os-name: macos
             compiler: clang-16
-            cxx: /usr/local/opt/llvm@16/bin/clang++
-            cc: /usr/local/opt/llvm@16/bin/clang
+            cxx: /usr/local/opt/llvm@17/bin/clang++
+            cc: /usr/local/opt/llvm@17/bin/clang
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,13 +67,12 @@ jobs:
       - name: (MacOS) Install clang through brew
         if: matrix.os-name == 'macos' && contains(matrix.compiler, 'clang')
         run: |
-          brew install llvm@16
-          export LLVM_DIR="$(brew --prefix llvm@16)/lib/cmake"
-          echo "CC=$(brew --prefix llvm@16)/bin/clang" >> $GITHUB_ENV
-          echo "CXX=$(brew --prefix llvm@16)/bin/clang++" >> $GITHUB_ENV
-          echo "$(brew --prefix llvm@16)/bin" >> $GITHUB_PATH
-          echo "PATH=$(brew --prefix llvm@16)/bin:$PATH" >> $GITHUB_ENV
-          brew link --overwrite llvm@16
+          brew install llvm@17
+          export LLVM_DIR="$(brew --prefix llvm@17)/lib/cmake"
+          echo "CC=$(brew --prefix llvm@17)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@17)/bin/clang++" >> $GITHUB_ENV
+          echo "$(brew --prefix llvm@17)/bin" >> $GITHUB_PATH
+          brew link --overwrite llvm@17
 
       - name: Cache Build
         uses: actions/cache@v4
