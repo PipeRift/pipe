@@ -147,12 +147,12 @@ jobs:
           mkdir -p Install/Final/lib/Windows/Release
           mkdir -p Install/Final/lib/MacOS/Debug
           mkdir -p Install/Final/lib/MacOS/Release
-          cp -r Install/Linux/Debug/lib Install/Final/lib/Linux/Debug
-          cp -r Install/Linux/Release/lib Install/Final/lib/Linux/Release
-          cp -r Install/Windows/Debug/lib Install/Final/lib/Windows/Debug
-          cp -r Install/Windows/Release/lib Install/Final/lib/Windows/Release
-          cp -r Install/MacOS/Debug/lib Install/Final/lib/MacOS/Debug
-          cp -r Install/MacOS/Release/lib Install/Final/lib/MacOS/Release
+          cp -r Install/Linux/Debug/lib/. Install/Final/lib/Linux/Debug
+          cp -r Install/Linux/Release/lib/. Install/Final/lib/Linux/Release
+          cp -r Install/Windows/Debug/lib/. Install/Final/lib/Windows/Debug
+          cp -r Install/Windows/Release/lib/. Install/Final/lib/Windows/Release
+          cp -r Install/MacOS/Debug/lib/. Install/Final/lib/MacOS/Debug
+          cp -r Install/MacOS/Release/lib/. Install/Final/lib/MacOS/Release
 
 
       - name: Upload all
