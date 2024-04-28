@@ -137,7 +137,7 @@ jobs:
       - name: Copy includes
         run: |
           mkdir -p Install/Final/include
-          cp -r Install/Linux/Release/include Install/Final/include
+          cp -r Install/Linux/Release/include/. Install/Final/include
 
       - name: Copy binaries
         run: |
