@@ -7,11 +7,11 @@ on:
       - 'v*.*.*'
 
 jobs:
-  build:
+  Build:
     uses: ./.github/workflows/build.yml
 
   Publish:
-    needs: Package
+    needs: Build
     runs-on: ubuntu-latest
     steps:
       - name: Download Pipe build
