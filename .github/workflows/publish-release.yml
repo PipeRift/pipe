@@ -21,13 +21,13 @@ jobs:
           path: Pipe
 
       - name: Package
-        uses: thedoctor0/zip-release@master
+        uses: thedoctor0/zip-release@0.7.6
         with:
           type: 'zip'
           path: 'Pipe'
           filename: 'Pipe.zip'
 
       - name: Upload Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: Pipe.zip
