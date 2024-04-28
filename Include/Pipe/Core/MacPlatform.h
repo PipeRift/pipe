@@ -30,6 +30,14 @@ namespace p
 	using PlatformTypes = MacPlatformTypes;
 }    // namespace p
 
+#if __is_target_arch(arm64) || __is_target_arch(arm64e)
+	#define P_PLATFORM_MAC_ARM64 1
+	#define P_PLATFORM_MAC_X86 0
+#else
+	#define P_PLATFORM_MAC_ARM64 0
+	#define P_PLATFORM_MAC_X86 1
+#endif
+
 
 #if P_DEBUG
 	#define P_FORCEINLINE inline /* Don't force code to be inline */
@@ -38,7 +46,12 @@ namespace p
 #endif
 #define P_NOINLINE __attribute__((noinline))
 
-#define P_PLATFORM_BREAK() __asm__("int $3")
+#if P_PLATFORM_MAC_X86
+	#define P_PLATFORM_BREAK() __asm__("int $3")
+#else
+	#define P_PLATFORM_BREAK() __builtin_debugtrap()
+#endif
+
 
 #if (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 6))
 	#define DISABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize off")

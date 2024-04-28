@@ -11,13 +11,31 @@ namespace p::Strings
 	TOptional<T> InternalToNumber(StringView str)
 	{
 		T val;
-#if __cpp_lib_to_chars >= 202306L
-		if (std::from_chars(str.data(), str.data() + str.size(), val))
-#else
-		if (std::from_chars(str.data(), str.data() + str.size(), val).ec == std::errc{})
-#endif
+		if constexpr (FloatingPoint<T>)
 		{
-			return val;
+#if __cpp_lib_to_chars >= 202306L
+			if (std::from_chars(
+			        str.data(), str.data() + str.size(), val, std::chars_format::general))
+#else
+			if (std::from_chars(
+			        str.data(), str.data() + str.size(), val, std::chars_format::general)
+			        .ec
+			    == std::errc{})
+#endif
+			{
+				return val;
+			}
+		}
+		else
+		{
+#if __cpp_lib_to_chars >= 202306L
+			if (std::from_chars(str.data(), str.data() + str.size(), val))
+#else
+			if (std::from_chars(str.data(), str.data() + str.size(), val).ec == std::errc{})
+#endif
+			{
+				return val;
+			}
 		}
 		return {};
 	}
