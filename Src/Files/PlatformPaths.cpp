@@ -16,6 +16,7 @@
 	#include <unistd.h>
 	#include <pwd.h>
 #elif P_PLATFORM_MACOS
+	#include <pwd.h>
 	#include <mach-o/dyld.h>
 	#include <mach/thread_act.h>
 	#include <mach/thread_policy.h>
