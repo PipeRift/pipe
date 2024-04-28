@@ -452,7 +452,7 @@ namespace p
 		static String userTempPath;
 		if (userTempPath.empty())
 		{
-			const char* dirValue = secure_getenv("TMPDIR");
+			const char* dirValue = std::getenv("TMPDIR");
 			if (dirValue)
 			{
 				userTempPath = Strings::Convert<String>(TStringView<char>{dirValue});
@@ -471,7 +471,7 @@ namespace p
 		if (userHomePath.empty())
 		{
 			// Try user $HOME var first
-			const char* dirValue = secure_getenv("HOME");
+			const char* dirValue = std::getenv("HOME");
 			if (dirValue && dirValue[0] != '\0')
 			{
 				userHomePath = Strings::Convert<String>(TStringView<char>{dirValue});
@@ -534,13 +534,13 @@ namespace p
 
 	StringView MacPlatformPaths::GetAppSettingsPath()
 	{
+		// Where pipe stores settings and configuration data.
+		// On linux this is $HOME/.config/
 		static String appSettingsPath;
 		if (appSettingsPath.empty())
 		{
-			NSString* ApplicationSupportFolder = [NSSearchPathForDirectoriesInDomains(
-			    NSApplicationSupportDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-			userPath                           = String{[ApplicationSupportFolder UTF8String]};
-			userPath.push_back('/');
+			appSettingsPath = PlatformPaths::GetUserHomePath();
+			AppendToPath(appSettingsPath, ".config/");
 		}
 		return appSettingsPath;
 	}
