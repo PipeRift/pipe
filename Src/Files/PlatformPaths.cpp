@@ -447,12 +447,22 @@ namespace p
 
 	StringView MacPlatformPaths::GetUserTempPath()
 	{
-		static String userTempDir;
-		if (userTempDir.empty())
+		// Use $TMPDIR if its set otherwise fallback to /var/tmp as Windows defaults to %TEMP% which
+		// does not get cleared on reboot.
+		static String userTempPath;
+		if (userTempPath.empty())
 		{
-			userTempDir = String{[NSTemporaryDirectory() UTF8String]};
+			const char* dirValue = secure_getenv("TMPDIR");
+			if (dirValue)
+			{
+				userTempPath = Strings::Convert<String>(TStringView<char>{dirValue});
+			}
+			else
+			{
+				userTempPath = "/var/tmp";
+			}
 		}
-		return userTempDir;
+		return userTempPath;
 	}
 
 	StringView MacPlatformPaths::GetUserHomePath()
@@ -460,7 +470,27 @@ namespace p
 		static String userHomePath;
 		if (userHomePath.empty())
 		{
-			userHomePath = String{[NSHomeDirectory() UTF8String]};
+			// Try user $HOME var first
+			const char* dirValue = secure_getenv("HOME");
+			if (dirValue && dirValue[0] != '\0')
+			{
+				userHomePath = Strings::Convert<String>(TStringView<char>{dirValue});
+			}
+			else
+			{
+				struct passwd* userInfo = getpwuid(geteuid());
+				if (userInfo && userInfo->pw_dir && userInfo->pw_dir[0] != '\0')
+				{
+					userHomePath = Strings::Convert<String>(TStringView<char>{userInfo->pw_dir});
+				}
+				else
+				{
+					userHomePath = GetUserTempPath();
+					p::Warning(
+					    "Could get determine user home directory. Using temporary directory: {}",
+					    userHomePath);
+				}
+			}
 		}
 		return userHomePath;
 	}
@@ -470,10 +500,29 @@ namespace p
 		static String userPath;
 		if (userPath.empty())
 		{
-			NSString* DocumentsFolder = [NSSearchPathForDirectoriesInDomains(
-			    NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-			userPath                  = String{[DocumentsFolder UTF8String]};
-			userPath.push_back('/');
+			FILE* FilePtr = popen("xdg-user-dir DOCUMENTS", "r");
+			if (FilePtr)
+			{
+				char docPath[GetMaxPathLength()];
+				if (fgets(docPath, GetMaxPathLength(), FilePtr) != nullptr)
+				{
+					size_t docLen = strlen(docPath) - 1;
+					if (docLen > 0)
+					{
+						docPath[docLen] = '\0';
+						userPath        = Strings::Convert<String>(TStringView<char>{docPath});
+						userPath.push_back('/');
+					}
+				}
+				pclose(FilePtr);
+			}
+
+			// if xdg-user-dir did not work, use $HOME
+			if (userPath.empty())
+			{
+				userPath = PlatformPaths::GetUserHomePath();
+				AppendToPath(userPath, "Documents");
+			}
 		}
 		return userPath;
 	}
