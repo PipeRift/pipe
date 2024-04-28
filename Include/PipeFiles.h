@@ -5,54 +5,30 @@
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Files/Paths.h"
 
-#include <efsw/efsw.hpp>
-
 
 namespace p
 {
 #pragma region FileWatch
-	enum class FileWatchAction
+	enum class FileWatchAction : p::u8
 	{
-		Add      = efsw::Actions::Add,
-		Delete   = efsw::Actions::Delete,
-		Modified = efsw::Actions::Modified,
-		Moved    = efsw::Actions::Moved
+		Add      = 1,
+		Delete   = 2,
+		Modified = 3,
+		Moved    = 4
 	};
 
-	using FileListenerId    = efsw::WatchID;
+	using FileListenerId    = long;
 	using FileWatchCallback = std::function<void(
 	    StringView path, StringView filename, FileWatchAction action, StringView oldFilename)>;
 
-
-	struct PIPE_API FileWatchListener : public efsw::FileWatchListener
-	{
-		friend struct FileWatcher;
-
-	private:
-		FileListenerId watchId;
-		FileWatchCallback callback;
-
-	public:
-		FileWatchListener(FileWatchCallback callback) : callback{Move(callback)} {}
-
-		bool operator==(FileListenerId other) const
-		{
-			return watchId == other;
-		}
-
-	private:
-		void handleFileAction(FileListenerId watchid, const std::string& dir,
-		    const std::string& filename, efsw::Action action, std::string oldFilename) override;
-	};
-
-
 	struct PIPE_API FileWatcher
 	{
-		efsw::FileWatcher fileWatcher;
-		p::TArray<TOwnPtr<FileWatchListener>> listeners;
+	private:
+		OwnPtr fileWatcher;
+		p::TArray<TOwnPtr<struct FileWatchListener>> listeners;
 
 	public:
-		FileWatcher() {}
+		FileWatcher();
 		~FileWatcher();
 		FileWatcher(const FileWatcher& other)            = delete;
 		FileWatcher& operator=(const FileWatcher& other) = delete;

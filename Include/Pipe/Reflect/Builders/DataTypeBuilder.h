@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Function.h"
@@ -12,10 +12,8 @@
 #include "Pipe/Reflect/TypeId.h"
 #include "Pipe/Reflect/TypeName.h"
 #include "Pipe/Reflect/TypeRegistry.h"
-#include "Pipe/Serialize/Reader.h"
-#include "Pipe/Serialize/Writer.h"
 #include "PipeArrays.h"
-
+#include "PipeSerialize.h"
 
 
 namespace p

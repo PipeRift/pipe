@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Core/Platform.h"
@@ -234,11 +234,9 @@ namespace p
 	template<typename T>
 	concept IsConst = std::is_const_v<T>;
 	template<typename T>
-	concept IsMutable = !
-	std::is_const_v<T>;
+	concept IsMutable = (!std::is_const_v<T>);
 	template<typename T>
-	concept IsVolatile = !
-	std::is_volatile_v<T>;
+	concept IsVolatile = (!std::is_volatile_v<T>);
 
 
 	template<typename T, typename Reference>

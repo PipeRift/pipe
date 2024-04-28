@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include "PipeECS.h"
 
@@ -1234,7 +1234,7 @@ namespace p
 					}
 					else
 					{
-						access.Add<CChild>(childId, parentId);
+						access.Add<CChild>(childId, {parentId});
 						fixed = true;
 					}
 				}

@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include <bandit/assertion_frameworks/snowhouse/exceptions.h>
 #include <bandit/bandit.h>

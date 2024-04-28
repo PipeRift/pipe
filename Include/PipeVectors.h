@@ -1,10 +1,11 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #pragma once
 
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
-#include "Pipe/Serialize/SerializationFwd.h"
 #include "PipeMath.h"
+#include "PipeSerializeFwd.h"
+
 
 /// @OPTIMIZE: Try to remove this include
 #include "Pipe/Core/String.h"

@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Reflect/Builders/StaticInitializers.h"
@@ -57,7 +57,7 @@ namespace p
 	}
 
 	template<typename T>
-	constexpr bool HasType() requires(IsArray<T>())
+	constexpr bool HasType() requires(IsArrayView<T>())
 	{
 		return HasType<typename T::ItemType>();
 	}

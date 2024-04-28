@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
 #include "Pipe/Reflect/ArrayProperty.h"
@@ -15,9 +15,7 @@ namespace p
 
 	public:
 		PropertyHandle(const Property& property, void* data) : property{property}, data{data} {}
-
-		PropertyHandle(const PropertyHandle& other)            = default;
-		PropertyHandle& operator=(const PropertyHandle& other) = default;
+		PropertyHandle(const PropertyHandle& other) = default;
 
 		const Property& GetProperty() const
 		{

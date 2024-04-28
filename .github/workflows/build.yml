@@ -22,74 +22,141 @@ jobs:
         include:
           - name: windows-msvc
             os: windows-latest
-            os-name: windows
+            os-name: Windows
             compiler: msvc
-            cxx: cl
-            cc: cl
           - name: windows-clang
             os: windows-latest
-            os-name: windows
+            os-name: Windows
             compiler: clang-16
-            cxx: clang-cl
-            cc: clang-cl
           - name: linux-clang
             os: ubuntu-latest
-            os-name: linux
+            os-name: Linux
             compiler: clang-16
-            cxx: clang++
-            cc: clang
           - name: linux-gcc
             os: ubuntu-latest
-            os-name: linux
+            os-name: Linux
             compiler: gcc-13
-            cxx: g++
-            cc: gcc
           - name: macos-clang
             os: macos-14
-            os-name: macos
-            compiler: clang-16
-            cxx: clang++
-            cc: clang
-          #- name: macos-gcc
-          #  os: macos-14
-          #  os-name: macos
-          #  compiler: gcc-13
-          #  cxx: /usr/bin/g++
-          #  cc: /usr/bin/gcc
+            os-name: MacOS
+            compiler: clang-17
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: 'recursive'
 
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
-          compiler: ${{ matrix.compiler }}
-          vcvarsall: ${{ matrix.os-name == 'windows' }}
+          compiler: ${{ (matrix.os-name != 'MacOS' || !contains(matrix.compiler, 'clang')) && matrix.compiler || '' }}
+          vcvarsall: ${{ matrix.os-name == 'Windows' }}
           cmake: true
           ninja: true
 
+      - name: (MacOS) Install clang through brew
+        if: matrix.os-name == 'MacOS' && contains(matrix.compiler, 'clang')
+        run: |
+          brew install llvm@17
+          export LLVM_DIR="$(brew --prefix llvm@17)/lib/cmake"
+          echo "CC=$(brew --prefix llvm@17)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@17)/bin/clang++" >> $GITHUB_ENV
+          echo "$(brew --prefix llvm@17)/bin" >> $GITHUB_PATH
+          brew link --overwrite llvm@17
+
       - name: Cache Build
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: Build
-          key: ${{ matrix.os-name }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
+          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
-        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{matrix.cxx}}
+        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
       - name: Build
         run: cmake --build Build --config ${{ matrix.config }}
 
-      - name: Upload binaries as artifacts
-        uses: actions/upload-artifact@v3
-        if: ${{ matrix.config == 'Release' && contains(matrix.compiler, 'clang') }} # Only clang artifacts are stored
+      - name: Install
+        run: cmake --install Build --config ${{ matrix.config }} --prefix Install
+
+      - name: Upload installation
+        uses: actions/upload-artifact@v4
+        if: ${{ contains(matrix.compiler, 'clang') }} # Only clang artifacts are stored
         with:
-          name: pipe-${{ matrix.os-name }}
-          path: Build/Bin
+          name: Pipe-${{ matrix.os-name }}-${{ matrix.config }}
+          path: Install
 
       - name: Run Tests
         if: ${{ matrix.os-name != 'macos' }} # Tests are skipped temporarily on MacOS
         working-directory: ./Build
         run: ctest --output-on-failure -j2 -C ${{ matrix.config }}
+
+  Package:
+    needs: Build
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Debug Linux
+        uses: actions/download-artifact@v4
+        with:
+          name: Pipe-Linux-Debug
+          path: Install/Linux/Debug
+
+      - name: Download Release Linux
+        uses: actions/download-artifact@v4
+        with:
+          name: Pipe-Linux-Release
+          path: Install/Linux/Release
+
+
+      - name: Download Debug Windows
+        uses: actions/download-artifact@v4
+        with:
+          name: Pipe-Windows-Debug
+          path: Install/Windows/Debug
+
+      - name: Download Release Windows
+        uses: actions/download-artifact@v4
+        with:
+          name: Pipe-Windows-Release
+          path: Install/Windows/Release
+
+
+      - name: Download Debug MacOS
+        uses: actions/download-artifact@v4
+        with:
+          name: Pipe-MacOS-Debug
+          path: Install/MacOS/Debug
+
+      - name: Download Release MacOS
+        uses: actions/download-artifact@v4
+        with:
+          name: Pipe-MacOS-Release
+          path: Install/MacOS/Release
+
+      - name: Copy includes
+        run: |
+          mkdir -p Install/Final/include
+          cp -r Install/Linux/Release/include/. Install/Final/include
+
+      - name: Copy binaries
+        run: |
+          mkdir -p Install/Final/lib/Linux/Debug
+          mkdir -p Install/Final/lib/Linux/Release
+          mkdir -p Install/Final/lib/Windows/Debug
+          mkdir -p Install/Final/lib/Windows/Release
+          mkdir -p Install/Final/lib/MacOS/Debug
+          mkdir -p Install/Final/lib/MacOS/Release
+          cp -r Install/Linux/Debug/lib/. Install/Final/lib/Linux/Debug
+          cp -r Install/Linux/Release/lib/. Install/Final/lib/Linux/Release
+          cp -r Install/Windows/Debug/lib/. Install/Final/lib/Windows/Debug
+          cp -r Install/Windows/Release/lib/. Install/Final/lib/Windows/Release
+          cp -r Install/MacOS/Debug/lib/. Install/Final/lib/MacOS/Debug
+          cp -r Install/MacOS/Release/lib/. Install/Final/lib/MacOS/Release
+
+
+      - name: Upload all
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pipe
+          path: Install/Final

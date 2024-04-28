@@ -16,6 +16,7 @@
 	#include <unistd.h>
 	#include <pwd.h>
 #elif P_PLATFORM_MACOS
+	#include <pwd.h>
 	#include <mach-o/dyld.h>
 	#include <mach/thread_act.h>
 	#include <mach/thread_policy.h>
@@ -423,7 +424,7 @@ namespace p
 		if (filePath.empty())
 		{
 			TFixedString<GetMaxPathLength(), char> rawPath{};
-			u32 size{rawPath.size()};
+			u32 size = u32(rawPath.size());
 			if (_NSGetExecutablePath(rawPath.data(), &size) != 0)
 			{
 				// Failed to retrive a path
@@ -445,14 +446,24 @@ namespace p
 		return GetExecutablePath();
 	}
 
-	const TCHAR* MacPlatformPaths::GetUserTempPath()
+	StringView MacPlatformPaths::GetUserTempPath()
 	{
-		static String userTempDir;
-		if (userTempDir.empty())
+		// Use $TMPDIR if its set otherwise fallback to /var/tmp as Windows defaults to %TEMP% which
+		// does not get cleared on reboot.
+		static String userTempPath;
+		if (userTempPath.empty())
 		{
-			userTempDir = NSTemporaryDirectory();
+			const char* dirValue = std::getenv("TMPDIR");
+			if (dirValue)
+			{
+				userTempPath = Strings::Convert<String>(TStringView<char>{dirValue});
+			}
+			else
+			{
+				userTempPath = "/var/tmp";
+			}
 		}
-		return userTempDir;
+		return userTempPath;
 	}
 
 	StringView MacPlatformPaths::GetUserHomePath()
@@ -460,9 +471,26 @@ namespace p
 		static String userHomePath;
 		if (userHomePath.empty())
 		{
-			@autoreleasepool
+			// Try user $HOME var first
+			const char* dirValue = std::getenv("HOME");
+			if (dirValue && dirValue[0] != '\0')
 			{
-				userHomePath = String{[NSHomeDirectory() UTF8String]};
+				userHomePath = Strings::Convert<String>(TStringView<char>{dirValue});
+			}
+			else
+			{
+				struct passwd* userInfo = getpwuid(geteuid());
+				if (userInfo && userInfo->pw_dir && userInfo->pw_dir[0] != '\0')
+				{
+					userHomePath = Strings::Convert<String>(TStringView<char>{userInfo->pw_dir});
+				}
+				else
+				{
+					userHomePath = GetUserTempPath();
+					p::Warning(
+					    "Could get determine user home directory. Using temporary directory: {}",
+					    userHomePath);
+				}
 			}
 		}
 		return userHomePath;
@@ -473,12 +501,28 @@ namespace p
 		static String userPath;
 		if (userPath.empty())
 		{
-			@autoreleasepool
+			FILE* FilePtr = popen("xdg-user-dir DOCUMENTS", "r");
+			if (FilePtr)
 			{
-				NSString* DocumentsFolder = [NSSearchPathForDirectoriesInDomains(
-				    NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-				userPath                  = String{[DocumentsFolder UTF8String]};
-				userPath.push_back('/');
+				char docPath[GetMaxPathLength()];
+				if (fgets(docPath, GetMaxPathLength(), FilePtr) != nullptr)
+				{
+					size_t docLen = strlen(docPath) - 1;
+					if (docLen > 0)
+					{
+						docPath[docLen] = '\0';
+						userPath        = Strings::Convert<String>(TStringView<char>{docPath});
+						userPath.push_back('/');
+					}
+				}
+				pclose(FilePtr);
+			}
+
+			// if xdg-user-dir did not work, use $HOME
+			if (userPath.empty())
+			{
+				userPath = PlatformPaths::GetUserHomePath();
+				AppendToPath(userPath, "Documents");
 			}
 		}
 		return userPath;
@@ -491,16 +535,13 @@ namespace p
 
 	StringView MacPlatformPaths::GetAppSettingsPath()
 	{
+		// Where pipe stores settings and configuration data.
+		// On linux this is $HOME/.config/
 		static String appSettingsPath;
 		if (appSettingsPath.empty())
 		{
-			@autoreleasepool
-			{
-				NSString* ApplicationSupportFolder = [NSSearchPathForDirectoriesInDomains(
-				    NSApplicationSupportDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-				userPath                           = String{[ApplicationSupportFolder UTF8String]};
-				userPath.push_back('/');
-			}
+			appSettingsPath = PlatformPaths::GetUserHomePath();
+			AppendToPath(appSettingsPath, ".config/");
 		}
 		return appSettingsPath;
 	}

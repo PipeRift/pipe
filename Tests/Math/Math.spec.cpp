@@ -1,4 +1,4 @@
-// Copyright 2015-2023 Piperift - All rights reserved
+// Copyright 2015-2024 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
 #include <Pipe/Core/Limits.h>
@@ -278,7 +278,7 @@ go_bandit([]() {
 				AssertThat(Floor(-4.2), Equals(std::floor(-4.2)));
 				AssertThat(Floor(-4.7), Equals(std::floor(-4.7)));
 				AssertThat(Floor(-5.0), Equals(std::floor(-5.0)));
-				AssertThat(Floor(99999999999999999 + 0.5), Equals(99999999999999999));
+				AssertThat(Floor(99999999999999999.0 + 0.5), Equals(99999999999999999.0));
 
 				static constexpr double dInfinite = Limits<double>::Infinity();
 				AssertThat(Floor(-dInfinite), Equals(std::floor(-dInfinite)));
@@ -295,7 +295,7 @@ go_bandit([]() {
 				AssertThat(Ceil(-4.2), Equals(std::ceil(-4.2)));
 				AssertThat(Ceil(-4.7), Equals(std::ceil(-4.7)));
 				AssertThat(Ceil(-5.0), Equals(std::ceil(-5.0)));
-				AssertThat(Ceil(99999999999999999 - 0.5), Equals(99999999999999999));
+				AssertThat(Ceil(99999999999999999.0 - 0.5), Equals(99999999999999999.0));
 
 				static constexpr double dInfinite = Limits<double>::Infinity();
 				AssertThat(Ceil(-dInfinite), Equals(std::ceil(-dInfinite)));
@@ -313,7 +313,7 @@ go_bandit([]() {
 				AssertThat(Round(-4.2), Equals(std::round(-4.2)));
 				AssertThat(Round(-4.7), Equals(std::round(-4.7)));
 				AssertThat(Round(-5.0), Equals(std::round(-5.0)));
-				AssertThat(Round(99999999999999999 - 0.4), Equals(99999999999999999));
+				AssertThat(Round(99999999999999999.0 - 0.4), Equals(99999999999999999.0));
 
 				static constexpr double dInfinite = Limits<double>::Infinity();
 				AssertThat(Round(-dInfinite), Equals(std::round(-dInfinite)));
