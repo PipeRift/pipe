@@ -140,6 +140,6 @@ install(DIRECTORY Include/Pipe
 )
 
 # Debug files
-if (MSVC)
+if (PLATFORM_WINDOWS)
     install(FILES $<TARGET_PDB_FILE:Pipe> DESTINATION "${CMAKE_INSTALL_BINDIR}" OPTIONAL)
 endif()
