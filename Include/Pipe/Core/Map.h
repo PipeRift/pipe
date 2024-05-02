@@ -268,6 +268,11 @@ namespace p
 			return i32(map.size());
 		}
 
+		bool IsEmpty() const
+		{
+			return Size() == 0;
+		}
+
 		bool IsValidIndex(i32 index) const
 		{
 			return index >= 0 && index < Size();
