@@ -163,18 +163,30 @@ namespace p
 			return const_cast<Type&>(*it);
 		}
 
-		bool Contains(const Type& value) const
+		template<typename Key = Type>
+		bool Contains(const Key& key) const
 		{
-			return FindIt(value) != set.end();
+			return FindIt(key) != set.end();
+		}
+		template<typename Key = Type>
+		bool Contains(const Key& key, sizet hash) const
+		{
+			return FindIt(key, hash) != set.end();
 		}
 
 		/**
 		 * Delete all items that match another provided item
 		 * @return number of deleted items
 		 */
-		i32 Remove(const Type& value)
+		template<typename Key = Type>
+		i32 Remove(const Key& value)
 		{
 			return RemoveIt(FindIt(value));
+		}
+		template<typename Key = Type>
+		i32 Remove(const Key& value, sizet hash)
+		{
+			return RemoveIt(FindIt(value, hash));
 		}
 
 		i32 RemoveIt(Iterator it)
