@@ -74,6 +74,16 @@ namespace p
 			return set.insert(value).first;
 		}
 
+		Type& InsertRef(Type&& value)
+		{
+			return const_cast<Type&>(*Insert(Move(value)));
+		}
+
+		Type& InsertRef(const Type& value)
+		{
+			return const_cast<Type&>(*Insert(value));
+		}
+
 		void Append(const TSet<Type>& other)
 		{
 			if (other.Size() > 0)
