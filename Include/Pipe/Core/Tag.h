@@ -39,6 +39,11 @@ namespace p
 		u32 Size() const;
 		StringView AsString() const;
 
+		bool IsNone() const
+		{
+			return str == nullptr;
+		}
+
 		bool operator==(const Tag& other) const
 		{
 			return hash == other.hash;
@@ -49,9 +54,14 @@ namespace p
 			return hash < other.hash;
 		}
 
-		bool IsNone() const
+		operator bool() const
 		{
-			return str == nullptr;
+			return !IsNone();
+		}
+
+		bool operator!() const
+		{
+			return IsNone();
 		}
 
 		sizet GetHash() const

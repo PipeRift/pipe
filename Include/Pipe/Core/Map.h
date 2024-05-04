@@ -40,7 +40,7 @@ namespace p
 
 		using KeyType   = Key;
 		using ValueType = Value;
-		using KeyEqual  = std::equal_to<KeyType>;
+		using KeyEqual  = std::equal_to<>;
 		using Allocator = STLAllocator<TPair<Key, Value>>;
 		using HashMapType =
 		    tsl::sparse_map<KeyType, ValueType, TMapHash<KeyType>, KeyEqual, Allocator>;
@@ -266,6 +266,11 @@ namespace p
 		i32 Size() const
 		{
 			return i32(map.size());
+		}
+
+		bool IsEmpty() const
+		{
+			return Size() == 0;
 		}
 
 		bool IsValidIndex(i32 index) const

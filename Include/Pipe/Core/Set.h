@@ -15,9 +15,9 @@
 
 namespace p
 {
-	template<typename T>
-	struct TSetHash
+	struct SetHash
 	{
+		template<typename T>
 		sizet operator()(const T& v) const
 		{
 			return GetHash(v);
@@ -35,8 +35,9 @@ namespace p
 		template<typename OtherType>
 		friend class TSet;
 
+		using KeyEqual    = std::equal_to<>;
 		using Allocator   = STLAllocator<Type>;
-		using HashSetType = tsl::sparse_set<Type, TSetHash<Type>, std::equal_to<Type>, Allocator>;
+		using HashSetType = tsl::sparse_set<Type, SetHash, KeyEqual, Allocator>;
 
 		using Iterator      = typename HashSetType::iterator;
 		using ConstIterator = typename HashSetType::const_iterator;
@@ -71,6 +72,16 @@ namespace p
 		Iterator Insert(const Type& value)
 		{
 			return set.insert(value).first;
+		}
+
+		Type& InsertRef(Type&& value)
+		{
+			return const_cast<Type&>(*Insert(Move(value)));
+		}
+
+		Type& InsertRef(const Type& value)
+		{
+			return const_cast<Type&>(*Insert(value));
 		}
 
 		void Append(const TSet<Type>& other)
@@ -162,18 +173,30 @@ namespace p
 			return const_cast<Type&>(*it);
 		}
 
-		bool Contains(const Type& value) const
+		template<typename Key = Type>
+		bool Contains(const Key& key) const
 		{
-			return FindIt(value) != set.end();
+			return FindIt(key) != set.end();
+		}
+		template<typename Key = Type>
+		bool Contains(const Key& key, sizet hash) const
+		{
+			return FindIt(key, hash) != set.end();
 		}
 
 		/**
 		 * Delete all items that match another provided item
 		 * @return number of deleted items
 		 */
-		i32 Remove(const Type& value)
+		template<typename Key = Type>
+		i32 Remove(const Key& value)
 		{
 			return RemoveIt(FindIt(value));
+		}
+		template<typename Key = Type>
+		i32 Remove(const Key& value, sizet hash)
+		{
+			return RemoveIt(FindIt(value, hash));
 		}
 
 		i32 RemoveIt(Iterator it)
@@ -208,6 +231,11 @@ namespace p
 		i32 Size() const
 		{
 			return i32(set.size());
+		}
+
+		bool IsEmpty() const
+		{
+			return Size() == 0;
 		}
 
 		bool IsValidIndex(i32 index) const
