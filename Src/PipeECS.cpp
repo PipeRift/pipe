@@ -278,7 +278,7 @@ namespace p
 	void Read(Reader& r, Id& val)
 	{
 		auto* entityReader = dynamic_cast<EntityReader*>(&r);
-		if (EnsureMsg(entityReader, "Serializing an ecs Id without an EntityReader")) [[likely]]
+		if (P_EnsureMsg(entityReader, "Serializing an ecs Id without an EntityReader")) [[likely]]
 		{
 			i32 dataId;
 			entityReader->Serialize(dataId);
@@ -289,7 +289,7 @@ namespace p
 	void Write(Writer& w, Id val)
 	{
 		auto* entityWriter = dynamic_cast<EntityWriter*>(&w);
-		if (EnsureMsg(entityWriter, "Serializing an ecs Id without an EntityWriter")) [[likely]]
+		if (P_EnsureMsg(entityWriter, "Serializing an ecs Id without an EntityWriter")) [[likely]]
 		{
 			const i32* dataId = entityWriter->GetIdToIndexes().Find(val);
 			entityWriter->Serialize(dataId ? *dataId : -1);
@@ -338,7 +338,7 @@ namespace p
 
 	BasePool::Index BasePool::EmplaceId(const Id id, bool forceBack)
 	{
-		CheckMsg(!Has(id), "Set already contains entity");
+		P_CheckMsg(!Has(id), "Set already contains entity");
 		const auto idIndex = GetIdIndex(id);
 
 		if (lastRemovedIndex != NO_INDEX && !forceBack)
@@ -826,7 +826,7 @@ namespace p
 	{
 		for (const BasePool* pool : pools)
 		{
-			if (!EnsureMsg(pool,
+			if (!P_EnsureMsg(pool,
 			        "One of the pools is null. Is the access missing one or more of the specified "
 			        "components?"))
 			{
@@ -860,7 +860,7 @@ namespace p
 	{
 		for (const BasePool* pool : pools)
 		{
-			if (!EnsureMsg(pool,
+			if (!P_EnsureMsg(pool,
 			        "One of the pools is null. Is the access missing one or more of the specified "
 			        "components?"))
 			{
@@ -880,7 +880,7 @@ namespace p
 		i32 maxPossibleSize = 0;
 		for (const BasePool* pool : pools)
 		{
-			if (!EnsureMsg(pool,
+			if (!P_EnsureMsg(pool,
 			        "One of the pools is null. Is the access missing one or more of the specified "
 			        "components?"))
 			{
@@ -942,7 +942,7 @@ namespace p
 			if (auto* cChild = access.TryGet<CChild>(childId))
 			{
 				if (cChild->parent == parent
-				    || !EnsureMsg(IsNone(cChild->parent),
+				    || !P_EnsureMsg(IsNone(cChild->parent),
 				        "An entity trying to be attached already has a parent. Consider using "
 				        "TransferIdChildren()"))
 				{
@@ -964,7 +964,7 @@ namespace p
 		childrenIds.Each([&access, parent](Id child) {
 			if (auto* cChild = access.TryGet<CChild>(child))
 			{
-				if (EnsureMsg(IsNone(cChild->parent),
+				if (P_EnsureMsg(IsNone(cChild->parent),
 				        "An entity trying to be attached already has a parent. Consider using "
 				        "TransferIdChildren()"))
 				{
@@ -1103,7 +1103,7 @@ namespace p
 	void GetAllIdChildren(TAccessRef<CParent> access, TView<const Id> parentIds,
 	    TArray<Id>& outChildrenIds, u32 depth)
 	{
-		Check(depth > 0);
+		P_Check(depth > 0);
 
 		TArray<Id> currentLinked{};
 		TArray<Id> pendingInspection;

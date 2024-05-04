@@ -1343,7 +1343,7 @@ namespace p
 		static DstTime InternalCastClock(const SrcTime tp,
 		    const SrcDuration tolerance = DecMicroseconds{1}, const i32 limit = 10)
 		{
-			Check(limit > 0);
+			P_Check(limit > 0);
 			auto itercnt = 0;
 			auto src_now = SrcTime{};
 			auto dst_now = DstTime{};

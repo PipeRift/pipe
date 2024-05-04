@@ -36,7 +36,7 @@ namespace p
 	template<sizet blockSize>
 	void LinearBasePool<blockSize>::FreeBlock(Arena& parentArena, LinearBlock* block)
 	{
-		Check(block);
+		P_Check(block);
 		// freeBlock is never freed. No need to handle it.
 		if (block->next)
 		{

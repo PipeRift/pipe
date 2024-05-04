@@ -365,7 +365,7 @@ namespace p
 		{
 			PopScope();
 		}
-		EnsureMsg(scopeStack.Size() == 0,
+		P_EnsureMsg(scopeStack.Size() == 0,
 		    "Forgot to Leave() some scope? One or more scopes have not been closed.");
 		yyjson_doc_free(doc);
 	}
@@ -417,7 +417,7 @@ namespace p
 	bool JsonFormatReader::EnterNext(StringView name)
 	{
 		auto& scope = GetScope();
-		if (!EnsureMsg(yyjson_is_obj(scope.parent),
+		if (!P_EnsureMsg(yyjson_is_obj(scope.parent),
 		        "Current scope is not an object or has not been initialized with BeginObject()"))
 		    [[unlikely]]
 		{
@@ -455,7 +455,7 @@ namespace p
 	bool JsonFormatReader::EnterNext()
 	{
 		auto& scope = GetScope();
-		if (!EnsureMsg(yyjson_is_arr(scope.parent),
+		if (!P_EnsureMsg(yyjson_is_arr(scope.parent),
 		        "Current scope is not an array or has not been initialized with BeginArray()"))
 		    [[unlikely]]
 		{
@@ -484,7 +484,7 @@ namespace p
 
 	void JsonFormatReader::Leave()
 	{
-		if (EnsureMsg(scopeStack.Size() >= 1,
+		if (P_EnsureMsg(scopeStack.Size() >= 1,
 		        "Closed an extra scope! When surrounding EnterScope in if(), make sure to call "
 		        "leave scope inside the brackets."))
 		{
@@ -819,7 +819,7 @@ namespace p
 
 	bool JsonFormatWriter::EnterNext(StringView name)
 	{
-		if (!EnsureMsg(yyjson_mut_is_obj(current),
+		if (!P_EnsureMsg(yyjson_mut_is_obj(current),
 		        "Current scope is not an object or has not been initialized with BeginObject()"))
 		    [[unlikely]]
 		{
@@ -831,7 +831,7 @@ namespace p
 
 	bool JsonFormatWriter::EnterNext()
 	{
-		if (!EnsureMsg(yyjson_mut_is_arr(current),
+		if (!P_EnsureMsg(yyjson_mut_is_arr(current),
 		        "Current scope is not an array or has not been initialized with BeginArray()"))
 		    [[unlikely]]
 		{
@@ -853,7 +853,7 @@ namespace p
 		{
 			if (!unsafe_yyjson_is_obj(current)) [[unlikely]]
 			{
-				CheckMsg(false,
+				P_CheckMsg(false,
 				    "Scope is already initialized but it is not an object. Is BeginObject() being "
 				    "mixed with BeginArray() in the same scope?");
 			}
@@ -870,7 +870,7 @@ namespace p
 		{
 			if (!unsafe_yyjson_is_arr(current)) [[unlikely]]
 			{
-				CheckMsg(false,
+				P_CheckMsg(false,
 				    "Scope is already initialized but it is not an array. Is BeginArray() being "
 				    "mixed with BeginObject() in the same scope?");
 			}
@@ -947,7 +947,7 @@ namespace p
 			{
 				PopScope();
 			}
-			EnsureMsg(scopeStack.Size() == 0,
+			P_EnsureMsg(scopeStack.Size() == 0,
 			    "Forgot to Leave() some scope? One or more scopes have not been closed.");
 		}
 	}
@@ -1000,20 +1000,20 @@ namespace p
 	{
 		val = *pointer;
 		++pointer;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(i8& val)
 	{
 		val = i8(*pointer);
 		++pointer;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 	void BinaryFormatReader::Read(u8& val)
 	{
 		val = *pointer;
 		++pointer;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(i16& val)
@@ -1021,7 +1021,7 @@ namespace p
 		val = pointer[0];
 		val |= i16(pointer[1]) << 8;
 		pointer += 2;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(u16& val)
@@ -1029,7 +1029,7 @@ namespace p
 		val = pointer[0];
 		val |= u16(pointer[1]) << 8;
 		pointer += 2;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(i32& val)
@@ -1039,7 +1039,7 @@ namespace p
 		val |= i32(pointer[2]) << 16;
 		val |= i32(pointer[3]) << 24;
 		pointer += 4;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(u32& val)
@@ -1049,7 +1049,7 @@ namespace p
 		val |= u32(pointer[2]) << 16;
 		val |= u32(pointer[3]) << 24;
 		pointer += 4;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(i64& val)
@@ -1063,7 +1063,7 @@ namespace p
 		val |= i64(pointer[6]) << 48;
 		val |= i64(pointer[7]) << 56;
 		pointer += 8;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(u64& val)
@@ -1077,21 +1077,21 @@ namespace p
 		val |= u64(pointer[6]) << 48;
 		val |= u64(pointer[7]) << 56;
 		pointer += 8;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(float& val)
 	{
 		p::CopyMem(&val, pointer, 4);
 		pointer += 4;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(double& val)
 	{
 		p::CopyMem(&val, pointer, 8);
 		pointer += 8;
-		CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
 
 	void BinaryFormatReader::Read(StringView& val)
@@ -1099,12 +1099,12 @@ namespace p
 		i32 size = 0;
 		Read(size);
 		const sizet sizeInBytes = size * sizeof(TChar);
-		if (EnsureMsg(pointer + sizeInBytes <= data.EndData(),
+		if (P_EnsureMsg(pointer + sizeInBytes <= data.EndData(),
 		        "The size of a string readen exceeds the read buffer!")) [[likely]]
 		{
 			val = StringView{reinterpret_cast<TChar*>(pointer), sizeInBytes};
 			pointer += sizeInBytes;
-			CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+			P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 		}
 	}
 

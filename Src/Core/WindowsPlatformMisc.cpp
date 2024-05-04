@@ -13,7 +13,7 @@ namespace p
 {
 	const TChar* WindowsPlatformMisc::GetSystemErrorMessage(TChar* buffer, i32 size, i32 error)
 	{
-		Check(buffer && size);
+		P_Check(buffer && size);
 
 		*buffer = '\0';
 		if (error == 0)

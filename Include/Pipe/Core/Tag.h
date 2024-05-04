@@ -54,16 +54,6 @@ namespace p
 			return hash < other.hash;
 		}
 
-		operator bool() const
-		{
-			return !IsNone();
-		}
-
-		bool operator!() const
-		{
-			return IsNone();
-		}
-
 		sizet GetHash() const
 		{
 			return hash;

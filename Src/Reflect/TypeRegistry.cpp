@@ -12,7 +12,7 @@ namespace p
 	void TypeRegistry::Initialize()
 	{
 		auto& registry = Get();
-		if (!EnsureMsg(!registry.initialized, "Reflection is already initialized"))
+		if (!P_EnsureMsg(!registry.initialized, "Reflection is already initialized"))
 		{
 			return;
 		}
@@ -37,7 +37,7 @@ namespace p
 
 	void TypeRegistry::RegisterCompiledType(TFunction<void()> callback)
 	{
-		if (EnsureMsg(!initialized, "Can't register compile types after initializing!"))
+		if (P_EnsureMsg(!initialized, "Can't register compile types after initializing!"))
 		{
 			compiledTypeRegisters.Add(callback);
 		}

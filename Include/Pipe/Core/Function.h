@@ -46,7 +46,7 @@ namespace p
 
 		constexpr Ret operator()(Args... args) const
 		{
-			Check(IsBound() && "Can't call an unbound TFunction.");
+			P_Check(IsBound() && "Can't call an unbound TFunction.");
 			return dispatcher(target, args...);
 		}
 

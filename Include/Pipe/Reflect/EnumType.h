@@ -84,7 +84,7 @@ namespace p
 		template<Integral T>
 		void SetValue(void* data, T value) const
 		{
-			Check(sizeof(T) >= valueSize);
+			P_Check(sizeof(T) >= valueSize);
 			CopyMem(data, &data, valueSize);
 		}
 		void SetValue(void* data, Tag valueName) const
@@ -99,7 +99,7 @@ namespace p
 		template<Integral T>
 		T GetValue(void* data) const
 		{
-			Check(sizeof(T) >= valueSize);
+			P_Check(sizeof(T) >= valueSize);
 			return *reinterpret_cast<T*>(data);
 		}
 

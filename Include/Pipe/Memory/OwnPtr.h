@@ -574,7 +574,7 @@ namespace p
 	template<typename T>
 	inline TOwnPtr<T>::TOwnPtr(OwnPtr&& other) noexcept
 	{
-		CheckMsg(other.IsType<T>(), "Type doesn't match!");
+		P_CheckMsg(other.IsType<T>(), "Type doesn't match!");
 		Super::MoveFrom(Move(other));
 #if P_DEBUG
 		instance = static_cast<T*>(value);
@@ -584,7 +584,7 @@ namespace p
 	template<typename T>
 	inline TOwnPtr<T>& TOwnPtr<T>::operator=(OwnPtr&& other) noexcept
 	{
-		CheckMsg(other.IsType<T>(), "Type doesn't match!");
+		P_CheckMsg(other.IsType<T>(), "Type doesn't match!");
 		Delete();
 		Super::MoveFrom(Move(other));
 #if P_DEBUG

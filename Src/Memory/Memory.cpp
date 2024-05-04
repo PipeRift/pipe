@@ -77,7 +77,7 @@ namespace p
 
 	void* GetAlignedBlock(void* ptr, const sizet blockSize)
 	{
-		Check(IsPowerOfTwo(blockSize));
+		P_Check(IsPowerOfTwo(blockSize));
 		const uPtr alignedPtr = uPtr(ptr) & ~(blockSize - 1);
 		// return alignedPtr without casting to int (performance-no-int-to-ptr)
 		return static_cast<u8*>(ptr) - (uPtr(ptr) - alignedPtr);
@@ -85,7 +85,7 @@ namespace p
 
 	sizet GetAlignmentPadding(const void* ptr, sizet align)
 	{
-		Check(IsPowerOfTwo(align));
+		P_Check(IsPowerOfTwo(align));
 		return -reinterpret_cast<ssizet>(ptr) & (align - 1);
 	}
 

@@ -74,8 +74,8 @@ namespace p
 		template<typename T>
 		T& GetDefault() const requires(IsClass<T>())
 		{
-			Check(T::GetType() == this);
-			CheckMsg(!HasFlag(Class_Abstract), "Tried to get default from an abstract class");
+			P_Check(T::GetType() == this);
+			P_CheckMsg(!HasFlag(Class_Abstract), "Tried to get default from an abstract class");
 			return *GetDefaultPtr();
 		}
 	};
