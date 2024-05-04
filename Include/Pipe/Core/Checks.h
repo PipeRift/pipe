@@ -20,7 +20,7 @@ namespace p::internal
 }    // namespace p::internal
 
 
-#define EnsureImpl(capture, always, expression, text)                         \
+#define P_EnsureImpl(capture, always, expression, text)                       \
 	(P_LIKELY(!!(expression)) || ([capture]() {                               \
 		static bool executed = false;                                         \
 		if (always || !executed)                                              \
@@ -35,15 +35,15 @@ namespace p::internal
 		return false;                                                         \
 	}()))
 
-#define Ensure(expression) EnsureImpl(, false, expression, "")
-#define EnsureMsg(expression, msg, ...) \
-	EnsureImpl(&, false, expression, std::format(msg, ##__VA_ARGS__))
+#define P_Ensure(expression) P_EnsureImpl(, false, expression, "")
+#define P_EnsureMsg(expression, msg, ...) \
+	P_EnsureImpl(&, false, expression, std::format(msg, ##__VA_ARGS__))
 
-#ifndef Check
+#ifndef P_Check
 	#if P_RELEASE
-		#define CheckImpl(expression, ...)
+		#define P_CheckImpl(expression, ...)
 	#else
-		#define CheckImpl(expression, text)                                           \
+		#define P_CheckImpl(expression, text)                                         \
 			if (!(expression)) [[unlikely]]                                           \
 			{                                                                         \
 				p::internal::FailedCheckError(#expression, __FILE__, __LINE__, text); \
@@ -51,9 +51,10 @@ namespace p::internal
 			}
 	#endif
 
-	#define Check(expression) CheckImpl(expression, "")
-	#define CheckMsg(expression, msg, ...) CheckImpl(expression, std::format(msg, ##__VA_ARGS__))
+	#define P_Check(expression) P_CheckImpl(expression, "")
+	#define P_CheckMsg(expression, msg, ...) \
+		P_CheckImpl(expression, std::format(msg, ##__VA_ARGS__))
 #endif
 
 
-#define NotImplemented CheckMsg(false, "Not Implemented")
+#define P_NotImplemented P_CheckMsg(false, "Not Implemented")

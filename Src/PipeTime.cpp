@@ -351,7 +351,7 @@ namespace p
 
 	i32 DateTime::DaysInMonth(i32 Year, i32 Month)
 	{
-		Check((Month >= 1) && (Month <= 12));
+		P_Check((Month >= 1) && (Month <= 12));
 
 		if ((Month == 2) && IsLeapYear(Year))
 		{

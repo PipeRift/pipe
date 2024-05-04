@@ -688,7 +688,7 @@ namespace p
 
 		void RemoveUnsafe(Id id) override
 		{
-			Check(Has(id));
+			P_Check(Has(id));
 			OnRemoved({id});
 			if (deletionPolicy == DeletionPolicy::InPlace)
 				Pop(id);
@@ -732,7 +732,7 @@ namespace p
 			{
 				for (Id id : ids)
 				{
-					Check(Has(id));
+					P_Check(Has(id));
 					Pop(id);
 				}
 			}
@@ -740,7 +740,7 @@ namespace p
 			{
 				for (Id id : ids)
 				{
-					Check(Has(id));
+					P_Check(Has(id));
 					PopSwap(id);
 				}
 			}
@@ -748,14 +748,14 @@ namespace p
 
 		T& Get(Id id) requires(!p::IsEmpty<T>)
 		{
-			Check(Has(id));
+			P_Check(Has(id));
 			const i32 index = GetIndexFromId(id);
 			return data[index];
 		}
 
 		const T& Get(Id id) const requires(!p::IsEmpty<T>)
 		{
-			Check(Has(id));
+			P_Check(Has(id));
 			return data[GetIndexFromId(id)];
 		}
 
@@ -847,8 +847,8 @@ namespace p
 
 		void Swap(const Id a, const Id b)
 		{
-			CheckMsg(Has(a), "Set does not contain entity");
-			CheckMsg(Has(b), "Set does not contain entity");
+			P_CheckMsg(Has(a), "Set does not contain entity");
+			P_CheckMsg(Has(b), "Set does not contain entity");
 
 			i32& aListIdx = idIndices[GetIdIndex(a)];
 			i32& bListIdx = idIndices[GetIdIndex(b)];
@@ -953,20 +953,20 @@ namespace p
 		template<typename C>
 		decltype(auto) Add(Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
 		{
-			Check(IsValid(id));
+			P_Check(IsValid(id));
 			return AssurePool<C>().Add(id, p::Forward<C>(value));
 		}
 		template<typename C>
 		decltype(auto) Add(Id id, const C& value) const requires(IsSame<C, Mut<C>>)
 		{
-			Check(IsValid(id));
+			P_Check(IsValid(id));
 			return AssurePool<C>().Add(id, value);
 		}
 		// Adds Component to an entity (if the entity doesnt have it already)
 		template<typename... Component>
 		void Add(Id id) requires(sizeof...(Component) > 1)
 		{
-			Check(IsValid(id));
+			P_Check(IsValid(id));
 			(Add<Component>(id), ...);
 		}
 
@@ -987,7 +987,7 @@ namespace p
 		template<typename Component>
 		void AddN(TView<const Id> ids, const TView<const Component>& values)
 		{
-			Check(ids.Size() == values.Size());
+			P_Check(ids.Size() == values.Size());
 			AssurePool<Component>().Add(ids.begin(), ids.end(), values.begin());
 		}
 
@@ -1022,15 +1022,15 @@ namespace p
 		template<typename Component>
 		Component& Get(const Id id) const
 		{
-			Check(IsValid(id));
+			P_Check(IsValid(id));
 			auto* const pool = GetPool<Component>();
-			Check(pool);
+			P_Check(pool);
 			return pool->Get(id);
 		}
 		template<typename... Component>
 		TTuple<Component&...> Get(const Id id) const requires(sizeof...(Component) > 1)
 		{
-			Check(IsValid(id));
+			P_Check(IsValid(id));
 			return std::forward_as_tuple(Get<Component>(id)...);
 		}
 		template<typename Component>
@@ -1042,14 +1042,14 @@ namespace p
 		template<typename... Component>
 		TTuple<Component*...> TryGet(const Id id) const requires(sizeof...(Component) > 1)
 		{
-			Check(IsValid(id));
+			P_Check(IsValid(id));
 			return std::forward_as_tuple(TryGet<Component>(id)...);
 		}
 
 		template<typename Component>
 		Component& GetOrAdd(Id id)
 		{
-			Check(IsValid(id));
+			P_Check(IsValid(id));
 			return AssurePool<Component>().GetOrAdd(id);
 		}
 

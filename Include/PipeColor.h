@@ -10,7 +10,6 @@
 #include "PipeVectors.h"
 
 
-
 namespace p
 {
 	/**
@@ -239,7 +238,7 @@ namespace p
 			}
 			else
 			{
-				CheckMsg(false, "Not supported color conversion");
+				P_CheckMsg(false, "Not supported color conversion");
 				return TColor<to>{};
 			}
 		}
@@ -325,7 +324,7 @@ namespace p
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
-				CheckMsg(false, "operator+(color) is not allowed on HSV");
+				P_CheckMsg(false, "operator+(color) is not allowed on HSV");
 				return {};
 			}
 			return {this->r + other.r, this->g + other.g, this->b + other.b, this->a + other.a};
@@ -346,7 +345,7 @@ namespace p
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
-				CheckMsg(false, "operator-(color) is not allowed on HSV");
+				P_CheckMsg(false, "operator-(color) is not allowed on HSV");
 				return {};
 			}
 			return {this->r - other.r, this->g - other.g, this->b - other.b, this->a - other.a};
@@ -367,7 +366,7 @@ namespace p
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
-				CheckMsg(false, "operator*(color) is not allowed on HSV");
+				P_CheckMsg(false, "operator*(color) is not allowed on HSV");
 				return {};
 			}
 			return {this->r * other.r, this->g * other.g, this->b * other.b, this->a * other.a};
@@ -388,7 +387,7 @@ namespace p
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
-				CheckMsg(false, "operator/(color) is not allowed on HSV");
+				P_CheckMsg(false, "operator/(color) is not allowed on HSV");
 				return {};
 			}
 			return {this->r / other.r, this->g / other.g, this->b / other.b, this->a / other.a};
@@ -409,7 +408,7 @@ namespace p
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
-				CheckMsg(false, "operator*(scalar) is not allowed on HSV");
+				P_CheckMsg(false, "operator*(scalar) is not allowed on HSV");
 				return {};
 			}
 			return {this->r * scalar, this->g * scalar, this->b * scalar, this->a * scalar};
@@ -431,7 +430,7 @@ namespace p
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
-				CheckMsg(false, "operator/(scalar) is not allowed on HSV");
+				P_CheckMsg(false, "operator/(scalar) is not allowed on HSV");
 				return {};
 			}
 			return {

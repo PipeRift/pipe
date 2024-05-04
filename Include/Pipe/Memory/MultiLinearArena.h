@@ -118,7 +118,7 @@ namespace p
 
 		sizet GetUsedMemory() const override
 		{
-			NotImplemented;
+			P_NotImplemented;
 			return 0;
 		}
 	};

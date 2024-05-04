@@ -492,13 +492,13 @@ namespace p
 
 		Reader& GetRead() const
 		{
-			Check(IsReading());
+			P_Check(IsReading());
 			return *reader;
 		}
 
 		Writer& GetWrite() const
 		{
-			Check(IsWriting());
+			P_Check(IsWriting());
 			return *writer;
 		}
 

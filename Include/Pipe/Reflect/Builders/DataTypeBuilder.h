@@ -95,7 +95,7 @@ namespace p
 			{
 				// Parent gets initialized before anything else
 				auto* parent = static_cast<DataType*>(TCompiledTypeRegister<Parent>::InitType());
-				Check(parent);
+				P_Check(parent);
 
 				newType = &TypeRegistry::Get().AddType<TType>(GetId());
 				parent->children.Add(newType);

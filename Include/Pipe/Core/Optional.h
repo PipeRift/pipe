@@ -109,14 +109,14 @@ namespace p
 		/** @return The optional value; undefined when IsSet() returns false. */
 		const Type& Get() const
 		{
-			CheckMsg(IsSet(),
+			P_CheckMsg(IsSet(),
 			    "Called GetValue() on an unset Optional. Please either check IsSet() or "
 			    "use Get(defaultValue) instead.");
 			return value;
 		}
 		Type& Get()
 		{
-			CheckMsg(IsSet(),
+			P_CheckMsg(IsSet(),
 			    "Called Get() on an unset Optional. Please either check IsSet() or "
 			    "use Get(defaultValue) instead.");
 			return value;

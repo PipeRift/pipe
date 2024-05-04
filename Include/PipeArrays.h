@@ -199,8 +199,8 @@ namespace p
 		constexpr void Verify() const
 		{
 #if P_DEBUG
-			CheckMsg(ptr, "Iterator is null");
-			CheckMsg(range->Data() <= ptr && ptr < (range->Data() + range->Size()),
+			P_CheckMsg(ptr, "Iterator is null");
+			P_CheckMsg(range->Data() <= ptr && ptr < (range->Data() + range->Size()),
 			    "Iterator is out of range");
 #endif
 		}
@@ -208,14 +208,15 @@ namespace p
 		constexpr void VerifyOffset(const i32 offset) const noexcept
 		{
 #if P_DEBUG
-			CheckMsg(offset == 0 || ptr, "Can not seek value-initialized iterator");
+			P_CheckMsg(offset == 0 || ptr, "Can not seek value-initialized iterator");
 			if (offset < 0)
 			{
-				CheckMsg(offset >= range->Data() - ptr, "Can not seek iterator before range begin");
+				P_CheckMsg(
+				    offset >= range->Data() - ptr, "Can not seek iterator before range begin");
 			}
 			else if (offset > 0)
 			{
-				CheckMsg(offset <= (range->Data() + range->Size()) - ptr,
+				P_CheckMsg(offset <= (range->Data() + range->Size()) - ptr,
 				    "Can not seek iterator after range end");
 			}
 #else
@@ -226,7 +227,7 @@ namespace p
 		constexpr void VerifyRange(const TArrayIterator& rhs) const noexcept
 		{
 #if P_DEBUG
-			CheckMsg(range == rhs.range, "Iterators dont share the same range");
+			P_CheckMsg(range == rhs.range, "Iterators dont share the same range");
 #else
 			(void)rhs;
 #endif
@@ -370,7 +371,7 @@ namespace p
 		 */
 		constexpr Type& operator[](i32 index) const
 		{
-			Check(IsValidIndex(index));
+			P_Check(IsValidIndex(index));
 			return data[index];
 		}
 
@@ -385,12 +386,12 @@ namespace p
 
 		constexpr Type& First() const
 		{
-			Check(size != 0);
+			P_Check(size != 0);
 			return data[0];
 		}
 		constexpr Type& Last() const
 		{
-			Check(size != 0);
+			P_Check(size != 0);
 			return data[size - 1];
 		}
 
@@ -512,14 +513,14 @@ namespace p
 		Type& FindRef(const Type& value) const
 		{
 			Iterator it = FindIt(value);
-			Check(it != end());
+			P_Check(it != end());
 			return *it;
 		}
 
 		Type& FindRef(TFunction<bool(const Type&)> cb) const
 		{
 			Iterator it = FindIt(Move(cb));
-			Check(it != end());
+			P_Check(it != end());
 			return *it;
 		}
 
@@ -1398,7 +1399,7 @@ namespace p
 		/** @return true if element data needs to be moved */
 		bool AllocNewBuffer(i32 newCapacity)
 		{
-			Check(capacity != newCapacity);
+			P_Check(capacity != newCapacity);
 
 			// Can never reallocate to under our used size
 			if (Super::size > newCapacity) [[unlikely]]
@@ -1542,7 +1543,7 @@ namespace p
 	template<typename Type, u32 InlineCapacity>
 	void TInlineArray<Type, InlineCapacity>::AddUninitialized(i32 count)
 	{
-		CheckMsg(count >= 0, "Can't add less than zero elements.");
+		P_CheckMsg(count >= 0, "Can't add less than zero elements.");
 		const i32 newSize = Super::size + count;
 		if (capacity < newSize)
 		{
@@ -1554,7 +1555,7 @@ namespace p
 	template<typename Type, u32 InlineCapacity>
 	void TInlineArray<Type, InlineCapacity>::InsertUninitialized(i32 atIndex, i32 count)
 	{
-		Check(atIndex >= 0 && atIndex <= Super::size);
+		P_Check(atIndex >= 0 && atIndex <= Super::size);
 
 		const i32 oldSize = Super::size;
 		const i32 newSize = Super::size + count;

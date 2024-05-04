@@ -9,7 +9,7 @@ namespace p
 {
 	BaseClass* ClassType::New(Arena& arena) const
 	{
-		if (Ensure(onNew && !HasFlag(Class_Abstract)))
+		if (P_Ensure(onNew && !HasFlag(Class_Abstract)))
 		{
 			return onNew(arena);
 		}

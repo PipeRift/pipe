@@ -570,7 +570,7 @@ namespace p
 			return;
 		}
 
-		NotImplemented;
+		P_NotImplemented;
 		return;
 	}
 

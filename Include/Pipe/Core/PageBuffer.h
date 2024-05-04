@@ -55,7 +55,7 @@ namespace p
 		template<typename... Args>
 		Type* Insert(sizet index, Args&&... args)
 		{
-			CheckMsg(index < Capacity(), "Out of bounds index");
+			P_CheckMsg(index < Capacity(), "Out of bounds index");
 			Type* const instance = AssurePage(index) + GetOffset(index);
 			std::construct_at(instance, p::Forward<Args>(args)...);
 			return instance;

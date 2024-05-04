@@ -58,7 +58,7 @@ namespace p
 	{
 		Interface<BestFitArena>();
 
-		Check(initialSize > 0);
+		P_Check(initialSize > 0);
 		block.data = GetParentArena().Alloc(initialSize);
 		block.size = initialSize;
 		// Set address at end of block. Size is 0

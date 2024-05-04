@@ -65,7 +65,7 @@ namespace p
 		PropertyIndexHandle(const PropertyHandle& other, i32 index)
 		    : PropertyHandle(other), index(index)
 		{
-			Check(GetArrayProperty());
+			P_Check(GetArrayProperty());
 		}
 
 		i32 GetIndex() const
@@ -115,7 +115,7 @@ namespace p
 		ValueHandle(void* data, const Property* property, i32 index)
 		    : data{data}, property{property}, index{index}
 		{
-			Check(GetArrayProperty());
+			P_Check(GetArrayProperty());
 			if (property)
 			{
 				type = property->GetType();
@@ -170,7 +170,7 @@ namespace p
 
 		void* GetContainerPtr() const
 		{
-			Check(index != NO_INDEX);
+			P_Check(index != NO_INDEX);
 			return data;
 		}
 
