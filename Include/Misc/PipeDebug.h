@@ -8,9 +8,9 @@
 // In a C++ file, once and before you include this file to create the implementation.
 
 #ifndef IMGUI_VERSION_NUM
-static_assert(false, "Imgui not found. v1.90 or newer is required.");
+static_assert(false, "Imgui not found. PipeDebug requires v1.90 or newer.");
 #elif IMGUI_VERSION_NUM < 19000
-static_assert(false, "Imgui v" IMGUI_VERSION " found but v1.90 or newer is required.");
+static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeDebug requires v1.90 or newer.");
 #endif
 
 
@@ -24,6 +24,15 @@ namespace p
 	///////////////////////////////////////////////////////////
 	// Definition
 
+#pragma region Inspection
+	bool BeginInspector(const char* name, p::v2 size = p::v2{0.f, 0.f});
+	void EndInspector();
+
+
+#pragma endregion Inspection
+
+
+#pragma region ECS
 	struct ECSDebugIdRegistry
 	{
 		bool visible = false;
@@ -62,6 +71,7 @@ namespace p
 	static void DrawEntityInspector(StringView label, ECSDebugInspector& inspector,
 	    bool* open = nullptr, ImGuiWindowFlags flags = 0);
 	static void DrawOpenEntityInspectors(ImGuiWindowFlags flags = 0);
+#pragma endregion ECS
 
 
 	///////////////////////////////////////////////////////////
