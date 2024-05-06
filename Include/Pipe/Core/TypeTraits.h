@@ -155,6 +155,20 @@ namespace p
 	template<typename T>
 	concept IsChar = Internal::TIsChar<T>::value;
 
+
+	template<typename T>
+	struct HasSuper
+	{
+	private:
+		template<typename V>
+		static void Impl(decltype(typename V::Super(), int()));
+		template<typename V>
+		static bool Impl(char);
+
+	public:
+		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
+	};
+
 	template<typename T>
 	struct HasTypeMember
 	{

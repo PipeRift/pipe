@@ -559,7 +559,7 @@ namespace p
 		}
 
 		template<typename Value, typename SortPredicate = TLess<>>
-		i32 FindSortedEqual(const Value& value, SortPredicate sortPredicate = {}) const
+		i32 FindSorted(const Value& value, SortPredicate sortPredicate = {}) const
 		{
 			return p::BinarySearch(Data(), 0, Size(), value, sortPredicate);
 		}
@@ -589,7 +589,7 @@ namespace p
 		template<typename Value, typename SortPredicate = TLess<>>
 		bool ContainsSorted(const Value& value, SortPredicate sortPredicate = {}) const
 		{
-			return FindSortedEqual(value, sortPredicate) != NO_INDEX;
+			return FindSorted(value, sortPredicate) != NO_INDEX;
 		}
 #pragma endregion Search
 
@@ -871,55 +871,55 @@ namespace p
 		 */
 		template<typename SortPredicate = TLess<Type>>
 		i32 AddUniqueSorted(const Type& value, SortPredicate sortPredicate = {},
-		    bool* outFound = nullptr, bool insertSorted = true)
+		    bool* outAdded = nullptr, bool insertSorted = true)
 		{
 			const i32 index = Super::LowerBound(value, sortPredicate);
 			if (index != NO_INDEX)
 			{
 				if (!sortPredicate(value, Super::data[index]))    // Equal check, found element
 				{
-					if (outFound)
-						*outFound = false;
+					if (outAdded)
+						*outAdded = false;
 					return index;
 				}
 				else if (insertSorted)
 				{
 					Insert(index, value);
-					if (outFound)
-						*outFound = true;
+					if (outAdded)
+						*outAdded = true;
 					return index;
 				}
 			}
 
-			if (outFound)
-				*outFound = true;
+			if (outAdded)
+				*outAdded = true;
 			return Add(value);
 		}
 
 		template<typename SortPredicate = TLess<Type>>
 		i32 AddUniqueSorted(Type&& value, SortPredicate sortPredicate = {},
-		    bool* outFound = nullptr, bool insertSorted = true)
+		    bool* outAdded = nullptr, bool insertSorted = true)
 		{
 			const i32 index = Super::LowerBound(value, sortPredicate);
 			if (index != NO_INDEX)
 			{
 				if (!sortPredicate(value, Super::data[index]))    // Equal check, found element
 				{
-					if (outFound)
-						*outFound = false;
+					if (outAdded)
+						*outAdded = false;
 					return index;
 				}
 				else if (insertSorted)
 				{
 					Insert(index, p::Forward<Type>(value));
-					if (outFound)
-						*outFound = true;
+					if (outAdded)
+						*outAdded = true;
 					return index;
 				}
 			}
 
-			if (outFound)
-				*outFound = true;
+			if (outAdded)
+				*outAdded = true;
 			return Add(p::Forward<Type>(value));
 		}
 
@@ -1043,6 +1043,9 @@ namespace p
 			return Super::data[atIndex];
 		}
 
+		void AddUninitialized(i32 count);
+		void InsertUninitialized(i32 atIndex, i32 count);
+
 #pragma endregion Insertions
 
 
@@ -1098,7 +1101,7 @@ namespace p
 		bool RemoveSorted(const OtherType& value, SortPredicate sortPredicate = {},
 		    const bool shouldShrink = true)
 		{
-			return RemoveAt(Super::FindSortedEqual(value, sortPredicate));
+			return RemoveAt(Super::FindSorted(value, sortPredicate));
 		}
 
 		/**
@@ -1458,8 +1461,6 @@ namespace p
 
 
 	protected:
-		void AddUninitialized(i32 count);
-		void InsertUninitialized(i32 atIndex, i32 count);
 		void CopyFrom(const IArray<const Type>& other);
 
 		template<u32 OtherInlineCapacity>

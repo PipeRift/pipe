@@ -25,6 +25,11 @@ namespace p
 		bool initialized = false;
 
 
+		TArray<TypeId> ids;
+		TArray<TypeId> parentIds;
+		TArray<StringView> names;
+
+
 	public:
 		TypeRegistry();
 		~TypeRegistry()

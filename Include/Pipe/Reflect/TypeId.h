@@ -3,6 +3,7 @@
 
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Platform.h"
+#include "Pipe/Core/Utility.h"
 
 #include <format>
 #include <iostream>
@@ -13,11 +14,12 @@ namespace p
 	struct PIPE_API TypeId
 	{
 	protected:
-		u64 id = 0;
+		u64 id;
 
 
 	public:
-		constexpr TypeId() = default;
+		constexpr TypeId() : id{0} {}
+		constexpr TypeId(p::Undefined) {}
 		explicit constexpr TypeId(u64 id) : id(id) {}
 
 		constexpr u64 GetId() const
@@ -69,9 +71,15 @@ namespace p
 	}
 
 	template<typename T>
-	inline consteval TypeId GetTypeId()
+	inline consteval TypeId GetTypeId() requires(!IsConst<T>)
 	{
 		return TypeId{p::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
+	}
+
+	template<typename T>
+	inline consteval TypeId GetTypeId() requires(IsConst<T>)
+	{
+		return GetTypeId<Mut<T>>();
 	}
 
 }    // namespace p

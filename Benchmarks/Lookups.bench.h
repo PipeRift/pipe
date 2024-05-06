@@ -44,7 +44,7 @@ void RunLookupsBenchmarks()
 			}
 			u64 i = 0;
 			lookups.run("Array - Binary Search", [&data, &i] {
-				ankerl::nanobench::doNotOptimizeAway(data.FindSortedEqual(i));
+				ankerl::nanobench::doNotOptimizeAway(data.FindSorted(i));
 				++i;
 			});
 		}
@@ -76,7 +76,7 @@ void RunLookupsBenchmarks()
 	        }
 	        u64 i = 0;
 	        complexityBSearch.complexityN(size).run("Array - Binary Search", [&data, &i] {
-	            data.FindSortedEqual(i);
+	            data.FindSorted(i);
 	            ++i;
 	        });
 	    }
