@@ -196,7 +196,6 @@ namespace p
 		if (valid)
 		{
 			p::String componentLabel;
-			const auto& registry = p::TypeRegistry::Get();
 			for (const auto& poolInstance : GetDebugCtx().GetPools())
 			{
 				if (!poolInstance.GetPool()->Has(inspector.id))
@@ -205,16 +204,9 @@ namespace p
 				}
 
 				componentLabel.clear();
-				p::Type* type = registry.FindType(poolInstance.componentId);
-				if (!type)
-				{
-					p::Strings::FormatTo(
-					    componentLabel, "{} (unknown type)", poolInstance.componentId);
-					ImGui::CollapsingHeader(componentLabel.c_str(), ImGuiTreeNodeFlags_Leaf);
-					continue;
-				}
 
-				p::Strings::FormatTo(componentLabel, "{}", type->GetName());
+				p::Strings::FormatTo(
+				    componentLabel, "{}", RemoveNamespace(GetTypeName(poolInstance.componentId)));
 
 				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
 				void* data               = poolInstance.GetPool()->TryGetVoid(inspector.id);
