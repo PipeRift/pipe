@@ -14,6 +14,14 @@ struct One
 
 go_bandit([]() {
 	describe("Reflection.TypeId", []() {
+		it("Ids can be valid and invalid", [&]() {
+			static constexpr TypeId id = GetTypeId<u8>();
+			AssertThat(id.IsValid(), Equals(true));
+
+			static constexpr TypeId noId{};
+			AssertThat(noId.IsValid(), Equals(false));
+		});
+
 		it("Different types don't share an id", [&]() {
 			static constexpr TypeId ids[]{
 			    GetTypeId<u8>(), GetTypeId<u16>(), GetTypeId<i32>(), GetTypeId<One>()};

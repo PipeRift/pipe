@@ -9,6 +9,7 @@
 #include "Pipe/Memory/UniquePtr.h"
 #include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
 #include "PipeArrays.h"
+#include "PipeReflect.h"
 
 
 ////////////////////////////////
@@ -2106,7 +2107,7 @@ namespace p
 	template<typename T>
 	inline TPool<Mut<T>>& EntityContext::AssurePool() const
 	{
-		constexpr TypeId componentId = GetTypeId<Mut<T>>();
+		const TypeId componentId = AssureTypeId<Mut<T>>();
 
 		i32 index = pools.LowerBound(PoolInstance{componentId, {}});
 		if (index != NO_INDEX)

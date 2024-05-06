@@ -131,7 +131,7 @@ namespace p
 		}
 
 		std::unique_lock lock{mutex};
-		const i32 index = allocations.FindSortedEqual(ptr, SortLessAllocationStats{});
+		const i32 index = allocations.FindSorted(ptr, SortLessAllocationStats{});
 		if (index != NO_INDEX)
 		{
 			AllocationStats& allocation = allocations[index];
