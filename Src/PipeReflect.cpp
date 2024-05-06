@@ -47,7 +47,7 @@ namespace p
 	TypeId GetParentId(TypeId id)
 	{
 		const i32 index = GetTypeIndex(id);
-		return index ? parentIds[index] : TypeId{};
+		return index != NO_INDEX ? parentIds[index] : TypeId{};
 	}
 
 	bool IsParentOf(TypeId parentId, TypeId childId)
@@ -65,6 +65,6 @@ namespace p
 	StringView GetTypeName(TypeId id)
 	{
 		const i32 index = GetTypeIndex(id);
-		return index ? names[index] : StringView{};
+		return index != NO_INDEX ? names[index] : StringView{};
 	}
 }    // namespace p
