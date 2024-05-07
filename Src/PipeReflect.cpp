@@ -2,52 +2,48 @@
 
 #include "PipeReflect.h"
 
+#include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Platform.h"
 #include "PipeECS.h"
 
 
 namespace p
 {
-	static TArray<TypeId> ids;
-	static TArray<TypeId> parentIds;
-	static TArray<StringView> names;
-
-	namespace details
+	struct TypeRegistry2
 	{
-		i32 AssureSingleTypeId(TypeId id)
-		{
-			bool added      = false;
-			const i32 index = ids.AddUniqueSorted(id, {}, &added);
-			if (added)    // Not already registered?
-			{
-				parentIds.InsertUninitialized(index, 1);
-				names.InsertUninitialized(index, 1);
-				return index;
-			}
-			return NO_INDEX;
-		}
+		MultiLinearArena arena;
 
-		void SetTypeParentUnsafe(i32 index, TypeId parentId)
-		{
-			parentIds[index] = parentId;
-		}
+		TArray<TypeId> ids{arena};
 
-		void SetTypeNameUnsafe(i32 index, StringView name)
-		{
-			names[index] = name;
-		}
-	}    // namespace details
+		TArray<TypeId> parentIds{arena};
+		TArray<StringView> names{arena};
+		TArray<u64> flags{arena};
+		TArray<TArray<TypeProperty>> properties{arena};
+		TArray<const TypeOperations*> operations{arena};
+	};
+
+	struct TypeEditContext
+	{
+		// Index being currently edited
+		i32 index = NO_INDEX;
+		// Nested types being registered. A type can be registered from inside another
+		TArray<TypeId> typeStack;
+	};
+
+
+	static TypeRegistry2 registry;
+	static TypeEditContext currentEdit;
 
 
 	i32 GetTypeIndex(TypeId id)
 	{
-		return ids.FindSorted(id);
+		return registry.ids.FindSorted(id);
 	}
 
 	TypeId GetParentId(TypeId id)
 	{
 		const i32 index = GetTypeIndex(id);
-		return index != NO_INDEX ? parentIds[index] : TypeId{};
+		return index != NO_INDEX ? registry.parentIds[index] : TypeId{};
 	}
 
 	bool IsParentOf(TypeId parentId, TypeId childId)
@@ -65,6 +61,81 @@ namespace p
 	StringView GetTypeName(TypeId id)
 	{
 		const i32 index = GetTypeIndex(id);
-		return index != NO_INDEX ? names[index] : StringView{};
+		return index != NO_INDEX ? registry.names[index] : StringView{};
 	}
+
+
+	namespace details
+	{
+#define P_CheckEditingType                      \
+	P_CheckMsg(currentEdit.index != NO_INDEX,   \
+	    "Not currently editing a type! Forgot " \
+	    "BeginTypeId()?")
+
+
+		bool BeginTypeId(TypeId id)
+		{
+			bool added      = false;
+			const i32 index = registry.ids.AddUniqueSorted(id, {}, &added);
+			if (!added)    // Not already registered?
+			{
+				return false;
+			}
+			currentEdit.index = index;
+			currentEdit.typeStack.Add(id);
+
+			registry.parentIds.Insert(index);
+			registry.names.Insert(index);
+			registry.flags.Insert(index);
+			registry.properties.Insert(index);
+			registry.operations.Insert(index);
+			return true;
+		}
+
+		void EndTypeId()
+		{
+			if (!P_EnsureMsg(currentEdit.index != NO_INDEX,
+			        "Trying to finish editing a type but no type is being edited. Forgot to call "
+			        "BeginTypeId()?"))
+			{
+				return;
+			}
+			currentEdit.typeStack.RemoveLast();
+			// Apply the index (that could have changed)
+			currentEdit.index = currentEdit.typeStack.IsEmpty()
+			                      ? NO_INDEX
+			                      : GetTypeIndex(currentEdit.typeStack.Last());
+		}
+
+		void SetTypeParent(TypeId parentId)
+		{
+			P_CheckEditingType;
+			registry.parentIds[currentEdit.index] = parentId;
+		}
+
+		void SetTypeName(StringView name)
+		{
+			P_CheckEditingType;
+			registry.names[currentEdit.index] = name;
+		}
+
+		void SetTypeFlags(u64 flags)
+		{
+			P_CheckEditingType;
+			registry.flags[currentEdit.index] = flags;
+		}
+
+		void AddTypeProperty(const TypeProperty& property)
+		{
+			P_CheckEditingType;
+			auto& properties = registry.properties[currentEdit.index];
+			properties.Add(property);
+		}
+
+		void SetTypeOperations(const TypeOperations* operations)
+		{
+			P_CheckEditingType;
+			registry.operations[currentEdit.index] = operations;
+		}
+	}    // namespace details
 }    // namespace p
