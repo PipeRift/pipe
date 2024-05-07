@@ -67,6 +67,9 @@ namespace p
 	PIPE_API StringView GetTypeName(TypeId id);
 
 
+	template<typename T>
+	TypeId AssureTypeId();    // Forward declaration
+
 	namespace details
 	{
 		PIPE_API bool BeginTypeId(TypeId id);
@@ -90,10 +93,6 @@ namespace p
 
 		PIPE_API void SetTypeOperations(const TypeOperations* operations);
 	}    // namespace details
-
-
-	template<typename T>
-	TypeId AssureTypeId();
 
 	// Do not call directly.
 	template<typename T>
