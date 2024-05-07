@@ -92,6 +92,9 @@ namespace p
 	}    // namespace details
 
 
+	template<typename T>
+	TypeId AssureTypeId();
+
 	// Do not call directly.
 	template<typename T>
 	void RegisterTypeId(const TypeId typeId)
