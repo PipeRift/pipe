@@ -9,7 +9,7 @@
 
 namespace p
 {
-	namespace Internal
+	namespace details
 	{
 		template<class T>
 		struct TIsRValueReference : std::false_type
@@ -40,7 +40,7 @@ namespace p
 		template<>
 		struct TIsChar<const WideChar> : std::true_type
 		{};
-	}    // namespace Internal
+	}    // namespace details
 
 	template<typename T>
 	concept IsVoid = std::is_void_v<T>;
@@ -148,12 +148,12 @@ namespace p
 	using ValueOrRef = typename std::conditional<ShouldPassByValue<T>, T, const T&>::type;
 
 	template<typename T>
-	concept IsRValueRef = Internal::TIsRValueReference<T>::value;
+	concept IsRValueRef = details::TIsRValueReference<T>::value;
 	template<typename T>
-	concept IsLValueRef = Internal::TIsLValueReference<T>::value;
+	concept IsLValueRef = details::TIsLValueReference<T>::value;
 
 	template<typename T>
-	concept IsChar = Internal::TIsChar<T>::value;
+	concept IsChar = details::TIsChar<T>::value;
 
 
 	template<typename T>

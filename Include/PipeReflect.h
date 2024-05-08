@@ -10,8 +10,12 @@
 
 namespace p
 {
-	///////////////////////////////////////////////////////
-	// Runtime reflection
+	// clang-format off
+	template<typename T>
+	concept MemberBuildType = requires() {
+		{ T::BuildType() };
+	};
+	// clang-format on
 
 	enum TypeFlags2
 	{
@@ -28,9 +32,9 @@ namespace p
 		using AccessFunc = void*(void*);
 
 		TypeId typeId;
-		u64 flags = 0;
-		Tag name;
+		u64 flags          = 0;
 		AccessFunc* access = nullptr;
+		Tag name;
 	};
 
 	struct TypeOperations
@@ -51,7 +55,6 @@ namespace p
 		using RemoveItemFunc = void(void*, i32);
 		using ClearFunc      = void(void*);
 
-
 		GetDataFunc* getData       = nullptr;
 		GetSizeFunc* getSize       = nullptr;
 		GetItemFunc* getItem       = nullptr;
@@ -60,64 +63,105 @@ namespace p
 		ClearFunc* clear           = nullptr;
 	};
 
-
-	PIPE_API TypeId GetParentId(TypeId id);
-	PIPE_API TypeId GetParentId(TypeId id);
-	PIPE_API bool IsParentOf(TypeId parentId, TypeId childId);
-	PIPE_API StringView GetTypeName(TypeId id);
-
-
-	template<typename T>
-	TypeId AssureTypeId();    // Forward declaration
-
 	namespace details
 	{
-		PIPE_API bool BeginTypeId(TypeId id);
-		PIPE_API void EndTypeId();
-		PIPE_API void SetTypeParent(TypeId parentId);
-		PIPE_API void SetTypeName(StringView name);
-		PIPE_API void SetTypeFlags(u64 flags);
+		PIPE_API i32 GetTypeIndex(TypeId id);
+	}
 
-		PIPE_API void AddTypeProperty(const TypeProperty& property);
+	PIPE_API TView<TypeId> GetRegisteredTypeIds(TypeId id);
+	PIPE_API bool IsTypeRegistered(TypeId id);
+	PIPE_API TypeId GetParentType(TypeId id);
+	PIPE_API bool IsParentTypeOf(TypeId parentId, TypeId childId);
+	PIPE_API StringView GetTypeName(TypeId id);
+	PIPE_API u64 GetTypeFlags(TypeId id);
+	PIPE_API TView<TypeProperty> GetTypeProperties(TypeId id);
 
-		template<typename T, typename U>
-		constexpr void AddTypeProperty(U T::*member, StringView name)
-		{
-			AddTypeProperty({.typeId = AssureTypeId<U>(),
-			    .flags               = 0,
-			    .name                = name,
-			    .access              = [member](void* instance) {
-                    (void*)&static_cast<T*>(instance)->*member;
-			    }});
-		}
 
-		PIPE_API void SetTypeOperations(const TypeOperations* operations);
-	}    // namespace details
+#pragma region TypeRegistration
+	/** To register types, define either of the following functions for that type:
+	 * - A member static function BuildType() inside of the type to register.
+	 * - An external function BuildType(const T*) where T is the type.
+	 *   The parameter is used as a dummy for overloading. Will always be null.
+	 *
+	 * NOTE: BuildType() is optional! Only needed to add properties, operations, etc.
+	 *       Types can also be of any kind, including templates.
+	 *
+	 * Examples:
+	 * - A member BuildType():
+	 *     struct A {
+	 *         bool value = false;
+	 *         static void BuildType()
+	 *         {
+	 *             SetTypeName("A");
+	 *             AddTypeProperty("value", &A::value);
+	 *         }
+	 *     };
+	 *
+	 * - An external BuildType():
+	 *     struct B {
+	 *         bool value = false;
+	 *     };
+	 *     // NOTE: External should be placed -outside- of any namespaces (except "p" which is
+	 * optional) void BuildType(const B*)
+	 *     {
+	 *         SetTypeName("B");
+	 *         AddTypeProperty("value", &B::value);
+	 *     }
+	 */
 
-	// Do not call directly.
+	// Resolve the right BuildType function to call
 	template<typename T>
-	void RegisterTypeId(const TypeId typeId)
+	void BuildType(const T*) requires(MemberBuildType<T>)
 	{
-		if (details::BeginTypeId(typeId))
+		T::BuildType();
+	}
+	template<typename T>
+	void BuildType(const T*) requires(!MemberBuildType<T>)
+	{}
+
+
+	template<typename T>
+	TypeId RegisterTypeId();    // Forward declaration
+
+	PIPE_API bool BeginTypeId(TypeId id);
+	PIPE_API void EndTypeId();
+	PIPE_API void SetTypeParent(TypeId parentId);
+	PIPE_API void SetTypeName(StringView name);
+	PIPE_API void SetTypeFlags(u64 flags);
+	PIPE_API void AddTypeProperty(const TypeProperty& property);
+	template<typename T, typename U>
+	constexpr void AddTypeProperty(U T::*member, StringView name, u64 flags = 0)
+	{
+		AddTypeProperty({.typeId = RegisterTypeId<U>(),
+		    .flags               = flags,
+		    .name                = name,
+		    .access              = [member](void* instance) {
+                (void*)&static_cast<T*>(instance)->*member;
+		    }});
+	}
+	PIPE_API void SetTypeOperations(const TypeOperations* operations);
+
+
+	template<typename T>
+	TypeId RegisterTypeId()
+	{    // Static to only register once
+		static bool bRegistered = false;
+		const TypeId typeId     = GetTypeId<T>();
+		if (!bRegistered && BeginTypeId(typeId))
 		{
+			bRegistered = true;
+
+			// Obvious defaults
 			if constexpr (HasSuper<T>::value)
 			{
-				details::SetTypeParent(AssureTypeId<typename T::Super>());
+				SetTypeParent(RegisterTypeId<typename T::Super>());
 			}
-			details::SetTypeName(GetTypeName<T>());
-			details::EndTypeId();
-		}
-	}
+			SetTypeName(GetTypeName<T>());
 
-	template<typename T>
-	TypeId AssureTypeId()
-	{
-		// Static to only register once
-		static TypeId typeId = []() {
-			const TypeId typeId = GetTypeId<T>();
-			RegisterTypeId<T>(typeId);
-			return typeId;
-		}();
+			BuildType<T>(nullptr);
+			EndTypeId();
+		}
 		return typeId;
 	}
+#pragma endregion TypeRegistration
 };    // namespace p

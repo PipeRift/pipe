@@ -23,7 +23,7 @@ struct yyjson_mut_val;
 
 namespace p
 {
-	namespace internal
+	namespace details
 	{
 		template<typename T>
 		struct HasRead : std::false_type
@@ -40,13 +40,13 @@ namespace p
 		requires IsVoid<decltype(Write(std::declval<struct Writer&>(), std::declval<const T&>()))>
 		struct HasWrite<T> : std::true_type
 		{};
-	}    // namespace internal
+	}    // namespace details
 
 
 	template<typename T>
-	static constexpr bool Readable = internal::template HasRead<T>::value;
+	static constexpr bool Readable = details::template HasRead<T>::value;
 	template<typename T>
-	static constexpr bool Writable = internal::template HasWrite<T>::value;
+	static constexpr bool Writable = details::template HasWrite<T>::value;
 
 
 	enum WriteFlags : sizet

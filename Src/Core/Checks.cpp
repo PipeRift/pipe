@@ -7,7 +7,7 @@
 #include "Pipe/Core/StringView.h"
 
 
-namespace p::internal
+namespace p::details
 {
 	void FailedCheckError(const AnsiChar* expr, const AnsiChar* file, u32 line, const char* inText)
 	{
@@ -24,4 +24,4 @@ namespace p::internal
 		}
 		Error(text);
 	}
-}    // namespace p::internal
+}    // namespace p::details

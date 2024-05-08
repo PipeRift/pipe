@@ -2107,7 +2107,7 @@ namespace p
 	template<typename T>
 	inline TPool<Mut<T>>& EntityContext::AssurePool() const
 	{
-		const TypeId componentId = AssureTypeId<Mut<T>>();
+		const TypeId componentId = RegisterTypeId<Mut<T>>();
 
 		i32 index = pools.LowerBound(PoolInstance{componentId, {}});
 		if (index != NO_INDEX)
