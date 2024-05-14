@@ -5,6 +5,7 @@
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/TypeTraits.h"
+#include "Pipe/Memory/HeapArena.h"
 #include "Pipe/Memory/MultiLinearArena.h"
 #include "PipeECS.h"
 
@@ -38,7 +39,7 @@ namespace p
 		TArray<const TypeOps*> operations{arena};
 
 		bool initialized = false;
-		TArray<void (*)()> onInitCallbacks;
+		TArray<void (*)()> onInitCallbacks{GetHeapArena()};
 	};
 
 	struct TypeEditContext
@@ -49,8 +50,11 @@ namespace p
 		TArray<TypeId> typeStack;
 	};
 
-
-	static TypeRegistry registry;
+	TypeRegistry& AssureRegistry()
+	{
+		static TypeRegistry registry;
+		return registry;
+	}
 	static TypeEditContext currentEdit;
 
 	bool TypeProperty::HasFlag(PropertyFlags flag) const
@@ -123,13 +127,14 @@ namespace p
 	{
 		i32 GetTypeIndex(TypeId id)
 		{
-			return registry.ids.FindSorted(id);
+			return AssureRegistry().ids.FindSorted(id);
 		}
 	}    // namespace details
 
 
 	bool InitializeReflect()
 	{
+		auto& registry = AssureRegistry();
 		if (!P_EnsureMsg(!registry.initialized, "Reflection is already initialized"))
 		{
 			return false;
@@ -150,13 +155,13 @@ namespace p
 	{
 		if (callback)
 		{
-			registry.onInitCallbacks.Add(callback);
+			AssureRegistry().onInitCallbacks.Add(callback);
 		}
 	}
 
-	TView<TypeId> GetRegisteredTypeIds(TypeId id)
+	TView<TypeId> GetRegisteredTypeIds()
 	{
-		return registry.ids;
+		return AssureRegistry().ids;
 	}
 
 	bool IsTypeRegistered(TypeId id)
@@ -167,7 +172,7 @@ namespace p
 	TypeId GetTypeParent(TypeId id)
 	{
 		const i32 index = details::GetTypeIndex(id);
-		return index != NO_INDEX ? registry.parentIds[index] : TypeId{};
+		return index != NO_INDEX ? AssureRegistry().parentIds[index] : TypeId{};
 	}
 
 	bool IsTypeParentOf(TypeId parentId, TypeId childId)
@@ -185,46 +190,47 @@ namespace p
 	sizet GetTypeSize(TypeId id)
 	{
 		const i32 index = details::GetTypeIndex(id);
-		return index != NO_INDEX ? registry.sizes[index] : 0;
+		return index != NO_INDEX ? AssureRegistry().sizes[index] : 0;
 	}
 
 	StringView GetTypeName(TypeId id)
 	{
 		const i32 index = details::GetTypeIndex(id);
-		return index != NO_INDEX ? registry.names[index] : StringView{};
+		return index != NO_INDEX ? AssureRegistry().names[index] : StringView{};
 	}
 
 	TypeFlags GetTypeFlags(TypeId id)
 	{
 		const i32 index = details::GetTypeIndex(id);
-		return index != NO_INDEX ? registry.flags[index] : TF_None;
+		return index != NO_INDEX ? AssureRegistry().flags[index] : TF_None;
 	}
 
 	bool HasTypeFlags(TypeId id, TypeFlags flags)
 	{
 		const i32 index = details::GetTypeIndex(id);
-		return index != NO_INDEX && (registry.flags[index] & flags) == flags;
+		return index != NO_INDEX && (AssureRegistry().flags[index] & flags) == flags;
 	}
 	bool HasAnyTypeFlags(TypeId id, TypeFlags flags)
 	{
 		const i32 index = details::GetTypeIndex(id);
-		return index != NO_INDEX && (registry.flags[index] & flags) > 0;
+		return index != NO_INDEX && (AssureRegistry().flags[index] & flags) > 0;
 	}
 
 	TView<TypeProperty> GetTypeProperties(TypeId id)
 	{
 		const i32 index = details::GetTypeIndex(id);
-		return index != NO_INDEX ? registry.properties[index] : TView<TypeProperty>{};
+		return index != NO_INDEX ? AssureRegistry().properties[index] : TView<TypeProperty>{};
 	}
 
 	const TypeOps* GetTypeOps(TypeId id)
 	{
 		const i32 index = details::GetTypeIndex(id);
-		return index != NO_INDEX ? registry.operations[index] : nullptr;
+		return index != NO_INDEX ? AssureRegistry().operations[index] : nullptr;
 	}
 
 	const ObjectTypeOps* GetTypeObjectOps(TypeId id)
 	{
+		auto& registry  = AssureRegistry();
 		const i32 index = details::GetTypeIndex(id);
 		return (index != NO_INDEX && (registry.flags[index] & TF_Object) == TF_Object)
 		         ? static_cast<const ObjectTypeOps*>(registry.operations[index])
@@ -233,6 +239,7 @@ namespace p
 
 	const ContainerTypeOps* GetTypeContainerOps(TypeId id)
 	{
+		auto& registry  = AssureRegistry();
 		const i32 index = details::GetTypeIndex(id);
 		return (index != NO_INDEX && (registry.flags[index] & TF_Object) == TF_Object)
 		         ? static_cast<const ContainerTypeOps*>(registry.operations[index])
@@ -247,6 +254,7 @@ namespace p
 
 	bool BeginTypeId(TypeId id)
 	{
+		auto& registry  = AssureRegistry();
 		bool added      = false;
 		const i32 index = registry.ids.AddUniqueSorted(id, {}, &added);
 		if (!added)    // Not already registered?
@@ -283,50 +291,50 @@ namespace p
 	void SetTypeParent(TypeId parentId)
 	{
 		P_CheckEditingType;
-		registry.parentIds[currentEdit.index] = parentId;
+		AssureRegistry().parentIds[currentEdit.index] = parentId;
 	}
 
 	void SetTypeSize(sizet size)
 	{
 		P_CheckEditingType;
-		registry.sizes[currentEdit.index] = size;
+		AssureRegistry().sizes[currentEdit.index] = size;
 	}
 
 	void SetTypeName(StringView name)
 	{
 		P_CheckEditingType;
-		registry.names[currentEdit.index] = name;
+		AssureRegistry().names[currentEdit.index] = name;
 	}
 
 	void SetTypeFlags(TypeFlags flags)
 	{
 		P_CheckEditingType;
-		registry.flags[currentEdit.index] = flags;
+		AssureRegistry().flags[currentEdit.index] = flags;
 	}
 
 	void AddTypeFlags(TypeFlags flags)
 	{
 		P_CheckEditingType;
-		registry.flags[currentEdit.index] |= flags;
+		AssureRegistry().flags[currentEdit.index] |= flags;
 	}
 
 	void RemoveTypeFlags(TypeFlags flags)
 	{
 		P_CheckEditingType;
-		registry.flags[currentEdit.index] &= ~flags;
+		AssureRegistry().flags[currentEdit.index] &= ~flags;
 	}
 
 	void AddTypeProperty(const TypeProperty& property)
 	{
 		P_CheckEditingType;
-		auto& properties = registry.properties[currentEdit.index];
+		auto& properties = AssureRegistry().properties[currentEdit.index];
 		properties.Add(property);
 	}
 
 	void SetTypeOps(const TypeOps* operations)
 	{
 		P_CheckEditingType;
-		registry.operations[currentEdit.index] = operations;
+		AssureRegistry().operations[currentEdit.index] = operations;
 	}
 
 

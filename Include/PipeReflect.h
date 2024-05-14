@@ -314,7 +314,7 @@ namespace p
 	PIPE_API bool InitializeReflect();
 	PIPE_API void OnReflectInit(void (*callback)());
 
-	PIPE_API TView<TypeId> GetRegisteredTypeIds(TypeId id);
+	PIPE_API TView<TypeId> GetRegisteredTypeIds();
 	PIPE_API bool IsTypeRegistered(TypeId id);
 	PIPE_API TypeId GetTypeParent(TypeId id);
 	PIPE_API bool IsTypeParentOf(TypeId parentId, TypeId childId);
@@ -498,6 +498,12 @@ namespace p
 	};
 
 	template<typename T>
+	struct TStaticTypeAutoRegister
+	{
+		static inline TTypeAutoRegister<T> instance;
+	};
+
+	template<typename T>
 	void CallSuperReadProperties(T& value, p::Reader& r)
 	{}
 	template<typename T>
@@ -519,7 +525,12 @@ namespace p
 
 
 #pragma region Macros
-#define P_AUTOREGISTER_TYPE(type)    // static const p::TTypeAutoRegister<type> __##type##_register;
+#define P_AUTOREGISTER_TYPE(type)                       \
+	template<>                                          \
+	struct p::TStaticTypeAutoRegister<type>             \
+	{                                                   \
+		static inline TTypeAutoRegister<type> instance; \
+	};
 
 #define P_NATIVE(type)                 \
 	inline void BuildType(const type*) \
@@ -562,6 +573,9 @@ public:                                                                      \
 
 
 #define P_REFLECTION_BODY(buildCode)                                      \
+private:                                                                  \
+	static inline p::TTypeAutoRegister<Self> typeAutoRegister;            \
+                                                                          \
 public:                                                                   \
 	static void BuildType()                                               \
 	{                                                                     \
@@ -797,7 +811,7 @@ namespace p
 					return instance;
 				}
 			}
-			return {};
+			return nullptr;
 		}
 
 		static void Delete(Arena& arena, void* rawPtr)

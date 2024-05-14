@@ -4,6 +4,10 @@
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Utility.h"
+#if P_DEBUG
+	#include "Pipe/Core/StringView.h"
+	#include "Pipe/Reflect/TypeName.h"
+#endif
 
 #include <format>
 #include <iostream>
@@ -15,12 +19,18 @@ namespace p
 	{
 	protected:
 		u64 id;
+#if P_DEBUG
+		StringView debugName;
+#endif
 
 
 	public:
 		constexpr TypeId() : id{0} {}
 		constexpr TypeId(p::Undefined) {}
-		explicit constexpr TypeId(u64 id) : id(id) {}
+		explicit constexpr TypeId(u64 id) : id{id} {}
+#if P_DEBUG
+		explicit constexpr TypeId(u64 id, StringView debugName) : id{id}, debugName{debugName} {}
+#endif
 
 		constexpr u64 GetId() const
 		{
@@ -73,7 +83,14 @@ namespace p
 	template<typename T>
 	inline consteval TypeId GetTypeId() requires(!IsConst<T>)
 	{
-		return TypeId{p::GetStringHash(TX(UNIQUE_FUNCTION_ID))};
+		return TypeId
+		{
+			p::GetStringHash(TX(UNIQUE_FUNCTION_ID))
+#if P_DEBUG
+			    ,
+			    GetTypeName<T>()
+#endif
+		};
 	}
 
 	template<typename T>
