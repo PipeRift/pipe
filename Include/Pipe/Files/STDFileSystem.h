@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
 #include "PipeSerializeFwd.h"
 
 #include <filesystem>
@@ -57,5 +57,3 @@ namespace p
 	PIPE_API PathIterator CreatePathIterator(StringView path);
 	PIPE_API RecursivePathIterator CreateRecursivePathIterator(StringView path);
 }    // namespace p
-
-P_REFLECT_NATIVE_TYPE(p::Path);

@@ -3,7 +3,6 @@
 
 #include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/Reflect/ReflectionTraits.h"
 
 
 namespace p

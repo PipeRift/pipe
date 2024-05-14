@@ -3,7 +3,6 @@
 #include "PipeVectors.h"
 
 #include "Pipe/Core/PlatformMisc.h"
-#include "PipeSerialize.h"
 
 
 namespace p
@@ -31,86 +30,6 @@ namespace p
 		}
 
 		return angle;
-	}
-
-
-	void Read(Reader& ct, v2& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-	}
-	void Write(Writer& ct, v2 val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-	}
-	void Read(Reader& ct, v2_u32& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-	}
-	void Write(Writer& ct, v2_u32 val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-	}
-	void Read(Reader& ct, v2_i32& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-	}
-	void Write(Writer& ct, v2_i32 val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-	}
-	void Read(Reader& ct, v3& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
-	}
-	void Write(Writer& ct, const v3& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
-	}
-	void Read(Reader& ct, v3_u32& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
-	}
-	void Write(Writer& ct, const v3_u32& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
-	}
-	void Read(Reader& ct, v3_i32& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
-	}
-	void Write(Writer& ct, const v3_i32& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
 	}
 
 	v3 Vectors::GetSafeScaleReciprocal(const v3& scale, float tolerance)
@@ -332,23 +251,5 @@ namespace p
 	Quat Quat::LookAt(const v3& origin, const v3& dest)
 	{
 		return Between(origin, dest);
-	}
-
-
-	void Read(Reader& ct, Quat& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
-		ct.Next(TX("w"), val.w);
-	}
-	void Write(Writer& ct, const Quat& val)
-	{
-		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
-		ct.Next(TX("w"), val.w);
 	}
 }    // namespace p

@@ -158,9 +158,6 @@ namespace p
 	{
 		return GetStringHash(str.data());
 	}
-
-	PIPE_API void Read(p::Reader& ct, p::String& val);
-	PIPE_API void Write(p::Writer& ct, const p::String& val);
 }    // namespace p
 
 #pragma warning(pop)

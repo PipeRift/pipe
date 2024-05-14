@@ -90,9 +90,6 @@ namespace p
 	{
 		return tag.GetHash();
 	}
-
-	PIPE_API void Read(Reader& ct, Tag& tag);
-	PIPE_API void Write(Writer& ct, const Tag& tag);
 }    // namespace p
 
 

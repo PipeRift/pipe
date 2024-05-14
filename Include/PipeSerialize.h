@@ -5,11 +5,10 @@
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Templates.h"
-#include "Pipe/Reflect/EnumType.h"
-#include "Pipe/Reflect/ReflectionTraits.h"
-#include "Pipe/Reflect/Type.h"
+#include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Reflect/TypeFlags.h"
 #include "PipeArrays.h"
+#include "PipeColor.h"
 #include "PipeSerializeFwd.h"
 
 #include <utility>
@@ -23,30 +22,12 @@ struct yyjson_mut_val;
 
 namespace p
 {
-	namespace details
-	{
-		template<typename T>
-		struct HasRead : std::false_type
-		{};
-		template<typename T>
-		requires IsVoid<decltype(Read(std::declval<struct Reader&>(), std::declval<T&>()))>
-		struct HasRead<T> : std::true_type
-		{};
-
-		template<typename T>
-		struct HasWrite : std::false_type
-		{};
-		template<typename T>
-		requires IsVoid<decltype(Write(std::declval<struct Writer&>(), std::declval<const T&>()))>
-		struct HasWrite<T> : std::true_type
-		{};
-	}    // namespace details
-
-
+	// clang-format off
 	template<typename T>
-	static constexpr bool Readable = details::template HasRead<T>::value;
+	concept Readable = requires(p::Reader reader, T v) { Read(reader, v); };
 	template<typename T>
-	static constexpr bool Writable = details::template HasWrite<T>::value;
+	concept Writable = requires(p::Writer writer, const T v) { Write(writer, v); };
+	// clang-format on
 
 
 	enum WriteFlags : sizet
@@ -181,10 +162,6 @@ namespace p
 	PIPE_API void Read(Reader& r, double& val);
 	PIPE_API void Read(Reader& r, StringView& val);
 
-	// Pipe types reads
-	PIPE_API void Read(Reader& r, Type*& val);
-	PIPE_API void Read(Reader& r, TypeId& val);
-
 	template<typename T1, typename T2>
 	void Read(Reader& r, TPair<T1, T2>& val)
 	{
@@ -209,20 +186,6 @@ namespace p
 		for (u32 i = 0; i < size; ++i)
 		{
 			r.Next(val[i]);
-		}
-	}
-
-	template<typename T>
-	void Read(Reader& r, T& val) requires(Enum<T>)
-	{
-		if constexpr (GetEnumSize<T>() > 0)
-		{
-			StringView typeStr;
-			r.Serialize(typeStr);
-			if (std::optional<T> value = GetEnumValue<T>(typeStr))
-			{
-				val = value.value();
-			}
 		}
 	}
 #pragma endregion Reader
@@ -305,10 +268,10 @@ namespace p
 		template<typename T>
 		void Serialize(const T& val)
 		{
-			static_assert(Writable<T>,
-			    "Type must be writable! No valid write function found. E.g: 'Write(Writer& w, "
-			    "const T& value)'");
-			if constexpr (Writable<T>)
+			// static_assert(Writable<T>,
+			//     "Type must be writable! No valid write function found. E.g: 'Write(Writer& w, "
+			//     "const T& value)'");
+			// if constexpr (Writable<T>)
 			{
 				Write(*this, val);
 			}
@@ -349,10 +312,6 @@ namespace p
 	PIPE_API void Write(Writer& w, double val);
 	PIPE_API void Write(Writer& w, StringView val);
 
-	// Pipe types writes
-	PIPE_API void Write(Writer& w, Type* val);
-	PIPE_API void Write(Writer& w, TypeId val);
-
 	template<typename T1, typename T2>
 	void Write(Writer& w, TPair<T1, T2>& val)
 	{
@@ -369,25 +328,13 @@ namespace p
 	}
 
 	template<typename T>
-	void Write(Writer& w, const T& val) requires(IsArrayView<T>())
+	void Write(Writer& w, const T& val) requires(IsArray<T>())
 	{
 		u32 size = val.Size();
 		w.BeginArray(size);
 		for (u32 i = 0; i < size; ++i)
 		{
 			w.Next(val[i]);
-		}
-	}
-
-	template<typename T>
-	void Write(Writer& w, T& val) requires Enum<T>
-	{
-		if constexpr (GetEnumSize<T>() > 0)
-		{
-			// Might not be necessary to cache string since enum name is static
-			w.PushAddFlags(WriteFlags_CacheStringValues);
-			w.Serialize(GetEnumName(val));
-			w.PopFlags();
 		}
 	}
 #pragma endregion Writer
@@ -905,4 +852,42 @@ namespace p
 		void PreAlloc(p::u32 offset);
 	};
 #pragma endregion BinaryFormat
+
+
+#pragma region CoreSupport
+	struct Tag;
+	PIPE_API void Read(Reader& ct, String& val);
+	PIPE_API void Write(Writer& ct, const String& val);
+	PIPE_API void Read(Reader& ct, Tag& val);
+	PIPE_API void Write(Writer& ct, const Tag& val);
+
+	struct Guid;
+	PIPE_API void Read(Reader& ct, Guid& guid);
+	PIPE_API void Write(Writer& ct, const Guid& guid);
+
+
+	template<ColorMode mode>
+	PIPE_API void Read(Reader& ct, TColor<mode>& color);
+	template<ColorMode mode>
+	PIPE_API void Write(Writer& ct, const TColor<mode>& color);
+
+
+	template<u32 size, Number T>
+	struct Vec;
+	struct Quat;
+	PIPE_API void Read(Reader& ct, Vec<2, float>& val);
+	PIPE_API void Write(Writer& ct, const Vec<2, float>& val);
+	PIPE_API void Read(Reader& ct, Vec<2, u32>& val);
+	PIPE_API void Write(Writer& ct, const Vec<2, u32>& val);
+	PIPE_API void Read(Reader& ct, Vec<2, i32>& val);
+	PIPE_API void Write(Writer& ct, const Vec<2, i32>& val);
+	PIPE_API void Read(Reader& ct, Vec<3, float>& val);
+	PIPE_API void Write(Writer& ct, const Vec<3, float>& val);
+	PIPE_API void Read(Reader& ct, Vec<3, u32>& val);
+	PIPE_API void Write(Writer& ct, const Vec<3, u32>& val);
+	PIPE_API void Read(Reader& ct, Vec<3, i32>& val);
+	PIPE_API void Write(Writer& ct, const Vec<3, i32>& val);
+	PIPE_API void Read(Reader& ct, Quat& val);
+	PIPE_API void Write(Writer& ct, const Quat& val);
+#pragma endregion CoreSupport
 }    // namespace p
