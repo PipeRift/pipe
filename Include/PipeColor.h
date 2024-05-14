@@ -4,9 +4,7 @@
 
 #include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/String.h"
-#include "Pipe/Reflect/NativeType.h"
 #include "PipeMath.h"
-#include "PipeSerialize.h"
 #include "PipeVectors.h"
 
 
@@ -821,48 +819,6 @@ namespace p
 		return tmp.Convert<mode>();
 	}
 
-
-	template<ColorMode mode>
-	inline void Read(Reader& ct, TColor<mode>& color)
-	{
-		ct.BeginObject();
-		ct.Next("r", color.r);
-		ct.Next("g", color.g);
-		ct.Next("b", color.b);
-		ct.Next("a", color.a);
-	}
-
-	template<ColorMode mode>
-	inline void Write(Writer& ct, const TColor<mode>& color)
-	{
-		ct.BeginObject();
-		ct.Next("r", color.r);
-		ct.Next("g", color.g);
-		ct.Next("b", color.b);
-		ct.Next("a", color.a);
-	}
-
-	template<>
-	inline void Read(Reader& r, TColor<ColorMode::HSV>& color)
-	{
-		r.BeginObject();
-		r.Next("h", color.h);
-		r.Next("s", color.s);
-		r.Next("v", color.v);
-		r.Next("a", color.a);
-	}
-
-	template<>
-	inline void Write(Writer& w, const TColor<ColorMode::HSV>& color)
-	{
-		w.BeginObject();
-		w.Next("h", color.h);
-		w.Next("s", color.s);
-		w.Next("v", color.v);
-		w.Next("a", color.a);
-	}
-
-
 	template<ColorMode mode>
 	inline sizet GetHash(const TColor<mode>& color)
 	{
@@ -875,9 +831,3 @@ namespace p
 		return color.DWColor();
 	};
 }    // namespace p
-
-
-P_REFLECT_NATIVE_TYPE(p::LinearColor)
-P_REFLECT_NATIVE_TYPE(p::sRGBColor)
-P_REFLECT_NATIVE_TYPE(p::HSVColor)
-P_REFLECT_NATIVE_TYPE(p::Color)

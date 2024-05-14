@@ -9,7 +9,7 @@
 
 namespace p
 {
-	namespace Internal
+	namespace details
 	{
 		template<class T>
 		struct TIsRValueReference : std::false_type
@@ -40,10 +40,13 @@ namespace p
 		template<>
 		struct TIsChar<const WideChar> : std::true_type
 		{};
-	}    // namespace Internal
+	}    // namespace details
 
 	template<typename T>
 	concept IsVoid = std::is_void_v<T>;
+
+	template<typename T>
+	concept IsStructOrClass = std::is_class_v<T>;
 
 	template<typename One, typename Other>
 	concept IsSame = std::is_same_v<One, Other>;
@@ -130,7 +133,7 @@ namespace p
 	size;
 
 	template<typename T>
-	concept Enum = std::is_enum_v<T>;
+	concept IsEnum = std::is_enum_v<T>;
 
 	template<typename T>
 	concept IsPointer = std::is_pointer_v<T>;
@@ -148,97 +151,29 @@ namespace p
 	using ValueOrRef = typename std::conditional<ShouldPassByValue<T>, T, const T&>::type;
 
 	template<typename T>
-	concept IsRValueRef = Internal::TIsRValueReference<T>::value;
+	concept IsRValueRef = details::TIsRValueReference<T>::value;
 	template<typename T>
-	concept IsLValueRef = Internal::TIsLValueReference<T>::value;
-
-	template<typename T>
-	concept IsChar = Internal::TIsChar<T>::value;
-
+	concept IsLValueRef = details::TIsLValueReference<T>::value;
 
 	template<typename T>
-	struct HasSuper
-	{
-	private:
-		template<typename V>
-		static void Impl(decltype(typename V::Super(), int()));
-		template<typename V>
-		static bool Impl(char);
+	concept IsChar = details::TIsChar<T>::value;
 
-	public:
-		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
-	};
 
 	template<typename T>
-	struct HasTypeMember
-	{
-	private:
-		template<typename V>
-		static void Impl(decltype(typename V::Type(), int()));
-		template<typename V>
-		static bool Impl(char);
-
-	public:
-		static const bool value = IsVoid<decltype(Impl<T>(0))>;
-	};
+	concept HasTypeMember = requires { typename T::Type; };
+	template<typename T>
+	concept HasItemTypeMember = requires { typename T::ItemType; };
 
 	template<typename T>
-	struct HasItemTypeMember
-	{
-	private:
-		template<typename V>
-		static void Impl(decltype(typename V::ItemType(), int()));
-		template<typename V>
-		static bool Impl(char);
-
-	public:
-		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
-	};
-
+	concept HasKeyTypeMember = requires { typename T::KeyType; };
 	template<typename T>
-	struct HasKeyTypeMember
-	{
-	private:
-		template<typename V>
-		static void Impl(decltype(typename V::KeyType(), int()));
-		template<typename V>
-		static bool Impl(char);
-
-	public:
-		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
-	};
-
-	template<typename T>
-	struct HasValueTypeMember
-	{
-	private:
-		template<typename V>
-		static void Impl(decltype(typename V::ValueType(), int()));
-		template<typename V>
-		static bool Impl(char);
-
-	public:
-		static const bool value = std::is_void<decltype(Impl<T>(0))>::value;
-	};
-
-	template<typename T>
-	struct HasSuperMember
-	{
-	private:
-		template<typename V>
-		static void Impl(decltype(typename V::Super(), int()));
-		template<typename V>
-		static bool Impl(char);
-
-	public:
-		static const bool value = IsVoid<decltype(Impl<T>(0))>;
-	};
+	concept HasValueTypeMember = requires { typename T::ValueType; };
 
 	template<typename T>
 	using UnderlyingType = typename std::underlying_type<T>::type;
 
 	template<typename T>
-	using UnwrapEnum = Select<Enum<T>, UnderlyingType<T>, T>;
+	using UnwrapEnum = Select<IsEnum<T>, UnderlyingType<T>, T>;
 
 	template<typename T>
 	using Mut = std::remove_const_t<T>;
@@ -329,6 +264,56 @@ namespace p
 	};
 	template<typename T>
 	using RemoveReference = typename TRemoveReference<T>::Type;
+
+
+	template<typename Type>
+	struct IArray;
+
+	template<typename Type, u32 InlineCapacity>
+	struct TInlineArray;
+	template<typename Key, typename Value>
+	struct TMap;
+
+
+	template<typename T, typename = int>
+	struct HasInlineCapacityMember : std::false_type
+	{};
+	template<typename T>
+	struct HasInlineCapacityMember<T, decltype((void)T::inlineCapacity, 0)> : std::true_type
+	{};
+
+	template<typename T>
+	constexpr bool IsArray()
+	{
+		// Check if we are dealing with a TArray
+		if constexpr (HasItemTypeMember<T> && HasInlineCapacityMember<T>::value)
+		{
+			return Derived<T, TInlineArray<typename T::ItemType, T::inlineCapacity>>;
+		}
+		return false;
+	}
+
+	template<typename T>
+	inline constexpr bool IsArrayView()
+	{
+		// Check if we are dealing with a TArray
+		if constexpr (HasItemTypeMember<T>)
+		{
+			return Derived<T, IArray<typename T::ItemType>>;
+		}
+		return false;
+	}
+
+	template<typename T>
+	inline constexpr bool IsMap()
+	{
+		// Check if we are dealing with a TAssetPtr
+		if constexpr (HasKeyTypeMember<T> && HasValueTypeMember<T>)
+		{
+			return IsSame<TMap<typename T::KeyType, typename T::ValueType>, T>;
+		}
+		return false;
+	}
 }    // namespace p
 
 #define P_DECLARE_IS_TRIVIAL(T, isTrivial)                                                   \

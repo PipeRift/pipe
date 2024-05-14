@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
+#include "Pipe/Core/Utility.h"
 #include "PipeMath.h"
 #include "PipeSerializeFwd.h"
 
@@ -34,6 +34,7 @@ namespace p
 
 	public:
 		constexpr Vec() : x{0}, y{0} {}
+		constexpr Vec(p::Undefined) {}
 		constexpr Vec(T x, T y) : x{x}, y{y} {}
 		template<typename T2>
 		explicit constexpr Vec(const Vec<2, T2>& other) requires(std::is_convertible_v<T2, T>)
@@ -313,6 +314,7 @@ namespace p
 
 	public:
 		constexpr Vec() : x{0}, y{0}, z{0} {}
+		constexpr Vec(p::Undefined) {}
 		constexpr Vec(T x, T y, T z) : x{x}, y{y}, z{z} {}
 		template<typename T2>
 		explicit constexpr Vec(const Vec<3, T2>& other) requires(std::is_convertible_v<T2, T>)
@@ -578,6 +580,7 @@ namespace p
 
 	public:
 		constexpr Vec() : x{0}, y{0}, z{0}, w{0} {}
+		constexpr Vec(p::Undefined) {}
 		constexpr Vec(T x, T y, T z, T w) : x{x}, y{y}, z{z}, w{w} {}
 		template<typename T2>
 		explicit constexpr Vec(const Vec<4, T2>& other) requires(std::is_convertible_v<T2, T>)
@@ -676,6 +679,7 @@ namespace p
 
 
 		TAABB() = default;
+		constexpr TAABB(p::Undefined) : min{p::Undefined{}}, max{p::Undefined{}} {}
 		constexpr TAABB(Vec<size, T> min, Vec<size, T> max) : min{min}, max{max} {}
 
 
@@ -883,6 +887,7 @@ namespace p
 		using v3::v3;
 
 		Rotator() {}
+		Rotator(p::Undefined) : v3{p::Undefined{}} {}
 		Rotator(const v3& vector) : v3{vector} {}
 
 		float Pitch() const
@@ -939,7 +944,8 @@ namespace p
 
 	public:
 		// Default constructor (uninitialized)
-		constexpr Quat() {}
+		constexpr Quat() : x{0.f}, y{0.f}, z{0.f}, w{1.f} {}
+		constexpr Quat(p::Undefined) {}
 		constexpr Quat(float x, float y, float z, float w) : x{x}, y{y}, z{z}, w{w} {}
 
 		v3 Rotate(const v3& vector) const;
@@ -988,29 +994,7 @@ namespace p
 	};
 
 
-	PIPE_API void Read(Reader& ct, v2& val);
-	PIPE_API void Write(Writer& ct, v2 val);
-	PIPE_API void Read(Reader& ct, v2_u32& val);
-	PIPE_API void Write(Writer& ct, v2_u32 val);
-	PIPE_API void Read(Reader& ct, v2_i32& val);
-	PIPE_API void Write(Writer& ct, v2_i32 val);
-	PIPE_API void Read(Reader& ct, v3& val);
-	PIPE_API void Write(Writer& ct, const v3& val);
-	PIPE_API void Read(Reader& ct, v3_u32& val);
-	PIPE_API void Write(Writer& ct, const v3_u32& val);
-	PIPE_API void Read(Reader& ct, v3_i32& val);
-	PIPE_API void Write(Writer& ct, const v3_i32& val);
-	PIPE_API void Read(Reader& ct, Quat& val);
-	PIPE_API void Write(Writer& ct, const Quat& val);
 }    // namespace p
-
-P_REFLECT_NATIVE_TYPE(p::v2);
-P_REFLECT_NATIVE_TYPE(p::v2_u32);
-P_REFLECT_NATIVE_TYPE(p::v2_i32);
-P_REFLECT_NATIVE_TYPE(p::v3);
-P_REFLECT_NATIVE_TYPE(p::v3_u32);
-P_REFLECT_NATIVE_TYPE(p::v3_i32);
-P_REFLECT_NATIVE_TYPE(p::Quat);
 
 
 template<typename T>

@@ -17,7 +17,7 @@
 namespace p
 {
 #pragma region Internal
-	namespace internal
+	namespace details
 	{
 		bool IsDriveLetter(const TChar c)
 		{
@@ -523,7 +523,7 @@ namespace p
 			return first;
 #endif
 		}
-	}    // namespace internal
+	}    // namespace details
 #pragma endregion Internal
 
 
@@ -536,7 +536,7 @@ namespace p
 	const TChar* FindRelativeChar(
 	    const TChar* const first, const TChar* const last, const TChar*& outNameEnd)
 	{
-		outNameEnd = internal::FindRootNameEnd(first, last);
+		outNameEnd = details::FindRootNameEnd(first, last);
 		// attempt to parse [first, last) as a path and return the start of relative-path
 		return std::find_if_not(outNameEnd, last, IsSeparator);
 	}
@@ -584,7 +584,7 @@ namespace p
 	{
 		const auto first = path.data();
 		const auto last  = first + path.size();
-		return {first, static_cast<size_t>(internal::FindRootNameEnd(first, last) - first)};
+		return {first, static_cast<size_t>(details::FindRootNameEnd(first, last) - first)};
 	}
 
 	StringView GetRootPath(const StringView path)
@@ -848,8 +848,8 @@ namespace p
 	String LexicallyRelative(StringView path, StringView base)
 	{
 		{    // perform root-name/root-directory mismatch checks
-			auto pp                      = internal::PathParser::CreateBegin(path);
-			auto ppBase                  = internal::PathParser::CreateBegin(base);
+			auto pp                      = details::PathParser::CreateBegin(path);
+			auto ppBase                  = details::PathParser::CreateBegin(base);
 			auto CheckIterMismatchAtBase = [&]() {
 				return pp.state != ppBase.state && (pp.InRootPath() || ppBase.InRootPath());
 			};
@@ -874,8 +874,8 @@ namespace p
 		}
 
 		// Find the first mismatching element
-		auto pp     = internal::PathParser::CreateBegin(path);
-		auto ppBase = internal::PathParser::CreateBegin(base);
+		auto pp     = details::PathParser::CreateBegin(path);
+		auto ppBase = details::PathParser::CreateBegin(base);
 		while (pp && ppBase && pp.state == ppBase.state && *pp == *ppBase)
 		{
 			++pp;

@@ -4,7 +4,6 @@
 
 #include "Pipe/Memory/Memory.h"
 #include "Pipe/Memory/MultiLinearArena.h"
-#include "PipeSerialize.h"
 
 #include <mutex>
 #include <shared_mutex>
@@ -229,14 +228,4 @@ namespace p
 		arena.Free(&str, GetAllocSize(str.size));
 	}
 
-	void Read(Reader& ct, Tag& tag)
-	{
-		StringView str;
-		ct.Serialize(str);
-		tag = Tag(str);
-	}
-	void Write(Writer& ct, const Tag& tag)
-	{
-		ct.Serialize(tag.AsString());
-	}
 }    // namespace p

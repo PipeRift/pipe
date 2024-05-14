@@ -4,7 +4,6 @@
 
 #include "Pipe/Core/Char.h"
 #include "Pipe/Core/PlatformMisc.h"
-#include "PipeSerialize.h"
 
 #include <cstdio>
 
@@ -212,24 +211,5 @@ namespace p
 		);*/
 
 		return true;
-	}
-
-
-	void Read(Reader& ct, Guid& guid)
-	{
-		ct.BeginObject();
-		ct.Next(TX("a"), guid.a);
-		ct.Next(TX("b"), guid.b);
-		ct.Next(TX("c"), guid.c);
-		ct.Next(TX("d"), guid.d);
-	}
-
-	void Write(Writer& ct, const Guid& guid)
-	{
-		ct.BeginObject();
-		ct.Next(TX("a"), guid.a);
-		ct.Next(TX("b"), guid.b);
-		ct.Next(TX("c"), guid.c);
-		ct.Next(TX("d"), guid.d);
 	}
 }    // namespace p

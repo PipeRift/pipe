@@ -3,7 +3,9 @@
 #pragma once
 
 #include "Pipe/Core/StringView.h"
+#include "Pipe/Core/Templates.h"
 #include "Pipe/Files/Paths.h"
+#include "Pipe/Memory/OwnPtr.h"
 
 
 namespace p

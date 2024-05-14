@@ -2,12 +2,12 @@
 #pragma once
 
 #include "Pipe/Core/Broadcast.h"
+#include "Pipe/Core/Map.h"
 #include "Pipe/Core/PageBuffer.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Templates.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/UniquePtr.h"
-#include "Pipe/Reflect/Builders/NativeTypeBuilder.h"
 #include "PipeArrays.h"
 #include "PipeReflect.h"
 
@@ -25,7 +25,7 @@ namespace p
 	{
 	};
 }    // namespace p
-P_REFLECT_NATIVE_TYPE(p::Id);
+P_NATIVE(p::Id);
 
 namespace p
 {
@@ -2107,7 +2107,7 @@ namespace p
 	template<typename T>
 	inline TPool<Mut<T>>& EntityContext::AssurePool() const
 	{
-		const TypeId componentId = AssureTypeId<Mut<T>>();
+		const TypeId componentId = RegisterTypeId<Mut<T>>();
 
 		i32 index = pools.LowerBound(PoolInstance{componentId, {}});
 		if (index != NO_INDEX)
