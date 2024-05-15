@@ -6,7 +6,7 @@
 #include "Pipe/Core/Utility.h"
 #if P_DEBUG
 	#include "Pipe/Core/StringView.h"
-	#include "Pipe/Reflect/TypeName.h"
+	#include "Pipe/Core/TypeName.h"
 #endif
 
 #include <format>

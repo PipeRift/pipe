@@ -3,12 +3,12 @@
 #pragma once
 
 #include "Pipe/Core/Checks.h"
+#include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/PtrBuilder.h"
-#include "Pipe/Reflect/TypeId.h"
 
 #include <atomic>
 
