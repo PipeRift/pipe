@@ -1294,9 +1294,7 @@ namespace p
 		ct.Next(TX("d"), guid.d);
 	}
 
-
-	template<>
-	void Read<ColorMode::RGBA>(Reader& ct, TColor<ColorMode::RGBA>& color)
+	void Read(Reader& ct, TColor<ColorMode::RGBA>& color)
 	{
 		ct.BeginObject();
 		ct.Next("r", color.r);
@@ -1304,9 +1302,7 @@ namespace p
 		ct.Next("b", color.b);
 		ct.Next("a", color.a);
 	}
-
-	template<>
-	void Write<ColorMode::RGBA>(Writer& ct, const TColor<ColorMode::RGBA>& color)
+	void Write(Writer& ct, const TColor<ColorMode::RGBA>& color)
 	{
 		ct.BeginObject();
 		ct.Next("r", color.r);
@@ -1314,8 +1310,7 @@ namespace p
 		ct.Next("b", color.b);
 		ct.Next("a", color.a);
 	}
-	template<>
-	void Read<ColorMode::Linear>(Reader& ct, TColor<ColorMode::Linear>& color)
+	void Read(Reader& ct, TColor<ColorMode::Linear>& color)
 	{
 		ct.BeginObject();
 		ct.Next("r", color.r);
@@ -1323,8 +1318,7 @@ namespace p
 		ct.Next("b", color.b);
 		ct.Next("a", color.a);
 	}
-	template<>
-	void Write<ColorMode::Linear>(Writer& ct, const TColor<ColorMode::Linear>& color)
+	void Write(Writer& ct, const TColor<ColorMode::Linear>& color)
 	{
 		ct.BeginObject();
 		ct.Next("r", color.r);
@@ -1332,8 +1326,7 @@ namespace p
 		ct.Next("b", color.b);
 		ct.Next("a", color.a);
 	}
-	template<>
-	void Read<ColorMode::sRGB>(Reader& ct, TColor<ColorMode::sRGB>& color)
+	void Read(Reader& ct, TColor<ColorMode::sRGB>& color)
 	{
 		ct.BeginObject();
 		ct.Next("r", color.r);
@@ -1341,8 +1334,7 @@ namespace p
 		ct.Next("b", color.b);
 		ct.Next("a", color.a);
 	}
-	template<>
-	void Write<ColorMode::sRGB>(Writer& ct, const TColor<ColorMode::sRGB>& color)
+	void Write(Writer& ct, const TColor<ColorMode::sRGB>& color)
 	{
 		ct.BeginObject();
 		ct.Next("r", color.r);
@@ -1350,8 +1342,7 @@ namespace p
 		ct.Next("b", color.b);
 		ct.Next("a", color.a);
 	}
-	template<>
-	void Read<ColorMode::HSV>(Reader& r, TColor<ColorMode::HSV>& color)
+	void Read(Reader& r, TColor<ColorMode::HSV>& color)
 	{
 		r.BeginObject();
 		r.Next("h", color.h);
@@ -1359,8 +1350,7 @@ namespace p
 		r.Next("v", color.v);
 		r.Next("a", color.a);
 	}
-	template<>
-	void Write<ColorMode::HSV>(Writer& w, const TColor<ColorMode::HSV>& color)
+	void Write(Writer& w, const TColor<ColorMode::HSV>& color)
 	{
 		w.BeginObject();
 		w.Next("h", color.h);

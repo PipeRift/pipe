@@ -2,6 +2,7 @@
 
 #include "Pipe/Files/PlatformPaths.h"
 
+#include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Files/Files.h"
