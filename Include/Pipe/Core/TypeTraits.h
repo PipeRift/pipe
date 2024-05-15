@@ -272,7 +272,7 @@ namespace p
 	template<typename Type, u32 InlineCapacity>
 	struct TInlineArray;
 	template<typename Key, typename Value>
-	struct TMap;
+	class TMap;
 
 
 	template<typename T, typename = int>
