@@ -31,6 +31,7 @@ namespace p
 
 	inline constexpr StringView RemoveNamespace(StringView value)
 	{
+		// TODO: Detect '<' for templates
 		const sizet pos = Strings::Find(value, "::", FindDirection::Back);
 		if (pos != StringView::npos)
 		{
@@ -40,6 +41,7 @@ namespace p
 	}
 	inline constexpr StringView RemoveNamespace(StringView value, StringView& outNamespace)
 	{
+		// TODO: Detect '<' for templates
 		const sizet pos = Strings::Find(value, "::", FindDirection::Back);
 		if (pos != StringView::npos)
 		{

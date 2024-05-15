@@ -8,10 +8,10 @@
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Tag.h"
+#include "Pipe/Core/TypeId.h"
+#include "Pipe/Core/TypeName.h"
 #include "Pipe/Files/STDFileSystem.h"
 #include "Pipe/Memory/OwnPtr.h"
-#include "Pipe/Reflect/TypeId.h"
-#include "Pipe/Reflect/TypeName.h"
 #include "PipeColor.h"
 #include "PipeSerialize.h"
 #include "PipeVectors.h"
@@ -23,7 +23,6 @@ namespace p
 {
 	class Object;
 	class BaseObject;
-
 
 #pragma region Traits
 	template<typename T>
@@ -223,6 +222,7 @@ namespace p
 #pragma endregion Flags
 
 
+#pragma region Runtime
 	struct PIPE_API TypeProperty
 	{
 		using AccessFunc = void*(void*);
@@ -306,10 +306,13 @@ namespace p
 		void Clear(void* container) const;
 	};
 
+	struct TypeRegistry;
 	namespace details
 	{
-		PIPE_API i32 GetTypeIndex(TypeId id);
-	}
+		PIPE_API i32 GetTypeIndex(const TypeRegistry& registry, TypeId id);
+		PIPE_API bool HasTypeFlags(const TypeRegistry& registry, i32 index, TypeFlags flags);
+		PIPE_API bool HasAnyTypeFlags(const TypeRegistry& registry, i32 index, TypeFlags flags);
+	}    // namespace details
 
 	PIPE_API bool InitializeReflect();
 	PIPE_API void OnReflectInit(void (*callback)());
@@ -329,7 +332,7 @@ namespace p
 	PIPE_API const ContainerTypeOps* GetTypeContainerOps(TypeId id);
 
 
-#pragma region TypeRegistration
+#pragma region Registration
 	/** To register types, define either of the following functions for that type:
 	 * - A member static function BuildType() inside of the type to register.
 	 * - An external function BuildType(const T*) where T is the type.
@@ -400,7 +403,7 @@ namespace p
 
 	PIPE_API void SetTypeOps(const TypeOps* operations);
 	template<typename T>
-	void AssignTypeSerializeOps(TypeOps& ops)
+	void AssignSerializableTypeOps(TypeOps& ops)
 	{
 		ops.read = [](Reader& r, void* instance) {
 			if constexpr (Readable<T>)
@@ -416,23 +419,39 @@ namespace p
 		};
 	}
 	template<typename T>
-	void AssignTypeEnumOps(EnumTypeOps& ops)
+	void AssignEnumTypeOps(EnumTypeOps& ops)
 	{
-		const auto valueNames = GetEnumNames<T>();
-		ops.names.Reserve(valueNames.size());
-		for (StringView valueName : valueNames)
+		if constexpr (GetEnumSize<T>() > 0)
 		{
-			ops.names.Add(Tag{valueName});
-		}
+			const auto valueNames = GetEnumNames<T>();
+			ops.names.Reserve(valueNames.size());
+			for (StringView valueName : valueNames)
+			{
+				ops.names.Add(Tag{valueName});
+			}
 
-		const auto values = GetEnumValues<T>();
-		ops.valueSize     = sizeof(T);
-		ops.values.Resize(values.size() * ops.valueSize);
-		for (i32 i = 0; i < values.size(); ++i)
-		{
-			// Copy value into the correct entry index
-			memcpy(ops.values.Data() + (i * ops.valueSize), &values[i], ops.valueSize);
+			const auto values = GetEnumValues<T>();
+			ops.valueSize     = sizeof(T);
+			ops.values.Resize(values.size() * ops.valueSize);
+			for (i32 i = 0; i < values.size(); ++i)
+			{
+				// Copy value into the correct entry index
+				memcpy(ops.values.Data() + (i * ops.valueSize), &values[i], ops.valueSize);
+			}
 		}
+		AddTypeFlags(TF_Enum);
+	}
+	template<typename T>
+	void AssignObjectTypeOps(ObjectTypeOps& ops)
+	{
+		ops.onNew = [](Arena& arena) -> BaseObject* {
+			if constexpr (!IsAbstract<T> && !IsSame<T, BaseObject>)
+			{
+				return new (p::Alloc<T>(arena)) T();
+			}
+			return nullptr;    // Can't create instances of abstract objects
+		};
+		AddTypeFlags(TF_Object);
 	}
 
 
@@ -458,20 +477,24 @@ namespace p
 				AddTypeFlags(TF_Struct);
 				if constexpr (IsObject<T>)
 				{
-					static ObjectTypeOps objectOps{.onNew = [](Arena& arena) -> BaseObject* {
-						if constexpr (!IsAbstract<T> && !IsSame<T, BaseObject>)
-						{
-							return new (p::Alloc<T>(arena)) T();
-						}
-						return nullptr;    // Can't create instances of abstract objects
-					}};
-					AddTypeFlags(TF_Object);
+					static ObjectTypeOps objectOps;
+					AssignSerializableTypeOps<T>(objectOps);
+					AssignObjectTypeOps<T>(objectOps);
 					SetTypeOps(&objectOps);
+				}
+				else
+				{
+					static TypeOps basicOps;
+					AssignSerializableTypeOps<T>(basicOps);
+					SetTypeOps(&basicOps);
 				}
 			}
 			else if constexpr (IsEnum<T>)
 			{
-				AddTypeFlags(TF_Enum);
+				static EnumTypeOps enumOps;
+				AssignSerializableTypeOps<T>(enumOps);
+				AssignEnumTypeOps<T>(enumOps);
+				SetTypeOps(&enumOps);
 			}
 
 			if constexpr (CanBuildType<T>())
@@ -483,8 +506,6 @@ namespace p
 		}
 		return typeId;
 	}
-#pragma endregion TypeRegistration
-
 
 	template<typename T>
 	struct TTypeAutoRegister
@@ -502,6 +523,9 @@ namespace p
 	{
 		static inline TTypeAutoRegister<T> instance;
 	};
+#pragma endregion Registration
+#pragma endregion Runtime
+
 
 	template<typename T>
 	void CallSuperReadProperties(T& value, p::Reader& r)
@@ -704,10 +728,10 @@ P_NATIVE(p::v3_u32);
 P_NATIVE(p::v3_i32);
 P_NATIVE(p::Quat);
 
-P_NATIVE(p::LinearColor)
-P_NATIVE(p::sRGBColor)
-P_NATIVE(p::HSVColor)
-P_NATIVE(p::Color)
+P_NATIVE_NAMED(p::LinearColor, "LinearColor")
+P_NATIVE_NAMED(p::sRGBColor, "sRGBColor")
+P_NATIVE_NAMED(p::HSVColor, "HSVColor")
+P_NATIVE_NAMED(p::Color, "Color")
 
 // Build array types
 template<typename T>
