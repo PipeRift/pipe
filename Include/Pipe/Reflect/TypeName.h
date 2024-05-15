@@ -38,6 +38,17 @@ namespace p
 		}
 		return value;
 	}
+	inline constexpr StringView RemoveNamespace(StringView value, StringView& outNamespace)
+	{
+		const sizet pos = Strings::Find(value, "::", FindDirection::Back);
+		if (pos != StringView::npos)
+		{
+			outNamespace = {value.data(), pos};
+			return Strings::RemoveFromStart(value, pos + 2);
+		}
+		outNamespace = {};
+		return value;
+	}
 
 	template<typename T>
 	inline consteval StringView GetFullTypeName(bool includeNamespaces = true)
