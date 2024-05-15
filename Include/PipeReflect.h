@@ -561,7 +561,7 @@ namespace p
 	{                                  \
 		p::AddTypeFlags(p::TF_Native); \
 	};                                 \
-	P_AUTOREGISTER_TYPE(type)
+	// P_AUTOREGISTER_TYPE(type)
 
 #define P_NATIVE_NAMED(type, name)                                                  \
 	template<>                                                                      \
@@ -571,7 +571,7 @@ namespace p
 	}                                                                               \
 	P_NATIVE(type);
 
-#define P_ENUM(type) P_AUTOREGISTER_TYPE(type)
+#define P_ENUM(type) /*P_AUTOREGISTER_TYPE(type)*/
 
 
 /** Defines a Class */
