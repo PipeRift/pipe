@@ -4,23 +4,6 @@
 
 #include "Pipe/Core/Char.h"
 #include "PipeMath.h"
-#include "PipeSerialize.h"
-
-
-
-namespace p
-{
-	void Read(p::Reader& ct, p::String& val)
-	{
-		p::StringView view;
-		ct.Serialize(view);
-		val = view;
-	}
-	void Write(p::Writer& ct, const p::String& val)
-	{
-		ct.Serialize(p::StringView{val});
-	}
-}    // namespace p
 
 
 namespace p::Strings

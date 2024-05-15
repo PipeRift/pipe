@@ -69,7 +69,7 @@ namespace p
 
 
 	template<Number T>
-	sizet GetHash(const T& value) noexcept requires(!Enum<T>)
+	sizet GetHash(const T& value) noexcept requires(!IsEnum<T>)
 	{
 #if defined(__GNUC__) && !defined(__clang__)
 	#pragma GCC diagnostic push
@@ -81,7 +81,7 @@ namespace p
 #endif
 	}
 
-	template<Enum T>
+	template<IsEnum T>
 	sizet GetHash(const T& value) noexcept
 	{
 		return GetHash(static_cast<UnderlyingType<T>>(value));
@@ -92,4 +92,12 @@ namespace p
 	{
 		return HashInt(reinterpret_cast<sizet>(ptr));
 	}
+
+	// clang-format off
+	template<typename T>
+	concept Hashable = requires(T a)
+	{
+		{ GetHash<T>(a) } -> std::convertible_to<sizet>;
+	};
+	// clang-format on
 }    // namespace p

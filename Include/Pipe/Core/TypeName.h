@@ -3,7 +3,6 @@
 
 #include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/Reflect/ReflectionTraits.h"
 
 
 namespace p
@@ -32,11 +31,24 @@ namespace p
 
 	inline constexpr StringView RemoveNamespace(StringView value)
 	{
+		// TODO: Detect '<' for templates
 		const sizet pos = Strings::Find(value, "::", FindDirection::Back);
 		if (pos != StringView::npos)
 		{
 			return Strings::RemoveFromStart(value, pos + 2);
 		}
+		return value;
+	}
+	inline constexpr StringView RemoveNamespace(StringView value, StringView& outNamespace)
+	{
+		// TODO: Detect '<' for templates
+		const sizet pos = Strings::Find(value, "::", FindDirection::Back);
+		if (pos != StringView::npos)
+		{
+			outNamespace = {value.data(), pos};
+			return Strings::RemoveFromStart(value, pos + 2);
+		}
+		outNamespace = {};
 		return value;
 	}
 

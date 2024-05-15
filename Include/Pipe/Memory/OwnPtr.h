@@ -3,12 +3,12 @@
 #pragma once
 
 #include "Pipe/Core/Checks.h"
+#include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/PtrBuilder.h"
-#include "Pipe/Reflect/TypeId.h"
 
 #include <atomic>
 
@@ -124,11 +124,19 @@ namespace p
 
 
 	public:
+		Ptr() = default;
+		Ptr(const Ptr& other);
 		~Ptr()
 		{
 			Reset();
 		}
 
+	protected:
+		Ptr(const BaseOwnPtr& owner);
+		Ptr(Ptr&& other) noexcept;
+
+
+	public:
 		void Reset();
 		bool IsValid() const;
 
@@ -158,11 +166,6 @@ namespace p
 		}
 
 	protected:
-		Ptr() = default;
-		Ptr(const BaseOwnPtr& owner);
-		Ptr(const Ptr& other);
-		Ptr(Ptr&& other) noexcept;
-
 		void MoveFrom(Ptr&& other);
 		void CopyFrom(const Ptr& other);
 

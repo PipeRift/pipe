@@ -40,12 +40,12 @@ go_bandit([]() {
 			});
 
 			it("Can find equal", [&]() {
-				AssertThat(bottomUp.FindSortedEqual(0), Equals(NO_INDEX));
-				AssertThat(bottomUp.FindSortedEqual(34), Equals(1));
-				AssertThat(bottomUp.FindSortedEqual(33), Equals(NO_INDEX));
-				AssertThat(bottomUp.FindSortedEqual(121), Equals(NO_INDEX));
+				AssertThat(bottomUp.FindSorted(0), Equals(NO_INDEX));
+				AssertThat(bottomUp.FindSorted(34), Equals(1));
+				AssertThat(bottomUp.FindSorted(33), Equals(NO_INDEX));
+				AssertThat(bottomUp.FindSorted(121), Equals(NO_INDEX));
 
-				AssertThat(topDown.FindSortedEqual(34, TGreater<>()), Equals(3));
+				AssertThat(topDown.FindSorted(34, TGreater<>()), Equals(3));
 			});
 
 			describe("FindSortedMax", []() {

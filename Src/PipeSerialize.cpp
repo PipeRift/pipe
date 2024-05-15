@@ -3,9 +3,10 @@
 #include "PipeSerialize.h"
 
 #include "Pipe/Core/Checks.h"
+#include "Pipe/Core/Guid.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/String.h"
-#include "Pipe/Reflect/TypeRegistry.h"
+#include "Pipe/Core/Tag.h"
 #include "PipeMath.h"
 
 #include <yyjson.h>
@@ -138,20 +139,6 @@ namespace p
 	{
 		return r.GetFormat().Read(val);
 	}
-
-	void Read(Reader& r, Type*& val)
-	{
-		// TODO: Use name instead of typeId
-		TypeId typeId{};
-		r.Serialize(typeId);
-		val = TypeRegistry::Get().FindType(typeId);
-	}
-	void Read(Reader& r, TypeId& val)
-	{
-		u64 idValue = TypeId::None().GetId();
-		r.Serialize(idValue);
-		val = TypeId{idValue};
-	}
 #pragma endregion Reader
 
 
@@ -241,16 +228,6 @@ namespace p
 	void Write(Writer& w, StringView val)
 	{
 		w.GetFormat().Write(val);
-	}
-
-	void Write(Writer& w, Type* val)
-	{
-		// TODO: Use name instead of typeId
-		w.Serialize(val->GetId());
-	}
-	void Write(Writer& w, TypeId val)
-	{
-		w.Serialize(val.GetId());
 	}
 #pragma endregion Writer
 
@@ -1275,4 +1252,217 @@ namespace p
 		}
 	}
 #pragma endregion BinaryFormat
+
+
+#pragma region CoreSupport
+	void Read(Reader& ct, String& val)
+	{
+		StringView view;
+		ct.Serialize(view);
+		val = view;
+	}
+	void Write(Writer& ct, const String& val)
+	{
+		ct.Serialize(StringView{val});
+	}
+	void Read(Reader& ct, Tag& tag)
+	{
+		StringView str;
+		ct.Serialize(str);
+		tag = Tag(str);
+	}
+	void Write(Writer& ct, const Tag& tag)
+	{
+		ct.Serialize(tag.AsString());
+	}
+
+	void Read(Reader& ct, Guid& guid)
+	{
+		ct.BeginObject();
+		ct.Next(TX("a"), guid.a);
+		ct.Next(TX("b"), guid.b);
+		ct.Next(TX("c"), guid.c);
+		ct.Next(TX("d"), guid.d);
+	}
+
+	void Write(Writer& ct, const Guid& guid)
+	{
+		ct.BeginObject();
+		ct.Next(TX("a"), guid.a);
+		ct.Next(TX("b"), guid.b);
+		ct.Next(TX("c"), guid.c);
+		ct.Next(TX("d"), guid.d);
+	}
+
+
+	template<>
+	void Read<ColorMode::RGBA>(Reader& ct, TColor<ColorMode::RGBA>& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+
+	template<>
+	void Write<ColorMode::RGBA>(Writer& ct, const TColor<ColorMode::RGBA>& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+	template<>
+	void Read<ColorMode::Linear>(Reader& ct, TColor<ColorMode::Linear>& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+	template<>
+	void Write<ColorMode::Linear>(Writer& ct, const TColor<ColorMode::Linear>& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+	template<>
+	void Read<ColorMode::sRGB>(Reader& ct, TColor<ColorMode::sRGB>& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+	template<>
+	void Write<ColorMode::sRGB>(Writer& ct, const TColor<ColorMode::sRGB>& color)
+	{
+		ct.BeginObject();
+		ct.Next("r", color.r);
+		ct.Next("g", color.g);
+		ct.Next("b", color.b);
+		ct.Next("a", color.a);
+	}
+	template<>
+	void Read<ColorMode::HSV>(Reader& r, TColor<ColorMode::HSV>& color)
+	{
+		r.BeginObject();
+		r.Next("h", color.h);
+		r.Next("s", color.s);
+		r.Next("v", color.v);
+		r.Next("a", color.a);
+	}
+	template<>
+	void Write<ColorMode::HSV>(Writer& w, const TColor<ColorMode::HSV>& color)
+	{
+		w.BeginObject();
+		w.Next("h", color.h);
+		w.Next("s", color.s);
+		w.Next("v", color.v);
+		w.Next("a", color.a);
+	}
+
+
+	void Read(Reader& ct, Vec<2, float>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+	}
+	void Write(Writer& ct, const Vec<2, float>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+	}
+	void Read(Reader& ct, Vec<2, u32>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+	}
+	void Write(Writer& ct, const Vec<2, u32>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+	}
+	void Read(Reader& ct, Vec<2, i32>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+	}
+	void Write(Writer& ct, const Vec<2, i32>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+	}
+	void Read(Reader& ct, Vec<3, float>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+	}
+	void Write(Writer& ct, const Vec<3, float>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+	}
+	void Read(Reader& ct, Vec<3, u32>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+	}
+	void Write(Writer& ct, const Vec<3, u32>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+	}
+	void Read(Reader& ct, Vec<3, i32>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+	}
+	void Write(Writer& ct, const Vec<3, i32>& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+	}
+	void Read(Reader& ct, Quat& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+		ct.Next(TX("w"), val.w);
+	}
+	void Write(Writer& ct, const Quat& val)
+	{
+		ct.BeginObject();
+		ct.Next(TX("x"), val.x);
+		ct.Next(TX("y"), val.y);
+		ct.Next(TX("z"), val.z);
+		ct.Next(TX("w"), val.w);
+	}
+#pragma endregion CoreSupport
 }    // namespace p
