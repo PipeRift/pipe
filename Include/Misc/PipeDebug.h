@@ -48,25 +48,28 @@ namespace p
 		bool pendingFocus = false;
 	};
 
-	struct ECSDebugContext
+	struct DebugContext
 	{
 		EntityContext* ctx = nullptr;
 		TArray<ECSDebugIdRegistry> idRegistries;
 
 
-		ECSDebugContext() = default;
-		ECSDebugContext(EntityContext& ctx) : ctx{&ctx} {}
+		DebugContext() = default;
+		DebugContext(EntityContext& ctx) : ctx{&ctx} {}
 	};
 
 
-	static void BeginECSDebug(ECSDebugContext& Context);
-	static void EndECSDebug();
+	static bool BeginDebug(DebugContext& Context);
+	static void EndDebug();
 
 	static bool BeginIdRegistry(
 	    const char* label = "Id Registry", bool* open = nullptr, ImGuiWindowFlags flags = 0);
 	static void EndIdRegistry();
 	static void DrawIdRegistry(
 	    const char* label = "Id Registry", bool* open = nullptr, ImGuiWindowFlags flags = 0);
+
+	static void DrawReflection(
+	    const char* label = "Reflection", bool* open = nullptr, ImGuiWindowFlags flags = 0);
 
 	static void DrawEntityInspector(StringView label, ECSDebugInspector& inspector,
 	    bool* open = nullptr, ImGuiWindowFlags flags = 0);
@@ -78,11 +81,12 @@ namespace p
 	// Implementation
 #ifdef P_DEBUG_IMPLEMENTATION
 
-	#define EnsureInsideECSDebug \
-		P_EnsureMsg(             \
-		    currentContext, "No ECS Debug context available! Forgot to call BeginECSDebug()?")
+	#define EnsureInsideECSDebug                              \
+		P_EnsureMsg(currentContext,                           \
+		    "No ECS Debug context available! Forgot to call " \
+		    "BeginDebug()?")
 
-	static ECSDebugContext* currentContext = nullptr;
+	static DebugContext* currentContext = nullptr;
 
 	constexpr p::LinearColor errorColor = p::LinearColor::FromHex(0xD62B2B);
 
@@ -92,10 +96,10 @@ namespace p
 		return *currentContext->ctx;
 	}
 
-	void BeginECSDebug(ECSDebugContext& context)
+	bool BeginDebug(DebugContext& context)
 	{
 		if (!P_EnsureMsg(!currentContext,
-		        "Called BeginECSDebug() but there was a ECS Debug Context already! "
+		        "Called BeginDebug() but there was a ECS Debug Context already! "
 		        "Forgot to call "
 		        "EndECSDebug()?"))
 		{
@@ -108,13 +112,14 @@ namespace p
 		}
 
 		currentContext = &context;
+		return true;
 	}
-	void EndECSDebug()
+	void EndDebug()
 	{
 		P_CheckMsg(currentContext,
 		    "Called EndECSDebug() but there was no current ECS Debug Context! Forgot "
 		    "to call "
-		    "BeginECSDebug()?");
+		    "BeginDebug()?");
 		currentContext = nullptr;
 	}
 
@@ -131,6 +136,14 @@ namespace p
 		if (BeginIdRegistry(label, open, flags))
 		{
 			EndIdRegistry();
+		}
+	}
+
+	void DrawReflection(const char* label, bool* open, ImGuiWindowFlags flags)
+	{
+		if (ImGui::Begin(label, open, flags))
+		{
+			ImGui::End();
 		}
 	}
 
@@ -170,7 +183,7 @@ namespace p
 
 		if (ImGui::BeginMenuBar())
 		{
-			if (ImGui::BeginMenu(ICON_FA_BARS))
+			if (ImGui::BeginMenu("..."))
 			{
 				ImGui::AlignTextToFramePadding();
 				ImGui::Text("Id");
@@ -208,13 +221,13 @@ namespace p
 				p::Strings::FormatTo(
 				    componentLabel, "{}", RemoveNamespace(GetTypeName(poolInstance.componentId)));
 
-				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen;
-				void* data               = poolInstance.GetPool()->TryGetVoid(inspector.id);
+				ImGuiTreeNodeFlags headerFlags = ImGuiTreeNodeFlags_DefaultOpen;
+				void* data                     = poolInstance.GetPool()->TryGetVoid(inspector.id);
 				if (!data)
 				{
-					flags |= ImGuiTreeNodeFlags_Leaf;
+					headerFlags |= ImGuiTreeNodeFlags_Leaf;
 				}
-				if (ImGui::CollapsingHeader(componentLabel.c_str(), flags))
+				if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
 				{
 					// UI::Indent();
 					// auto* dataType = Cast<p::DataType>(type);
