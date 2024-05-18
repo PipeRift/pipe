@@ -1096,8 +1096,8 @@ namespace p
 			return (GetHour() < 12);
 		}
 
-		void Read(class Reader& ct);
-		void Write(class Writer& ct) const;
+		void Read(struct Reader& ct);
+		void Write(struct Writer& ct) const;
 
 		/**
 		 * Returns the RFC 1123 string representation of the FDateTime.
