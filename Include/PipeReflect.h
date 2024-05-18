@@ -18,6 +18,10 @@
 
 #include <magic_enum.hpp>
 
+#ifndef P_AUTOREGISTER_ENABLED
+	#define P_AUTOREGISTER_ENABLED 1
+#endif
+
 
 namespace p
 {
@@ -38,6 +42,12 @@ namespace p
 	consteval bool HasMemberBuildType()
 	{
 		return requires() { T::BuildType(); };
+	}
+
+	template<typename T>
+	consteval bool HasGlobalBuildType()
+	{
+		return requires(const T v) { ::BuildType(&v); };
 	}
 
 	template<typename T>
@@ -398,7 +408,7 @@ namespace p
 			flags |= PF_Pointer;
 		}
 		AddTypeProperty(TypeProperty{
-		    .typeId = RegisterTypeId<PropType>(), .flags = flags, .name = name, .access = access});
+		    .typeId = RegisterTypeId<PropType>(), .flags = flags, .access = access, .name = name});
 	}
 
 	PIPE_API void SetTypeOps(const TypeOps* operations);
@@ -499,7 +509,14 @@ namespace p
 
 			if constexpr (CanBuildType<T>())
 			{
-				BuildType<T>(nullptr);
+				if constexpr (HasGlobalBuildType<T>())
+				{
+					::BuildType<T>(nullptr);
+				}
+				else
+				{
+					BuildType<T>(nullptr);
+				}
 			}
 
 			EndTypeId();
@@ -512,9 +529,11 @@ namespace p
 	{
 		TTypeAutoRegister()
 		{
+#if P_AUTOREGISTER_ENABLED
 			OnReflectInit([] {
 				RegisterTypeId<T>();
 			});
+#endif
 		}
 	};
 
@@ -645,11 +664,11 @@ public:
                                                                                                   \
 	static void __BuildProperty(p::MetaCounter<id_name>)                                          \
 	{                                                                                             \
-		AddTypeProperty<decltype(name)>(                                                          \
+		p::AddTypeProperty<decltype(name)>(                                                       \
 		    [](void* instance) {                                                                  \
 			return (void*)&static_cast<Self*>(instance)->name;                                    \
 		    },                                                                                    \
-		    #name, flags);                                                                        \
+		    #name, p::InitPropertyFlags(flags));                                                  \
 		/* Registry next property if any */                                                       \
 		__BuildProperty(p::MetaCounter<id_name + 1>{});                                           \
 	}                                                                                             \
@@ -661,7 +680,7 @@ public:
 		}                                                                                         \
 		/* Serialize next property if any */                                                      \
 		__ReadProperty(r, p::MetaCounter<id_name + 1>{});                                         \
-	};                                                                                            \
+	}                                                                                             \
 	void __WriteProperty(p::Writer& w, p::MetaCounter<id_name>) const                             \
 	{                                                                                             \
 		if constexpr (!(p::InitPropertyFlags(flags) & p::PF_NotSerialized))                       \
@@ -670,7 +689,7 @@ public:
 		}                                                                                         \
 		/* Serialize next property if any*/                                                       \
 		__WriteProperty(w, p::MetaCounter<id_name + 1>{});                                        \
-	};
+	}
 
 
 #define P_REFL_INTERNAL_GET_3RD_ARG(arg1, arg2, arg3, ...) arg3
@@ -684,8 +703,8 @@ public:
 #define P_TYPE_CHOOSER(TYPE_NO_FLAGS, TYPE_FLAGS, type, ...) \
 	P_REFL_GET_3RD_ARG((type, __VA_ARGS__, TYPE_FLAGS, TYPE_NO_FLAGS, TYPE_INVALID))
 
-#define P_PROP_CHOOSER(TYPE_NO_FLAGS, TYPE_FLAGS, name, ...) \
-	P_REFL_GET_3RD_ARG((name, __VA_ARGS__, TYPE_FLAGS, TYPE_NO_FLAGS, TYPE_INVALID))
+#define P_PROP_CHOOSER(PROPERTY_NO_FLAGS, PROPERTY_FLAGS, name, ...) \
+	P_REFL_GET_3RD_ARG((name, __VA_ARGS__, PROPERTY_FLAGS, PROPERTY_NO_FLAGS, PROPERTY_INVALID))
 
 
 #define P_CLASS(type, ...)                                                           \

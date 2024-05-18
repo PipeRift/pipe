@@ -856,25 +856,28 @@ namespace p
 
 #pragma region CoreSupport
 	struct Tag;
+	struct Guid;
+	template<u32 size, Number T>
+	struct Vec;
+	struct Quat;
+
 	PIPE_API void Read(Reader& ct, String& val);
 	PIPE_API void Write(Writer& ct, const String& val);
 	PIPE_API void Read(Reader& ct, Tag& val);
 	PIPE_API void Write(Writer& ct, const Tag& val);
 
-	struct Guid;
 	PIPE_API void Read(Reader& ct, Guid& guid);
 	PIPE_API void Write(Writer& ct, const Guid& guid);
 
+	PIPE_API void Read(Reader& ct, TColor<ColorMode::RGBA>& color);
+	PIPE_API void Write(Writer& ct, const TColor<ColorMode::RGBA>& color);
+	PIPE_API void Read(Reader& ct, TColor<ColorMode::Linear>& color);
+	PIPE_API void Write(Writer& ct, const TColor<ColorMode::Linear>& color);
+	PIPE_API void Read(Reader& ct, TColor<ColorMode::sRGB>& color);
+	PIPE_API void Write(Writer& ct, const TColor<ColorMode::sRGB>& color);
+	PIPE_API void Read(Reader& r, TColor<ColorMode::HSV>& color);
+	PIPE_API void Write(Writer& w, const TColor<ColorMode::HSV>& color);
 
-	template<ColorMode mode>
-	PIPE_API void Read(Reader& ct, TColor<mode>& color);
-	template<ColorMode mode>
-	PIPE_API void Write(Writer& ct, const TColor<mode>& color);
-
-
-	template<u32 size, Number T>
-	struct Vec;
-	struct Quat;
 	PIPE_API void Read(Reader& ct, Vec<2, float>& val);
 	PIPE_API void Write(Writer& ct, const Vec<2, float>& val);
 	PIPE_API void Read(Reader& ct, Vec<2, u32>& val);
