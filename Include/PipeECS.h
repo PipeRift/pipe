@@ -1291,7 +1291,10 @@ namespace p
 			{
 				return std::get<TPool<Mut<C>>*>(pools);
 			}
-			return nullptr;
+			else
+			{
+				return nullptr;
+			}
 		}
 
 		template<typename C>
@@ -1302,7 +1305,10 @@ namespace p
 			{
 				return std::get<TPool<Mut<C>>*>(pools);
 			}
-			return nullptr;
+			else
+			{
+				return nullptr;
+			}
 		}
 
 		template<typename C>
