@@ -18,6 +18,10 @@
 
 #include <magic_enum.hpp>
 
+#ifndef P_AUTOREGISTER_ENABLED
+	#define P_AUTOREGISTER_ENABLED 1
+#endif
+
 
 namespace p
 {
@@ -525,9 +529,11 @@ namespace p
 	{
 		TTypeAutoRegister()
 		{
+#if P_AUTOREGISTER_ENABLED
 			OnReflectInit([] {
 				RegisterTypeId<T>();
 			});
+#endif
 		}
 	};
 
@@ -574,7 +580,7 @@ namespace p
 	{                                  \
 		p::AddTypeFlags(p::TF_Native); \
 	};                                 \
-	// P_AUTOREGISTER_TYPE(type)
+	P_AUTOREGISTER_TYPE(type)
 
 #define P_NATIVE_NAMED(type, name)                                                  \
 	template<>                                                                      \
@@ -584,7 +590,7 @@ namespace p
 	}                                                                               \
 	P_NATIVE(type);
 
-#define P_ENUM(type) /*P_AUTOREGISTER_TYPE(type)*/
+#define P_ENUM(type) P_AUTOREGISTER_TYPE(type)
 
 
 /** Defines a Class */
