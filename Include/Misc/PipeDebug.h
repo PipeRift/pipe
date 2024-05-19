@@ -52,6 +52,7 @@ namespace p
 	{
 		ImGuiTextFilter filter;
 		TypeFlags typeFlagsFilter = TF_Native | TF_Enum | TF_Struct | TF_Object;
+		String typeFlags;
 	};
 
 	struct DebugContext
@@ -133,10 +134,9 @@ namespace p
 			ImGui::Text(name);
 
 			ImGui::TableSetColumnIndex(2);    // Flags
-			static String flags;
-			flags.clear();
-			GetEnumFlagName<TypeFlags_>(TypeFlags_(GetTypeFlags(type)), flags);
-			ImGui::Text(flags);
+			ctx.typeFlags.clear();
+			GetEnumFlagName<TypeFlags_>(TypeFlags_(GetTypeFlags(type)), ctx.typeFlags);
+			ImGui::Text(ctx.typeFlags);
 
 			TypeId parentId = GetTypeParent(type);
 			if (parentId.IsValid())

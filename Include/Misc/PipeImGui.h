@@ -87,16 +87,11 @@ namespace ImGui
 	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
 	    void* userData = nullptr);
 
-	bool MutableText(p::StringView label, p::String& text, ImGuiInputTextFlags flags = 0);
-
 	void HelpTooltip(p::StringView text, float delay = 1.f);
 	void HelpMarker(p::StringView text);
 
 	bool DrawFilterWithHint(ImGuiTextFilter& filter, const char* label = "Filter (inc,-exc)",
 	    const char* hint = "...", float width = 0.0f);
-
-	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
-	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize = p::v2(18.f, 14.f));
 
 
 	///////////////////////////////////////////////////////////
@@ -194,23 +189,6 @@ namespace ImGui
 
 	static ImGuiID gPendingEditingId = 0;
 
-	bool MutableText(p::StringView label, p::String& text, ImGuiInputTextFlags flags)
-	{
-		const ImGuiID id     = ImGui::GetID(label);
-		const bool isEditing = ImGui::GetActiveID() == id;
-		if (!isEditing)    // Is editing
-		{
-			ImGui::PushStyleColor(ImGuiCol_FrameBg, p::LinearColor::Transparent());
-		}
-
-		const bool valueChanged = InputText(label.data(), text, flags);
-		if (!isEditing)
-		{
-			ImGui::PopStyleColor();
-		}
-		return valueChanged;
-	}
-
 	void HelpTooltip(p::StringView text, float delay)
 	{
 		static ImGuiID currentHelpItemId = 0;
@@ -265,46 +243,6 @@ namespace ImGui
 		if (value_changed)
 			filter.Build();
 		return value_changed;
-	}
-
-	bool CollapsingHeaderWithButton(p::StringView label, ImGuiTreeNodeFlags flags,
-	    bool& buttonClicked, p::StringView buttonLabel, p::v2 buttonSize)
-	{
-		ImGuiWindow* window = ImGui::GetCurrentWindow();
-		if (window->SkipItems)
-			return false;
-
-		ImGuiID id = window->GetID(label.data());
-		flags |= ImGuiTreeNodeFlags_CollapsingHeader | ImGuiTreeNodeFlags_AllowOverlap
-		       | ImGuiTreeNodeFlags_ClipLabelForTrailingButton;
-		bool isOpen = ImGui::TreeNodeBehavior(id, flags, label.data());
-
-
-		// Create a small overlapping close button
-		// FIXME: We can evolve this into user accessible helpers to add extra buttons on title
-		// bars, headers, etc.
-		// FIXME: CloseButton can overlap into text, need find a way to clip the text somehow.
-		ImGuiContext& g                    = *GetCurrentContext();
-		ImGuiLastItemData last_item_backup = g.LastItemData;
-		ImGui::PushID(id);
-		const float widthAvailable =
-		    ImGui::GetContentRegionAvail().x + ImGui::GetCurrentWindow()->DC.Indent.x;
-		ImGui::SameLine(widthAvailable - 25.f);
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.f);
-		ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
-		float backup_padding_y = g.Style.FramePadding.y;
-		g.Style.FramePadding.y = 0.0f;
-		if (ImGui::ButtonEx(buttonLabel.data(), {buttonSize.x, buttonSize.y},
-		        ImGuiButtonFlags_AlignTextBaseLine))
-		{
-			buttonClicked = true;
-		}
-		g.Style.FramePadding.y = backup_padding_y;
-		ImGui::PopStyleVar(2);
-		ImGui::PopID();
-		g.LastItemData = last_item_backup;
-
-		return isOpen;
 	}
 #endif
 };    // namespace ImGui
