@@ -45,15 +45,15 @@ namespace p
 	}
 
 	template<typename T>
-	consteval bool HasGlobalBuildType()
+	consteval bool HasExternalBuildType()
 	{
-		return requires(const T v) { ::BuildType(&v); };
+		return requires(const T v) { BuildType(&v); };
 	}
 
 	template<typename T>
 	consteval bool CanBuildType()
 	{
-		return requires(const T v) { BuildType(&v); };
+		return HasMemberBuildType<T>() || HasExternalBuildType<T>();
 	}
 
 	template<u32 N>
@@ -509,13 +509,13 @@ namespace p
 
 			if constexpr (CanBuildType<T>())
 			{
-				if constexpr (HasGlobalBuildType<T>())
+				if constexpr (HasMemberBuildType<T>())
 				{
-					::BuildType<T>(nullptr);
+					T::BuildType();
 				}
 				else
 				{
-					BuildType<T>(nullptr);
+					BuildType((const T*)nullptr);
 				}
 			}
 
