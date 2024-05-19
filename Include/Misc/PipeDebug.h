@@ -127,10 +127,13 @@ namespace p
 			ImGui::TableSetColumnIndex(1);    // Name
 			StringView ns;
 			StringView name = RemoveNamespace(rawName, ns);
-			ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
-			ImGui::Text(ns);
-			ImGui::PopTextColor();
-			ImGui::SameLine(0, 10.f);
+			if (ns.size() > 0)
+			{
+				ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
+				ImGui::Text(ns);
+				ImGui::PopTextColor();
+				ImGui::SameLine(0, 10.f);
+			}
 			ImGui::Text(name);
 
 			ImGui::TableSetColumnIndex(2);    // Flags
@@ -144,10 +147,13 @@ namespace p
 				ImGui::TableSetColumnIndex(3);    // Parent
 				rawName = GetTypeName(parentId);
 				name    = RemoveNamespace(rawName, ns);
-				ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
-				ImGui::Text(ns);
-				ImGui::PopTextColor();
-				ImGui::SameLine(0, 10.f);
+				if (ns.size() > 0)
+				{
+					ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
+					ImGui::Text(ns);
+					ImGui::PopTextColor();
+					ImGui::SameLine(0, 10.f);
+				}
 				ImGui::Text(name);
 			}
 		}
