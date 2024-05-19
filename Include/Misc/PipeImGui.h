@@ -26,29 +26,30 @@ namespace ImGui
 	// Definition
 
 
-	void PushID(p::StringView id)
+	inline void PushID(p::StringView id)
 	{
 		PushID(id.data(), id.data() + id.size());
 	}
-	ImGuiID GetID(p::StringView id)
+	inline ImGuiID GetID(p::StringView id)
 	{
 		return GetID(id.data(), id.data() + id.size());
 	}
 
-	void PushStyleColor(ImGuiCol idx, p::Color color)
+	inline void PushStyleColor(ImGuiCol idx, p::Color color)
 	{
 		PushStyleColor(idx, color.DWColor());
 	}
-	void PushStyleColor(ImGuiCol idx, const p::LinearColor& color)
+	inline void PushStyleColor(ImGuiCol idx, const p::LinearColor& color)
 	{
 		PushStyleColor(idx, ImVec4{color.r, color.g, color.b, color.a});
 	}
-	void PushStyleVar(ImGuiStyleVar idx, p::v2 value)
+	inline void PushStyleVar(ImGuiStyleVar idx, p::v2 value)
 	{
 		PushStyleVar(idx, ImVec2{value.x, value.y});
 	}
 	void PushTextColor(p::LinearColor color);
 	void PopTextColor();
+	p::LinearColor GetTextColor();
 
 	inline void Text(p::StringView text)
 	{
@@ -111,6 +112,12 @@ namespace ImGui
 	void PopTextColor()
 	{
 		PopStyleColor(2);
+	}
+
+	p::LinearColor GetTextColor()
+	{
+		auto color = GetStyleColorVec4(ImGuiCol_TextDisabled);
+		return {color.x, color.y, color.z, color.w};
 	}
 
 	struct InputTextCallbackStringUserData

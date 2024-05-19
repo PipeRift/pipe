@@ -25,7 +25,7 @@ namespace p
 	// Definition
 
 #pragma region Inspection
-	bool BeginInspector(const char* name, p::v2 size = p::v2{0.f, 0.f});
+	bool BeginInspector(const char* name, v2 size = v2{0.f, 0.f});
 	void EndInspector();
 
 
@@ -48,8 +48,16 @@ namespace p
 		bool pendingFocus = false;
 	};
 
+	struct DebugReflectContext
+	{
+		ImGuiTextFilter filter;
+		TypeFlags typeFlagsFilter = TF_Native | TF_Enum | TF_Struct | TF_Object;
+	};
+
 	struct DebugContext
 	{
+		DebugReflectContext reflect;
+
 		EntityContext* ctx = nullptr;
 		TArray<ECSDebugIdRegistry> idRegistries;
 
@@ -59,21 +67,21 @@ namespace p
 	};
 
 
-	static bool BeginDebug(DebugContext& Context);
-	static void EndDebug();
+	bool BeginDebug(DebugContext& Context);
+	void EndDebug();
 
-	static bool BeginIdRegistry(
+	bool BeginIdRegistry(
 	    const char* label = "Id Registry", bool* open = nullptr, ImGuiWindowFlags flags = 0);
-	static void EndIdRegistry();
-	static void DrawIdRegistry(
+	void EndIdRegistry();
+	void DrawIdRegistry(
 	    const char* label = "Id Registry", bool* open = nullptr, ImGuiWindowFlags flags = 0);
 
-	static void DrawReflection(
+	void DrawReflection(
 	    const char* label = "Reflection", bool* open = nullptr, ImGuiWindowFlags flags = 0);
 
-	static void DrawEntityInspector(StringView label, ECSDebugInspector& inspector,
-	    bool* open = nullptr, ImGuiWindowFlags flags = 0);
-	static void DrawOpenEntityInspectors(ImGuiWindowFlags flags = 0);
+	void DrawEntityInspector(StringView label, ECSDebugInspector& inspector, bool* open = nullptr,
+	    ImGuiWindowFlags flags = 0);
+	void DrawOpenEntityInspectors(ImGuiWindowFlags flags = 0);
 #pragma endregion ECS
 
 
@@ -81,14 +89,69 @@ namespace p
 	// Implementation
 #ifdef P_DEBUG_IMPLEMENTATION
 
-	#define EnsureInsideECSDebug                              \
+	#define EnsureInsideDebug                                 \
 		P_EnsureMsg(currentContext,                           \
 		    "No ECS Debug context available! Forgot to call " \
 		    "BeginDebug()?")
 
 	static DebugContext* currentContext = nullptr;
+	constexpr LinearColor errorColor    = LinearColor::FromHex(0xD62B2B);
 
-	constexpr p::LinearColor errorColor = p::LinearColor::FromHex(0xD62B2B);
+
+	namespace details
+	{
+		void DrawType(DebugReflectContext& ctx, TypeId type)
+		{
+			if (!HasAnyTypeFlags(type, ctx.typeFlagsFilter))
+			{
+				return;
+			}
+
+			static String idText;
+			idText.clear();
+			Strings::FormatTo(idText, "{}", type);
+
+			StringView rawName = GetTypeName(type);
+			if (!ctx.filter.PassFilter(idText.c_str(), idText.c_str() + idText.size())
+			    && !ctx.filter.PassFilter(rawName.data(), rawName.data() + rawName.size()))
+			{
+				return;
+			}
+
+			ImGui::TableNextRow();
+
+			ImGui::TableSetColumnIndex(0);    // Id
+			ImGui::Text(idText);
+
+			ImGui::TableSetColumnIndex(1);    // Name
+			StringView ns;
+			StringView name = RemoveNamespace(rawName, ns);
+			ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
+			ImGui::Text(ns);
+			ImGui::PopTextColor();
+			ImGui::SameLine(0, 10.f);
+			ImGui::Text(name);
+
+			ImGui::TableSetColumnIndex(2);    // Flags
+			static String flags;
+			flags.clear();
+			GetEnumFlagName<TypeFlags_>(TypeFlags_(GetTypeFlags(type)), flags);
+			ImGui::Text(flags);
+
+			TypeId parentId = GetTypeParent(type);
+			if (parentId.IsValid())
+			{
+				ImGui::TableSetColumnIndex(3);    // Parent
+				rawName = GetTypeName(parentId);
+				name    = RemoveNamespace(rawName, ns);
+				ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
+				ImGui::Text(ns);
+				ImGui::PopTextColor();
+				ImGui::SameLine(0, 10.f);
+				ImGui::Text(name);
+			}
+		}
+	}    // namespace details
 
 	// For internal use only
 	EntityContext& GetDebugCtx()
@@ -141,16 +204,58 @@ namespace p
 
 	void DrawReflection(const char* label, bool* open, ImGuiWindowFlags flags)
 	{
-		if (ImGui::Begin(label, open, flags))
+		if (!EnsureInsideDebug)
 		{
-			ImGui::End();
+			return;
 		}
+
+		auto& reflectDbg = currentContext->reflect;
+
+		ImGui::Begin(label, open, flags);
+
+		if (ImGui::BeginPopup("Filter"))
+		{
+			ImGui::CheckboxFlags("Native", &reflectDbg.typeFlagsFilter, u64(TF_Native));
+			ImGui::CheckboxFlags("Enum", &reflectDbg.typeFlagsFilter, u64(TF_Enum));
+			ImGui::CheckboxFlags("Struct", &reflectDbg.typeFlagsFilter, u64(TF_Struct));
+			ImGui::CheckboxFlags("Object", &reflectDbg.typeFlagsFilter, u64(TF_Object));
+			ImGui::CheckboxFlags("Container", &reflectDbg.typeFlagsFilter, u64(TF_Container));
+			ImGui::EndPopup();
+		}
+		if (ImGui::Button("Filter"))
+		{
+			ImGui::OpenPopup("Filter");
+		}
+
+		ImGui::SameLine();
+		reflectDbg.filter.Draw("##Filter", -100.0f);
+
+		static ImGuiTableFlags tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
+		                                  | ImGuiTableFlags_Hideable
+		                                  | ImGuiTableFlags_SizingStretchProp;
+		ImGui::BeginChild("typesTableChild", ImVec2(0.f, ImGui::GetContentRegionAvail().y));
+		if (ImGui::BeginTable("typesTable", 4, tableFlags))
+		{
+			ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_IndentEnable);
+			ImGui::TableSetupColumn("Name");
+			ImGui::TableSetupColumn("Flags");
+			ImGui::TableSetupColumn("Parent");
+			ImGui::TableHeadersRow();
+
+			for (TypeId type : GetRegisteredTypeIds())
+			{
+				details::DrawType(reflectDbg, type);
+			}
+			ImGui::EndTable();
+		}
+		ImGui::EndChild();
+		ImGui::End();
 	}
 
 	void DrawEntityInspector(
 	    StringView label, ECSDebugInspector& inspector, bool* open, ImGuiWindowFlags flags)
 	{
-		if (!EnsureInsideECSDebug)
+		if (!EnsureInsideDebug)
 		{
 			return;
 		}
@@ -158,10 +263,10 @@ namespace p
 		const bool valid   = GetDebugCtx().IsValid(inspector.id);
 		const bool removed = GetDebugCtx().WasRemoved(inspector.id);
 		bool clone         = false;
-		p::Id nextId       = inspector.id;
+		Id nextId          = inspector.id;
 
-		p::String name;
-		p::Strings::FormatTo(name, "{}: {}{}", label, inspector.id, removed ? " (removed)" : "");
+		String name;
+		Strings::FormatTo(name, "{}: {}{}", label, inspector.id, removed ? " (removed)" : "");
 
 		if (inspector.pendingFocus)
 		{
@@ -188,12 +293,12 @@ namespace p
 				ImGui::AlignTextToFramePadding();
 				ImGui::Text("Id");
 				ImGui::SameLine();
-				p::String asString = p::ToString(inspector.id);
+				String asString = ToString(inspector.id);
 				ImGui::SetNextItemWidth(100.f);
 				if (ImGui::InputText("##IdValue", asString,
 				        ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll))
 				{
-					nextId = p::IdFromString(asString);
+					nextId = IdFromString(asString);
 				}
 				ImGui::EndMenu();
 			}
@@ -208,7 +313,7 @@ namespace p
 
 		if (valid)
 		{
-			p::String componentLabel;
+			String componentLabel;
 			for (const auto& poolInstance : GetDebugCtx().GetPools())
 			{
 				if (!poolInstance.GetPool()->Has(inspector.id))
@@ -218,7 +323,7 @@ namespace p
 
 				componentLabel.clear();
 
-				p::Strings::FormatTo(
+				Strings::FormatTo(
 				    componentLabel, "{}", RemoveNamespace(GetTypeName(poolInstance.componentId)));
 
 				ImGuiTreeNodeFlags headerFlags = ImGuiTreeNodeFlags_DefaultOpen;
@@ -230,7 +335,7 @@ namespace p
 				if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
 				{
 					// UI::Indent();
-					// auto* dataType = Cast<p::DataType>(type);
+					// auto* dataType = Cast<DataType>(type);
 					// if (data && dataType && UI::BeginInspector("EntityInspector"))
 					//{
 					//	UI::InspectChildrenProperties({data, dataType});
