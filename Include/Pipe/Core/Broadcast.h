@@ -127,7 +127,7 @@ namespace p
 		{
 			if (instance && method)
 			{
-				if constexpr (IsObject<Type>())
+				if constexpr (IsObject<Type>)
 				{
 					return Bind<Type>(instance->AsPtr(), Move(method));
 				}
