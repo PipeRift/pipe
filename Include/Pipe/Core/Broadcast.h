@@ -6,9 +6,6 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Memory/OwnPtr.h"
 
-// TODO: Remove this dependency
-#include "PipeReflect.h"
-
 
 namespace p
 {
@@ -127,7 +124,7 @@ namespace p
 		{
 			if (instance && method)
 			{
-				if constexpr (IsObject<Type>())
+				if constexpr (IsObject<Type>)
 				{
 					return Bind<Type>(instance->AsPtr(), Move(method));
 				}
