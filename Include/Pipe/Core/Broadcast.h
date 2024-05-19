@@ -6,6 +6,9 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Memory/OwnPtr.h"
 
+// TODO: Remove this dependency
+#include "PipeReflect.h"
+
 
 namespace p
 {
