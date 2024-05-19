@@ -237,11 +237,8 @@ namespace ImGui
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, p::v2{4.f, 3.f});
 				ImGui::BeginTooltip();
 				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-				static p::String finalText;
-				finalText.clear();
-				p::Strings::FormatTo(finalText, "{} {}", ICON_FA_QUESTION_CIRCLE, text);
 				ImGui::AlignTextToFramePadding();
-				ImGui::TextUnformatted(finalText.c_str());
+				ImGui::TextUnformatted(text.data());
 				ImGui::PopTextWrapPos();
 				ImGui::EndTooltip();
 				ImGui::PopStyleVar();
@@ -254,7 +251,7 @@ namespace ImGui
 	}
 	void HelpMarker(p::StringView text)
 	{
-		ImGui::TextDisabled(ICON_FA_QUESTION_CIRCLE);
+		ImGui::TextDisabled("(?)");
 		HelpTooltip(text, 0.f);
 	}
 
@@ -287,7 +284,7 @@ namespace ImGui
 		// FIXME: We can evolve this into user accessible helpers to add extra buttons on title
 		// bars, headers, etc.
 		// FIXME: CloseButton can overlap into text, need find a way to clip the text somehow.
-		ImGuiContext& g                    = *GImGui;
+		ImGuiContext& g                    = *GetCurrentContext();
 		ImGuiLastItemData last_item_backup = g.LastItemData;
 		ImGui::PushID(id);
 		const float widthAvailable =
@@ -297,7 +294,8 @@ namespace ImGui
 		ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
 		float backup_padding_y = g.Style.FramePadding.y;
 		g.Style.FramePadding.y = 0.0f;
-		if (ImGui::ButtonEx(buttonLabel.data(), buttonSize, ImGuiButtonFlags_AlignTextBaseLine))
+		if (ImGui::ButtonEx(buttonLabel.data(), {buttonSize.x, buttonSize.y},
+		        ImGuiButtonFlags_AlignTextBaseLine))
 		{
 			buttonClicked = true;
 		}
