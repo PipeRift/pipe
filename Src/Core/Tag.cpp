@@ -50,7 +50,11 @@ namespace p
 	};
 
 
-	static TagStringTable table{};
+	TagStringTable& GetTable()
+	{
+		static TagStringTable table{};
+		return table;
+	}
 	// Makes sure the hashes & keys lists are thread-safe
 	std::shared_mutex stringsListMutex;
 
@@ -60,7 +64,7 @@ namespace p
 		if (!value.empty())
 		{
 			hash              = p::GetHash(value);
-			TagHeader& header = table.GetOrAddTagString(hash, value);
+			TagHeader& header = GetTable().GetOrAddTagString(hash, value);
 			++header.activeTags;
 			str = header.Data();
 		}
@@ -137,6 +141,7 @@ namespace p
 
 	i32 Tag::FlushInactiveTags()
 	{
+		auto& table = GetTable();
 		std::unique_lock lock{stringsListMutex};
 		const i32 initialSize = table.strings.Size();
 		for (i32 i = initialSize - 1; i >= 0; --i)
@@ -154,7 +159,7 @@ namespace p
 
 	void Tag::SetAutomaticFlush(bool enabled)
 	{
-		table.automaticFlush = enabled;
+		GetTable().automaticFlush = enabled;
 	}
 
 	void Tag::InternalReset()
@@ -163,6 +168,7 @@ namespace p
 		{
 			TagHeader* const header = GetTagHeader(str);
 			--header->activeTags;
+			auto& table = GetTable();
 			if (table.automaticFlush && header->activeTags <= 0) [[unlikely]]
 			{
 				table.FreeTagString(hash, *header);
