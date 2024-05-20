@@ -34,19 +34,11 @@ namespace p
 
 
 #pragma region ECS
-	struct ECSDebugIdRegistry
-	{
-		bool visible = false;
-
-		// Filters
-		TArray<TypeId> includedPools;
-		TArray<TypeId> excludedPools;
-	};
-
 	struct ECSDebugInspector
 	{
 		Id id             = NoId;
 		bool pendingFocus = false;
+		ImGuiTextFilter filter;
 
 		bool operator==(const ECSDebugInspector& other) const
 		{
@@ -64,7 +56,12 @@ namespace p
 
 	struct DebugECSContext
 	{
+		TArray<TypeId> includedPools;
+		TArray<TypeId> excludedPools;
+		TArray<TypeId> previewedPools;
 		ImGuiTextFilter filter;
+		ImGuiTextFilter typeChooserFilter;
+
 		TSet<ECSDebugInspector> inspectors;
 	};
 	struct DebugReflectContext
@@ -80,7 +77,6 @@ namespace p
 		DebugReflectContext reflect;
 
 		EntityContext* ctx = nullptr;
-		TArray<ECSDebugIdRegistry> idRegistries;
 
 
 		DebugContext() = default;
@@ -118,6 +114,94 @@ namespace p
 	using DrawNodeAccess = TAccessRef<CParent, CChild>;
 	namespace details
 	{
+		bool ChooseTypePopup(const char* label, ImGuiTextFilter& filter, TypeId& selectedTypeId)
+		{
+			bool selectedAny = false;
+			if (ImGui::BeginPopup(label))
+			{
+				if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)
+				    && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+				{
+					ImGui::SetKeyboardFocusHere(0);
+				}
+
+				filter.Draw("##Filter", ImGui::GetContentRegionAvail().x);
+				ImGui::Separator();
+				ImGui::Spacing();
+
+				ImGui::BeginChild("types", {300.f, 400.f});
+				String typeName;
+				for (const TypeId typeId : GetRegisteredTypeIds())
+				{
+					typeName.assign(GetTypeName(typeId));
+					if (filter.PassFilter(typeName.data()) && ImGui::Selectable(typeName.data()))
+					{
+						selectedTypeId = typeId;
+						selectedAny    = true;
+						ImGui::CloseCurrentPopup();
+					}
+				}
+				ImGui::EndChild();
+				ImGui::EndPopup();
+			}
+			return selectedAny;
+		}
+
+		void DrawPoolsList(StringView id, DebugECSContext& ecsDbg, TArray<TypeId>& poolTypes,
+		    bool canModify = false)
+		{
+			ImGui::PushID(id);
+
+			String typeName;
+			TArray<TypeId> typesToRemove;
+			for (TypeId typeId : poolTypes)
+			{
+				typeName.assign(GetTypeName(typeId));
+				if (ImGui::Button(typeName.data()))
+				{
+					typesToRemove.Add(typeId);
+				}
+				ImGui::SameLine();
+			}
+			poolTypes.Remove(typesToRemove);
+
+			if (ImGui::Button("+"))
+			{
+				ecsDbg.typeChooserFilter.Clear();
+				ImGui::OpenPopup("Select Type##popup");
+			}
+			TypeId selectedType;
+			if (ChooseTypePopup("Select Type##popup", ecsDbg.typeChooserFilter, selectedType))
+			{
+				poolTypes.Add(selectedType);
+			}
+			ImGui::PopID();
+		}
+
+		void DrawPoolsFilters(DebugECSContext& ecsDbg)
+		{
+			ImGui::PushStyleCompact();
+			ImGui::BeginTable("poolFilterTable", 2, ImGuiTableFlags_SizingStretchProp);
+			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::Text("Include");
+			ImGui::TableNextColumn();
+			DrawPoolsList("Include", ecsDbg, ecsDbg.includedPools, true);
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::Text("Exclude");
+			ImGui::TableNextColumn();
+			DrawPoolsList("Exclude", ecsDbg, ecsDbg.excludedPools, true);
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::Text("Preview");
+			ImGui::TableNextColumn();
+			DrawPoolsList("Preview", ecsDbg, ecsDbg.excludedPools, true);
+			ImGui::EndTable();
+			ImGui::PopStyleCompact();
+		}
+
 		void DrawIdInTable(DrawNodeAccess access, Id id, DebugECSContext& ecsDbg)
 		{
 			static p::String idText;
@@ -141,7 +225,7 @@ namespace p
 			}
 
 			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
+			ImGui::TableSetColumnIndex(0);    // View
 			static p::String inspectLabel;
 			inspectLabel.clear();
 
@@ -157,7 +241,7 @@ namespace p
 			ImGui::PopTextColor();
 
 
-			ImGui::TableNextColumn();
+			ImGui::TableSetColumnIndex(1);    // Id
 			const CParent* parent = access.TryGet<const CParent>(id);
 			bool hasChildren      = parent && !parent->children.IsEmpty();
 
@@ -173,7 +257,8 @@ namespace p
 				ImGui::Text(idText);
 			}
 
-			// Other columns
+			ImGui::TableSetColumnIndex(2);    // Previews
+
 
 			if (hasChildren && open)
 			{
@@ -288,16 +373,26 @@ namespace p
 		ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin(label, open, flags))
 		{
+			ImGui::DrawFilterWithHint(
+			    ecsDbg.filter, "##filter", "Search...", ImGui::GetContentRegionAvail().x);
+			details::DrawPoolsFilters(ecsDbg);
+
+			ImGui::Separator();
+			ImGui::Dummy({0.f, 0.f});
+
+			ImGui::Text("%i entities", GetDebugCtx().Size());
+
 			static const ImGuiTableFlags tableFlags =
 			    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
 			    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
-			if (ImGui::BeginTable("entityTable", 2, tableFlags))
+			if (ImGui::BeginTable("entityTable", 3, tableFlags))
 			{
 				ImGui::TableSetupColumn("View", ImGuiTableColumnFlags_IndentDisable
 				                                    | ImGuiTableColumnFlags_WidthFixed
 				                                    | ImGuiTableColumnFlags_NoResize);    // Inspect
 				ImGui::TableSetupColumn(
 				    "Id", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_IndentEnable);
+				ImGui::TableSetupColumn("Previews");
 
 				ImGui::TableSetupScrollFreeze(0, 1);
 				ImGui::TableHeadersRow();
@@ -398,7 +493,7 @@ namespace p
 
 		if (ImGui::BeginMenuBar())
 		{
-			if (ImGui::BeginMenu("..."))
+			if (ImGui::BeginMenu("Settings"))
 			{
 				ImGui::AlignTextToFramePadding();
 				ImGui::Text("Id");
@@ -412,6 +507,7 @@ namespace p
 				}
 				ImGui::EndMenu();
 			}
+			ImGui::DrawFilterWithHint(inspector.filter, "##filter", "Search components...");
 
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 40.f);
 			if (ImGui::MenuItem("Clone"))

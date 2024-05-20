@@ -93,6 +93,11 @@ namespace ImGui
 	    const char* hint = "...", float width = 0.0f);
 
 
+#pragma region Style
+	void PushStyleCompact();
+	void PopStyleCompact();
+#pragma endregion Style
+
 	///////////////////////////////////////////////////////////
 	// Implementation
 #ifdef P_IMGUI_IMPLEMENTATION
@@ -243,5 +248,21 @@ namespace ImGui
 			filter.Build();
 		return value_changed;
 	}
+
+	#pragma region Style
+	void PushStyleCompact()
+	{
+		ImGuiStyle& style = ImGui::GetStyle();
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+		    ImVec2(style.FramePadding.x, (float)(int)(style.FramePadding.y * 0.60f)));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
+		    ImVec2(style.ItemSpacing.x, (float)(int)(style.ItemSpacing.y * 0.60f)));
+	}
+
+	void PopStyleCompact()
+	{
+		ImGui::PopStyleVar(2);
+	}
+	#pragma endregion Style
 #endif
 };    // namespace ImGui

@@ -1071,6 +1071,11 @@ namespace p
 			idRegistry.Each(cb);
 		}
 
+		u32 Size() const
+		{
+			return idRegistry.Size();
+		}
+
 		template<typename Callback>
 		void EachOrphan(Callback cb) const
 		{
