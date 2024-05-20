@@ -25,7 +25,6 @@ namespace ImGui
 	///////////////////////////////////////////////////////////
 	// Definition
 
-
 	inline void PushID(p::StringView id)
 	{
 		PushID(id.data(), id.data() + id.size());

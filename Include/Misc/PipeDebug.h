@@ -15,6 +15,7 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeDebug requires v1.9
 
 
 #include "Misc/PipeImGui.h"
+#include "Pipe/Core/Set.h"
 #include "PipeArrays.h"
 #include "PipeECS.h"
 
@@ -46,8 +47,26 @@ namespace p
 	{
 		Id id             = NoId;
 		bool pendingFocus = false;
+
+		bool operator==(const ECSDebugInspector& other) const
+		{
+			return id == other.id;
+		}
+		bool operator==(Id other) const
+		{
+			return id == other;
+		}
+		sizet GetHash() const
+		{
+			return p::GetHash(id);
+		}
 	};
 
+	struct DebugECSContext
+	{
+		ImGuiTextFilter filter;
+		TSet<ECSDebugInspector> inspectors;
+	};
 	struct DebugReflectContext
 	{
 		ImGuiTextFilter filter;
@@ -57,6 +76,7 @@ namespace p
 
 	struct DebugContext
 	{
+		DebugECSContext ecs;
 		DebugReflectContext reflect;
 
 		EntityContext* ctx = nullptr;
@@ -71,9 +91,6 @@ namespace p
 	bool BeginDebug(DebugContext& Context);
 	void EndDebug();
 
-	bool BeginIdRegistry(
-	    const char* label = "Id Registry", bool* open = nullptr, ImGuiWindowFlags flags = 0);
-	void EndIdRegistry();
 	void DrawIdRegistry(
 	    const char* label = "Id Registry", bool* open = nullptr, ImGuiWindowFlags flags = 0);
 
@@ -98,9 +115,76 @@ namespace p
 	static DebugContext* currentContext = nullptr;
 	constexpr LinearColor errorColor    = LinearColor::FromHex(0xD62B2B);
 
-
+	using DrawNodeAccess = TAccessRef<CParent, CChild>;
 	namespace details
 	{
+		void DrawIdInTable(DrawNodeAccess access, Id id, DebugECSContext& ecsDbg)
+		{
+			static p::String idText;
+			idText.clear();
+			if (id == NoId)
+			{
+				idText = "Invalid";
+			}
+			else if (auto version = p::GetIdVersion(id); version > 0)
+			{
+				p::Strings::FormatTo(idText, "{}:{}", p::GetIdIndex(id), version);
+			}
+			else
+			{
+				p::Strings::FormatTo(idText, "{}", p::GetIdIndex(id));
+			}
+
+			if (!ecsDbg.filter.PassFilter(idText.c_str(), idText.c_str() + idText.size()))
+			{
+				return;
+			}
+
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			static p::String inspectLabel;
+			inspectLabel.clear();
+
+			const bool inspected = ecsDbg.inspectors.Contains(id);
+			const char* icon     = inspected ? " × " : " » ";
+			p::Strings::FormatTo(inspectLabel, "{}##{}", icon, id);
+			ImGui::PushTextColor(
+			    inspected ? ImGui::GetTextColor() : ImGui::GetTextColor().Translucency(0.3f));
+			if (ImGui::Button(inspectLabel.c_str()))
+			{
+				//
+			}
+			ImGui::PopTextColor();
+
+
+			ImGui::TableNextColumn();
+			const CParent* parent = access.TryGet<const CParent>(id);
+			bool hasChildren      = parent && !parent->children.IsEmpty();
+
+			bool open = false;
+			static p::Tag font{"WorkSans"};
+			if (hasChildren)
+			{
+				open = ImGui::TreeNodeEx(idText.c_str(), ImGuiTreeNodeFlags_SpanFullWidth);
+			}
+			else
+			{
+				ImGui::SameLine(0, 18.f);
+				ImGui::Text(idText);
+			}
+
+			// Other columns
+
+			if (hasChildren && open)
+			{
+				for (Id child : parent->children)
+				{
+					DrawIdInTable(access, child, ecsDbg);
+				}
+
+				ImGui::TreePop();
+			}
+		}
 		void DrawType(DebugReflectContext& ctx, TypeId type)
 		{
 			if (!HasAnyTypeFlags(type, ctx.typeFlagsFilter))
@@ -192,19 +276,39 @@ namespace p
 		currentContext = nullptr;
 	}
 
-	bool BeginIdRegistry(const char* label, bool* open, ImGuiWindowFlags flags)
-	{
-		return ImGui::Begin(label, open, flags);
-	}
-	void EndIdRegistry()
-	{
-		ImGui::End();
-	}
 	void DrawIdRegistry(const char* label, bool* open, ImGuiWindowFlags flags)
 	{
-		if (BeginIdRegistry(label, open, flags))
+		if (!EnsureInsideDebug)
 		{
-			EndIdRegistry();
+			return;
+		}
+
+		auto& ecsDbg = currentContext->ecs;
+
+		ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_FirstUseEver);
+		if (ImGui::Begin(label, open, flags))
+		{
+			static const ImGuiTableFlags tableFlags =
+			    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
+			    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
+			if (ImGui::BeginTable("entityTable", 2, tableFlags))
+			{
+				ImGui::TableSetupColumn("View", ImGuiTableColumnFlags_IndentDisable
+				                                    | ImGuiTableColumnFlags_WidthFixed
+				                                    | ImGuiTableColumnFlags_NoResize);    // Inspect
+				ImGui::TableSetupColumn(
+				    "Id", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_IndentEnable);
+
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableHeadersRow();
+
+				DrawNodeAccess access{GetDebugCtx()};
+				GetDebugCtx().Each([&access, &ecsDbg](Id id) {
+					details::DrawIdInTable(access, id, ecsDbg);
+				});
+				ImGui::EndTable();
+			}
+			ImGui::End();
 		}
 	}
 
@@ -228,7 +332,7 @@ namespace p
 			ImGui::CheckboxFlags("Container", &reflectDbg.typeFlagsFilter, u64(TF_Container));
 			ImGui::EndPopup();
 		}
-		if (ImGui::Button("Filter"))
+		if (ImGui::Button("Settings"))
 		{
 			ImGui::OpenPopup("Filter");
 		}
