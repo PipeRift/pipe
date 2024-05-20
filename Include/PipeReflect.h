@@ -108,13 +108,14 @@ namespace p
 		{
 			if (static_cast<UnderlyingType<T>>(v) != 0 && HasFlag(value, v))
 			{
-				Strings::FormatTo(outName, "{} | ", GetEnumName(v));
+				outName.append(GetEnumName(v));
+				outName.append(" | ");
 				hasAny = true;
 			}
 		}
 		if (hasAny)
 		{
-			Strings::RemoveFromEnd(outName, 3);
+			outName.resize(outName.size() - 3);
 		}
 	}
 #pragma endregion Enums
@@ -739,12 +740,12 @@ P_NATIVE_NAMED(p::Path, "Path");
 P_NATIVE(p::Tag)
 P_NATIVE(p::Guid)
 
-P_NATIVE(p::v2);
-P_NATIVE(p::v2_u32);
-P_NATIVE(p::v2_i32);
-P_NATIVE(p::v3);
-P_NATIVE(p::v3_u32);
-P_NATIVE(p::v3_i32);
+P_NATIVE_NAMED(p::v2, "v2");
+P_NATIVE_NAMED(p::v2_u32, "v2_u32");
+P_NATIVE_NAMED(p::v2_i32, "v2_i32");
+P_NATIVE_NAMED(p::v3, "v3");
+P_NATIVE_NAMED(p::v3_u32, "v3_u32");
+P_NATIVE_NAMED(p::v3_i32, "v3_i32");
 P_NATIVE(p::Quat);
 
 P_NATIVE_NAMED(p::LinearColor, "LinearColor")
