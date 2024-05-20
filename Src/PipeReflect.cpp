@@ -39,7 +39,6 @@ namespace p
 		TArray<const TypeOps*> operations{arena};
 
 		bool initialized = false;
-		TArray<void (*)()> onInitCallbacks{GetHeapArena()};
 	};
 
 	struct TypeEditContext
@@ -55,6 +54,12 @@ namespace p
 		static TypeRegistry registry;
 		return registry;
 	}
+	TArray<void (*)()>& GetRefectInitCallacks()
+	{
+		static TArray<void (*)()> onInitCallbacks{GetHeapArena()};
+		return onInitCallbacks;
+	}
+
 	static TypeEditContext currentEdit;
 
 	bool TypeProperty::HasFlag(PropertyFlags flag) const
@@ -149,7 +154,7 @@ namespace p
 			return false;
 		}
 
-		for (auto callback : registry.onInitCallbacks)
+		for (auto callback : GetRefectInitCallacks())
 		{
 			if (callback)
 			{
@@ -164,7 +169,7 @@ namespace p
 	{
 		if (callback)
 		{
-			GetRegistry().onInitCallbacks.Add(callback);
+			GetRefectInitCallacks().Add(callback);
 		}
 	}
 
