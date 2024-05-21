@@ -4,9 +4,6 @@
 // ImGui helpers for Pipe
 // Required ImGui (v1.90 or newer). Must be included before this header.
 
-// Use: #define P_IMGUI_IMPLEMENTATION
-// In a C++ file, once and before you include this file to create the implementation.
-
 #ifndef IMGUI_VERSION_NUM
 static_assert(false, "Imgui not found. PipeImGui requires v1.90 or newer.");
 #elif IMGUI_VERSION_NUM < 19000
@@ -22,12 +19,50 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeImGui requires v1.9
 
 namespace ImGui
 {
+	namespace details
+	{
+		struct InputTextCallbackStringUserData
+		{
+			p::String* str;
+			ImGuiInputTextCallback chainCallback;
+			void* chainCallbackUserData;
+		};
+
+		inline int InputTextCallback(ImGuiInputTextCallbackData* data)
+		{
+			auto* userData = static_cast<InputTextCallbackStringUserData*>(data->UserData);
+			if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
+			{
+				// Resize string callback
+				// If for some reason we refuse the new length (BufTextLen) and/or capacity
+				// (BufSize) we need to set them back to what we want.
+				p::String* str = userData->str;
+				IM_ASSERT(data->Buf == str->c_str());
+				str->resize(data->BufTextLen);
+				data->Buf = (char*)str->c_str();
+			}
+			else if (userData->chainCallback)
+			{
+				// Forward to user callback, if any
+				data->UserData = userData->chainCallbackUserData;
+				return userData->chainCallback(data);
+			}
+			return 0;
+		}
+	}    // namespace details
+
+
 	///////////////////////////////////////////////////////////
 	// Definition
 
 	inline void PushID(p::StringView id)
 	{
 		PushID(id.data(), id.data() + id.size());
+	}
+	template<p::Integral T>
+	inline void PushID(T id)
+	{
+		PushID(reinterpret_cast<void*>(p::sizet(id)));
 	}
 	inline ImGuiID GetID(p::StringView id)
 	{
@@ -46,9 +81,6 @@ namespace ImGui
 	{
 		PushStyleVar(idx, ImVec2{value.x, value.y});
 	}
-	void PushTextColor(p::LinearColor color);
-	void PopTextColor();
-	p::LinearColor GetTextColor();
 
 	inline void Text(p::StringView text)
 	{
@@ -77,128 +109,56 @@ namespace ImGui
 
 	// ImGui::InputText() with String
 	// Because text input needs dynamic resizing, we need to setup a callback to grow the capacity
-	bool InputText(const char* label, p::String& str, ImGuiInputTextFlags flags = 0,
-	    ImGuiInputTextCallback callback = nullptr, void* userData = nullptr);
-	bool InputTextMultiline(const char* label, p::String& str, const ImVec2& size = ImVec2(0, 0),
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
-	    void* userData = nullptr);
-	bool InputTextWithHint(const char* label, const char* hint, p::String& str,
-	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
-	    void* userData = nullptr);
-
-	void HelpTooltip(p::StringView text, float delay = 1.f);
-	void HelpMarker(p::StringView text);
-
-	bool DrawFilterWithHint(ImGuiTextFilter& filter, const char* label = "Filter (inc,-exc)",
-	    const char* hint = "...", float width = 0.0f);
-
-
-#pragma region Style
-	void PushStyleCompact();
-	void PopStyleCompact();
-#pragma endregion Style
-
-	///////////////////////////////////////////////////////////
-	// Implementation
-#ifdef P_IMGUI_IMPLEMENTATION
-
-	void PushTextColor(p::LinearColor color)
-	{
-		PushStyleColor(ImGuiCol_Text, color);
-		PushStyleColor(ImGuiCol_TextDisabled, color.Shade(0.15f));
-	}
-
-	void PopTextColor()
-	{
-		PopStyleColor(2);
-	}
-
-	p::LinearColor GetTextColor()
-	{
-		auto color = GetStyleColorVec4(ImGuiCol_TextDisabled);
-		return {color.x, color.y, color.z, color.w};
-	}
-
-	struct InputTextCallbackStringUserData
-	{
-		p::String* str;
-		ImGuiInputTextCallback chainCallback;
-		void* chainCallbackUserData;
-	};
-
-	static int InputTextCallback(ImGuiInputTextCallbackData* data)
-	{
-		auto* userData = static_cast<InputTextCallbackStringUserData*>(data->UserData);
-		if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
-		{
-			// Resize string callback
-			// If for some reason we refuse the new length (BufTextLen) and/or capacity (BufSize) we
-			// need to set them back to what we want.
-			p::String* str = userData->str;
-			IM_ASSERT(data->Buf == str->c_str());
-			str->resize(data->BufTextLen);
-			data->Buf = (char*)str->c_str();
-		}
-		else if (userData->chainCallback)
-		{
-			// Forward to user callback, if any
-			data->UserData = userData->chainCallbackUserData;
-			return userData->chainCallback(data);
-		}
-		return 0;
-	}
-
-
-	bool InputText(const char* label, p::String& str, ImGuiInputTextFlags flags,
-	    ImGuiInputTextCallback callback, void* userData)
+	inline bool InputText(const char* label, p::String& str, ImGuiInputTextFlags flags = 0,
+	    ImGuiInputTextCallback callback = nullptr, void* userData = nullptr)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 		flags |= ImGuiInputTextFlags_CallbackResize;
 
-		InputTextCallbackStringUserData cbUserData;
+		details::InputTextCallbackStringUserData cbUserData;
 		cbUserData.str                   = &str;
 		cbUserData.chainCallback         = callback;
 		cbUserData.chainCallbackUserData = userData;
-		return ImGui::InputText(
-		    label, (char*)str.c_str(), str.capacity() + 1, flags, InputTextCallback, &cbUserData);
+		return InputText(label, (char*)str.c_str(), str.capacity() + 1, flags,
+		    details::InputTextCallback, &cbUserData);
 	}
 
-	bool InputTextMultiline(const char* label, p::String& str, const ImVec2& size,
-	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
+	inline bool InputTextMultiline(const char* label, p::String& str,
+	    const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0,
+	    ImGuiInputTextCallback callback = nullptr, void* userData = nullptr)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 		flags |= ImGuiInputTextFlags_CallbackResize;
 
-		InputTextCallbackStringUserData cbUserData;
+		details::InputTextCallbackStringUserData cbUserData;
 		cbUserData.str                   = &str;
 		cbUserData.chainCallback         = callback;
 		cbUserData.chainCallbackUserData = userData;
 		return ImGui::InputTextMultiline(label, (char*)str.c_str(), str.capacity() + 1, size, flags,
-		    InputTextCallback, &cbUserData);
+		    details::InputTextCallback, &cbUserData);
 	}
 
-	bool InputTextWithHint(const char* label, const char* hint, p::String& str,
-	    ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* userData)
+	inline bool InputTextWithHint(const char* label, const char* hint, p::String& str,
+	    ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr,
+	    void* userData = nullptr)
 	{
 		IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
 		flags |= ImGuiInputTextFlags_CallbackResize;
 
-		InputTextCallbackStringUserData cbUserData;
+		details::InputTextCallbackStringUserData cbUserData;
 		cbUserData.str                   = &str;
 		cbUserData.chainCallback         = callback;
 		cbUserData.chainCallbackUserData = userData;
-		return ImGui::InputTextWithHint(label, hint, (char*)str.c_str(), str.capacity() + 1, flags,
-		    InputTextCallback, &cbUserData);
+		return InputTextWithHint(label, hint, (char*)str.c_str(), str.capacity() + 1, flags,
+		    details::InputTextCallback, &cbUserData);
 	}
 
-	static ImGuiID gPendingEditingId = 0;
-
-	void HelpTooltip(p::StringView text, float delay)
+	inline void HelpTooltip(p::StringView text, float delay = 1.f)
 	{
 		static ImGuiID currentHelpItemId = 0;
 
-		ImGuiID itemId = ImGui::GetCurrentContext()->LastItemData.ID;
-		if (ImGui::IsItemHovered())
+		ImGuiID itemId = GetCurrentContext()->LastItemData.ID;
+		if (IsItemHovered())
 		{
 			bool show = true;
 			if (delay > 0.f)
@@ -216,14 +176,14 @@ namespace ImGui
 
 			if (show)
 			{
-				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, p::v2{4.f, 3.f});
-				ImGui::BeginTooltip();
-				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-				ImGui::AlignTextToFramePadding();
-				ImGui::TextUnformatted(text.data());
-				ImGui::PopTextWrapPos();
-				ImGui::EndTooltip();
-				ImGui::PopStyleVar();
+				PushStyleVar(ImGuiStyleVar_WindowPadding, p::v2{4.f, 3.f});
+				BeginTooltip();
+				PushTextWrapPos(GetFontSize() * 35.0f);
+				AlignTextToFramePadding();
+				TextUnformatted(text.data());
+				PopTextWrapPos();
+				EndTooltip();
+				PopStyleVar();
 			}
 		}
 		else if (itemId == currentHelpItemId)
@@ -231,38 +191,93 @@ namespace ImGui
 			currentHelpItemId = 0;
 		}
 	}
-	void HelpMarker(p::StringView text)
+	inline void HelpMarker(p::StringView text)
 	{
-		ImGui::TextDisabled("(?)");
+		TextDisabled("(?)");
 		HelpTooltip(text, 0.f);
 	}
 
-	bool DrawFilterWithHint(
-	    ImGuiTextFilter& filter, const char* label, const char* hint, float width)
+	inline bool DrawFilterWithHint(ImGuiTextFilter& filter, const char* label = "Filter (inc,-exc)",
+	    const char* hint = "...", float width = 0.0f)
 	{
 		if (width != 0.0f)
-			ImGui::SetNextItemWidth(width);
+			SetNextItemWidth(width);
 		bool value_changed =
-		    ImGui::InputTextWithHint(label, hint, filter.InputBuf, IM_ARRAYSIZE(filter.InputBuf));
+		    InputTextWithHint(label, hint, filter.InputBuf, IM_ARRAYSIZE(filter.InputBuf));
 		if (value_changed)
 			filter.Build();
 		return value_changed;
 	}
 
-	#pragma region Style
-	void PushStyleCompact()
+
+#pragma region Style
+	template<p::ColorMode mode>
+	p::TColor<mode> ToHovered(const p::TColor<mode>& color)
 	{
-		ImGuiStyle& style = ImGui::GetStyle();
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-		    ImVec2(style.FramePadding.x, (float)(int)(style.FramePadding.y * 0.60f)));
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
-		    ImVec2(style.ItemSpacing.x, (float)(int)(style.ItemSpacing.y * 0.60f)));
+		return color.Shade(0.1f);
 	}
 
-	void PopStyleCompact()
+	template<p::ColorMode mode>
+	p::TColor<mode> ToDisabled(const p::TColor<mode>& color)
 	{
-		ImGui::PopStyleVar(2);
+		return color.Shade(0.2f);
 	}
-	#pragma endregion Style
-#endif
-};    // namespace ImGui
+
+	inline void PushStyleCompact()
+	{
+		ImGuiStyle& style = GetStyle();
+		PushStyleVar(ImGuiStyleVar_FramePadding,
+		    ImVec2(style.FramePadding.x, (float)(int)(style.FramePadding.y * 0.60f)));
+		PushStyleVar(ImGuiStyleVar_ItemSpacing,
+		    ImVec2(style.ItemSpacing.x, (float)(int)(style.ItemSpacing.y * 0.60f)));
+	}
+	inline void PopStyleCompact()
+	{
+		PopStyleVar(2);
+	}
+	inline void PushFrameBgColor(p::LinearColor color)
+	{
+		PushStyleColor(ImGuiCol_FrameBg, color.Shade(0.3f));
+		PushStyleColor(ImGuiCol_FrameBgHovered, ToHovered(color));
+		PushStyleColor(ImGuiCol_FrameBgActive, color);
+	}
+	inline void PopFrameBgColor()
+	{
+		PopStyleColor(3);
+	}
+	inline void PushButtonColor(p::LinearColor color)
+	{
+		PushStyleColor(ImGuiCol_Button, color);
+		PushStyleColor(ImGuiCol_ButtonHovered, ToHovered(color));
+		PushStyleColor(ImGuiCol_ButtonActive, color.Tint(0.1f));
+	}
+	inline void PopButtonColor()
+	{
+		PopStyleColor(3);
+	}
+	inline void PushHeaderColor(p::LinearColor color)
+	{
+		PushStyleColor(ImGuiCol_Header, color);
+		PushStyleColor(ImGuiCol_HeaderHovered, ToHovered(color));
+		PushStyleColor(ImGuiCol_HeaderActive, color.Tint(0.1f));
+	}
+	inline void PopHeaderColor()
+	{
+		PopStyleColor(3);
+	}
+	inline void PushTextColor(p::LinearColor color)
+	{
+		PushStyleColor(ImGuiCol_Text, color);
+		PushStyleColor(ImGuiCol_TextDisabled, color.Shade(0.15f));
+	}
+	inline void PopTextColor()
+	{
+		PopStyleColor(2);
+	}
+	inline p::LinearColor GetTextColor()
+	{
+		auto color = GetStyleColorVec4(ImGuiCol_TextDisabled);
+		return {color.x, color.y, color.z, color.w};
+	}
+#pragma endregion Style
+}    // namespace ImGui
