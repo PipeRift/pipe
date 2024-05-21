@@ -351,16 +351,18 @@ namespace p
 		i32 lastRemovedIndex = NO_INDEX;
 		DeletionPolicy deletionPolicy;
 
+		TypeId typeId;
 		EntityContext* context = nullptr;
 		TBroadcast<EntityContext&, TView<const Id>> onAdd;
 		TBroadcast<EntityContext&, TView<const Id>> onRemove;
 
 
-		BasePool(EntityContext& ast, DeletionPolicy deletionPolicy, Arena& arena)
+		BasePool(TypeId typeId, EntityContext& ast, DeletionPolicy deletionPolicy, Arena& arena)
 		    : idIndices{arena}
 		    , idList{arena}
 		    , arena{&arena}
 		    , deletionPolicy{deletionPolicy}
+		    , typeId{typeId}
 		    , context{&ast}
 		{
 			BindOnPageAllocated();
@@ -410,6 +412,10 @@ namespace p
 		}
 		virtual TUniquePtr<BasePool> Clone() = 0;
 
+		TypeId GetTypeId() const
+		{
+			return typeId;
+		}
 		EntityContext& GetContext() const
 		{
 			return *context;
@@ -519,7 +525,7 @@ namespace p
 
 	public:
 		TPool(EntityContext& ast, Arena& arena = GetCurrentArena())
-		    : BasePool(ast, DeletionPolicy::InPlace, arena), data{arena}
+		    : BasePool(p::GetTypeId<T>(), ast, DeletionPolicy::InPlace, arena), data{arena}
 		{}
 		TPool(const TPool& other) : BasePool(other), data{*other.arena}
 		{
@@ -1263,6 +1269,7 @@ namespace p
 		using RawComponents = TTypeList<AsComponent<T>...>;
 
 	private:
+		TypeId typeId;
 		EntityContext& context;
 		TTuple<TPool<AsComponent<T>>*...> pools;
 

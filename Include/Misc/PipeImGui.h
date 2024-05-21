@@ -153,6 +153,13 @@ namespace ImGui
 		    details::InputTextCallback, &cbUserData);
 	}
 
+	inline bool ColorButton(const char* desc_id, const p::LinearColor& col,
+	    ImGuiColorEditFlags flags = 0, p::v2 size = {})
+	{
+		return ColorButton(
+		    desc_id, ImVec4{col.r, col.g, col.b, col.a}, flags, ImVec2{size.x, size.y});
+	}
+
 	inline void HelpTooltip(p::StringView text, float delay = 1.f)
 	{
 		static ImGuiID currentHelpItemId = 0;

@@ -56,13 +56,19 @@ namespace p
 
 	struct DebugECSContext
 	{
-		TArray<TypeId> includedTypes;
-		TArray<TypeId> excludedTypes;
-		TArray<TypeId> previewedTypes;
+		TArray<TypeId> includeTypes;
+		TArray<TypeId> excludeTypes;
+		TArray<TypeId> previewTypes;
+
 		ImGuiTextFilter filter;
 		ImGuiTextFilter typeChooserFilter;
 
 		TSet<ECSDebugInspector> inspectors;
+
+		// Updated on tick
+		TArray<const BasePool*> includePools;
+		TArray<const BasePool*> excludePools;
+		TArray<const BasePool*> previewPools;
 	};
 	struct DebugReflectContext
 	{
@@ -108,8 +114,12 @@ namespace p
 		    "No ECS Debug context available! Forgot to call " \
 		    "BeginDebug()?")
 
+
 	static DebugContext* currentContext = nullptr;
 	constexpr LinearColor errorColor    = LinearColor::FromHex(0xD62B2B);
+	constexpr LinearColor includeColor  = LinearColor::FromHex(0x40A832);
+	constexpr LinearColor excludeColor  = LinearColor::FromHex(0xA83632);
+	constexpr LinearColor previewColor  = LinearColor::FromHex(0x3265A8);
 
 	using DrawNodeAccess = TAccessRef<CParent, CChild>;
 	namespace details
@@ -148,9 +158,10 @@ namespace p
 		}
 
 		void DrawPoolsList(StringView id, DebugECSContext& ecsDbg, TArray<TypeId>& poolTypes,
-		    bool canModify = false)
+		    LinearColor color, bool canModify = false)
 		{
 			ImGui::PushID(id);
+			ImGui::PushButtonColor(color);
 
 			String typeName;
 			TArray<TypeId> typesToRemove;
@@ -165,7 +176,7 @@ namespace p
 			}
 			poolTypes.Remove(typesToRemove);
 
-			if (ImGui::Button("+"))
+			if (ImGui::Button(" + "))
 			{
 				ecsDbg.typeChooserFilter.Clear();
 				ImGui::OpenPopup("Select Type##popup");
@@ -175,6 +186,7 @@ namespace p
 			{
 				poolTypes.Add(selectedType);
 			}
+			ImGui::PopButtonColor();
 			ImGui::PopID();
 		}
 
@@ -185,19 +197,22 @@ namespace p
 			ImGui::TableSetupColumn(nullptr, ImGuiTableColumnFlags_WidthFixed);
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
+			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Include");
 			ImGui::TableNextColumn();
-			DrawPoolsList("Include", ecsDbg, ecsDbg.includedTypes, true);
+			DrawPoolsList("Include", ecsDbg, ecsDbg.includeTypes, includeColor, true);
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
+			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Exclude");
 			ImGui::TableNextColumn();
-			DrawPoolsList("Exclude", ecsDbg, ecsDbg.excludedTypes, true);
+			DrawPoolsList("Exclude", ecsDbg, ecsDbg.excludeTypes, excludeColor, true);
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
+			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Preview");
 			ImGui::TableNextColumn();
-			DrawPoolsList("Preview", ecsDbg, ecsDbg.previewedTypes, true);
+			DrawPoolsList("Preview", ecsDbg, ecsDbg.previewTypes, previewColor, true);
 			ImGui::EndTable();
 			ImGui::PopStyleCompact();
 		}
@@ -234,10 +249,12 @@ namespace p
 			p::Strings::FormatTo(inspectLabel, "{}##{}", icon, id);
 			ImGui::PushTextColor(
 			    inspected ? ImGui::GetTextColor() : ImGui::GetTextColor().Translucency(0.3f));
+			ImGui::PushStyleCompact();
 			if (ImGui::Button(inspectLabel.c_str()))
 			{
 				//
 			}
+			ImGui::PopStyleCompact();
 			ImGui::PopTextColor();
 
 
@@ -258,6 +275,22 @@ namespace p
 			}
 
 			ImGui::TableSetColumnIndex(2);    // Previews
+			ImGui::PushStyleCompact();
+			ImGui::PushStyleCompact();
+			static String poolName;
+			ImGui::PushButtonColor(previewColor);
+			for (const BasePool* previewPool : ecsDbg.previewPools)
+			{
+				if (previewPool && previewPool->Has(id))
+				{
+					poolName.assign(GetTypeName(previewPool->GetTypeId()));
+					ImGui::Button(poolName.data());
+					ImGui::SameLine();
+				}
+			}
+			ImGui::PopButtonColor();
+			ImGui::PopStyleCompact();
+			ImGui::PopStyleCompact();
 
 
 			if (hasChildren && open)
@@ -380,9 +413,18 @@ namespace p
 			ImGui::Separator();
 			ImGui::Dummy({0.f, 0.f});
 
+			{    // Cache pools
+				ecsDbg.includePools.Clear(false);
+				ecsDbg.excludePools.Clear(false);
+				ecsDbg.previewPools.Clear(false);
+				GetDebugCtx().GetPools(ecsDbg.includeTypes, ecsDbg.includePools);
+				GetDebugCtx().GetPools(ecsDbg.excludeTypes, ecsDbg.excludePools);
+				GetDebugCtx().GetPools(ecsDbg.previewTypes, ecsDbg.previewPools);
+			}
+
 			TArray<Id> ids;
 			{    // Filtering
-				if (ecsDbg.includedTypes.IsEmpty())
+				if (ecsDbg.includeTypes.IsEmpty())
 				{
 					ids.AddUninitialized(GetDebugCtx().Size());
 					i32 idx = 0;
@@ -393,14 +435,10 @@ namespace p
 				}
 				else
 				{
-					TArray<const BasePool*> includedPools;
-					GetDebugCtx().GetPools(ecsDbg.includedTypes, includedPools);
-					FindAllIdsWith(includedPools, ids);
+					FindAllIdsWith(ecsDbg.includePools, ids);
 				}
 
-				TArray<BasePool*> excludedPools;
-				GetDebugCtx().GetPools(ecsDbg.excludedTypes, excludedPools);
-				for (const BasePool* pool : excludedPools)
+				for (const BasePool* pool : ecsDbg.excludePools)
 				{
 					ExcludeIdsWithStable(pool, ids, false);
 				}

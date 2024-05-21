@@ -302,6 +302,7 @@ namespace p
 	    , idList{*other.arena}
 	    , arena{other.arena}
 	    , deletionPolicy{other.deletionPolicy}
+	    , typeId{other.typeId}
 	    , context{other.context}
 	{
 		BindOnPageAllocated();
@@ -323,6 +324,7 @@ namespace p
 	    , arena{other.arena}
 	    , lastRemovedIndex{Exchange(other.lastRemovedIndex, NO_INDEX)}
 	    , deletionPolicy{other.deletionPolicy}
+	    , typeId{Exchange(other.typeId, {})}
 	    , context{other.context}
 	{}
 	BasePool& BasePool::operator=(BasePool&& other) noexcept
@@ -332,6 +334,7 @@ namespace p
 		arena            = other.arena;
 		lastRemovedIndex = Exchange(other.lastRemovedIndex, NO_INDEX);
 		deletionPolicy   = other.deletionPolicy;
+		typeId           = other.typeId;
 		context          = other.context;
 		return *this;
 	}
