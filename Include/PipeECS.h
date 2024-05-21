@@ -507,7 +507,7 @@ namespace p
 	};
 
 
-	i32 GetSmallestPool(TView<const BasePool*> pools);
+	i32 GetSmallestPool(TView<const BasePool* const> pools);
 
 
 	template<typename T>
@@ -1121,6 +1121,11 @@ namespace p
 		TPool<Mut<T>>& AssurePool() const;
 
 		BasePool* GetPool(TypeId componentId) const;
+		void GetPools(TView<const TypeId> componentIds, TArray<BasePool*>& outPools) const;
+		void GetPools(TView<const TypeId> componentIds, TArray<const BasePool*>& outPools) const
+		{
+			GetPools(componentIds, reinterpret_cast<TArray<BasePool*>&>(outPools));
+		}
 
 		template<typename T>
 		CopyConst<TPool<Mut<T>>, T>* GetPool() const
@@ -1517,13 +1522,12 @@ namespace p
 
 
 	/** Find ids containing a component from a list 'source' into 'results'. */
-	PIPE_API void FindIdsWith(const BasePool* pool, const TView<Id>& source, TArray<Id>& results);
+	PIPE_API void FindIdsWith(const BasePool* pool, TView<const Id> source, TArray<Id>& results);
 	PIPE_API void FindIdsWith(
-	    const TArray<const BasePool*>& pools, const TView<Id>& source, TArray<Id>& results);
+	    TView<const BasePool* const> pools, TView<const Id> source, TArray<Id>& results);
 
 	/** Find ids NOT containing a component from a list 'source' into 'results'. */
-	PIPE_API void FindIdsWithout(
-	    const BasePool* pool, const TView<Id>& source, TArray<Id>& results);
+	PIPE_API void FindIdsWithout(const BasePool* pool, TView<const Id> source, TArray<Id>& results);
 
 
 	/**
@@ -1556,13 +1560,13 @@ namespace p
 
 
 	/** Find all ids containing all of the components */
-	PIPE_API void FindAllIdsWith(TArray<const BasePool*> pools, TArray<Id>& ids);
+	PIPE_API void FindAllIdsWith(TView<const BasePool* const> pools, TArray<Id>& ids);
 
 	/** Find all ids containing any of the components. Includes possible duplicates */
-	PIPE_API void FindAllIdsWithAny(const TArray<const BasePool*>& pools, TArray<Id>& ids);
+	PIPE_API void FindAllIdsWithAny(TView<const BasePool* const> pools, TArray<Id>& ids);
 
 	/** Find all ids containing any of the components. Prevents duplicates */
-	PIPE_API void FindAllIdsWithAnyUnique(const TArray<const BasePool*>& pools, TArray<Id>& ids);
+	PIPE_API void FindAllIdsWithAnyUnique(TView<const BasePool* const> pools, TArray<Id>& ids);
 
 
 	// Templated API
@@ -1788,7 +1792,7 @@ namespace p
 	 * @see FindAllIdsWithAny()
 	 */
 	template<typename... C, typename AccessType>
-	void FindAllIdsWith(const AccessType& access, TArray<Id>& ids)
+	void FindAllIdsWith(const AccessType& access, TArray<Id>& ids) requires(sizeof...(C) >= 1)
 	{
 		FindAllIdsWith({&access.template AssurePool<const C>()...}, ids);
 	}
@@ -1802,7 +1806,7 @@ namespace p
 	 * @see FindAllIdsWithAny()
 	 */
 	template<typename... C, typename AccessType>
-	TArray<Id> FindAllIdsWith(const AccessType& access)
+	TArray<Id> FindAllIdsWith(const AccessType& access) requires(sizeof...(C) >= 1)
 	{
 		TArray<Id> ids;
 		FindAllIdsWith<C...>(access, ids);
@@ -1818,7 +1822,7 @@ namespace p
 	 * @see FindAllIdsWith()
 	 */
 	template<typename... C, typename AccessType>
-	void FindAllIdsWithAny(const AccessType& access, TArray<Id>& ids)
+	void FindAllIdsWithAny(const AccessType& access, TArray<Id>& ids) requires(sizeof...(C) >= 1)
 	{
 		FindAllIdsWithAny({&access.template AssurePool<const C>()...}, ids);
 	}
@@ -1833,6 +1837,7 @@ namespace p
 	 */
 	template<typename... C, typename AccessType>
 	void FindAllIdsWithAnyUnique(const AccessType& access, TArray<Id>& ids)
+	    requires(sizeof...(C) >= 1)
 	{
 		FindAllIdsWithAnyUnique({&access.template AssurePool<const C>()...}, ids);
 	}
@@ -1846,7 +1851,7 @@ namespace p
 	 * @see FindAllIdsWith()
 	 */
 	template<typename... C, typename AccessType>
-	TArray<Id> FindAllIdsWithAny(const AccessType& access)
+	TArray<Id> FindAllIdsWithAny(const AccessType& access) requires(sizeof...(C) >= 1)
 	{
 		TArray<Id> ids;
 		FindAllIdsWithAny<C...>(access, ids);
@@ -1862,7 +1867,7 @@ namespace p
 	 * @see FindAllIdsWithAny()
 	 */
 	template<typename... C, typename AccessType>
-	TArray<Id> FindAllIdsWithAnyUnique(const AccessType& access)
+	TArray<Id> FindAllIdsWithAnyUnique(const AccessType& access) requires(sizeof...(C) >= 1)
 	{
 		TArray<Id> ids;
 		FindAllIdsWithAnyUnique<C...>(access, ids);

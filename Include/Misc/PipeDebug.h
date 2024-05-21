@@ -56,9 +56,9 @@ namespace p
 
 	struct DebugECSContext
 	{
-		TArray<TypeId> includedPools;
-		TArray<TypeId> excludedPools;
-		TArray<TypeId> previewedPools;
+		TArray<TypeId> includedTypes;
+		TArray<TypeId> excludedTypes;
+		TArray<TypeId> previewedTypes;
 		ImGuiTextFilter filter;
 		ImGuiTextFilter typeChooserFilter;
 
@@ -187,17 +187,17 @@ namespace p
 			ImGui::TableNextColumn();
 			ImGui::Text("Include");
 			ImGui::TableNextColumn();
-			DrawPoolsList("Include", ecsDbg, ecsDbg.includedPools, true);
+			DrawPoolsList("Include", ecsDbg, ecsDbg.includedTypes, true);
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 			ImGui::Text("Exclude");
 			ImGui::TableNextColumn();
-			DrawPoolsList("Exclude", ecsDbg, ecsDbg.excludedPools, true);
+			DrawPoolsList("Exclude", ecsDbg, ecsDbg.excludedTypes, true);
 			ImGui::TableNextRow();
 			ImGui::TableNextColumn();
 			ImGui::Text("Preview");
 			ImGui::TableNextColumn();
-			DrawPoolsList("Preview", ecsDbg, ecsDbg.excludedPools, true);
+			DrawPoolsList("Preview", ecsDbg, ecsDbg.previewedTypes, true);
 			ImGui::EndTable();
 			ImGui::PopStyleCompact();
 		}
@@ -380,7 +380,34 @@ namespace p
 			ImGui::Separator();
 			ImGui::Dummy({0.f, 0.f});
 
-			ImGui::Text("%i entities", GetDebugCtx().Size());
+			TArray<Id> ids;
+			{    // Filtering
+				if (ecsDbg.includedTypes.IsEmpty())
+				{
+					ids.AddUninitialized(GetDebugCtx().Size());
+					i32 idx = 0;
+					GetDebugCtx().Each([&ids, &idx](Id id) {
+						ids[idx] = id;
+						++idx;
+					});
+				}
+				else
+				{
+					TArray<const BasePool*> includedPools;
+					GetDebugCtx().GetPools(ecsDbg.includedTypes, includedPools);
+					FindAllIdsWith(includedPools, ids);
+				}
+
+				TArray<BasePool*> excludedPools;
+				GetDebugCtx().GetPools(ecsDbg.excludedTypes, excludedPools);
+				for (const BasePool* pool : excludedPools)
+				{
+					ExcludeIdsWithStable(pool, ids, false);
+				}
+			}
+
+
+			ImGui::Text("%i entities", ids.Size());
 
 			static const ImGuiTableFlags tableFlags =
 			    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
@@ -398,9 +425,16 @@ namespace p
 				ImGui::TableHeadersRow();
 
 				DrawNodeAccess access{GetDebugCtx()};
-				GetDebugCtx().Each([&access, &ecsDbg](Id id) {
-					details::DrawIdInTable(access, id, ecsDbg);
-				});
+
+				ImGuiListClipper clipper;
+				clipper.Begin(ids.Size());
+				while (clipper.Step())
+				{
+					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+					{
+						details::DrawIdInTable(access, ids[i], ecsDbg);
+					}
+				}
 				ImGui::EndTable();
 			}
 			ImGui::End();

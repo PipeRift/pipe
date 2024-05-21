@@ -411,7 +411,7 @@ namespace p
 		};
 	}
 
-	i32 GetSmallestPool(TView<const BasePool*> pools)
+	i32 GetSmallestPool(TView<const BasePool* const> pools)
 	{
 		sizet minSize = Limits<sizet>::Max();
 		i32 minIndex  = NO_INDEX;
@@ -550,6 +550,19 @@ namespace p
 	{
 		const i32 index = pools.FindSorted(PoolInstance{componentId, {}});
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
+	}
+
+	void EntityContext::GetPools(
+	    TView<const TypeId> componentIds, TArray<BasePool*>& outPools) const
+	{
+		for (const TypeId componentId : componentIds)
+		{
+			const i32 index = pools.FindSorted(PoolInstance{componentId, {}});
+			if (index != NO_INDEX)
+			{
+				outPools.Add(pools[index].GetPool());
+			}
+		}
 	}
 
 	void EntityContext::CopyFrom(const EntityContext& other)
@@ -708,7 +721,7 @@ namespace p
 		    shouldShrink);
 	}
 
-	void FindIdsWith(const BasePool* pool, const TView<Id>& source, TArray<Id>& results)
+	void FindIdsWith(const BasePool* pool, TView<const Id> source, TArray<Id>& results)
 	{
 		if (pool)
 		{
@@ -723,7 +736,7 @@ namespace p
 		}
 	}
 	void FindIdsWith(
-	    const TArray<const BasePool*>& pools, const TView<Id>& source, TArray<Id>& results)
+	    TView<const BasePool* const> pools, TView<const Id> source, TArray<Id>& results)
 	{
 		FindIdsWith(pools.First(), source, results);
 		for (i32 i = 1; i < pools.Size(); ++i)
@@ -732,7 +745,7 @@ namespace p
 		}
 	}
 
-	void FindIdsWithout(const BasePool* pool, const TView<Id>& source, TArray<Id>& results)
+	void FindIdsWithout(const BasePool* pool, TView<const Id> source, TArray<Id>& results)
 	{
 		if (pool)
 		{
@@ -822,8 +835,11 @@ namespace p
 		    shouldShrink);
 	}
 
-	void FindAllIdsWith(TArray<const BasePool*> pools, TArray<Id>& ids)
+	void FindAllIdsWith(TView<const BasePool* const> pools, TArray<Id>& ids)
 	{
+		if (pools.IsEmpty())
+			return;
+
 		for (const BasePool* pool : pools)
 		{
 			if (!P_EnsureMsg(pool,
@@ -836,7 +852,6 @@ namespace p
 
 		const i32 smallestIdx        = GetSmallestPool(pools);
 		const BasePool* iterablePool = pools[smallestIdx];
-		pools.RemoveAtSwap(smallestIdx);
 
 		ids.Clear(false);
 		ids.Reserve(iterablePool->Size());
@@ -850,14 +865,21 @@ namespace p
 		// Faster but doesn't exclude invalid ids.
 		// ids.Append(iterablePool->begin(), iterablePool->end());
 
-		for (const BasePool* pool : pools)
+		for (i32 i = 0; i < pools.Size(); ++i)
 		{
-			ExcludeIdsWithout(pool, ids, false);
+			if (i != smallestIdx)
+			{
+				const BasePool* pool = pools[i];
+				ExcludeIdsWithout(pool, ids, false);
+			}
 		}
 	}
 
-	void FindAllIdsWithAny(const TArray<const BasePool*>& pools, TArray<Id>& ids)
+	void FindAllIdsWithAny(TView<const BasePool* const> pools, TArray<Id>& ids)
 	{
+		if (pools.IsEmpty())
+			return;
+
 		for (const BasePool* pool : pools)
 		{
 			if (!P_EnsureMsg(pool,
@@ -875,8 +897,11 @@ namespace p
 		}
 	}
 
-	void FindAllIdsWithAnyUnique(const TArray<const BasePool*>& pools, TArray<Id>& ids)
+	void FindAllIdsWithAnyUnique(TView<const BasePool* const> pools, TArray<Id>& ids)
 	{
+		if (pools.IsEmpty())
+			return;
+
 		i32 maxPossibleSize = 0;
 		for (const BasePool* pool : pools)
 		{
