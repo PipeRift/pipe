@@ -96,6 +96,7 @@ namespace p
 		ImGuiTextFilter filter;
 		TypeFlags typeFlagsFilter = TF_Native | TF_Enum | TF_Struct | TF_Object;
 		String typeFlags;
+		String propertyFlags;
 	};
 
 	void DrawReflection(
@@ -330,7 +331,7 @@ namespace p
 			static p::Tag font{"WorkSans"};
 			if (hasChildren)
 			{
-				open = ImGui::TreeNodeEx(idText.c_str(), ImGuiTreeNodeFlags_SpanFullWidth);
+				open = ImGui::TreeNodeEx(idText.c_str(), ImGuiTreeNodeFlags_SpanAllColumns);
 			}
 			else
 			{
@@ -655,20 +656,14 @@ namespace p
 	#pragma region Reflection
 	namespace details
 	{
-		void DrawType(DebugReflectContext& ctx, TypeId type)
+		void DrawProperty(DebugReflectContext& ctx, TypeId type, const TypeProperty& property)
 		{
-			if (!HasAnyTypeFlags(type, ctx.typeFlagsFilter))
-			{
-				return;
-			}
-
 			static String idText;
 			idText.clear();
 			Strings::FormatTo(idText, "{}", type);
 
-			StringView rawName = GetTypeName(type);
-			if (!ctx.filter.PassFilter(idText.c_str(), idText.c_str() + idText.size())
-			    && !ctx.filter.PassFilter(rawName.data(), rawName.data() + rawName.size()))
+			StringView name = property.name.AsString();
+			if (!ctx.filter.PassFilter(name.data(), name.data() + name.size()))
 			{
 				return;
 			}
@@ -676,7 +671,66 @@ namespace p
 			ImGui::TableNextRow();
 
 			ImGui::TableSetColumnIndex(0);    // Id
-			ImGui::Text(idText);
+
+			ImGui::TableSetColumnIndex(1);    // Name
+			ImGui::Text(name);
+
+			ImGui::TableSetColumnIndex(2);    // Flags
+			ctx.propertyFlags.clear();
+			GetEnumFlagName<PropertyFlags_>(PropertyFlags_(property.flags), ctx.propertyFlags);
+			ImGui::Text(ctx.propertyFlags);
+		}
+
+		void DrawType(DebugReflectContext& ctx, TypeId type)
+		{
+			if (!HasAnyTypeFlags(type, ctx.typeFlagsFilter))
+			{
+				return;
+			}
+
+			const auto& typeProperties = GetTypeProperties(type);
+
+			static String idText;
+			idText.clear();
+			Strings::FormatTo(idText, "{}", type);
+
+			bool passedFilter  = true;
+			StringView rawName = GetTypeName(type);
+			if (!ctx.filter.PassFilter(idText.c_str(), idText.c_str() + idText.size())
+			    && !ctx.filter.PassFilter(rawName.data(), rawName.data() + rawName.size()))
+			{
+				bool anyPropsPassedFilter = false;
+				for (const auto& prop : typeProperties)
+				{
+					StringView name = prop.name.AsString();
+					if (ctx.filter.PassFilter(name.data(), name.data() + name.size()))
+					{
+						anyPropsPassedFilter = true;
+						break;
+					}
+				}
+
+				if (!anyPropsPassedFilter)
+				{
+					return;
+				}
+				passedFilter = false;
+			}
+
+			ImGui::TableNextRow();
+
+			ImGui::TableSetColumnIndex(0);    // Id
+			if (!passedFilter)
+				ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
+			ImGuiTreeNodeFlags treeNodeFlags =
+			    ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+			if (typeProperties.IsEmpty())
+			{
+				treeNodeFlags |= ImGuiTreeNodeFlags_Leaf;
+			}
+			const bool propsOpen = ImGui::TreeNodeEx(idText.data(), treeNodeFlags);
+			if (!passedFilter)
+				ImGui::PopTextColor();
 
 			ImGui::TableSetColumnIndex(1);    // Name
 			StringView ns;
@@ -709,6 +763,14 @@ namespace p
 					ImGui::SameLine(0, 10.f);
 				}
 				ImGui::Text(name);
+			}
+
+			if (propsOpen)
+			{
+				for (const auto& prop : typeProperties)
+				{
+					DrawProperty(ctx, type, prop);
+				}
 			}
 		}
 	}    // namespace details
@@ -751,6 +813,8 @@ namespace p
 			ImGui::TableSetupColumn("Name");
 			ImGui::TableSetupColumn("Flags");
 			ImGui::TableSetupColumn("Parent");
+
+			ImGui::TableSetupScrollFreeze(0, 1);
 			ImGui::TableHeadersRow();
 
 			for (TypeId type : GetRegisteredTypeIds())
