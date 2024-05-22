@@ -26,21 +26,19 @@ namespace p
 	// Definition
 
 #pragma region Inspection
-	bool BeginInspector(const char* name, v2 size = v2{0.f, 0.f});
-	void EndInspector();
-
-
-#pragma endregion Inspection
-
-
-#pragma region ECS
-	struct ECSDebugInspector
+	struct DebugECSInspector
 	{
+	protected:
+		static i32 uniqueIdCounter;
+
+	public:
+		i32 uniqueId      = 0;
 		Id id             = NoId;
 		bool pendingFocus = false;
 		ImGuiTextFilter filter;
 
-		bool operator==(const ECSDebugInspector& other) const
+		DebugECSInspector() : uniqueId{++uniqueIdCounter} {}
+		bool operator==(const DebugECSInspector& other) const
 		{
 			return id == other.id;
 		}
@@ -48,12 +46,18 @@ namespace p
 		{
 			return id == other;
 		}
-		sizet GetHash() const
+		friend sizet GetHash(const DebugECSInspector& inspector)
 		{
-			return p::GetHash(id);
+			return p::GetHash(inspector.id);
 		}
 	};
 
+	bool BeginInspector(const char* name, v2 size = v2{0.f, 0.f});
+	void EndInspector();
+#pragma endregion Inspection
+
+
+#pragma region ECS
 	struct DebugECSContext
 	{
 		TArray<TypeId> includeTypes;
@@ -63,19 +67,40 @@ namespace p
 		ImGuiTextFilter filter;
 		ImGuiTextFilter typeChooserFilter;
 
-		TSet<ECSDebugInspector> inspectors;
+		TArray<DebugECSInspector> inspectors;
 
 		// Updated on tick
 		TArray<const BasePool*> includePools;
 		TArray<const BasePool*> excludePools;
 		TArray<const BasePool*> previewPools;
+
+		// Layout
+		ImGuiID leftDockId  = 0;
+		ImGuiID rightDockId = 0;
 	};
+
+	namespace details
+	{
+		void DrawEntityInspector(StringView label, DebugECSInspector& inspector,
+		    bool* open = nullptr, ImGuiWindowFlags flags = 0);
+	}
+	void DrawIdRegistry(
+	    const char* label = "Id Registry", bool* open = nullptr, ImGuiWindowFlags flags = 0);
+
+#pragma endregion ECS
+
+#pragma region Reflection
 	struct DebugReflectContext
 	{
 		ImGuiTextFilter filter;
 		TypeFlags typeFlagsFilter = TF_Native | TF_Enum | TF_Struct | TF_Object;
 		String typeFlags;
 	};
+
+	void DrawReflection(
+	    const char* label = "Reflection", bool* open = nullptr, ImGuiWindowFlags flags = 0);
+#pragma endregion Reflection
+
 
 	struct DebugContext
 	{
@@ -89,20 +114,8 @@ namespace p
 		DebugContext(EntityContext& ctx) : ctx{&ctx} {}
 	};
 
-
 	bool BeginDebug(DebugContext& Context);
 	void EndDebug();
-
-	void DrawIdRegistry(
-	    const char* label = "Id Registry", bool* open = nullptr, ImGuiWindowFlags flags = 0);
-
-	void DrawReflection(
-	    const char* label = "Reflection", bool* open = nullptr, ImGuiWindowFlags flags = 0);
-
-	void DrawEntityInspector(StringView label, ECSDebugInspector& inspector, bool* open = nullptr,
-	    ImGuiWindowFlags flags = 0);
-	void DrawOpenEntityInspectors(ImGuiWindowFlags flags = 0);
-#pragma endregion ECS
 
 
 	///////////////////////////////////////////////////////////
@@ -115,11 +128,24 @@ namespace p
 		    "BeginDebug()?")
 
 
-	static DebugContext* currentContext = nullptr;
-	constexpr LinearColor errorColor    = LinearColor::FromHex(0xD62B2B);
-	constexpr LinearColor includeColor  = LinearColor::FromHex(0x40A832);
-	constexpr LinearColor excludeColor  = LinearColor::FromHex(0xA83632);
-	constexpr LinearColor previewColor  = LinearColor::FromHex(0x3265A8);
+	static DebugContext* currentContext  = nullptr;
+	constexpr LinearColor errorTextColor = LinearColor::FromHex(0xC13E3A);
+	constexpr LinearColor includeColor   = LinearColor::FromHex(0x40A832);
+	constexpr LinearColor excludeColor   = LinearColor::FromHex(0xA83632);
+	constexpr LinearColor previewColor   = LinearColor::FromHex(0x3265A8);
+
+
+	#pragma region Inspection
+	i32 DebugECSInspector::uniqueIdCounter = 0;
+	#pragma endregion Inspection
+
+
+	#pragma region ECS
+	// For internal use only
+	EntityContext& GetDebugCtx()
+	{
+		return *currentContext->ctx;
+	}
 
 	using DrawNodeAccess = TAccessRef<CParent, CChild>;
 	namespace details
@@ -217,6 +243,19 @@ namespace p
 			ImGui::PopStyleCompact();
 		}
 
+		void InspectEntity(DebugECSContext& ecsDbg, Id id, bool useMainInspector = true)
+		{
+			if (!useMainInspector || ecsDbg.inspectors.IsEmpty() || ImGui::IsKeyDown(ImGuiMod_Ctrl))
+			{
+				ecsDbg.inspectors[ecsDbg.inspectors.Add()].id = id;
+			}
+			else
+			{
+				ecsDbg.inspectors[0].id           = id;
+				ecsDbg.inspectors[0].pendingFocus = true;
+			}
+		}
+
 		void DrawIdInTable(DrawNodeAccess access, Id id, DebugECSContext& ecsDbg)
 		{
 			static p::String idText;
@@ -244,15 +283,39 @@ namespace p
 			static p::String inspectLabel;
 			inspectLabel.clear();
 
-			const bool inspected = ecsDbg.inspectors.Contains(id);
-			const char* icon     = inspected ? " × " : " » ";
+			static DebugECSInspector searchInspector;
+			searchInspector.id   = id;
+			const bool inspected = ecsDbg.inspectors.Contains(searchInspector);
+			const char* icon     = inspected ? " × " : "-->";
 			p::Strings::FormatTo(inspectLabel, "{}##{}", icon, id);
 			ImGui::PushTextColor(
 			    inspected ? ImGui::GetTextColor() : ImGui::GetTextColor().Translucency(0.3f));
 			ImGui::PushStyleCompact();
 			if (ImGui::Button(inspectLabel.c_str()))
 			{
-				//
+				if (inspected)
+				{
+					for (i32 i = 0; i < ecsDbg.inspectors.Size(); ++i)
+					{
+						auto& inspector = ecsDbg.inspectors[i];
+						if (inspector.id == id)
+						{
+							if (i == 0)
+							{
+								inspector.id = {};
+							}
+							else
+							{
+								ecsDbg.inspectors.RemoveAtSwap(i);
+								--i;
+							}
+						}
+					}
+				}
+				else
+				{
+					InspectEntity(ecsDbg, id);
+				}
 			}
 			ImGui::PopStyleCompact();
 			ImGui::PopTextColor();
@@ -303,96 +366,130 @@ namespace p
 				ImGui::TreePop();
 			}
 		}
-		void DrawType(DebugReflectContext& ctx, TypeId type)
+
+		void DrawEntityInspector(
+		    StringView label, DebugECSInspector& inspector, bool* open, ImGuiWindowFlags flags)
 		{
-			if (!HasAnyTypeFlags(type, ctx.typeFlagsFilter))
+			if (!EnsureInsideDebug)
 			{
 				return;
 			}
 
-			static String idText;
-			idText.clear();
-			Strings::FormatTo(idText, "{}", type);
+			const bool valid   = GetDebugCtx().IsValid(inspector.id);
+			const bool removed = GetDebugCtx().WasRemoved(inspector.id);
+			bool clone         = false;
+			Id nextId          = inspector.id;
 
-			StringView rawName = GetTypeName(type);
-			if (!ctx.filter.PassFilter(idText.c_str(), idText.c_str() + idText.size())
-			    && !ctx.filter.PassFilter(rawName.data(), rawName.data() + rawName.size()))
+			String name;
+			Strings::FormatTo(name, "{}: {}{}###inspector{}", label, inspector.id,
+			    removed ? " (removed)" : "", inspector.uniqueId);
+
+			if (inspector.pendingFocus)
 			{
-				return;
+				ImGui::SetNextWindowFocus();
+				inspector.pendingFocus = false;
 			}
 
-			ImGui::TableNextRow();
+			ImGui::SetNextWindowPos(
+			    ImGui::GetCursorScreenPos() + ImVec2(20, 20), ImGuiCond_Appearing);
+			ImGui::SetNextWindowSizeConstraints(ImVec2(300.f, 200.f), ImVec2(800, FLT_MAX));
+			ImGui::Begin(name.c_str(), open, ImGuiWindowFlags_MenuBar);
 
-			ImGui::TableSetColumnIndex(0);    // Id
-			ImGui::Text(idText);
-
-			ImGui::TableSetColumnIndex(1);    // Name
-			StringView ns;
-			StringView name = RemoveNamespace(rawName, ns);
-			if (ns.size() > 0)
+			if (ImGui::BeginMenuBar())
 			{
-				ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
-				ImGui::Text(ns);
-				ImGui::PopTextColor();
-				ImGui::SameLine(0, 10.f);
-			}
-			ImGui::Text(name);
-
-			ImGui::TableSetColumnIndex(2);    // Flags
-			ctx.typeFlags.clear();
-			GetEnumFlagName<TypeFlags_>(TypeFlags_(GetTypeFlags(type)), ctx.typeFlags);
-			ImGui::Text(ctx.typeFlags);
-
-			TypeId parentId = GetTypeParent(type);
-			if (parentId.IsValid())
-			{
-				ImGui::TableSetColumnIndex(3);    // Parent
-				rawName = GetTypeName(parentId);
-				name    = RemoveNamespace(rawName, ns);
-				if (ns.size() > 0)
+				if (ImGui::BeginMenu("Settings"))
 				{
-					ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
-					ImGui::Text(ns);
-					ImGui::PopTextColor();
-					ImGui::SameLine(0, 10.f);
+					ImGui::AlignTextToFramePadding();
+					ImGui::Text("Id");
+					ImGui::SameLine();
+					String asString = ToString(inspector.id);
+					ImGui::SetNextItemWidth(100.f);
+					if (ImGui::InputText("##IdValue", asString,
+					        ImGuiInputTextFlags_EnterReturnsTrue
+					            | ImGuiInputTextFlags_EscapeClearsAll))
+					{
+						nextId = IdFromString(asString, &GetDebugCtx());
+					}
+					ImGui::EndMenu();
 				}
-				ImGui::Text(name);
+				ImGui::DrawFilterWithHint(
+				    inspector.filter, "##filter", "Search components...", -38.f);
+
+				if (ImGui::MenuItem(" -> "))
+				{
+					clone = true;
+				}
+				ImGui::EndMenuBar();
+			}
+
+			if (valid)
+			{
+				String componentLabel;
+				for (const auto& poolInstance : GetDebugCtx().GetPools())
+				{
+					if (!poolInstance.GetPool()->Has(inspector.id))
+					{
+						continue;
+					}
+
+					componentLabel.clear();
+
+					Strings::FormatTo(componentLabel, "{}",
+					    RemoveNamespace(GetTypeName(poolInstance.componentId)));
+
+					if (!inspector.filter.PassFilter(componentLabel.c_str()))
+					{
+						continue;
+					}
+
+					ImGuiTreeNodeFlags headerFlags = ImGuiTreeNodeFlags_DefaultOpen;
+					void* data = poolInstance.GetPool()->TryGetVoid(inspector.id);
+					if (!data)
+					{
+						headerFlags |= ImGuiTreeNodeFlags_Leaf;
+					}
+					if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
+					{
+						// UI::Indent();
+						// auto* dataType = Cast<DataType>(type);
+						// if (data && dataType && UI::BeginInspector("EntityInspector"))
+						//{
+						//	UI::InspectChildrenProperties({data, dataType});
+						//	UI::EndInspector();
+						// }
+						// UI::Unindent();
+					}
+				}
+			}
+			else
+			{
+				ImGui::PushTextColor(errorTextColor);
+				const char* errorMsg = removed ? "Entity was removed" : "Entity is invalid.";
+				auto regionAvail     = ImGui::GetContentRegionAvail();
+				auto textSize =
+				    ImGui::CalcTextSize(errorMsg) + ImGui::GetStyle().FramePadding * 2.0f;
+
+				ImGui::SetCursorPos(ImGui::GetCursorPos() + ((regionAvail - textSize) * 0.5f));
+				ImGui::Text(errorMsg);
+				ImGui::PopTextColor();
+			}
+
+			ImGui::End();
+
+			// Update after drawing
+			if (nextId != inspector.id)
+			{
+				inspector.id = nextId;
+			}
+
+			if (clone)
+			{
+				auto& ecsDbg = currentContext->ecs;
+				InspectEntity(ecsDbg, inspector.id, false);
 			}
 		}
 	}    // namespace details
 
-	// For internal use only
-	EntityContext& GetDebugCtx()
-	{
-		return *currentContext->ctx;
-	}
-
-	bool BeginDebug(DebugContext& context)
-	{
-		if (!P_EnsureMsg(!currentContext,
-		        "Called BeginDebug() but there was a ECS Debug Context already! "
-		        "Forgot to call "
-		        "EndECSDebug()?"))
-		{
-			return false;
-		}
-
-		if (!P_EnsureMsg(context.ctx, "Debug Context does not contain a valid EntityContext."))
-		{
-			return false;
-		}
-
-		currentContext = &context;
-		return true;
-	}
-	void EndDebug()
-	{
-		P_CheckMsg(currentContext,
-		    "Called EndECSDebug() but there was no current ECS Debug Context! Forgot "
-		    "to call "
-		    "BeginDebug()?");
-		currentContext = nullptr;
-	}
 
 	void DrawIdRegistry(const char* label, bool* open, ImGuiWindowFlags flags)
 	{
@@ -403,8 +500,38 @@ namespace p
 
 		auto& ecsDbg = currentContext->ecs;
 
+		bool hasDocking = false;
+	#ifdef IMGUI_HAS_DOCK
+		hasDocking = true;
+		ImGui::Begin(label, open, flags);
+		ImGuiID dockspaceId   = ImGui::GetID("Dockspace");
+		static bool everBuilt = false;
+		if (!everBuilt || ImGui::DockBuilderGetNode(dockspaceId) == 0)
+		{
+			everBuilt = true;
+			ImGui::DockBuilderRemoveNode(dockspaceId);    // Clear any preexisting layouts
+			                                              // associated with the ID we just chose
+			ImGui::DockBuilderAddNode(dockspaceId,
+			    ImGuiDockNodeFlags_KeepAliveOnly);    // Create a new dock node to use
+
+			ImGui::DockBuilderSplitNode(
+			    dockspaceId, ImGuiDir_Right, 0.4f, &ecsDbg.rightDockId, &ecsDbg.leftDockId);
+
+			ImGui::DockBuilderGetNode(ecsDbg.leftDockId)->LocalFlags |=
+			    ImGuiDockNodeFlags_AutoHideTabBar | ImGuiDockNodeFlags_NoUndocking;
+			ImGui::DockBuilderFinish(dockspaceId);
+		}
+		ImGui::DockSpace(dockspaceId);
+		ImGui::End();
+
+		ImGui::SetNextWindowDockID(ecsDbg.leftDockId, ImGuiCond_Always);
+	#endif
+
+
 		ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_FirstUseEver);
-		if (ImGui::Begin(label, open, flags))
+		ImGui::SetNextWindowSizeConstraints(ImVec2(400.f, 500.f), ImVec2(FLT_MAX, FLT_MAX));
+
+		if (ImGui::Begin("Id Registry", hasDocking ? nullptr : open, flags))
 		{
 			ImGui::DrawFilterWithHint(
 			    ecsDbg.filter, "##filter", "Search...", ImGui::GetContentRegionAvail().x);
@@ -477,7 +604,89 @@ namespace p
 			}
 			ImGui::End();
 		}
+
+		{    // DrawECSInspectors
+			String uniqueId;
+			for (i32 i = 0; i < ecsDbg.inspectors.Size(); ++i)
+			{
+				auto& inspector = ecsDbg.inspectors[i];
+	#ifdef IMGUI_HAS_DOCK
+				ImGui::SetNextWindowDockID(ecsDbg.rightDockId, ImGuiCond_Always);
+	#endif
+				bool open = true;
+				details::DrawEntityInspector("Inspect", inspector, i > 0 ? &open : nullptr);
+
+				if (!open)
+				{
+					ecsDbg.inspectors.RemoveAt(i);
+					--i;
+				}
+			}
+		}
 	}
+	#pragma endregion ECS
+
+
+	#pragma region Reflection
+	namespace details
+	{
+		void DrawType(DebugReflectContext& ctx, TypeId type)
+		{
+			if (!HasAnyTypeFlags(type, ctx.typeFlagsFilter))
+			{
+				return;
+			}
+
+			static String idText;
+			idText.clear();
+			Strings::FormatTo(idText, "{}", type);
+
+			StringView rawName = GetTypeName(type);
+			if (!ctx.filter.PassFilter(idText.c_str(), idText.c_str() + idText.size())
+			    && !ctx.filter.PassFilter(rawName.data(), rawName.data() + rawName.size()))
+			{
+				return;
+			}
+
+			ImGui::TableNextRow();
+
+			ImGui::TableSetColumnIndex(0);    // Id
+			ImGui::Text(idText);
+
+			ImGui::TableSetColumnIndex(1);    // Name
+			StringView ns;
+			StringView name = RemoveNamespace(rawName, ns);
+			if (ns.size() > 0)
+			{
+				ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
+				ImGui::Text(ns);
+				ImGui::PopTextColor();
+				ImGui::SameLine(0, 10.f);
+			}
+			ImGui::Text(name);
+
+			ImGui::TableSetColumnIndex(2);    // Flags
+			ctx.typeFlags.clear();
+			GetEnumFlagName<TypeFlags_>(TypeFlags_(GetTypeFlags(type)), ctx.typeFlags);
+			ImGui::Text(ctx.typeFlags);
+
+			TypeId parentId = GetTypeParent(type);
+			if (parentId.IsValid())
+			{
+				ImGui::TableSetColumnIndex(3);    // Parent
+				rawName = GetTypeName(parentId);
+				name    = RemoveNamespace(rawName, ns);
+				if (ns.size() > 0)
+				{
+					ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
+					ImGui::Text(ns);
+					ImGui::PopTextColor();
+					ImGui::SameLine(0, 10.f);
+				}
+				ImGui::Text(name);
+			}
+		}
+	}    // namespace details
 
 	void DrawReflection(const char* label, bool* open, ImGuiWindowFlags flags)
 	{
@@ -528,109 +737,34 @@ namespace p
 		ImGui::EndChild();
 		ImGui::End();
 	}
+	#pragma endregion Reflection
 
-	void DrawEntityInspector(
-	    StringView label, ECSDebugInspector& inspector, bool* open, ImGuiWindowFlags flags)
+
+	bool BeginDebug(DebugContext& context)
 	{
-		if (!EnsureInsideDebug)
+		if (!P_EnsureMsg(!currentContext,
+		        "Called BeginDebug() but there was a ECS Debug Context already! "
+		        "Forgot to call "
+		        "EndECSDebug()?"))
 		{
-			return;
+			return false;
 		}
 
-		const bool valid   = GetDebugCtx().IsValid(inspector.id);
-		const bool removed = GetDebugCtx().WasRemoved(inspector.id);
-		bool clone         = false;
-		Id nextId          = inspector.id;
-
-		String name;
-		Strings::FormatTo(name, "{}: {}{}", label, inspector.id, removed ? " (removed)" : "");
-
-		if (inspector.pendingFocus)
+		if (!P_EnsureMsg(context.ctx, "Debug Context does not contain a valid EntityContext."))
 		{
-			ImGui::SetNextWindowFocus();
-			inspector.pendingFocus = false;
+			return false;
 		}
 
-		ImGui::SetNextWindowPos(ImGui::GetCursorScreenPos() + ImVec2(20, 20), ImGuiCond_Appearing);
-		ImGui::SetNextWindowSizeConstraints(ImVec2(300.f, 200.f), ImVec2(800, FLT_MAX));
-		if (!valid || removed)
-		{
-			ImGui::PushTextColor(errorColor);
-		}
-		ImGui::Begin(name.c_str(), open, ImGuiWindowFlags_MenuBar);
-		if (!valid || removed)
-		{
-			ImGui::PopTextColor();
-		}
-
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("Settings"))
-			{
-				ImGui::AlignTextToFramePadding();
-				ImGui::Text("Id");
-				ImGui::SameLine();
-				String asString = ToString(inspector.id);
-				ImGui::SetNextItemWidth(100.f);
-				if (ImGui::InputText("##IdValue", asString,
-				        ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll))
-				{
-					nextId = IdFromString(asString);
-				}
-				ImGui::EndMenu();
-			}
-			ImGui::DrawFilterWithHint(inspector.filter, "##filter", "Search components...");
-
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - 40.f);
-			if (ImGui::MenuItem("Clone"))
-			{
-				clone = true;
-			}
-			ImGui::EndMenuBar();
-		}
-
-		if (valid)
-		{
-			String componentLabel;
-			for (const auto& poolInstance : GetDebugCtx().GetPools())
-			{
-				if (!poolInstance.GetPool()->Has(inspector.id))
-				{
-					continue;
-				}
-
-				componentLabel.clear();
-
-				Strings::FormatTo(
-				    componentLabel, "{}", RemoveNamespace(GetTypeName(poolInstance.componentId)));
-
-				ImGuiTreeNodeFlags headerFlags = ImGuiTreeNodeFlags_DefaultOpen;
-				void* data                     = poolInstance.GetPool()->TryGetVoid(inspector.id);
-				if (!data)
-				{
-					headerFlags |= ImGuiTreeNodeFlags_Leaf;
-				}
-				if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
-				{
-					// UI::Indent();
-					// auto* dataType = Cast<DataType>(type);
-					// if (data && dataType && UI::BeginInspector("EntityInspector"))
-					//{
-					//	UI::InspectChildrenProperties({data, dataType});
-					//	UI::EndInspector();
-					// }
-					// UI::Unindent();
-				}
-			}
-		}
-		ImGui::End();
-
-		// Update after drawing
-		if (nextId != inspector.id)
-		{
-			inspector.id = nextId;
-		}
+		currentContext = &context;
+		return true;
 	}
-	void DrawOpenEntityInspectors(ImGuiWindowFlags flags) {}
+	void EndDebug()
+	{
+		P_CheckMsg(currentContext,
+		    "Called EndECSDebug() but there was no current ECS Debug Context! Forgot "
+		    "to call "
+		    "BeginDebug()?");
+		currentContext = nullptr;
+	}
 #endif
 };    // namespace p

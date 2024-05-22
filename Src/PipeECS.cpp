@@ -18,7 +18,7 @@ namespace p
 		return Strings::Format("{}:{}", p::GetIdIndex(id), p::GetIdVersion(id));
 	}
 
-	Id IdFromString(String str)
+	Id IdFromString(String str, EntityContext* context)
 	{
 		if (str == "none")
 		{
@@ -33,6 +33,16 @@ namespace p
 			if (idx && v)
 			{
 				return MakeId(*idx, *v);
+			}
+		}
+		else if (context)
+		{
+			if (auto idx = Strings::ToNumber<IdTraits<Id>::Index>(str))
+			{
+				if (auto v = context->GetIdRegistry().GetValidVersion(*idx))
+				{
+					return MakeId(*idx, *v);
+				}
 			}
 		}
 		return NoId;
@@ -123,6 +133,15 @@ namespace p
 		const Index index = GetIdIndex(id);
 		return entities.IsValidIndex(index)
 		    && GetIdVersion(entities[p::i32(index)]) > GetIdVersion(id);
+	}
+
+	TOptional<IdRegistry::Version> IdRegistry::GetValidVersion(IdRegistry::Index idx) const
+	{
+		if (entities.IsValidIndex(idx))
+		{
+			return GetIdVersion(entities[p::i32(idx)]);
+		}
+		return TOptional<Version>{};
 	}
 
 

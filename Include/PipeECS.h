@@ -98,7 +98,13 @@ namespace p
 
 	PIPE_API String ToString(Id id);
 
-	PIPE_API Id IdFromString(String str);
+	/**
+	 * Resolve an entity id from an string.
+	 * The expected format is {}:{} where first is the index and second is the version.
+	 * If a context is provided, providing the index alone as a number will resolve it slast valid
+	 * version
+	 */
+	PIPE_API Id IdFromString(String str, EntityContext* context);
 
 
 	/** IdRegistry tracks the existance and versioning of ids. Used internally by the ECS context */
@@ -129,6 +135,7 @@ namespace p
 		bool Destroy(TView<const Id> ids);
 		bool IsValid(Id id) const;
 		bool WasRemoved(Id id) const;
+		TOptional<Version> GetValidVersion(Index idx) const;
 
 		u32 Size() const
 		{
@@ -1067,6 +1074,10 @@ namespace p
 			return pool && pool->Has(id);
 		}
 
+		const IdRegistry& GetIdRegistry() const
+		{
+			return idRegistry;
+		}
 		bool IsValid(Id id) const;
 		bool WasRemoved(Id id) const;
 		bool IsOrphan(const Id id) const;
