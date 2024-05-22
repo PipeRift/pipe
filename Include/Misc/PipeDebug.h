@@ -110,10 +110,6 @@ namespace p
 		DebugReflectContext reflect;
 
 		EntityContext* ctx = nullptr;
-
-
-		DebugContext() = default;
-		DebugContext(EntityContext& ctx) : ctx{&ctx} {}
 	};
 
 	bool BeginDebug(DebugContext& Context);
