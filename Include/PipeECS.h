@@ -2239,7 +2239,7 @@ struct std::formatter<p::Id> : public std::formatter<p::u64>
 	{
 		if (id == p::NoId)
 		{
-			return std::format_to(ctx.out(), "none");
+			return std::format_to(ctx.out(), "NoId");
 		}
 		return std::vformat_to(
 		    ctx.out(), "{}:{}", std::make_format_args(p::GetIdIndex(id), p::GetIdVersion(id)));

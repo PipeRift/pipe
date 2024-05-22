@@ -37,6 +37,7 @@ namespace p
 		bool pendingFocus = false;
 		ImGuiTextFilter filter;
 
+
 		DebugECSInspector() : uniqueId{++uniqueIdCounter} {}
 		bool operator==(const DebugECSInspector& other) const
 		{
@@ -67,7 +68,7 @@ namespace p
 		ImGuiTextFilter filter;
 		ImGuiTextFilter typeChooserFilter;
 
-		TArray<DebugECSInspector> inspectors;
+		TArray<DebugECSInspector> inspectors{1};
 
 		// Updated on tick
 		TArray<const BasePool*> includePools;
@@ -302,7 +303,7 @@ namespace p
 						{
 							if (i == 0)
 							{
-								inspector.id = {};
+								inspector.id = NoId;
 							}
 							else
 							{
@@ -413,9 +414,9 @@ namespace p
 					ImGui::EndMenu();
 				}
 				ImGui::DrawFilterWithHint(
-				    inspector.filter, "##filter", "Search components...", -38.f);
+				    inspector.filter, "##filter", "Search components...", -36.f);
 
-				if (ImGui::MenuItem(" -> "))
+				if (ImGui::MenuItem("-->"))
 				{
 					clone = true;
 				}
@@ -464,8 +465,13 @@ namespace p
 			else
 			{
 				ImGui::PushTextColor(errorTextColor);
-				const char* errorMsg = removed ? "Entity was removed" : "Entity is invalid.";
-				auto regionAvail     = ImGui::GetContentRegionAvail();
+				const char* errorMsg;
+				if (inspector.id == NoId)
+					errorMsg = "No entity";
+				else
+					errorMsg = removed ? "Removed entity" : "Invalid entity";
+
+				auto regionAvail = ImGui::GetContentRegionAvail();
 				auto textSize =
 				    ImGui::CalcTextSize(errorMsg) + ImGui::GetStyle().FramePadding * 2.0f;
 
@@ -502,36 +508,47 @@ namespace p
 
 		bool hasDocking = false;
 	#ifdef IMGUI_HAS_DOCK
-		hasDocking = true;
-		ImGui::Begin(label, open, flags);
-		ImGuiID dockspaceId   = ImGui::GetID("Dockspace");
-		static bool everBuilt = false;
-		if (!everBuilt || ImGui::DockBuilderGetNode(dockspaceId) == 0)
+		bool refreshingLayout = false;
+		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
-			everBuilt = true;
-			ImGui::DockBuilderRemoveNode(dockspaceId);    // Clear any preexisting layouts
-			                                              // associated with the ID we just chose
-			ImGui::DockBuilderAddNode(dockspaceId,
-			    ImGuiDockNodeFlags_KeepAliveOnly);    // Create a new dock node to use
+			hasDocking = true;
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+			ImGui::Begin(label, open, flags);
+			ImGui::PopStyleVar();
+			{
+				ImGuiID dockspaceId   = ImGui::GetID(label);
+				static bool everBuilt = false;
+				if (!everBuilt || ImGui::DockBuilderGetNode(dockspaceId) == 0)
+				{
+					everBuilt = true;
+					// Clear any preexisting layouts associated with the ID we just chose
+					ImGui::DockBuilderRemoveNode(dockspaceId);
+					ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_KeepAliveOnly);
 
-			ImGui::DockBuilderSplitNode(
-			    dockspaceId, ImGuiDir_Right, 0.4f, &ecsDbg.rightDockId, &ecsDbg.leftDockId);
+					ImGui::DockBuilderSplitNode(
+					    dockspaceId, ImGuiDir_Right, 0.4f, &ecsDbg.rightDockId, &ecsDbg.leftDockId);
 
-			ImGui::DockBuilderGetNode(ecsDbg.leftDockId)->LocalFlags |=
-			    ImGuiDockNodeFlags_AutoHideTabBar | ImGuiDockNodeFlags_NoUndocking;
-			ImGui::DockBuilderFinish(dockspaceId);
+					ImGui::DockBuilderGetNode(ecsDbg.leftDockId)->LocalFlags |=
+					    ImGuiDockNodeFlags_AutoHideTabBar | ImGuiDockNodeFlags_NoUndocking;
+					ImGui::DockBuilderFinish(dockspaceId);
+
+					refreshingLayout = true;
+				}
+				ImGui::DockSpace(dockspaceId, ImVec2{0.f, 0.f}, ImGuiDockNodeFlags_NoSplit);
+				ImGui::End();
+			}
 		}
-		ImGui::DockSpace(dockspaceId);
-		ImGui::End();
 
-		ImGui::SetNextWindowDockID(ecsDbg.leftDockId, ImGuiCond_Always);
+		if (ecsDbg.leftDockId != 0)
+		{
+			ImGui::SetNextWindowDockID(ecsDbg.leftDockId, ImGuiCond_Always);
+		}
 	#endif
-
 
 		ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSizeConstraints(ImVec2(400.f, 500.f), ImVec2(FLT_MAX, FLT_MAX));
 
-		if (ImGui::Begin("Id Registry", hasDocking ? nullptr : open, flags))
+		if (ImGui::Begin(hasDocking ? "Id Registry" : label, hasDocking ? nullptr : open, flags))
 		{
 			ImGui::DrawFilterWithHint(
 			    ecsDbg.filter, "##filter", "Search...", ImGui::GetContentRegionAvail().x);
@@ -579,9 +596,9 @@ namespace p
 			    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
 			if (ImGui::BeginTable("entityTable", 3, tableFlags))
 			{
-				ImGui::TableSetupColumn("View", ImGuiTableColumnFlags_IndentDisable
-				                                    | ImGuiTableColumnFlags_WidthFixed
-				                                    | ImGuiTableColumnFlags_NoResize);    // Inspect
+				ImGui::TableSetupColumn("View",
+				    ImGuiTableColumnFlags_IndentDisable | ImGuiTableColumnFlags_WidthFixed
+				        | ImGuiTableColumnFlags_NoResize);    // Inspect
 				ImGui::TableSetupColumn(
 				    "Id", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_IndentEnable);
 				ImGui::TableSetupColumn("Previews");
@@ -611,18 +628,26 @@ namespace p
 			{
 				auto& inspector = ecsDbg.inspectors[i];
 	#ifdef IMGUI_HAS_DOCK
-				ImGui::SetNextWindowDockID(ecsDbg.rightDockId, ImGuiCond_Always);
+				if (ecsDbg.rightDockId != 0)
+				{
+					ImGui::SetNextWindowDockID(ecsDbg.rightDockId,
+					    refreshingLayout ? ImGuiCond_Always : ImGuiCond_FirstUseEver);
+				}
 	#endif
 				bool open = true;
 				details::DrawEntityInspector("Inspect", inspector, i > 0 ? &open : nullptr);
 
 				if (!open)
 				{
-					ecsDbg.inspectors.RemoveAt(i);
+					ecsDbg.inspectors.RemoveAtSwap(i);
 					--i;
 				}
 			}
 		}
+
+	#ifdef IMGUI_HAS_DOCK
+		refreshingLayout = false;
+	#endif
 	}
 	#pragma endregion ECS
 

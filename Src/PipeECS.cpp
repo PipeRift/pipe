@@ -13,14 +13,14 @@ namespace p
 	{
 		if (id == NoId)
 		{
-			return "none";
+			return "NoId";
 		}
 		return Strings::Format("{}:{}", p::GetIdIndex(id), p::GetIdVersion(id));
 	}
 
 	Id IdFromString(String str, EntityContext* context)
 	{
-		if (str == "none")
+		if (str == "NoId")
 		{
 			return NoId;
 		}
