@@ -548,7 +548,7 @@ namespace p
 
 	BasePool* EntityContext::GetPool(TypeId componentId) const
 	{
-		const i32 index = pools.FindSortedEqual(PoolInstance{componentId, {}});
+		const i32 index = pools.FindSorted(PoolInstance{componentId, {}});
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
 	}
 
@@ -607,21 +607,21 @@ namespace p
 
 	void* EntityContext::TryGetStatic(TypeId typeId)
 	{
-		const i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
+		const i32 index = statics.FindSorted<TypeId, SortLessStatics>(typeId);
 		return index != NO_INDEX ? statics[index].Get() : nullptr;
 	}
 	const void* EntityContext::TryGetStatic(TypeId typeId) const
 	{
-		const i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
+		const i32 index = statics.FindSorted<TypeId, SortLessStatics>(typeId);
 		return index != NO_INDEX ? statics[index].Get() : nullptr;
 	}
 	bool EntityContext::HasStatic(TypeId typeId) const
 	{
-		return statics.FindSortedEqual<TypeId, SortLessStatics>(typeId) != NO_INDEX;
+		return statics.FindSorted<TypeId, SortLessStatics>(typeId) != NO_INDEX;
 	}
 	bool EntityContext::RemoveStatic(TypeId typeId)
 	{
-		const i32 index = statics.FindSortedEqual<TypeId, SortLessStatics>(typeId);
+		const i32 index = statics.FindSorted<TypeId, SortLessStatics>(typeId);
 		if (index != NO_INDEX)
 		{
 			statics.RemoveAt(index);

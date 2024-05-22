@@ -6,7 +6,7 @@
 #include "Pipe/Core/STDFormat.h"
 
 
-namespace p::internal
+namespace p::details
 {
 	PIPE_API void FailedCheckError(
 	    const AnsiChar* expr, const AnsiChar* file, u32 line, const char* text);
@@ -17,22 +17,22 @@ namespace p::internal
 		// Ensure string is not destroyed while using it
 		FailedCheckError(expr, file, line, text.c_str());
 	}
-}    // namespace p::internal
+}    // namespace p::details
 
 
-#define P_EnsureImpl(capture, always, expression, text)                       \
-	(P_LIKELY(!!(expression)) || ([capture]() {                               \
-		static bool executed = false;                                         \
-		if (always || !executed)                                              \
-		{                                                                     \
-			executed = true;                                                  \
-			return true;                                                      \
-		}                                                                     \
-		return false;                                                         \
-	}()) && ([capture]() {                                                    \
-		p::internal::FailedCheckError(#expression, __FILE__, __LINE__, text); \
-		P_DEBUG_PLATFORM_BREAK();                                             \
-		return false;                                                         \
+#define P_EnsureImpl(capture, always, expression, text)                      \
+	(P_LIKELY(!!(expression)) || ([capture]() {                              \
+		static bool executed = false;                                        \
+		if (always || !executed)                                             \
+		{                                                                    \
+			executed = true;                                                 \
+			return true;                                                     \
+		}                                                                    \
+		return false;                                                        \
+	}()) && ([capture]() {                                                   \
+		p::details::FailedCheckError(#expression, __FILE__, __LINE__, text); \
+		P_DEBUG_PLATFORM_BREAK();                                            \
+		return false;                                                        \
 	}()))
 
 #define P_Ensure(expression) P_EnsureImpl(, false, expression, "")
@@ -43,11 +43,11 @@ namespace p::internal
 	#if P_RELEASE
 		#define P_CheckImpl(expression, ...)
 	#else
-		#define P_CheckImpl(expression, text)                                         \
-			if (!(expression)) [[unlikely]]                                           \
-			{                                                                         \
-				p::internal::FailedCheckError(#expression, __FILE__, __LINE__, text); \
-				P_DEBUG_PLATFORM_BREAK();                                             \
+		#define P_CheckImpl(expression, text)                                        \
+			if (!(expression)) [[unlikely]]                                          \
+			{                                                                        \
+				p::details::FailedCheckError(#expression, __FILE__, __LINE__, text); \
+				P_DEBUG_PLATFORM_BREAK();                                            \
 			}
 	#endif
 

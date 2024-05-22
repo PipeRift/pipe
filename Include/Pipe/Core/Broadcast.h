@@ -4,7 +4,10 @@
 #include "Function.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Platform.h"
-#include "Pipe/Reflect/Class.h"
+#include "Pipe/Memory/OwnPtr.h"
+
+// TODO: Remove this dependency
+#include "PipeReflect.h"
 
 
 namespace p
@@ -73,7 +76,7 @@ namespace p
 		};
 		struct PtrListener : public BaseListener
 		{
-			TPtr<Class> instance;
+			Ptr instance;
 		};
 
 		mutable TArray<RawListener> rawListeners{};
@@ -124,9 +127,9 @@ namespace p
 		{
 			if (instance && method)
 			{
-				if constexpr (IsClass<Type>())
+				if constexpr (IsObject<Type>)
 				{
-					return Bind<Type>(instance->Self(), Move(method));
+					return Bind<Type>(instance->AsPtr(), Move(method));
 				}
 				else
 				{

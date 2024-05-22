@@ -7,7 +7,6 @@
 #include "PipeSerializeFwd.h"
 
 
-
 namespace p
 {
 	/**
@@ -285,9 +284,6 @@ namespace p
 		u32 d = 0;
 	};
 
-
-	PIPE_API void Read(Reader& ct, Guid& guid);
-	PIPE_API void Write(Writer& ct, const Guid& guid);
 
 	inline sizet GetHash(const Guid& guid)
 	{

@@ -7,7 +7,7 @@
 #include "Pipe/Core/Log.h"
 #include "Pipe/Files/Paths.h"
 #include "Pipe/Memory/Alloc.h"
-#include "Pipe/Reflect/TypeRegistry.h"
+#include "PipeReflect.h"
 
 
 namespace p
@@ -15,7 +15,7 @@ namespace p
 	void Initialize(StringView logPath)
 	{
 		InitializeMemory();
-		TypeRegistry::Initialize();
+		InitializeReflect();
 		InitLog(logPath);
 	}
 

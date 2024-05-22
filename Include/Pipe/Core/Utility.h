@@ -60,6 +60,11 @@ namespace p
 #endif
 	}
 
+	struct Undefined
+	{
+		explicit Undefined() = default;
+	};
+
 	template<typename Predicate>
 	class ReversePredicate
 	{

@@ -3,7 +3,6 @@
 
 #include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/Reflect/ReflectionTraits.h"
 
 
 namespace p
@@ -32,11 +31,56 @@ namespace p
 
 	inline constexpr StringView RemoveNamespace(StringView value)
 	{
-		const sizet pos = Strings::Find(value, "::", FindDirection::Back);
-		if (pos != StringView::npos)
+		if (value.size() > 0)
 		{
-			return Strings::RemoveFromStart(value, pos + 2);
+			const char* c               = value.data();
+			const char* const end       = c + value.size();
+			const char* const last      = end - 1;
+			const char* lastFoundQuotes = nullptr;
+			while (c < last)    // skip last char
+			{
+				if (*c == ':' && *(c + 1) == ':')
+				{
+					lastFoundQuotes = c;
+					++c;    // Skip one more character for ::
+				}
+				else if (*c == '<')    // Stop on templates
+					break;
+				++c;
+			}
+			if (lastFoundQuotes)
+			{
+				return {lastFoundQuotes + 2, end};
+			}
 		}
+		return value;
+	}
+	inline constexpr StringView RemoveNamespace(StringView value, StringView& outNamespace)
+	{
+		if (value.size() > 0)
+		{
+			const char* c               = value.data();
+			const char* const end       = c + value.size();
+			const char* const last      = end - 1;
+			const char* lastFoundQuotes = nullptr;
+			while (c < last)    // skip last char
+			{
+				if (*c == ':' && *(c + 1) == ':')
+				{
+					lastFoundQuotes = c;
+					++c;    // Skip one more character for ::
+				}
+				else if (*c == '<')    // Stop on templates
+					break;
+				++c;
+			}
+			if (lastFoundQuotes)
+			{
+				outNamespace = {value.data(), lastFoundQuotes};
+				return {lastFoundQuotes + 2, end};
+			}
+		}
+		outNamespace = {};
 		return value;
 	}
 
@@ -49,6 +93,7 @@ namespace p
 
 		typeName = Strings::RemoveFromStart(typeName, "struct ");
 		typeName = Strings::RemoveFromStart(typeName, "class ");
+		typeName = Strings::RemoveFromStart(typeName, "enum ");
 
 		if (!includeNamespaces)
 		{
