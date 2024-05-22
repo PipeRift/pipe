@@ -632,7 +632,7 @@ namespace p
 				if (ecsDbg.rightDockId != 0)
 				{
 					ImGui::SetNextWindowDockID(ecsDbg.rightDockId,
-					    refreshingLayout ? ImGuiCond_Always : ImGuiCond_FirstUseEver);
+					    refreshingLayout ? ImGuiCond_Always : ImGuiCond_Appearing);
 				}
 	#endif
 				bool open = true;
@@ -803,9 +803,9 @@ namespace p
 		ImGui::SameLine();
 		reflectDbg.filter.Draw("##Filter", -100.0f);
 
-		static ImGuiTableFlags tableFlags = ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable
-		                                  | ImGuiTableFlags_Hideable
-		                                  | ImGuiTableFlags_SizingStretchProp;
+		static ImGuiTableFlags tableFlags =
+		    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
+		    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
 		ImGui::BeginChild("typesTableChild", ImVec2(0.f, ImGui::GetContentRegionAvail().y));
 		if (ImGui::BeginTable("typesTable", 4, tableFlags))
 		{
