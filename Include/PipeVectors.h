@@ -993,6 +993,11 @@ namespace p
 		}
 	};
 
+	template<u32 size, Number T>
+	inline p::sizet GetHash(Vec<size, T> v)
+	{
+		return HashBytes(&v, sizeof(Vec<size, T>));
+	}
 
 }    // namespace p
 
