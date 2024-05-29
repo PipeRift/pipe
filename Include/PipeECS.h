@@ -1892,11 +1892,20 @@ namespace p
 		return Move(ids);
 	}
 
-	template<typename C, typename AccessType>
+	template<typename C, typename... OtherC, typename AccessType>
 	Id GetFirstId(const AccessType& access)
 	{
 		const BasePool* pool = access.template GetPool<const C>();
-		return (pool && pool->Size() > 0) ? *pool->begin() : NoId;
+		Id id                = (pool && pool->Size() > 0) ? *pool->begin() : NoId;
+
+		if (([&access, id]() {
+			    const BasePool* pool = access.template GetPool<const OtherC>();
+			    return pool && pool->Has(id);
+		    }() && ...))
+		{
+			return id;
+		}
+		return NoId;
 	}
 
 
