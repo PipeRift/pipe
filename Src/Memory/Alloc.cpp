@@ -16,17 +16,12 @@ namespace p
 
 	void InitializeMemory()
 	{
-		GetHeapStats();
 		GetHeapArena();
 	}
 
 	void* HeapAlloc(sizet size)
 	{
-		void* const ptr = malloc(size);
-#if P_DEBUG
-		GetHeapStats()->Add(ptr, size);
-#endif
-		return ptr;
+		return malloc(size);
 	}
 
 	void* HeapAlloc(sizet size, sizet align)
@@ -37,29 +32,16 @@ namespace p
 #else
 		void* const ptr = aligned_alloc(align, size);
 #endif
-#if P_DEBUG
-		GetHeapStats()->Add(ptr, size);
-#endif
 		return ptr;
 	}
 
 	void* HeapRealloc(void* ptr, sizet size)
 	{
-#if P_DEBUG
-		GetHeapStats()->Remove(ptr);
-#endif
-		ptr = realloc(ptr, size);
-#if P_DEBUG
-		GetHeapStats()->Add(ptr, size);
-#endif
-		return ptr;
+		return realloc(ptr, size);
 	}
 
 	void HeapFree(void* ptr)
 	{
-#if P_DEBUG
-		GetHeapStats()->Remove(ptr);
-#endif
 		free(ptr);
 	}
 
@@ -78,12 +60,6 @@ namespace p
 	void SetCurrentArena(Arena& arena)
 	{
 		currentArena = &arena;
-	}
-
-	MemoryStats* GetHeapStats()
-	{
-		static MemoryStats heapStats;
-		return &heapStats;
 	}
 
 
