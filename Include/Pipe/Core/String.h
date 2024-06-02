@@ -151,6 +151,13 @@ namespace p
 			ConvertTo(source, dest);
 			return Move(dest);
 		}
+		template<typename ToStringType, typename FromChar>
+		inline ToStringType Convert(const TString<FromChar>& source)
+		{
+			ToStringType dest;
+			ConvertTo(TStringView<FromChar>{source}, dest);
+			return Move(dest);
+		}
 	};    // namespace Strings
 
 
