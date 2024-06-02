@@ -10,6 +10,8 @@
 #include "PipeArrays.h"
 #include "PipeMath.h"
 
+#include "Pipe/Memory/MemoryStats.h"
+
 
 namespace p
 {
@@ -21,17 +23,21 @@ namespace p
 	 */
 	class PIPE_API MonoLinearArena : public ChildArena
 	{
+private:
+		MemoryStats stats;
+
 	protected:
 		void* insert = nullptr;
 		sizet count  = 0;
 		Memory::Block block{};
 		bool selfAllocated = false;
 
-
+ 
 	public:
 		MonoLinearArena(Memory::Block externalBlock, Arena& parentArena = GetCurrentArena())
 		    : ChildArena(&parentArena), insert{externalBlock.data}, block{Move(externalBlock)}
 		{
+			stats.name = "Mono Linear Arena";
 			Interface<MonoLinearArena>();
 		}
 		MonoLinearArena(const sizet blockSize = Memory::MB, Arena& parentArena = GetCurrentArena())
@@ -40,6 +46,7 @@ namespace p
 		    , block{insert, blockSize}
 		    , selfAllocated{true}
 		{
+			stats.name = "Mono Linear Arena";
 			Interface<MonoLinearArena>();
 		}
 		~MonoLinearArena() override
@@ -61,11 +68,6 @@ namespace p
 
 		void Release(bool keepIfSelfAllocated = true);
 
-
-		sizet GetUsedMemory() const override
-		{
-			return (u8*)insert - (u8*)block.data;
-		}
 		sizet GetAvailableMemory() const override
 		{
 			return block.size;
@@ -74,6 +76,8 @@ namespace p
 		{
 			outBlocks.Add(block);
 		}
+
+		const MemoryStats* GetStats() const override { return &stats; }
 	};
 
 	// TMonoLinearArena works like a MonoLinearArena but providing a block on the stack as the block

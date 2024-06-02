@@ -11,11 +11,13 @@ namespace p
 {
 	class PIPE_API HeapArena : public Arena
 	{
+	private:
 		MemoryStats stats;
 
 	public:
 		HeapArena()
 		{
+			stats.name = "Heap Arena";
 			Interface<HeapArena>();
 		}
 		~HeapArena() override = default;
@@ -38,10 +40,10 @@ namespace p
 		}
 		void Free(void* ptr, sizet size)
 		{
-			stats.Remove(ptr);
+			stats.Remove(ptr, size);
 			p::HeapFree(ptr);
 		}
 
-		const MemoryStats& GetStats() const { return stats; }
+		const MemoryStats* GetStats() const override { return &stats; }
 	};
 }    // namespace p

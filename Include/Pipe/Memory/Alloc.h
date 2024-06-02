@@ -9,7 +9,6 @@
 namespace p
 {
 	class Arena;
-	struct MemoryStats;
 
 	void InitializeMemory();
 

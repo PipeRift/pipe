@@ -11,4 +11,4 @@ pipe_target_shared_output_directory(PipeTests)
 target_link_libraries(PipeTests PUBLIC Pipe Bandit)
 pipe_add_sanitizers(PipeTests)
 
-add_test(NAME PipeTests COMMAND $<TARGET_FILE:PipeTests>)
+add_test(NAME PipeTests COMMAND $<TARGET_FILE:PipeTests> --reporter=spec)

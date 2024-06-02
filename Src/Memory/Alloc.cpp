@@ -4,7 +4,6 @@
 
 #include "Pipe/Memory/Arena.h"
 #include "Pipe/Memory/HeapArena.h"
-#include "Pipe/Memory/MemoryStats.h"
 
 #include <cstdlib>
 #include <memory>
