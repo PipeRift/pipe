@@ -38,7 +38,7 @@ namespace p
 		{
 			String str;
 			std::vformat_to(
-			    std::back_inserter(str), format, std::make_format_args(p::Forward<Args>(args)...));
+			    std::back_inserter(str), format, std::make_format_args(args...));
 			return Move(str);
 		}
 
@@ -46,7 +46,7 @@ namespace p
 		inline void FormatTo(StringType& buffer, StringView format, Args... args)
 		{
 			std::vformat_to(std::back_inserter(buffer), format,
-			    std::make_format_args(p::Forward<Args>(args)...));
+			    std::make_format_args(args...));
 		}
 
 		// Format an string using a compile time format
