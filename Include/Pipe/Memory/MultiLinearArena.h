@@ -115,11 +115,5 @@ namespace p
 		void Release();
 
 		void Grow(sizet size, sizet align = 0);
-
-		sizet GetUsedMemory() const override
-		{
-			P_NotImplemented;
-			return 0;
-		}
 	};
 }    // namespace p

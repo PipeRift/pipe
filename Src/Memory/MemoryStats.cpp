@@ -58,28 +58,7 @@ namespace p
 
 	MemoryStats::~MemoryStats()
 	{
-		if (allocations.Size() > 0)
-		{
-			TString<TChar> errorMsg;
-			Strings::FormatTo(
-			    errorMsg, "MEMORY LEAKS! {} allocations were not freed!", allocations.Size());
-
-			const auto shown = Min<sizet>(64, allocations.Size());
-			for (i32 i = 0; i < shown; ++i)
-			{
-				PrintAllocationError("", &allocations[i], nullptr);
-#if P_ENABLE_ALLOCATION_STACKS
-				PrintAllocationError("", &allocations[i], &stacks[i]);
-#endif
-			}
-
-			if (shown < allocations.Size())
-			{
-				Strings::FormatTo(
-				    errorMsg, "\n...\n{} more not shown.", allocations.Size() - shown);
-			}
-			std::puts(errorMsg.data());
-		}
+		Release();
 	}
 
 	void MemoryStats::PrintAllocationError(
@@ -123,19 +102,21 @@ namespace p
 #endif
 	}
 
-	void MemoryStats::Remove(void* ptr)
+	void MemoryStats::Remove(void* ptr, sizet size)
 	{
 		if (!ptr)
 		{
 			return;
 		}
 
+		used -= size;
+
 		std::unique_lock lock{mutex};
 		const i32 index = allocations.FindSorted(ptr, SortLessAllocationStats{});
 		if (index != NO_INDEX)
 		{
 			AllocationStats& allocation = allocations[index];
-			used -= allocation.size;
+			P_CheckMsg(size == allocation.size, "Freed an allocation with a different size to which it got allocated with.");
 			freedAllocations.AddSorted(Move(allocation), SortLessAllocationStats{});
 			allocations.RemoveAt(index);
 #if P_ENABLE_ALLOCATION_STACKS
@@ -153,5 +134,36 @@ namespace p
 				std::puts("Freeing a pointer that was never allocated.");
 			}
 		}
+	}
+
+	void MemoryStats::Release()
+	{
+		if (allocations.Size() > 0)
+		{
+			TString<TChar> errorMsg;
+			Strings::FormatTo(
+			    errorMsg, "{}: {} allocations were not freed!", name, allocations.Size());
+
+			const auto shown = Min<sizet>(64, allocations.Size());
+			for (i32 i = 0; i < shown; ++i)
+			{
+				PrintAllocationError("", &allocations[i], nullptr);
+#if P_ENABLE_ALLOCATION_STACKS
+				PrintAllocationError("", &allocations[i], &stacks[i]);
+#endif
+			}
+
+			if (shown < allocations.Size())
+			{
+				Strings::FormatTo(
+				    errorMsg, "\n...\n{} more not shown.", allocations.Size() - shown);
+			}
+			std::puts(errorMsg.data());
+		}
+		allocations.Clear();
+#if P_ENABLE_ALLOCATION_STACKS
+		stacks.Clear();
+#endif // P_ENABLE_ALLOCATION_STACKS
+		used = 0;
 	}
 }    // namespace p

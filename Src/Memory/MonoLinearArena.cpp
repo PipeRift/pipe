@@ -11,20 +11,26 @@ namespace p
 	void* MonoLinearArena::Alloc(sizet size, sizet align)
 	{
 		u8* const allocEnd = (u8*)insert + size + GetAlignmentPadding(insert, align);
+		void* ptr;
 		// Not enough space in current block?
 		if (allocEnd <= block.End()) [[likely]]
 		{
 			insert = allocEnd;
 			++count;
-			return allocEnd - size;    // Fast-path
+			ptr = allocEnd - size;    // Fast-path
 		}
-
-		// Allocation doesn't fit. Allocate in parent arena
-		return GetParentArena().Alloc(size, align);
+		else
+		{
+			// Allocation doesn't fit. Allocate in parent arena
+			ptr = GetParentArena().Alloc(size, align);
+		}
+		stats.Add(ptr, size);
+		return ptr;
 	}
 
 	void MonoLinearArena::Free(void* ptr, sizet size)
 	{
+		stats.Remove(ptr, size);
 		if (ptr >= block.data && ptr < block.End()) [[likely]]
 		{
 			--count;
@@ -41,6 +47,7 @@ namespace p
 
 	void MonoLinearArena::Release(bool keepIfSelfAllocated)
 	{
+		stats.Release();
 		insert = block.data;
 		count  = 0;
 		if (selfAllocated && !keepIfSelfAllocated)
