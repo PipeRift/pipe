@@ -15,6 +15,7 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeDebug requires v1.9
 
 
 #include "Misc/PipeImGui.h"
+#include "Pipe/Core/Map.h"
 #include "Pipe/Core/Set.h"
 #include "PipeArrays.h"
 #include "PipeECS.h"
@@ -26,6 +27,11 @@ namespace p
 	// Definition
 
 #pragma region Inspection
+	struct DebugInspectionContext
+	{
+		using Callback = TFunction<void(StringView label, void* data, TypeId typeId)>;
+		TMap<TypeId, Callback> registeredTypes;
+	};
 	struct DebugECSInspector
 	{
 	protected:
@@ -53,8 +59,30 @@ namespace p
 		}
 	};
 
-	bool BeginInspector(const char* name, v2 size = v2{0.f, 0.f});
-	void EndInspector();
+	bool BeginInspection(const char* name, v2 size = v2{0.f, 0.f});
+	void EndInspection();
+
+	void RegisterTypeInspection(TypeId typeId, const DebugInspectionContext::Callback& callback);
+	template<typename T, typename Callback>
+	void RegisterTypeInspection(Callback callback)
+	{
+		RegisterTypeInspection(GetTypeId<T>(),
+		    [callback](StringView label, void* data, TypeId typeId) {
+			callback(label, *static_cast<T*>(data));
+		});
+	}
+	void RegisterPipeTypeInspections();
+	void RemoveTypeInspection(TypeId typeId);
+
+	void Inspect(StringView label, void* data, TypeId typeId);
+	template<typename T>
+	void Inspect(StringView label, T* data)
+	{
+		Inspect(label, data, GetTypeId<T>());
+	}
+	void InspectSetKeyColumn();
+	void InspectSetKeyAsText(StringView label);
+	void InspectSetValueColumn();
 #pragma endregion Inspection
 
 
@@ -106,10 +134,13 @@ namespace p
 
 	struct DebugContext
 	{
+		DebugInspectionContext inspection;
 		DebugECSContext ecs;
 		DebugReflectContext reflect;
 
 		EntityContext* ctx = nullptr;
+
+		bool initialized = false;
 
 
 		DebugContext() = default;
@@ -124,10 +155,8 @@ namespace p
 	// Implementation
 #ifdef P_DEBUG_IMPLEMENTATION
 
-	#define EnsureInsideDebug                                 \
-		P_EnsureMsg(currentContext,                           \
-		    "No ECS Debug context available! Forgot to call " \
-		    "BeginDebug()?")
+	#define EnsureInsideDebug \
+		P_EnsureMsg(currentContext, "No Debug context available! Forgot to call BeginDebug()?")
 
 
 	static DebugContext* currentContext  = nullptr;
@@ -139,6 +168,112 @@ namespace p
 
 	#pragma region Inspection
 	i32 DebugECSInspector::uniqueIdCounter = 0;
+
+
+	bool BeginInspection(const char* name, v2 size)
+	{
+		return false;
+	}
+	void EndInspection() {}
+
+	void RegisterTypeInspection(TypeId typeId, const DebugInspectionContext::Callback& callback)
+	{
+		if (EnsureInsideDebug)
+		{
+			currentContext->inspection.registeredTypes.Insert(typeId, callback);
+		}
+	}
+	void RegisterPipeTypeInspections()
+	{
+		RegisterTypeInspection<bool>([](StringView label, bool& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::Checkbox("##value", &data);
+		});
+		RegisterTypeInspection<String>([](StringView label, String& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputText("##value", data);
+		});
+		RegisterTypeInspection<StringView>([](StringView label, StringView& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputText("##value", const_cast<char*>(data.data()), data.size(),
+			    ImGuiInputTextFlags_ReadOnly);
+		});
+		RegisterTypeInspection<i8>([](StringView label, i8& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_S8, &data);
+		});
+		RegisterTypeInspection<u8>([](StringView label, u8& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_U8, &data);
+		});
+		RegisterTypeInspection<i32>([](StringView label, i32& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_S32, &data);
+		});
+		RegisterTypeInspection<u32>([](StringView label, u32& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_U32, &data);
+		});
+		RegisterTypeInspection<i64>([](StringView label, i64& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_S64, &data);
+		});
+		RegisterTypeInspection<u64>([](StringView label, u64& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_U64, &data);
+		});
+		RegisterTypeInspection<float>([](StringView label, float& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_Float, &data);
+		});
+		RegisterTypeInspection<double>([](StringView label, double& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_Double, &data);
+		});
+	}
+	void RemoveTypeInspection(TypeId typeId)
+	{
+		if (EnsureInsideDebug)
+		{
+			currentContext->inspection.registeredTypes.Remove(typeId);
+		}
+	}
+	void Inspect(StringView label, void* data, TypeId typeId)
+	{
+		if (!EnsureInsideDebug)
+		{
+			return;
+		}
+
+		if (auto* cb = currentContext->inspection.registeredTypes.Find(typeId))
+		{
+			(*cb)(label, data, typeId);
+		}
+	}
+	void InspectSetKeyColumn()
+	{
+		ImGui::TableSetColumnIndex(0);
+	}
+	void InspectSetKeyAsText(StringView label)
+	{
+		InspectSetKeyColumn();
+		ImGui::TextUnformatted(label.data(), label.data() + label.size());
+	}
+	void InspectSetValueColumn()
+	{
+		ImGui::TableSetColumnIndex(1);
+	}
 	#pragma endregion Inspection
 
 
@@ -426,6 +561,7 @@ namespace p
 
 			if (valid)
 			{
+				BeginInspection("EntityInspector");
 				String componentLabel;
 				for (const auto& poolInstance : GetDebugCtx().GetPools())
 				{
@@ -452,16 +588,15 @@ namespace p
 					}
 					if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
 					{
-						// UI::Indent();
-						// auto* dataType = Cast<DataType>(type);
-						// if (data && dataType && UI::BeginInspector("EntityInspector"))
-						//{
-						//	UI::InspectChildrenProperties({data, dataType});
-						//	UI::EndInspector();
-						// }
-						// UI::Unindent();
+						ImGui::Indent();
+						if (data)
+						{
+							Inspect(componentLabel.c_str(), data, poolInstance.componentId);
+						}
+						ImGui::Unindent();
 					}
 				}
+				EndInspection();
 			}
 			else
 			{
@@ -688,7 +823,7 @@ namespace p
 				return;
 			}
 
-			const auto& typeProperties = GetTypeProperties(type);
+			const auto& typeProperties = GetOwnTypeProperties(type);
 
 			static String idText;
 			idText.clear();
@@ -845,12 +980,18 @@ namespace p
 		}
 
 		currentContext = &context;
+
+		if (!currentContext->initialized)
+		{
+			RegisterPipeTypeInspections();
+			currentContext->initialized = true;
+		}
 		return true;
 	}
 	void EndDebug()
 	{
 		P_CheckMsg(currentContext,
-		    "Called EndECSDebug() but there was no current ECS Debug Context! Forgot "
+		    "Called EndDebug() but there was no current ECS Debug Context! Forgot "
 		    "to call "
 		    "BeginDebug()?");
 		currentContext = nullptr;

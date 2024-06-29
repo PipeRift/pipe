@@ -337,7 +337,10 @@ namespace p
 	PIPE_API TypeFlags GetTypeFlags(TypeId id);
 	PIPE_API bool HasTypeFlags(TypeId id, TypeFlags flags);
 	PIPE_API bool HasAnyTypeFlags(TypeId id, TypeFlags flags);
-	PIPE_API TView<TypeProperty> GetTypeProperties(TypeId id);
+	/// @return the properties of this type, excluding those of the parent (if any)
+	PIPE_API TView<const TypeProperty> GetOwnTypeProperties(TypeId id);
+	/// @return the properties of this type
+	PIPE_API TView<const TypeProperty*> GetTypeProperties(TypeId id);
 	PIPE_API const TypeOps* GetTypeOps(TypeId id);
 	PIPE_API const ObjectTypeOps* GetTypeObjectOps(TypeId id);
 	PIPE_API const ContainerTypeOps* GetTypeContainerOps(TypeId id);

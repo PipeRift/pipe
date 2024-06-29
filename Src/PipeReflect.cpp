@@ -35,7 +35,8 @@ namespace p
 		TArray<sizet> sizes{arena};
 		TArray<StringView> names{arena};
 		TArray<u64> flags{arena};
-		TArray<TArray<TypeProperty>> properties{arena};
+		TArray<TArray<TypeProperty>> ownProperties{arena};
+		TArray<TArray<const TypeProperty*>> allProperties{arena};
 		TArray<const TypeOps*> operations{arena};
 
 		bool initialized = false;
@@ -234,11 +235,17 @@ namespace p
 		return details::HasAnyTypeFlags(registry, details::GetTypeIndex(registry, id), flags);
 	}
 
-	TView<TypeProperty> GetTypeProperties(TypeId id)
+	TView<const TypeProperty> GetOwnTypeProperties(TypeId id)
 	{
 		auto& registry  = GetRegistry();
 		const i32 index = details::GetTypeIndex(registry, id);
-		return index != NO_INDEX ? registry.properties[index] : TView<TypeProperty>{};
+		return index != NO_INDEX ? registry.ownProperties[index] : TView<TypeProperty>{};
+	}
+	TView<const TypeProperty*> GetTypeProperties(TypeId id)
+	{
+		auto& registry  = GetRegistry();
+		const i32 index = details::GetTypeIndex(registry, id);
+		return index != NO_INDEX ? registry.allProperties[index] : TView<const TypeProperty*>{};
 	}
 
 	const TypeOps* GetTypeOps(TypeId id)
@@ -288,7 +295,8 @@ namespace p
 		registry.sizes.Insert(index);
 		registry.names.Insert(index);
 		registry.flags.Insert(index);
-		registry.properties.Insert(index);
+		registry.ownProperties.Insert(index);
+		registry.allProperties.Insert(index);
 		registry.operations.Insert(index);
 		return true;
 	}
@@ -311,7 +319,15 @@ namespace p
 	void SetTypeParent(TypeId parentId)
 	{
 		P_CheckEditingType;
-		GetRegistry().parentIds[currentEdit.index] = parentId;
+		auto& reg                        = GetRegistry();
+		reg.parentIds[currentEdit.index] = parentId;
+
+		// Assign properties from parent
+		const i32 parentIdx = details::GetTypeIndex(reg, parentId);
+		if (parentIdx != NO_INDEX)
+		{
+			reg.allProperties[currentEdit.index].Append(reg.allProperties[parentIdx]);
+		}
 	}
 
 	void SetTypeSize(sizet size)
@@ -347,8 +363,9 @@ namespace p
 	void AddTypeProperty(const TypeProperty& property)
 	{
 		P_CheckEditingType;
-		auto& properties = GetRegistry().properties[currentEdit.index];
-		properties.Add(property);
+		auto& ownProperties = GetRegistry().ownProperties[currentEdit.index];
+		const auto& prop    = ownProperties.AddRef(property);
+		GetRegistry().allProperties[currentEdit.index].Add(&prop);
 	}
 
 	void SetTypeOps(const TypeOps* operations)
