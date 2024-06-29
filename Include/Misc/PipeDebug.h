@@ -104,6 +104,7 @@ namespace p
 		TArray<const BasePool*> previewPools;
 
 		// Layout
+		bool resetLayout    = true;
 		ImGuiID leftDockId  = 0;
 		ImGuiID rightDockId = 0;
 	};
@@ -649,42 +650,56 @@ namespace p
 		{
 			hasDocking = true;
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-			ImGui::Begin(label, open, flags);
+			ImGui::Begin(label, open, flags | ImGuiWindowFlags_MenuBar);
 			ImGui::PopStyleVar();
+
+			if (ImGui::BeginMenuBar())
 			{
-				ImGuiID dockspaceId   = ImGui::GetID(label);
-				static bool everBuilt = false;
-				if (!everBuilt || ImGui::DockBuilderGetNode(dockspaceId) == 0)
+				if (ImGui::BeginMenu("Settings"))
 				{
-					everBuilt = true;
-					// Clear any preexisting layouts associated with the ID we just chose
-					ImGui::DockBuilderRemoveNode(dockspaceId);
-					ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_KeepAliveOnly);
-
-					ImGui::DockBuilderSplitNode(
-					    dockspaceId, ImGuiDir_Right, 0.4f, &ecsDbg.rightDockId, &ecsDbg.leftDockId);
-
-					ImGui::DockBuilderGetNode(ecsDbg.leftDockId)->LocalFlags |=
-					    ImGuiDockNodeFlags_AutoHideTabBar | ImGuiDockNodeFlags_NoUndocking;
-					ImGui::DockBuilderFinish(dockspaceId);
-
-					refreshingLayout = true;
+					if (ImGui::MenuItem("Reset Layout"))
+					{
+						ecsDbg.resetLayout = true;
+					}
+					ImGui::EndMenu();
 				}
-				ImGui::DockSpace(dockspaceId, ImVec2{0.f, 0.f}, ImGuiDockNodeFlags_NoSplit);
-				ImGui::End();
+				ImGui::EndMenuBar();
 			}
+
+			ImGuiID dockspaceId = ImGui::GetID(label);
+			if (ecsDbg.resetLayout || ImGui::DockBuilderGetNode(dockspaceId) == 0)
+			{
+				ecsDbg.resetLayout = false;
+				// Clear any preexisting layouts associated with the ID we just chose
+				ImGui::DockBuilderRemoveNode(dockspaceId);
+				ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_KeepAliveOnly);
+
+				ImGui::DockBuilderSplitNode(
+				    dockspaceId, ImGuiDir_Right, 0.4f, &ecsDbg.rightDockId, &ecsDbg.leftDockId);
+
+				ImGui::DockBuilderGetNode(ecsDbg.leftDockId)->LocalFlags |=
+				    ImGuiDockNodeFlags_AutoHideTabBar;
+				ImGui::DockBuilderFinish(dockspaceId);
+
+				refreshingLayout = true;
+			}
+			ImGui::DockSpace(dockspaceId, ImVec2{0.f, 0.f});
+			ImGui::End();
 		}
 
 		if (ecsDbg.leftDockId != 0)
 		{
-			ImGui::SetNextWindowDockID(ecsDbg.leftDockId, ImGuiCond_Always);
+			ImGui::SetNextWindowDockID(
+			    ecsDbg.leftDockId, refreshingLayout ? ImGuiCond_Always : ImGuiCond_Appearing);
 		}
 	#endif
 
 		ImGui::SetNextWindowSize(ImVec2(400, 700), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowSizeConstraints(ImVec2(400.f, 500.f), ImVec2(FLT_MAX, FLT_MAX));
 
-		if (ImGui::Begin(hasDocking ? "Id Registry" : label, hasDocking ? nullptr : open, flags))
+		const auto idRegistryFlags = hasDocking ? flags : 0;
+		if (ImGui::Begin(
+		        hasDocking ? "Id Registry" : label, hasDocking ? nullptr : open, idRegistryFlags))
 		{
 			ImGui::DrawFilterWithHint(
 			    ecsDbg.filter, "##filter", "Search...", ImGui::GetContentRegionAvail().x);
@@ -770,10 +785,11 @@ namespace p
 					    refreshingLayout ? ImGuiCond_Always : ImGuiCond_Appearing);
 				}
 	#endif
-				bool open = true;
-				details::DrawEntityInspector("Inspect", inspector, i > 0 ? &open : nullptr);
+				bool inspectorOpen = true;
+				details::DrawEntityInspector(
+				    "Inspect", inspector, i > 0 ? &inspectorOpen : nullptr);
 
-				if (!open)
+				if (!inspectorOpen)
 				{
 					ecsDbg.inspectors.RemoveAtSwap(i);
 					--i;

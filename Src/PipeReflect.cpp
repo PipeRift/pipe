@@ -55,7 +55,7 @@ namespace p
 		static TypeRegistry registry;
 		return registry;
 	}
-	TArray<void (*)()>& GetRefectInitCallacks()
+	TArray<void (*)()>& GetRefectInitCallbacks()
 	{
 		static TArray<void (*)()> onInitCallbacks{GetHeapArena()};
 		return onInitCallbacks;
@@ -155,7 +155,7 @@ namespace p
 			return false;
 		}
 
-		for (auto callback : GetRefectInitCallacks())
+		for (auto callback : GetRefectInitCallbacks())
 		{
 			if (callback)
 			{
@@ -170,7 +170,7 @@ namespace p
 	{
 		if (callback)
 		{
-			GetRefectInitCallacks().Add(callback);
+			GetRefectInitCallbacks().Add(callback);
 		}
 	}
 
