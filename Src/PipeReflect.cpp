@@ -268,7 +268,7 @@ namespace p
 	{
 		auto& registry  = GetRegistry();
 		const i32 index = details::GetTypeIndex(registry, id);
-		return (index != NO_INDEX && (registry.flags[index] & TF_Object) == TF_Object)
+		return (index != NO_INDEX && (registry.flags[index] & TF_Container) == TF_Container)
 		         ? static_cast<const ContainerTypeOps*>(registry.operations[index])
 		         : nullptr;
 	}
@@ -309,11 +309,33 @@ namespace p
 		{
 			return;
 		}
+
+		auto& reg = GetRegistry();
+
+		{    // Cache inherited properties
+			auto& allProperties = reg.allProperties[currentEdit.index];
+			allProperties.Clear(false);
+
+			// Assign properties from parent
+			const i32 parentIdx = details::GetTypeIndex(reg, reg.parentIds[currentEdit.index]);
+			if (parentIdx != NO_INDEX)
+			{
+				allProperties.Append(reg.allProperties[parentIdx]);
+			}
+			// Assign own properties
+			const auto& ownProperties = reg.ownProperties[currentEdit.index];
+			allProperties.ReserveMore(ownProperties.Size());
+			for (auto& ownProp : ownProperties)
+			{
+				allProperties.Add(&ownProp);
+			}
+		}
+
 		currentEdit.typeStack.RemoveLast();
 		// Apply the index (that could have changed)
 		currentEdit.index = currentEdit.typeStack.IsEmpty()
 		                      ? NO_INDEX
-		                      : details::GetTypeIndex(GetRegistry(), currentEdit.typeStack.Last());
+		                      : details::GetTypeIndex(reg, currentEdit.typeStack.Last());
 	}
 
 	void SetTypeParent(TypeId parentId)
@@ -321,13 +343,6 @@ namespace p
 		P_CheckEditingType;
 		auto& reg                        = GetRegistry();
 		reg.parentIds[currentEdit.index] = parentId;
-
-		// Assign properties from parent
-		const i32 parentIdx = details::GetTypeIndex(reg, parentId);
-		if (parentIdx != NO_INDEX)
-		{
-			reg.allProperties[currentEdit.index].Append(reg.allProperties[parentIdx]);
-		}
 	}
 
 	void SetTypeSize(sizet size)
@@ -364,8 +379,7 @@ namespace p
 	{
 		P_CheckEditingType;
 		auto& ownProperties = GetRegistry().ownProperties[currentEdit.index];
-		const auto& prop    = ownProperties.AddRef(property);
-		GetRegistry().allProperties[currentEdit.index].Add(&prop);
+		ownProperties.Add(property);
 	}
 
 	void SetTypeOps(const TypeOps* operations)

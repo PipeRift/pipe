@@ -15,6 +15,7 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeDebug requires v1.9
 
 
 #include "Misc/PipeImGui.h"
+#include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Map.h"
 #include "Pipe/Core/Set.h"
 #include "PipeArrays.h"
@@ -59,7 +60,7 @@ namespace p
 		}
 	};
 
-	bool BeginInspection(const char* name, v2 size = v2{0.f, 0.f});
+	bool BeginInspection(const char* label, v2 size = v2{0.f, 0.f});
 	void EndInspection();
 
 	void RegisterTypeInspection(TypeId typeId, const DebugInspectionContext::Callback& callback);
@@ -83,6 +84,8 @@ namespace p
 	void InspectSetKeyColumn();
 	void InspectSetKeyAsText(StringView label);
 	void InspectSetValueColumn();
+	bool InspectBeginCategory(p::StringView name, bool isLeaf);
+	void InspectEndCategory();
 #pragma endregion Inspection
 
 
@@ -159,7 +162,6 @@ namespace p
 	#define EnsureInsideDebug \
 		P_EnsureMsg(currentContext, "No Debug context available! Forgot to call BeginDebug()?")
 
-
 	static DebugContext* currentContext  = nullptr;
 	constexpr LinearColor errorTextColor = LinearColor::FromHex(0xC13E3A);
 	constexpr LinearColor includeColor   = LinearColor::FromHex(0x40A832);
@@ -167,15 +169,33 @@ namespace p
 	constexpr LinearColor previewColor   = LinearColor::FromHex(0x3265A8);
 
 
+	// For internal use only
+	EntityContext& GetDebugCtx()
+	{
+		return *currentContext->ctx;
+	}
+
+
 	#pragma region Inspection
 	i32 DebugECSInspector::uniqueIdCounter = 0;
 
 
-	bool BeginInspection(const char* name, v2 size)
+	bool BeginInspection(const char* label, v2 size)
 	{
+		const ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp
+		                            | ImGuiTableFlags_PadOuterX;
+		if (ImGui::BeginTable(label, 2, flags, size))
+		{
+			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.5f);
+			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			return true;
+		}
 		return false;
 	}
-	void EndInspection() {}
+	void EndInspection()
+	{
+		ImGui::EndTable();
+	}
 
 	void RegisterTypeInspection(TypeId typeId, const DebugInspectionContext::Callback& callback)
 	{
@@ -201,6 +221,16 @@ namespace p
 			InspectSetValueColumn();
 			ImGui::InputText("##value", const_cast<char*>(data.data()), data.size(),
 			    ImGuiInputTextFlags_ReadOnly);
+		});
+		RegisterTypeInspection<Tag>([](StringView label, Tag& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			static String str;
+			str = data.AsString();
+			if (ImGui::InputText("##value", str))
+			{
+				data = Tag{str};
+			}
 		});
 		RegisterTypeInspection<i8>([](StringView label, i8& data) {
 			InspectSetKeyAsText(label);
@@ -242,6 +272,16 @@ namespace p
 			InspectSetValueColumn();
 			ImGui::InputScalar("##value", ImGuiDataType_Double, &data);
 		});
+		RegisterTypeInspection<Id>([](StringView label, Id& data) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			String asString = ToString(data);
+			ImGui::SetNextItemWidth(100.f);
+			if (ImGui::InputText("##IdValue", asString, ImGuiInputTextFlags_EscapeClearsAll))
+			{
+				data = IdFromString(asString, &GetDebugCtx());
+			}
+		});
 	}
 	void RemoveTypeInspection(TypeId typeId)
 	{
@@ -252,15 +292,75 @@ namespace p
 	}
 	void Inspect(StringView label, void* data, TypeId typeId)
 	{
-		if (!EnsureInsideDebug)
+		if (!EnsureInsideDebug || !data)
 		{
 			return;
 		}
-
+		ImGui::TableNextRow();
+		ImGui::PushID(data);
 		if (auto* cb = currentContext->inspection.registeredTypes.Find(typeId))
 		{
 			(*cb)(label, data, typeId);
 		}
+		else if (p::HasTypeFlags(typeId, p::TF_Container))
+		{
+			const auto* ops = GetTypeContainerOps(typeId);
+			P_Check(ops);
+			i32 size        = ops->GetSize(data);
+			const bool open = InspectBeginCategory(label, size <= 0);
+
+			InspectSetValueColumn();
+			String tmpLabel;
+			Strings::FormatTo(tmpLabel, "{} items", size);
+			ImGui::Text(tmpLabel);
+			{    // Buttons
+				// Ignore indent on buttons
+				const float widthAvailable =
+				    ImGui::GetContentRegionAvail().x + ImGui::GetCurrentWindow()->DC.Indent.x;
+				ImGui::SameLine(widthAvailable - 50.f);
+				ImGui::PushStyleCompact();
+				if (ImGui::Button("+##AddItem", p::v2(20.f, 18.f)))
+				{
+					ops->AddItem(data, nullptr);
+				}
+				ImGui::HelpTooltip("Add: Add one item");
+				ImGui::SameLine();
+				if (ImGui::Button("Clr##Empty", p::v2(20.f, 18.f)))
+				{
+					ops->Clear(data);
+				}
+				ImGui::HelpTooltip("Clear: Remove all items of the array");
+				ImGui::PopStyleCompact();
+			}
+
+			if (open)
+			{
+				size = ops->GetSize(data);    // Update size
+				for (i32 i = 0; i < size; ++i)
+				{
+					tmpLabel.clear();
+					Strings::FormatTo(tmpLabel, "Index {}", i);
+					Inspect(tmpLabel, ops->GetItem(data, i), ops->itemType);
+				}
+				InspectEndCategory();
+			}
+		}
+		else if (p::HasTypeFlags(typeId, p::TF_Struct))
+		{
+			auto props = GetTypeProperties(typeId);
+			if (InspectBeginCategory(label, props.Size() <= 0))
+			{
+				for (const auto* prop : props)
+				{
+					ImGui::BeginDisabled(!prop->HasFlag(PF_Edit));
+					Inspect(prop->name.AsString(), prop->access(data), prop->typeId);
+					ImGui::EndDisabled();
+				}
+				InspectEndCategory();
+			}
+		}
+
+		ImGui::PopID();
 	}
 	void InspectSetKeyColumn()
 	{
@@ -269,22 +369,33 @@ namespace p
 	void InspectSetKeyAsText(StringView label)
 	{
 		InspectSetKeyColumn();
+		ImGui::AlignTextToFramePadding();
 		ImGui::TextUnformatted(label.data(), label.data() + label.size());
 	}
 	void InspectSetValueColumn()
 	{
 		ImGui::TableSetColumnIndex(1);
 	}
+	bool InspectBeginCategory(p::StringView name, bool isLeaf)
+	{
+		InspectSetKeyColumn();
+		ImGui::AlignTextToFramePadding();
+		ImGui::Unindent();
+		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_AllowItemOverlap
+		                               | ImGuiTreeNodeFlags_SpanAllColumns
+		                               | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0);
+		bool bOpen = ImGui::TreeNodeEx(name.data(), flags);
+		ImGui::Indent();
+		return bOpen;
+	}
+	void InspectEndCategory()
+	{
+		ImGui::TreePop();
+	}
 	#pragma endregion Inspection
 
 
 	#pragma region ECS
-	// For internal use only
-	EntityContext& GetDebugCtx()
-	{
-		return *currentContext->ctx;
-	}
-
 	using DrawNodeAccess = TAccessRef<CParent, CChild>;
 	namespace details
 	{
@@ -560,9 +671,8 @@ namespace p
 				ImGui::EndMenuBar();
 			}
 
-			if (valid)
+			if (valid && BeginInspection("##Inspector"))
 			{
-				BeginInspection("EntityInspector");
 				String componentLabel;
 				for (const auto& poolInstance : GetDebugCtx().GetPools())
 				{
@@ -581,18 +691,27 @@ namespace p
 						continue;
 					}
 
-					ImGuiTreeNodeFlags headerFlags = ImGuiTreeNodeFlags_DefaultOpen;
+					ImGuiTreeNodeFlags headerFlags =
+					    ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAllColumns;
 					void* data = poolInstance.GetPool()->TryGetVoid(inspector.id);
 					if (!data)
 					{
 						headerFlags |= ImGuiTreeNodeFlags_Leaf;
 					}
+					ImGui::TableNextRow();
+					InspectSetKeyColumn();
 					if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
 					{
 						ImGui::Indent();
 						if (data)
 						{
-							Inspect(componentLabel.c_str(), data, poolInstance.componentId);
+							auto props = GetTypeProperties(poolInstance.componentId);
+							for (const auto* prop : props)
+							{
+								ImGui::BeginDisabled(!prop->HasFlag(PF_Edit));
+								Inspect(prop->name.AsString(), prop->access(data), prop->typeId);
+								ImGui::EndDisabled();
+							}
 						}
 						ImGui::Unindent();
 					}

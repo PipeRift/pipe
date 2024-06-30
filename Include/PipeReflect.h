@@ -47,7 +47,7 @@ namespace p
 	template<typename T>
 	consteval bool HasExternalBuildType()
 	{
-		return requires(const T v) { BuildType(&v); };
+		return IsArray<T>() || requires(const T v) { BuildType(&v); };
 	}
 
 	template<typename T>
@@ -301,6 +301,7 @@ namespace p
 		using RemoveItemFunc = void(void*, i32);
 		using ClearFunc      = void(void*);
 
+		TypeId itemType            = TypeId::None();
 		GetDataFunc* getData       = nullptr;
 		GetSizeFunc* getSize       = nullptr;
 		GetItemFunc* getItem       = nullptr;
@@ -379,11 +380,11 @@ namespace p
 	 */
 
 	// Resolve the right BuildType function to call
-	template<typename T>
+	/*template<typename T>
 	void BuildType(const T*) requires(HasMemberBuildType<T>())
 	{
-		T::BuildType();
-	}
+	    T::BuildType();
+	}*/
 
 
 	template<typename T>
@@ -758,42 +759,43 @@ P_NATIVE_NAMED(p::Color, "Color")
 
 // Build array types
 template<typename T>
-inline void BuildType(const p::TArray<T>*)
+inline void BuildType(const T*) requires(p::IsArray<T>())
 {
 	// clang-format off
 	static p::ContainerTypeOps ops{
+		.itemType = p::RegisterTypeId<typename T::ItemType>(),
 		.getData = [](void* data) {
-			return (void*)static_cast<p::TArray<T>*>(data)->Data();
+			return (void*)static_cast<T*>(data)->Data();
 		},
 	    .getSize = [](void* data) {
-			return static_cast<p::TArray<T>*>(data)->Size();
+			return static_cast<T*>(data)->Size();
 	    },
 	    .getItem = [](void* data, p::i32 index) {
-			return (void*)(static_cast<p::TArray<T>*>(data)->Data() + index);
+			return (void*)(static_cast<T*>(data)->Data() + index);
 	    },
 	    .addItem = [](void* data, void* item) {
 			if (item)
 			{
-				auto& itemRef = *static_cast<T*>(item);
-				if constexpr (p::IsCopyAssignable<T>)
+				auto& itemRef = *static_cast<typename T::ItemType*>(item);
+				if constexpr (p::IsCopyAssignable<typename T::ItemType>)
 				{
-					static_cast<p::TArray<T>*>(data)->Add(itemRef);
+					static_cast<T*>(data)->Add(itemRef);
 				}
 				else
 				{
-					static_cast<p::TArray<T>*>(data)->Add(Move(itemRef));
+					static_cast<T*>(data)->Add(p::Move(itemRef));
 				}
 			}
 			else
 			{
-				static_cast<p::TArray<T>*>(data)->Add();
+				static_cast<T*>(data)->Add();
 			}
 	    },
 	    .removeItem = [](void* data, p::i32 index) {
-			static_cast<p::TArray<T>*>(data)->RemoveAt(index);
+			static_cast<T*>(data)->RemoveAt(index);
 	    },
 	    .clear = [](void* data) {
-		    static_cast<p::TArray<T>*>(data)->Clear();
+		    static_cast<T*>(data)->Clear();
 	    }
 	};
 	// clang-format on
