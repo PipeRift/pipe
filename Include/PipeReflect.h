@@ -380,11 +380,11 @@ namespace p
 	 */
 
 	// Resolve the right BuildType function to call
-	/*template<typename T>
+	template<typename T>
 	void BuildType(const T*) requires(HasMemberBuildType<T>())
 	{
-	    T::BuildType();
-	}*/
+		T::BuildType();
+	}
 
 
 	template<typename T>
@@ -518,7 +518,7 @@ namespace p
 				{
 					T::BuildType();
 				}
-				else
+				else if constexpr (HasExternalBuildType<T>())
 				{
 					BuildType((const T*)nullptr);
 				}
