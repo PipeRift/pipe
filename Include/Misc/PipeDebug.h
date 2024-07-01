@@ -28,10 +28,30 @@ namespace p
 	// Definition
 
 #pragma region Inspection
+	struct TypeInspection
+	{
+		using RowCallback =
+		    std::function<void(StringView label, void* data, TypeId typeId, bool& open)>;
+		using ChildrenCallback = std::function<void(void* data, TypeId typeId)>;
+		template<typename T>
+		using TRowCallback = std::function<void(StringView label, T& data, bool& open)>;
+		template<typename T>
+		using TChildrenCallback = std::function<void(T& data)>;
+
+		RowCallback onDrawRow;
+		ChildrenCallback onDrawChildren;
+	};
+
 	struct DebugInspectionContext
 	{
-		using Callback = TFunction<void(StringView label, void* data, TypeId typeId)>;
-		TMap<TypeId, Callback> registeredTypes;
+		struct PropStack
+		{
+			TypeId typeId;
+			void* data = nullptr;
+			i32 index  = NO_INDEX;
+		};
+		TMap<TypeId, TypeInspection> registeredTypes;
+		TArray<PropStack> propStack;
 	};
 	struct DebugECSInspector
 	{
@@ -63,14 +83,23 @@ namespace p
 	bool BeginInspection(const char* label, v2 size = v2{0.f, 0.f});
 	void EndInspection();
 
-	void RegisterTypeInspection(TypeId typeId, const DebugInspectionContext::Callback& callback);
-	template<typename T, typename Callback>
-	void RegisterTypeInspection(Callback callback)
+	void RegisterTypeInspection(TypeId typeId, TypeInspection::RowCallback onDrawRow,
+	    TypeInspection::ChildrenCallback onDrawChildren = {});
+	template<typename T>
+	void RegisterTypeInspection(TypeInspection::TRowCallback<T> onDrawRow,
+	    TypeInspection::TChildrenCallback<T> onDrawChildren = {})
 	{
-		RegisterTypeInspection(GetTypeId<T>(),
-		    [callback](StringView label, void* data, TypeId typeId) {
-			callback(label, *static_cast<T*>(data));
-		});
+		// clang-format off
+		TypeInspection::RowCallback onDrawRowBase =
+		    onDrawRow? [onDrawRow = Move(onDrawRow)](StringView label, void* data, TypeId typeId, bool& open) {
+				onDrawRow(label, *static_cast<T*>(data), open);
+		    } : TypeInspection::RowCallback{};
+		TypeInspection::ChildrenCallback onDrawChildrenBase =
+		    onDrawChildren? [onDrawChildren = Move(onDrawChildren)](void* data, TypeId typeId) {
+				onDrawChildren(*static_cast<T*>(data));
+		    } : TypeInspection::ChildrenCallback{};
+		// clang-format on
+		RegisterTypeInspection(GetTypeId<T>(), Move(onDrawRowBase), Move(onDrawChildrenBase));
 	}
 	void RegisterPipeTypeInspections();
 	void RemoveTypeInspection(TypeId typeId);
@@ -197,32 +226,34 @@ namespace p
 		ImGui::EndTable();
 	}
 
-	void RegisterTypeInspection(TypeId typeId, const DebugInspectionContext::Callback& callback)
+	void RegisterTypeInspection(TypeId typeId, TypeInspection::RowCallback onDrawRow,
+	    TypeInspection::ChildrenCallback onDrawChildren)
 	{
 		if (EnsureInsideDebug)
 		{
-			currentContext->inspection.registeredTypes.Insert(typeId, callback);
+			currentContext->inspection.registeredTypes.Insert(
+			    typeId, {Move(onDrawRow), Move(onDrawChildren)});
 		}
 	}
 	void RegisterPipeTypeInspections()
 	{
-		RegisterTypeInspection<bool>([](StringView label, bool& data) {
+		RegisterTypeInspection<bool>([](StringView label, bool& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::Checkbox("##value", &data);
 		});
-		RegisterTypeInspection<String>([](StringView label, String& data) {
+		RegisterTypeInspection<String>([](StringView label, String& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::InputText("##value", data);
 		});
-		RegisterTypeInspection<StringView>([](StringView label, StringView& data) {
+		RegisterTypeInspection<StringView>([](StringView label, StringView& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::InputText("##value", const_cast<char*>(data.data()), data.size(),
 			    ImGuiInputTextFlags_ReadOnly);
 		});
-		RegisterTypeInspection<Tag>([](StringView label, Tag& data) {
+		RegisterTypeInspection<Tag>([](StringView label, Tag& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			static String str;
@@ -232,47 +263,47 @@ namespace p
 				data = Tag{str};
 			}
 		});
-		RegisterTypeInspection<i8>([](StringView label, i8& data) {
+		RegisterTypeInspection<i8>([](StringView label, i8& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::InputScalar("##value", ImGuiDataType_S8, &data);
 		});
-		RegisterTypeInspection<u8>([](StringView label, u8& data) {
+		RegisterTypeInspection<u8>([](StringView label, u8& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::InputScalar("##value", ImGuiDataType_U8, &data);
 		});
-		RegisterTypeInspection<i32>([](StringView label, i32& data) {
+		RegisterTypeInspection<i32>([](StringView label, i32& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::InputScalar("##value", ImGuiDataType_S32, &data);
 		});
-		RegisterTypeInspection<u32>([](StringView label, u32& data) {
+		RegisterTypeInspection<u32>([](StringView label, u32& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::InputScalar("##value", ImGuiDataType_U32, &data);
 		});
-		RegisterTypeInspection<i64>([](StringView label, i64& data) {
+		RegisterTypeInspection<i64>([](StringView label, i64& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::InputScalar("##value", ImGuiDataType_S64, &data);
 		});
-		RegisterTypeInspection<u64>([](StringView label, u64& data) {
+		RegisterTypeInspection<u64>([](StringView label, u64& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::InputScalar("##value", ImGuiDataType_U64, &data);
 		});
-		RegisterTypeInspection<float>([](StringView label, float& data) {
+		RegisterTypeInspection<float>([](StringView label, float& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::InputScalar("##value", ImGuiDataType_Float, &data);
 		});
-		RegisterTypeInspection<double>([](StringView label, double& data) {
+		RegisterTypeInspection<double>([](StringView label, double& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			ImGui::InputScalar("##value", ImGuiDataType_Double, &data);
 		});
-		RegisterTypeInspection<Id>([](StringView label, Id& data) {
+		RegisterTypeInspection<Id>([](StringView label, Id& data, bool& open) {
 			InspectSetKeyAsText(label);
 			InspectSetValueColumn();
 			String asString = ToString(data);
@@ -296,60 +327,107 @@ namespace p
 		{
 			return;
 		}
+
+		auto& ins = currentContext->inspection;
+
 		ImGui::TableNextRow();
 		ImGui::PushID(data);
-		if (auto* cb = currentContext->inspection.registeredTypes.Find(typeId))
+		bool open = false;
+		auto* it  = ins.registeredTypes.Find(typeId);
+		if (it && it->onDrawRow)
 		{
-			(*cb)(label, data, typeId);
+			it->onDrawRow(label, data, typeId, open);
 		}
 		else if (p::HasTypeFlags(typeId, p::TF_Container))
 		{
 			const auto* ops = GetTypeContainerOps(typeId);
 			P_Check(ops);
-			i32 size        = ops->GetSize(data);
-			const bool open = InspectBeginCategory(label, size <= 0);
+			const i32 size = ops->GetSize(data);
+			open           = InspectBeginCategory(label, size <= 0);
 
 			InspectSetValueColumn();
-			String tmpLabel;
-			Strings::FormatTo(tmpLabel, "{} items", size);
-			ImGui::Text(tmpLabel);
-			{    // Buttons
-				// Ignore indent on buttons
-				const float widthAvailable =
-				    ImGui::GetContentRegionAvail().x + ImGui::GetCurrentWindow()->DC.Indent.x;
-				ImGui::SameLine(widthAvailable - 50.f);
-				ImGui::PushStyleCompact();
-				if (ImGui::Button("+##AddItem", p::v2(20.f, 18.f)))
+			ImGui::Text("%i items", size);
+
+			const float widthAvailable =
+			    ImGui::GetContentRegionAvail().x + ImGui::GetCurrentWindow()->DC.Indent.x;
+			ImGui::SameLine(widthAvailable - 20.f);
+			if (ImGui::SmallButton("..."))
+			{
+				ImGui::OpenPopup("ContextualSettings");
+			}
+			if (ImGui::BeginPopupContextItem("ContextualSettings"))
+			{
+				if (ImGui::MenuItem("Add"))
 				{
 					ops->AddItem(data, nullptr);
+					ImGui::CloseCurrentPopup();
 				}
 				ImGui::HelpTooltip("Add: Add one item");
-				ImGui::SameLine();
-				if (ImGui::Button("Clr##Empty", p::v2(20.f, 18.f)))
+				if (ImGui::MenuItem("Clear"))
 				{
 					ops->Clear(data);
+					ImGui::CloseCurrentPopup();
 				}
 				ImGui::HelpTooltip("Clear: Remove all items of the array");
-				ImGui::PopStyleCompact();
-			}
-
-			if (open)
-			{
-				size = ops->GetSize(data);    // Update size
-				for (i32 i = 0; i < size; ++i)
-				{
-					tmpLabel.clear();
-					Strings::FormatTo(tmpLabel, "Index {}", i);
-					Inspect(tmpLabel, ops->GetItem(data, i), ops->itemType);
-				}
-				InspectEndCategory();
+				ImGui::EndPopup();
 			}
 		}
 		else if (p::HasTypeFlags(typeId, p::TF_Struct))
 		{
 			auto props = GetTypeProperties(typeId);
-			if (InspectBeginCategory(label, props.Size() <= 0))
+			open       = InspectBeginCategory(label, props.Size() <= 0);
+		}
+
+		if (!ins.propStack.IsEmpty())    // Container item buttons
+		{
+			const auto& prop = ins.propStack[0];
+
+			const float widthAvailable =
+			    ImGui::GetContentRegionAvail().x + ImGui::GetCurrentWindow()->DC.Indent.x;
+			ImGui::SameLine(widthAvailable - 20.f);
+			if (ImGui::SmallButton("..."))
 			{
+				ImGui::OpenPopup("ContextualSettings");
+			}
+			if (ImGui::BeginPopupContextItem("ContextualSettings"))
+			{
+				if (p::HasTypeFlags(prop.typeId, p::TF_Container) && ImGui::MenuItem("Remove"))
+				{
+					const auto* ops = GetTypeContainerOps(prop.typeId);
+					ops->RemoveItem(prop.data, prop.index);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::HelpTooltip("Remove: Remove this item from its array");
+				ImGui::EndPopup();
+			}
+		}
+
+		if (open)
+		{
+			if (it && it->onDrawChildren)
+			{
+				it->onDrawChildren(data, typeId);
+			}
+			else if (p::HasTypeFlags(typeId, p::TF_Container))
+			{
+				const auto* ops = GetTypeContainerOps(typeId);
+				String tmpLabel;
+				const i32 size = ops->GetSize(data);
+				ins.propStack.Add({typeId, data, 0});
+				for (i32 i = 0; i < size; ++i)
+				{
+					tmpLabel.clear();
+					Strings::FormatTo(tmpLabel, "Index {}", i);
+					Inspect(tmpLabel, ops->GetItem(data, i), ops->itemType);
+
+					++ins.propStack.Last().index;
+				}
+				ins.propStack.RemoveLast();
+				InspectEndCategory();
+			}
+			else if (p::HasTypeFlags(typeId, p::TF_Struct))
+			{
+				auto props = GetTypeProperties(typeId);
 				for (const auto* prop : props)
 				{
 					ImGui::BeginDisabled(!prop->HasFlag(PF_Edit));
@@ -359,7 +437,6 @@ namespace p
 				InspectEndCategory();
 			}
 		}
-
 		ImGui::PopID();
 	}
 	void InspectSetKeyColumn()
@@ -702,9 +779,9 @@ namespace p
 					InspectSetKeyColumn();
 					if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
 					{
-						ImGui::Indent();
 						if (data)
 						{
+							ImGui::Indent();
 							auto props = GetTypeProperties(poolInstance.componentId);
 							for (const auto* prop : props)
 							{
@@ -712,8 +789,8 @@ namespace p
 								Inspect(prop->name.AsString(), prop->access(data), prop->typeId);
 								ImGui::EndDisabled();
 							}
+							ImGui::Unindent();
 						}
-						ImGui::Unindent();
 					}
 				}
 				EndInspection();

@@ -161,7 +161,7 @@ namespace ImGui
 	}
 
 	inline void HelpTooltip(p::StringView text,
-	    ImGuiHoveredFlags flags = ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_NoSharedDelay)
+	    ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip | ImGuiHoveredFlags_NoSharedDelay)
 	{
 		if (IsItemHovered(flags))
 		{
@@ -176,7 +176,7 @@ namespace ImGui
 		}
 	}
 	inline void HelpMarker(p::StringView text,
-	    ImGuiHoveredFlags flags = ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_NoSharedDelay)
+	    ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip | ImGuiHoveredFlags_NoSharedDelay)
 	{
 		TextDisabled("(?)");
 		HelpTooltip(text, flags);
