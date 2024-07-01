@@ -47,7 +47,7 @@ namespace p
 	template<typename T>
 	consteval bool HasExternalBuildType()
 	{
-		return IsArray<T>() || requires(const T v) { BuildType(&v); };
+		return requires(const T v) { BuildType(&v); };
 	}
 
 	template<typename T>
@@ -580,11 +580,14 @@ namespace p
 		static inline TTypeAutoRegister<type> instance; \
 	};
 
-#define P_NATIVE(type)                 \
-	inline void BuildType(const type*) \
-	{                                  \
-		p::AddTypeFlags(p::TF_Native); \
-	};                                 \
+#define P_NATIVE(type)                     \
+	namespace p                            \
+	{                                      \
+		inline void BuildType(const type*) \
+		{                                  \
+			p::AddTypeFlags(p::TF_Native); \
+		};                                 \
+	}                                      \
 	P_AUTOREGISTER_TYPE(type)
 
 #define P_NATIVE_NAMED(type, name)                                                  \
@@ -758,10 +761,12 @@ P_NATIVE_NAMED(p::HSVColor, "HSVColor")
 P_NATIVE_NAMED(p::Color, "Color")
 
 // Build array types
-template<typename T>
-inline void BuildType(const T*) requires(p::IsArray<T>())
+namespace p
 {
-	// clang-format off
+	template<typename T>
+	inline void BuildType(const T*) requires(p::IsArray<T>())
+	{
+		// clang-format off
 	static p::ContainerTypeOps ops{
 		.itemType = p::RegisterTypeId<typename T::ItemType>(),
 		.getData = [](void* data) {
@@ -798,10 +803,11 @@ inline void BuildType(const T*) requires(p::IsArray<T>())
 		    static_cast<T*>(data)->Clear();
 	    }
 	};
-	// clang-format on
-	p::AddTypeFlags(p::TF_Container);
-	p::SetTypeOps(&ops);
-};
+		// clang-format on
+		p::AddTypeFlags(p::TF_Container);
+		p::SetTypeOps(&ops);
+	};
+}    // namespace p
 #pragma endregion PipeTypesSupport
 
 
