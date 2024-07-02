@@ -82,6 +82,30 @@ go_bandit([]() {
 				AssertThat(Strings::ToSentenceCase("papa3"), Equals("Papa 3"));
 				AssertThat(Strings::ToSentenceCase("MisterPotato"), Equals("Mister Potato"));
 			});
+
+			it("Convert u16 to u8", [&]() {
+				TString<Char16> utf16string{0x41, 0x0448, 0x65e5, 0xd834, 0xdd1e};
+				TString<Char8> u = Strings::Convert<TString<Char8>>(utf16string);
+				AssertThat(u.size(), Equals(10));
+			});
+			it("Convert u8 to u16", [&]() {
+				TString<AnsiChar> utf8_with_surrogates = "\xe6\x97\xa5\xd1\x88\xf0\x9d\x84\x9e";
+				TString<Char16> utf16result =
+				    Strings::Convert<TString<Char16>>(utf8_with_surrogates);
+				AssertThat(utf16result.size(), Equals(4));
+				AssertThat(utf16result[2] == 0xd834, Is().True());
+				AssertThat(utf16result[3] == 0xdd1e, Is().True());
+			});
+			it("Convert u32 to u8", [&]() {
+				TString<Char32> utf32string = {0x448, 0x65E5, 0x10346};
+				TString<Char8> utf8result   = Strings::Convert<TString<Char8>>(utf32string);
+				AssertThat(utf8result.size(), Equals(9));
+			});
+			it("Convert u8 to u32", [&]() {
+				TString<AnsiChar> twochars  = "\xe6\x97\xa5\xd1\x88";
+				TString<Char32> utf32result = Strings::Convert<TString<Char32>>(twochars);
+				AssertThat(utf32result.size(), Equals(2));
+			});
 		});
 	});
 });

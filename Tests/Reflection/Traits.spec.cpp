@@ -82,5 +82,10 @@ go_bandit([]() {
 			AssertThat(p::HasSuper<TestNotSerializable>(), Is().False());
 			AssertThat(p::HasSuper<TestWithSuper>(), Is().True());
 		});
+
+		it("Can build type on Arrays", []() {
+			AssertThat(p::CanBuildType<p::TArray<bool>>(), Is().True());
+			AssertThat(p::HasExternalBuildType<p::TArray<bool>>(), Is().True());
+		});
 	});
 });

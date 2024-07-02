@@ -16,7 +16,7 @@ go_bandit([]() {
 			MonoLinearArena arena{1024};
 
 			AssertThat(arena.GetAvailableMemory(), Is().EqualTo(1024));
-			AssertThat(arena.GetUsedMemory(), Is().EqualTo(0));
+			AssertThat(arena.GetStats()->used, Is().EqualTo(0));
 		});
 
 		it("Can allocate outside the block", [&]() {
@@ -50,22 +50,27 @@ go_bandit([]() {
 			MonoLinearArena arena{1024};
 			void* p = arena.Alloc(sizeof(float));
 			AssertThat(p, Is().Not().Null());
-			AssertThat(arena.GetUsedMemory(), Is().EqualTo(4));
+			AssertThat(arena.GetStats()->used, Is().EqualTo(4));
 			AssertThat(arena.GetAvailableMemory(), Is().EqualTo(1024));
+			arena.Free(p, sizeof(float));
 		});
 
 		it("Can allocate with alignment", [&]() {
 			MonoLinearArena arena{1024};
 
-			arena.Alloc(sizeof(bool));
+			void* p0 = arena.Alloc(sizeof(bool));
 
 			// When padding is not 0 (last ptr is not aligned)
-			void* p = arena.Alloc(sizeof(float), 8);
-			AssertThat(p::GetAlignmentPadding(p, 8), Is().EqualTo(0));
+			void* p1 = arena.Alloc(sizeof(float), 8);
+			AssertThat(p::GetAlignmentPadding(p1, 8), Is().EqualTo(0));
 
 			// When padding is 0 (last ptr is aligned)
 			void* p2 = arena.Alloc(sizeof(float), 16);
 			AssertThat(p::GetAlignmentPadding(p2, 16), Is().EqualTo(0));
+
+			arena.Free(p0, sizeof(bool));
+			arena.Free(p1, sizeof(float));
+			arena.Free(p2, sizeof(float));
 		});
 
 		it("Can allocate after release", [&]() {
@@ -73,17 +78,19 @@ go_bandit([]() {
 			arena.Release();
 			void* p = arena.Alloc(sizeof(float));
 			AssertThat(p, Is().Not().Null());
-			AssertThat(arena.GetUsedMemory(), Is().EqualTo(4));
+			AssertThat(arena.GetStats()->used, Is().EqualTo(4));
 			// Buffer size will be as small as the type (4 bytes)
 			AssertThat(arena.GetAvailableMemory(), Is().EqualTo(1024));
+
+			arena.Free(p, sizeof(float));
 		});
 
 		it("Can free block after Free", [&]() {
 			MonoLinearArena arena{1024};
 			void* p = arena.Alloc(256);
-			AssertThat(arena.GetUsedMemory(), Is().EqualTo(256));
+			AssertThat(arena.GetStats()->used, Is().EqualTo(256));
 			arena.Free(p, 256);
-			AssertThat(arena.GetUsedMemory(), Is().EqualTo(0));
+			AssertThat(arena.GetStats()->used, Is().EqualTo(0));
 		});
 
 		it("Allocates at correct addresses", [&]() {
@@ -92,10 +99,13 @@ go_bandit([]() {
 			TArray<Memory::Block> blocks;
 			arena.GetBlocks(blocks);
 
-			void* p = arena.Alloc(sizeof(float));
-			AssertThat(p, Is().EqualTo(blocks[0].data));
+			void* p1 = arena.Alloc(sizeof(float));
+			AssertThat(p1, Is().EqualTo(blocks[0].data));
 			void* p2 = arena.Alloc(sizeof(float), alignof(float));
 			AssertThat(p2, Is().EqualTo((u8*)blocks[0].data + 4));
+
+			arena.Free(p1, sizeof(float));
+			arena.Free(p2, sizeof(float));
 		});
 
 		// Move test to Multi linear
@@ -104,7 +114,7 @@ go_bandit([]() {
 
 		    void* p = arena.Alloc(sizeof(float*));    // 8 bytes
 		    arena.Alloc(sizeof(float));               // 4 bytes
-		    AssertThat(arena.GetUsedMemory(), Is().EqualTo(12));
+		    AssertThat(arena.GetStats()->used, Is().EqualTo(12));
 		    AssertThat(arena.GetAvailableMemory(), Is().EqualTo(16));
 
 		    void* p3 = arena.Alloc(sizeof(float*));    // 8 bytes
@@ -115,7 +125,7 @@ go_bandit([]() {
 		    AssertThat(p, Is().EqualTo(blocks[0].data));
 		    AssertThat(p3, Is().EqualTo(blocks[1].data));
 
-		    AssertThat(arena.GetUsedMemory(), Is().EqualTo(8));
+		    AssertThat(arena.GetStats()->used, Is().EqualTo(8));
 		    AssertThat(arena.GetAvailableMemory(), Is().EqualTo(16));
 		});*/
 	});

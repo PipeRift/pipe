@@ -1,6 +1,6 @@
 [submodule "Extern/Bandit"]
 	path = Extern/Bandit
-	url = https://github.com/banditcpp/bandit
+	url = https://github.com/banditcpp/bandit.git
 [submodule "Extern/spdlog"]
 	path = Extern/spdlog
 	url = https://github.com/gabime/spdlog.git
@@ -16,9 +16,6 @@
 [submodule "Extern/utfcpp"]
 	path = Extern/utfcpp
 	url = https://github.com/nemtrif/utfcpp.git
-[submodule "Extern/simdjson"]
-	path = Extern/simdjson
-	url = https://github.com/simdjson/simdjson.git
 [submodule "Extern/yyjson"]
 	path = Extern/yyjson
 	url = https://github.com/ibireme/yyjson.git
