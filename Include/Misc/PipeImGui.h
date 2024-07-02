@@ -160,48 +160,26 @@ namespace ImGui
 		    desc_id, ImVec4{col.r, col.g, col.b, col.a}, flags, ImVec2{size.x, size.y});
 	}
 
-	inline void HelpTooltip(p::StringView text, float delay = 1.f)
+	inline void HelpTooltip(p::StringView text,
+	    ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip | ImGuiHoveredFlags_NoSharedDelay)
 	{
-		static ImGuiID currentHelpItemId = 0;
-
-		ImGuiID itemId = GetCurrentContext()->LastItemData.ID;
-		if (IsItemHovered())
+		if (IsItemHovered(flags))
 		{
-			bool show = true;
-			if (delay > 0.f)
-			{
-				static p::DateTime hoverStartTime;
-				const p::DateTime now = p::DateTime::Now();
-				if (itemId != currentHelpItemId)
-				{
-					// Reset help tooltip countdown
-					currentHelpItemId = itemId;
-					hoverStartTime    = now;
-				}
-				show = (now - hoverStartTime).GetTotalSeconds() > delay;
-			}
-
-			if (show)
-			{
-				PushStyleVar(ImGuiStyleVar_WindowPadding, p::v2{4.f, 3.f});
-				BeginTooltip();
-				PushTextWrapPos(GetFontSize() * 35.0f);
-				AlignTextToFramePadding();
-				TextUnformatted(text.data());
-				PopTextWrapPos();
-				EndTooltip();
-				PopStyleVar();
-			}
-		}
-		else if (itemId == currentHelpItemId)
-		{
-			currentHelpItemId = 0;
+			PushStyleVar(ImGuiStyleVar_WindowPadding, p::v2{4.f, 3.f});
+			BeginTooltip();
+			PushTextWrapPos(GetFontSize() * 35.0f);
+			AlignTextToFramePadding();
+			TextUnformatted(text.data());
+			PopTextWrapPos();
+			EndTooltip();
+			PopStyleVar();
 		}
 	}
-	inline void HelpMarker(p::StringView text)
+	inline void HelpMarker(p::StringView text,
+	    ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip | ImGuiHoveredFlags_NoSharedDelay)
 	{
 		TextDisabled("(?)");
-		HelpTooltip(text, 0.f);
+		HelpTooltip(text, flags);
 	}
 
 	inline bool DrawFilterWithHint(ImGuiTextFilter& filter, const char* label = "Filter (inc,-exc)",

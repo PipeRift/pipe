@@ -301,6 +301,7 @@ namespace p
 		using RemoveItemFunc = void(void*, i32);
 		using ClearFunc      = void(void*);
 
+		TypeId itemType            = TypeId::None();
 		GetDataFunc* getData       = nullptr;
 		GetSizeFunc* getSize       = nullptr;
 		GetItemFunc* getItem       = nullptr;
@@ -337,7 +338,10 @@ namespace p
 	PIPE_API TypeFlags GetTypeFlags(TypeId id);
 	PIPE_API bool HasTypeFlags(TypeId id, TypeFlags flags);
 	PIPE_API bool HasAnyTypeFlags(TypeId id, TypeFlags flags);
-	PIPE_API TView<TypeProperty> GetTypeProperties(TypeId id);
+	/// @return the properties of this type, excluding those of the parent (if any)
+	PIPE_API TView<const TypeProperty> GetOwnTypeProperties(TypeId id);
+	/// @return the properties of this type
+	PIPE_API TView<const TypeProperty*> GetTypeProperties(TypeId id);
 	PIPE_API const TypeOps* GetTypeOps(TypeId id);
 	PIPE_API const ObjectTypeOps* GetTypeObjectOps(TypeId id);
 	PIPE_API const ContainerTypeOps* GetTypeContainerOps(TypeId id);
@@ -514,7 +518,7 @@ namespace p
 				{
 					T::BuildType();
 				}
-				else
+				else if constexpr (HasExternalBuildType<T>())
 				{
 					BuildType((const T*)nullptr);
 				}
@@ -576,11 +580,14 @@ namespace p
 		static inline TTypeAutoRegister<type> instance; \
 	};
 
-#define P_NATIVE(type)                 \
-	inline void BuildType(const type*) \
-	{                                  \
-		p::AddTypeFlags(p::TF_Native); \
-	};                                 \
+#define P_NATIVE(type)                     \
+	namespace p                            \
+	{                                      \
+		inline void BuildType(const type*) \
+		{                                  \
+			p::AddTypeFlags(p::TF_Native); \
+		};                                 \
+	}                                      \
 	P_AUTOREGISTER_TYPE(type)
 
 #define P_NATIVE_NAMED(type, name)                                                  \
@@ -754,49 +761,53 @@ P_NATIVE_NAMED(p::HSVColor, "HSVColor")
 P_NATIVE_NAMED(p::Color, "Color")
 
 // Build array types
-template<typename T>
-inline void BuildType(const p::TArray<T>*)
+namespace p
 {
-	// clang-format off
+	template<typename T>
+	inline void BuildType(const T*) requires(p::IsArray<T>())
+	{
+		// clang-format off
 	static p::ContainerTypeOps ops{
+		.itemType = p::RegisterTypeId<typename T::ItemType>(),
 		.getData = [](void* data) {
-			return (void*)static_cast<p::TArray<T>*>(data)->Data();
+			return (void*)static_cast<T*>(data)->Data();
 		},
 	    .getSize = [](void* data) {
-			return static_cast<p::TArray<T>*>(data)->Size();
+			return static_cast<T*>(data)->Size();
 	    },
 	    .getItem = [](void* data, p::i32 index) {
-			return (void*)(static_cast<p::TArray<T>*>(data)->Data() + index);
+			return (void*)(static_cast<T*>(data)->Data() + index);
 	    },
 	    .addItem = [](void* data, void* item) {
 			if (item)
 			{
-				auto& itemRef = *static_cast<T*>(item);
-				if constexpr (p::IsCopyAssignable<T>)
+				auto& itemRef = *static_cast<typename T::ItemType*>(item);
+				if constexpr (p::IsCopyAssignable<typename T::ItemType>)
 				{
-					static_cast<p::TArray<T>*>(data)->Add(itemRef);
+					static_cast<T*>(data)->Add(itemRef);
 				}
 				else
 				{
-					static_cast<p::TArray<T>*>(data)->Add(Move(itemRef));
+					static_cast<T*>(data)->Add(p::Move(itemRef));
 				}
 			}
 			else
 			{
-				static_cast<p::TArray<T>*>(data)->Add();
+				static_cast<T*>(data)->Add();
 			}
 	    },
 	    .removeItem = [](void* data, p::i32 index) {
-			static_cast<p::TArray<T>*>(data)->RemoveAt(index);
+			static_cast<T*>(data)->RemoveAt(index);
 	    },
 	    .clear = [](void* data) {
-		    static_cast<p::TArray<T>*>(data)->Clear();
+		    static_cast<T*>(data)->Clear();
 	    }
 	};
-	// clang-format on
-	p::AddTypeFlags(p::TF_Container);
-	p::SetTypeOps(&ops);
-};
+		// clang-format on
+		p::AddTypeFlags(p::TF_Container);
+		p::SetTypeOps(&ops);
+	};
+}    // namespace p
 #pragma endregion PipeTypesSupport
 
 

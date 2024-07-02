@@ -66,7 +66,7 @@ namespace p
 	/** Returns a random float between 0 and 1, inclusive. */
 	inline PIPE_API float Rand01()
 	{
-		return (float)Rand() / RAND_MAX;
+		return (float)Rand() / (float)RAND_MAX;
 	}
 
 	inline PIPE_API float Random(float min, float max)

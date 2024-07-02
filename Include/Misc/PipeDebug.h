@@ -15,6 +15,8 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeDebug requires v1.9
 
 
 #include "Misc/PipeImGui.h"
+#include "Pipe/Core/Checks.h"
+#include "Pipe/Core/Map.h"
 #include "Pipe/Core/Set.h"
 #include "PipeArrays.h"
 #include "PipeECS.h"
@@ -26,6 +28,31 @@ namespace p
 	// Definition
 
 #pragma region Inspection
+	struct TypeInspection
+	{
+		using RowCallback =
+		    std::function<void(StringView label, void* data, TypeId typeId, bool& open)>;
+		using ChildrenCallback = std::function<void(void* data, TypeId typeId)>;
+		template<typename T>
+		using TRowCallback = std::function<void(StringView label, T& data, bool& open)>;
+		template<typename T>
+		using TChildrenCallback = std::function<void(T& data)>;
+
+		RowCallback onDrawRow;
+		ChildrenCallback onDrawChildren;
+	};
+
+	struct DebugInspectionContext
+	{
+		struct PropStack
+		{
+			TypeId typeId;
+			void* data = nullptr;
+			i32 index  = NO_INDEX;
+		};
+		TMap<TypeId, TypeInspection> registeredTypes;
+		TArray<PropStack> propStack;
+	};
 	struct DebugECSInspector
 	{
 	protected:
@@ -53,8 +80,41 @@ namespace p
 		}
 	};
 
-	bool BeginInspector(const char* name, v2 size = v2{0.f, 0.f});
-	void EndInspector();
+	bool BeginInspection(const char* label, v2 size = v2{0.f, 0.f});
+	void EndInspection();
+
+	void RegisterTypeInspection(TypeId typeId, TypeInspection::RowCallback onDrawRow,
+	    TypeInspection::ChildrenCallback onDrawChildren = {});
+	template<typename T>
+	void RegisterTypeInspection(TypeInspection::TRowCallback<T> onDrawRow,
+	    TypeInspection::TChildrenCallback<T> onDrawChildren = {})
+	{
+		// clang-format off
+		TypeInspection::RowCallback onDrawRowBase =
+		    onDrawRow? [onDrawRow = Move(onDrawRow)](StringView label, void* data, TypeId typeId, bool& open) {
+				onDrawRow(label, *static_cast<T*>(data), open);
+		    } : TypeInspection::RowCallback{};
+		TypeInspection::ChildrenCallback onDrawChildrenBase =
+		    onDrawChildren? [onDrawChildren = Move(onDrawChildren)](void* data, TypeId typeId) {
+				onDrawChildren(*static_cast<T*>(data));
+		    } : TypeInspection::ChildrenCallback{};
+		// clang-format on
+		RegisterTypeInspection(GetTypeId<T>(), Move(onDrawRowBase), Move(onDrawChildrenBase));
+	}
+	void RegisterPipeTypeInspections();
+	void RemoveTypeInspection(TypeId typeId);
+
+	void Inspect(StringView label, void* data, TypeId typeId);
+	template<typename T>
+	void Inspect(StringView label, T* data)
+	{
+		Inspect(label, data, GetTypeId<T>());
+	}
+	void InspectSetKeyColumn();
+	void InspectSetKeyAsText(StringView label);
+	void InspectSetValueColumn();
+	bool InspectBeginCategory(p::StringView name, bool isLeaf);
+	void InspectEndCategory();
 #pragma endregion Inspection
 
 
@@ -107,10 +167,17 @@ namespace p
 
 	struct DebugContext
 	{
+		DebugInspectionContext inspection;
 		DebugECSContext ecs;
 		DebugReflectContext reflect;
 
 		EntityContext* ctx = nullptr;
+
+		bool initialized = false;
+
+
+		DebugContext() = default;
+		DebugContext(EntityContext& ctx) : ctx{&ctx} {}
 	};
 
 	bool BeginDebug(DebugContext& Context);
@@ -121,11 +188,8 @@ namespace p
 	// Implementation
 #ifdef P_DEBUG_IMPLEMENTATION
 
-	#define EnsureInsideDebug                                 \
-		P_EnsureMsg(currentContext,                           \
-		    "No ECS Debug context available! Forgot to call " \
-		    "BeginDebug()?")
-
+	#define EnsureInsideDebug \
+		P_EnsureMsg(currentContext, "No Debug context available! Forgot to call BeginDebug()?")
 
 	static DebugContext* currentContext  = nullptr;
 	constexpr LinearColor errorTextColor = LinearColor::FromHex(0xC13E3A);
@@ -134,18 +198,281 @@ namespace p
 	constexpr LinearColor previewColor   = LinearColor::FromHex(0x3265A8);
 
 
-	#pragma region Inspection
-	i32 DebugECSInspector::uniqueIdCounter = 0;
-	#pragma endregion Inspection
-
-
-	#pragma region ECS
 	// For internal use only
 	EntityContext& GetDebugCtx()
 	{
 		return *currentContext->ctx;
 	}
 
+
+	#pragma region Inspection
+	i32 DebugECSInspector::uniqueIdCounter = 0;
+
+
+	bool BeginInspection(const char* label, v2 size)
+	{
+		const ImGuiTableFlags flags = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp
+		                            | ImGuiTableFlags_PadOuterX;
+		if (ImGui::BeginTable(label, 2, flags, size))
+		{
+			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.5f);
+			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			return true;
+		}
+		return false;
+	}
+	void EndInspection()
+	{
+		ImGui::EndTable();
+	}
+
+	void RegisterTypeInspection(TypeId typeId, TypeInspection::RowCallback onDrawRow,
+	    TypeInspection::ChildrenCallback onDrawChildren)
+	{
+		if (EnsureInsideDebug)
+		{
+			currentContext->inspection.registeredTypes.Insert(
+			    typeId, {Move(onDrawRow), Move(onDrawChildren)});
+		}
+	}
+	void RegisterPipeTypeInspections()
+	{
+		RegisterTypeInspection<bool>([](StringView label, bool& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::Checkbox("##value", &data);
+		});
+		RegisterTypeInspection<String>([](StringView label, String& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputText("##value", data);
+		});
+		RegisterTypeInspection<StringView>([](StringView label, StringView& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputText("##value", const_cast<char*>(data.data()), data.size(),
+			    ImGuiInputTextFlags_ReadOnly);
+		});
+		RegisterTypeInspection<Tag>([](StringView label, Tag& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			static String str;
+			str = data.AsString();
+			if (ImGui::InputText("##value", str))
+			{
+				data = Tag{str};
+			}
+		});
+		RegisterTypeInspection<i8>([](StringView label, i8& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_S8, &data);
+		});
+		RegisterTypeInspection<u8>([](StringView label, u8& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_U8, &data);
+		});
+		RegisterTypeInspection<i32>([](StringView label, i32& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_S32, &data);
+		});
+		RegisterTypeInspection<u32>([](StringView label, u32& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_U32, &data);
+		});
+		RegisterTypeInspection<i64>([](StringView label, i64& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_S64, &data);
+		});
+		RegisterTypeInspection<u64>([](StringView label, u64& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_U64, &data);
+		});
+		RegisterTypeInspection<float>([](StringView label, float& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_Float, &data);
+		});
+		RegisterTypeInspection<double>([](StringView label, double& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			ImGui::InputScalar("##value", ImGuiDataType_Double, &data);
+		});
+		RegisterTypeInspection<Id>([](StringView label, Id& data, bool& open) {
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			String asString = ToString(data);
+			ImGui::SetNextItemWidth(100.f);
+			if (ImGui::InputText("##IdValue", asString, ImGuiInputTextFlags_EscapeClearsAll))
+			{
+				data = IdFromString(asString, &GetDebugCtx());
+			}
+		});
+	}
+	void RemoveTypeInspection(TypeId typeId)
+	{
+		if (EnsureInsideDebug)
+		{
+			currentContext->inspection.registeredTypes.Remove(typeId);
+		}
+	}
+	void Inspect(StringView label, void* data, TypeId typeId)
+	{
+		if (!EnsureInsideDebug || !data)
+		{
+			return;
+		}
+
+		auto& ins = currentContext->inspection;
+
+		ImGui::TableNextRow();
+		ImGui::PushID(data);
+		bool open = false;
+		auto* it  = ins.registeredTypes.Find(typeId);
+		if (it && it->onDrawRow)
+		{
+			it->onDrawRow(label, data, typeId, open);
+		}
+		else if (p::HasTypeFlags(typeId, p::TF_Container))
+		{
+			const auto* ops = GetTypeContainerOps(typeId);
+			P_Check(ops);
+			const i32 size = ops->GetSize(data);
+			open           = InspectBeginCategory(label, size <= 0);
+
+			InspectSetValueColumn();
+			ImGui::Text("%i items", size);
+
+			const float widthAvailable =
+			    ImGui::GetContentRegionAvail().x + ImGui::GetCurrentWindow()->DC.Indent.x;
+			ImGui::SameLine(widthAvailable - 20.f);
+			if (ImGui::SmallButton("..."))
+			{
+				ImGui::OpenPopup("ContextualSettings");
+			}
+			if (ImGui::BeginPopupContextItem("ContextualSettings"))
+			{
+				if (ImGui::MenuItem("Add"))
+				{
+					ops->AddItem(data, nullptr);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::HelpTooltip("Add: Add one item");
+				if (ImGui::MenuItem("Clear"))
+				{
+					ops->Clear(data);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::HelpTooltip("Clear: Remove all items of the array");
+				ImGui::EndPopup();
+			}
+		}
+		else if (p::HasTypeFlags(typeId, p::TF_Struct))
+		{
+			auto props = GetTypeProperties(typeId);
+			open       = InspectBeginCategory(label, props.Size() <= 0);
+		}
+
+		if (!ins.propStack.IsEmpty())    // Container item buttons
+		{
+			const auto& prop = ins.propStack[0];
+
+			const float widthAvailable =
+			    ImGui::GetContentRegionAvail().x + ImGui::GetCurrentWindow()->DC.Indent.x;
+			ImGui::SameLine(widthAvailable - 20.f);
+			if (ImGui::SmallButton("..."))
+			{
+				ImGui::OpenPopup("ContextualSettings");
+			}
+			if (ImGui::BeginPopupContextItem("ContextualSettings"))
+			{
+				if (p::HasTypeFlags(prop.typeId, p::TF_Container) && ImGui::MenuItem("Remove"))
+				{
+					const auto* ops = GetTypeContainerOps(prop.typeId);
+					ops->RemoveItem(prop.data, prop.index);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::HelpTooltip("Remove: Remove this item from its array");
+				ImGui::EndPopup();
+			}
+		}
+
+		if (open)
+		{
+			if (it && it->onDrawChildren)
+			{
+				it->onDrawChildren(data, typeId);
+			}
+			else if (p::HasTypeFlags(typeId, p::TF_Container))
+			{
+				const auto* ops = GetTypeContainerOps(typeId);
+				String tmpLabel;
+				const i32 size = ops->GetSize(data);
+				ins.propStack.Add({typeId, data, 0});
+				for (i32 i = 0; i < size; ++i)
+				{
+					tmpLabel.clear();
+					Strings::FormatTo(tmpLabel, "Index {}", i);
+					Inspect(tmpLabel, ops->GetItem(data, i), ops->itemType);
+
+					++ins.propStack.Last().index;
+				}
+				ins.propStack.RemoveLast();
+				InspectEndCategory();
+			}
+			else if (p::HasTypeFlags(typeId, p::TF_Struct))
+			{
+				auto props = GetTypeProperties(typeId);
+				for (const auto* prop : props)
+				{
+					ImGui::BeginDisabled(!prop->HasFlag(PF_Edit));
+					Inspect(prop->name.AsString(), prop->access(data), prop->typeId);
+					ImGui::EndDisabled();
+				}
+				InspectEndCategory();
+			}
+		}
+		ImGui::PopID();
+	}
+	void InspectSetKeyColumn()
+	{
+		ImGui::TableSetColumnIndex(0);
+	}
+	void InspectSetKeyAsText(StringView label)
+	{
+		InspectSetKeyColumn();
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextUnformatted(label.data(), label.data() + label.size());
+	}
+	void InspectSetValueColumn()
+	{
+		ImGui::TableSetColumnIndex(1);
+	}
+	bool InspectBeginCategory(p::StringView name, bool isLeaf)
+	{
+		InspectSetKeyColumn();
+		ImGui::AlignTextToFramePadding();
+		ImGui::Unindent();
+		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_AllowItemOverlap
+		                               | ImGuiTreeNodeFlags_SpanAllColumns
+		                               | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0);
+		bool bOpen = ImGui::TreeNodeEx(name.data(), flags);
+		ImGui::Indent();
+		return bOpen;
+	}
+	void InspectEndCategory()
+	{
+		ImGui::TreePop();
+	}
+	#pragma endregion Inspection
+
+
+	#pragma region ECS
 	using DrawNodeAccess = TAccessRef<CParent, CChild>;
 	namespace details
 	{
@@ -421,7 +748,7 @@ namespace p
 				ImGui::EndMenuBar();
 			}
 
-			if (valid)
+			if (valid && BeginInspection("##Inspector"))
 			{
 				String componentLabel;
 				for (const auto& poolInstance : GetDebugCtx().GetPools())
@@ -441,24 +768,32 @@ namespace p
 						continue;
 					}
 
-					ImGuiTreeNodeFlags headerFlags = ImGuiTreeNodeFlags_DefaultOpen;
+					ImGuiTreeNodeFlags headerFlags =
+					    ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAllColumns;
 					void* data = poolInstance.GetPool()->TryGetVoid(inspector.id);
 					if (!data)
 					{
 						headerFlags |= ImGuiTreeNodeFlags_Leaf;
 					}
+					ImGui::TableNextRow();
+					InspectSetKeyColumn();
 					if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
 					{
-						// UI::Indent();
-						// auto* dataType = Cast<DataType>(type);
-						// if (data && dataType && UI::BeginInspector("EntityInspector"))
-						//{
-						//	UI::InspectChildrenProperties({data, dataType});
-						//	UI::EndInspector();
-						// }
-						// UI::Unindent();
+						if (data)
+						{
+							ImGui::Indent();
+							auto props = GetTypeProperties(poolInstance.componentId);
+							for (const auto* prop : props)
+							{
+								ImGui::BeginDisabled(!prop->HasFlag(PF_Edit));
+								Inspect(prop->name.AsString(), prop->access(data), prop->typeId);
+								ImGui::EndDisabled();
+							}
+							ImGui::Unindent();
+						}
 					}
 				}
+				EndInspection();
 			}
 			else
 			{
@@ -700,7 +1035,7 @@ namespace p
 				return;
 			}
 
-			const auto& typeProperties = GetTypeProperties(type);
+			const auto& typeProperties = GetOwnTypeProperties(type);
 
 			static String idText;
 			idText.clear();
@@ -857,12 +1192,18 @@ namespace p
 		}
 
 		currentContext = &context;
+
+		if (!currentContext->initialized)
+		{
+			RegisterPipeTypeInspections();
+			currentContext->initialized = true;
+		}
 		return true;
 	}
 	void EndDebug()
 	{
 		P_CheckMsg(currentContext,
-		    "Called EndECSDebug() but there was no current ECS Debug Context! Forgot "
+		    "Called EndDebug() but there was no current ECS Debug Context! Forgot "
 		    "to call "
 		    "BeginDebug()?");
 		currentContext = nullptr;
