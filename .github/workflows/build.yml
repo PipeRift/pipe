@@ -27,7 +27,7 @@ jobs:
           - name: windows-clang
             os: windows-latest
             os-name: Windows
-            compiler: clang-18
+            compiler: clang-17
           - name: linux-clang
             os: ubuntu-latest
             os-name: Linux
