@@ -117,16 +117,13 @@ namespace p
 			doFree(this, ptr, size);
 		}
 
-
-		virtual sizet GetUsedMemory() const
-		{
-			return 0;
-		}
 		virtual sizet GetAvailableMemory() const
 		{
 			return 0;
 		}
 		virtual void GetBlocks(TInlineArray<Memory::Block, 0>& outBlocks) const {}
+
+		virtual const struct MemoryStats* GetStats() const { return nullptr; }
 	};
 
 	class PIPE_API ChildArena : public Arena

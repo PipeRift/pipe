@@ -31,8 +31,8 @@ go_bandit([]() {
 		AssertThat(properties.Size(), Equals(2));
 
 		// AssertThat(properties[0].typeId, Equals(p::GetTypeId<p::TArray<float>>()));
-		AssertThat(properties[0].name.Data(), Equals("value0"));
+		AssertThat(properties[0]->name.Data(), Equals("value0"));
 		// AssertThat(properties[1].typeId, Equals(p::GetTypeId<bool>()));
-		AssertThat(properties[1].name.Data(), Equals("value1"));
+		AssertThat(properties[1]->name.Data(), Equals("value1"));
 	});
 });

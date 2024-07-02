@@ -1915,6 +1915,9 @@ namespace p
 
 	struct PIPE_API CParent
 	{
+		P_STRUCT(CParent)
+
+		P_PROP(children, PF_Edit)
 		TArray<Id> children;
 	};
 	PIPE_API void Read(Reader& ct, CParent& val);
@@ -1922,6 +1925,9 @@ namespace p
 
 	struct PIPE_API CChild
 	{
+		P_STRUCT(CChild)
+
+		P_PROP(parent, PF_Edit)
 		Id parent = NoId;
 	};
 	PIPE_API void Read(Reader& ct, CChild& val);

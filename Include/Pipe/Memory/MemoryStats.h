@@ -42,7 +42,10 @@ namespace p
 
 	struct PIPE_API MemoryStats
 	{
+		const char* name = "Arena";
+
 		sizet used = 0;
+		sizet available = 0;
 		mutable std::shared_mutex mutex;
 		TArray<AllocationStats> allocations;
 #if P_ENABLE_ALLOCATION_STACKS
@@ -50,11 +53,13 @@ namespace p
 #endif
 		TArray<AllocationStats> freedAllocations;
 
+
 		MemoryStats();
 		~MemoryStats();
 
 		void Add(void* ptr, sizet size);
-		void Remove(void* ptr);
+		void Remove(void* ptr, sizet size);
+		void Release();
 
 	private:
 		void PrintAllocationError(
