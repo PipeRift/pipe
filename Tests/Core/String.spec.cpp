@@ -90,18 +90,19 @@ go_bandit([]() {
 			});
 			it("Convert u8 to u16", [&]() {
 				TString<AnsiChar> utf8_with_surrogates = "\xe6\x97\xa5\xd1\x88\xf0\x9d\x84\x9e";
-				TString<Char16> utf16result = Strings::Convert<TString<Char16>>(utf8_with_surrogates);
+				TString<Char16> utf16result =
+				    Strings::Convert<TString<Char16>>(utf8_with_surrogates);
 				AssertThat(utf16result.size(), Equals(4));
-				AssertThat(utf16result[2], Equals(0xd834));
-				AssertThat(utf16result[3], Equals(0xdd1e));
+				AssertThat(utf16result[2] == 0xd834, Is().True());
+				AssertThat(utf16result[3] == 0xdd1e, Is().True());
 			});
 			it("Convert u32 to u8", [&]() {
 				TString<Char32> utf32string = {0x448, 0x65E5, 0x10346};
-				TString<Char8> utf8result = Strings::Convert<TString<Char8>>(utf32string);
+				TString<Char8> utf8result   = Strings::Convert<TString<Char8>>(utf32string);
 				AssertThat(utf8result.size(), Equals(9));
 			});
 			it("Convert u8 to u32", [&]() {
-				TString<AnsiChar> twochars = "\xe6\x97\xa5\xd1\x88";
+				TString<AnsiChar> twochars  = "\xe6\x97\xa5\xd1\x88";
 				TString<Char32> utf32result = Strings::Convert<TString<Char32>>(twochars);
 				AssertThat(utf32result.size(), Equals(2));
 			});
