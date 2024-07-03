@@ -526,20 +526,20 @@ namespace p
 
 	void EntityContext::Destroy(const Id id)
 	{
-		idRegistry.Destroy(id);
 		for (auto& pool : pools)
 		{
 			pool.GetPool()->Remove(id);
 		}
+		idRegistry.Destroy(id);
 	}
 
 	void EntityContext::Destroy(TView<const Id> ids)
 	{
-		idRegistry.Destroy(ids);
 		for (auto& pool : pools)
 		{
 			pool.GetPool()->Remove(ids);
 		}
+		idRegistry.Destroy(ids);
 	}
 
 	void* EntityContext::AddDefault(TypeId typeId, Id id)

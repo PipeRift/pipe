@@ -392,7 +392,10 @@ namespace p
 
 		void OnRemoved(TView<const Id> ids)
 		{
-			onRemove.Broadcast(*context, ids);
+			if (!ids.IsEmpty())
+			{
+				onRemove.Broadcast(*context, ids);
+			}
 		}
 
 	public:
