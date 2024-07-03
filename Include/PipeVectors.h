@@ -657,17 +657,26 @@ namespace p
 	using v3d = Vec<3, double>;
 	using v4d = Vec<4, double>;
 
+	using v2_i8 = Vec<2, i8>;
 	using v2_u8 = Vec<2, u8>;
+	using v3_i8 = Vec<3, i8>;
 	using v3_u8 = Vec<3, u8>;
+	using v4_i8 = Vec<4, i8>;
 	using v4_u8 = Vec<4, u8>;
 
 	using v2_i32 = Vec<2, i32>;
-	using v3_i32 = Vec<3, i32>;
-	using v4_i32 = Vec<4, i32>;
-
 	using v2_u32 = Vec<2, u32>;
+	using v3_i32 = Vec<3, i32>;
 	using v3_u32 = Vec<3, u32>;
+	using v4_i32 = Vec<4, i32>;
 	using v4_u32 = Vec<4, u32>;
+
+	using v2_i64 = Vec<2, i64>;
+	using v2_u64 = Vec<2, u64>;
+	using v3_i64 = Vec<3, i64>;
+	using v3_u64 = Vec<3, u64>;
+	using v4_i64 = Vec<4, i64>;
+	using v4_u64 = Vec<4, u64>;
 
 
 	template<u32 size, Number T>

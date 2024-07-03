@@ -9,15 +9,6 @@
 
 namespace p
 {
-	String ToString(Id id)
-	{
-		if (id == NoId)
-		{
-			return "NoId";
-		}
-		return Strings::Format("{}:{}", p::GetIdIndex(id), p::GetIdVersion(id));
-	}
-
 	Id IdFromString(String str, EntityContext* context)
 	{
 		if (str == "NoId")

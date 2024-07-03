@@ -40,8 +40,27 @@ namespace p
 		return (static_cast<UnderlyingType<E>>(value) & static_cast<UnderlyingType<E>>(flags)) != 0;
 	}
 
+	template<typename E, typename R = UnderlyingType<E>>
+	constexpr bool HasAllFlags(R value, E flags) noexcept requires(IsEnum<E>)
+	{
+		return (static_cast<R>(value) & static_cast<UnderlyingType<E>>(flags))
+		    == static_cast<UnderlyingType<E>>(flags);
+	}
+
+	template<typename E, typename R = UnderlyingType<E>>
+	constexpr bool HasAnyFlags(R value, E flags) noexcept requires(IsEnum<E>)
+	{
+		return (static_cast<R>(value) & static_cast<UnderlyingType<E>>(flags)) != 0;
+	}
+
 	template<typename E>
 	constexpr bool HasFlag(E value, E flag) noexcept requires(IsEnum<E>)
+	{
+		return HasAllFlags(value, flag);
+	}
+
+	template<typename E, typename R = UnderlyingType<E>>
+	constexpr bool HasFlag(R value, E flag) noexcept requires(IsEnum<E>)
 	{
 		return HasAllFlags(value, flag);
 	}

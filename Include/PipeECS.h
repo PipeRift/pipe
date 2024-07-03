@@ -96,7 +96,14 @@ namespace p
 		return GetIdVersion(id) == GetIdVersion(NoId);
 	}
 
-	PIPE_API String ToString(Id id);
+	inline String ToString(Id id)
+	{
+		if (id == NoId)
+		{
+			return "NoId";
+		}
+		return Strings::Format("{}:{}", p::GetIdIndex(id), p::GetIdVersion(id));
+	}
 
 	/**
 	 * Resolve an entity id from an string.
