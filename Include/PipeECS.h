@@ -1902,20 +1902,24 @@ namespace p
 		return Move(ids);
 	}
 
-	template<typename C, typename... OtherC, typename AccessType>
+	template<typename... C, typename AccessType>
 	Id GetFirstId(const AccessType& access)
 	{
-		const BasePool* pool = access.template GetPool<const C>();
-		Id id                = (pool && pool->Size() > 0) ? *pool->begin() : NoId;
-
-		if (([&access, id]() {
-			    const BasePool* pool = access.template GetPool<const OtherC>();
-			    return pool && pool->Has(id);
-		    }() && ...))
+		if constexpr (sizeof...(C) == 1)    // Only one component?
 		{
-			return id;
+			const BasePool* pool = access.template GetPool<const C...>();
+			if (pool && pool->Size() > 0)
+			{
+				return *pool->begin();
+			}
+			return NoId;
 		}
-		return NoId;
+		else
+		{
+			TArray<Id> ids;
+			FindAllIdsWith<C...>(access, ids);
+			return ids.IsEmpty() ? NoId : ids[0];
+		}
 	}
 
 
