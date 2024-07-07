@@ -2266,7 +2266,8 @@ struct std::formatter<p::Id> : public std::formatter<p::u64>
 		{
 			return std::format_to(ctx.out(), "NoId");
 		}
-		return std::vformat_to(
-		    ctx.out(), "{}:{}", std::make_format_args(p::GetIdIndex(id), p::GetIdVersion(id)));
+		const auto index   = p::GetIdIndex(id);
+		const auto version = p::GetIdVersion(id);
+		return std::vformat_to(ctx.out(), "{}:{}", std::make_format_args(index, version));
 	}
 };
