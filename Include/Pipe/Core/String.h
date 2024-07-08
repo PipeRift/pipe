@@ -7,11 +7,10 @@
 #include "Pipe/Core/STDFormat.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
+#include "Pipe/Extern/utf8.h"
 #include "Pipe/Memory/STLAllocator.h"
 #include "PipeArrays.h"
 #include "PipeSerializeFwd.h"
-
-#include <utf8.h>
 
 #include <string>
 
@@ -37,16 +36,14 @@ namespace p
 		inline StringType Format(StringView format, Args... args)
 		{
 			String str;
-			std::vformat_to(
-			    std::back_inserter(str), format, std::make_format_args(args...));
+			std::vformat_to(std::back_inserter(str), format, std::make_format_args(args...));
 			return Move(str);
 		}
 
 		template<typename StringType, typename... Args>
 		inline void FormatTo(StringType& buffer, StringView format, Args... args)
 		{
-			std::vformat_to(std::back_inserter(buffer), format,
-			    std::make_format_args(args...));
+			std::vformat_to(std::back_inserter(buffer), format, std::make_format_args(args...));
 		}
 
 		// Format an string using a compile time format

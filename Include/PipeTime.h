@@ -622,6 +622,7 @@ namespace p
 		 * @see Parse
 		 */
 		String ToString(const TChar* Format) const;
+		void ToString(const TChar* format, String& result) const;
 
 	public:
 		/**
@@ -1138,6 +1139,7 @@ namespace p
 		 * @see Parse, ToIso8601
 		 */
 		String ToString(const TChar* Format) const;
+		void ToString(const TChar* format, String& result) const;
 
 		/**
 		 * Returns this date as the number of seconds since the Unix Epoch (January

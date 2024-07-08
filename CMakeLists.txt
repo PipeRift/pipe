@@ -67,18 +67,8 @@ file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
-target_link_libraries(Pipe PUBLIC
-    tsl::robin_map
-    tsl::sparse_map
-    magic_enum
-    utf8cpp
-)
 target_link_libraries(Pipe PRIVATE
-    portable_file_dialogs
-    spdlog
-    yyjson
     efsw
-    fast_float
 )
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)
@@ -122,7 +112,7 @@ endif()
 #   Install
 include(GNUInstallDirs)
 
-install(TARGETS Pipe robin_map magic_enum
+install(TARGETS Pipe
     EXPORT PipeTargets
     ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
     LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
