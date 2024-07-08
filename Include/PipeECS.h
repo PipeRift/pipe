@@ -96,7 +96,14 @@ namespace p
 		return GetIdVersion(id) == GetIdVersion(NoId);
 	}
 
-	PIPE_API String ToString(Id id);
+	inline String ToString(Id id)
+	{
+		if (id == NoId)
+		{
+			return "NoId";
+		}
+		return Strings::Format("{}:{}", p::GetIdIndex(id), p::GetIdVersion(id));
+	}
 
 	/**
 	 * Resolve an entity id from an string.
@@ -385,7 +392,10 @@ namespace p
 
 		void OnRemoved(TView<const Id> ids)
 		{
-			onRemove.Broadcast(*context, ids);
+			if (!ids.IsEmpty())
+			{
+				onRemove.Broadcast(*context, ids);
+			}
 		}
 
 	public:
@@ -1892,20 +1902,24 @@ namespace p
 		return Move(ids);
 	}
 
-	template<typename C, typename... OtherC, typename AccessType>
+	template<typename... C, typename AccessType>
 	Id GetFirstId(const AccessType& access)
 	{
-		const BasePool* pool = access.template GetPool<const C>();
-		Id id                = (pool && pool->Size() > 0) ? *pool->begin() : NoId;
-
-		if (([&access, id]() {
-			    const BasePool* pool = access.template GetPool<const OtherC>();
-			    return pool && pool->Has(id);
-		    }() && ...))
+		if constexpr (sizeof...(C) == 1)    // Only one component?
 		{
-			return id;
+			const BasePool* pool = access.template GetPool<const C...>();
+			if (pool && pool->Size() > 0)
+			{
+				return *pool->begin();
+			}
+			return NoId;
 		}
-		return NoId;
+		else
+		{
+			TArray<Id> ids;
+			FindAllIdsWith<C...>(access, ids);
+			return ids.IsEmpty() ? NoId : ids[0];
+		}
 	}
 
 
@@ -2256,7 +2270,8 @@ struct std::formatter<p::Id> : public std::formatter<p::u64>
 		{
 			return std::format_to(ctx.out(), "NoId");
 		}
-		return std::vformat_to(
-		    ctx.out(), "{}:{}", std::make_format_args(p::GetIdIndex(id), p::GetIdVersion(id)));
+		const auto index   = p::GetIdIndex(id);
+		const auto version = p::GetIdVersion(id);
+		return std::vformat_to(ctx.out(), "{}:{}", std::make_format_args(index, version));
 	}
 };
