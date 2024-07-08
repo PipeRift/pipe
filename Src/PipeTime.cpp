@@ -20,11 +20,15 @@ namespace p
 		return ToString("%d.%h:%m:%s.%f");
 	}
 
-
 	String Timespan::ToString(const TChar* format) const
 	{
 		String result;
+		ToString(format, result);
+		return result;
+	}
 
+	void Timespan::ToString(const TChar* format, String& result) const
+	{
 		result += (*this < Timespan::Zero()) ? '-' : '+';
 
 		while (*format != '\0')
@@ -52,8 +56,6 @@ namespace p
 
 			++format;
 		}
-
-		return result;
 	}
 
 
@@ -304,13 +306,17 @@ namespace p
 		return ToString("%Y.%m.%d-%H.%M.%S");
 	}
 
-
 	String DateTime::ToString(const TChar* format) const
 	{
 		// return Strings::Format(format, *value);
 		String result;
+		ToString(format, result);
+		return result;
+	}
 
-		if (format != nullptr)
+	void DateTime::ToString(const TChar* format, String& result) const
+	{
+		if (format)
 		{
 			while (*format != '\0')
 			{
@@ -320,16 +326,16 @@ namespace p
 					{
 						case 'a': result += IsMorning() ? "am" : "pm"; break;
 						case 'A': result += IsMorning() ? "AM" : "PM"; break;
-						case 'd': Strings::FormatTo(result, "{:02i}", GetDay()); break;
-						case 'D': Strings::FormatTo(result, "{:03i}", GetDayOfYear()); break;
-						case 'm': Strings::FormatTo(result, "{:02i}", GetMonth()); break;
-						case 'y': Strings::FormatTo(result, "{:02i}", GetYear() % 100); break;
-						case 'Y': Strings::FormatTo(result, "{:04i}", GetYear()); break;
-						case 'h': Strings::FormatTo(result, "{:02i}", GetHour12()); break;
-						case 'H': Strings::FormatTo(result, "{:02i}", GetHour()); break;
-						case 'M': Strings::FormatTo(result, "{:02i}", GetMinute()); break;
-						case 'S': Strings::FormatTo(result, "{:02i}", GetSecond()); break;
-						case 's': Strings::FormatTo(result, "{:03i}", GetMillisecond()); break;
+						case 'd': Strings::FormatTo(result, "{:02}", GetDay()); break;
+						case 'D': Strings::FormatTo(result, "{:03}", GetDayOfYear()); break;
+						case 'm': Strings::FormatTo(result, "{:02}", GetMonth()); break;
+						case 'y': Strings::FormatTo(result, "{:02}", GetYear() % 100); break;
+						case 'Y': Strings::FormatTo(result, "{:04}", GetYear()); break;
+						case 'h': Strings::FormatTo(result, "{:02}", GetHour12()); break;
+						case 'H': Strings::FormatTo(result, "{:02}", GetHour()); break;
+						case 'M': Strings::FormatTo(result, "{:02}", GetMinute()); break;
+						case 'S': Strings::FormatTo(result, "{:02}", GetSecond()); break;
+						case 's': Strings::FormatTo(result, "{:03}", GetMillisecond()); break;
 						default: result += *format;
 					}
 				}
@@ -342,7 +348,6 @@ namespace p
 				++format;
 			}
 		}
-		return result;
 	}
 
 

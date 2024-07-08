@@ -7,10 +7,9 @@
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Templates.h"
 #include "Pipe/Core/Utility.h"
+#include "Pipe/Extern/sparse_map.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/STLAllocator.h"
-
-#include <tsl/sparse_map.h>
 
 #include <cassert>
 #include <type_traits>

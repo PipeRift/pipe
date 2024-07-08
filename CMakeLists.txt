@@ -67,12 +67,7 @@ file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
-target_link_libraries(Pipe PUBLIC
-    tsl::sparse_map
-)
 target_link_libraries(Pipe PRIVATE
-    portable_file_dialogs
-    spdlog
     efsw
 )
 

@@ -3,8 +3,7 @@
 #include "PipeFiles.h"
 
 #include "Pipe/Core/Checks.h"
-
-#include <portable-file-dialogs.h>
+#include "Pipe/Extern/portable-file-dialogs.h"
 
 #include <efsw/efsw.hpp>
 
