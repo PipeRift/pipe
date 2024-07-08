@@ -10,13 +10,13 @@
 #include "Pipe/Core/Tag.h"
 #include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeName.h"
+#include "Pipe/Extern/magic_enum.hpp"
 #include "Pipe/Files/STDFileSystem.h"
 #include "Pipe/Memory/OwnPtr.h"
 #include "PipeColor.h"
 #include "PipeSerialize.h"
 #include "PipeVectors.h"
 
-#include <magic_enum.hpp>
 
 #ifndef P_AUTOREGISTER_ENABLED
 	#define P_AUTOREGISTER_ENABLED 1

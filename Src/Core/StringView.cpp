@@ -2,7 +2,7 @@
 
 #include "Pipe/Core/StringView.h"
 
-#include <fast_float.h>
+#include "Pipe/Extern/fast_float.h"
 
 
 namespace p::Strings

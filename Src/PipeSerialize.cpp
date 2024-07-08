@@ -7,9 +7,11 @@
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/Tag.h"
+#include "Pipe/Extern/yyjson.h"
 #include "PipeMath.h"
 
-#include <yyjson.h>
+// Include yyjson.c to get it compiled
+#include "Pipe/Extern/yyjson.c"
 
 
 static void* yyjson_malloc(void* ctx, p::sizet size)

@@ -2,8 +2,7 @@
 #pragma once
 
 #include "Pipe/Core/TypeTraits.h"
-
-#include <magic_enum.hpp>
+#include "Pipe/Extern/magic_enum.hpp"
 
 
 namespace p
