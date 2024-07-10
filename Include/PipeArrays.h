@@ -450,6 +450,33 @@ namespace p
 		{
 			SortRange(firstIdx, count, TLess<Type>());
 		}
+
+		void Shuffle()
+		{
+			const i32 LastIndex = Size() - 1;
+			for (i32 i = 0; i <= LastIndex; ++i)
+			{
+				const i32 Index = p::Random(i, LastIndex);
+				if (i != Index)
+				{
+					Swap(i, Index);
+				}
+			}
+		}
+
+		void ShuffleRange(i32 firstIdx, i32 count)
+		{
+			count               = Min(count, Size() - firstIdx);    // Make sure count is in bounds
+			const i32 LastIndex = firstIdx + count;
+			for (i32 i = firstIdx; i <= LastIndex; ++i)
+			{
+				const i32 Index = p::Random(i, LastIndex);
+				if (i != Index)
+				{
+					Swap(i, Index);
+				}
+			}
+		}
 #pragma endregion Sort
 
 
