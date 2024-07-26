@@ -85,6 +85,25 @@ namespace p
 		}
 	};
 
+	template<typename T = void>
+	struct THashLess
+	{
+		constexpr bool operator()(const T& A, const T& B) const
+		{
+			return GetHash(A) < GetHash(B);
+		}
+	};
+
+	template<>
+	struct THashLess<void>
+	{
+		template<typename T, typename U>
+		constexpr bool operator()(T&& A, U&& B) const
+		{
+			return GetHash(A) < GetHash(B);
+		}
+	};
+
 #pragma endregion Comparisons
 
 
