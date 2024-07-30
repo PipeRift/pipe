@@ -259,6 +259,18 @@ namespace p
 	{
 		return 1.f / Sqrt(x);
 	}
+	inline PIPE_API double InvSqrt(double x)
+	{
+		return 1. / Sqrt(x);
+	}
+	inline PIPE_API float InvSqrt(i32 x)
+	{
+		return 1.f / Sqrt(x);
+	}
+	inline PIPE_API double InvSqrt(i64 x)
+	{
+		return 1. / Sqrt(x);
+	}
 
 	template<typename T>
 	static constexpr T Square(T val)

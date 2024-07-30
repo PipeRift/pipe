@@ -535,6 +535,26 @@ namespace p
 	}
 #pragma endregion Sort
 
+#pragma region Transformations
+	template<typename T, typename Index>
+	void Normalize(T* first, Index size)
+	{
+		T magnitude = {};
+		for (Index i = 0; i < size; ++i)
+		{
+			const T& value = first[i];
+			magnitude += value * value;
+		}
+		if (magnitude > T(0))
+		{
+			const T invMagnitude = InvSqrt(magnitude);
+			for (Index i = 0; i < size; ++i)
+			{
+				first[i] *= invMagnitude;
+			}
+		}
+	}
+#pragma endregion Transformations
 
 	/** Generates CRC hash of the memory area */
 	PIPE_API u32 MemCrc32(const void* Data, i32 Length, u32 CRC = 0);

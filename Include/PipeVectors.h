@@ -85,7 +85,7 @@ namespace p
 			const T lengthSquared = LengthSquared();
 			if (lengthSquared > 0.f)
 			{
-				const float scale = InvSqrt(lengthSquared);
+				const auto scale = InvSqrt(lengthSquared);
 				x *= scale;
 				y *= scale;
 			}
@@ -365,7 +365,7 @@ namespace p
 			const T lengthSqrt = LengthSquared();
 			if (lengthSqrt > 0.f)
 			{
-				const float scale = InvSqrt(lengthSqrt);
+				const auto scale = InvSqrt(lengthSqrt);
 				x *= scale;
 				y *= scale;
 				z *= scale;

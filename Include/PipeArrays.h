@@ -841,17 +841,20 @@ namespace p
 			new (Super::data + firstIdx) Type(value);
 			return firstIdx;
 		}
-		Type& AddRef()
+		inline Type& AddRef()
 		{
-			return Super::data[Add()];
+			const i32 idx = Add();
+			return Super::data[idx];
 		}
-		Type& AddRef(Type&& value)
+		inline Type& AddRef(Type&& value)
 		{
-			return Super::data[Add(p::Forward<Type>(value))];
+			const i32 idx = Add(p::Forward<Type>(value));
+			return Super::data[idx];
 		}
-		Type& AddRef(const Type& value)
+		inline Type& AddRef(const Type& value)
 		{
-			return Super::data[Add(value)];
+			const i32 idx = Add(value);
+			return Super::data[idx];
 		}
 
 		template<typename SortPredicate = TLess<Type>>
