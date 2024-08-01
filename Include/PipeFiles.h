@@ -25,12 +25,23 @@ namespace p
 
 	struct PIPE_API FileWatcher
 	{
+	public:
+		/** Should recursive watchers follow symbolic links? Default: false */
+		bool followsSymlinks = false;
+
+		/** Allow symlinks to watch recursively out of the pointed directory. Default: false.
+		 * 'followsSymlinks' must be enabled.
+		 * E.g: A symlink from '/home/folder' to '/'. With 'followsSymlinks=false' only '/home' and
+		 * deeper are allowed. Set to false it will prevent infinite recursion.
+		 */
+		bool allowsOutOfScopeLinks = false;
+
 	private:
 		OwnPtr fileWatcher;
 		p::TArray<TOwnPtr<struct FileWatchListener>> listeners;
 
 	public:
-		FileWatcher();
+		FileWatcher(bool useGeneric = false);
 		~FileWatcher();
 		FileWatcher(const FileWatcher& other)            = delete;
 		FileWatcher& operator=(const FileWatcher& other) = delete;
@@ -39,7 +50,7 @@ namespace p
 		void StopListening(FileListenerId id);
 		void Reset();
 
-		void StartAsync();
+		void StartWatchingAsync();
 	};
 #pragma endregion FileWatch
 
