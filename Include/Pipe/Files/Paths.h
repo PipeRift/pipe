@@ -64,6 +64,7 @@ namespace p
 
 	PIPE_API bool IsAbsolutePath(StringView path);
 	PIPE_API bool IsRelativePath(StringView path);
+	PIPE_API bool IsRemotePath(StringView path);
 	PIPE_API bool Exists(StringView path);
 
 	PIPE_API String JoinPaths(StringView base, StringView relative);
