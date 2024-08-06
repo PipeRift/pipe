@@ -319,7 +319,7 @@ namespace p
 	{
 		files.Clear();
 		for (auto& it :
-		    PathIterator(path, std::filesystem::directory_options::follow_directory_symlink))
+		    DirectoryIterator(path, std::filesystem::directory_options::follow_directory_symlink))
 		{
 			files.Insert(Tag{ToString(it.path().filename())}, it.status());
 		}
@@ -363,7 +363,7 @@ namespace p
 
 		FileStatusMap currentFiles;
 		for (auto& it :
-		    PathIterator(path, std::filesystem::directory_options::follow_directory_symlink))
+		    DirectoryIterator(path, std::filesystem::directory_options::follow_directory_symlink))
 		{
 			currentFiles.Insert(Tag{ToString(it.path().filename())}, it.status());
 		}

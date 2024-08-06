@@ -19,9 +19,9 @@ namespace p
 	using Path     = fs::path;
 	using PathView = TStringView<Path::value_type>;
 
-	using PathIterator          = fs::directory_iterator;
-	using RecursivePathIterator = fs::recursive_directory_iterator;
-	using SpaceInfo             = fs::space_info;
+	using DirectoryIterator          = fs::directory_iterator;
+	using RecursiveDirectoryIterator = fs::recursive_directory_iterator;
+	using SpaceInfo                  = fs::space_info;
 
 	enum class CopyOptions
 	{
@@ -54,6 +54,6 @@ namespace p
 	PIPE_API void Read(p::Reader& ct, p::Path& value);
 	PIPE_API void Write(p::Writer& ct, const p::Path& value);
 
-	PIPE_API PathIterator CreatePathIterator(StringView path);
-	PIPE_API RecursivePathIterator CreateRecursivePathIterator(StringView path);
+	PIPE_API DirectoryIterator CreateDirIterator(StringView path);
+	PIPE_API RecursiveDirectoryIterator CreateRecursiveDirIterator(StringView path);
 }    // namespace p
