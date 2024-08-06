@@ -795,6 +795,24 @@ namespace p
 		return *this;
 	}
 
+	bool PathIterator::operator==(const PathIterator& other) const noexcept
+	{
+		if (path == other.path && state == other.state)
+		{
+			if (state == State::InRootName || state == State::InFilenames)
+			{
+				return rawEntry == other.rawEntry;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	bool PathIterator::operator!=(const PathIterator& other) const noexcept
+	{
+		return !operator==(other);
+	}
+
 	bool PathIterator::AtEnd() const noexcept
 	{
 		return state == State::AtEnd;

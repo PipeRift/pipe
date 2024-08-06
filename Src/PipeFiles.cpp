@@ -9,7 +9,6 @@
 #include "Pipe/Extern/portable-file-dialogs.h"
 #include "Pipe/Files/Paths.h"
 
-#include <efsw/efsw.hpp>
 #include <shared_mutex>
 
 
@@ -273,6 +272,7 @@ namespace p
 		}
 
 		void Init(StringView path);
+		void SetPath(StringView newPath);
 		bool Exists();
 		void Scan(DirectorySnapshotDiff& diff);
 		FileStatusMap::Iterator NodeInFiles(FileStatus& fi);
@@ -286,11 +286,36 @@ namespace p
 		void DeleteAll(DirectorySnapshotDiff& diff);
 	};
 
+	void DirectorySnapshotDiff::Clear()
+	{
+		filesCreated.Clear();
+		filesModified.Clear();
+		filesMoved.Clear();
+		filesDeleted.Clear();
+		dirsCreated.Clear();
+		dirsModified.Clear();
+		dirsMoved.Clear();
+		dirsDeleted.Clear();
+	}
+
+	bool DirectorySnapshotDiff::Changed()
+	{
+		return !filesCreated.IsEmpty() || !filesModified.IsEmpty() || !filesMoved.IsEmpty()
+		    || !filesDeleted.IsEmpty() || !dirsCreated.IsEmpty() || !dirsModified.IsEmpty()
+		    || !dirsMoved.IsEmpty() || !dirsDeleted.IsEmpty();
+	}
+
+
 	void DirectorySnapshot::Init(StringView newPath)
+	{
+		SetPath(newPath);
+		InitFiles();
+	}
+
+	void DirectorySnapshot::SetPath(StringView newPath)
 	{
 		path          = String{newPath};
 		pathFileState = GetFileStatus(path);
-		InitFiles();
 	}
 
 	bool DirectorySnapshot::Exists()
@@ -720,9 +745,8 @@ namespace p
 		/// Is this a recursive watch?
 		if (watch->path != path)
 		{
-			if (!(path.size()
-			        && (path.at(0) == FileSystem::getOSSlash()
-			            || path.at(path.size() - 1) == FileSystem::getOSSlash())))
+			if (path.empty()
+			    || (!IsSeparator(path.at(0)) && !IsSeparator(path.at(path.size() - 1))))
 			{
 				/// Get the real directory
 				if (parent)
@@ -736,7 +760,7 @@ namespace p
 			}
 		}
 
-		dirSnap.SetDirectoryInfo(pathTmp);
+		dirSnap.SetPath(pathTmp);
 	}
 
 	void GenericDirWatch::HandleAction(
@@ -783,7 +807,8 @@ namespace p
 						}
 						else
 						{
-							dir = link;
+							path = link;
+							dir  = Tag{link};
 						}
 					}
 					else
@@ -898,36 +923,22 @@ namespace p
 			path = path.substr(dirSnap.path.size() - 1);
 		}
 
-		if (path.size() == 1)
-		{
-			P_Check(path[0] == FileSystem::getOSSlash());
-			return this;
-		}
-
-		size_t level             = 0;
-		std::vector<String> dirv = String::split(path, FileSystem::getOSSlash(), false);
-
 		GenericDirWatch* dirWatcher = this;
-
-		while (level < dirv.size())
+		const PathIterator dirEnd   = PathIterator::CreateEnd(path);
+		for (auto dirIt = PathIterator::CreateBegin(path); dirIt != dirEnd; ++dirIt)
 		{
 			// search the dir level in the current watcher
-			auto it = dirWatcher->directories.FindIt(Tag{dirv[level]});
+			auto it = dirWatcher->directories.FindIt(Tag{*dirIt});
 
-			// found? continue with the next level
-			if (it != dirWatcher->directories.end())
-			{
-				dirWatcher = it->second;
-				++level;
-			}
-			else
+			if (it == dirWatcher->directories.end())
 			{
 				// couldn't found the folder level?
 				// directory not watched
 				return nullptr;
 			}
+			// found? continue with the next level
+			dirWatcher = it->second;
 		}
-
 		return dirWatcher;
 	}
 
@@ -1271,7 +1282,7 @@ namespace p
 		else
 		{
 			fileWatcher = MakeOwned<DefaultFileWatcher>(this);
-			if (!fileWatcher.Get<BaseFileWatcher>()
+			if (!fileWatcher.GetUnsafe<BaseFileWatcher>()
 			         ->IsInitialized())    // Fallback to generic file watcher
 			{
 				p::Warning("Initialization of OS file watcher failed. Fallback to generic.");
@@ -1286,22 +1297,22 @@ namespace p
 
 	void FileWatcher::StartWatchingAsync()
 	{
-		fileWatcher.Get<BaseFileWatcher>()->Watch();
+		fileWatcher.GetUnsafe<BaseFileWatcher>()->Watch();
 	}
 
 	FileWatchId FileWatcher::ListenPath(StringView path, bool recursive, FileWatchCallback callback)
 	{
-		return fileWatcher.Get<BaseFileWatcher>()->AddWatch(path, Move(callback), recursive);
+		return fileWatcher.GetUnsafe<BaseFileWatcher>()->AddWatch(path, Move(callback), recursive);
 	}
 
 	void FileWatcher::StopListening(FileWatchId id)
 	{
-		fileWatcher.Get<BaseFileWatcher>()->RemoveWatch(id);
+		fileWatcher.GetUnsafe<BaseFileWatcher>()->RemoveWatch(id);
 	}
 
 	void FileWatcher::Reset()
 	{
-		fileWatcher.Get<BaseFileWatcher>()->RemoveAllWatches();
+		fileWatcher.GetUnsafe<BaseFileWatcher>()->RemoveAllWatches();
 	}
 #pragma endregion FileWatch
 }    // namespace p

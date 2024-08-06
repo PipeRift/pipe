@@ -153,6 +153,8 @@ namespace p
 		explicit operator bool() const noexcept;
 		PathIterator& operator++() noexcept;
 		PathIterator& operator--() noexcept;
+		bool operator==(const PathIterator& other) const noexcept;
+		bool operator!=(const PathIterator& other) const noexcept;
 
 		bool AtEnd() const noexcept;
 		bool InRootDir() const noexcept;
