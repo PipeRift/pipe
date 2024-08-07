@@ -21,7 +21,6 @@ namespace p
 		using TYPE_OF_NULL = decltype(nullptr);
 #if P_PLATFORM_MACOS_USE_CHAR16
 		using WideChar = char16_t;
-		using TChar    = WideChar;
 #else
 		using Char16 = char16_t;
 #endif

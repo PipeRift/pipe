@@ -81,20 +81,20 @@ namespace p
 
 	Subprocess::Subprocess(Subprocess&& other) noexcept
 	{
-		Swap(cinFile, other.cinFile);
-		Swap(coutFile, other.coutFile);
-		Swap(cerrFile, other.cerrFile);
+		p::Swap(cinFile, other.cinFile);
+		p::Swap(coutFile, other.coutFile);
+		p::Swap(cerrFile, other.cerrFile);
 #if defined(_MSC_VER)
-		Swap(hProcess, other.hProcess);
-		Swap(hStdInput, other.hStdInput);
-		Swap(hEventOutput, other.hEventOutput);
-		Swap(hEventError, other.hEventError);
+		p::Swap(hProcess, other.hProcess);
+		p::Swap(hStdInput, other.hStdInput);
+		p::Swap(hEventOutput, other.hEventOutput);
+		p::Swap(hEventError, other.hEventError);
 #else
-		Swap(child, other.child);
-		Swap(returnStatus, other.returnStatus);
+		p::Swap(child, other.child);
+		p::Swap(returnStatus, other.returnStatus);
 #endif
-		Swap(options, other.options);
-		Swap(alive, other.alive);
+		p::Swap(options, other.options);
+		p::Swap(alive, other.alive);
 	}
 
 	Subprocess::~Subprocess()
@@ -164,7 +164,6 @@ namespace p
 		instance.options = options;
 
 #if defined(_MSC_VER)
-		sizet len;
 		i32 i, j;
 		u64 flags                                = 0;
 		static constexpr u64 startFUseStdHandles = 0x00000100;
@@ -360,7 +359,7 @@ namespace p
 		        reinterpret_cast<_PROCESS_INFORMATION*>(&processInfo)))
 		{
 			DWORD errorCode = GetLastError();
-			TChar errorMessage[512];
+			char errorMessage[512];
 			PlatformMisc::GetSystemErrorMessage(errorMessage, 512, errorCode);
 			Error("RunProcess failed: {} (0x{:08x})", errorMessage, errorCode);
 			return {};

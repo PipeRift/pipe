@@ -7,6 +7,8 @@
 
 #include <thread>
 
+// Prevent errors with chrono duration::max()
+#undef max
 
 namespace p
 {
@@ -20,14 +22,14 @@ namespace p
 		return ToString("%d.%h:%m:%s.%f");
 	}
 
-	String Timespan::ToString(const TChar* format) const
+	String Timespan::ToString(const char* format) const
 	{
 		String result;
 		ToString(format, result);
 		return result;
 	}
 
-	void Timespan::ToString(const TChar* format, String& result) const
+	void Timespan::ToString(const char* format, String& result) const
 	{
 		result += (*this < Timespan::Zero()) ? '-' : '+';
 
@@ -126,7 +128,7 @@ namespace p
 		const i32 fractionNano = *Strings::ToI32(Tokens[4]);
 
 		// Max days
-		if ((days > Chrono::floor<Days>(DecMicroseconds::max()).count() - 1))
+		if (days > (Days::max().count() - 1))
 		{
 			return false;
 		}
@@ -306,7 +308,7 @@ namespace p
 		return ToString("%Y.%m.%d-%H.%M.%S");
 	}
 
-	String DateTime::ToString(const TChar* format) const
+	String DateTime::ToString(const char* format) const
 	{
 		// return Strings::Format(format, *value);
 		String result;
@@ -314,7 +316,7 @@ namespace p
 		return result;
 	}
 
-	void DateTime::ToString(const TChar* format, String& result) const
+	void DateTime::ToString(const char* format, String& result) const
 	{
 		if (format)
 		{
@@ -423,13 +425,13 @@ namespace p
 		return true;
 	}
 
-	bool DateTime::ParseIso8601(const TChar* DateTimeString, DateTime& OutDateTime)
+	bool DateTime::ParseIso8601(const char* DateTimeString, DateTime& OutDateTime)
 	{
 		// DateOnly: YYYY-MM-DD
 		// DateTime: YYYY-mm-ddTHH:MM:SS(.ssss)(Z|+th:tm|-th:tm)
 
-		const TChar* ptr = DateTimeString;
-		TChar* Next      = nullptr;
+		const char* ptr = DateTimeString;
+		char* Next      = nullptr;
 
 		i32 Year = 0, Month = 0, Day = 0;
 		i32 Hour = 0, Minute = 0, Second = 0, Millisecond = 0;

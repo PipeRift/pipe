@@ -17,15 +17,15 @@ namespace p
 		u32 size;
 
 		TagHeader(const TagHeader&) = delete;
-		const TChar* Data() const
+		const char* Data() const
 		{
-			return reinterpret_cast<const TChar*>(this + 1);
+			return reinterpret_cast<const char*>(this + 1);
 		};
 	};
 
-	TagHeader* GetTagHeader(const TChar* data)
+	TagHeader* GetTagHeader(const char* data)
 	{
-		return reinterpret_cast<TagHeader*>(const_cast<TChar*>(data)) - 1;
+		return reinterpret_cast<TagHeader*>(const_cast<char*>(data)) - 1;
 	}
 
 	struct TagHeaderRef
@@ -113,7 +113,7 @@ namespace p
 		InternalReset();
 	}
 
-	const TChar* Tag::Data() const
+	const char* Tag::Data() const
 	{
 		return str;
 	}
@@ -133,7 +133,7 @@ namespace p
 	constexpr sizet GetAllocSize(sizet dataSize)
 	{
 		// +1 for the end character of the string
-		return sizeof(TagHeader) + sizeof(TChar) * (dataSize + 1);
+		return sizeof(TagHeader) + sizeof(char) * (dataSize + 1);
 	}
 
 	i32 Tag::FlushInactiveTags()
@@ -213,8 +213,8 @@ namespace p
 		header->activeTags = 0;
 		header->size       = size;
 		// Copy string data
-		auto* const data = const_cast<TChar*>(header->Data());
-		p::CopyMem(data, (void*)value.data(), sizeof(TChar) * size);
+		auto* const data = const_cast<char*>(header->Data());
+		p::CopyMem(data, (void*)value.data(), sizeof(char) * size);
 		data[header->size] = '\0';
 
 		std::unique_lock lock{stringsListMutex};

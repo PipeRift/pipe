@@ -49,7 +49,7 @@ namespace p
 
 	}    // namespace Details
 
-	template<sizet N, typename CharType = TChar, typename TTraits = std::char_traits<CharType>>
+	template<sizet N, typename CharType = char, typename TTraits = std::char_traits<CharType>>
 	struct TFixedString
 	{
 		// exposition only
@@ -696,14 +696,14 @@ namespace p
 
 #endif    // CPP20_SPACESHIP_OPERATOR_PRESENT
 
-	template<sizet N, typename CharType = TChar>
+	template<sizet N, typename CharType = char>
 	TFixedString(const CharType (&)[N]) -> TFixedString<N - 1, CharType>;
 
 	template<sizet N>
-	using FixedString = TFixedString<N, TChar>;
+	using FixedString = TFixedString<N, char>;
 
 	// template <sizet N>
-	// FixedString(const TChar (&)[N]) -> FixedString<N - 1>;
+	// FixedString(const char (&)[N]) -> FixedString<N - 1>;
 
 
 	template<sizet N, sizet M, typename CharType, typename TTraits>

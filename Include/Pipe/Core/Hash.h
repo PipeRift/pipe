@@ -17,7 +17,7 @@ namespace p
 	// FNV String hash
 	// Use offset and prime based on the architecture (64bit or 32bit)
 	// http://www.isthe.com/chongo/tech/comp/fnv/index.html
-	template<typename CharType = TChar>
+	template<typename CharType = char>
 	inline PIPE_API constexpr sizet GetStringHash(const CharType* str)
 	{
 		// 32/64 bit architecture switch
@@ -41,7 +41,7 @@ namespace p
 		}
 	}
 
-	template<typename CharType = TChar>
+	template<typename CharType = char>
 	inline PIPE_API constexpr sizet GetStringHash(const CharType* str, sizet size)
 	{
 		// 32/64 bit architecture switch

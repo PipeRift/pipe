@@ -739,8 +739,8 @@ P_NATIVE_NAMED(p::u64, "u64")
 P_NATIVE_NAMED(p::i64, "i64")
 P_NATIVE(float)
 P_NATIVE(double)
-P_NATIVE_NAMED(p::TChar, "TChar")
-P_NATIVE_NAMED(p::TChar*, "StringLiteral")
+P_NATIVE(char)
+P_NATIVE_NAMED(char*, "StringLiteral")
 P_NATIVE_NAMED(p::StringView, "StringView")
 P_NATIVE_NAMED(p::String, "String")
 P_NATIVE_NAMED(p::Path, "Path");
@@ -906,13 +906,61 @@ namespace p
 		template<typename T = Object>
 		TPtr<T> AsPtr() const
 		{
-			return ownership.AsPtr().Cast<T>();
+			return Cast<T>(ownership.AsPtr());
 		}
 		template<typename T = Object>
 		TPtr<T> GetOwner() const
 		{
-			return ownership.GetOwner().Cast<T>();
+			return Cast<T>(ownership.GetOwner());
 		}
 	};
 #pragma endregion Objects
+
+
+#pragma region Casts
+
+	// Equal and Down-casting
+	template<typename To, typename From, typename ToValue = std::remove_pointer_t<To>>
+	ToValue* Cast(From* value) requires(Derived<From, ToValue>)
+	{
+		return value;
+	}
+
+	// Up-casting
+	template<typename To, typename From, typename ToValue = std::remove_pointer_t<To>>
+	ToValue* Cast(From* value) requires(Derived<ToValue, From, false>)
+	{
+		if constexpr (Derived<From, Object>)
+		{
+			const TypeId toId   = GetTypeId<ToValue>();
+			const TypeId fromId = value->GetTypeId();
+			return IsTypeParentOf(toId, fromId) ? static_cast<ToValue*>(value) : nullptr;
+		}
+		return nullptr;    // TODO: Implement non-object up casting
+	}
+
+	template<typename To, typename From>
+	TPtr<To> Cast(const TPtr<From>& value)
+	{
+		if (value.IsValid() && (Convertible<From, To> || Cast<To*>(value.GetUnsafe()) != nullptr))
+		{
+			TPtr<To> ptr{};
+			ptr.CopyFromUnsafe(value);
+			return ptr;
+		}
+		return {};
+	}
+
+	template<typename From, typename To = From>
+	TPtr<To> Cast(const TOwnPtr<From>& value)
+	{
+		if constexpr (Derived<From, To>)    // Is T2 is T or its base
+		{
+			return TPtr<To>{*this};
+		}
+
+		TPtr<From> ptr{*this};
+		return Cast<To>(ptr);
+	}
+#pragma endregion Casts
 };    // namespace p

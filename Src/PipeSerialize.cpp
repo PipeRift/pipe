@@ -754,7 +754,7 @@ namespace p
 
 		if (asString.data())
 		{
-			yyjsonAllocator.free(yyjsonAllocator.ctx, const_cast<TChar*>(asString.data()));
+			yyjsonAllocator.free(yyjsonAllocator.ctx, const_cast<char*>(asString.data()));
 		}
 	}
 
@@ -941,7 +941,7 @@ namespace p
 		if (asString.data())
 		{
 			// Free previous string value
-			yyjsonAllocator.free(yyjsonAllocator.ctx, const_cast<TChar*>(asString.data()));
+			yyjsonAllocator.free(yyjsonAllocator.ctx, const_cast<char*>(asString.data()));
 		}
 
 		yyjson_write_flag flags = pretty ? YYJSON_WRITE_PRETTY : 0;
@@ -977,7 +977,7 @@ namespace p
 
 	void BinaryFormatReader::Read(bool& val)
 	{
-		val = *pointer;
+		val = bool(*pointer);
 		++pointer;
 		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 	}
@@ -1077,11 +1077,11 @@ namespace p
 	{
 		i32 size = 0;
 		Read(size);
-		const sizet sizeInBytes = size * sizeof(TChar);
+		const sizet sizeInBytes = size * sizeof(char);
 		if (P_EnsureMsg(pointer + sizeInBytes <= data.EndData(),
 		        "The size of a string readen exceeds the read buffer!")) [[likely]]
 		{
-			val = StringView{reinterpret_cast<TChar*>(pointer), sizeInBytes};
+			val = StringView{reinterpret_cast<char*>(pointer), sizeInBytes};
 			pointer += sizeInBytes;
 			P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
 		}
@@ -1114,9 +1114,9 @@ namespace p
 		Free(arena, data, capacity);
 	}
 
-	void BinaryFormatWriter::BeginArray(u32 size)
+	void BinaryFormatWriter::BeginArray(u32 arraySize)
 	{
-		Write(size);
+		Write(arraySize);
 	}
 
 	bool BinaryFormatWriter::EnterNext(StringView)
@@ -1227,11 +1227,11 @@ namespace p
 	}
 	void BinaryFormatWriter::Write(StringView val)
 	{
-		const i32 valSize = i32(val.size() * sizeof(TChar));
+		const i32 valSize = i32(val.size() * sizeof(char));
 		PreAlloc(valSize + sizeof(i32));
 
 		Write(i32(val.size()));
-		CopyMem(data + size, const_cast<TChar*>(val.data()), valSize);
+		CopyMem(data + size, const_cast<char*>(val.data()), valSize);
 		size += valSize;
 	}
 

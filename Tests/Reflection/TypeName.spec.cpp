@@ -9,7 +9,6 @@
 #include <PipeReflect.h>
 
 
-
 using namespace snowhouse;
 using namespace bandit;
 using namespace p;
@@ -39,7 +38,7 @@ go_bandit([]() {
 			AssertThat(GetTypeName<i16>(), Equals("i16"));
 			AssertThat(GetTypeName<i32>(), Equals("i32"));
 			AssertThat(GetTypeName<i64>(), Equals("i64"));
-			AssertThat(GetTypeName<TChar>(), Equals("TChar"));
+			AssertThat(GetTypeName<char>(), Equals("TChar"));
 			AssertThat(GetTypeName<StringView>(), Equals("StringView"));
 			AssertThat(GetTypeName<String>(), Equals("String"));
 		});

@@ -11,7 +11,7 @@
 
 namespace p
 {
-	const TChar* WindowsPlatformMisc::GetSystemErrorMessage(TChar* buffer, i32 size, i32 error)
+	const char* WindowsPlatformMisc::GetSystemErrorMessage(char* buffer, i32 size, i32 error)
 	{
 		P_Check(buffer && size);
 
@@ -20,9 +20,9 @@ namespace p
 		{
 			error = ::GetLastError();
 		}
-		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, error,
+		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, error,
 		    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buffer, size, nullptr);
-		TChar* found = std::strchr(buffer, '\r');
+		char* found = std::strchr(buffer, '\r');
 		if (found)
 		{
 			*found = '\0';

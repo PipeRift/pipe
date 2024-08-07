@@ -1220,7 +1220,7 @@ namespace p
 		void CopyFrom(const EntityContext& other);
 		void MoveFrom(EntityContext&& other);
 
-		OwnPtr& FindOrAddStaticPtr(
+		static OwnPtr& FindOrAddStaticPtr(
 		    TArray<OwnPtr>& statics, const TypeId typeId, bool* bAdded = nullptr);
 
 		template<typename T>

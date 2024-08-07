@@ -621,8 +621,8 @@ namespace p
 		 * @return String representation.
 		 * @see Parse
 		 */
-		String ToString(const TChar* Format) const;
-		void ToString(const TChar* format, String& result) const;
+		String ToString(const char* Format) const;
+		void ToString(const char* format, String& result) const;
 
 	public:
 		/**
@@ -1138,8 +1138,8 @@ namespace p
 		 * @return String representation.
 		 * @see Parse, ToIso8601
 		 */
-		String ToString(const TChar* Format) const;
-		void ToString(const TChar* format, String& result) const;
+		String ToString(const char* Format) const;
+		void ToString(const char* format, String& result) const;
 
 		/**
 		 * Returns this date as the number of seconds since the Unix Epoch (January
@@ -1296,7 +1296,7 @@ namespace p
 		 * @return true if the string was converted successfully, false otherwise.
 		 * @see Parse, ParseHttpDate, ToIso8601
 		 */
-		static bool ParseIso8601(const TChar* DateTimeString, DateTime& OutDateTime);
+		static bool ParseIso8601(const char* DateTimeString, DateTime& OutDateTime);
 
 		/**
 		 * Gets the local date on this computer.

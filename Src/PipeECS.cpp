@@ -287,7 +287,7 @@ namespace p
 
 	void Read(Reader& r, Id& val)
 	{
-		auto* entityReader = dynamic_cast<EntityReader*>(&r);
+		auto* entityReader = p::Cast<EntityReader*>(&r);
 		if (P_EnsureMsg(entityReader, "Serializing an ecs Id without an EntityReader")) [[likely]]
 		{
 			i32 dataId;
@@ -298,7 +298,7 @@ namespace p
 
 	void Write(Writer& w, Id val)
 	{
-		auto* entityWriter = dynamic_cast<EntityWriter*>(&w);
+		auto* entityWriter = p::Cast<EntityWriter*>(&w);
 		if (P_EnsureMsg(entityWriter, "Serializing an ecs Id without an EntityWriter")) [[likely]]
 		{
 			const i32* dataId = entityWriter->GetIdToIndexes().Find(val);

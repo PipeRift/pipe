@@ -24,11 +24,11 @@ namespace p
 	template<typename CharType>
 	using TString =
 	    std::basic_string<CharType, std::char_traits<CharType>, std::allocator<CharType>>;
-	using String  = TString<TChar>;
+	using String  = TString<char>;
 	using WString = TString<WideChar>;
 
 	template<typename... Args>
-	using FormatString = std::basic_format_string<TChar, Args...>;
+	using FormatString = std::basic_format_string<char, Args...>;
 
 	namespace Strings
 	{
@@ -88,20 +88,20 @@ namespace p
 		 * @return	The number of elements in InArray
 		 */
 		PIPE_API i32 ParseIntoArray(const String& str, TArray<String>& OutArray,
-		    const TChar* pchDelim, bool InCullEmpty = true);
+		    const char* pchDelim, bool InCullEmpty = true);
 
 		PIPE_API void RemoveFromStart(String& str, sizet size);
 		PIPE_API void RemoveFromEnd(String& str, sizet size);
 		PIPE_API void RemoveFromEnd(String& str, StringView subStr);
 
-		PIPE_API bool RemoveCharFromEnd(String& str, TChar c);
+		PIPE_API bool RemoveCharFromEnd(String& str, char c);
 
-		PIPE_API i32 Split(const String& str, TArray<String>& tokens, const TChar delim);
+		PIPE_API i32 Split(const String& str, TArray<String>& tokens, const char delim);
 
-		PIPE_API bool Split(const String& str, String& a, String& b, const TChar* delim);
+		PIPE_API bool Split(const String& str, String& a, String& b, const char* delim);
 
 		PIPE_API bool IsNumeric(const String& str);
-		PIPE_API bool IsNumeric(const TChar* Str);
+		PIPE_API bool IsNumeric(const char* Str);
 
 		PIPE_API String ParseMemorySize(sizet size);
 

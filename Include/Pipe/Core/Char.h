@@ -45,12 +45,13 @@ namespace p
 		}
 	};
 
-#define LITERAL(CharType, StringLiteral) TLiteral<CharType>::Select(StringLiteral, L##StringLiteral)
+#define P_LITERAL(CharType, StringLiteral) \
+	TLiteral<CharType>::Select(StringLiteral, L##StringLiteral)
 
 	/**
 	 * TChar
 	 * Set of utility functions operating on a single character. The functions
-	 * are specialized for AnsiChar and TChar character types. You can use the
+	 * are specialized for AnsiChar and char character types. You can use the
 	 * typedefs FChar and FCharAnsi for convenience.
 	 */
 
@@ -152,7 +153,7 @@ namespace p
 		}
 		static inline bool IsUnderscore(CharType c)
 		{
-			return c == LITERAL(CharType, '_');
+			return c == P_LITERAL(CharType, '_');
 		}
 
 		static inline bool IsLinebreak(CharType c)
@@ -163,7 +164,7 @@ namespace p
 		static inline i32 StrtoI32(const CharType* str, CharType** end, i32 radix);
 	};
 
-	using FChar     = TCharHelpers<TChar>;
+	using FChar     = TCharHelpers<char>;
 	using FCharWide = TCharHelpers<WideChar>;
 	using FCharAnsi = TCharHelpers<AnsiChar>;
 

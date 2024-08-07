@@ -50,7 +50,7 @@ namespace p
 
 	MemoryStats::MemoryStats()
 	    : allocations{GetStateArena()}
-#if P_ENABLE_ALLOCATION_STACKS
+#ifdef P_ENABLE_ALLOCATION_STACKS
 	    , stacks{arena}
 #endif
 	    , freedAllocations{GetStateArena()}
@@ -94,7 +94,7 @@ namespace p
 		const AllocationStats item{static_cast<u8*>(ptr), size};
 		i32 index = allocations.AddSorted(item, SortLessAllocationStats{});
 
-#if P_ENABLE_ALLOCATION_STACKS
+#ifdef P_ENABLE_ALLOCATION_STACKS
 		auto& stack = stacks.InsertRef(index);
 		backward::StackTrace stack{arena};
 		stack.load_here(14 + 3);
@@ -116,10 +116,11 @@ namespace p
 		if (index != NO_INDEX)
 		{
 			AllocationStats& allocation = allocations[index];
-			P_CheckMsg(size == allocation.size, "Freed an allocation with a different size to which it got allocated with.");
+			P_CheckMsg(size == allocation.size,
+			    "Freed an allocation with a different size to which it got allocated with.");
 			freedAllocations.AddSorted(Move(allocation), SortLessAllocationStats{});
 			allocations.RemoveAt(index);
-#if P_ENABLE_ALLOCATION_STACKS
+#ifdef P_ENABLE_ALLOCATION_STACKS
 			stacks.RemoveAt(index);
 #endif
 		}
@@ -140,7 +141,7 @@ namespace p
 	{
 		if (allocations.Size() > 0)
 		{
-			TString<TChar> errorMsg;
+			TString<char> errorMsg;
 			Strings::FormatTo(
 			    errorMsg, "{}: {} allocations were not freed!", name, allocations.Size());
 
@@ -148,7 +149,7 @@ namespace p
 			for (i32 i = 0; i < shown; ++i)
 			{
 				PrintAllocationError("", &allocations[i], nullptr);
-#if P_ENABLE_ALLOCATION_STACKS
+#ifdef P_ENABLE_ALLOCATION_STACKS
 				PrintAllocationError("", &allocations[i], &stacks[i]);
 #endif
 			}
@@ -161,9 +162,9 @@ namespace p
 			std::puts(errorMsg.data());
 		}
 		allocations.Clear();
-#if P_ENABLE_ALLOCATION_STACKS
+#ifdef P_ENABLE_ALLOCATION_STACKS
 		stacks.Clear();
-#endif // P_ENABLE_ALLOCATION_STACKS
+#endif    // P_ENABLE_ALLOCATION_STACKS
 		used = 0;
 	}
 }    // namespace p
