@@ -67,10 +67,6 @@ file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
-target_link_libraries(Pipe PRIVATE
-    efsw
-)
-
 if(PIPE_ENABLE_ALLOCATION_STACKS)
     target_compile_definitions(Pipe PUBLIC P_ENABLE_ALLOCATION_STACKS=0)
 endif()

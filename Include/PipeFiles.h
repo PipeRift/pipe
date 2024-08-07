@@ -10,40 +10,6 @@
 
 namespace p
 {
-#pragma region FileWatch
-	enum class FileWatchAction : p::u8
-	{
-		Add      = 1,
-		Delete   = 2,
-		Modified = 3,
-		Moved    = 4
-	};
-
-	using FileListenerId    = long;
-	using FileWatchCallback = std::function<void(
-	    StringView path, StringView filename, FileWatchAction action, StringView oldFilename)>;
-
-	struct PIPE_API FileWatcher
-	{
-	private:
-		OwnPtr fileWatcher;
-		p::TArray<TOwnPtr<struct FileWatchListener>> listeners;
-
-	public:
-		FileWatcher();
-		~FileWatcher();
-		FileWatcher(const FileWatcher& other)            = delete;
-		FileWatcher& operator=(const FileWatcher& other) = delete;
-
-		FileListenerId ListenPath(StringView path, bool recursive, FileWatchCallback callback);
-		void StopListening(FileListenerId id);
-		void Reset();
-
-		void StartAsync();
-	};
-#pragma endregion FileWatch
-
-
 #pragma region FileDialogs
 	using DialogFileFilter = TPair<StringView, StringView>;
 
@@ -104,4 +70,48 @@ namespace p
     },
 	    bool alwaysShowDefaultPath = false, bool confirmOverwrite = false);
 #pragma endregion FileDialogs
+
+
+#pragma region FileWatch
+	enum class FileWatchAction : p::u8
+	{
+		Add      = 1,
+		Delete   = 2,
+		Modified = 3,
+		Moved    = 4
+	};
+
+	using FileWatchId       = i32;
+	using FileWatchCallback = std::function<void(FileWatchId id, StringView path,
+	    StringView filename, FileWatchAction action, StringView oldFilename)>;
+
+	struct PIPE_API FileWatcher
+	{
+	public:
+		/** Should recursive watchers follow symbolic links? Default: false */
+		bool followsSymlinks = false;
+
+		/** Allow symlinks to watch recursively out of the pointed directory. Default: false.
+		 * 'followsSymlinks' must be enabled.
+		 * E.g: A symlink from '/home/folder' to '/'. With 'followsSymlinks=false' only '/home' and
+		 * deeper are allowed. Set to false it will prevent infinite recursion.
+		 */
+		bool allowsOutOfScopeLinks = false;
+
+	private:
+		OwnPtr fileWatcher;
+
+	public:
+		FileWatcher(bool useGeneric = false);
+		~FileWatcher();
+		FileWatcher(const FileWatcher& other)            = delete;
+		FileWatcher& operator=(const FileWatcher& other) = delete;
+
+		FileWatchId ListenPath(StringView path, bool recursive, FileWatchCallback callback);
+		void StopListening(FileWatchId id);
+		void Reset();
+
+		void StartWatchingAsync();
+	};
+#pragma endregion FileWatch
 };    // namespace p

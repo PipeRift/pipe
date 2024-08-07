@@ -21,21 +21,21 @@ namespace p
 		ct.Serialize(ToString(value));
 	}
 
-	PathIterator CreatePathIterator(StringView path)
+	DirectoryIterator CreateDirIterator(StringView path)
 	{
 		if (!IsFolder(path))
 		{
 			return {};
 		}
-		return PathIterator{path};
+		return DirectoryIterator{path};
 	}
 
-	RecursivePathIterator CreateRecursivePathIterator(StringView path)
+	RecursiveDirectoryIterator CreateRecursiveDirIterator(StringView path)
 	{
 		if (!Exists(path) || !IsFolder(path))
 		{
 			return {};
 		}
-		return RecursivePathIterator{path};
+		return RecursiveDirectoryIterator{path};
 	}
 }    // namespace p

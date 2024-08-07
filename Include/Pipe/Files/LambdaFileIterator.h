@@ -6,7 +6,7 @@
 
 namespace p
 {
-	template<typename Iterator = PathIterator>
+	template<typename Iterator = DirectoryIterator>
 	class LambdaFileIterator
 	{
 	public:

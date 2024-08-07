@@ -64,6 +64,7 @@ namespace p
 
 	PIPE_API bool IsAbsolutePath(StringView path);
 	PIPE_API bool IsRelativePath(StringView path);
+	PIPE_API bool IsRemotePath(StringView path);
 	PIPE_API bool Exists(StringView path);
 
 	PIPE_API String JoinPaths(StringView base, StringView relative);
@@ -108,4 +109,75 @@ namespace p
 
 	PIPE_API String ToString(const Path& path);
 	PIPE_API std::filesystem::path ToSTDPath(StringView pathStr);
+
+
+#pragma region PathIterator
+	struct PathIterator
+	{
+		enum class State : u8
+		{
+			// Zero is a special sentinel value used by default constructed iterators.
+			BeforeBegin,
+			InRootName,
+			InRootDir,
+			InFilenames,
+			InTrailingSep,
+			AtEnd
+		};
+
+		const StringView path;
+		StringView rawEntry;
+		State state;
+
+	private:
+		PathIterator(StringView path, State state) noexcept : path(path), state(state) {}
+
+	public:
+		PathIterator(StringView path, StringView entry, State state)
+		    : path(path), rawEntry(entry), state(state)
+		{
+			// S cannot be '0' or BeforeBegin.
+		}
+
+		static PathIterator CreateBegin(StringView p) noexcept;
+		static PathIterator CreateEnd(StringView p) noexcept;
+
+		const TChar* Peek() const noexcept;
+		void Increment() noexcept;
+		void Decrement() noexcept;
+
+		/** @return a view with the "preferred representation" of the current
+		 * element. For example trailing separators are represented as a '.'
+		 */
+		StringView operator*() const noexcept;
+		explicit operator bool() const noexcept;
+		PathIterator& operator++() noexcept;
+		PathIterator& operator--() noexcept;
+		bool operator==(const PathIterator& other) const noexcept;
+		bool operator!=(const PathIterator& other) const noexcept;
+
+		bool AtEnd() const noexcept;
+		bool InRootDir() const noexcept;
+		bool InRootName() const noexcept;
+		bool InRootPath() const noexcept;
+
+	private:
+		void MakeState(State newState, const TChar* start, const TChar* end) noexcept;
+		void MakeState(State newState) noexcept;
+		const TChar* GetAfterBack() const noexcept;
+		const TChar* GetBeforeFront() const noexcept;
+		/// @return a pointer to the first character after the currently lexed element.
+		const TChar* GetNextTokenStartPos() const noexcept;
+		/// @return a pointer to the first character in the currently lexed element.
+		const TChar* GetCurrentTokenStartPos() const noexcept;
+		// Consume all consecutive separators
+		const TChar* ConsumeAllSeparators(const TChar* p, const TChar* end) const noexcept;
+		// Consume exactly N separators, or return nullptr.
+		const TChar* ConsumeNSeparators(const TChar* p, const TChar* end, int N) const noexcept;
+		const TChar* ConsumeName(const TChar* p, const TChar* end) const noexcept;
+		const TChar* ConsumeDriveLetter(const TChar* p, const TChar* end) const noexcept;
+		const TChar* ConsumeNetworkRoot(const TChar* p, const TChar* end) const noexcept;
+		const TChar* ConsumeRootName(const TChar* p, const TChar* end) const noexcept;
+	};
+#pragma endregion PathIterator
 }    // namespace p

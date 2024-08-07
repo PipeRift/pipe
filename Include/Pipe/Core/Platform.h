@@ -3,9 +3,7 @@
 #pragma once
 
 #ifndef P_PLATFORM_WINDOWS
-	#if defined(_WIN64)
-		#define P_PLATFORM_WINDOWS 1
-	#elif defined(_WIN32)
+	#if defined(_WIN64) || defined(_WIN32)
 		#define P_PLATFORM_WINDOWS 1
 	#else
 		#define P_PLATFORM_WINDOWS 0
@@ -14,18 +12,40 @@
 #ifndef P_PLATFORM_LINUX
 	#if defined(__linux__)
 		#define P_PLATFORM_LINUX 1
+		#if defined(__ANDROID__) || defined(ANDROID)
+			#define P_PLATFORM_ANDROID 1
+		#endif
 	#else
 		#define P_PLATFORM_LINUX 0
+		#define P_PLATFORM_ANDROID 0
 	#endif
 #endif
-#ifndef P_PLATFORM_MACOS
-	#if defined(__APPLE__)
-		#define P_PLATFORM_MACOS 1
+#ifndef P_PLATFORM_APPLE
+	#if defined(__APPLE__) || defined(__APPLE_CC__)
+		#define P_PLATFORM_APPLE 1
+		#if defined(__IPHONE__) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) \
+		    || (defined(TARGET_IPHONE_SIMULATOR) && TARGET_IPHONE_SIMULATOR)
+			#define P_PLATFORM_IOS 1
+			#define P_PLATFORM_MACOS 0
+		#else
+			#define P_PLATFORM_MACOS 1
+			#define P_PLATFORM_IOS 0
+		#endif
 	#else
+		#define P_PLATFORM_APPLE 0
 		#define P_PLATFORM_MACOS 0
+		#define P_PLATFORM_IOS 0
 	#endif
 #endif
 
+#ifndef P_PLATFORM_BSD
+	#if defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) \
+	    || defined(__DragonFly__)
+		#define P_PLATFORM_BSD 1
+	#else
+		#define P_PLATFORM_BSD 0
+	#endif
+#endif
 
 #if P_PLATFORM_WINDOWS
 	#include "Pipe/Core/WindowsPlatform.h"

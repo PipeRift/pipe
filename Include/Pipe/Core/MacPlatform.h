@@ -31,11 +31,11 @@ namespace p
 }    // namespace p
 
 #if __is_target_arch(arm64) || __is_target_arch(arm64e)
-	#define P_PLATFORM_MAC_ARM64 1
-	#define P_PLATFORM_MAC_X86 0
+	#define P_PLATFORM_MACOS_ARM64 1
+	#define P_PLATFORM_MACOS_X86 0
 #else
-	#define P_PLATFORM_MAC_ARM64 0
-	#define P_PLATFORM_MAC_X86 1
+	#define P_PLATFORM_MACOS_ARM64 0
+	#define P_PLATFORM_MACOS_X86 1
 #endif
 
 
@@ -46,7 +46,7 @@ namespace p
 #endif
 #define P_NOINLINE __attribute__((noinline))
 
-#if P_PLATFORM_MAC_X86
+#if P_PLATFORM_MACOS_X86
 	#define P_PLATFORM_BREAK() __asm__("int $3")
 #else
 	#define P_PLATFORM_BREAK() __builtin_debugtrap()
