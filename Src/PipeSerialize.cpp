@@ -1237,7 +1237,7 @@ namespace p
 
 	TView<p::u8> BinaryFormatWriter::GetData()
 	{
-		return {data, size};
+		return {data, i32(size)};
 	}
 
 	void BinaryFormatWriter::PreAlloc(u32 offset)

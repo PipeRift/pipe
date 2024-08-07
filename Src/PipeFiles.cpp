@@ -661,14 +661,14 @@ namespace p
 		dirWatch->Watch();
 	}
 
-	void GenericWatch::WatchDir(StringView path)
+	void GenericWatch::WatchDir(StringView pathToWatch)
 	{
-		dirWatch->WatchDir(path);
+		dirWatch->WatchDir(pathToWatch);
 	}
 
-	bool GenericWatch::IsPathInWatches(StringView path) const
+	bool GenericWatch::IsPathInWatches(StringView pathToCheck) const
 	{
-		return dirWatch->IsPathInWatches(path);
+		return dirWatch->IsPathInWatches(pathToCheck);
 	}
 
 
