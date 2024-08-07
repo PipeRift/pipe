@@ -102,10 +102,9 @@ namespace p
 		FWE_Unspecified = -6
 	};
 
-	using FileStatus     = std::filesystem::file_status;
-	using FileStatusMap  = TMap<Tag, FileStatus>;
-	using FileStatusList = std::list<FileStatus>;
-	using MovedList      = TArray<TPair<Tag, Tag>>;
+	using FileStatus    = std::filesystem::file_status;
+	using FileStatusMap = TMap<Tag, FileStatus>;
+	using MovedList     = TArray<TPair<Tag, Tag>>;
 
 	FileStatus GetFileStatus(StringView path)
 	{
@@ -215,7 +214,7 @@ namespace p
 		    StringView oldFilename = {}) = 0;
 
 		// @return Returns a list of the directories that are being watched
-		virtual std::list<String> Directories() = 0;
+		virtual TArray<String> Directories() = 0;
 
 		// @return true if the backend init successfully
 		bool IsInitialized() const
@@ -225,7 +224,7 @@ namespace p
 
 		// @return If the link is allowed according to the current path and the state of out scope
 		// links
-		bool IsLinkAllowed(const String& currentPath, const String& link) const;
+		bool IsLinkAllowed(StringView currentPath, StringView link) const;
 
 		/// Search if a directory already exists in the watches
 		virtual bool IsPathInWatches(StringView path) const = 0;
@@ -233,7 +232,7 @@ namespace p
 
 	BaseFileWatcher::BaseFileWatcher(FileWatcher* parent) : fileWatcher(parent) {}
 
-	bool BaseFileWatcher::IsLinkAllowed(const String& currentPath, const String& link) const
+	bool BaseFileWatcher::IsLinkAllowed(StringView currentPath, StringView link) const
 	{
 		return (fileWatcher->followsSymlinks && fileWatcher->allowsOutOfScopeLinks)
 		    || Strings::StartsWith(currentPath, link);
@@ -598,21 +597,18 @@ namespace p
 
 	class GenericFileWatcher : public BaseFileWatcher
 	{
-	public:
-		using WatchList = std::list<GenericWatch*>;
-
 	protected:
 		std::thread* thread     = nullptr;
 		FileWatchId lastWatchId = 0;
 
 		// Map of FileWatchId to WatchStruct pointers
-		WatchList watches;
+		TArray<GenericWatch*> watches;
 		std::shared_mutex watchesMutex;
 
 
 	public:
 		GenericFileWatcher(FileWatcher* parent);
-		~GenericFileWatcher();
+		virtual ~GenericFileWatcher();
 
 		// Add a directory watch. On error returns FileWatchId with Error type.
 		FileWatchId AddWatch(StringView path, FileWatchCallback callback, bool recursive) override;
@@ -621,11 +617,7 @@ namespace p
 		void RemoveWatch(StringView path) override;
 
 		// Remove a directory watch. This is a map lookup O(logn).
-		void RemoveWatch(FileWatchId watchId, WatchList::iterator it);
-		void RemoveWatch(FileWatchId watchId) override
-		{
-			RemoveWatch(watchId, watches.begin());
-		}
+		void RemoveWatch(FileWatchId watchId) override;
 
 		void RemoveAllWatches() override;
 
@@ -637,7 +629,7 @@ namespace p
 		    StringView oldFilename = {}) override;
 
 		// List of the directories that are being watched
-		std::list<String> Directories() override;
+		TArray<String> Directories() override;
 
 		bool IsPathInWatches(StringView path) const override;
 
@@ -692,8 +684,6 @@ namespace p
 
 			if (diff.Changed())
 			{
-				FileStatusList::iterator it;
-
 				for (auto filePath : diff.filesCreated)
 				{
 					HandleAction(filePath.AsString(), FileWatchAction::Add);
@@ -712,8 +702,6 @@ namespace p
 
 			if (!dirSnap.Exists())
 			{
-				FileStatusList::iterator it;
-
 				for (auto filePath : diff.filesDeleted)
 				{
 					HandleAction(filePath.AsString(), FileWatchAction::Delete);
@@ -1142,39 +1130,38 @@ namespace p
 
 		lastWatchId++;
 
-		GenericWatch* pWatch = new GenericWatch(lastWatchId, dir, Move(callback), this, recursive);
+		GenericWatch* watch = new GenericWatch(lastWatchId, dir, Move(callback), this, recursive);
 		std::unique_lock lock{watchesMutex};
-		watches.push_back(pWatch);
-		return pWatch->id;
+		watches.Add(watch);
+		return watch->id;
 	}
 
 	// Remove a directory watch. This is a brute force lazy search O(nlogn).
 	void GenericFileWatcher::RemoveWatch(StringView path)
 	{
-		WatchList::iterator it = watches.begin();
-		for (; it != watches.end(); ++it)
+		for (i32 i = 0; i < watches.Size(); ++i)
 		{
-			if ((*it)->path == path)
+			GenericWatch* watch = watches[i];
+			if (watch->path == path)
 			{
-				GenericWatch* watch = (*it);
 				std::unique_lock lock{watchesMutex};
 				delete watch;
-				watches.erase(it);
+				watches.RemoveAt(i);
 				return;
 			}
 		}
 	}
 
-	void GenericFileWatcher::RemoveWatch(FileWatchId watchId, WatchList::iterator it)
+	void GenericFileWatcher::RemoveWatch(FileWatchId watchId)
 	{
-		for (; it != watches.end(); ++it)
+		for (i32 i = 0; i < watches.Size(); ++i)
 		{
-			if ((*it)->id == watchId)
+			GenericWatch* watch = watches[i];
+			if (watch->id == watchId)
 			{
-				GenericWatch* watch = (*it);
 				std::unique_lock lock{watchesMutex};
 				delete watch;
-				watches.erase(it);
+				watches.RemoveAt(i);
 				return;
 			}
 		}
@@ -1187,7 +1174,7 @@ namespace p
 		{
 			delete watch;
 		}
-		watches.clear();
+		watches.Clear();
 	}
 
 	void GenericFileWatcher::Watch()
@@ -1206,16 +1193,14 @@ namespace p
 	}
 
 	// List of the directories that are being watched
-	std::list<String> GenericFileWatcher::Directories()
+	TArray<String> GenericFileWatcher::Directories()
 	{
-		std::list<String> dirs;
+		TArray<String> dirs;
 
 		std::unique_lock lock{watchesMutex};
-		WatchList::iterator it = watches.begin();
-
-		for (; it != watches.end(); ++it)
+		for (GenericWatch* watch : watches)
 		{
-			dirs.push_back((*it)->path);
+			dirs.Add(watch->path);
 		}
 
 		return Move(dirs);
@@ -1239,11 +1224,9 @@ namespace p
 		{
 			{
 				std::shared_lock lock{watchesMutex};
-				WatchList::iterator it = watches.begin();
-
-				for (; it != watches.end(); ++it)
+				for (GenericWatch* watch : watches)
 				{
-					(*it)->Watch();
+					watch->Watch();
 				}
 			}
 
