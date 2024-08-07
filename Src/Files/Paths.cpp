@@ -11,6 +11,14 @@
 	#include <windows.h>
 #elif P_PLATFORM_LINUX || P_PLATFORM_MACOS || P_PLATFORM_BSD || P_PLATFORM_ANDROID || P_PLATFORM_IOS
 	#include <sys/stat.h>
+
+	#if P_PLATFORM_LINUX || P_PLATFORM_ANDROID
+		#include <sys/vfs.h>
+	#elif P_PLATFORM_MACOS || P_PLATFORM_BSD || P_PLATFORM_IOS
+		#include <sys/mount.h>
+		#include <sys/param.h>
+	#endif
+
 /** Remote file systems codes */
 	#define P_MAGIC_AFS 0x5346414F
 	#define P_MAGIC_AUFS 0x61756673
@@ -396,7 +404,7 @@ namespace p
 
 		switch (statfsbuf.f_type | 0UL)
 		{
-			case S_MAGIC_FUSEBLK: /* 0x65735546 remote */
+			case P_MAGIC_FUSEBLK: /* 0x65735546 remote */
 			{
 	#if P_PLATFORM_LINUX
 				// TODO: Implement check if FUSE is remote or not. See EFSW's
@@ -404,27 +412,27 @@ namespace p
 				return true;
 	#endif
 			}
-			case S_MAGIC_AFS:     /* 0x5346414F remote */
-			case S_MAGIC_AUFS:    /* 0x61756673 remote */
-			case S_MAGIC_CEPH:    /* 0x00C36400 remote */
-			case S_MAGIC_CIFS:    /* 0xFF534D42 remote */
-			case S_MAGIC_CODA:    /* 0x73757245 remote */
-			case S_MAGIC_FHGFS:   /* 0x19830326 remote */
-			case S_MAGIC_FUSECTL: /* 0x65735543 remote */
-			case S_MAGIC_GFS:     /* 0x01161970 remote */
-			case S_MAGIC_GPFS:    /* 0x47504653 remote */
-			case S_MAGIC_KAFS:    /* 0x6B414653 remote */
-			case S_MAGIC_LUSTRE:  /* 0x0BD00BD0 remote */
-			case S_MAGIC_NCP:     /* 0x564C remote */
-			case S_MAGIC_NFS:     /* 0x6969 remote */
-			case S_MAGIC_NFSD:    /* 0x6E667364 remote */
-			case S_MAGIC_OCFS2:   /* 0x7461636F remote */
-			case S_MAGIC_PANFS:   /* 0xAAD7AAEA remote */
-			case S_MAGIC_PIPEFS:  /* 0x50495045 remote */
-			case S_MAGIC_SMB:     /* 0x517B remote */
-			case S_MAGIC_SNFS:    /* 0xBEEFDEAD remote */
-			case S_MAGIC_VMHGFS:  /* 0xBACBACBC remote */
-			case S_MAGIC_VXFS: /* 0xA501FCF5 remote */ return true;
+			case P_MAGIC_AFS:     /* 0x5346414F remote */
+			case P_MAGIC_AUFS:    /* 0x61756673 remote */
+			case P_MAGIC_CEPH:    /* 0x00C36400 remote */
+			case P_MAGIC_CIFS:    /* 0xFF534D42 remote */
+			case P_MAGIC_CODA:    /* 0x73757245 remote */
+			case P_MAGIC_FHGFS:   /* 0x19830326 remote */
+			case P_MAGIC_FUSECTL: /* 0x65735543 remote */
+			case P_MAGIC_GFS:     /* 0x01161970 remote */
+			case P_MAGIC_GPFS:    /* 0x47504653 remote */
+			case P_MAGIC_KAFS:    /* 0x6B414653 remote */
+			case P_MAGIC_LUSTRE:  /* 0x0BD00BD0 remote */
+			case P_MAGIC_NCP:     /* 0x564C remote */
+			case P_MAGIC_NFS:     /* 0x6969 remote */
+			case P_MAGIC_NFSD:    /* 0x6E667364 remote */
+			case P_MAGIC_OCFS2:   /* 0x7461636F remote */
+			case P_MAGIC_PANFS:   /* 0xAAD7AAEA remote */
+			case P_MAGIC_PIPEFS:  /* 0x50495045 remote */
+			case P_MAGIC_SMB:     /* 0x517B remote */
+			case P_MAGIC_SNFS:    /* 0xBEEFDEAD remote */
+			case P_MAGIC_VMHGFS:  /* 0xBACBACBC remote */
+			case P_MAGIC_VXFS: /* 0xA501FCF5 remote */ return true;
 		}
 #endif
 		return false;
