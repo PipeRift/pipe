@@ -557,6 +557,8 @@ namespace p
 		GenericWatch(FileWatchId id, StringView path, FileWatchCallback callback,
 		    GenericFileWatcher* fileWatcher, bool recursive);
 		~GenericWatch();
+		GenericWatch(const GenericWatch& other)            = delete;
+		GenericWatch& operator=(const GenericWatch& other) = delete;
 
 		void Watch();
 		void WatchDir(StringView dir);
@@ -937,8 +939,6 @@ namespace p
 		{
 			return this;
 		}
-		GenericDirWatch* watcher = nullptr;
-
 		for (const auto& dir : directories)
 		{
 			if (GenericDirWatch* watcher = dir.second->FindDirWatcher(path))

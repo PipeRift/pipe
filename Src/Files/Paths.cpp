@@ -402,7 +402,7 @@ namespace p
 		struct statfs statfsbuf;
 		statfs(path.data(), &statfsbuf);
 
-		switch (statfsbuf.f_type | 0UL)
+		switch (u32(statfsbuf.f_type))
 		{
 			case P_MAGIC_FUSEBLK: /* 0x65735546 remote */
 			{
