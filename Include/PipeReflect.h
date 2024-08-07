@@ -956,10 +956,10 @@ namespace p
 	{
 		if constexpr (Derived<From, To>)    // Is T2 is T or its base
 		{
-			return TPtr<To>{*this};
+			return TPtr<To>{value};
 		}
 
-		TPtr<From> ptr{*this};
+		TPtr<From> ptr{value};
 		return Cast<To>(ptr);
 	}
 #pragma endregion Casts
