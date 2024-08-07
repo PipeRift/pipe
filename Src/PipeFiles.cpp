@@ -507,16 +507,17 @@ namespace p
 
 	FileStatusMap::Iterator DirectorySnapshot::NodeInFiles(FileStatus& fi)
 	{
-#if P_PLATFORM_WINDOWS == 0    // Is INode supported?
-		FileStatusMap::Iterator it;
-		for (it = files.begin(); it != files.end(); it++)
-		{
-			if (it->second.Inode == Other.Inode && it->second.filePath != fi.filePath)
-			{
-				return it;
-			}
-		}
-#endif
+		// TODO: Implement inode support
+		// #if P_PLATFORM_WINDOWS == 0    // Is INode supported?
+		// 		FileStatusMap::Iterator it;
+		// 		for (it = files.begin(); it != files.end(); it++)
+		// 		{
+		// 			if (it->second.Inode == Other.Inode && it->second.filePath != fi.filePath)
+		// 			{
+		// 				return it;
+		// 			}
+		// 		}
+		// #endif
 		return files.end();
 	}
 
