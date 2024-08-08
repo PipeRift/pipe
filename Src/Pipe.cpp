@@ -13,11 +13,11 @@
 
 namespace p
 {
-	void Initialize(StringView logPath)
+	void Initialize(Logger* logger)
 	{
 		InitializeMemory();
 		InitializeReflect();
-		InitLog(logPath);
+		InitLog(logger);
 	}
 
 	void Shutdown()

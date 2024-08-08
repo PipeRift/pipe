@@ -958,7 +958,6 @@ namespace p
 		{
 			return TPtr<To>{value};
 		}
-
 		TPtr<From> ptr{value};
 		return Cast<To>(ptr);
 	}
