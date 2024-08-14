@@ -10,9 +10,6 @@
 #include "Pipe/Extern/yyjson.h"
 #include "PipeMath.h"
 
-// Include yyjson.c to get it compiled
-#include "Pipe/Extern/yyjson.c"
-
 
 static void* yyjson_malloc(void* ctx, p::sizet size)
 {

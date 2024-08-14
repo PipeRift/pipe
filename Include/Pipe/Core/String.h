@@ -7,7 +7,7 @@
 #include "Pipe/Core/STDFormat.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Extern/utf8.h"
+#include "Pipe/Extern/utf8/unchecked.h"
 #include "Pipe/Memory/STLAllocator.h"
 #include "PipeArrays.h"
 #include "PipeSerializeFwd.h"
@@ -120,19 +120,19 @@ namespace p
 			}
 			else if constexpr (sizeof(FromChar) == 1 && sizeof(ToChar) == 2)
 			{
-				utf8::utf8to16(source.begin(), source.end(), std::back_inserter(dest));
+				utf8::unchecked::utf8to16(source.begin(), source.end(), std::back_inserter(dest));
 			}
 			else if constexpr (sizeof(FromChar) == 2 && sizeof(ToChar) == 1)
 			{
-				utf8::utf16to8(source.begin(), source.end(), std::back_inserter(dest));
+				utf8::unchecked::utf16to8(source.begin(), source.end(), std::back_inserter(dest));
 			}
 			else if constexpr (sizeof(FromChar) == 1 && sizeof(ToChar) == 4)
 			{
-				utf8::utf8to32(source.begin(), source.end(), std::back_inserter(dest));
+				utf8::unchecked::utf8to32(source.begin(), source.end(), std::back_inserter(dest));
 			}
 			else if constexpr (sizeof(FromChar) == 4 && sizeof(ToChar) == 1)
 			{
-				utf8::utf32to8(source.begin(), source.end(), std::back_inserter(dest));
+				utf8::unchecked::utf32to8(source.begin(), source.end(), std::back_inserter(dest));
 			}
 			else
 			{

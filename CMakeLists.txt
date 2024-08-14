@@ -63,7 +63,8 @@ generate_export_header(Pipe
 pipe_target_define_platform(Pipe)
 
 target_include_directories(Pipe PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>)
-file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
+target_include_directories(Pipe PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Src>)
+file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.c)
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
