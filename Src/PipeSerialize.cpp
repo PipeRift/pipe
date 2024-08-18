@@ -30,7 +30,9 @@ bool yyjson_mut_obj_add_val(
     yyjson_mut_doc* doc, yyjson_mut_val* obj, p::StringView _key, yyjson_mut_val* _val)
 {
 	if (yyjson_unlikely(!_val))
+	{
 		return false;
+	}
 
 	if (yyjson_likely(yyjson_mut_is_obj(obj) && _key.data()))
 	{
@@ -1295,19 +1297,13 @@ namespace p
 
 	void Read(Reader& ct, TColor<ColorMode::RGBA>& color)
 	{
-		ct.BeginObject();
-		ct.Next("r", color.r);
-		ct.Next("g", color.g);
-		ct.Next("b", color.b);
-		ct.Next("a", color.a);
+		u32 value;
+		ct.Serialize(value);
+		color = TColor<ColorMode::RGBA>::FromHexAlpha(value);
 	}
 	void Write(Writer& ct, const TColor<ColorMode::RGBA>& color)
 	{
-		ct.BeginObject();
-		ct.Next("r", color.r);
-		ct.Next("g", color.g);
-		ct.Next("b", color.b);
-		ct.Next("a", color.a);
+		ct.Serialize(color.ToPackedRGBA());
 	}
 	void Read(Reader& ct, TColor<ColorMode::Linear>& color)
 	{

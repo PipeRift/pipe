@@ -558,7 +558,9 @@ namespace p
 	void CallSuperReadProperties(const T& value, p::Reader& r) requires(p::HasSuper<T>())
 	{
 		if constexpr (p::HasReadProperties<typename T::Super>())
+		{
 			value.Super::ReadProperties(r);
+		}
 	}
 	template<typename T>
 	void CallSuperWriteProperties(const T& value, p::Writer& w)
@@ -567,7 +569,9 @@ namespace p
 	void CallSuperWriteProperties(const T& value, p::Writer& w) requires(p::HasSuper<T>())
 	{
 		if constexpr (p::HasWriteProperties<typename T::Super>())
+		{
 			value.Super::WriteProperties(w);
+		}
 	}
 }    // namespace p
 
@@ -767,42 +771,42 @@ namespace p
 	inline void BuildType(const T*) requires(p::IsArray<T>())
 	{
 		// clang-format off
-	static p::ContainerTypeOps ops{
-		.itemType = p::RegisterTypeId<typename T::ItemType>(),
-		.getData = [](void* data) {
-			return (void*)static_cast<T*>(data)->Data();
-		},
-	    .getSize = [](void* data) {
-			return static_cast<T*>(data)->Size();
-	    },
-	    .getItem = [](void* data, p::i32 index) {
-			return (void*)(static_cast<T*>(data)->Data() + index);
-	    },
-	    .addItem = [](void* data, void* item) {
-			if (item)
-			{
-				auto& itemRef = *static_cast<typename T::ItemType*>(item);
-				if constexpr (p::IsCopyAssignable<typename T::ItemType>)
+		static p::ContainerTypeOps ops{
+			.itemType = p::RegisterTypeId<typename T::ItemType>(),
+			.getData = [](void* data) {
+				return (void*)static_cast<T*>(data)->Data();
+			},
+			.getSize = [](void* data) {
+				return static_cast<T*>(data)->Size();
+			},
+			.getItem = [](void* data, p::i32 index) {
+				return (void*)(static_cast<T*>(data)->Data() + index);
+			},
+			.addItem = [](void* data, void* item) {
+				if (item)
 				{
-					static_cast<T*>(data)->Add(itemRef);
+					auto& itemRef = *static_cast<typename T::ItemType*>(item);
+					if constexpr (p::IsCopyAssignable<typename T::ItemType>)
+					{
+						static_cast<T*>(data)->Add(itemRef);
+					}
+					else
+					{
+						static_cast<T*>(data)->Add(p::Move(itemRef));
+					}
 				}
 				else
 				{
-					static_cast<T*>(data)->Add(p::Move(itemRef));
+					static_cast<T*>(data)->Add();
 				}
+			},
+			.removeItem = [](void* data, p::i32 index) {
+				static_cast<T*>(data)->RemoveAt(index);
+			},
+			.clear = [](void* data) {
+				static_cast<T*>(data)->Clear();
 			}
-			else
-			{
-				static_cast<T*>(data)->Add();
-			}
-	    },
-	    .removeItem = [](void* data, p::i32 index) {
-			static_cast<T*>(data)->RemoveAt(index);
-	    },
-	    .clear = [](void* data) {
-		    static_cast<T*>(data)->Clear();
-	    }
-	};
+		};
 		// clang-format on
 		p::AddTypeFlags(p::TF_Container);
 		p::SetTypeOps(&ops);
