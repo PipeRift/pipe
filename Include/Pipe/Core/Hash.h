@@ -97,7 +97,7 @@ namespace p
 	template<typename T>
 	concept Hashable = requires(T a)
 	{
-		{ GetHash<T>(a) } -> std::convertible_to<sizet>;
+		{ GetHash(a) } -> std::convertible_to<sizet>;
 	};
 	// clang-format on
 }    // namespace p
