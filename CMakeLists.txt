@@ -56,10 +56,6 @@ else()
     add_library(Pipe STATIC)
 endif()
 
-generate_export_header(Pipe
-    BASE_NAME PIPE
-    EXPORT_MACRO_NAME PIPE_API
-    EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Pipe/Export.h)
 pipe_target_define_platform(Pipe)
 
 target_include_directories(Pipe PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>)
