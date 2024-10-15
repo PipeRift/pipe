@@ -2,8 +2,6 @@
 
 #include "Pipe/Core/StringView.h"
 
-#include "Pipe/Extern/fast_float.h"
-
 
 namespace p::Strings
 {
@@ -12,9 +10,9 @@ namespace p::Strings
 	{
 		T val;
 #if __cpp_lib_to_chars >= 202306L
-		if (fast_float::from_chars(str.data(), str.data() + str.size(), val))
+		if (std::from_chars(str.data(), str.data() + str.size(), val))
 #else
-		if (fast_float::from_chars(str.data(), str.data() + str.size(), val).ec == std::errc{})
+		if (std::from_chars(str.data(), str.data() + str.size(), val).ec == std::errc{})
 #endif
 		{
 			return val;

@@ -194,7 +194,7 @@ namespace p
 			return Value.ToString();
 		}
 
-		friend void LexFromString(Guid& Result, const TChar* String)
+		friend void LexFromString(Guid& Result, const char* String)
 		{
 			Guid::Parse(String, Result);
 		}

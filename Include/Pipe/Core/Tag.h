@@ -19,14 +19,14 @@ namespace p
 	struct PIPE_API Tag
 	{
 	private:
-		sizet hash       = 0;
-		const TChar* str = nullptr;
+		sizet hash      = 0;
+		const char* str = nullptr;
 
 
 	public:
 		constexpr Tag() = default;
 		Tag(StringView value);
-		Tag(const TChar* value) : Tag(StringView{value}) {}
+		Tag(const char* value) : Tag(StringView{value}) {}
 		explicit Tag(const String& value) : Tag(StringView(value)) {}
 
 		Tag(const Tag& other);
@@ -35,7 +35,7 @@ namespace p
 		Tag& operator=(Tag&& other) noexcept;
 		~Tag();
 
-		const TChar* Data() const;
+		const char* Data() const;
 		u32 Size() const;
 		StringView AsString() const;
 

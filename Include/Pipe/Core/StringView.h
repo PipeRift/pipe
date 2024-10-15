@@ -15,7 +15,7 @@ namespace p
 	template<typename CharType>
 	using TStringView = std::basic_string_view<CharType, std::char_traits<CharType>>;
 
-	using StringView  = TStringView<TChar>;
+	using StringView  = TStringView<char>;
 	using WStringView = TStringView<WideChar>;
 
 
@@ -187,103 +187,103 @@ namespace p
 		// END Any Char API
 
 
-		// BEGIN TChar API
-		// Specializations to avoid requiring <TChar> on function calls
+		// BEGIN char API
+		// Specializations to avoid requiring <char> on function calls
 
 		PIPE_API constexpr sizet Find(
-		    const StringView str, const TChar c, FindDirection direction = FindDirection::Front)
+		    const StringView str, const char c, FindDirection direction = FindDirection::Front)
 		{
-			return Find<TChar>(str, c, direction);
+			return Find<char>(str, c, direction);
 		}
 
 		PIPE_API constexpr sizet Find(const StringView str, const StringView subStr,
 		    FindDirection direction = FindDirection::Front)
 		{
-			return Find<TChar>(str, subStr, direction);
+			return Find<char>(str, subStr, direction);
 		}
 
 		PIPE_API constexpr bool Contains(
-		    const StringView str, const TChar c, FindDirection direction = FindDirection::Front)
+		    const StringView str, const char c, FindDirection direction = FindDirection::Front)
 		{
-			return Contains<TChar>(str, c, direction);
+			return Contains<char>(str, c, direction);
 		}
 
 		PIPE_API constexpr bool Contains(const StringView str, const StringView subStr,
 		    FindDirection direction = FindDirection::Front)
 		{
-			return Contains<TChar>(str, subStr, direction);
+			return Contains<char>(str, subStr, direction);
 		}
 
 		PIPE_API constexpr bool Equals(const StringView str, const StringView other)
 		{
-			return Equals<TChar>(str, other);
+			return Equals<char>(str, other);
 		}
 
-		PIPE_API constexpr bool Equals(const StringView str, const TChar c)
+		PIPE_API constexpr bool Equals(const StringView str, const char c)
 		{
-			return Equals<TChar>(str, c);
+			return Equals<char>(str, c);
 		}
 
 		PIPE_API constexpr bool StartsWith(const StringView str, const StringView subStr)
 		{
-			return StartsWith<TChar>(str, subStr);
+			return StartsWith<char>(str, subStr);
 		}
 
 		PIPE_API constexpr bool EndsWith(const StringView str, const StringView subStr)
 		{
-			return EndsWith<TChar>(str, subStr);
+			return EndsWith<char>(str, subStr);
 		}
 
-		PIPE_API constexpr bool EndsWith(const StringView str, const TChar c)
+		PIPE_API constexpr bool EndsWith(const StringView str, const char c)
 		{
-			return EndsWith<TChar>(str, c);
+			return EndsWith<char>(str, c);
 		}
 
 		PIPE_API constexpr StringView RemoveFromStart(const StringView str, sizet size)
 		{
-			return RemoveFromStart<TChar>(str, size);
+			return RemoveFromStart<char>(str, size);
 		}
 
 		PIPE_API constexpr StringView RemoveFromStart(const StringView str, const StringView subStr)
 		{
-			return RemoveFromStart<TChar>(str, subStr);
+			return RemoveFromStart<char>(str, subStr);
 		}
 
 
 		PIPE_API constexpr StringView RemoveFromEnd(const StringView str, sizet size)
 		{
-			return RemoveFromEnd<TChar>(str, size);
+			return RemoveFromEnd<char>(str, size);
 		}
 
 		PIPE_API constexpr StringView RemoveFromEnd(const StringView str, const StringView subStr)
 		{
-			return RemoveFromEnd<TChar>(str, subStr);
+			return RemoveFromEnd<char>(str, subStr);
 		}
 
-		PIPE_API constexpr StringView RemoveCharFromEnd(const StringView str, const TChar c)
+		PIPE_API constexpr StringView RemoveCharFromEnd(const StringView str, const char c)
 		{
-			return RemoveCharFromEnd<TChar>(str, c);
+			return RemoveCharFromEnd<char>(str, c);
 		}
 
 		PIPE_API constexpr StringView FrontSubstr(StringView str, sizet size)
 		{
-			return FrontSubstr<TChar>(str, size);
+			return FrontSubstr<char>(str, size);
 		}
 
 		PIPE_API constexpr StringView BackSubstr(StringView str, sizet size)
 		{
-			return BackSubstr<TChar>(str, size);
+			return BackSubstr<char>(str, size);
 		}
 
 		PIPE_API constexpr void Replace(
-		    StringView str, const TChar searchChar, const TChar replacementChar)
+		    StringView str, const char searchChar, const char replacementChar)
 		{
-			Replace<TChar>(str, searchChar, replacementChar);
+			Replace<char>(str, searchChar, replacementChar);
 		}
 
-		PIPE_API constexpr sizet Length(const TChar* str)
+		PIPE_API constexpr sizet Length(const char* str)
 		{
-			return Length<TChar>(str);
+			return Length<char>(str);
 		}
 
 		template<Number T>
@@ -319,7 +319,7 @@ namespace p
 		PIPE_API TOptional<i64> ToNumber<i64>(StringView str);
 		/** End ToNumber spetializations */
 
-		// END TChar API
+		// END char API
 	}    // namespace Strings
 
 
@@ -328,7 +328,7 @@ namespace p
 		return GetStringHash(str.data(), str.size());
 	};
 
-	inline sizet GetHash(const TChar* str)
+	inline sizet GetHash(const char* str)
 	{
 		return GetStringHash(str);
 	};

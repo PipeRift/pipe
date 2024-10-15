@@ -19,12 +19,12 @@ namespace p::Strings
 		String result;
 		result.reserve(value.size());
 
-		const TChar* p    = value.data();
-		const TChar* end  = value.data() + value.size();
-		const TChar* last = end - 1;
+		const char* p    = value.data();
+		const char* end  = value.data() + value.size();
+		const char* last = end - 1;
 		for (; p < last; ++p)
 		{
-			const TChar* next = p + 1;
+			const char* next = p + 1;
 			if (FChar::IsAlpha(*p) && (FChar::IsUpper(*next) || FChar::IsDigit(*next)))
 			{
 				result.push_back(*p);
@@ -57,7 +57,7 @@ namespace p::Strings
 		}
 	}
 
-	bool RemoveCharFromEnd(String& str, TChar c)
+	bool RemoveCharFromEnd(String& str, char c)
 	{
 		if (EndsWith(str, c))
 		{
@@ -67,7 +67,7 @@ namespace p::Strings
 		return false;
 	}
 
-	i32 Split(const String& str, TArray<String>& tokens, const TChar delim)
+	i32 Split(const String& str, TArray<String>& tokens, const char delim)
 	{
 		sizet current, previous = 0;
 		current = str.find(delim);
@@ -81,7 +81,7 @@ namespace p::Strings
 		return tokens.Size();
 	}
 
-	bool Split(const String& str, String& a, String& b, const TChar* delim)
+	bool Split(const String& str, String& a, String& b, const char* delim)
 	{
 		const sizet pos = str.find(delim);
 		if (pos != String::npos)
@@ -98,7 +98,7 @@ namespace p::Strings
 		return IsNumeric(str.data());
 	}
 
-	bool IsNumeric(const TChar* Str)
+	bool IsNumeric(const char* Str)
 	{
 		if (*Str == TX('-') || *Str == TX('+'))
 		{

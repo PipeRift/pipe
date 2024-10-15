@@ -73,7 +73,6 @@ namespace p
 		float y = value - (2.0f * pi) * quotient;
 
 		// Map y to [-pi/2,pi/2] with sin(y) = sin(value).
-		float sign;
 		if (y > halfPi)
 		{
 			y = pi - y;

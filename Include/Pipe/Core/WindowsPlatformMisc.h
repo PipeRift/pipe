@@ -12,7 +12,7 @@ namespace p
 	 **/
 	struct PIPE_API WindowsPlatformMisc : public GenericPlatformMisc
 	{
-		static const TChar* GetSystemErrorMessage(TChar* buffer, i32 size, i32 error = 0);
+		static const char* GetSystemErrorMessage(char* buffer, i32 size, i32 error = 0);
 	};
 
 	using PlatformMisc = WindowsPlatformMisc;

@@ -558,7 +558,9 @@ namespace p
 	void CallSuperReadProperties(const T& value, p::Reader& r) requires(p::HasSuper<T>())
 	{
 		if constexpr (p::HasReadProperties<typename T::Super>())
+		{
 			value.Super::ReadProperties(r);
+		}
 	}
 	template<typename T>
 	void CallSuperWriteProperties(const T& value, p::Writer& w)
@@ -567,7 +569,9 @@ namespace p
 	void CallSuperWriteProperties(const T& value, p::Writer& w) requires(p::HasSuper<T>())
 	{
 		if constexpr (p::HasWriteProperties<typename T::Super>())
+		{
 			value.Super::WriteProperties(w);
+		}
 	}
 }    // namespace p
 
@@ -739,8 +743,8 @@ P_NATIVE_NAMED(p::u64, "u64")
 P_NATIVE_NAMED(p::i64, "i64")
 P_NATIVE(float)
 P_NATIVE(double)
-P_NATIVE_NAMED(p::TChar, "TChar")
-P_NATIVE_NAMED(p::TChar*, "StringLiteral")
+P_NATIVE(char)
+P_NATIVE_NAMED(char*, "StringLiteral")
 P_NATIVE_NAMED(p::StringView, "StringView")
 P_NATIVE_NAMED(p::String, "String")
 P_NATIVE_NAMED(p::Path, "Path");
@@ -767,42 +771,42 @@ namespace p
 	inline void BuildType(const T*) requires(p::IsArray<T>())
 	{
 		// clang-format off
-	static p::ContainerTypeOps ops{
-		.itemType = p::RegisterTypeId<typename T::ItemType>(),
-		.getData = [](void* data) {
-			return (void*)static_cast<T*>(data)->Data();
-		},
-	    .getSize = [](void* data) {
-			return static_cast<T*>(data)->Size();
-	    },
-	    .getItem = [](void* data, p::i32 index) {
-			return (void*)(static_cast<T*>(data)->Data() + index);
-	    },
-	    .addItem = [](void* data, void* item) {
-			if (item)
-			{
-				auto& itemRef = *static_cast<typename T::ItemType*>(item);
-				if constexpr (p::IsCopyAssignable<typename T::ItemType>)
+		static p::ContainerTypeOps ops{
+			.itemType = p::RegisterTypeId<typename T::ItemType>(),
+			.getData = [](void* data) {
+				return (void*)static_cast<T*>(data)->Data();
+			},
+			.getSize = [](void* data) {
+				return static_cast<T*>(data)->Size();
+			},
+			.getItem = [](void* data, p::i32 index) {
+				return (void*)(static_cast<T*>(data)->Data() + index);
+			},
+			.addItem = [](void* data, void* item) {
+				if (item)
 				{
-					static_cast<T*>(data)->Add(itemRef);
+					auto& itemRef = *static_cast<typename T::ItemType*>(item);
+					if constexpr (p::IsCopyAssignable<typename T::ItemType>)
+					{
+						static_cast<T*>(data)->Add(itemRef);
+					}
+					else
+					{
+						static_cast<T*>(data)->Add(p::Move(itemRef));
+					}
 				}
 				else
 				{
-					static_cast<T*>(data)->Add(p::Move(itemRef));
+					static_cast<T*>(data)->Add();
 				}
+			},
+			.removeItem = [](void* data, p::i32 index) {
+				static_cast<T*>(data)->RemoveAt(index);
+			},
+			.clear = [](void* data) {
+				static_cast<T*>(data)->Clear();
 			}
-			else
-			{
-				static_cast<T*>(data)->Add();
-			}
-	    },
-	    .removeItem = [](void* data, p::i32 index) {
-			static_cast<T*>(data)->RemoveAt(index);
-	    },
-	    .clear = [](void* data) {
-		    static_cast<T*>(data)->Clear();
-	    }
-	};
+		};
 		// clang-format on
 		p::AddTypeFlags(p::TF_Container);
 		p::SetTypeOps(&ops);
@@ -906,13 +910,60 @@ namespace p
 		template<typename T = Object>
 		TPtr<T> AsPtr() const
 		{
-			return ownership.AsPtr().Cast<T>();
+			return Cast<T>(ownership.AsPtr());
 		}
 		template<typename T = Object>
 		TPtr<T> GetOwner() const
 		{
-			return ownership.GetOwner().Cast<T>();
+			return Cast<T>(ownership.GetOwner());
 		}
 	};
 #pragma endregion Objects
+
+
+#pragma region Casts
+
+	// Equal and Down-casting
+	template<typename To, typename From, typename ToValue = std::remove_pointer_t<To>>
+	ToValue* Cast(From* value) requires(Derived<From, ToValue>)
+	{
+		return value;
+	}
+
+	// Up-casting
+	template<typename To, typename From, typename ToValue = std::remove_pointer_t<To>>
+	ToValue* Cast(From* value) requires(Derived<ToValue, From, false>)
+	{
+		if constexpr (Derived<From, Object>)
+		{
+			const TypeId toId   = GetTypeId<ToValue>();
+			const TypeId fromId = value->GetTypeId();
+			return IsTypeParentOf(toId, fromId) ? static_cast<ToValue*>(value) : nullptr;
+		}
+		return nullptr;    // TODO: Implement non-object up casting
+	}
+
+	template<typename To, typename From>
+	TPtr<To> Cast(const TPtr<From>& value)
+	{
+		if (value.IsValid() && (Convertible<From, To> || Cast<To*>(value.GetUnsafe()) != nullptr))
+		{
+			TPtr<To> ptr{};
+			ptr.CopyFromUnsafe(value);
+			return ptr;
+		}
+		return {};
+	}
+
+	template<typename From, typename To = From>
+	TPtr<To> Cast(const TOwnPtr<From>& value)
+	{
+		if constexpr (Derived<From, To>)    // Is T2 is T or its base
+		{
+			return TPtr<To>{value};
+		}
+		TPtr<From> ptr{value};
+		return Cast<To>(ptr);
+	}
+#pragma endregion Casts
 };    // namespace p

@@ -814,8 +814,8 @@ namespace p
 	private:
 		Arena& arena;
 		u8* data     = nullptr;
-		i32 size     = 0;
-		i32 capacity = 0;
+		u32 size     = 0;
+		u32 capacity = 0;
 
 
 	public:

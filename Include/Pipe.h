@@ -8,6 +8,6 @@
 
 namespace p
 {
-	PIPE_API void Initialize(StringView logPath = {});
+	PIPE_API void Initialize(Logger* logger = nullptr);
 	PIPE_API void Shutdown();
 };    // namespace p

@@ -8,12 +8,14 @@
 
 namespace p
 {
-#if __has_cpp_attribute(clang::fallthrough)
-	#define P_FALLTHROUGH() [[clang::fallthrough]]
-#elif __has_cpp_attribute(gnu::fallthrough)
-	#define P_FALLTHROUGH() [[gnu::fallthrough]]
-#else
-	#define P_FALLTHROUGH()
+#ifndef P_FALLTHROUGH
+	#if __has_cpp_attribute(clang::fallthrough)
+		#define P_FALLTHROUGH [[clang::fallthrough]]
+	#elif __has_cpp_attribute(gnu::fallthrough)
+		#define P_FALLTHROUGH [[gnu::fallthrough]]
+	#else
+		#define P_FALLTHROUGH
+	#endif
 #endif
 
 
@@ -52,16 +54,16 @@ namespace p
 		const auto* const data8 = reinterpret_cast<const u8*>(data64 + n_blocks);
 		switch (len & 7U)
 		{
-			case 7: h ^= static_cast<u64>(data8[6]) << 48U; P_FALLTHROUGH();
-			case 6: h ^= static_cast<u64>(data8[5]) << 40U; P_FALLTHROUGH();
-			case 5: h ^= static_cast<u64>(data8[4]) << 32U; P_FALLTHROUGH();
-			case 4: h ^= static_cast<u64>(data8[3]) << 24U; P_FALLTHROUGH();
-			case 3: h ^= static_cast<u64>(data8[2]) << 16U; P_FALLTHROUGH();
-			case 2: h ^= static_cast<u64>(data8[1]) << 8U; P_FALLTHROUGH();
+			case 7: h ^= static_cast<u64>(data8[6]) << 48U; P_FALLTHROUGH;
+			case 6: h ^= static_cast<u64>(data8[5]) << 40U; P_FALLTHROUGH;
+			case 5: h ^= static_cast<u64>(data8[4]) << 32U; P_FALLTHROUGH;
+			case 4: h ^= static_cast<u64>(data8[3]) << 24U; P_FALLTHROUGH;
+			case 3: h ^= static_cast<u64>(data8[2]) << 16U; P_FALLTHROUGH;
+			case 2: h ^= static_cast<u64>(data8[1]) << 8U; P_FALLTHROUGH;
 			case 1:
 				h ^= static_cast<u64>(data8[0]);
 				h *= m;
-				P_FALLTHROUGH();
+				P_FALLTHROUGH;
 			default: break;
 		}
 

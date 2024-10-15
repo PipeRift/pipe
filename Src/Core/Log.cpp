@@ -11,34 +11,65 @@
 
 namespace p
 {
-	void InitLog(StringView logPath) {}
+	// clang-format off
+	const Logger defaultLogger = Logger{
+		.infoCallback = [](StringView msg) {
+			String text;
+			auto now = DateTime::Now();
+			now.ToString("[%Y/%m/%d %H:%M:%S]", text);
+			Strings::FormatTo(text, "[Info] {}\n", msg);
+			std::cout << text;
+		},
+		.warningCallback = [](StringView msg) {
+			String text;
+			auto now = DateTime::Now();
+			now.ToString("[%Y/%m/%d %H:%M:%S]", text);
+			Strings::FormatTo(text, "[Warning] {}\n", msg);
+			std::cout << text;
+		},
+		.errorCallback = [](StringView msg) {
+			String text;
+			auto now = DateTime::Now();
+			now.ToString("[%Y/%m/%d %H:%M:%S]", text);
+			Strings::FormatTo(text, "[Error] {}\n", msg);
+			std::cout << text;
+		}
+	};
+	// clang-format on
 
-	void ShutdownLog() {}
+	const Logger* globalLogger = nullptr;
+
+	void InitLog(Logger* logger)
+	{
+		globalLogger = logger ? logger : &defaultLogger;
+	}
+
+	void ShutdownLog()
+	{
+		globalLogger = nullptr;
+	}
 
 	void Info(StringView msg)
 	{
-		String text;
-		auto now = DateTime::Now();
-		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		Strings::FormatTo(text, "[Info] {}", msg);
-		std::cout << text << std::endl;
+		if (globalLogger)
+		{
+			globalLogger->infoCallback(msg);
+		}
 	}
 
 	void Warning(StringView msg)
 	{
-		String text;
-		auto now = DateTime::Now();
-		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		Strings::FormatTo(text, "[Warning] {}", msg);
-		std::cout << text << std::endl;
+		if (globalLogger)
+		{
+			globalLogger->warningCallback(msg);
+		}
 	}
 
 	void Error(StringView msg)
 	{
-		String text;
-		auto now = DateTime::Now();
-		now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-		Strings::FormatTo(text, "[Error] {}", msg);
-		std::cout << text << std::endl;
+		if (globalLogger)
+		{
+			globalLogger->errorCallback(msg);
+		}
 	}
 }    // namespace p
