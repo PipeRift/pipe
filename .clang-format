@@ -26,7 +26,6 @@ BinPackArguments: true
 BinPackParameters: true
 BitFieldColonSpacing: None
 BreakBeforeBinaryOperators: NonAssignment
-BreakBeforeBraces: Custom
 BreakBeforeConceptDeclarations: true
 BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: AfterComma

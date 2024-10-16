@@ -396,7 +396,6 @@ namespace p
 	{
 		if (lastRemovedIndex == NO_INDEX)
 		{
-			const auto last = end();
 			for (Id id : idList)
 			{
 				idIndices[GetIdIndex(id)] = NO_INDEX;
@@ -1100,7 +1099,7 @@ namespace p
 				{
 					for (Id child : cParent->children)
 					{
-						access.Get<CChild>(parent).parent = NoId;
+						access.Get<CChild>(child).parent = NoId;
 					}
 					cParent->children.Clear();
 				}

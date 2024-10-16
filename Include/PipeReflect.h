@@ -676,11 +676,9 @@ public:
                                                                                                   \
 	static void __BuildProperty(p::MetaCounter<id_name>)                                          \
 	{                                                                                             \
-		p::AddTypeProperty<decltype(name)>(                                                       \
-		    [](void* instance) {                                                                  \
+		p::AddTypeProperty<decltype(name)>([](void* instance) {                                   \
 			return (void*)&static_cast<Self*>(instance)->name;                                    \
-		    },                                                                                    \
-		    #name, p::InitPropertyFlags(flags));                                                  \
+		}, #name, p::InitPropertyFlags(flags));                                                   \
 		/* Registry next property if any */                                                       \
 		__BuildProperty(p::MetaCounter<id_name + 1>{});                                           \
 	}                                                                                             \
@@ -940,7 +938,10 @@ namespace p
 			const TypeId fromId = value->GetTypeId();
 			return IsTypeParentOf(toId, fromId) ? static_cast<ToValue*>(value) : nullptr;
 		}
-		return nullptr;    // TODO: Implement non-object up casting
+		else
+		{
+			return dynamic_cast<ToValue*>(value);    // TODO: Implement non-object up casting
+		}
 	}
 
 	template<typename To, typename From>

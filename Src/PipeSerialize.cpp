@@ -826,7 +826,6 @@ namespace p
 
 	void JsonFormatWriter::BeginObject()
 	{
-		Scope& scope = GetScope();
 		if (current) [[unlikely]]
 		{
 			if (!unsafe_yyjson_is_obj(current)) [[unlikely]]
@@ -843,7 +842,6 @@ namespace p
 
 	void JsonFormatWriter::BeginArray(u32 size)
 	{
-		Scope& scope = GetScope();
 		if (current) [[unlikely]]
 		{
 			if (!unsafe_yyjson_is_arr(current)) [[unlikely]]

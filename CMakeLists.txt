@@ -38,7 +38,6 @@ endif()
 include(CMake/Util.cmake)
 include(CMake/LinkTimeOptimization.cmake)
 find_package(Sanitizers)
-include(GenerateExportHeader)
 
 
 # ##############################################################################
@@ -62,7 +61,7 @@ target_include_directories(Pipe PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_
 target_include_directories(Pipe PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Src>)
 file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.c)
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
-target_compile_definitions(Pipe PRIVATE NOMINMAX)
+target_compile_definitions(Pipe PRIVATE PIPE_EXPORTS NOMINMAX)
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)
     target_compile_definitions(Pipe PUBLIC P_ENABLE_ALLOCATION_STACKS=0)

@@ -164,6 +164,9 @@ namespace p
 
 	class PIPE_API EntityReader : public Reader
 	{
+		using Super = Reader;
+		P_STRUCT(EntityReader)
+
 		EntityContext& context;
 
 		// While serializing we create ids as Ids appear and link them.
@@ -196,6 +199,9 @@ namespace p
 
 	class PIPE_API EntityWriter : public Writer
 	{
+		using Super = Writer;
+		P_STRUCT(EntityWriter)
+
 		EntityContext& context;
 
 		// While serializing we create ids as Ids appear and link them.
@@ -715,9 +721,13 @@ namespace p
 			P_Check(Has(id));
 			OnRemoved({id});
 			if (deletionPolicy == DeletionPolicy::InPlace)
+			{
 				Pop(id);
+			}
 			else
+			{
 				PopSwap(id);
+			}
 		}
 
 		i32 Remove(TView<const Id> ids) override

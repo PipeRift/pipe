@@ -6,6 +6,9 @@
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Map.h"
 #include "Pipe/Core/Tag.h"
+// Include Windows first
+#include <windows.h>
+// then PFD
 #include "Pipe/Extern/portable-file-dialogs.h"
 #include "Pipe/Files/Paths.h"
 
@@ -324,7 +327,6 @@ namespace p
 
 	void DirectorySnapshot::DeleteAll(DirectorySnapshotDiff& diff)
 	{
-		FileStatus fs;
 		for (const auto& value : files)
 		{
 			if (std::filesystem::is_directory(value.second))
