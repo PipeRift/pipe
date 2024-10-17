@@ -12,7 +12,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ################################################################################
 # Project
 
-project(Pipe VERSION 0.1 LANGUAGES CXX)
+project(Pipe VERSION 0.1 LANGUAGES CXX C)
 
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
