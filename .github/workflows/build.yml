@@ -12,34 +12,24 @@ on:
 
 jobs:
   Build:
-    name: ${{ matrix.os-name }} (${{ matrix.compiler }}, ${{ matrix.config }})
+    name: ${{ matrix.os }} (${{ matrix.compiler }}, ${{ matrix.config }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         config: [Release, Debug]
-        name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
+        os:
+          - windows-2022
+          - ubuntu-24.04
+          - macos-15
+        compiler:
+          - clang-17
+          - gcc-14
         include:
-          - name: windows-msvc
-            os: windows-2022
-            os-name: Windows
+          - os: windows-2022
             compiler: msvc
-          - name: windows-clang
-            os: windows-2022
-            os-name: Windows
-            compiler: clang-18
-          - name: linux-clang
-            os: ubuntu-24.04
-            os-name: Linux
-            compiler: clang-18
-          - name: linux-gcc
-            os: ubuntu-24.04
-            os-name: Linux
-            compiler: gcc-14
-          - name: macos-clang
-            os: macos-15
-            os-name: MacOS
-            compiler: clang-18
+    env:
+      os-name: ${{ contains(matrix.os, 'windows') && 'Windows' || (contains(matrix.os, 'ubuntu') && 'Linux' || 'MacOS') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,10 +39,21 @@ jobs:
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
-          compiler: ${{ matrix.compiler }}
-          vcvarsall: ${{ matrix.os-name == 'Windows' }}
+          # Skip compiler setup for macos clang-17
+          compiler: ${{ (contains(matrix.os, 'macos') && matrix.compiler == 'clang-17') && '' || matrix.compiler }}
+          vcvarsall: ${{ contains(matrix.os, 'windows') }}
           cmake: true
           ninja: true
+
+      - name: (MacOS) Install clang-17 through brew
+        if: contains(matrix.os, 'macos') && matrix.compiler == 'clang-17'
+        run: |
+          brew install llvm@17
+          export LLVM_DIR="$(brew --prefix llvm@17)/lib/cmake"
+          echo "CC=$(brew --prefix llvm@17)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@17)/bin/clang++" >> $GITHUB_ENV
+          echo "$(brew --prefix llvm@17)/bin" >> $GITHUB_PATH
+          brew link --overwrite llvm@17
 
       - name: Cache Build
         uses: actions/cache@v4
@@ -73,11 +74,11 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ contains(matrix.compiler, 'clang') }} # Only clang artifacts are stored
         with:
-          name: Pipe-${{ matrix.os-name }}-${{ matrix.config }}
+          name: Pipe-${{ env.os-name }}-${{ matrix.config }}
           path: Install
 
       - name: Run Tests
-        if: ${{ matrix.os-name != 'macos' }} # Tests are skipped temporarily on MacOS
+        if: ${{ !contains(matrix.os, 'macos') }} # Tests are skipped temporarily on MacOS
         working-directory: ./Build
         run: ctest --output-on-failure -j2 -C ${{ matrix.config }}
 
