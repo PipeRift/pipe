@@ -28,6 +28,10 @@ jobs:
         include:
           - os: windows-2022
             compiler: msvc
+            config: Release
+          - os: windows-2022
+            compiler: msvc
+            config: Debug
     env:
       os-name: ${{ contains(matrix.os, 'windows') && 'Windows' || (contains(matrix.os, 'ubuntu') && 'Linux' || 'MacOS') }}
     steps:
