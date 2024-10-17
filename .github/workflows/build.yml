@@ -25,13 +25,14 @@ jobs:
         compiler:
           - clang-17
           - gcc-14
-        include:
+          - msvc
+        exclude:
           - os: windows-2022
+            compiler: gcc-14
+          - os: ubuntu-24.04
             compiler: msvc
-            config: Release
-          - os: windows-2022
+          - os: macos-15
             compiler: msvc
-            config: Debug
     env:
       os-name: ${{ contains(matrix.os, 'windows') && 'Windows' || (contains(matrix.os, 'ubuntu') && 'Linux' || 'MacOS') }}
     steps:
