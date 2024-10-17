@@ -21,25 +21,25 @@ jobs:
         name: [windows-msvc, windows-clang, linux-clang, linux-gcc, macos-clang]
         include:
           - name: windows-msvc
-            os: windows-latest
+            os: windows-2022
             os-name: Windows
             compiler: msvc
           - name: windows-clang
-            os: windows-latest
+            os: windows-2022
             os-name: Windows
-            compiler: clang-17
+            compiler: clang-18
           - name: linux-clang
-            os: ubuntu-latest
+            os: ubuntu-24.04
             os-name: Linux
-            compiler: clang-16
+            compiler: clang-18
           - name: linux-gcc
-            os: ubuntu-latest
+            os: ubuntu-24.04
             os-name: Linux
-            compiler: gcc-13
+            compiler: gcc-14
           - name: macos-clang
-            os: macos-14
+            os: macOS-15-arm64
             os-name: MacOS
-            compiler: clang-17
+            compiler: clang-18
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -53,16 +53,6 @@ jobs:
           vcvarsall: ${{ matrix.os-name == 'Windows' }}
           cmake: true
           ninja: true
-
-      - name: (MacOS) Install clang through brew
-        if: matrix.os-name == 'MacOS' && contains(matrix.compiler, 'clang')
-        run: |
-          brew install llvm@17
-          export LLVM_DIR="$(brew --prefix llvm@17)/lib/cmake"
-          echo "CC=$(brew --prefix llvm@17)/bin/clang" >> $GITHUB_ENV
-          echo "CXX=$(brew --prefix llvm@17)/bin/clang++" >> $GITHUB_ENV
-          echo "$(brew --prefix llvm@17)/bin" >> $GITHUB_PATH
-          brew link --overwrite llvm@17
 
       - name: Cache Build
         uses: actions/cache@v4
