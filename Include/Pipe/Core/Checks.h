@@ -31,7 +31,7 @@ namespace p::details
 		return false;                                                        \
 	}()) && ([capture]() {                                                   \
 		p::details::FailedCheckError(#expression, __FILE__, __LINE__, text); \
-		P_DEBUG_PLATFORM_BREAK();                                            \
+		p::PlatformDebugBreak();                                             \
 		return false;                                                        \
 	}()))
 
@@ -47,7 +47,7 @@ namespace p::details
 			if (!(expression)) [[unlikely]]                                          \
 			{                                                                        \
 				p::details::FailedCheckError(#expression, __FILE__, __LINE__, text); \
-				P_DEBUG_PLATFORM_BREAK();                                            \
+				p::PlatformDebugBreak();                                             \
 			}
 	#endif
 

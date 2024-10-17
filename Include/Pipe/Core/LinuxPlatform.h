@@ -32,8 +32,6 @@ namespace p
 #endif    // P_DEBUG
 #define P_NOINLINE __attribute__((noinline))
 
-#define P_PLATFORM_BREAK() __asm__ volatile("int $0x03")
-
 #if (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 6))
 	#define DISABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize off")
 	#define ENABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize on")

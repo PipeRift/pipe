@@ -25,8 +25,6 @@ namespace p
 #define P_FORCEINLINE __forceinline     /* Force code to be inline */
 #define P_NOINLINE __declspec(noinline) /* Force code to not be inlined */
 
-#define P_PLATFORM_BREAK() (__nop(), __debugbreak())
-
 #if !defined(__clang__)
 	#define DISABLE_OPTIMIZATION_ACTUAL __pragma(optimize("", off))
 	#define ENABLE_OPTIMIZATION_ACTUAL __pragma(optimize("", on))

@@ -2,6 +2,7 @@
 
 #pragma once
 
+
 #ifndef P_PLATFORM_WINDOWS
 	#if defined(_WIN64) || defined(_WIN32)
 		#define P_PLATFORM_WINDOWS 1
@@ -55,6 +56,19 @@
 	#include "Pipe/Core/MacPlatform.h"
 #else
 	#error Unknown platform
+#endif
+
+
+// Platform break includes
+#if defined(__i386__) || defined(__x86_64__)
+#elif defined(__thumb__)
+#elif defined(__arm__) && !defined(__thumb__)
+#elif defined(__aarch64__) && defined(__APPLE__)
+#elif defined(__aarch64__)
+#elif defined(__powerpc__)
+#elif defined(__riscv)
+#else
+	#include <signal.h>
 #endif
 
 
@@ -120,6 +134,47 @@ namespace p
 	constexpr i32 NO_INDEX = -1;
 }    // namespace p
 
+#pragma region Platform Break
+namespace p
+{
+	__attribute__((always_inline)) __inline__ static void PlatformBreak()
+	{
+#if defined(__i386__) || defined(__x86_64__)
+		__asm__ volatile("int $0x03");
+#elif defined(__thumb__)
+		// See 'arm-linux-tdep.c' in GDB source, 'eabi_linux_thumb_le_breakpoint'
+		__asm__ volatile(".inst 0xde01");
+#elif defined(__arm__) && !defined(__thumb__)
+		// See 'arm-linux-tdep.c' in GDB source, 'eabi_linux_arm_le_breakpoint'
+		__asm__ volatile(".inst 0xe7f001f0");
+#elif defined(__aarch64__) && defined(__APPLE__)
+		__builtin_debugtrap();
+#elif defined(__aarch64__)
+		// See 'aarch64-tdep.c' in GDB source, 'aarch64_default_breakpoint'
+		__asm__ volatile(".inst 0xd4200000");
+#elif defined(__powerpc__)
+		// See 'rs6000-tdep.c' in GDB source, 'rs6000_breakpoint'
+		__asm__ volatile(".4byte 0x7d821008");
+#elif defined(__riscv)
+		// See 'riscv-tdep.c' in GDB source, 'riscv_sw_breakpoint_from_kind'
+		__asm__ volatile(".4byte 0x00100073");
+#else
+		raise(SIGTRAP);
+#endif
+	}
+
+#if P_DEBUG
+	__attribute__((always_inline)) __inline__ static void PlatformDebugBreak()
+	{
+		PlatformBreak();
+	}
+#else
+	__attribute__((always_inline)) __inline__ static void PlatformDebugBreak() {}
+#endif
+}    // namespace p
+
+#pragma endregion Platform Break
+
 
 #if !defined(TX)
 	#if PLATFORM_TCHAR_IS_WCHAR
@@ -142,12 +197,6 @@ namespace p
 	#if defined(__GNUG__)
 		#define UNIQUE_FUNCTION_ID __PRETTY_FUNCTION__
 	#endif
-#endif
-
-#if P_RELEASE
-	#define P_DEBUG_PLATFORM_BREAK()
-#else
-	#define P_DEBUG_PLATFORM_BREAK() P_PLATFORM_BREAK()
 #endif
 
 #define DISABLE_OPTIMIZATION DISABLE_OPTIMIZATION_ACTUAL

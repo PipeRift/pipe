@@ -37,13 +37,6 @@ namespace p
 #endif
 #define P_NOINLINE __attribute__((noinline))
 
-#if defined(__aarch64__)
-	#define P_PLATFORM_BREAK() __builtin_debugtrap()
-#else
-	#define P_PLATFORM_BREAK() __asm__("int $3")
-#endif
-
-
 #if (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 6))
 	#define DISABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize off")
 	#define ENABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize on")
