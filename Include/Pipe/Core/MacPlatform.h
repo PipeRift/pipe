@@ -29,14 +29,6 @@ namespace p
 	using PlatformTypes = MacPlatformTypes;
 }    // namespace p
 
-#if __is_target_arch(arm64) || __is_target_arch(arm64e)
-	#define P_PLATFORM_MACOS_ARM64 1
-	#define P_PLATFORM_MACOS_X86 0
-#else
-	#define P_PLATFORM_MACOS_ARM64 0
-	#define P_PLATFORM_MACOS_X86 1
-#endif
-
 
 #if P_DEBUG
 	#define P_FORCEINLINE inline /* Don't force code to be inline */
@@ -45,10 +37,10 @@ namespace p
 #endif
 #define P_NOINLINE __attribute__((noinline))
 
-#if P_PLATFORM_MACOS_X86
-	#define P_PLATFORM_BREAK() __asm__("int $3")
-#else
+#if defined(__aarch64__)
 	#define P_PLATFORM_BREAK() __builtin_debugtrap()
+#else
+	#define P_PLATFORM_BREAK() __asm__("int $3")
 #endif
 
 
