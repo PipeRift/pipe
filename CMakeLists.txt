@@ -51,6 +51,8 @@ add_subdirectory(Extern)
 
 if (PIPE_BUILD_SHARED)
     add_library(Pipe SHARED)
+    target_compile_definitions(Pipe PUBLIC PIPE_IMPORTS=1)
+    target_compile_definitions(Pipe PRIVATE -DPIPE_IMPORTS PIPE_EXPORTS=1)
 else()
     add_library(Pipe STATIC)
 endif()
@@ -61,7 +63,7 @@ target_include_directories(Pipe PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_
 target_include_directories(Pipe PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Src>)
 file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.c)
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
-target_compile_definitions(Pipe PRIVATE PIPE_EXPORTS NOMINMAX)
+target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)
     target_compile_definitions(Pipe PUBLIC P_ENABLE_ALLOCATION_STACKS=0)
