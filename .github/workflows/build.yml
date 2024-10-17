@@ -49,7 +49,7 @@ jobs:
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
-          compiler: ${{ (matrix.os-name != 'MacOS' || !contains(matrix.compiler, 'clang')) && matrix.compiler || '' }}
+          compiler: ${{ matrix.compiler }}
           vcvarsall: ${{ matrix.os-name == 'Windows' }}
           cmake: true
           ninja: true
