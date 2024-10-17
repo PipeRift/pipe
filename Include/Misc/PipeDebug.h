@@ -13,6 +13,8 @@ static_assert(false, "Imgui not found. PipeDebug requires v1.90 or newer.");
 static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeDebug requires v1.90 or newer.");
 #endif
 
+// Mark debug tools as present for others
+#define P_DEBUG_TOOLS 1
 
 #include "Misc/PipeImGui.h"
 #include "Pipe/Core/Checks.h"
@@ -176,7 +178,8 @@ namespace p
 
 		EntityContext* ctx = nullptr;
 
-		bool initialized = false;
+		bool initialized  = false;
+		bool isFirstDebug = true;
 
 
 		DebugContext() = default;
@@ -871,9 +874,13 @@ namespace p
 				ImGui::PushTextColor(errorTextColor);
 				const char* errorMsg;
 				if (inspector.id == NoId)
+				{
 					errorMsg = "No entity";
+				}
 				else
+				{
 					errorMsg = removed ? "Removed entity" : "Invalid entity";
+				}
 
 				auto regionAvail = ImGui::GetContentRegionAvail();
 				auto textSize =
@@ -1139,7 +1146,9 @@ namespace p
 
 			ImGui::TableSetColumnIndex(0);    // Id
 			if (!passedFilter)
+			{
 				ImGui::PushTextColor(ImGui::GetTextColor().Shade(0.3f));
+			}
 			ImGuiTreeNodeFlags treeNodeFlags =
 			    ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_NoTreePushOnOpen;
 			if (typeProperties.IsEmpty())
@@ -1148,7 +1157,9 @@ namespace p
 			}
 			const bool propsOpen = ImGui::TreeNodeEx(idText.data(), treeNodeFlags);
 			if (!passedFilter)
+			{
 				ImGui::PopTextColor();
+			}
 
 			ImGui::TableSetColumnIndex(1);    // Name
 			StringView ns;
@@ -1277,7 +1288,8 @@ namespace p
 		    "Called EndDebug() but there was no current ECS Debug Context! Forgot "
 		    "to call "
 		    "BeginDebug()?");
-		currentContext = nullptr;
+		currentContext->isFirstDebug = false;
+		currentContext               = nullptr;
 	}
 #endif
 };    // namespace p

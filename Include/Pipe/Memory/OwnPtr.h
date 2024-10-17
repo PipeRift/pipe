@@ -54,12 +54,12 @@ namespace p
 	public:
 		BaseOwnPtr(BaseOwnPtr&& other) noexcept
 		{
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 		}
 		BaseOwnPtr& operator=(BaseOwnPtr&& other) noexcept
 		{
 			Delete();
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 			return *this;
 		}
 		~BaseOwnPtr()
@@ -93,6 +93,14 @@ namespace p
 			return value;
 		}
 
+		void MoveFromUnsafe(BaseOwnPtr&& other)
+		{
+			value         = other.value;
+			counter       = other.counter;
+			other.value   = nullptr;
+			other.counter = nullptr;
+		}
+
 	protected:
 		BaseOwnPtr() = default;
 		// Initialization from parent
@@ -103,15 +111,6 @@ namespace p
 				counter = new (p::Alloc<Internal::PtrWeakCounter>(arena))
 				    Internal::PtrWeakCounter(arena, deleter);
 			}
-		}
-
-
-		void MoveFrom(BaseOwnPtr&& other)
-		{
-			value         = other.value;
-			counter       = other.counter;
-			other.value   = nullptr;
-			other.counter = nullptr;
 		}
 	};
 
@@ -165,9 +164,8 @@ namespace p
 			return value;
 		}
 
-	protected:
-		void MoveFrom(Ptr&& other);
-		void CopyFrom(const Ptr& other);
+		void MoveFromUnsafe(Ptr&& other);
+		void CopyFromUnsafe(const Ptr& other);
 
 	private:
 		void ResetNoCheck(const bool bIsSet);
@@ -211,14 +209,14 @@ namespace p
 
 		TOwnPtr(TOwnPtr&& other) noexcept
 		{
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 		}
 		TOwnPtr(OwnPtr&& other) noexcept;
 
 		TOwnPtr& operator=(TOwnPtr&& other) noexcept
 		{
 			Delete();
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 			return *this;
 		}
 
@@ -228,13 +226,13 @@ namespace p
 		template<typename T2>
 		TOwnPtr(TOwnPtr<T2>&& other) noexcept requires Derived<T2, T>
 		{
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 		}
 		template<typename T2>
 		TOwnPtr& operator=(TOwnPtr<T2>&& other) noexcept requires Derived<T2, T>
 		{
 			Delete();
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 			return *this;
 		}
 
@@ -258,22 +256,10 @@ namespace p
 			if (IsValid() && (Convertible<T, T2> || dynamic_cast<T2*>(GetUnsafe()) != nullptr))
 			{
 				TOwnPtr<T2> newPtr{};
-				newPtr.MoveFrom(Move(*this));
+				newPtr.MoveFromUnsafe(Move(*this));
 				return newPtr;
 			}
 			return {};
-		}
-
-		template<typename T2 = T>
-		TPtr<T2> Cast() const
-		{
-			if constexpr (Derived<T, T2>)    // Is T2 is T or its base
-			{
-				return TPtr<T2>{*this};
-			}
-
-			TPtr<T> ptr{*this};
-			return ptr.template Cast<T2>();
 		}
 
 		TPtr<T> AsPtr() const
@@ -341,12 +327,10 @@ namespace p
 			return Move(ptr);
 		}
 
-	private:
-
 		template<typename T2>
-		void MoveFrom(TOwnPtr<T2>&& other)
+		void MoveFromUnsafe(TOwnPtr<T2>&& other)
 		{
-			Super::MoveFrom(Move(other));
+			Super::MoveFromUnsafe(Move(other));
 #if P_DEBUG
 			instance       = static_cast<T*>(value);
 			other.instance = nullptr;
@@ -374,13 +358,13 @@ namespace p
 
 		TPtr& operator=(const TPtr& other)
 		{
-			CopyFrom(other);
+			CopyFromUnsafe(other);
 			return *this;
 		}
 
 		TPtr& operator=(TPtr&& other) noexcept
 		{
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 			return *this;
 		}
 
@@ -405,14 +389,14 @@ namespace p
 		template<typename T2>
 		TPtr& operator=(const TPtr<T2>& other) requires Derived<T2, T>
 		{
-			CopyFrom(other);
+			CopyFromUnsafe(other);
 			return *this;
 		}
 
 		template<typename T2>
 		TPtr& operator=(TPtr<T2>&& other) noexcept requires Derived<T2, T>
 		{
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 			return *this;
 		}
 
@@ -425,19 +409,6 @@ namespace p
 		{
 			return static_cast<T*>(value);
 		}
-
-		template<typename T2>
-		TPtr<T2> Cast() const
-		{
-			if (IsValid() && (Convertible<T, T2> || dynamic_cast<T2*>(GetUnsafe()) != nullptr))
-			{
-				TPtr<T2> ptr{};
-				ptr.CopyFrom(*this);
-				return ptr;
-			}
-			return {};
-		}
-
 
 		T& operator*() const
 		{
@@ -497,12 +468,12 @@ namespace p
 		template<typename T>
 		OwnPtr(TOwnPtr<T>&& other) noexcept
 		{
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 			typeId = GetTypeId<T>();
 		}
 		OwnPtr(OwnPtr&& other) noexcept
 		{
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 			typeId       = Move(other.typeId);
 			other.typeId = TypeId::None();
 		}
@@ -511,7 +482,7 @@ namespace p
 		OwnPtr& operator=(TOwnPtr<T>&& other) noexcept
 		{
 			Delete();
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 			typeId = GetTypeId<T>();
 			return *this;
 		}
@@ -519,7 +490,7 @@ namespace p
 		OwnPtr& operator=(OwnPtr&& other) noexcept
 		{
 			Delete();
-			MoveFrom(Move(other));
+			MoveFromUnsafe(Move(other));
 			typeId       = Move(other.typeId);
 			other.typeId = TypeId::None();
 			return *this;
@@ -578,7 +549,7 @@ namespace p
 	inline TOwnPtr<T>::TOwnPtr(OwnPtr&& other) noexcept
 	{
 		P_CheckMsg(other.IsType<T>(), "Type doesn't match!");
-		Super::MoveFrom(Move(other));
+		Super::MoveFromUnsafe(Move(other));
 #if P_DEBUG
 		instance = static_cast<T*>(value);
 #endif
@@ -589,7 +560,7 @@ namespace p
 	{
 		P_CheckMsg(other.IsType<T>(), "Type doesn't match!");
 		Delete();
-		Super::MoveFrom(Move(other));
+		Super::MoveFromUnsafe(Move(other));
 #if P_DEBUG
 		instance = static_cast<T*>(value);
 #endif

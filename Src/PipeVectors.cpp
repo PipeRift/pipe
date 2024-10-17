@@ -200,14 +200,6 @@ namespace p
 
 		Quat RotationQuat{CR * CP * CY + SR * SP * SY, CR * SP * SY - SR * CP * CY,
 		    -CR * SP * CY - SR * CP * SY, CR * CP * SY - SR * SP * CY};
-
-#if ENABLE_NAN_DIAGNOSTIC || DO_CHECK
-		// Very large inputs can cause NaN's. Want to catch this here
-		ensureMsgf(!RotationQuat.ContainsNaN(),
-		    TEXT("Invalid input to FRotator::Quaternion - generated NaN output: %s"),
-		    *RotationQuat.ToString());
-#endif
-
 		return RotationQuat;
 	}
 

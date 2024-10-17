@@ -5,7 +5,12 @@
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Map.h"
+#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Tag.h"
+#if P_PLATFORM_WINDOWS
+    // Include Windows before protable file dialogs
+	#include <windows.h>
+#endif
 #include "Pipe/Extern/portable-file-dialogs.h"
 #include "Pipe/Files/Paths.h"
 
@@ -115,7 +120,9 @@ namespace p
 	{
 #if P_PLATFORM_WINDOWS == 0
 		if (getuid() == 0)    // Is root?
+		{
 			return true;
+		}
 #endif
 		return (status.permissions() & std::filesystem::perms::owner_read)
 		    != std::filesystem::perms::none;
@@ -324,7 +331,6 @@ namespace p
 
 	void DirectorySnapshot::DeleteAll(DirectorySnapshotDiff& diff)
 	{
-		FileStatus fs;
 		for (const auto& value : files)
 		{
 			if (std::filesystem::is_directory(value.second))
@@ -661,14 +667,14 @@ namespace p
 		dirWatch->Watch();
 	}
 
-	void GenericWatch::WatchDir(StringView path)
+	void GenericWatch::WatchDir(StringView pathToWatch)
 	{
-		dirWatch->WatchDir(path);
+		dirWatch->WatchDir(pathToWatch);
 	}
 
-	bool GenericWatch::IsPathInWatches(StringView path) const
+	bool GenericWatch::IsPathInWatches(StringView pathToCheck) const
 	{
-		return dirWatch->IsPathInWatches(path);
+		return dirWatch->IsPathInWatches(pathToCheck);
 	}
 
 

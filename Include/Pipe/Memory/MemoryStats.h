@@ -44,11 +44,11 @@ namespace p
 	{
 		const char* name = "Arena";
 
-		sizet used = 0;
+		sizet used      = 0;
 		sizet available = 0;
 		mutable std::shared_mutex mutex;
 		TArray<AllocationStats> allocations;
-#if P_ENABLE_ALLOCATION_STACKS
+#ifdef P_ENABLE_ALLOCATION_STACKS
 		TArray<backward::StackTrace> stacks;
 #endif
 		TArray<AllocationStats> freedAllocations;

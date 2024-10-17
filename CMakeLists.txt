@@ -12,7 +12,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ################################################################################
 # Project
 
-project(Pipe VERSION 0.1 LANGUAGES CXX)
+project(Pipe VERSION 0.1 LANGUAGES CXX C)
 
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -38,7 +38,6 @@ endif()
 include(CMake/Util.cmake)
 include(CMake/LinkTimeOptimization.cmake)
 find_package(Sanitizers)
-include(GenerateExportHeader)
 
 
 # ##############################################################################
@@ -52,18 +51,17 @@ add_subdirectory(Extern)
 
 if (PIPE_BUILD_SHARED)
     add_library(Pipe SHARED)
+    target_compile_definitions(Pipe PUBLIC PIPE_IMPORTS=1)
+    target_compile_definitions(Pipe PRIVATE -DPIPE_IMPORTS PIPE_EXPORTS=1)
 else()
     add_library(Pipe STATIC)
 endif()
 
-generate_export_header(Pipe
-    BASE_NAME PIPE
-    EXPORT_MACRO_NAME PIPE_API
-    EXPORT_FILE_NAME ${CMAKE_CURRENT_SOURCE_DIR}/Include/Pipe/Export.h)
 pipe_target_define_platform(Pipe)
 
 target_include_directories(Pipe PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>)
-file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.h)
+target_include_directories(Pipe PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Src>)
+file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.c)
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
@@ -130,6 +128,6 @@ install(DIRECTORY Include/Pipe
 )
 
 # Debug files
-if (PLATFORM_WINDOWS)
+if (PLATFORM_WINDOWS AND NOT COMPILER_GCC)
     install(FILES $<TARGET_PDB_FILE:Pipe> DESTINATION "${CMAKE_INSTALL_LIBDIR}" OPTIONAL)
 endif()

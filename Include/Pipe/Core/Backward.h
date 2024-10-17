@@ -383,7 +383,7 @@ typedef int ssize_t;
 // TODO maybe these should be undefined somewhere else?
 #undef BACKWARD_HAS_UNWIND
 #undef BACKWARD_HAS_BACKTRACE
-#if BACKWARD_HAS_PDB_SYMBOL == 1
+#if defined(BACKWARD_HAS_PDB_SYMBOL) && BACKWARD_HAS_PDB_SYMBOL == 1
 #else
 #undef BACKWARD_HAS_PDB_SYMBOL
 #define BACKWARD_HAS_PDB_SYMBOL 1
@@ -391,7 +391,7 @@ typedef int ssize_t;
 
 #endif
 
-#if BACKWARD_HAS_UNWIND == 1
+#if defined(BACKWARD_HAS_UNWIND) && BACKWARD_HAS_UNWIND == 1
 
 #include <unwind.h>
 // while gcc's unwind.h defines something like that:
@@ -415,7 +415,7 @@ extern "C" uintptr_t _Unwind_GetIPInfo(_Unwind_Context *, int *);
 
 #endif // BACKWARD_HAS_UNWIND == 1
 
-#if BACKWARD_HAS_LIBUNWIND == 1
+#if defined(BACKWARD_HAS_LIBUNWIND) && BACKWARD_HAS_LIBUNWIND == 1
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #endif // BACKWARD_HAS_LIBUNWIND == 1
@@ -812,7 +812,7 @@ protected:
   std::vector<void *, p::STLAllocator<void*>> _stacktrace;
 };
 
-#if BACKWARD_HAS_UNWIND == 1
+#if defined(BACKWARD_HAS_UNWIND) && BACKWARD_HAS_UNWIND == 1
 
 namespace details {
 
@@ -914,7 +914,7 @@ private:
   };
 };
 
-#elif BACKWARD_HAS_LIBUNWIND == 1
+#elif defined(BACKWARD_HAS_LIBUNWIND) && BACKWARD_HAS_LIBUNWIND == 1
 
 template <>
 class StackTraceImpl<system_tag::current_tag> : public StackTraceImplHolder {
@@ -1223,7 +1223,7 @@ public:
       }
     }
 
-    Super::_stacktrace.resize(std::min(Super::_stacktrace.size(), Super::skip_n_firsts() + depth));
+    //Super::_stacktrace.resize(std::min(Super::_stacktrace.size(), Super::skip_n_firsts() + depth));
     return Super::size();
   }
 
@@ -3763,7 +3763,7 @@ public:
     // but look, I will reuse it two times!
     // What a good boy am I.
     struct isspace {
-      bool operator()(char c) { return std::isspace(c); }
+      bool operator()(char c) { return bool(std::isspace(c)); }
     };
 
     bool started = false;

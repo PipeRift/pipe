@@ -50,7 +50,7 @@ go_bandit([]() {
 			IdRegistry ids;
 
 			Id id1 = ids.Create();
-			Id id2 = ids.Create();
+			ids.Create();
 			AssertThat(ids.Destroy(id1), Is().True());
 			AssertThat(ids.IsValid(id1), Is().False());
 			AssertThat(ids.Size(), Equals(1));
@@ -59,7 +59,7 @@ go_bandit([]() {
 		it("Can create two and remove last", [&]() {
 			IdRegistry ids;
 
-			Id id1 = ids.Create();
+			ids.Create();
 			Id id2 = ids.Create();
 
 			AssertThat(ids.Destroy(id2), Is().True());

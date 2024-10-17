@@ -9,7 +9,14 @@
 
 namespace p
 {
-	PIPE_API void InitLog(StringView logPath = {});
+	struct Logger
+	{
+		std::function<void(StringView)> infoCallback;
+		std::function<void(StringView)> warningCallback;
+		std::function<void(StringView)> errorCallback;
+	};
+
+	PIPE_API void InitLog(Logger* logger = nullptr);
 	PIPE_API void ShutdownLog();
 
 	PIPE_API void Info(StringView msg);

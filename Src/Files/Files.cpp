@@ -108,7 +108,7 @@ namespace p
 			result.reserve(size + extraPadding);
 
 			file.seekg(0, std::ios::beg);
-			result.assign(std::istreambuf_iterator<TChar>(file), std::istreambuf_iterator<TChar>());
+			result.assign(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 		}
 		return !result.empty();
 	}
@@ -120,7 +120,7 @@ namespace p
 			return false;
 		}
 
-		std::basic_ofstream<TChar> file(String{path});
+		std::basic_ofstream<char> file(String{path});
 		file.write(data.data(), data.size());
 		file.close();
 		return true;

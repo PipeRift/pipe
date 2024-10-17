@@ -72,7 +72,7 @@ namespace p
 		other.counter = nullptr;
 	}
 
-	void Ptr::MoveFrom(Ptr&& other)
+	void Ptr::MoveFromUnsafe(Ptr&& other)
 	{
 		if (counter != other.counter)
 		{
@@ -87,7 +87,7 @@ namespace p
 		}
 	}
 
-	void Ptr::CopyFrom(const Ptr& other)
+	void Ptr::CopyFromUnsafe(const Ptr& other)
 	{
 		if (counter != other.counter)
 		{

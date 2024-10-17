@@ -81,7 +81,7 @@ namespace p
 	 * Individual allocations can't be freed. It can
 	 * be resized, but never smaller than its used size.
 	 */
-	class PIPE_API MultiLinearArena : public ChildArena
+	struct PIPE_API MultiLinearArena : public ChildArena
 	{
 	protected:
 		LinearSmallPool smallPool;

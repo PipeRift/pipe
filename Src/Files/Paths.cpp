@@ -19,7 +19,7 @@
 		#include <sys/param.h>
 	#endif
 
-/** Remote file systems codes */
+    /** Remote file systems codes */
 	#define P_MAGIC_AFS 0x5346414F
 	#define P_MAGIC_AUFS 0x61756673
 	#define P_MAGIC_CEPH 0x00C36400
@@ -56,7 +56,7 @@ namespace p
 #pragma region Internal
 	namespace details
 	{
-		bool IsDriveLetter(const TChar c)
+		bool IsDriveLetter(const char c)
 		{
 			return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 		}
@@ -77,7 +77,7 @@ namespace p
 
 
 #if P_PLATFORM_WINDOWS
-		bool HasDriveLetterPrefix(const TChar* const first, const TChar* const last)
+		bool HasDriveLetterPrefix(const char* const first, const char* const last)
 		{
 			// test if [first, last) has a prefix of the form X:
 			if (last - first >= 2 && FChar::ToUpper(first[0]) >= 'A'
@@ -89,7 +89,7 @@ namespace p
 		}
 #endif
 
-		const TChar* FindRootNameEnd(const TChar* const first, const TChar* const last)
+		const char* FindRootNameEnd(const char* const first, const char* const last)
 		{
 			const sizet len = last - first;
 #if P_PLATFORM_WINDOWS
@@ -163,7 +163,7 @@ namespace p
 			if (len > 2 && IsSeparator(first[0]) && IsSeparator(first[1]) && !IsSeparator(first[2])
 			    && std::isprint(first[2]))
 			{
-				const TChar* c = first + 3;
+				const char* c = first + 3;
 				while (c <= last)
 				{
 					if (IsSeparator(*c))
@@ -183,21 +183,21 @@ namespace p
 #pragma endregion Internal
 
 
-	const TChar* FindRelativeChar(const TChar* const first, const TChar* const last)
+	const char* FindRelativeChar(const char* const first, const char* const last)
 	{
-		const TChar* nameEnd;
+		const char* nameEnd;
 		return FindRelativeChar(first, last, nameEnd);
 	}
 
-	const TChar* FindRelativeChar(
-	    const TChar* const first, const TChar* const last, const TChar*& outNameEnd)
+	const char* FindRelativeChar(
+	    const char* const first, const char* const last, const char*& outNameEnd)
 	{
 		outNameEnd = details::FindRootNameEnd(first, last);
 		// attempt to parse [first, last) as a path and return the start of relative-path
 		return std::find_if_not(outNameEnd, last, IsSeparator);
 	}
 
-	const TChar* FindFilename(const TChar* const first, const TChar* last)
+	const char* FindFilename(const char* const first, const char* last)
 	{
 		// attempt to parse [first, last) as a path and return the start of filename if it
 		// exists; otherwise, last
@@ -209,17 +209,17 @@ namespace p
 		return last;
 	}
 
-	const TChar* FindExtension(const TChar* const first, const TChar* const last)
+	const char* FindExtension(const char* const first, const char* const last)
 	{
-		const TChar* filenameFirst = FindFilename(first, last);
-		const sizet filenameSize   = last - filenameFirst;
+		const char* filenameFirst = FindFilename(first, last);
+		const sizet filenameSize  = last - filenameFirst;
 
 		if (filenameSize > 0u &&
 		    // Check for "." and ".." filenames
 		    !(filenameFirst[0] == '.'
 		        && (filenameSize == 1u || (filenameSize == 2u && filenameFirst[1u] == '.'))))
 		{
-			const TChar* extensionFirst = last;
+			const char* extensionFirst = last;
 			while (extensionFirst > filenameFirst)
 			{
 				--extensionFirst;
@@ -288,9 +288,9 @@ namespace p
 	{
 		// attempt to parse path as a path and return the filename if it exists; otherwise, an
 		// empty view
-		const TChar* first    = path.data();
-		const TChar* last     = first + path.size();
-		const TChar* filename = FindFilename(first, last);
+		const char* first    = path.data();
+		const char* last     = first + path.size();
+		const char* filename = FindFilename(first, last);
 		return StringView{filename, static_cast<sizet>(last - filename)};
 	}
 
@@ -301,25 +301,25 @@ namespace p
 
 	void RemoveFilename(String& path)
 	{
-		const TChar* first    = path.data();
-		const TChar* last     = first + path.size();
-		const TChar* filename = FindFilename(first, last);
+		const char* first    = path.data();
+		const char* last     = first + path.size();
+		const char* filename = FindFilename(first, last);
 		path.erase(static_cast<sizet>(filename - first));
 	}
 
 	void RemoveFilename(StringView& path)
 	{
-		const TChar* first    = path.data();
-		const TChar* last     = first + path.size();
-		const TChar* filename = FindFilename(first, last);
-		path                  = StringView{first, static_cast<sizet>(filename - first)};
+		const char* first    = path.data();
+		const char* last     = first + path.size();
+		const char* filename = FindFilename(first, last);
+		path                 = StringView{first, static_cast<sizet>(filename - first)};
 	}
 
 	StringView GetStem(StringView path)
 	{
-		const TChar* first       = path.data();
-		const TChar* last        = first + path.size();
-		const TChar* stemFirst   = FindFilename(first, last);
+		const char* first        = path.data();
+		const char* last         = first + path.size();
+		const char* stemFirst    = FindFilename(first, last);
 		const sizet filenameSize = last - stemFirst;
 
 		// Check for "." and ".." filenames
@@ -327,7 +327,7 @@ namespace p
 		    && !(stemFirst[0] == '.'
 		         && (filenameSize == 1 || (filenameSize == 2 && stemFirst[1] == '.'))))
 		{
-			const TChar* stemLast = last;
+			const char* stemLast = last;
 			while (stemLast > stemFirst)
 			{
 				--stemLast;
@@ -350,23 +350,23 @@ namespace p
 
 	StringView GetExtension(StringView path)
 	{
-		const TChar* first     = path.data();
-		const TChar* last      = first + path.size();
-		const TChar* extension = FindExtension(first, last);
+		const char* first     = path.data();
+		const char* last      = first + path.size();
+		const char* extension = FindExtension(first, last);
 		return StringView{extension, static_cast<sizet>(last - extension)};
 	}
 
 	void ReplaceExtension(String& path, StringView newExtension)
 	{
-		const TChar* first     = path.data();
-		const TChar* last      = first + path.size();
-		const TChar* extension = FindExtension(first, last);
+		const char* first     = path.data();
+		const char* last      = first + path.size();
+		const char* extension = FindExtension(first, last);
 		path.erase(extension - first, last - extension);
 
 		if (!newExtension.empty())
 		{
-			if (newExtension[0] != dot)
-				path.push_back(dot);
+			if (newExtension[0] != details::dot)
+				path.push_back(details::dot);
 			path.append(newExtension);
 		}
 	}
@@ -488,9 +488,9 @@ namespace p
 				return;
 			}
 
-			const TChar* const otherEnd = other.data() + other.size();
-			const TChar* otherRootNameEnd;
-			const TChar* otherRootEnd = FindRelativeChar(other.data(), otherEnd, otherRootNameEnd);
+			const char* const otherEnd = other.data() + other.size();
+			const char* otherRootNameEnd;
+			const char* otherRootEnd = FindRelativeChar(other.data(), otherEnd, otherRootNameEnd);
 
 			// Is absolute?
 			if (otherRootEnd != other.data())
@@ -507,7 +507,7 @@ namespace p
 		}
 		else if (HasFilename(base))
 		{
-			base.push_back(preferredSeparator);
+			base.push_back(details::preferredSeparator);
 		}
 	}
 
@@ -515,7 +515,7 @@ namespace p
 	{
 		if (!path.empty() && !IsElementSeparator(*(path.end() - 1)))
 		{
-			path += preferredSeparator;
+			path += details::preferredSeparator;
 			return true;
 		}
 		return false;
@@ -629,7 +629,7 @@ namespace p
 
 	String ToString(const Path& path)
 	{
-		return path.string<TChar, std::char_traits<TChar>, std::allocator<TChar>>();
+		return path.string<char, std::char_traits<char>, std::allocator<char>>();
 	}
 
 	Path ToSTDPath(StringView pathStr)
@@ -653,7 +653,7 @@ namespace p
 		return {p, State::AtEnd};
 	}
 
-	const TChar* PathIterator::Peek() const noexcept
+	const char* PathIterator::Peek() const noexcept
 	{
 		auto tkEnd = GetNextTokenStartPos();
 		auto end   = GetAfterBack();
@@ -662,8 +662,8 @@ namespace p
 
 	void PathIterator::Increment() noexcept
 	{
-		const TChar* const end   = GetAfterBack();
-		const TChar* const start = GetNextTokenStartPos();
+		const char* const end   = GetAfterBack();
+		const char* const start = GetNextTokenStartPos();
 		if (start == end)
 		{
 			MakeState(State::AtEnd);
@@ -673,7 +673,7 @@ namespace p
 		switch (state)
 		{
 			case State::BeforeBegin: {
-				if (const TChar* tkEnd = ConsumeRootName(start, end))
+				if (const char* tkEnd = ConsumeRootName(start, end))
 				{
 					MakeState(State::InRootName, start, tkEnd);
 					return;
@@ -681,7 +681,7 @@ namespace p
 				P_FALLTHROUGH;
 			}
 			case State::InRootName: {
-				const TChar* tkEnd = ConsumeAllSeparators(start, end);
+				const char* tkEnd = ConsumeAllSeparators(start, end);
 				if (tkEnd)
 					MakeState(State::InRootDir, start, tkEnd);
 				else
@@ -693,10 +693,10 @@ namespace p
 				break;
 
 			case State::InFilenames: {
-				const TChar* sepEnd = ConsumeAllSeparators(start, end);
+				const char* sepEnd = ConsumeAllSeparators(start, end);
 				if (sepEnd != end)
 				{
-					const TChar* tkEnd = ConsumeName(sepEnd, end);
+					const char* tkEnd = ConsumeName(sepEnd, end);
 					if (tkEnd)
 					{
 						MakeState(State::InFilenames, sepEnd, tkEnd);
@@ -714,8 +714,8 @@ namespace p
 
 	void PathIterator::Decrement() noexcept
 	{
-		const TChar* rEnd   = GetBeforeFront();
-		const TChar* rStart = GetCurrentTokenStartPos() - 1;
+		const char* rEnd   = GetBeforeFront();
+		const char* rStart = GetCurrentTokenStartPos() - 1;
 		if (rStart == rEnd)    // we're decrementing the begin
 		{
 			MakeState(State::BeforeBegin);
@@ -726,14 +726,14 @@ namespace p
 		{
 			case State::AtEnd: {
 				// Try to Consume a trailing separator or root directory first.
-				if (const TChar* sepEnd = ConsumeAllSeparators(rStart, rEnd))
+				if (const char* sepEnd = ConsumeAllSeparators(rStart, rEnd))
 				{
 					if (sepEnd == rEnd)
 					{
 						MakeState(State::InRootDir, path.data(), rStart + 1);
 						return;
 					}
-					const TChar* tkStart = ConsumeRootName(sepEnd, rEnd);
+					const char* tkStart = ConsumeRootName(sepEnd, rEnd);
 					if (tkStart == rEnd)
 					{
 						MakeState(State::InRootDir, rStart, rStart + 1);
@@ -745,7 +745,7 @@ namespace p
 				}
 				else
 				{
-					const TChar* tkStart = ConsumeRootName(rStart, rEnd);
+					const char* tkStart = ConsumeRootName(rStart, rEnd);
 					if (tkStart == rEnd)
 					{
 						MakeState(State::InRootName, tkStart + 1, rStart + 1);
@@ -762,13 +762,13 @@ namespace p
 				MakeState(State::InFilenames, ConsumeName(rStart, rEnd) + 1, rStart + 1);
 				break;
 			case State::InFilenames: {
-				const TChar* sepEnd = ConsumeAllSeparators(rStart, rEnd);
+				const char* sepEnd = ConsumeAllSeparators(rStart, rEnd);
 				if (sepEnd == rEnd)
 				{
 					MakeState(State::InRootDir, path.data(), rStart + 1);
 					break;
 				}
-				const TChar* tkStart = ConsumeRootName(sepEnd ? sepEnd : rStart, rEnd);
+				const char* tkStart = ConsumeRootName(sepEnd ? sepEnd : rStart, rEnd);
 				if (tkStart == rEnd)
 				{
 					if (sepEnd)
@@ -866,7 +866,7 @@ namespace p
 		return InRootName() || InRootDir();
 	}
 
-	void PathIterator::MakeState(State newState, const TChar* start, const TChar* end) noexcept
+	void PathIterator::MakeState(State newState, const char* start, const char* end) noexcept
 	{
 		state    = newState;
 		rawEntry = StringView(start, end - start);
@@ -877,19 +877,19 @@ namespace p
 		rawEntry = {};
 	}
 
-	const TChar* PathIterator::GetAfterBack() const noexcept
+	const char* PathIterator::GetAfterBack() const noexcept
 	{
 		return path.data() + path.size();
 	}
 
-	const TChar* PathIterator::GetBeforeFront() const noexcept
+	const char* PathIterator::GetBeforeFront() const noexcept
 	{
 		return path.data() - 1;
 	}
 
 	/// \brief Return a pointer to the first character after the currently
 	///   lexed element.
-	const TChar* PathIterator::GetNextTokenStartPos() const noexcept
+	const char* PathIterator::GetNextTokenStartPos() const noexcept
 	{
 		switch (state)
 		{
@@ -905,7 +905,7 @@ namespace p
 
 	/// \brief Return a pointer to the first character in the currently lexed
 	///   element.
-	const TChar* PathIterator::GetCurrentTokenStartPos() const noexcept
+	const char* PathIterator::GetCurrentTokenStartPos() const noexcept
 	{
 		switch (state)
 		{
@@ -920,7 +920,7 @@ namespace p
 	}
 
 	// Consume all consecutive separators
-	const TChar* PathIterator::ConsumeAllSeparators(const TChar* p, const TChar* end) const noexcept
+	const char* PathIterator::ConsumeAllSeparators(const char* p, const char* end) const noexcept
 	{
 		if (p == nullptr || p == end || !IsSeparator(*p))
 			return nullptr;
@@ -932,10 +932,10 @@ namespace p
 	}
 
 	// Consume exactly N separators, or return nullptr.
-	const TChar* PathIterator::ConsumeNSeparators(
-	    const TChar* p, const TChar* end, int N) const noexcept
+	const char* PathIterator::ConsumeNSeparators(
+	    const char* p, const char* end, int N) const noexcept
 	{
-		const TChar* ret = ConsumeAllSeparators(p, end);
+		const char* ret = ConsumeAllSeparators(p, end);
 		if (ret == nullptr)
 			return nullptr;
 		if (p < end)
@@ -951,9 +951,9 @@ namespace p
 		return nullptr;
 	}
 
-	const TChar* PathIterator::ConsumeName(const TChar* p, const TChar* end) const noexcept
+	const char* PathIterator::ConsumeName(const char* p, const char* end) const noexcept
 	{
-		const TChar* start = p;
+		const char* start = p;
 		if (p == nullptr || p == end || IsSeparator(*p))
 			return nullptr;
 		const int inc = p < end ? 1 : -1;
@@ -965,14 +965,14 @@ namespace p
 			// Iterating backwards and Consumed all the rest of the input.
 			// Check if the start of the string would have been considered
 			// a root name.
-			const TChar* rootEnd = ConsumeRootName(end + 1, start);
+			const char* rootEnd = ConsumeRootName(end + 1, start);
 			if (rootEnd)
 				return rootEnd - 1;
 		}
 		return p;
 	}
 
-	const TChar* PathIterator::ConsumeDriveLetter(const TChar* p, const TChar* end) const noexcept
+	const char* PathIterator::ConsumeDriveLetter(const char* p, const char* end) const noexcept
 	{
 		if (p == end)
 			return nullptr;
@@ -990,7 +990,7 @@ namespace p
 		}
 	}
 
-	const TChar* PathIterator::ConsumeNetworkRoot(const TChar* p, const TChar* end) const noexcept
+	const char* PathIterator::ConsumeNetworkRoot(const char* p, const char* end) const noexcept
 	{
 		if (p == end)
 			return nullptr;
@@ -1000,12 +1000,12 @@ namespace p
 			return ConsumeNSeparators(ConsumeName(p, end), end, 2);
 	}
 
-	const TChar* PathIterator::ConsumeRootName(const TChar* p, const TChar* end) const noexcept
+	const char* PathIterator::ConsumeRootName(const char* p, const char* end) const noexcept
 	{
 #if P_PLATFORM_WINDOWS
-		if (const TChar* ret = ConsumeDriveLetter(p, end))
+		if (const char* ret = ConsumeDriveLetter(p, end))
 			return ret;
-		if (const TChar* ret = ConsumeNetworkRoot(p, end))
+		if (const char* ret = ConsumeNetworkRoot(p, end))
 			return ret;
 #endif
 		return nullptr;

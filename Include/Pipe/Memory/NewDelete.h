@@ -58,14 +58,4 @@ void operator delete  (void* p, std::align_val_t, const std::nothrow_t&) noexcep
 void operator delete[](void* p, std::align_val_t, const std::nothrow_t&) noexcept { p::HeapFree(p); }
 #	endif
 // clang-format on
-
-	#define P_DO_OVERRIDE_NEW_DELETE
-
-
-    // If Pipe is linked statically, only Pipe overrides new/delete
-	#ifdef PIPE_STATIC_DEFINE
-		#define P_OVERRIDE_NEW_DELETE
-	#else
-		#define P_OVERRIDE_NEW_DELETE P_DO_OVERRIDE_NEW_DELETE
-	#endif
 #endif

@@ -98,7 +98,7 @@ namespace p
 		void ReduceSlot(i32 slotIndex, Slot& slot, u32 allocationStart, u32 allocationEnd);
 		void AbsorbFreeSpace(u32 allocationStart, u32 allocationEnd);
 
-		u32 ToOffset(void* data, void* block);
+		static u32 ToOffset(void* data, void* block);
 	};
 
 

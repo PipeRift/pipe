@@ -60,10 +60,6 @@ namespace p
 		// compilers which don't fully support C++11 yet (i.e. MSVC).
 		using Char32 = unsigned int;
 
-		// A switchable character - In-memory only.
-		// Either AnsiChar or WideChar
-		using TChar = AnsiChar;
-
 		// unsigned int the same size as a pointer
 		using uPtr = SelectIntPointerType<std::uint32_t, std::uint64_t, sizeof(void*)>::TIntPointer;
 

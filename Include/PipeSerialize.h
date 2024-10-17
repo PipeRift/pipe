@@ -459,7 +459,7 @@ namespace p
 	// and Write
 	template<typename T>
 	void Read(Reader& ct, T& val)
-	    requires(bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
+	    requires(bool(TFlags<T>::HasSingleSerialize && TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		val.Serialize(commonContext);
@@ -476,7 +476,7 @@ namespace p
 	// and Write
 	template<typename T>
 	void Write(Writer& ct, const T& val)
-	    requires(bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
+	    requires(bool(TFlags<T>::HasSingleSerialize && TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		const_cast<T&>(val).Serialize(commonContext);
@@ -814,8 +814,8 @@ namespace p
 	private:
 		Arena& arena;
 		u8* data     = nullptr;
-		i32 size     = 0;
-		i32 capacity = 0;
+		u32 size     = 0;
+		u32 capacity = 0;
 
 
 	public:

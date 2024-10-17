@@ -26,7 +26,6 @@ BinPackArguments: true
 BinPackParameters: true
 BitFieldColonSpacing: None
 BreakBeforeBinaryOperators: NonAssignment
-BreakBeforeBraces: Custom
 BreakBeforeConceptDeclarations: true
 BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: AfterComma
@@ -62,6 +61,7 @@ IndentPPDirectives: BeforeHash
 IndentRequires: true
 IndentWidth: 4
 IndentWrappedFunctionNames: false
+InsertBraces: true
 KeepEmptyLinesAtTheStartOfBlocks: false
 LambdaBodyIndentation: OuterScope
 MaxEmptyLinesToKeep: 2

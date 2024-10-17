@@ -4,6 +4,7 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Function.h"
+#include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
@@ -909,26 +910,32 @@ namespace p
 				if (!sortPredicate(value, Super::data[index]))    // Equal check, found element
 				{
 					if (outAdded)
+					{
 						*outAdded = false;
+					}
 					return index;
 				}
 				else if (insertSorted)
 				{
 					Insert(index, value);
 					if (outAdded)
+					{
 						*outAdded = true;
+					}
 					return index;
 				}
 			}
 
 			if (outAdded)
+			{
 				*outAdded = true;
+			}
 			return Add(value);
 		}
 
 		template<typename SortPredicate = TLess<Type>>
 		i32 AddUniqueSorted(Type&& value, SortPredicate sortPredicate = {},
-		    bool* outAdded = nullptr, bool insertSorted = true)
+		    bool* outAdded = nullptr, bool insertSorted = true) requires(Hashable<Type>)
 		{
 			const i32 index = Super::LowerBound(value, sortPredicate);
 			if (index != NO_INDEX)
@@ -936,20 +943,26 @@ namespace p
 				if (!sortPredicate(value, Super::data[index]))    // Equal check, found element
 				{
 					if (outAdded)
+					{
 						*outAdded = false;
+					}
 					return index;
 				}
 				else if (insertSorted)
 				{
 					Insert(index, p::Forward<Type>(value));
 					if (outAdded)
+					{
 						*outAdded = true;
+					}
 					return index;
 				}
 			}
 
 			if (outAdded)
+			{
 				*outAdded = true;
+			}
 			return Add(p::Forward<Type>(value));
 		}
 
@@ -1207,7 +1220,9 @@ namespace p
 
 			/// @OPTIMIZE: Shrinking can be combined to avoid moving trailing elements twice
 			if (shouldShrink)
+			{
 				Shrink();
+			}
 		}
 
 		/**
@@ -1225,7 +1240,9 @@ namespace p
 
 			/// @OPTIMIZE: Shrinking can be combined to avoid moving trailing elements twice
 			if (shouldShrink)
+			{
 				Shrink();
+			}
 		}
 
 		/**

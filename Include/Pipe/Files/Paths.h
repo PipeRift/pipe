@@ -12,21 +12,23 @@
 
 namespace p
 {
-	constexpr TChar separator{'/'};
+	namespace details
+	{
+		constexpr char separator{'/'};
 #if P_PLATFORM_WINDOWS
-	constexpr TChar preferredSeparator{'\\'};
+		constexpr char preferredSeparator{'\\'};
 #else
-	constexpr TChar preferredSeparator{'/'};
+		constexpr char preferredSeparator{'/'};
 #endif
-	constexpr TChar dot{'.'};
-	constexpr TChar colon{':'};
+		constexpr char dot{'.'};
+		constexpr char colon{':'};
+	}    // namespace details
 
-
-	PIPE_API const TChar* FindRelativeChar(const TChar* const first, const TChar* const last);
-	PIPE_API const TChar* FindRelativeChar(
-	    const TChar* const first, const TChar* const last, const TChar*& outNameEnd);
-	PIPE_API const TChar* FindFilename(const TChar* const first, const TChar* last);
-	PIPE_API const TChar* FindExtension(const TChar* const first, const TChar* last);
+	PIPE_API const char* FindRelativeChar(const char* const first, const char* const last);
+	PIPE_API const char* FindRelativeChar(
+	    const char* const first, const char* const last, const char*& outNameEnd);
+	PIPE_API const char* FindFilename(const char* const first, const char* last);
+	PIPE_API const char* FindExtension(const char* const first, const char* last);
 
 	// @return root name of a path, or an empty view if missing
 	// E.g: "C:\Folder" -> "C:"
@@ -85,11 +87,11 @@ namespace p
 	PIPE_API void SetCanonical(String& path);
 	PIPE_API void SetWeaklyCanonical(String& path);
 
-	inline PIPE_API constexpr bool IsSeparator(TChar c)
+	inline PIPE_API constexpr bool IsSeparator(char c)
 	{
-		return c == separator
+		return c == details::separator
 #if P_PLATFORM_WINDOWS
-		    || c == preferredSeparator
+		    || c == details::preferredSeparator
 #endif
 		    ;
 	}
@@ -98,11 +100,11 @@ namespace p
 	//  a forward slash is the only valid directory separator and also the only valid
 	//  element separator. For Windows, forward slash and back slash are the possible
 	//  directory separators, but colon (example: "c:foo") is also an element separator.
-	inline PIPE_API constexpr bool IsElementSeparator(TChar c)
+	inline PIPE_API constexpr bool IsElementSeparator(char c)
 	{
-		return c == separator
+		return c == details::separator
 #if P_PLATFORM_WINDOWS
-		    || c == preferredSeparator || c == colon
+		    || c == details::preferredSeparator || c == details::colon
 #endif
 		    ;
 	}
@@ -142,7 +144,7 @@ namespace p
 		static PathIterator CreateBegin(StringView p) noexcept;
 		static PathIterator CreateEnd(StringView p) noexcept;
 
-		const TChar* Peek() const noexcept;
+		const char* Peek() const noexcept;
 		void Increment() noexcept;
 		void Decrement() noexcept;
 
@@ -162,22 +164,22 @@ namespace p
 		bool InRootPath() const noexcept;
 
 	private:
-		void MakeState(State newState, const TChar* start, const TChar* end) noexcept;
+		void MakeState(State newState, const char* start, const char* end) noexcept;
 		void MakeState(State newState) noexcept;
-		const TChar* GetAfterBack() const noexcept;
-		const TChar* GetBeforeFront() const noexcept;
+		const char* GetAfterBack() const noexcept;
+		const char* GetBeforeFront() const noexcept;
 		/// @return a pointer to the first character after the currently lexed element.
-		const TChar* GetNextTokenStartPos() const noexcept;
+		const char* GetNextTokenStartPos() const noexcept;
 		/// @return a pointer to the first character in the currently lexed element.
-		const TChar* GetCurrentTokenStartPos() const noexcept;
+		const char* GetCurrentTokenStartPos() const noexcept;
 		// Consume all consecutive separators
-		const TChar* ConsumeAllSeparators(const TChar* p, const TChar* end) const noexcept;
+		const char* ConsumeAllSeparators(const char* p, const char* end) const noexcept;
 		// Consume exactly N separators, or return nullptr.
-		const TChar* ConsumeNSeparators(const TChar* p, const TChar* end, int N) const noexcept;
-		const TChar* ConsumeName(const TChar* p, const TChar* end) const noexcept;
-		const TChar* ConsumeDriveLetter(const TChar* p, const TChar* end) const noexcept;
-		const TChar* ConsumeNetworkRoot(const TChar* p, const TChar* end) const noexcept;
-		const TChar* ConsumeRootName(const TChar* p, const TChar* end) const noexcept;
+		const char* ConsumeNSeparators(const char* p, const char* end, int N) const noexcept;
+		const char* ConsumeName(const char* p, const char* end) const noexcept;
+		const char* ConsumeDriveLetter(const char* p, const char* end) const noexcept;
+		const char* ConsumeNetworkRoot(const char* p, const char* end) const noexcept;
+		const char* ConsumeRootName(const char* p, const char* end) const noexcept;
 	};
 #pragma endregion PathIterator
 }    // namespace p

@@ -298,7 +298,7 @@ namespace p
 		// Gets the color in a packed u32 format packed in the order RGBA.
 		constexpr u32 ToPackedRGBA() const requires(mode == ColorMode::RGBA)
 		{
-			return (this->r << 24) | (this->g << 16) | (this->g << 8) | (this->a << 0);
+			return (this->r << 24) | (this->g << 16) | (this->b << 8) | (this->a << 0);
 		}
 
 		// Gets the color in a packed u32 format packed in the order BGRA.
@@ -462,16 +462,24 @@ namespace p
 		constexpr auto* Data()
 		{
 			if constexpr (mode == ColorMode::HSV)
+			{
 				return &this->h;
+			}
 			else
+			{
 				return &this->r;
+			}
 		}
 		constexpr const auto* Data() const
 		{
 			if constexpr (mode == ColorMode::HSV)
+			{
 				return &this->h;
+			}
 			else
+			{
 				return &this->r;
+			}
 		}
 		constexpr auto& operator[](u32 i)
 		{

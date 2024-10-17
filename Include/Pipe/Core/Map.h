@@ -17,7 +17,7 @@
 
 namespace p
 {
-	template<typename T>
+	template<Hashable T>
 	struct TMapHash
 	{
 		sizet operator()(const T& v) const

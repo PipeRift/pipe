@@ -486,9 +486,13 @@ namespace p
 				for (;;)
 				{
 					while (++inner.min <= current.max && !predicate(*current.min, *inner.min))
+					{
 						;
+					}
 					while (--inner.max > current.min && !predicate(*inner.max, *current.min))
+					{
 						;
+					}
 					if (inner.min > inner.max)
 					{
 						break;

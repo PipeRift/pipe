@@ -235,7 +235,7 @@ namespace p
 	/**
 	 * Converts a floating point number to an integer which is more positive: 0.1 becomes 1,
 	 * -0.1 becomes 0
-	 * @param F		Floating point value to convert
+	 * @param f		Floating point value to convert
 	 * @return		The rounded integer
 	 */
 	inline PIPE_API float RoundToPositiveInfinity(float f)
@@ -246,6 +246,20 @@ namespace p
 	inline PIPE_API double RoundToPositiveInfinity(double d)
 	{
 		return Ceil(d);
+	}
+
+	/**
+	 * Returns the fractional part of a float.
+	 * @param f	Floating point value to convert
+	 * @return		A float between >=0 and < 1.
+	 */
+	inline PIPE_API float Frac(float f)
+	{
+		return f - p::Floor(f);
+	}
+	inline PIPE_API double Frac(double d)
+	{
+		return d - p::Floor(d);
 	}
 
 
@@ -282,22 +296,30 @@ namespace p
 	PIPE_API constexpr T Pow(T value, u32 power)
 	{
 		if (power == 0)
+		{
 			return value >= 0 ? 1 : -1;
+		}
 
 		T result = value;
 		for (u32 i = 1; i < power; ++i)
+		{
 			result *= value;
+		}
 		return result;
 	}
 	template<UnsignedIntegral T>
 	PIPE_API constexpr T Pow(T value, u32 power)
 	{
 		if (power == 0)
+		{
 			return 1u;
+		}
 
 		T result = value;
 		for (u32 i = 1; i < power; ++i)
+		{
 			result *= value;
+		}
 		return result;
 	}
 
@@ -307,11 +329,15 @@ namespace p
 		if (std::is_constant_evaluated() && Integral<P>)
 		{
 			if (power == 0)
+			{
 				return V(1);
+			}
 
 			V result = value;
 			for (P i = 1; i < power; ++i)
+			{
 				result *= value;
+			}
 			return result;
 		}
 		return std::pow(value, power);

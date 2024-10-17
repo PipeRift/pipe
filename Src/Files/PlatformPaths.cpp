@@ -158,12 +158,12 @@ namespace p
 			char tempPath[MAX_PATH];
 			ZeroMemory(tempPath, sizeof(char) * MAX_PATH);
 
-			::GetTempPath(MAX_PATH, tempPath);
+			::GetTempPathA(MAX_PATH, tempPath);
 
 			// Always expand the temp path in case windows returns short directory names.
 			char fullTempPath[MAX_PATH];
 			ZeroMemory(fullTempPath, sizeof(char) * MAX_PATH);
-			::GetLongPathName(tempPath, fullTempPath, MAX_PATH);
+			::GetLongPathNameA(tempPath, fullTempPath, MAX_PATH);
 
 			userTempPath = Strings::Convert<String>(TStringView<char>{fullTempPath});
 			std::replace(userTempPath.begin(), userTempPath.end(), '\\', '/');

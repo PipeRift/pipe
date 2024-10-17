@@ -21,7 +21,6 @@ namespace p
 		using TYPE_OF_NULL = decltype(nullptr);
 #if P_PLATFORM_MACOS_USE_CHAR16
 		using WideChar = char16_t;
-		using TChar    = WideChar;
 #else
 		using Char16 = char16_t;
 #endif
@@ -30,14 +29,6 @@ namespace p
 	using PlatformTypes = MacPlatformTypes;
 }    // namespace p
 
-#if __is_target_arch(arm64) || __is_target_arch(arm64e)
-	#define P_PLATFORM_MACOS_ARM64 1
-	#define P_PLATFORM_MACOS_X86 0
-#else
-	#define P_PLATFORM_MACOS_ARM64 0
-	#define P_PLATFORM_MACOS_X86 1
-#endif
-
 
 #if P_DEBUG
 	#define P_FORCEINLINE inline /* Don't force code to be inline */
@@ -45,13 +36,6 @@ namespace p
 	#define P_FORCEINLINE inline __attribute__((always_inline)) /* Force code to be inline */
 #endif
 #define P_NOINLINE __attribute__((noinline))
-
-#if P_PLATFORM_MACOS_X86
-	#define P_PLATFORM_BREAK() __asm__("int $3")
-#else
-	#define P_PLATFORM_BREAK() __builtin_debugtrap()
-#endif
-
 
 #if (__clang_major__ > 3 || (__clang_major__ == 3 && __clang_minor__ >= 6))
 	#define DISABLE_OPTIMIZATION_ACTUAL _Pragma("clang optimize off")
