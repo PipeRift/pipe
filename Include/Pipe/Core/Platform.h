@@ -60,10 +60,11 @@
 
 
 // Platform break includes
-#if defined(__i386__) || defined(__x86_64__)
+#ifdef _MSC_VER
+#elif defined(__i386__) || defined(__x86_64__)
 #elif defined(__thumb__)
 #elif defined(__arm__) && !defined(__thumb__)
-#elif defined(__aarch64__) && defined(__APPLE__)
+#elif defined(__aarch64__) && defined(__clang__)
 #elif defined(__aarch64__)
 #elif defined(__powerpc__)
 #elif defined(__riscv)
@@ -139,7 +140,9 @@ namespace p
 {
 	__attribute__((always_inline)) __inline__ static void PlatformBreak()
 	{
-#if defined(__i386__) || defined(__x86_64__)
+#ifdef _MSC_VER    // MSVC
+		__debugbreak();
+#elif defined(__i386__) || defined(__x86_64__)
 		__asm__ volatile("int $0x03");
 #elif defined(__thumb__)
 		// See 'arm-linux-tdep.c' in GDB source, 'eabi_linux_thumb_le_breakpoint'
@@ -147,7 +150,7 @@ namespace p
 #elif defined(__arm__) && !defined(__thumb__)
 		// See 'arm-linux-tdep.c' in GDB source, 'eabi_linux_arm_le_breakpoint'
 		__asm__ volatile(".inst 0xe7f001f0");
-#elif defined(__aarch64__) && defined(__APPLE__)
+#elif defined(__aarch64__) && defined(__clang__)
 		__builtin_debugtrap();
 #elif defined(__aarch64__)
 		// See 'aarch64-tdep.c' in GDB source, 'aarch64_default_breakpoint'
