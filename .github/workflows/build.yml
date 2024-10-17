@@ -37,7 +37,7 @@ jobs:
             os-name: Linux
             compiler: gcc-14
           - name: macos-clang
-            os: macOS-15-arm64
+            os: macos-15
             os-name: MacOS
             compiler: clang-18
     steps:
