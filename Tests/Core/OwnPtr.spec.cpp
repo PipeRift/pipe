@@ -110,7 +110,7 @@ go_bandit([]() {
 
 			it("Can copy from other weak", [&]() {
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
-				auto* raw                  = owner.GetUnsafe();
+				auto* raw                  = owner.Get();
 				TPtr<EmptyStruct> ptr      = owner;
 				TPtr<EmptyStruct> ptr2     = ptr;
 
@@ -121,7 +121,7 @@ go_bandit([]() {
 
 			it("Can move from other weak", [&]() {
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
-				auto* raw                  = owner.GetUnsafe();
+				auto* raw                  = owner.Get();
 				auto weak                  = owner.AsPtr();
 				auto movedWeak             = Move(weak);
 
@@ -137,10 +137,10 @@ go_bandit([]() {
 				TPtr<EmptyStruct> ptr      = owner;
 				owner.Delete();
 
-				AssertThat(ptr.GetUnsafe(), Is().Not().EqualTo(nullptr));
+				AssertThat(ptr.Get(), Is().Not().EqualTo(nullptr));
 
 				AssertThat(ptr.IsValid(), Equals(false));
-				AssertThat(ptr.GetUnsafe(), Equals(nullptr));
+				AssertThat(ptr.Get(), Equals(nullptr));
 			});
 		});
 

@@ -238,11 +238,6 @@ namespace p
 
 		T* Get() const
 		{
-			return IsValid() ? GetUnsafe() : nullptr;
-		}
-
-		T* GetUnsafe() const
-		{
 			return static_cast<T*>(value);
 		}
 
@@ -252,8 +247,7 @@ namespace p
 		template<typename T2>
 		TOwnPtr<T2> Transfer()
 		{
-			// If can be casted statically or dynamically
-			if (IsValid() && (Convertible<T, T2> || dynamic_cast<T2*>(GetUnsafe()) != nullptr))
+			if (Cast<T2*>(Get()))
 			{
 				TOwnPtr<T2> newPtr{};
 				newPtr.MoveFromUnsafe(Move(*this));
@@ -269,11 +263,11 @@ namespace p
 
 		T& operator*() const
 		{
-			return *GetUnsafe();
+			return *Get();
 		}
 		T* operator->() const
 		{
-			return GetUnsafe();
+			return Get();
 		}
 
 		template<typename T2>
@@ -284,12 +278,12 @@ namespace p
 		template<typename T2>
 		bool operator==(const TOwnPtr<T2>& other) const
 		{
-			return value == other.GetUnsafe();
+			return value == other.Get();
 		}
 		template<typename T2>
 		bool operator==(const TPtr<T2>& other) const
 		{
-			return value == other.GetUnsafe();
+			return value == other.Get();
 		}
 		template<typename T2>
 		bool operator!=(T2* other) const
@@ -299,12 +293,12 @@ namespace p
 		template<typename T2>
 		bool operator!=(const TOwnPtr<T2>& other) const
 		{
-			return value != other.GetUnsafe();
+			return value != other.Get();
 		}
 		template<typename T2>
 		bool operator!=(const TPtr<T2>& other) const
 		{
-			return value != other.GetUnsafe();
+			return value != other.Get();
 		}
 
 		template<typename... Args>
@@ -402,21 +396,16 @@ namespace p
 
 		T* Get() const
 		{
-			return IsValid() ? GetUnsafe() : nullptr;
-		}
-
-		T* GetUnsafe() const
-		{
 			return static_cast<T*>(value);
 		}
 
 		T& operator*() const
 		{
-			return *GetUnsafe();
+			return *Get();
 		}
 		T* operator->() const
 		{
-			return GetUnsafe();
+			return Get();
 		}
 
 		template<typename T2>
@@ -427,12 +416,12 @@ namespace p
 		template<typename T2>
 		bool operator==(const TOwnPtr<T2>& other) const
 		{
-			return value == other.GetUnsafe();
+			return value == other.Get();
 		}
 		template<typename T2>
 		bool operator==(const TPtr<T2>& other) const
 		{
-			return value == other.GetUnsafe();
+			return value == other.Get();
 		}
 		template<typename T2>
 		bool operator!=(T2* other) const
@@ -442,12 +431,12 @@ namespace p
 		template<typename T2>
 		bool operator!=(const TOwnPtr<T2>& other) const
 		{
-			return value != other.GetUnsafe();
+			return value != other.Get();
 		}
 		template<typename T2>
 		bool operator!=(const TPtr<T2>& other) const
 		{
-			return value != other.GetUnsafe();
+			return value != other.Get();
 		}
 	};
 

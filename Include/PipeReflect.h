@@ -957,21 +957,23 @@ namespace p
 	{
 		if constexpr (Derived<From, Casteable>)
 		{
-			const TypeId toId   = GetTypeId<ToValue>();
-			const TypeId fromId = value->GetTypeId();
-			return IsTypeParentOf(toId, fromId) ? static_cast<ToValue*>(value) : nullptr;
+			if (value)
+			{
+				const TypeId toId   = GetTypeId<ToValue>();
+				const TypeId fromId = value->GetTypeId();
+				return IsTypeParentOf(toId, fromId) ? static_cast<ToValue*>(value) : nullptr;
+			}
 		}
-		else
-		{
-			return nullptr;
-		}
+		return nullptr;
 	}
 
 	template<typename To, typename From>
 	TPtr<To> Cast(const TPtr<From>& value)
 	{
-		if (value.IsValid() && (Convertible<From, To> || Cast<To*>(value.GetUnsafe()) != nullptr))
+		if (Cast<To*>(value.Get()))
 		{
+			// FIX: Multi inheritance may not make pointers directly compatible. Pass casted
+			// ptr!
 			TPtr<To> ptr{};
 			ptr.CopyFromUnsafe(value);
 			return ptr;

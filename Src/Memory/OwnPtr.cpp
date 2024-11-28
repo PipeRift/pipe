@@ -22,8 +22,8 @@ namespace p
 			// With this weaks know the value has been deleted
 			counter->deleter = nullptr;
 		}
-		counter = nullptr;
 		value   = nullptr;
+		counter = nullptr;
 	}
 
 	void Ptr::Reset()
@@ -69,6 +69,7 @@ namespace p
 	{
 		value         = other.value;
 		counter       = other.counter;
+		other.value   = nullptr;
 		other.counter = nullptr;
 	}
 
@@ -79,6 +80,7 @@ namespace p
 			Reset();
 			value         = other.value;
 			counter       = other.counter;
+			other.value   = nullptr;
 			other.counter = nullptr;
 		}
 		else    // If equals, we reset previous anyway
@@ -112,7 +114,7 @@ namespace p
 		{
 			--counter->weakCount;
 		}
-		counter = nullptr;
 		value   = nullptr;
+		counter = nullptr;
 	}
 }    // namespace p
