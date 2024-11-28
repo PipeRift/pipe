@@ -970,10 +970,10 @@ namespace p
 	template<typename To, typename From>
 	TPtr<To> Cast(const TPtr<From>& value)
 	{
-		if (Cast<To*>(value.Get()))
+		if (Cast<To>(value.Get()))
 		{
 			// FIX: Multi inheritance may not make pointers directly compatible. Pass casted
-			// ptr!
+			// ptr into copy!
 			TPtr<To> ptr{};
 			ptr.CopyFromUnsafe(value);
 			return ptr;
