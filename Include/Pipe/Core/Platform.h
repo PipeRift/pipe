@@ -138,7 +138,7 @@ namespace p
 #pragma region Platform Break
 namespace p
 {
-	__attribute__((always_inline)) __inline__ static void PlatformBreak()
+	P_FORCEINLINE static void PlatformBreak()
 	{
 #ifdef _MSC_VER    // MSVC
 		__debugbreak();
@@ -167,12 +167,12 @@ namespace p
 	}
 
 #if P_DEBUG
-	__attribute__((always_inline)) __inline__ static void PlatformDebugBreak()
+	P_FORCEINLINE static void PlatformDebugBreak()
 	{
 		PlatformBreak();
 	}
 #else
-	__attribute__((always_inline)) __inline__ static void PlatformDebugBreak() {}
+	P_FORCEINLINE static void PlatformDebugBreak() {}
 #endif
 }    // namespace p
 
