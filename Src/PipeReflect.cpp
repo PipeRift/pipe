@@ -198,7 +198,9 @@ namespace p
 		{
 			currentId = GetTypeParent(currentId);
 			if (parentId == currentId)
+			{
 				return true;
+			}
 		} while (currentId.IsValid());
 		return false;
 	}
@@ -388,11 +390,6 @@ namespace p
 		GetRegistry().operations[currentEdit.index] = operations;
 	}
 
-
-	TypeId BaseObject::GetTypeId() const
-	{
-		return static_cast<const Object*>(this)->GetTypeId();
-	}
 	TPtr<Object> BaseObject::AsPtr() const
 	{
 		return static_cast<const Object*>(this)->AsPtr();

@@ -612,7 +612,7 @@ public:                                                                      \
 	using Self                                    = type;                    \
 	static constexpr p::TypeFlags staticTypeFlags = p::InitTypeFlags(flags); \
                                                                              \
-	p::TypeId GetTypeId() const override                                     \
+	p::TypeId ProvideTypeId() const override                                 \
 	{                                                                        \
 		return p::GetTypeId<Self>();                                         \
 	}
@@ -676,9 +676,11 @@ public:
                                                                                                   \
 	static void __BuildProperty(p::MetaCounter<id_name>)                                          \
 	{                                                                                             \
-		p::AddTypeProperty<decltype(name)>([](void* instance) {                                   \
+		p::AddTypeProperty<decltype(name)>(                                                       \
+		    [](void* instance) {                                                                  \
 			return (void*)&static_cast<Self*>(instance)->name;                                    \
-		}, #name, p::InitPropertyFlags(flags));                                                   \
+		    },                                                                                    \
+		    #name, p::InitPropertyFlags(flags));                                                  \
 		/* Registry next property if any */                                                       \
 		__BuildProperty(p::MetaCounter<id_name + 1>{});                                           \
 	}                                                                                             \
@@ -815,8 +817,25 @@ namespace p
 
 namespace p
 {
+	struct Casteable
+	{
+	private:
+		TypeId typeId;
+
+	public:
+		Casteable() : typeId(GetTypeId()) {}
+
+		TypeId GetTypeId() const
+		{
+			return typeId;
+		}
+
+	protected:
+		virtual TypeId ProvideTypeId() const = 0;
+	};
+
 #pragma region Objects
-	class PIPE_API BaseObject
+	class PIPE_API BaseObject : public Casteable
 	{
 	protected:
 		BaseObject() = default;
@@ -824,7 +843,6 @@ namespace p
 	public:
 		virtual ~BaseObject() = default;
 
-		TypeId GetTypeId() const;
 		TPtr<Object> AsPtr() const;
 	};
 
@@ -863,7 +881,8 @@ namespace p
 				// Sets owner during construction
 				// TODO: Fix self not existing at the moment of construction
 				ObjectOwnership::nextOwner = owner;
-				if (T* instance = dynamic_cast<T*>(ops->onNew(arena)))
+				if (T* instance = Cast<T*>(
+				        ops->onNew(arena)))    // FIX: This will leak if type does not inherit T!
 				{
 					return instance;
 				}
@@ -888,7 +907,7 @@ namespace p
 		template<typename T>
 		using PtrBuilder = TObjectPtrBuilder<T>;
 
-		virtual p::TypeId GetTypeId() const
+		p::TypeId ProvideTypeId() const override
 		{
 			return p::GetTypeId<Object>();
 		}
@@ -921,18 +940,22 @@ namespace p
 
 #pragma region Casts
 
-	// Equal and Down-casting
+	/**
+	 * Cast a pointer into another type doing up-casting
+	 */
 	template<typename To, typename From, typename ToValue = std::remove_pointer_t<To>>
 	ToValue* Cast(From* value) requires(Derived<From, ToValue>)
 	{
 		return value;
 	}
 
-	// Up-casting
+	/**
+	 * Cast a pointer into another type doing down-casting
+	 */
 	template<typename To, typename From, typename ToValue = std::remove_pointer_t<To>>
 	ToValue* Cast(From* value) requires(Derived<ToValue, From, false>)
 	{
-		if constexpr (Derived<From, Object>)
+		if constexpr (Derived<From, Casteable>)
 		{
 			const TypeId toId   = GetTypeId<ToValue>();
 			const TypeId fromId = value->GetTypeId();
@@ -940,7 +963,7 @@ namespace p
 		}
 		else
 		{
-			return dynamic_cast<ToValue*>(value);    // TODO: Implement non-object up casting
+			return nullptr;
 		}
 	}
 
