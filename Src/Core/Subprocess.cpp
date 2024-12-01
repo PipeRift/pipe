@@ -108,6 +108,30 @@ namespace p
 
 
 #if defined(_MSC_VER)
+	const char* GetSystemErrorMessage(char* buffer, i32 size, i32 error)
+	{
+		P_Check(buffer && size);
+
+		*buffer = '\0';
+		if (error == 0)
+		{
+			error = ::GetLastError();
+		}
+		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, error,
+		    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buffer, size, nullptr);
+		char* found = std::strchr(buffer, '\r');
+		if (found)
+		{
+			*found = '\0';
+		}
+		found = std::strchr(buffer, '\n');
+		if (found)
+		{
+			*found = '\0';
+		}
+		return buffer;
+	}
+
 	i32 RunProcessNamedPipeHelper(void** readPipe, void** writePipe)
 	{
 		const u64 pipeAccessInbound          = 0x00000001;
@@ -360,7 +384,7 @@ namespace p
 		{
 			DWORD errorCode = GetLastError();
 			char errorMessage[512];
-			PlatformMisc::GetSystemErrorMessage(errorMessage, 512, errorCode);
+			GetSystemErrorMessage(errorMessage, 512, errorCode);
 			Error("RunProcess failed: {} (0x{:08x})", errorMessage, errorCode);
 			return {};
 		}

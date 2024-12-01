@@ -1,6 +1,6 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 
-#include "Pipe/Core/GenericPlatformMisc.h"
+#include "Pipe/Core/PlatformMisc.h"
 
 #include "Pipe/Core/Guid.h"
 #include "Pipe/Core/PlatformMisc.h"
@@ -9,7 +9,7 @@
 
 namespace p
 {
-	void GenericPlatformMisc::CreateGuid(Guid& guid)
+	void PlatformMisc::CreateGuid(Guid& guid)
 	{
 		static u16 incrementCounter = 0;
 		static DateTime initialDateTime;
@@ -32,7 +32,7 @@ namespace p
 		    estimatedCurrentDateTime.GetTicks() & 0xffffffff, PlatformMisc::GetCycles());
 	}
 
-	u64 GenericPlatformMisc::GetCycles64()
+	u64 PlatformMisc::GetCycles64()
 	{
 		return Chrono::floor<Chrono::microseconds>(DateTime::Now().GetTime().time_since_epoch())
 		    .count();

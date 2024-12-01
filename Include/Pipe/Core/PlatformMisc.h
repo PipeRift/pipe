@@ -1,13 +1,23 @@
 // Copyright 2015-2024 Piperift - All rights reserved
-
 #pragma once
 
-#if P_PLATFORM_WINDOWS
-	#include "Pipe/Core/WindowsPlatformMisc.h"
-#elif P_PLATFORM_LINUX
-	#include "Pipe/Core/LinuxPlatformMisc.h"
-#elif P_PLATFORM_MACOS
-	#include "Pipe/Core/MacPlatformMisc.h"
-#else
-	#error Unknown platform
-#endif
+#include "Pipe/Export.h"
+#include "PipePlatform.h"
+
+
+namespace p
+{
+	struct Guid;
+
+	struct PIPE_API PlatformMisc
+	{
+		static void CreateGuid(Guid& guid);
+
+		static u64 GetCycles64();
+
+		static u32 GetCycles()
+		{
+			return u32(GetCycles64());
+		}
+	};
+}    // namespace p
