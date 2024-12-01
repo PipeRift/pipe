@@ -817,25 +817,6 @@ namespace p
 
 namespace p
 {
-	struct Casteable
-	{
-	private:
-		mutable TypeId typeId;
-
-	public:
-		TypeId GetTypeId() const
-		{
-			if (!typeId)
-			{
-				typeId = ProvideTypeId();
-			}
-			return typeId;
-		}
-
-	protected:
-		virtual TypeId ProvideTypeId() const = 0;
-	};
-
 #pragma region Objects
 	class PIPE_API BaseObject : public Casteable
 	{
@@ -885,7 +866,7 @@ namespace p
 					// Sets owner during construction
 					// TODO: Fix self not existing at the moment of construction
 					ObjectOwnership::nextOwner = owner;
-					return Cast<T*>(ops->onNew(arena));
+					return Cast<T>(ops->onNew(arena));
 				}
 			}
 			return nullptr;
@@ -944,8 +925,8 @@ namespace p
 	/**
 	 * Cast a pointer into another type doing up-casting
 	 */
-	template<typename To, typename From, typename ToValue = std::remove_pointer_t<To>>
-	ToValue* Cast(From* value) requires(Derived<From, ToValue>)
+	template<IsCasteable To, IsCasteable From>
+	To* Cast(From* value) requires(Derived<From, To>)
 	{
 		return value;
 	}
@@ -953,16 +934,20 @@ namespace p
 	/**
 	 * Cast a pointer into another type doing down-casting
 	 */
-	template<typename To, typename From, typename ToValue = std::remove_pointer_t<To>>
-	ToValue* Cast(From* value) requires(Derived<ToValue, From, false>)
+	template<IsCasteable To, IsCasteable From>
+	To* Cast(From* value) requires(Derived<std::remove_pointer_t<To>, From, false>)
 	{
-		if constexpr (Derived<From, Casteable>)
+		static_assert(!IsPointer<To>,
+		    "Destination type of a Cast should not be a pointer. Use Cast<To>() instead of "
+		    "Cast<To*>().");
+		using ToValue = std::remove_pointer_t<To>;
+		if (value)
 		{
-			if (value)
+			const TypeId toId   = GetTypeId<ToValue>();
+			const TypeId fromId = value->GetTypeId();
+			if (toId == fromId || IsTypeParentOf(toId, fromId))
 			{
-				const TypeId toId   = GetTypeId<ToValue>();
-				const TypeId fromId = value->GetTypeId();
-				return IsTypeParentOf(toId, fromId) ? static_cast<ToValue*>(value) : nullptr;
+				return static_cast<ToValue*>(value);
 			}
 		}
 		return nullptr;

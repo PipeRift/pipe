@@ -104,6 +104,30 @@ namespace p
 		return GetTypeId<Mut<T>>();
 	}
 
+
+#pragma region Casteable
+	struct Casteable
+	{
+	private:
+		mutable TypeId typeId;
+
+	public:
+		TypeId GetTypeId() const
+		{
+			if (!typeId)
+			{
+				typeId = ProvideTypeId();
+			}
+			return typeId;
+		}
+
+	protected:
+		virtual TypeId ProvideTypeId() const = 0;
+	};
+
+	template<typename T>
+	concept IsCasteable = Derived<std::remove_pointer_t<T>, Casteable, false>;
+#pragma endregion Casteable
 }    // namespace p
 
 

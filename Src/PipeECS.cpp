@@ -207,9 +207,13 @@ namespace p
 	    TFunction<void(EntityWriter&)> onWritePools, bool includeChildren)
 	{
 		if (includeChildren)
+		{
 			RetrieveHierarchy(entities, ids);
+		}
 		else
+		{
 			ids = entities;
+		}
 		MapIdsToIndices();
 
 		Next("count", ids.Size());
@@ -287,7 +291,7 @@ namespace p
 
 	void Read(Reader& r, Id& val)
 	{
-		auto* entityReader = p::Cast<EntityReader*>(&r);
+		auto* entityReader = p::Cast<EntityReader>(&r);
 		if (P_EnsureMsg(entityReader, "Serializing an ecs Id without an EntityReader")) [[likely]]
 		{
 			i32 dataId;
@@ -298,7 +302,7 @@ namespace p
 
 	void Write(Writer& w, Id val)
 	{
-		auto* entityWriter = p::Cast<EntityWriter*>(&w);
+		auto* entityWriter = p::Cast<EntityWriter>(&w);
 		if (P_EnsureMsg(entityWriter, "Serializing an ecs Id without an EntityWriter")) [[likely]]
 		{
 			const i32* dataId = entityWriter->GetIdToIndexes().Find(val);
@@ -680,7 +684,9 @@ namespace p
 		}
 		statics.Insert(index);
 		if (bAdded)
+		{
 			*bAdded = true;
+		}
 		return statics[index];
 	}
 
@@ -850,7 +856,9 @@ namespace p
 	void FindAllIdsWith(TView<const BasePool* const> pools, TArray<Id>& ids)
 	{
 		if (pools.IsEmpty())
+		{
 			return;
+		}
 
 		for (const BasePool* pool : pools)
 		{
@@ -890,7 +898,9 @@ namespace p
 	void FindAllIdsWithAny(TView<const BasePool* const> pools, TArray<Id>& ids)
 	{
 		if (pools.IsEmpty())
+		{
 			return;
+		}
 
 		for (const BasePool* pool : pools)
 		{
@@ -912,7 +922,9 @@ namespace p
 	void FindAllIdsWithAnyUnique(TView<const BasePool* const> pools, TArray<Id>& ids)
 	{
 		if (pools.IsEmpty())
+		{
 			return;
+		}
 
 		i32 maxPossibleSize = 0;
 		for (const BasePool* pool : pools)

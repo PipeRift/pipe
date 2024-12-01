@@ -5,6 +5,7 @@
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Templates.h"
 #include "Pipe/Core/TypeFlags.h"
+#include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "PipeArrays.h"
 #include "PipeColor.h"
@@ -12,7 +13,6 @@
 #include "PipeSerializeFwd.h"
 
 #include <utility>
-
 
 
 struct yyjson_doc;
@@ -41,7 +41,7 @@ namespace p
 
 
 #pragma region Reader
-	struct PIPE_API Reader
+	struct PIPE_API Reader : public Casteable
 	{
 		friend IFormatReader;
 		IFormatReader* formatReader = nullptr;
@@ -147,6 +147,12 @@ namespace p
 		{
 			return *formatReader;
 		}
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<Reader>();
+		}
 	};
 
 	// Format reads
@@ -193,7 +199,7 @@ namespace p
 
 
 #pragma region Writer
-	struct PIPE_API Writer
+	struct PIPE_API Writer : public Casteable
 	{
 		friend IFormatWriter;
 		IFormatWriter* formatWriter = nullptr;
@@ -296,6 +302,12 @@ namespace p
 		inline IFormatWriter& GetFormat()
 		{
 			return *formatWriter;
+		}
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<Writer>();
 		}
 	};
 

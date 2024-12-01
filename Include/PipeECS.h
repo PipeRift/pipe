@@ -12,7 +12,6 @@
 #include "PipeReflect.h"
 
 
-
 ////////////////////////////////
 // ENTITY IDS
 //
@@ -195,6 +194,12 @@ namespace p
 
 		const TArray<Id>& GetIds() const;
 		EntityContext& GetContext();
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<EntityReader>();
+		}
 	};
 
 
@@ -238,6 +243,12 @@ namespace p
 		void RetrieveHierarchy(const TArray<Id>& roots, TArray<Id>& children);
 		void RemoveIgnoredEntities(TArray<Id>& entities);
 		void MapIdsToIndices();
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<EntityWriter>();
+		}
 	};
 
 	void PIPE_API Read(p::Reader& ct, p::Id& val);
