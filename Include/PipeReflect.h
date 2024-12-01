@@ -938,7 +938,7 @@ namespace p
 	To* Cast(From* value) requires(Derived<std::remove_pointer_t<To>, From, false>)
 	{
 		static_assert(!IsPointer<To>,
-		    "Destination type of a Cast should not be a pointer. Use Cast<To>() instead of "
+		    "Destination type of a Cast can't be a pointer. Use Cast<To>() instead of "
 		    "Cast<To*>().");
 		using ToValue = std::remove_pointer_t<To>;
 		if (value)
@@ -958,8 +958,6 @@ namespace p
 	{
 		if (Cast<To>(value.Get()))
 		{
-			// FIX: Multi inheritance may not make pointers directly compatible. Pass casted
-			// ptr into copy!
 			TPtr<To> ptr{};
 			ptr.CopyFromUnsafe(value);
 			return ptr;
