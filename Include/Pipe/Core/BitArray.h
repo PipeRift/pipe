@@ -1,8 +1,9 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Platform.h"
 #include "PipeArrays.h"
+#include "PipePlatform.h"
+
 
 
 namespace p
@@ -233,12 +234,16 @@ namespace p
 		for (i = index + 1; i < numBits; ++i)
 		{
 			if (IsSet(i))
+			{
 				return i;
+			}
 		}
 		for (i = 0; i < index - 1; ++i)
 		{
 			if (IsSet(i))
+			{
 				return i;
+			}
 		}
 		return -1;
 	}
@@ -251,16 +256,22 @@ namespace p
 			for (i = index - 1; i > 0; --i)
 			{
 				if (IsSet(i))
+				{
 					return i;
+				}
 			}
 			if (IsSet(0))
+			{
 				return 0;
+			}
 		}
 
 		for (i = numBits - 1; i > index; i--)
 		{
 			if (IsSet(i))
+			{
 				return i;
+			}
 		}
 		return -1;
 	}

@@ -1,7 +1,9 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
+#include <Pipe/Core/TypeTraits.h>
 #include <PipeReflect.h>
+#include <PipeSerialize.h>
 
 
 using namespace snowhouse;

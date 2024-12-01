@@ -44,8 +44,10 @@ namespace p
 					lastFoundQuotes = c;
 					++c;    // Skip one more character for ::
 				}
-				else if (*c == '<')    // Stop on templates
+				else if (*c == '<')
+				{    // Stop on templates
 					break;
+				}
 				++c;
 			}
 			if (lastFoundQuotes)
@@ -70,8 +72,10 @@ namespace p
 					lastFoundQuotes = c;
 					++c;    // Skip one more character for ::
 				}
-				else if (*c == '<')    // Stop on templates
+				else if (*c == '<')
+				{    // Stop on templates
 					break;
+				}
 				++c;
 			}
 			if (lastFoundQuotes)
@@ -178,5 +182,5 @@ namespace p
 	template<>                                                                      \
 	inline consteval p::StringView p::GetFullTypeName<type>(bool includeNamespaces) \
 	{                                                                               \
-		return TX(name);                                                            \
+		return name;                                                                \
 	}

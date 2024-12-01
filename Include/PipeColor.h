@@ -660,10 +660,9 @@ namespace p
 		{
 			if constexpr (mode == ColorMode::HSV)
 			{
-				return Strings::Format(
-				    TX("(h={},s={},v={},a={})"), this->h, this->s, this->v, this->a);
+				return Strings::Format("(h={},s={},v={},a={})", this->h, this->s, this->v, this->a);
 			}
-			return Strings::Format(TX("(r={},g={},b={},a={})"), this->r, this->g, this->b, this->a);
+			return Strings::Format("(r={},g={},b={},a={})", this->r, this->g, this->b, this->a);
 		}
 
 		/**
@@ -677,9 +676,9 @@ namespace p
 			if (includeAlpha)
 			{
 				return Strings::Format(
-				    TX("{:02X}{:02X}{:02X}{:02X}"), this->r, this->g, this->b, this->a);
+				    "{:02X}{:02X}{:02X}{:02X}", this->r, this->g, this->b, this->a);
 			}
-			return Strings::Format(TX("{:02X}{:02X}{:02X}"), this->r, this->g, this->b);
+			return Strings::Format("{:02X}{:02X}{:02X}", this->r, this->g, this->b);
 		}
 
 		// Common colors

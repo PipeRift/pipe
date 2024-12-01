@@ -1,9 +1,10 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/Block.h"
+#include "PipePlatform.h"
+
 
 
 namespace p
@@ -123,7 +124,10 @@ namespace p
 		}
 		virtual void GetBlocks(TInlineArray<Memory::Block, 0>& outBlocks) const {}
 
-		virtual const struct MemoryStats* GetStats() const { return nullptr; }
+		virtual const struct MemoryStats* GetStats() const
+		{
+			return nullptr;
+		}
 	};
 
 	class PIPE_API ChildArena : public Arena

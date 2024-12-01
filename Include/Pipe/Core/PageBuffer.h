@@ -2,11 +2,12 @@
 
 #pragma once
 
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Memory/Arena.h"
 #include "PipeArrays.h"
+#include "PipePlatform.h"
 
 #include <memory>
+
 
 
 namespace p

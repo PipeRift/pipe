@@ -28,7 +28,7 @@ namespace p::Strings
 			if (FChar::IsAlpha(*p) && (FChar::IsUpper(*next) || FChar::IsDigit(*next)))
 			{
 				result.push_back(*p);
-				result.push_back(TX(' '));
+				result.push_back(' ');
 			}
 			else
 			{
@@ -100,15 +100,15 @@ namespace p::Strings
 
 	bool IsNumeric(const char* Str)
 	{
-		if (*Str == TX('-') || *Str == TX('+'))
+		if (*Str == '-' || *Str == '+')
 		{
 			Str++;
 		}
 
 		bool bHasDot = false;
-		while (*Str != TX('\0'))
+		while (*Str != '\0')
 		{
-			if (*Str == TX('.'))
+			if (*Str == '.')
 			{
 				if (bHasDot)
 				{

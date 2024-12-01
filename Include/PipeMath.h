@@ -3,10 +3,11 @@
 #pragma once
 
 #include "Pipe/Core/Limits.h"
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Utility.h"
+#include "PipePlatform.h"
 
 #include <cmath>
+
 
 
 namespace p

@@ -2,12 +2,13 @@
 #pragma once
 
 #include "Pipe/Core/Limits.h"
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"
+#include "PipePlatform.h"
 
 #include <type_traits>
+
 
 
 namespace p

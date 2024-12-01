@@ -3,13 +3,14 @@
 #pragma once
 
 #include "Pipe/Core/Hash.h"
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Extern/sparse_set.h"
 #include "Pipe/Memory/STLAllocator.h"
+#include "PipePlatform.h"
 
 #include <cassert>
 #include <type_traits>
+
 
 
 namespace p

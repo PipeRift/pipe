@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Pipe/Core/Platform.h"
+#include "PipePlatform.h"
 
 
 namespace p

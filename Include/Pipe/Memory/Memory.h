@@ -1,10 +1,11 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Export.h"
+#include "PipePlatform.h"
+
 
 
 namespace p

@@ -2,10 +2,11 @@
 
 #pragma once
 
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/TypeTraits.h"
+#include "PipePlatform.h"
 
 #include <functional>
+
 
 
 namespace p

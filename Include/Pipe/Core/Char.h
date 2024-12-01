@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Pipe/Core/Platform.h"
+#include "PipePlatform.h"
 
 #include <cctype>
 #include <cwctype>

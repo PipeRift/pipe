@@ -820,13 +820,15 @@ namespace p
 	struct Casteable
 	{
 	private:
-		TypeId typeId;
+		mutable TypeId typeId;
 
 	public:
-		Casteable() : typeId(GetTypeId()) {}
-
 		TypeId GetTypeId() const
 		{
+			if (!typeId)
+			{
+				typeId = ProvideTypeId();
+			}
 			return typeId;
 		}
 
@@ -876,15 +878,14 @@ namespace p
 		// Allow creation of classes using reflection
 		static T* New(Arena& arena, TypeId type, TPtr<BaseObject> owner = {})
 		{
-			if (auto* ops = GetTypeObjectOps(type))
+			if (GetTypeId<T>() == type || IsTypeParentOf(GetTypeId<T>(), type))
 			{
-				// Sets owner during construction
-				// TODO: Fix self not existing at the moment of construction
-				ObjectOwnership::nextOwner = owner;
-				if (T* instance = Cast<T*>(
-				        ops->onNew(arena)))    // FIX: This will leak if type does not inherit T!
+				if (auto* ops = GetTypeObjectOps(type))
 				{
-					return instance;
+					// Sets owner during construction
+					// TODO: Fix self not existing at the moment of construction
+					ObjectOwnership::nextOwner = owner;
+					return Cast<T*>(ops->onNew(arena));
 				}
 			}
 			return nullptr;

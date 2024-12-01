@@ -1,7 +1,7 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 #pragma once
 
-#include "Pipe/Core/Platform.h"
+#include "PipePlatform.h"
 
 
 // Forward declarations of all serialization

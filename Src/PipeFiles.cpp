@@ -5,8 +5,9 @@
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Map.h"
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Tag.h"
+#include "PipePlatform.h"
+
 #if P_PLATFORM_WINDOWS
     // Include Windows before protable file dialogs
 	#include <windows.h>

@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/StringView.h"
 #include "PipeArrays.h"
+#include "PipePlatform.h"
+
 
 // #if P_ENABLE_ALLOCATION_STACKS
 #include "Pipe/Core/Backward.h"

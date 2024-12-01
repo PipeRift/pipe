@@ -18,27 +18,27 @@ namespace p
 		switch (Format)
 		{
 			case EGuidFormats::DigitsWithHyphens:
-				return Strings::Format(TX("{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}"), a, b >> 16,
+				return Strings::Format("{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}", a, b >> 16,
 				    b & 0xFFFF, c >> 16, c & 0xFFFF, d);
 
 			case EGuidFormats::DigitsWithHyphensInBraces:
-				return Strings::Format(TX("{{{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}}}"), a,
-				    b >> 16, b & 0xFFFF, c >> 16, c & 0xFFFF, d);
+				return Strings::Format("{{{:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X}}}", a, b >> 16,
+				    b & 0xFFFF, c >> 16, c & 0xFFFF, d);
 
 			case EGuidFormats::DigitsWithHyphensInParentheses:
-				return Strings::Format(TX("({:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X})"), a, b >> 16,
+				return Strings::Format("({:08X}-{:04X}-{:04X}-{:04X}-{:04X}{:08X})", a, b >> 16,
 				    b & 0xFFFF, c >> 16, c & 0xFFFF, d);
 
 			case EGuidFormats::HexValuesInBraces:
 				return Strings::Format(
-				    TX("{{0x{:08X},0x{:04X},0x{:04X},{{0x{:02X},0x{:02X},0x{:02X},"
-				       "0x{:02X},0x{:02X},0x{:02X},0x{:02X},0x{:02X}}}}}"),
+				    "{{0x{:08X},0x{:04X},0x{:04X},{{0x{:02X},0x{:02X},0x{:02X},"
+				    "0x{:02X},0x{:02X},0x{:02X},0x{:02X},0x{:02X}}}}}",
 				    a, b >> 16, b & 0xFFFF, c >> 24, (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0XFF,
 				    d >> 24, (d >> 16) & 0XFF, (d >> 8) & 0XFF, d & 0XFF);
 
 			case EGuidFormats::UniqueObjectGuid:
-				return Strings::Format(TX("{:08X}-{:08X}-{:08X}-{:08X}"), a, b, c, d);
-			default: return Strings::Format(TX("{:08X}{:08X}{:08X}{:08X}"), a, b, c, d);
+				return Strings::Format("{:08X}-{:08X}-{:08X}-{:08X}", a, b, c, d);
+			default: return Strings::Format("{:08X}{:08X}{:08X}{:08X}", a, b, c, d);
 		}
 	}
 
@@ -69,7 +69,7 @@ namespace p
 
 		if (stringSize == 38)
 		{
-			if (guidString[0] == TX('{'))
+			if (guidString[0] == '{')
 			{
 				return ParseExact(guidString, EGuidFormats::DigitsWithHyphensInBraces, OutGuid);
 			}
@@ -102,8 +102,8 @@ namespace p
 		}
 		else if (Format == EGuidFormats::DigitsWithHyphens)
 		{
-			if ((GuidString[8] != TX('-')) || (GuidString[13] != TX('-'))
-			    || (GuidString[18] != TX('-')) || (GuidString[23] != TX('-')))
+			if ((GuidString[8] != '-') || (GuidString[13] != '-') || (GuidString[18] != '-')
+			    || (GuidString[23] != '-'))
 			{
 				return false;
 			}
@@ -116,9 +116,8 @@ namespace p
 		}
 		else if (Format == EGuidFormats::DigitsWithHyphensInBraces)
 		{
-			if ((GuidString[0] != TX('{')) || (GuidString[9] != TX('-'))
-			    || (GuidString[14] != TX('-')) || (GuidString[19] != TX('-'))
-			    || (GuidString[24] != TX('-')) || (GuidString[37] != TX('}')))
+			if ((GuidString[0] != '{') || (GuidString[9] != '-') || (GuidString[14] != '-')
+			    || (GuidString[19] != '-') || (GuidString[24] != '-') || (GuidString[37] != '}'))
 			{
 				return false;
 			}
@@ -131,9 +130,8 @@ namespace p
 		}
 		else if (Format == EGuidFormats::DigitsWithHyphensInParentheses)
 		{
-			if ((GuidString[0] != TX('(')) || (GuidString[9] != TX('-'))
-			    || (GuidString[14] != TX('-')) || (GuidString[19] != TX('-'))
-			    || (GuidString[24] != TX('-')) || (GuidString[37] != TX(')')))
+			if ((GuidString[0] != '(') || (GuidString[9] != '-') || (GuidString[14] != '-')
+			    || (GuidString[19] != '-') || (GuidString[24] != '-') || (GuidString[37] != ')'))
 			{
 				return false;
 			}
@@ -146,24 +144,18 @@ namespace p
 		}
 		else if (Format == EGuidFormats::HexValuesInBraces)
 		{
-			if ((GuidString[0] != TX('{')) || (GuidString[1] != TX('0'))
-			    || (GuidString[2] != TX('x')) || (GuidString[11] != TX(','))
-			    || (GuidString[12] != TX('0')) || (GuidString[13] != TX('x'))
-			    || (GuidString[18] != TX(',')) || (GuidString[19] != TX('0'))
-			    || (GuidString[20] != TX('x')) || (GuidString[25] != TX(','))
-			    || (GuidString[26] != TX('{')) || (GuidString[27] != TX('0'))
-			    || (GuidString[28] != TX('x')) || (GuidString[31] != TX(','))
-			    || (GuidString[32] != TX('0')) || (GuidString[33] != TX('x'))
-			    || (GuidString[36] != TX(',')) || (GuidString[37] != TX('0'))
-			    || (GuidString[38] != TX('x')) || (GuidString[41] != TX(','))
-			    || (GuidString[42] != TX('0')) || (GuidString[43] != TX('x'))
-			    || (GuidString[46] != TX(',')) || (GuidString[47] != TX('0'))
-			    || (GuidString[48] != TX('x')) || (GuidString[51] != TX(','))
-			    || (GuidString[52] != TX('0')) || (GuidString[53] != TX('x'))
-			    || (GuidString[56] != TX(',')) || (GuidString[57] != TX('0'))
-			    || (GuidString[58] != TX('x')) || (GuidString[61] != TX(','))
-			    || (GuidString[62] != TX('0')) || (GuidString[63] != TX('x'))
-			    || (GuidString[66] != TX('}')) || (GuidString[67] != TX('}')))
+			if ((GuidString[0] != '{') || (GuidString[1] != '0') || (GuidString[2] != 'x')
+			    || (GuidString[11] != ',') || (GuidString[12] != '0') || (GuidString[13] != 'x')
+			    || (GuidString[18] != ',') || (GuidString[19] != '0') || (GuidString[20] != 'x')
+			    || (GuidString[25] != ',') || (GuidString[26] != '{') || (GuidString[27] != '0')
+			    || (GuidString[28] != 'x') || (GuidString[31] != ',') || (GuidString[32] != '0')
+			    || (GuidString[33] != 'x') || (GuidString[36] != ',') || (GuidString[37] != '0')
+			    || (GuidString[38] != 'x') || (GuidString[41] != ',') || (GuidString[42] != '0')
+			    || (GuidString[43] != 'x') || (GuidString[46] != ',') || (GuidString[47] != '0')
+			    || (GuidString[48] != 'x') || (GuidString[51] != ',') || (GuidString[52] != '0')
+			    || (GuidString[53] != 'x') || (GuidString[56] != ',') || (GuidString[57] != '0')
+			    || (GuidString[58] != 'x') || (GuidString[61] != ',') || (GuidString[62] != '0')
+			    || (GuidString[63] != 'x') || (GuidString[66] != '}') || (GuidString[67] != '}'))
 			{
 				return false;
 			}
@@ -182,8 +174,7 @@ namespace p
 		}
 		else if (Format == EGuidFormats::UniqueObjectGuid)
 		{
-			if ((GuidString[8] != TX('-')) || (GuidString[17] != TX('-'))
-			    || (GuidString[26] != TX('-')))
+			if ((GuidString[8] != '-') || (GuidString[17] != '-') || (GuidString[26] != '-'))
 			{
 				return false;
 			}

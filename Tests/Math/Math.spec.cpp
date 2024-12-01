@@ -2,11 +2,12 @@
 
 #include <bandit/bandit.h>
 #include <Pipe/Core/Limits.h>
-#include <Pipe/Core/Platform.h>
 #include <PipeAlgorithms.h>
 #include <PipeArrays.h>
+#include <PipePlatform.h>
 
 #include <cmath>
+
 
 
 using namespace snowhouse;

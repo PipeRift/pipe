@@ -3,16 +3,17 @@
 #pragma once
 
 #include "Pipe/Core/Hash.h"
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/STDFormat.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Extern/utf8/unchecked.h"
 #include "Pipe/Memory/STLAllocator.h"
 #include "PipeArrays.h"
+#include "PipePlatform.h"
 #include "PipeSerializeFwd.h"
 
 #include <string>
+
 
 
 #pragma warning(push)

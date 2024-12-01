@@ -4,7 +4,7 @@
 
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Optional.h"
-#include "Pipe/Core/Platform.h"
+#include "PipePlatform.h"
 
 #include <cstring>
 #include <string_view>

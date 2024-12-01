@@ -3,8 +3,9 @@
 
 #include "Function.h"
 #include "Pipe/Core/Log.h"
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Memory/OwnPtr.h"
+#include "PipePlatform.h"
+
 
 // TODO: Remove this dependency
 #include "PipeReflect.h"
@@ -20,7 +21,9 @@ namespace p
 		static u64 NewId()
 		{
 			if (counter == 0)
+			{
 				++counter;
+			}
 			return counter++;
 		}
 

@@ -5,7 +5,7 @@
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Hash.h"
-#include "Pipe/Core/Platform.h"
+#include "PipePlatform.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/Arena.h"

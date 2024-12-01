@@ -2,8 +2,9 @@
 #pragma once
 
 #include "Pipe/Core/Hash.h"
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Utility.h"
+#include "PipePlatform.h"
+
 #if P_DEBUG
 	#include "Pipe/Core/StringView.h"
 	#include "Pipe/Core/TypeName.h"
@@ -62,6 +63,10 @@ namespace p
 		{
 			return id >= other.id;
 		}
+		constexpr operator bool() const
+		{
+			return IsValid();
+		}
 
 		static consteval TypeId None()
 		{
@@ -85,7 +90,7 @@ namespace p
 	{
 		return TypeId
 		{
-			p::GetStringHash(TX(UNIQUE_FUNCTION_ID))
+			p::GetStringHash(P_UNIQUE_FUNCTION_ID)
 #if P_DEBUG
 			    ,
 			    GetTypeName<T>()

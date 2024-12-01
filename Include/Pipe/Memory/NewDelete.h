@@ -9,7 +9,7 @@
 
 
 #if defined(__cplusplus)
-	#include "Pipe/Core/Platform.h"
+	#include "PipePlatform.h"
 	#include "Pipe/Memory/Alloc.h"
 	#include <new>
 

@@ -2,12 +2,13 @@
 
 #pragma once
 
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Export.h"
 #include "Pipe/Files/STDFileSystem.h"
 #include "PipeArrays.h"
+#include "PipePlatform.h"
+
 
 
 namespace p

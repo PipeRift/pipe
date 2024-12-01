@@ -4,12 +4,13 @@
 #include "Pipe/Core/Broadcast.h"
 #include "Pipe/Core/Map.h"
 #include "Pipe/Core/PageBuffer.h"
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Templates.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/UniquePtr.h"
 #include "PipeArrays.h"
+#include "PipePlatform.h"
 #include "PipeReflect.h"
+
 
 
 ////////////////////////////////

@@ -3,10 +3,11 @@
 #pragma once
 
 #include "Pipe/Core/Checks.h"
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/String.h"
+#include "PipePlatform.h"
 
 #include <chrono>
+
 
 
 namespace p
@@ -1365,7 +1366,9 @@ namespace p
 					epsilon = delta;
 				}
 				if (++itercnt >= limit)
+				{
 					break;
+				}
 			} while (epsilon > tolerance);
 
 			return dst_now + (tp - src_now);

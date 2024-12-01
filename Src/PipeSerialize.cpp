@@ -1278,19 +1278,19 @@ namespace p
 	void Read(Reader& ct, Guid& guid)
 	{
 		ct.BeginObject();
-		ct.Next(TX("a"), guid.a);
-		ct.Next(TX("b"), guid.b);
-		ct.Next(TX("c"), guid.c);
-		ct.Next(TX("d"), guid.d);
+		ct.Next("a", guid.a);
+		ct.Next("b", guid.b);
+		ct.Next("c", guid.c);
+		ct.Next("d", guid.d);
 	}
 
 	void Write(Writer& ct, const Guid& guid)
 	{
 		ct.BeginObject();
-		ct.Next(TX("a"), guid.a);
-		ct.Next(TX("b"), guid.b);
-		ct.Next(TX("c"), guid.c);
-		ct.Next(TX("d"), guid.d);
+		ct.Next("a", guid.a);
+		ct.Next("b", guid.b);
+		ct.Next("c", guid.c);
+		ct.Next("d", guid.d);
 	}
 
 	void Read(Reader& ct, TColor<ColorMode::RGBA>& color)
@@ -1356,96 +1356,96 @@ namespace p
 	void Read(Reader& ct, Vec<2, float>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
 	}
 	void Write(Writer& ct, const Vec<2, float>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
 	}
 	void Read(Reader& ct, Vec<2, u32>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
 	}
 	void Write(Writer& ct, const Vec<2, u32>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
 	}
 	void Read(Reader& ct, Vec<2, i32>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
 	}
 	void Write(Writer& ct, const Vec<2, i32>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
 	}
 	void Read(Reader& ct, Vec<3, float>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
+		ct.Next("z", val.z);
 	}
 	void Write(Writer& ct, const Vec<3, float>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
+		ct.Next("z", val.z);
 	}
 	void Read(Reader& ct, Vec<3, u32>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
+		ct.Next("z", val.z);
 	}
 	void Write(Writer& ct, const Vec<3, u32>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
+		ct.Next("z", val.z);
 	}
 	void Read(Reader& ct, Vec<3, i32>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
+		ct.Next("z", val.z);
 	}
 	void Write(Writer& ct, const Vec<3, i32>& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
+		ct.Next("z", val.z);
 	}
 	void Read(Reader& ct, Quat& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
-		ct.Next(TX("w"), val.w);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
+		ct.Next("z", val.z);
+		ct.Next("w", val.w);
 	}
 	void Write(Writer& ct, const Quat& val)
 	{
 		ct.BeginObject();
-		ct.Next(TX("x"), val.x);
-		ct.Next(TX("y"), val.y);
-		ct.Next(TX("z"), val.z);
-		ct.Next(TX("w"), val.w);
+		ct.Next("x", val.x);
+		ct.Next("y", val.y);
+		ct.Next("z", val.z);
+		ct.Next("w", val.w);
 	}
 #pragma endregion CoreSupport
 }    // namespace p

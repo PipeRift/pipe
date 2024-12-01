@@ -4,15 +4,16 @@
 
 #include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/Hash.h"
-#include "Pipe/Core/Platform.h"
 #include "Pipe/Core/Templates.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Extern/sparse_map.h"
 #include "Pipe/Memory/Alloc.h"
 #include "Pipe/Memory/STLAllocator.h"
+#include "PipePlatform.h"
 
 #include <cassert>
 #include <type_traits>
+
 
 
 namespace p
