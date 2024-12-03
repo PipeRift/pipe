@@ -1,12 +1,12 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 
-#include "Pipe/Core/PlatformMisc.h"
+#include "PipePlatform.h"
 
 #include "Pipe/Core/Guid.h"
-#include "Pipe/Core/PlatformMisc.h"
 #include "PipeTime.h"
 
 
+#pragma region Platform Misc
 namespace p
 {
 	void PlatformMisc::CreateGuid(Guid& guid)
@@ -38,3 +38,4 @@ namespace p
 		    .count();
 	}
 }    // namespace p
+#pragma endregion Platform Misc

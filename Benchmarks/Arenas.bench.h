@@ -4,12 +4,7 @@
 #include "nanobench.h"
 using namespace ankerl;
 
-#include <Pipe/Memory/Alloc.h>
-#include <Pipe/Memory/BestFitArena.h>
-#include <Pipe/Memory/BigBestFitArena.h>
-#include <Pipe/Memory/HeapArena.h>
-#include <Pipe/Memory/MonoLinearArena.h>
-#include <Pipe/Memory/MultiLinearArena.h>
+#include <PipeMemoryArenas.h>
 #include <PipeTime.h>
 
 

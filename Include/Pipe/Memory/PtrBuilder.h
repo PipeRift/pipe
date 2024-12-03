@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/TypeTraits.h"
-#include "Pipe/Memory/Alloc.h"
+#include "PipeMemory.h"
 
 
 namespace p

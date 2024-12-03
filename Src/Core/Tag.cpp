@@ -2,8 +2,7 @@
 
 #include "Pipe/Core/Tag.h"
 
-#include "Pipe/Memory/Memory.h"
-#include "Pipe/Memory/MultiLinearArena.h"
+#include "PipeMemoryArenas.h"
 
 #include <mutex>
 #include <shared_mutex>
@@ -85,7 +84,9 @@ namespace p
 	Tag& Tag::operator=(const Tag& other)
 	{
 		if (this == &other)
+		{
 			return *this;
+		}
 
 		InternalReset();
 		hash = other.hash;
@@ -99,7 +100,9 @@ namespace p
 	Tag& Tag::operator=(Tag&& other) noexcept
 	{
 		if (this == &other)
+		{
 			return *this;
+		}
 
 		InternalReset();
 		hash       = other.hash;

@@ -10,7 +10,7 @@
 
 #if defined(__cplusplus)
 	#include "PipePlatform.h"
-	#include "Pipe/Memory/Alloc.h"
+	#include "PipeMemory.h"
 	#include <new>
 
 

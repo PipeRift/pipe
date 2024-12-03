@@ -3,7 +3,7 @@
 #include "Pipe/Core/Guid.h"
 
 #include "Pipe/Core/Char.h"
-#include "Pipe/Core/PlatformMisc.h"
+#include "PipePlatform.h"
 
 #include <cstdio>
 

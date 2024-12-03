@@ -7,7 +7,7 @@
 
 #include "Pipe/Core/Log.h"
 #include "Pipe/Files/Paths.h"
-#include "Pipe/Memory/Alloc.h"
+#include "PipeMemory.h"
 #include "PipeReflect.h"
 
 

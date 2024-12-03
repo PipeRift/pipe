@@ -2,7 +2,7 @@
 
 #include "PipeVectors.h"
 
-#include "Pipe/Core/PlatformMisc.h"
+#include "PipePlatform.h"
 
 
 namespace p
@@ -36,19 +36,31 @@ namespace p
 	{
 		v3 safeReciprocalScale;
 		if (Abs(scale.x) <= tolerance)
+		{
 			safeReciprocalScale.x = 0.f;
+		}
 		else
+		{
 			safeReciprocalScale.x = 1 / scale.x;
+		}
 
 		if (Abs(scale.y) <= tolerance)
+		{
 			safeReciprocalScale.y = 0.f;
+		}
 		else
+		{
 			safeReciprocalScale.y = 1 / scale.y;
+		}
 
 		if (Abs(scale.z) <= tolerance)
+		{
 			safeReciprocalScale.z = 0.f;
+		}
 		else
+		{
 			safeReciprocalScale.z = 1 / scale.z;
+		}
 
 		return safeReciprocalScale;
 	}

@@ -1,8 +1,7 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/Memory/BestFitArena.h>
-#include <Pipe/Memory/Memory.h>
+#include <PipeMemoryArenas.h>
 
 
 using namespace snowhouse;

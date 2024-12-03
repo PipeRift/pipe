@@ -346,3 +346,22 @@ namespace p
 }    // namespace p
 
 #pragma endregion Platform Break
+
+#pragma region Platform Misc
+namespace p
+{
+	struct Guid;
+
+	struct PIPE_API PlatformMisc
+	{
+		static void CreateGuid(struct Guid& guid);
+
+		static u64 GetCycles64();
+
+		static u32 GetCycles()
+		{
+			return u32(GetCycles64());
+		}
+	};
+}    // namespace p
+#pragma endregion Platform Misc

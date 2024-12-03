@@ -1,16 +1,13 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 
-#include "Pipe/Memory/Alloc.h"
+#include "PipeMemory.h"
 
-#include "Pipe/Memory/Arena.h"
-#include "Pipe/Memory/HeapArena.h"
-
-#include <cstdlib>
-#include <memory>
+#include "PipeMemoryArenas.h"
 
 
 namespace p
 {
+#pragma region Allocation
 	static Arena* currentArena = nullptr;
 
 	void InitializeMemory()
@@ -101,4 +98,20 @@ namespace p
 	{
 		Free(GetCurrentArena(), ptr, size);
 	}
+#pragma endregion Allocation
+
+
+#pragma region Arena
+	ChildArena::ChildArena(Arena* inParent) : parent{inParent}
+	{
+		if (!parent)
+		{
+			parent = &GetCurrentArena();
+			if (parent == this) [[unlikely]]
+			{
+				parent = &GetHeapArena();
+			}
+		}
+	}
+#pragma endregion Arena
 }    // namespace p

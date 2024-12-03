@@ -3,10 +3,10 @@
 
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Optional.h"
-#include "Pipe/Core/PlatformMisc.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "PipeArrays.h"
+#include "PipePlatform.h"
 
 
 #if defined(_MSC_VER)

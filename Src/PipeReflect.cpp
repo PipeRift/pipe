@@ -4,11 +4,9 @@
 
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/TypeTraits.h"
-#include "Pipe/Memory/HeapArena.h"
-#include "Pipe/Memory/MultiLinearArena.h"
 #include "PipeECS.h"
+#include "PipeMemoryArenas.h"
 #include "PipePlatform.h"
-
 
 
 namespace p

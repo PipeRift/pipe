@@ -1,8 +1,8 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 
 #include <bandit/bandit.h>
-#include <Pipe/Memory/BigBestFitArena.h>
 #include <Pipe/Memory/Memory.h>
+#include <PipeMemoryArenas.h>
 
 
 using namespace snowhouse;
@@ -15,7 +15,6 @@ struct TypeOfSize
 	static constexpr p::u32 size = Size;
 	p::u8 data[size]{0};    // Fill data for debugging
 };
-
 
 go_bandit([]() {
 	describe("Memory.BigBestFitArena", []() {
