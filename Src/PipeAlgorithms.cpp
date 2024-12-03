@@ -2,7 +2,7 @@
 
 #include "PipeAlgorithms.h"
 
-#include "Pipe/Memory/Memory.h"
+#include "PipeMemory.h"
 
 
 namespace p

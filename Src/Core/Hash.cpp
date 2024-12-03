@@ -3,7 +3,7 @@
 
 #include "Pipe/Core/Hash.h"
 
-#include "Pipe/Memory/Memory.h"
+#include "PipeMemory.h"
 
 
 namespace p
