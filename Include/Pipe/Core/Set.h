@@ -5,12 +5,11 @@
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Extern/sparse_set.h"
-#include "Pipe/Memory/STLAllocator.h"
+#include "PipeMemory.h"
 #include "PipePlatform.h"
 
 #include <cassert>
 #include <type_traits>
-
 
 
 namespace p

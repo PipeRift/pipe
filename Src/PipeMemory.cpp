@@ -190,6 +190,19 @@ namespace p
 
 
 #pragma region Arena
+	ArenaBlock::ArenaBlock(ArenaBlock&& other) noexcept
+	{
+		data = Exchange(other.data, nullptr);
+		size = Exchange(other.size, 0);
+	}
+	ArenaBlock& ArenaBlock::operator=(ArenaBlock&& other) noexcept
+	{
+		data = Exchange(other.data, nullptr);
+		size = Exchange(other.size, 0);
+		return *this;
+	}
+
+
 	ChildArena::ChildArena(Arena* inParent) : parent{inParent}
 	{
 		if (!parent)

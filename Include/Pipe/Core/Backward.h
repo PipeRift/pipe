@@ -77,7 +77,7 @@
 
 #define NOINLINE __attribute__((noinline))
 
-#include "Pipe/Memory/STLAllocator.h"
+#include "PipeMemory.h"
 #include <algorithm>
 #include <cctype>
 #include <cstdio>

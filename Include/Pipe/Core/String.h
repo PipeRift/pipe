@@ -7,13 +7,12 @@
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Extern/utf8/unchecked.h"
-#include "Pipe/Memory/STLAllocator.h"
 #include "PipeArrays.h"
+#include "PipeMemory.h"
 #include "PipePlatform.h"
 #include "PipeSerializeFwd.h"
 
 #include <string>
-
 
 
 #pragma warning(push)

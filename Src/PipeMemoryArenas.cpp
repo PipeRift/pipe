@@ -36,7 +36,7 @@ namespace p
 #pragma endregion Heap Arena
 
 #pragma region Mono Linear
-	MonoLinearArena::MonoLinearArena(Memory::Block externalBlock, Arena& parentArena)
+	MonoLinearArena::MonoLinearArena(ArenaBlock externalBlock, Arena& parentArena)
 	    : ChildArena(&parentArena), insert{externalBlock.data}, block{Move(externalBlock)}
 	{
 		stats.name = "Mono Linear Arena";

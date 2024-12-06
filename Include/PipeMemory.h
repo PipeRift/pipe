@@ -2,13 +2,18 @@
 
 #pragma once
 
+#include "Pipe/Core/Limits.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
-#include "Pipe/Memory/Block.h"
 
 
 namespace p
 {
+
+	template<typename Type, u32 InlineCapacity>
+	struct TInlineArray;
+
+
 #pragma region Memory Ops
 	namespace Details
 	{
@@ -294,7 +299,6 @@ namespace p
 	}
 #pragma endregion Memory Ops
 
-
 #pragma region Allocation
 	class Arena;
 	class HeapArena;
@@ -343,10 +347,50 @@ namespace p
 	}
 #pragma endregion Allocation
 
-
 #pragma region Arena
-	template<typename Type, u32 InlineCapacity>
-	struct TInlineArray;
+	struct PIPE_API ArenaBlock
+	{
+		void* data = nullptr;
+		sizet size = 0;
+
+
+		ArenaBlock() = default;
+		ArenaBlock(void* data, sizet size) : data{data}, size{size} {}
+		ArenaBlock(ArenaBlock&& other) noexcept;
+		ArenaBlock& operator=(ArenaBlock&& other) noexcept;
+		ArenaBlock(const ArenaBlock& other)            = default;
+		ArenaBlock& operator=(const ArenaBlock& other) = default;
+
+
+		bool IsAllocated() const
+		{
+			return data != nullptr;
+		}
+
+		void* Begin() const
+		{
+			return data;
+		}
+		void* End() const
+		{
+			return static_cast<u8*>(data) + size;
+		}
+
+		bool Contains(void* ptr) const
+		{
+			return data <= ptr && static_cast<u8*>(data) + size > ptr;
+		}
+
+		const void* operator*() const
+		{
+			return data;
+		}
+
+		void* operator*()
+		{
+			return data;
+		}
+	};
 
 
 	/** Arena defines the API used on all other arena types */
@@ -458,7 +502,7 @@ namespace p
 		{
 			return 0;
 		}
-		virtual void GetBlocks(TInlineArray<Memory::Block, 0>& outBlocks) const {}
+		virtual void GetBlocks(TInlineArray<ArenaBlock, 0>& outBlocks) const {}
 
 		virtual const struct MemoryStats* GetStats() const
 		{
@@ -480,4 +524,109 @@ namespace p
 		}
 	};
 #pragma endregion Arena
+
+#pragma region STL Allocator
+	template<typename T>
+	struct STLAllocator
+	{
+		using value_type      = T;
+		using size_type       = sizet;
+		using difference_type = std::ptrdiff_t;
+		using reference       = value_type&;
+		using const_reference = const value_type&;
+		using pointer         = value_type*;
+		using const_pointer   = const value_type*;
+
+		template<typename U>
+		struct rebind
+		{
+			using other = STLAllocator<U>;
+		};
+
+		Arena* arena = nullptr;
+
+
+		STLAllocator(Arena& arena = GetCurrentArena()) noexcept : arena{&arena} {}
+		STLAllocator(const STLAllocator& other) noexcept : arena{other.arena} {}
+		template<typename U>
+		STLAllocator(const STLAllocator<U>& other) noexcept : arena{other.arena}
+		{}
+		STLAllocator select_on_container_copy_construction() const
+		{
+			return *this;
+		}
+
+#if (__cplusplus >= 201703L)    // C++17
+		P_NODISCARD T* allocate(size_type count)
+		{
+			return p::Alloc<T>(*arena, count);
+		}
+		P_NODISCARD T* allocate(size_type count, const void*)
+		{
+			return allocate(count);
+		}
+#else
+		P_NODISCARD pointer allocate(size_type count, const void* = 0)
+		{
+			return p::Alloc<T>(*arena, count);
+		}
+#endif
+		constexpr void deallocate(T* p, size_type n)
+		{
+			p::Free<T>(*arena, p, n);
+		}
+
+
+#if ((__cplusplus >= 201103L) || (_MSC_VER > 1900))    // C++11
+		using is_always_equal                        = std::true_type;
+		using propagate_on_container_copy_assignment = std::true_type;
+		using propagate_on_container_move_assignment = std::true_type;
+		using propagate_on_container_swap            = std::true_type;
+		template<typename U, typename... Args>
+		void construct(U* p, Args&&... args)
+		{
+			::new (p) U(p::Forward<Args>(args)...);
+		}
+		template<typename U>
+		void destroy(U* p) noexcept
+		{
+			p->~U();
+		}
+#else
+		void construct(pointer p, value_type const& val)
+		{
+			::new (p) value_type(val);
+		}
+		void destroy(pointer p)
+		{
+			p->~value_type();
+		}
+#endif
+
+		size_type max_size() const noexcept
+		{
+			return (Limits<difference_type>::Max() / sizeof(value_type));
+		}
+		pointer address(reference x) const
+		{
+			return &x;
+		}
+		const_pointer address(const_reference x) const
+		{
+			return &x;
+		}
+	};
+
+	template<typename T1, typename T2>
+	bool operator==(const STLAllocator<T1>& a, const STLAllocator<T2>& b) noexcept
+	{
+		return &a.arena == &b.arena;
+	}
+	template<typename T1, typename T2>
+	bool operator!=(const STLAllocator<T1>& a, const STLAllocator<T2>& b) noexcept
+	{
+		return &a.arena != &b.arena;
+	}
+#pragma endregion STL Allocator
+
 }    // namespace p

@@ -74,12 +74,12 @@ namespace p
 	protected:
 		void* insert = nullptr;
 		sizet count  = 0;
-		Memory::Block block{};
+		ArenaBlock block{};
 		bool selfAllocated = false;
 
 
 	public:
-		MonoLinearArena(Memory::Block externalBlock, Arena& parentArena = GetCurrentArena());
+		MonoLinearArena(ArenaBlock externalBlock, Arena& parentArena = GetCurrentArena());
 		MonoLinearArena(const sizet blockSize = Memory::MB, Arena& parentArena = GetCurrentArena());
 		~MonoLinearArena()
 		{
@@ -102,7 +102,7 @@ namespace p
 		{
 			return block.size;
 		}
-		void GetBlocks(TArray<Memory::Block>& outBlocks) const override
+		void GetBlocks(TArray<ArenaBlock>& outBlocks) const override
 		{
 			outBlocks.Add(block);
 		}
@@ -122,7 +122,7 @@ namespace p
 
 
 		TMonoLinearArena(Arena& parentArena = GetCurrentArena())
-		    : MonoLinearArena(Memory::Block{buffer, blockSize}, parentArena)
+		    : MonoLinearArena(ArenaBlock{buffer, blockSize}, parentArena)
 		{}
 	};
 #pragma endregion Mono Linear
@@ -271,7 +271,7 @@ namespace p
 
 	protected:
 		// TODO: Support growing multiple blocks
-		Memory::Block block{};
+		ArenaBlock block{};
 		TArray<Slot> freeSlots{};
 		bool pendingSort = false;
 		sizet freeSize   = 0;
@@ -291,7 +291,7 @@ namespace p
 		}
 		void Free(void* ptr, sizet size);
 
-		const Memory::Block& GetBlock() const
+		const ArenaBlock& GetBlock() const
 		{
 			return block;
 		}
@@ -350,7 +350,7 @@ namespace p
 	protected:
 		static constexpr sizet minAlignment = sizeof(AllocationHeader);
 		// TODO: Support growing multiple blocks
-		Memory::Block block{};
+		ArenaBlock block{};
 		TArray<Slot> freeSlots{};
 		bool pendingSort = false;
 		sizet freeSize   = 0;
@@ -369,7 +369,7 @@ namespace p
 		}
 		void Free(void* ptr, sizet size);
 
-		const Memory::Block& GetBlock() const
+		const ArenaBlock& GetBlock() const
 		{
 			return block;
 		}

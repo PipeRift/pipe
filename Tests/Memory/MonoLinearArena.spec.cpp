@@ -40,7 +40,7 @@ go_bandit([]() {
 			MonoLinearArena arena{1024};
 			arena.Release();
 
-			TArray<Memory::Block> blocks;
+			TArray<ArenaBlock> blocks;
 			arena.GetBlocks(blocks);
 			AssertThat(blocks.Size(), Equals(1));
 		});
@@ -95,7 +95,7 @@ go_bandit([]() {
 		it("Allocates at correct addresses", [&]() {
 			MonoLinearArena arena{1024};
 
-			TArray<Memory::Block> blocks;
+			TArray<ArenaBlock> blocks;
 			arena.GetBlocks(blocks);
 
 			void* p1 = arena.Alloc(sizeof(float));
@@ -117,7 +117,7 @@ go_bandit([]() {
 		    AssertThat(arena.GetAvailableMemory(), Is().EqualTo(16));
 
 		    void* p3 = arena.Alloc(sizeof(float*));    // 8 bytes
-		    TArray<Memory::Block> blocks;
+		    TArray<ArenaBlock> blocks;
 		    arena.GetBlocks(blocks);
 		    AssertThat(blocks.Size(), Equals(2));
 		    AssertThat(blocks[0], Is().Not().EqualTo(blocks[1]));
