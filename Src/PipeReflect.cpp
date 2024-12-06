@@ -397,7 +397,10 @@ namespace p
 
 	TPtr<BaseObject> ObjectOwnership::nextOwner{};
 
-	ObjectOwnership::ObjectOwnership() : self{}, owner{Move(nextOwner)} {}
+	ObjectOwnership::ObjectOwnership() : self{}, owner{Move(nextOwner)}
+	{
+		;
+	}
 	const TPtr<BaseObject>& ObjectOwnership::AsPtr() const
 	{
 		return self;

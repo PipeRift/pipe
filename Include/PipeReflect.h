@@ -470,9 +470,10 @@ namespace p
 	}
 
 
-	template<typename T>
+	template<typename Type>
 	TypeId RegisterTypeId()
 	{    // Static to only register once
+		using T                 = Mut<Type>;
 		static bool bRegistered = false;
 		const TypeId typeId     = GetTypeId<T>();
 		if (!bRegistered && BeginTypeId(typeId))
@@ -676,11 +677,9 @@ public:
                                                                                                   \
 	static void __BuildProperty(p::MetaCounter<id_name>)                                          \
 	{                                                                                             \
-		p::AddTypeProperty<decltype(name)>(                                                       \
-		    [](void* instance) {                                                                  \
+		p::AddTypeProperty<decltype(name)>([](void* instance) {                                   \
 			return (void*)&static_cast<Self*>(instance)->name;                                    \
-		    },                                                                                    \
-		    #name, p::InitPropertyFlags(flags));                                                  \
+		}, #name, p::InitPropertyFlags(flags));                                                   \
 		/* Registry next property if any */                                                       \
 		__BuildProperty(p::MetaCounter<id_name + 1>{});                                           \
 	}                                                                                             \
