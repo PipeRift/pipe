@@ -1,6 +1,6 @@
 // Copyright 2015-2024 Piperift - All rights reserved
 
-#include <Pipe/Memory/NewDelete.h>
+#include <Pipe/NewDelete.h>
 //  Override as first include
 
 #include <bandit/bandit.h>
