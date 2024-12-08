@@ -73,6 +73,7 @@ pipe_target_enable_CPP20(Pipe)
 pipe_add_sanitizers(Pipe)
 pipe_target_shared_output_directory(Pipe)
 #pipe_target_link_time_optimization(Pipe)
+pipe_target_disable_rtti(Pipe PRIVATE)
 
 
 ################################################################################
