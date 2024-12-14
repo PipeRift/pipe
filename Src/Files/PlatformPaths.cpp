@@ -221,11 +221,7 @@ namespace p
 
 	bool WindowsPlatformPaths::SetCurrentPath(StringView path)
 	{
-	#if PLATFORM_TCHAR_IS_WCHAR
-		return ::SetCurrentDirectoryW(path.data());
-	#else
 		return ::SetCurrentDirectoryA(path.data());
-	#endif
 	}
 
 
