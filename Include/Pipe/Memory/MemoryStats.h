@@ -6,11 +6,6 @@
 #include "PipeArrays.h"
 #include "PipePlatform.h"
 
-
-// #if P_ENABLE_ALLOCATION_STACKS
-#include "Pipe/Core/Backward.h"
-// #endif
-
 #include <cstdlib>
 #include <shared_mutex>
 
@@ -49,9 +44,6 @@ namespace p
 		sizet available = 0;
 		mutable std::shared_mutex mutex;
 		TArray<AllocationStats> allocations;
-#ifdef P_ENABLE_ALLOCATION_STACKS
-		TArray<backward::StackTrace> stacks;
-#endif
 		TArray<AllocationStats> freedAllocations;
 
 
@@ -63,7 +55,6 @@ namespace p
 		void Release();
 
 	private:
-		void PrintAllocationError(
-		    StringView error, AllocationStats* allocation, const backward::StackTrace* stack);
+		void PrintAllocationError(StringView error, AllocationStats* allocation);
 	};
 }    // namespace p

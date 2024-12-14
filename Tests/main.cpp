@@ -5,7 +5,6 @@
 
 #include <bandit/bandit.h>
 #include <Pipe.h>
-#include <Pipe/Core/Backward.h>
 
 
 // namespace backward

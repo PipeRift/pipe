@@ -2,7 +2,6 @@
 
 #include "Pipe/Memory/MemoryStats.h"
 
-#include "Pipe/Core/Backward.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/Utility.h"
 #include "PipeMath.h"
@@ -48,13 +47,7 @@ namespace p
 	}
 
 
-	MemoryStats::MemoryStats()
-	    : allocations{GetStateArena()}
-#ifdef P_ENABLE_ALLOCATION_STACKS
-	    , stacks{arena}
-#endif
-	    , freedAllocations{GetStateArena()}
-	{}
+	MemoryStats::MemoryStats() : allocations{GetStateArena()}, freedAllocations{GetStateArena()} {}
 
 	MemoryStats::~MemoryStats()
 	{
@@ -93,13 +86,6 @@ namespace p
 		used += size;
 		const AllocationStats item{static_cast<u8*>(ptr), size};
 		i32 index = allocations.AddSorted(item, SortLessAllocationStats{});
-
-#ifdef P_ENABLE_ALLOCATION_STACKS
-		auto& stack = stacks.InsertRef(index);
-		backward::StackTrace stack{arena};
-		stack.load_here(14 + 3);
-		stack.skip_n_firsts(3);
-#endif
 	}
 
 	void MemoryStats::Remove(void* ptr, sizet size)
@@ -120,9 +106,6 @@ namespace p
 			    "Freed an allocation with a different size to which it got allocated with.");
 			freedAllocations.AddSorted(Move(allocation), SortLessAllocationStats{});
 			allocations.RemoveAt(index);
-#ifdef P_ENABLE_ALLOCATION_STACKS
-			stacks.RemoveAt(index);
-#endif
 		}
 		else
 		{
@@ -149,9 +132,6 @@ namespace p
 			for (i32 i = 0; i < shown; ++i)
 			{
 				PrintAllocationError("", &allocations[i], nullptr);
-#ifdef P_ENABLE_ALLOCATION_STACKS
-				PrintAllocationError("", &allocations[i], &stacks[i]);
-#endif
 			}
 
 			if (shown < allocations.Size())
@@ -162,9 +142,6 @@ namespace p
 			std::puts(errorMsg.data());
 		}
 		allocations.Clear();
-#ifdef P_ENABLE_ALLOCATION_STACKS
-		stacks.Clear();
-#endif    // P_ENABLE_ALLOCATION_STACKS
 		used = 0;
 	}
 }    // namespace p
