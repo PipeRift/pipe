@@ -54,8 +54,7 @@ namespace p
 		Release();
 	}
 
-	void MemoryStats::PrintAllocationError(
-	    StringView error, AllocationStats* allocation, const backward::StackTrace* stack)
+	void MemoryStats::PrintAllocationError(StringView error, AllocationStats* allocation)
 	{
 		String msg;
 		Strings::FormatTo(msg, error);
@@ -64,18 +63,6 @@ namespace p
 		{
 			Strings::FormatTo(msg, " ({} {})", static_cast<void*>(allocation->ptr),
 			    Strings::ParseMemorySize(allocation->size));
-		}
-
-		if (stack)
-		{
-			backward::TraceResolver tr;
-			tr.load_stacktrace(*stack);
-			for (sizet i = 0; i < stack->size(); ++i)
-			{
-				backward::ResolvedTrace trace = tr.resolve((*stack)[i]);
-				Strings::FormatTo(msg, "\n    #{} {} {} [{}]", i, trace.object_filename,
-				    trace.object_function, trace.addr);
-			}
 		}
 		std::puts(msg.data());
 	}
@@ -131,7 +118,7 @@ namespace p
 			const auto shown = Min<sizet>(64, allocations.Size());
 			for (i32 i = 0; i < shown; ++i)
 			{
-				PrintAllocationError("", &allocations[i], nullptr);
+				PrintAllocationError("", &allocations[i]);
 			}
 
 			if (shown < allocations.Size())
