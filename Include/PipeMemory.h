@@ -502,7 +502,7 @@ namespace p
 		{
 			return 0;
 		}
-		virtual void GetBlocks(TInlineArray<ArenaBlock, 0>& outBlocks) const {}
+		virtual void GetBlocks(TInlineArray<ArenaBlock, 0>& /**outBlocks*/) const {}
 
 		virtual const struct MemoryStats* GetStats() const
 		{

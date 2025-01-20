@@ -553,7 +553,7 @@ namespace p
 
 
 	template<typename T>
-	void CallSuperReadProperties(T& value, p::Reader& r)
+	void CallSuperReadProperties(T& /**value*/, p::Reader& /**r*/)
 	{}
 	template<typename T>
 	void CallSuperReadProperties(const T& value, p::Reader& r) requires(p::HasSuper<T>())
@@ -564,7 +564,7 @@ namespace p
 		}
 	}
 	template<typename T>
-	void CallSuperWriteProperties(const T& value, p::Writer& w)
+	void CallSuperWriteProperties(const T& /**value*/, p::Writer& /**w*/)
 	{}
 	template<typename T>
 	void CallSuperWriteProperties(const T& value, p::Writer& w) requires(p::HasSuper<T>())
