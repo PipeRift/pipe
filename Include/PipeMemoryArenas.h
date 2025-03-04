@@ -13,7 +13,7 @@ namespace p
 	 * It serves the single purpose of documenting an Arena's interface.
 	 * Not intended to be used.
 	 */
-	class PIPE_API DummyArena : public Arena
+	class P_API DummyArena : public Arena
 	{
 	public:
 		DummyArena()
@@ -39,7 +39,7 @@ namespace p
 #pragma endregion Dummy Arena
 
 #pragma region Heap Arena
-	class PIPE_API HeapArena : public Arena
+	class P_API HeapArena : public Arena
 	{
 	private:
 		MemoryStats stats;
@@ -66,7 +66,7 @@ namespace p
 	 * Individual allocations can't be freed. It can
 	 * be resized, but never smaller than its used size.
 	 */
-	class PIPE_API MonoLinearArena : public ChildArena
+	class P_API MonoLinearArena : public ChildArena
 	{
 	private:
 		MemoryStats stats;
@@ -116,7 +116,7 @@ namespace p
 	// TMonoLinearArena works like a MonoLinearArena but providing a block on the stack as the block
 	// to use
 	template<sizet blockSize = Memory::MB>
-	class PIPE_API TMonoLinearArena : public MonoLinearArena
+	class P_API TMonoLinearArena : public MonoLinearArena
 	{
 		u8 buffer[blockSize];
 
@@ -130,7 +130,7 @@ namespace p
 #pragma region Multi Linear
 	namespace Details
 	{
-		struct PIPE_API LinearBlock
+		struct P_API LinearBlock
 		{
 			sizet count       = 0;    // Counts number of live allocations
 			LinearBlock* next = nullptr;
@@ -144,7 +144,7 @@ namespace p
 		};
 
 		template<sizet blockSize>
-		struct PIPE_API LinearBasePool
+		struct P_API LinearBasePool
 		{
 			void* insert           = nullptr;    // Pointer where to insert new allocations
 			LinearBlock* freeBlock = nullptr;
@@ -176,19 +176,19 @@ namespace p
 			}
 		};
 
-		struct PIPE_API LinearSmallPool : public LinearBasePool<1 * Memory::MB>
+		struct P_API LinearSmallPool : public LinearBasePool<1 * Memory::MB>
 		{
 			static constexpr sizet minSize = 0;
 			static constexpr sizet maxSize = 8 * Memory::KB;
 		};
 
-		struct PIPE_API LinearMediumPool : public LinearBasePool<4 * Memory::MB>
+		struct P_API LinearMediumPool : public LinearBasePool<4 * Memory::MB>
 		{
 			static constexpr sizet minSize = LinearSmallPool::maxSize;
 			static constexpr sizet maxSize = 512 * Memory::KB;
 		};
 
-		struct PIPE_API LinearBigPool : public LinearBasePool<16 * Memory::MB>
+		struct P_API LinearBigPool : public LinearBasePool<16 * Memory::MB>
 		{
 			static constexpr sizet minSize = LinearMediumPool::maxSize;
 			static constexpr sizet maxSize = 4 * Memory::MB;
@@ -202,7 +202,7 @@ namespace p
 	 * Individual allocations can't be freed. It can
 	 * be resized, but never smaller than its used size.
 	 */
-	struct PIPE_API MultiLinearArena : public ChildArena
+	struct P_API MultiLinearArena : public ChildArena
 	{
 	protected:
 		Details::LinearSmallPool smallPool;
@@ -234,7 +234,7 @@ namespace p
 #pragma endregion Multi Linear
 
 #pragma region Best Fit Arena
-	class PIPE_API BestFitArena : public ChildArena
+	class P_API BestFitArena : public ChildArena
 	{
 	public:
 		struct Slot
@@ -324,7 +324,7 @@ namespace p
 #pragma endregion Best Fit Arena
 
 #pragma region Big Best Fit Arena
-	class PIPE_API BigBestFitArena : public ChildArena
+	class P_API BigBestFitArena : public ChildArena
 	{
 	public:
 		struct AllocationHeader
@@ -332,7 +332,7 @@ namespace p
 			u8* end;
 		};
 
-		struct PIPE_API Slot
+		struct P_API Slot
 		{
 			u32 offset;
 			u32 size;

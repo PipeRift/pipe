@@ -13,7 +13,7 @@
 
 namespace p
 {
-	struct PIPE_API EventHandle
+	struct P_API EventHandle
 	{
 	private:
 		static u64 counter;

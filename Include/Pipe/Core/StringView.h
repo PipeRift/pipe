@@ -190,98 +190,98 @@ namespace p
 		// BEGIN char API
 		// Specializations to avoid requiring <char> on function calls
 
-		PIPE_API constexpr sizet Find(
+		P_API constexpr sizet Find(
 		    const StringView str, const char c, FindDirection direction = FindDirection::Front)
 		{
 			return Find<char>(str, c, direction);
 		}
 
-		PIPE_API constexpr sizet Find(const StringView str, const StringView subStr,
+		P_API constexpr sizet Find(const StringView str, const StringView subStr,
 		    FindDirection direction = FindDirection::Front)
 		{
 			return Find<char>(str, subStr, direction);
 		}
 
-		PIPE_API constexpr bool Contains(
+		P_API constexpr bool Contains(
 		    const StringView str, const char c, FindDirection direction = FindDirection::Front)
 		{
 			return Contains<char>(str, c, direction);
 		}
 
-		PIPE_API constexpr bool Contains(const StringView str, const StringView subStr,
+		P_API constexpr bool Contains(const StringView str, const StringView subStr,
 		    FindDirection direction = FindDirection::Front)
 		{
 			return Contains<char>(str, subStr, direction);
 		}
 
-		PIPE_API constexpr bool Equals(const StringView str, const StringView other)
+		P_API constexpr bool Equals(const StringView str, const StringView other)
 		{
 			return Equals<char>(str, other);
 		}
 
-		PIPE_API constexpr bool Equals(const StringView str, const char c)
+		P_API constexpr bool Equals(const StringView str, const char c)
 		{
 			return Equals<char>(str, c);
 		}
 
-		PIPE_API constexpr bool StartsWith(const StringView str, const StringView subStr)
+		P_API constexpr bool StartsWith(const StringView str, const StringView subStr)
 		{
 			return StartsWith<char>(str, subStr);
 		}
 
-		PIPE_API constexpr bool EndsWith(const StringView str, const StringView subStr)
+		P_API constexpr bool EndsWith(const StringView str, const StringView subStr)
 		{
 			return EndsWith<char>(str, subStr);
 		}
 
-		PIPE_API constexpr bool EndsWith(const StringView str, const char c)
+		P_API constexpr bool EndsWith(const StringView str, const char c)
 		{
 			return EndsWith<char>(str, c);
 		}
 
-		PIPE_API constexpr StringView RemoveFromStart(const StringView str, sizet size)
+		P_API constexpr StringView RemoveFromStart(const StringView str, sizet size)
 		{
 			return RemoveFromStart<char>(str, size);
 		}
 
-		PIPE_API constexpr StringView RemoveFromStart(const StringView str, const StringView subStr)
+		P_API constexpr StringView RemoveFromStart(const StringView str, const StringView subStr)
 		{
 			return RemoveFromStart<char>(str, subStr);
 		}
 
 
-		PIPE_API constexpr StringView RemoveFromEnd(const StringView str, sizet size)
+		P_API constexpr StringView RemoveFromEnd(const StringView str, sizet size)
 		{
 			return RemoveFromEnd<char>(str, size);
 		}
 
-		PIPE_API constexpr StringView RemoveFromEnd(const StringView str, const StringView subStr)
+		P_API constexpr StringView RemoveFromEnd(const StringView str, const StringView subStr)
 		{
 			return RemoveFromEnd<char>(str, subStr);
 		}
 
-		PIPE_API constexpr StringView RemoveCharFromEnd(const StringView str, const char c)
+		P_API constexpr StringView RemoveCharFromEnd(const StringView str, const char c)
 		{
 			return RemoveCharFromEnd<char>(str, c);
 		}
 
-		PIPE_API constexpr StringView FrontSubstr(StringView str, sizet size)
+		P_API constexpr StringView FrontSubstr(StringView str, sizet size)
 		{
 			return FrontSubstr<char>(str, size);
 		}
 
-		PIPE_API constexpr StringView BackSubstr(StringView str, sizet size)
+		P_API constexpr StringView BackSubstr(StringView str, sizet size)
 		{
 			return BackSubstr<char>(str, size);
 		}
 
-		PIPE_API constexpr void Replace(
+		P_API constexpr void Replace(
 		    StringView str, const char searchChar, const char replacementChar)
 		{
 			Replace<char>(str, searchChar, replacementChar);
 		}
 
-		PIPE_API constexpr sizet Length(const char* str)
+		P_API constexpr sizet Length(const char* str)
 		{
 			return Length<char>(str);
 		}
@@ -289,34 +289,34 @@ namespace p
 		template<Number T>
 		TOptional<T> ToNumber(StringView str);
 
-		PIPE_API TOptional<float> ToFloat(StringView str);
-		PIPE_API TOptional<double> ToDouble(StringView str);
-		PIPE_API TOptional<u32> ToU32(StringView str);
-		PIPE_API TOptional<i32> ToI32(StringView str);
-		PIPE_API TOptional<u64> ToU64(StringView str);
-		PIPE_API TOptional<i64> ToI64(StringView str);
+		P_API TOptional<float> ToFloat(StringView str);
+		P_API TOptional<double> ToDouble(StringView str);
+		P_API TOptional<u32> ToU32(StringView str);
+		P_API TOptional<i32> ToI32(StringView str);
+		P_API TOptional<u64> ToU64(StringView str);
+		P_API TOptional<i64> ToI64(StringView str);
 
 		/** Begin ToNumber spetializations */
 		template<>
-		PIPE_API TOptional<float> ToNumber<float>(StringView str);
+		P_API TOptional<float> ToNumber<float>(StringView str);
 		template<>
-		PIPE_API TOptional<double> ToNumber<double>(StringView str);
+		P_API TOptional<double> ToNumber<double>(StringView str);
 		template<>
-		PIPE_API TOptional<u8> ToNumber<u8>(StringView str);
+		P_API TOptional<u8> ToNumber<u8>(StringView str);
 		template<>
-		PIPE_API TOptional<i8> ToNumber<i8>(StringView str);
+		P_API TOptional<i8> ToNumber<i8>(StringView str);
 		template<>
-		PIPE_API TOptional<u16> ToNumber<u16>(StringView str);
+		P_API TOptional<u16> ToNumber<u16>(StringView str);
 		template<>
-		PIPE_API TOptional<i16> ToNumber<i16>(StringView str);
+		P_API TOptional<i16> ToNumber<i16>(StringView str);
 		template<>
-		PIPE_API TOptional<u32> ToNumber<u32>(StringView str);
+		P_API TOptional<u32> ToNumber<u32>(StringView str);
 		template<>
-		PIPE_API TOptional<i32> ToNumber<i32>(StringView str);
+		P_API TOptional<i32> ToNumber<i32>(StringView str);
 		template<>
-		PIPE_API TOptional<u64> ToNumber<u64>(StringView str);
+		P_API TOptional<u64> ToNumber<u64>(StringView str);
 		template<>
-		PIPE_API TOptional<i64> ToNumber<i64>(StringView str);
+		P_API TOptional<i64> ToNumber<i64>(StringView str);
 		/** End ToNumber spetializations */
 
 		// END char API

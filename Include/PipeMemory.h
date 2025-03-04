@@ -86,12 +86,12 @@ namespace p
 	}    // namespace Memory
 
 
-	PIPE_API void MoveMem(void* dest, void* src, sizet size);
-	PIPE_API void CopyMem(void* dest, const void* src, sizet size);
-	PIPE_API void SwapMem(void* a, void* b, sizet size);
-	PIPE_API void SetMem(void* dest, u8 value, sizet size);
-	PIPE_API void SetZeroMem(void* dest, sizet size);
-	PIPE_API i32 CmpMem(const void* a, const void* b, sizet size);
+	P_API void MoveMem(void* dest, void* src, sizet size);
+	P_API void CopyMem(void* dest, const void* src, sizet size);
+	P_API void SwapMem(void* a, void* b, sizet size);
+	P_API void SetMem(void* dest, u8 value, sizet size);
+	P_API void SetZeroMem(void* dest, sizet size);
+	P_API i32 CmpMem(const void* a, const void* b, sizet size);
 
 	/**
 	 * @return the previous pointer of 'ptr' aligned to blockSize
@@ -101,9 +101,9 @@ namespace p
 	/**
 	 * @return the number of bytes needed for p to be aligned in 'align'
 	 */
-	PIPE_API sizet GetAlignmentPadding(const void* p, sizet align);
+	P_API sizet GetAlignmentPadding(const void* p, sizet align);
 
-	PIPE_API sizet GetAlignmentPaddingWithHeader(const void* ptr, sizet align, sizet headerSize);
+	P_API sizet GetAlignmentPaddingWithHeader(const void* ptr, sizet align, sizet headerSize);
 
 
 	/** Constructs a number of contiguous items with the default constructor */
@@ -306,21 +306,21 @@ namespace p
 	void InitializeMemory();
 
 	// Native allocation functions
-	PIPE_API void* HeapAlloc(sizet size);
-	PIPE_API void* HeapAlloc(sizet size, sizet align);
-	PIPE_API void* HeapRealloc(void* ptr, sizet size);
-	PIPE_API void HeapFree(void* ptr);
+	P_API void* HeapAlloc(sizet size);
+	P_API void* HeapAlloc(sizet size, sizet align);
+	P_API void* HeapRealloc(void* ptr, sizet size);
+	P_API void HeapFree(void* ptr);
 
 
-	PIPE_API HeapArena& GetHeapArena();
-	PIPE_API Arena& GetCurrentArena();
-	PIPE_API void SetCurrentArena(Arena& arena);
+	P_API HeapArena& GetHeapArena();
+	P_API Arena& GetCurrentArena();
+	P_API void SetCurrentArena(Arena& arena);
 
 	// Arena allocation functions (Find current arena)
-	PIPE_API void* Alloc(sizet size);
-	PIPE_API void* Alloc(sizet size, sizet align);
-	PIPE_API bool Realloc(void* ptr, sizet ptrSize, sizet size);
-	PIPE_API void Free(void* ptr, sizet size);
+	P_API void* Alloc(sizet size);
+	P_API void* Alloc(sizet size, sizet align);
+	P_API bool Realloc(void* ptr, sizet ptrSize, sizet size);
+	P_API void Free(void* ptr, sizet size);
 
 
 	// Templated arena allocation functions:
@@ -348,7 +348,7 @@ namespace p
 #pragma endregion Allocation
 
 #pragma region Arena
-	struct PIPE_API ArenaBlock
+	struct P_API ArenaBlock
 	{
 		void* data = nullptr;
 		sizet size = 0;
@@ -394,7 +394,7 @@ namespace p
 
 
 	/** Arena defines the API used on all other arena types */
-	class PIPE_API Arena
+	class P_API Arena
 	{
 	public:
 		using AllocSignature        = void*(Arena*, sizet size);
@@ -510,7 +510,7 @@ namespace p
 		}
 	};
 
-	class PIPE_API ChildArena : public Arena
+	class P_API ChildArena : public Arena
 	{
 	protected:
 		Arena* parent = nullptr;

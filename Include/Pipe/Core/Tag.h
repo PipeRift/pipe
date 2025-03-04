@@ -16,7 +16,7 @@ namespace p
 	 * Searching, comparing and other operations are way cheaper, but creating (indexing) is more
 	 * expensive.
 	 */
-	struct PIPE_API Tag
+	struct P_API Tag
 	{
 	private:
 		sizet hash      = 0;

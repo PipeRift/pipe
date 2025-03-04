@@ -561,5 +561,5 @@ namespace p
 #pragma endregion Transformations
 
 	/** Generates CRC hash of the memory area */
-	PIPE_API u32 MemCrc32(const void* Data, i32 Length, u32 CRC = 0);
+	P_API u32 MemCrc32(const void* Data, i32 Length, u32 CRC = 0);
 }    // namespace p

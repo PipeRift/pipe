@@ -13,7 +13,7 @@
 namespace p
 {
 	// Use a custom arena that doesn't track allocations. Otherwise tracking stats would loop
-	class PIPE_API MemoryStatsArena : public Arena
+	class P_API MemoryStatsArena : public Arena
 	{
 	public:
 		MemoryStatsArena()

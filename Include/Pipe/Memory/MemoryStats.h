@@ -12,49 +12,47 @@
 
 namespace p
 {
-	struct PIPE_API AllocationStats
+	struct P_API AllocationStats
 	{
 		u8* ptr  = nullptr;
 		u64 size = 0;
 	};
 
-	struct PIPE_API SortLessAllocationStats
-	{
-		bool operator()(const AllocationStats& a, const AllocationStats& b) const
-		{
-			return a.ptr + a.size < b.ptr;
-		}
+	struct P_API SortLessAllocationStats{bool operator()(
+	    const AllocationStats& a, const AllocationStats& b) const {return a.ptr + a.size < b.ptr;
+}    // namespace p
 
-		bool operator()(void* a, const AllocationStats& b) const
-		{
-			return a < b.ptr;
-		}
+bool operator()(void* a, const AllocationStats& b) const
+{
+	return a < b.ptr;
+}
 
-		bool operator()(const AllocationStats& a, void* b) const
-		{
-			return a.ptr + a.size < b;
-		}
-	};
+bool operator()(const AllocationStats& a, void* b) const
+{
+	return a.ptr + a.size < b;
+}
+}
+;
 
-	struct PIPE_API MemoryStats
-	{
-		const char* name = "Arena";
+struct P_API MemoryStats
+{
+	const char* name = "Arena";
 
-		sizet used      = 0;
-		sizet available = 0;
-		mutable std::shared_mutex mutex;
-		TArray<AllocationStats> allocations;
-		TArray<AllocationStats> freedAllocations;
+	sizet used      = 0;
+	sizet available = 0;
+	mutable std::shared_mutex mutex;
+	TArray<AllocationStats> allocations;
+	TArray<AllocationStats> freedAllocations;
 
 
-		MemoryStats();
-		~MemoryStats();
+	MemoryStats();
+	~MemoryStats();
 
-		void Add(void* ptr, sizet size);
-		void Remove(void* ptr, sizet size);
-		void Release();
+	void Add(void* ptr, sizet size);
+	void Remove(void* ptr, sizet size);
+	void Release();
 
-	private:
-		void PrintAllocationError(StringView error, AllocationStats* allocation);
-	};
+private:
+	void PrintAllocationError(StringView error, AllocationStats* allocation);
+};
 }    // namespace p

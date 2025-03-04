@@ -10,7 +10,6 @@
 #include "PipePlatform.h"
 
 
-
 namespace p
 {
 	namespace details
@@ -25,70 +24,70 @@ namespace p
 		constexpr char colon{':'};
 	}    // namespace details
 
-	PIPE_API const char* FindRelativeChar(const char* const first, const char* const last);
-	PIPE_API const char* FindRelativeChar(
+	P_API const char* FindRelativeChar(const char* const first, const char* const last);
+	P_API const char* FindRelativeChar(
 	    const char* const first, const char* const last, const char*& outNameEnd);
-	PIPE_API const char* FindFilename(const char* const first, const char* last);
-	PIPE_API const char* FindExtension(const char* const first, const char* last);
+	P_API const char* FindFilename(const char* const first, const char* last);
+	P_API const char* FindExtension(const char* const first, const char* last);
 
 	// @return root name of a path, or an empty view if missing
 	// E.g: "C:\Folder" -> "C:"
-	PIPE_API StringView GetRootPathName(const StringView path);
+	P_API StringView GetRootPathName(const StringView path);
 
 	// @return root path of a path, or an empty view if missing
 	// E.g: "C:\Folder" -> "C:\"
-	PIPE_API StringView GetRootPath(const StringView path);
+	P_API StringView GetRootPath(const StringView path);
 
 	// @return the relative path if it exists, otherwise, an empty view
 	// E.g: "C:\Folder\Other" -> "Folder\Other"
-	PIPE_API StringView GetRelativePath(const StringView path);
+	P_API StringView GetRelativePath(const StringView path);
 
 	// @return the path to the parent directory
 	// E.g: "/var/tmp/file.txt" -> "/var/tmp"
 	// E.g: "/var/tmp/." -> "/var/tmp"
-	PIPE_API StringView GetParentPath(StringView path);
+	P_API StringView GetParentPath(StringView path);
 
-	PIPE_API StringView GetFilename(StringView path);
+	P_API StringView GetFilename(StringView path);
 	inline StringView GetFilename(const String& path)
 	{
 		return GetFilename(StringView{path});
 	}
-	PIPE_API bool HasFilename(StringView path);
-	PIPE_API void RemoveFilename(String& path);
-	PIPE_API void RemoveFilename(StringView& path);
+	P_API bool HasFilename(StringView path);
+	P_API void RemoveFilename(String& path);
+	P_API void RemoveFilename(StringView& path);
 
-	PIPE_API StringView GetStem(StringView path);
-	PIPE_API bool HasStem(StringView path);
+	P_API StringView GetStem(StringView path);
+	P_API bool HasStem(StringView path);
 
-	PIPE_API StringView GetExtension(StringView path);
+	P_API StringView GetExtension(StringView path);
 	/** Replaces the extension of a path */
-	PIPE_API void ReplaceExtension(String& path, StringView newExtension);
-	PIPE_API bool HasExtension(StringView path);
+	P_API void ReplaceExtension(String& path, StringView newExtension);
+	P_API bool HasExtension(StringView path);
 
-	PIPE_API bool IsAbsolutePath(StringView path);
-	PIPE_API bool IsRelativePath(StringView path);
-	PIPE_API bool IsRemotePath(StringView path);
-	PIPE_API bool Exists(StringView path);
+	P_API bool IsAbsolutePath(StringView path);
+	P_API bool IsRelativePath(StringView path);
+	P_API bool IsRemotePath(StringView path);
+	P_API bool Exists(StringView path);
 
-	PIPE_API String JoinPaths(StringView base, StringView relative);
-	PIPE_API String JoinPaths(StringView base, StringView relative, StringView relative2);
-	PIPE_API String JoinPaths(
+	P_API String JoinPaths(StringView base, StringView relative);
+	P_API String JoinPaths(StringView base, StringView relative, StringView relative2);
+	P_API String JoinPaths(
 	    StringView base, StringView relative, StringView relative2, StringView relative3);
-	PIPE_API String JoinPaths(TView<StringView> paths);
-	PIPE_API void AppendToPath(String& base, StringView other);
+	P_API String JoinPaths(TView<StringView> paths);
+	P_API void AppendToPath(String& base, StringView other);
 
-	PIPE_API bool AppendPathSeparatorIfNeeded(String& path);
+	P_API bool AppendPathSeparatorIfNeeded(String& path);
 
-	PIPE_API String ToRelativePath(StringView path);
-	PIPE_API String ToAbsolutePath(StringView path);
-	PIPE_API String ToRelativePath(StringView path, StringView parent);
-	PIPE_API String ToAbsolutePath(StringView path, StringView parent);
+	P_API String ToRelativePath(StringView path);
+	P_API String ToAbsolutePath(StringView path);
+	P_API String ToRelativePath(StringView path, StringView parent);
+	P_API String ToAbsolutePath(StringView path, StringView parent);
 
 	String LexicallyRelative(StringView path, StringView base);
-	PIPE_API void SetCanonical(String& path);
-	PIPE_API void SetWeaklyCanonical(String& path);
+	P_API void SetCanonical(String& path);
+	P_API void SetWeaklyCanonical(String& path);
 
-	inline PIPE_API constexpr bool IsSeparator(char c)
+	inline P_API constexpr bool IsSeparator(char c)
 	{
 		return c == details::separator
 #if P_PLATFORM_WINDOWS
@@ -101,7 +100,7 @@ namespace p
 	//  a forward slash is the only valid directory separator and also the only valid
 	//  element separator. For Windows, forward slash and back slash are the possible
 	//  directory separators, but colon (example: "c:foo") is also an element separator.
-	inline PIPE_API constexpr bool IsElementSeparator(char c)
+	inline P_API constexpr bool IsElementSeparator(char c)
 	{
 		return c == details::separator
 #if P_PLATFORM_WINDOWS
@@ -110,8 +109,8 @@ namespace p
 		    ;
 	}
 
-	PIPE_API String ToString(const Path& path);
-	PIPE_API std::filesystem::path ToSTDPath(StringView pathStr);
+	P_API String ToString(const Path& path);
+	P_API std::filesystem::path ToSTDPath(StringView pathStr);
 
 
 #pragma region PathIterator

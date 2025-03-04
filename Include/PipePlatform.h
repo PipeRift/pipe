@@ -185,7 +185,7 @@ namespace p
 	/**
 	 * Generic types for almost all compilers and platforms
 	 */
-	struct PIPE_API GenericPlatformTypes
+	struct P_API GenericPlatformTypes
 	{
 		// Character types.
 		// An ANSI character - 8-bit fixed-width representation of 7-bit characters.
@@ -228,7 +228,7 @@ namespace p
 	};
 
 
-	struct PIPE_API PlatformTypes : public GenericPlatformTypes
+	struct P_API PlatformTypes : public GenericPlatformTypes
 	{
 #if P_PLATFORM_WINDOWS
 		using sizet = std::size_t;
@@ -352,7 +352,7 @@ namespace p
 {
 	struct Guid;
 
-	struct PIPE_API PlatformMisc
+	struct P_API PlatformMisc
 	{
 		static void CreateGuid(struct Guid& guid);
 

@@ -12,7 +12,6 @@
 #include <format>
 
 
-
 namespace p
 {
 	namespace fs = std::filesystem;
@@ -52,9 +51,9 @@ namespace p
 		return GetStringHash(path.c_str());
 	}
 
-	PIPE_API void Read(p::Reader& ct, p::Path& value);
-	PIPE_API void Write(p::Writer& ct, const p::Path& value);
+	P_API void Read(p::Reader& ct, p::Path& value);
+	P_API void Write(p::Writer& ct, const p::Path& value);
 
-	PIPE_API DirectoryIterator CreateDirIterator(StringView path);
-	PIPE_API RecursiveDirectoryIterator CreateRecursiveDirIterator(StringView path);
+	P_API DirectoryIterator CreateDirIterator(StringView path);
+	P_API RecursiveDirectoryIterator CreateRecursiveDirIterator(StringView path);
 }    // namespace p

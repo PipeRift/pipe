@@ -6,10 +6,9 @@
 #include "PipePlatform.h"
 
 
-
 namespace p::details
 {
-	PIPE_API void FailedCheckError(
+	P_API void FailedCheckError(
 	    const AnsiChar* expr, const AnsiChar* file, u32 line, const char* text);
 
 	inline void FailedCheckError(

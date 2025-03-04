@@ -41,7 +41,7 @@ namespace p
 
 
 #pragma region Reader
-	struct PIPE_API Reader : public Casteable
+	struct P_API Reader : public Casteable
 	{
 		friend IFormatReader;
 		IFormatReader* formatReader = nullptr;
@@ -156,18 +156,18 @@ namespace p
 	};
 
 	// Format reads
-	PIPE_API void Read(Reader& r, bool& val);
-	PIPE_API void Read(Reader& r, i8& val);
-	PIPE_API void Read(Reader& r, u8& val);
-	PIPE_API void Read(Reader& r, i16& val);
-	PIPE_API void Read(Reader& r, u16& val);
-	PIPE_API void Read(Reader& r, i32& val);
-	PIPE_API void Read(Reader& r, u32& val);
-	PIPE_API void Read(Reader& r, i64& val);
-	PIPE_API void Read(Reader& r, u64& val);
-	PIPE_API void Read(Reader& r, float& val);
-	PIPE_API void Read(Reader& r, double& val);
-	PIPE_API void Read(Reader& r, StringView& val);
+	P_API void Read(Reader& r, bool& val);
+	P_API void Read(Reader& r, i8& val);
+	P_API void Read(Reader& r, u8& val);
+	P_API void Read(Reader& r, i16& val);
+	P_API void Read(Reader& r, u16& val);
+	P_API void Read(Reader& r, i32& val);
+	P_API void Read(Reader& r, u32& val);
+	P_API void Read(Reader& r, i64& val);
+	P_API void Read(Reader& r, u64& val);
+	P_API void Read(Reader& r, float& val);
+	P_API void Read(Reader& r, double& val);
+	P_API void Read(Reader& r, StringView& val);
 
 	template<typename T1, typename T2>
 	void Read(Reader& r, TPair<T1, T2>& val)
@@ -199,7 +199,7 @@ namespace p
 
 
 #pragma region Writer
-	struct PIPE_API Writer : public Casteable
+	struct P_API Writer : public Casteable
 	{
 		friend IFormatWriter;
 		IFormatWriter* formatWriter = nullptr;
@@ -312,18 +312,18 @@ namespace p
 	};
 
 	// Format writes
-	PIPE_API void Write(Writer& w, bool val);
-	PIPE_API void Write(Writer& w, i8 val);
-	PIPE_API void Write(Writer& w, u8 val);
-	PIPE_API void Write(Writer& w, i16 val);
-	PIPE_API void Write(Writer& w, u16 val);
-	PIPE_API void Write(Writer& w, i32 val);
-	PIPE_API void Write(Writer& w, u32 val);
-	PIPE_API void Write(Writer& w, i64 val);
-	PIPE_API void Write(Writer& w, u64 val);
-	PIPE_API void Write(Writer& w, float val);
-	PIPE_API void Write(Writer& w, double val);
-	PIPE_API void Write(Writer& w, StringView val);
+	P_API void Write(Writer& w, bool val);
+	P_API void Write(Writer& w, i8 val);
+	P_API void Write(Writer& w, u8 val);
+	P_API void Write(Writer& w, i16 val);
+	P_API void Write(Writer& w, u16 val);
+	P_API void Write(Writer& w, i32 val);
+	P_API void Write(Writer& w, u32 val);
+	P_API void Write(Writer& w, i64 val);
+	P_API void Write(Writer& w, u64 val);
+	P_API void Write(Writer& w, float val);
+	P_API void Write(Writer& w, double val);
+	P_API void Write(Writer& w, StringView val);
 
 	template<typename T1, typename T2>
 	void Write(Writer& w, TPair<T1, T2>& val)
@@ -354,7 +354,7 @@ namespace p
 
 
 #pragma region ReadWriter
-	struct PIPE_API ReadWriter
+	struct P_API ReadWriter
 	{
 	private:
 		Reader* reader;
@@ -472,7 +472,7 @@ namespace p
 	// and Write
 	template<typename T>
 	void Read(Reader& ct, T& val)
-	    requires(bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
+	    requires(bool(TFlags<T>::HasSingleSerialize && TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		val.Serialize(commonContext);
@@ -489,7 +489,7 @@ namespace p
 	// and Write
 	template<typename T>
 	void Write(Writer& ct, const T& val)
-	    requires(bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
+	    requires(bool(TFlags<T>::HasSingleSerialize && TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		const_cast<T&>(val).Serialize(commonContext);
@@ -505,7 +505,7 @@ namespace p
 
 
 #pragma region Format Interface
-	struct PIPE_API IFormatReader
+	struct P_API IFormatReader
 	{
 	private:
 		Reader reader{};
@@ -554,7 +554,7 @@ namespace p
 	};
 
 
-	struct PIPE_API IFormatWriter
+	struct P_API IFormatWriter
 	{
 	private:
 		Writer writer{};
@@ -676,43 +676,43 @@ namespace p
 		 * @param data containing the constant json string
 		 * @see JsonFormatReader(String& data, bool insitu = true) for optional insitu reading
 		 */
-		PIPE_API explicit JsonFormatReader(StringView data);
+		P_API explicit JsonFormatReader(StringView data);
 		/**
 		 * Configures a JsonFormatReader to read from an string buffer
 		 * This contructor might MODIFY the buffer if needed to improve reading speed
 		 * slightly.
 		 * @param data containing the MUTABLE json string
 		 */
-		PIPE_API explicit JsonFormatReader(String& data);
-		PIPE_API ~JsonFormatReader();
+		P_API explicit JsonFormatReader(String& data);
+		P_API ~JsonFormatReader();
 
-		PIPE_API void BeginObject() override;
-		PIPE_API void BeginArray(u32& size) override;
+		P_API void BeginObject() override;
+		P_API void BeginArray(u32& size) override;
 
-		PIPE_API bool EnterNext(StringView name) override;
-		PIPE_API bool EnterNext() override;
-		PIPE_API void Leave() override;
+		P_API bool EnterNext(StringView name) override;
+		P_API bool EnterNext() override;
+		P_API void Leave() override;
 
-		PIPE_API void Read(bool& val) override;
-		PIPE_API void Read(i8& val) override;
-		PIPE_API void Read(u8& val) override;
-		PIPE_API void Read(i16& val) override;
-		PIPE_API void Read(u16& val) override;
-		PIPE_API void Read(i32& val) override;
-		PIPE_API void Read(u32& val) override;
-		PIPE_API void Read(i64& val) override;
-		PIPE_API void Read(u64& val) override;
-		PIPE_API void Read(float& val) override;
-		PIPE_API void Read(double& val) override;
-		PIPE_API void Read(StringView& val) override;
+		P_API void Read(bool& val) override;
+		P_API void Read(i8& val) override;
+		P_API void Read(u8& val) override;
+		P_API void Read(i16& val) override;
+		P_API void Read(u16& val) override;
+		P_API void Read(i32& val) override;
+		P_API void Read(u32& val) override;
+		P_API void Read(i64& val) override;
+		P_API void Read(u64& val) override;
+		P_API void Read(float& val) override;
+		P_API void Read(double& val) override;
+		P_API void Read(StringView& val) override;
 
-		PIPE_API bool IsObject() const override;
-		PIPE_API bool IsArray() const override;
-		PIPE_API bool IsValid() const override
+		P_API bool IsObject() const override;
+		P_API bool IsArray() const override;
+		P_API bool IsValid() const override
 		{
 			return root != nullptr;
 		}
-		PIPE_API const ReadError& GetError() const
+		P_API const ReadError& GetError() const
 		{
 			return error;
 		}
@@ -745,39 +745,39 @@ namespace p
 
 
 	public:
-		PIPE_API JsonFormatWriter();
-		PIPE_API ~JsonFormatWriter();
+		P_API JsonFormatWriter();
+		P_API ~JsonFormatWriter();
 
 		// BEGIN Writer Interface
-		PIPE_API bool EnterNext(StringView name) override;
-		PIPE_API bool EnterNext() override;
-		PIPE_API void Leave() override;
+		P_API bool EnterNext(StringView name) override;
+		P_API bool EnterNext() override;
+		P_API void Leave() override;
 
-		PIPE_API void BeginObject() override;
-		PIPE_API void BeginArray(u32 size) override;
+		P_API void BeginObject() override;
+		P_API void BeginArray(u32 size) override;
 
-		PIPE_API void Write(bool val) override;
-		PIPE_API void Write(i8 val) override;
-		PIPE_API void Write(u8 val) override;
-		PIPE_API void Write(i16 val) override;
-		PIPE_API void Write(u16 val) override;
-		PIPE_API void Write(i32 val) override;
-		PIPE_API void Write(u32 val) override;
-		PIPE_API void Write(i64 val) override;
-		PIPE_API void Write(u64 val) override;
-		PIPE_API void Write(float val) override;
-		PIPE_API void Write(double val) override;
-		PIPE_API void Write(StringView val) override;
+		P_API void Write(bool val) override;
+		P_API void Write(i8 val) override;
+		P_API void Write(u8 val) override;
+		P_API void Write(i16 val) override;
+		P_API void Write(u16 val) override;
+		P_API void Write(i32 val) override;
+		P_API void Write(u32 val) override;
+		P_API void Write(i64 val) override;
+		P_API void Write(u64 val) override;
+		P_API void Write(float val) override;
+		P_API void Write(double val) override;
+		P_API void Write(StringView val) override;
 
-		PIPE_API bool IsValid() const override
+		P_API bool IsValid() const override
 		{
 			return doc != nullptr;
 		}
 		// END Writer Interface
 
-		PIPE_API void Close();
+		P_API void Close();
 
-		PIPE_API StringView ToString(bool pretty = true, bool ensureClosed = true);
+		P_API StringView ToString(bool pretty = true, bool ensureClosed = true);
 
 	private:
 		Scope& GetScope();
@@ -794,32 +794,32 @@ namespace p
 		u8* pointer = nullptr;
 
 	public:
-		PIPE_API BinaryFormatReader(TView<u8> data);
-		PIPE_API ~BinaryFormatReader();
+		P_API BinaryFormatReader(TView<u8> data);
+		P_API ~BinaryFormatReader();
 
-		PIPE_API void BeginObject() override {}    // Nothing to do
-		PIPE_API void BeginArray(u32& size) override;
+		P_API void BeginObject() override {}    // Nothing to do
+		P_API void BeginArray(u32& size) override;
 
-		PIPE_API bool EnterNext(StringView name) override;    // Nothing to do
-		PIPE_API bool EnterNext() override;                   // Nothing to do
-		PIPE_API void Leave() override {}                     // Nothing to do
+		P_API bool EnterNext(StringView name) override;    // Nothing to do
+		P_API bool EnterNext() override;                   // Nothing to do
+		P_API void Leave() override {}                     // Nothing to do
 
-		PIPE_API void Read(bool& val) override;
-		PIPE_API void Read(i8& val) override;
-		PIPE_API void Read(u8& val) override;
-		PIPE_API void Read(i16& val) override;
-		PIPE_API void Read(u16& val) override;
-		PIPE_API void Read(i32& val) override;
-		PIPE_API void Read(u32& val) override;
-		PIPE_API void Read(i64& val) override;
-		PIPE_API void Read(u64& val) override;
-		PIPE_API void Read(float& val) override;
-		PIPE_API void Read(double& val) override;
-		PIPE_API void Read(StringView& val) override;
+		P_API void Read(bool& val) override;
+		P_API void Read(i8& val) override;
+		P_API void Read(u8& val) override;
+		P_API void Read(i16& val) override;
+		P_API void Read(u16& val) override;
+		P_API void Read(i32& val) override;
+		P_API void Read(u32& val) override;
+		P_API void Read(i64& val) override;
+		P_API void Read(u64& val) override;
+		P_API void Read(float& val) override;
+		P_API void Read(double& val) override;
+		P_API void Read(StringView& val) override;
 
-		PIPE_API bool IsObject() const override;
-		PIPE_API bool IsArray() const override;
-		PIPE_API bool IsValid() const override;
+		P_API bool IsObject() const override;
+		P_API bool IsArray() const override;
+		P_API bool IsValid() const override;
 	};
 
 	struct BinaryFormatWriter : public IFormatWriter
@@ -832,34 +832,34 @@ namespace p
 
 
 	public:
-		PIPE_API BinaryFormatWriter(Arena& arena = p::GetCurrentArena());
-		PIPE_API ~BinaryFormatWriter();
+		P_API BinaryFormatWriter(Arena& arena = p::GetCurrentArena());
+		P_API ~BinaryFormatWriter();
 
 		// BEGIN Writer Interface
-		PIPE_API void BeginObject() override {}         // Nothing to do
-		PIPE_API void BeginArray(u32 size) override;    // Nothing to do
-		PIPE_API bool EnterNext(StringView name) override;
-		PIPE_API bool EnterNext() override;
-		PIPE_API void Leave() override {}    // Nothing to do
-		PIPE_API void Write(bool val) override;
-		PIPE_API void Write(i8 val) override;
-		PIPE_API void Write(u8 val) override;
-		PIPE_API void Write(i16 val) override;
-		PIPE_API void Write(u16 val) override;
-		PIPE_API void Write(i32 val) override;
-		PIPE_API void Write(u32 val) override;
-		PIPE_API void Write(i64 val) override;
-		PIPE_API void Write(u64 val) override;
-		PIPE_API void Write(float val) override;
-		PIPE_API void Write(double val) override;
-		PIPE_API void Write(StringView val) override;
-		PIPE_API bool IsValid() const override
+		P_API void BeginObject() override {}         // Nothing to do
+		P_API void BeginArray(u32 size) override;    // Nothing to do
+		P_API bool EnterNext(StringView name) override;
+		P_API bool EnterNext() override;
+		P_API void Leave() override {}    // Nothing to do
+		P_API void Write(bool val) override;
+		P_API void Write(i8 val) override;
+		P_API void Write(u8 val) override;
+		P_API void Write(i16 val) override;
+		P_API void Write(u16 val) override;
+		P_API void Write(i32 val) override;
+		P_API void Write(u32 val) override;
+		P_API void Write(i64 val) override;
+		P_API void Write(u64 val) override;
+		P_API void Write(float val) override;
+		P_API void Write(double val) override;
+		P_API void Write(StringView val) override;
+		P_API bool IsValid() const override
 		{
 			return data != nullptr;
 		}
 		// END Writer Interface
 
-		PIPE_API TView<p::u8> GetData();
+		P_API TView<p::u8> GetData();
 
 	private:
 		void PreAlloc(p::u32 offset);
@@ -874,36 +874,36 @@ namespace p
 	struct Vec;
 	struct Quat;
 
-	PIPE_API void Read(Reader& ct, String& val);
-	PIPE_API void Write(Writer& ct, const String& val);
-	PIPE_API void Read(Reader& ct, Tag& val);
-	PIPE_API void Write(Writer& ct, const Tag& val);
+	P_API void Read(Reader& ct, String& val);
+	P_API void Write(Writer& ct, const String& val);
+	P_API void Read(Reader& ct, Tag& val);
+	P_API void Write(Writer& ct, const Tag& val);
 
-	PIPE_API void Read(Reader& ct, Guid& guid);
-	PIPE_API void Write(Writer& ct, const Guid& guid);
+	P_API void Read(Reader& ct, Guid& guid);
+	P_API void Write(Writer& ct, const Guid& guid);
 
-	PIPE_API void Read(Reader& ct, TColor<ColorMode::RGBA>& color);
-	PIPE_API void Write(Writer& ct, const TColor<ColorMode::RGBA>& color);
-	PIPE_API void Read(Reader& ct, TColor<ColorMode::Linear>& color);
-	PIPE_API void Write(Writer& ct, const TColor<ColorMode::Linear>& color);
-	PIPE_API void Read(Reader& ct, TColor<ColorMode::sRGB>& color);
-	PIPE_API void Write(Writer& ct, const TColor<ColorMode::sRGB>& color);
-	PIPE_API void Read(Reader& r, TColor<ColorMode::HSV>& color);
-	PIPE_API void Write(Writer& w, const TColor<ColorMode::HSV>& color);
+	P_API void Read(Reader& ct, TColor<ColorMode::RGBA>& color);
+	P_API void Write(Writer& ct, const TColor<ColorMode::RGBA>& color);
+	P_API void Read(Reader& ct, TColor<ColorMode::Linear>& color);
+	P_API void Write(Writer& ct, const TColor<ColorMode::Linear>& color);
+	P_API void Read(Reader& ct, TColor<ColorMode::sRGB>& color);
+	P_API void Write(Writer& ct, const TColor<ColorMode::sRGB>& color);
+	P_API void Read(Reader& r, TColor<ColorMode::HSV>& color);
+	P_API void Write(Writer& w, const TColor<ColorMode::HSV>& color);
 
-	PIPE_API void Read(Reader& ct, Vec<2, float>& val);
-	PIPE_API void Write(Writer& ct, const Vec<2, float>& val);
-	PIPE_API void Read(Reader& ct, Vec<2, u32>& val);
-	PIPE_API void Write(Writer& ct, const Vec<2, u32>& val);
-	PIPE_API void Read(Reader& ct, Vec<2, i32>& val);
-	PIPE_API void Write(Writer& ct, const Vec<2, i32>& val);
-	PIPE_API void Read(Reader& ct, Vec<3, float>& val);
-	PIPE_API void Write(Writer& ct, const Vec<3, float>& val);
-	PIPE_API void Read(Reader& ct, Vec<3, u32>& val);
-	PIPE_API void Write(Writer& ct, const Vec<3, u32>& val);
-	PIPE_API void Read(Reader& ct, Vec<3, i32>& val);
-	PIPE_API void Write(Writer& ct, const Vec<3, i32>& val);
-	PIPE_API void Read(Reader& ct, Quat& val);
-	PIPE_API void Write(Writer& ct, const Quat& val);
+	P_API void Read(Reader& ct, Vec<2, float>& val);
+	P_API void Write(Writer& ct, const Vec<2, float>& val);
+	P_API void Read(Reader& ct, Vec<2, u32>& val);
+	P_API void Write(Writer& ct, const Vec<2, u32>& val);
+	P_API void Read(Reader& ct, Vec<2, i32>& val);
+	P_API void Write(Writer& ct, const Vec<2, i32>& val);
+	P_API void Read(Reader& ct, Vec<3, float>& val);
+	P_API void Write(Writer& ct, const Vec<3, float>& val);
+	P_API void Read(Reader& ct, Vec<3, u32>& val);
+	P_API void Write(Writer& ct, const Vec<3, u32>& val);
+	P_API void Read(Reader& ct, Vec<3, i32>& val);
+	P_API void Write(Writer& ct, const Vec<3, i32>& val);
+	P_API void Read(Reader& ct, Quat& val);
+	P_API void Write(Writer& ct, const Quat& val);
 #pragma endregion CoreSupport
 }    // namespace p

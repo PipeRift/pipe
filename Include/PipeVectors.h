@@ -710,12 +710,16 @@ namespace p
 			for (u32 i = 0; i < size; ++i)
 			{
 				if (point[i] < min[i])
+				{
 					min[i] = point[i];
+				}
 			}
 			for (u32 i = 0; i < size; ++i)
 			{
 				if (point[i] > max[i])
+				{
 					max[i] = point[i];
+				}
 			}
 		}
 		void Merge(const TAABB& other)
@@ -723,12 +727,16 @@ namespace p
 			for (u32 i = 0; i < size; ++i)
 			{
 				if (other.min[i] < min[i])
+				{
 					min[i] = other.min[i];
+				}
 			}
 			for (u32 i = 0; i < size; ++i)
 			{
 				if (other.max[i] > max[i])
+				{
 					max[i] = other.max[i];
+				}
 			}
 		}
 
@@ -739,12 +747,16 @@ namespace p
 			for (u32 i = 0; i < size; ++i)
 			{
 				if (other.min[i] > min[i])
+				{
 					min[i] = other.min[i];
+				}
 			}
 			for (u32 i = 0; i < size; ++i)
 			{
 				if (other.max[i] < max[i])
+				{
 					max[i] = other.max[i];
+				}
 			}
 		}
 
@@ -774,49 +786,73 @@ namespace p
 		constexpr bool Contains(const Vec<size, T>& p) const
 		{
 			if constexpr (size == 2)
+			{
 				return (p.x >= min.x && p.y >= min.y) && (p.x < max.x && p.y < max.y);
+			}
 			else if constexpr (size == 3)
+			{
 				return (p.x >= min.x && p.y >= min.y && p.z >= min.z)
 				    && (p.x < max.x && p.y < max.y && p.z < max.z);
+			}
 			else if constexpr (size == 4)
+			{
 				return (p.x >= min.x && p.y >= min.y && p.z >= min.z && p.w >= min.w)
 				    && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
+			}
 		}
 		constexpr bool Contains(const TAABB& r) const requires(size == 2)
 		{
 			if constexpr (size == 2)
+			{
 				return (r.min.x >= min.x && r.min.y >= min.y)
 				    && (r.max.x <= max.x && r.max.y <= max.y);
+			}
 			else if constexpr (size == 3)
+			{
 				return (r.min.x >= min.x && r.min.y >= min.y && r.min.z >= min.z)
 				    && (r.max.x <= max.x && r.max.y <= max.y && r.max.z <= max.z);
+			}
 			else if constexpr (size == 4)
+			{
 				return (r.min.x >= min.x && r.min.y >= min.y && r.min.z >= min.z
 				           && r.min.w >= min.w)
 				    && (r.max.x <= max.x && r.max.y <= max.y && r.max.z <= max.z
 				        && r.max.w <= max.w);
+			}
 		}
 		constexpr bool Overlaps(const Vec<size, T>& p) const
 		{
 			if constexpr (size == 2)
+			{
 				return (p.x > min.x && p.y > min.y) && (p.x < max.x && p.y < max.y);
+			}
 			else if constexpr (size == 3)
+			{
 				return (p.x > min.x && p.y > min.y && p.z > min.z)
 				    && (p.x < max.x && p.y < max.y && p.z < max.z);
+			}
 			else if constexpr (size == 4)
+			{
 				return (p.x > min.x && p.y > min.y && p.z > min.z && p.w > min.w)
 				    && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
+			}
 		}
 		constexpr bool Overlaps(const TAABB& r) const
 		{
 			if constexpr (size == 2)
+			{
 				return (r.min.x < max.x && r.min.y < max.y) && (r.max.x > min.x && r.max.y > min.y);
+			}
 			else if constexpr (size == 3)
+			{
 				return (r.min.x < max.x && r.min.y < max.y && r.min.z < max.z)
 				    && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z);
+			}
 			else if constexpr (size == 4)
+			{
 				return (r.min.x < max.x && r.min.y < max.y && r.min.z < max.z && r.min.w < max.w)
 				    && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z && r.max.w > min.w);
+			}
 		}
 
 		constexpr Vec<size, T> GetSize() const
@@ -855,11 +891,17 @@ namespace p
 		constexpr bool IsInverted() const
 		{
 			if constexpr (size == 2)
+			{
 				return min.x > max.x || min.y > max.y;
+			}
 			else if constexpr (size == 3)
+			{
 				return min.x > max.x || min.y > max.y || min.z > max.z;
+			}
 			else if constexpr (size == 4)
+			{
 				return min.x > max.x || min.y > max.y || min.z > max.z || min.w > max.w;
+			}
 		}
 	};
 
@@ -883,15 +925,15 @@ namespace p
 		// however, in practice if you have 0 scale, and relative transform doesn't make much
 		// sense anymore because you should be instead of showing gigantic infinite mesh also
 		// returning BIG_NUMBER causes sequential NaN issues by multiplying so we hardcode as 0
-		PIPE_API v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = smallNumber);
-		PIPE_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
-		PIPE_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
+		P_API v3 GetSafeScaleReciprocal(const v3& scale, float tolerance = smallNumber);
+		P_API v2 ClosestPointInLine(v2 a, v2 b, v2 point);
+		P_API v3 ClosestPointInLine(v3 a, v3 b, v3 point);
 	}    // namespace Vectors
 
-	PIPE_API v2 EvaluateCubicBezier(v2 p0, v2 p1, v2 p2, v2 p3, float t);
+	P_API v2 EvaluateCubicBezier(v2 p0, v2 p1, v2 p2, v2 p3, float t);
 
 
-	struct PIPE_API Rotator : public v3
+	struct P_API Rotator : public v3
 	{
 		using v3::v3;
 
@@ -943,7 +985,7 @@ namespace p
 	};
 
 
-	struct PIPE_API Quat
+	struct P_API Quat
 	{
 	public:
 		float x;

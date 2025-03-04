@@ -8,6 +8,6 @@
 
 namespace p
 {
-    PIPE_API void Initialize(struct Logger* logger = nullptr);
-    PIPE_API void Shutdown();
+	P_API void Initialize(struct Logger* logger = nullptr);
+	P_API void Shutdown();
 };    // namespace p

@@ -8,18 +8,17 @@
 #include <functional>
 
 
-
 namespace p
 {
-	PIPE_API sizet HashBytes(void const* ptr, sizet const len);
-	PIPE_API sizet HashInt(u64 x);
+	P_API sizet HashBytes(void const* ptr, sizet const len);
+	P_API sizet HashInt(u64 x);
 
 
 	// FNV String hash
 	// Use offset and prime based on the architecture (64bit or 32bit)
 	// http://www.isthe.com/chongo/tech/comp/fnv/index.html
 	template<typename CharType = char>
-	inline PIPE_API constexpr sizet GetStringHash(const CharType* str)
+	inline P_API constexpr sizet GetStringHash(const CharType* str)
 	{
 		// 32/64 bit architecture switch
 		if constexpr (sizeof(sizet) < 64)
@@ -43,7 +42,7 @@ namespace p
 	}
 
 	template<typename CharType = char>
-	inline PIPE_API constexpr sizet GetStringHash(const CharType* str, sizet size)
+	inline P_API constexpr sizet GetStringHash(const CharType* str, sizet size)
 	{
 		// 32/64 bit architecture switch
 		if constexpr (sizeof(sizet) < 64)

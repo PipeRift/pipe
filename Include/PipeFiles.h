@@ -21,7 +21,7 @@ namespace p
 	 * the system can decide to, for example, display last user folder (windows).
 	 * @return selected file path
 	 */
-	PIPE_API String SelectFileDialog(StringView title, StringView defaultPath,
+	P_API String SelectFileDialog(StringView title, StringView defaultPath,
 	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}
@@ -36,8 +36,7 @@ namespace p
 	 * @param alwaysShowDefaultPath if true dialog will open to default path. Else,
 	 * the system can decide to, for example, display last user folder (windows).
 	 */
-	PIPE_API void SelectFilesDialog(StringView title, StringView defaultPath,
-	    TArray<String>& outFiles,
+	P_API void SelectFilesDialog(StringView title, StringView defaultPath, TArray<String>& outFiles,
 	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}
@@ -52,7 +51,7 @@ namespace p
 	 * the system can decide to, for example, display last user folder (windows).
 	 * @return selected folder path
 	 */
-	PIPE_API String SelectFolderDialog(
+	P_API String SelectFolderDialog(
 	    StringView title, StringView defaultPath, bool alwaysShowDefaultPath = false);
 
 	/**
@@ -63,7 +62,7 @@ namespace p
 	 * the system can decide to, for example, display last user folder (windows).
 	 * @return selected file path
 	 */
-	PIPE_API String SaveFileDialog(StringView title, StringView defaultPath,
+	P_API String SaveFileDialog(StringView title, StringView defaultPath,
 	    const TArray<DialogFileFilter>& filters =
 	        {
 	            {"All Files", "*"}
@@ -84,7 +83,7 @@ namespace p
 	using FileWatchCallback = std::function<void(FileWatchId id, StringView path,
 	    StringView filename, FileWatchAction action, StringView oldFilename)>;
 
-	struct PIPE_API FileWatcher
+	struct P_API FileWatcher
 	{
 	public:
 		/** Should recursive watchers follow symbolic links? Default: false */

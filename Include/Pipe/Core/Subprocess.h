@@ -55,7 +55,7 @@ namespace p
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wpadded"
 #endif
-	struct PIPE_API Subprocess
+	struct P_API Subprocess
 	{
 		FILE* cinFile  = nullptr;
 		FILE* coutFile = nullptr;
@@ -100,7 +100,7 @@ namespace p
 	 * If `options` contains `subprocess_option_inherit_environment`, then
 	 * `environment` must be NULL.
 	 */
-	PIPE_API TOptional<Subprocess> RunProcessEx(TView<const char* const> command,
+	P_API TOptional<Subprocess> RunProcessEx(TView<const char* const> command,
 	    TView<const char* const> environment, SubprocessOptions options = SubprocessOptions::None);
 
 	/**
@@ -113,7 +113,7 @@ namespace p
 	 * @param outProcess The newly created process.
 	 * @return On success zero is returned.
 	 */
-	inline PIPE_API TOptional<Subprocess> RunProcess(
+	inline P_API TOptional<Subprocess> RunProcess(
 	    TView<const char* const> command, SubprocessOptions options = SubprocessOptions::None)
 	{
 		return RunProcessEx(command, {}, options);
@@ -128,7 +128,7 @@ namespace p
 	 *
 	 * Joining a process will close the stdin pipe to the process.
 	 */
-	PIPE_API i32 WaitProcess(Subprocess* process, i32* outReturnCode);
+	P_API i32 WaitProcess(Subprocess* process, i32* outReturnCode);
 
 	/**
 	 * @brief Destroy a previously created process.
@@ -138,7 +138,7 @@ namespace p
 	 * If the process to be destroyed had not finished execution, it may out live
 	 * the parent process.
 	 */
-	PIPE_API i32 DestroyProcess(Subprocess* process);
+	P_API i32 DestroyProcess(Subprocess* process);
 
 	/**
 	 * @brief Terminate a previously created process.
@@ -148,7 +148,7 @@ namespace p
 	 * If the process to be destroyed had not finished execution, it will be
 	 * terminated (i.e killed).
 	 */
-	PIPE_API i32 TerminateProcess(Subprocess* process);
+	P_API i32 TerminateProcess(Subprocess* process);
 
 	/**
 	 * @brief Read the standard output from the child process.
@@ -162,7 +162,7 @@ namespace p
 	 * execution is to use the `SubprocessOptions::EnableAsync` option in
 	 * conjuction with this method.
 	 */
-	PIPE_API u32 ReadProcessCout(Subprocess* process, char* buffer, u32 size);
+	P_API u32 ReadProcessCout(Subprocess* process, char* buffer, u32 size);
 
 	/**
 	 * @brief Read the standard error from the child process.
@@ -176,14 +176,14 @@ namespace p
 	 * execution is to use the `SubprocessOptions::EnableAsync` option in
 	 * conjuction with this method.
 	 */
-	PIPE_API u32 ReadProcessCerr(Subprocess* process, char* buffer, u32 size);
+	P_API u32 ReadProcessCerr(Subprocess* process, char* buffer, u32 size);
 
 	/**
 	 * @brief Returns if the subprocess is currently still alive and executing.
 	 * @param process The process to check.
 	 * @return If the process is still alive non-zero is returned.
 	 */
-	PIPE_API bool IsAlive(Subprocess* process);
+	P_API bool IsAlive(Subprocess* process);
 
 	/**
 	 * @brief Get the standard input file for a process.
@@ -193,7 +193,7 @@ namespace p
 	 * The file returned can be written to by the parent process to feed data to
 	 * the standard input of the process.
 	 */
-	PIPE_API FILE* GetProcessCin(const Subprocess* process);
+	P_API FILE* GetProcessCin(const Subprocess* process);
 
 	/**
 	 * @brief Get the standard output file for a process.
@@ -203,7 +203,7 @@ namespace p
 	 * The file returned can be read from by the parent process to read data from
 	 * the standard output of the child process.
 	 */
-	PIPE_API FILE* GetProcessCout(const Subprocess* process);
+	P_API FILE* GetProcessCout(const Subprocess* process);
 
 	/**
 	 * @brief Get the standard error file for a process.
@@ -217,5 +217,5 @@ namespace p
 	 * option bit set, this function will return NULL, and the GetProcessCout
 	 * function should be used for both the standard output and error combined.
 	 */
-	PIPE_API FILE* GetProcessCerr(const Subprocess* process);
+	P_API FILE* GetProcessCerr(const Subprocess* process);
 }    // namespace p

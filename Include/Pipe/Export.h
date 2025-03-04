@@ -1,19 +1,19 @@
 
 #pragma once
 
-#ifndef PIPE_API
+#ifndef P_API
 	#if defined(_WIN32)
 		#if defined(PIPE_EXPORTS) && PIPE_EXPORTS
-			#define PIPE_API __declspec(dllexport)
+			#define P_API __declspec(dllexport)
 		#elif defined(PIPE_IMPORTS) && PIPE_IMPORTS
-			#define PIPE_API __declspec(dllimport)
+			#define P_API __declspec(dllimport)
 		#else
-			#define PIPE_API
+			#define P_API
 		#endif
 	#elif __has_attribute(visibility)
-		#define PIPE_API __attribute__((visibility("default")))
+		#define P_API __attribute__((visibility("default")))
 	#else
-		#define PIPE_API
+		#define P_API
 	#endif
 #endif
 
@@ -21,8 +21,8 @@
 	#define P_DEPRECATED __declspec(deprecated)
 #endif
 
-#ifndef P_DEPRECATED_EXPORT
-	#define P_DEPRECATED_EXPORT PIPE_API P_DEPRECATED
+#ifndef P_DEPRECATED_API
+	#define P_DEPRECATED_API P_API P_DEPRECATED
 #endif
 
 /* NOLINTNEXTLINE(readability-avoid-unconditional-preprocessor-if) */

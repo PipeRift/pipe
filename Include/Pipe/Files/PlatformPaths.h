@@ -7,7 +7,6 @@
 #include "PipePlatform.h"
 
 
-
 #if P_PLATFORM_LINUX
 	#include <linux/limits.h>
 #endif
@@ -15,7 +14,7 @@
 
 namespace p
 {
-	struct PIPE_API GenericPlatformPaths
+	struct P_API GenericPlatformPaths
 	{
 		static constexpr u32 GetMaxPathLength()
 		{
@@ -46,7 +45,7 @@ namespace p
 
 
 #if P_PLATFORM_WINDOWS
-	struct PIPE_API WindowsPlatformPaths : public GenericPlatformPaths
+	struct P_API WindowsPlatformPaths : public GenericPlatformPaths
 	{
 		static u32 GetMaxPathLength();
 
@@ -67,7 +66,7 @@ namespace p
 	using PlatformPaths = WindowsPlatformPaths;
 
 #elif P_PLATFORM_LINUX
-	struct PIPE_API LinuxPlatformPaths : public GenericPlatformPaths
+	struct P_API LinuxPlatformPaths : public GenericPlatformPaths
 	{
 		static constexpr u32 GetMaxPathLength()
 		{
@@ -92,7 +91,7 @@ namespace p
 	using PlatformPaths = LinuxPlatformPaths;
 
 #elif P_PLATFORM_MACOS
-	struct PIPE_API MacPlatformPaths : public GenericPlatformPaths
+	struct P_API MacPlatformPaths : public GenericPlatformPaths
 	{
 		static constexpr u32 GetMaxPathLength()
 		{

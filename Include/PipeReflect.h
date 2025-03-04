@@ -132,8 +132,8 @@ namespace p
 		return requires(const T v, p::Writer writer) { v.WriteProperties(writer); };
 	}
 
-	PIPE_API void Read(Reader& r, TypeId& val);
-	PIPE_API void Write(Writer& w, TypeId val);
+	P_API void Read(Reader& r, TypeId& val);
+	P_API void Write(Writer& w, TypeId val);
 
 	template<typename T>
 	void Read(Reader& ct, T& value) requires(
@@ -234,7 +234,7 @@ namespace p
 
 
 #pragma region Runtime
-	struct PIPE_API TypeProperty
+	struct P_API TypeProperty
 	{
 		using AccessFunc = void*(void*);
 
@@ -249,7 +249,7 @@ namespace p
 	};
 
 
-	struct PIPE_API TypeOps
+	struct P_API TypeOps
 	{
 		using ReadFunc  = void(Reader&, void*);
 		using WriteFunc = void(Writer&, void*);
@@ -258,7 +258,7 @@ namespace p
 		WriteFunc* write = nullptr;
 	};
 
-	struct PIPE_API EnumTypeOps : public TypeOps
+	struct P_API EnumTypeOps : public TypeOps
 	{
 		u32 valueSize = 0;
 		TArray<u8> values;
@@ -285,14 +285,14 @@ namespace p
 		i32 Size() const;
 	};
 
-	struct PIPE_API ObjectTypeOps : public TypeOps
+	struct P_API ObjectTypeOps : public TypeOps
 	{
 		using NewFunc = BaseObject*(Arena& arena);
 
 		NewFunc* onNew = nullptr;
 	};
 
-	struct PIPE_API ContainerTypeOps : public TypeOps
+	struct P_API ContainerTypeOps : public TypeOps
 	{
 		using GetDataFunc    = void*(void*);
 		using GetSizeFunc    = i32(void*);
@@ -321,30 +321,30 @@ namespace p
 	struct TypeRegistry;
 	namespace details
 	{
-		PIPE_API i32 GetTypeIndex(const TypeRegistry& registry, TypeId id);
-		PIPE_API bool HasTypeFlags(const TypeRegistry& registry, i32 index, TypeFlags flags);
-		PIPE_API bool HasAnyTypeFlags(const TypeRegistry& registry, i32 index, TypeFlags flags);
+		P_API i32 GetTypeIndex(const TypeRegistry& registry, TypeId id);
+		P_API bool HasTypeFlags(const TypeRegistry& registry, i32 index, TypeFlags flags);
+		P_API bool HasAnyTypeFlags(const TypeRegistry& registry, i32 index, TypeFlags flags);
 	}    // namespace details
 
-	PIPE_API bool InitializeReflect();
-	PIPE_API void OnReflectInit(void (*callback)());
+	P_API bool InitializeReflect();
+	P_API void OnReflectInit(void (*callback)());
 
-	PIPE_API TView<TypeId> GetRegisteredTypeIds();
-	PIPE_API bool IsTypeRegistered(TypeId id);
-	PIPE_API TypeId GetTypeParent(TypeId id);
-	PIPE_API bool IsTypeParentOf(TypeId parentId, TypeId childId);
-	PIPE_API sizet GetTypeSize(TypeId id);
-	PIPE_API StringView GetTypeName(TypeId id);
-	PIPE_API TypeFlags GetTypeFlags(TypeId id);
-	PIPE_API bool HasTypeFlags(TypeId id, TypeFlags flags);
-	PIPE_API bool HasAnyTypeFlags(TypeId id, TypeFlags flags);
+	P_API TView<TypeId> GetRegisteredTypeIds();
+	P_API bool IsTypeRegistered(TypeId id);
+	P_API TypeId GetTypeParent(TypeId id);
+	P_API bool IsTypeParentOf(TypeId parentId, TypeId childId);
+	P_API sizet GetTypeSize(TypeId id);
+	P_API StringView GetTypeName(TypeId id);
+	P_API TypeFlags GetTypeFlags(TypeId id);
+	P_API bool HasTypeFlags(TypeId id, TypeFlags flags);
+	P_API bool HasAnyTypeFlags(TypeId id, TypeFlags flags);
 	/// @return the properties of this type, excluding those of the parent (if any)
-	PIPE_API TView<const TypeProperty> GetOwnTypeProperties(TypeId id);
+	P_API TView<const TypeProperty> GetOwnTypeProperties(TypeId id);
 	/// @return the properties of this type
-	PIPE_API TView<const TypeProperty*> GetTypeProperties(TypeId id);
-	PIPE_API const TypeOps* GetTypeOps(TypeId id);
-	PIPE_API const ObjectTypeOps* GetTypeObjectOps(TypeId id);
-	PIPE_API const ContainerTypeOps* GetTypeContainerOps(TypeId id);
+	P_API TView<const TypeProperty*> GetTypeProperties(TypeId id);
+	P_API const TypeOps* GetTypeOps(TypeId id);
+	P_API const ObjectTypeOps* GetTypeObjectOps(TypeId id);
+	P_API const ContainerTypeOps* GetTypeContainerOps(TypeId id);
 
 
 #pragma region Registration
@@ -390,15 +390,15 @@ namespace p
 	template<typename T>
 	TypeId RegisterTypeId();    // Forward declaration
 
-	PIPE_API bool BeginTypeId(TypeId id);
-	PIPE_API void EndTypeId();
-	PIPE_API void SetTypeParent(TypeId parentId);
-	PIPE_API void SetTypeSize(sizet size);
-	PIPE_API void SetTypeName(StringView name);
-	PIPE_API void SetTypeFlags(TypeFlags flags);
-	PIPE_API void AddTypeFlags(TypeFlags flags);
-	PIPE_API void RemoveTypeFlags(TypeFlags flags);
-	PIPE_API void AddTypeProperty(const TypeProperty& property);
+	P_API bool BeginTypeId(TypeId id);
+	P_API void EndTypeId();
+	P_API void SetTypeParent(TypeId parentId);
+	P_API void SetTypeSize(sizet size);
+	P_API void SetTypeName(StringView name);
+	P_API void SetTypeFlags(TypeFlags flags);
+	P_API void AddTypeFlags(TypeFlags flags);
+	P_API void RemoveTypeFlags(TypeFlags flags);
+	P_API void AddTypeProperty(const TypeProperty& property);
 	template<typename T>
 	constexpr void AddTypeProperty(
 	    TypeProperty::AccessFunc* access, StringView name, PropertyFlags flags = PF_None)
@@ -416,7 +416,7 @@ namespace p
 		    .typeId = RegisterTypeId<PropType>(), .flags = flags, .access = access, .name = name});
 	}
 
-	PIPE_API void SetTypeOps(const TypeOps* operations);
+	P_API void SetTypeOps(const TypeOps* operations);
 	template<typename T>
 	void AssignSerializableTypeOps(TypeOps& ops)
 	{
@@ -817,7 +817,7 @@ namespace p
 namespace p
 {
 #pragma region Objects
-	class PIPE_API BaseObject : public Casteable
+	class P_API BaseObject : public Casteable
 	{
 	protected:
 		BaseObject() = default;
@@ -830,7 +830,7 @@ namespace p
 
 
 	// For shared export purposes, we separate pointers from the exported Class
-	struct PIPE_API ObjectOwnership
+	struct P_API ObjectOwnership
 	{
 		TPtr<BaseObject> self;
 		TPtr<BaseObject> owner;
@@ -881,7 +881,7 @@ namespace p
 	};
 
 
-	class PIPE_API Object : public BaseObject
+	class P_API Object : public BaseObject
 	{
 	public:
 		using Self = Object;

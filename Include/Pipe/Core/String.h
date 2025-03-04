@@ -76,7 +76,7 @@ namespace p
 			return str;
 		}
 
-		PIPE_API String ToSentenceCase(StringView value);
+		P_API String ToSentenceCase(StringView value);
 
 		/**
 		 * Breaks up a delimited string into elements of a string array.
@@ -87,23 +87,23 @@ namespace p
 		 *
 		 * @return	The number of elements in InArray
 		 */
-		PIPE_API i32 ParseIntoArray(const String& str, TArray<String>& OutArray,
-		    const char* pchDelim, bool InCullEmpty = true);
+		P_API i32 ParseIntoArray(const String& str, TArray<String>& OutArray, const char* pchDelim,
+		    bool InCullEmpty = true);
 
-		PIPE_API void RemoveFromStart(String& str, sizet size);
-		PIPE_API void RemoveFromEnd(String& str, sizet size);
-		PIPE_API void RemoveFromEnd(String& str, StringView subStr);
+		P_API void RemoveFromStart(String& str, sizet size);
+		P_API void RemoveFromEnd(String& str, sizet size);
+		P_API void RemoveFromEnd(String& str, StringView subStr);
 
-		PIPE_API bool RemoveCharFromEnd(String& str, char c);
+		P_API bool RemoveCharFromEnd(String& str, char c);
 
-		PIPE_API i32 Split(const String& str, TArray<String>& tokens, const char delim);
+		P_API i32 Split(const String& str, TArray<String>& tokens, const char delim);
 
-		PIPE_API bool Split(const String& str, String& a, String& b, const char* delim);
+		P_API bool Split(const String& str, String& a, String& b, const char* delim);
 
-		PIPE_API bool IsNumeric(const String& str);
-		PIPE_API bool IsNumeric(const char* Str);
+		P_API bool IsNumeric(const String& str);
+		P_API bool IsNumeric(const char* Str);
 
-		PIPE_API String ParseMemorySize(sizet size);
+		P_API String ParseMemorySize(sizet size);
 
 		template<typename ToStringType, typename FromChar>
 		inline void ConvertTo(TStringView<FromChar> source, ToStringType& dest)

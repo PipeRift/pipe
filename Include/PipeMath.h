@@ -9,7 +9,6 @@
 #include <cmath>
 
 
-
 namespace p
 {
 	constexpr float pi       = 3.14159265358979323846f;
@@ -59,23 +58,23 @@ namespace p
 
 
 	/** Returns a random integer between 0 and RAND_MAX, inclusive */
-	inline PIPE_API i32 Rand()
+	inline P_API i32 Rand()
 	{
 		return rand();
 	}
 
 	/** Returns a random float between 0 and 1, inclusive. */
-	inline PIPE_API float Rand01()
+	inline P_API float Rand01()
 	{
 		return (float)Rand() / (float)RAND_MAX;
 	}
 
-	inline PIPE_API float Random(float min, float max)
+	inline P_API float Random(float min, float max)
 	{
 		return min + (Rand01() * (max - min));
 	}
 
-	inline PIPE_API i32 Random(i32 min, i32 max)
+	inline P_API i32 Random(i32 min, i32 max)
 	{
 		return min + (Rand01() * (max - min));
 	}
@@ -129,12 +128,12 @@ namespace p
 		return std::floor(v);
 	}
 
-	PIPE_API constexpr i32 FloorToI32(float f)
+	P_API constexpr i32 FloorToI32(float f)
 	{
 		return i32(Floor(f));
 	}
 
-	PIPE_API constexpr i64 FloorToI64(double f)
+	P_API constexpr i64 FloorToI64(double f)
 	{
 		return i64(Floor(f));
 	}
@@ -162,25 +161,25 @@ namespace p
 		}
 		return std::ceil(v);
 	}
-	PIPE_API constexpr i32 CeilToI32(float f)
+	P_API constexpr i32 CeilToI32(float f)
 	{
 		return i32(Ceil(f));
 	}
-	PIPE_API constexpr i64 CeilToI64(double f)
+	P_API constexpr i64 CeilToI64(double f)
 	{
 		return i64(Ceil(f));
 	}
 
 
-	inline PIPE_API float Round(float f)
+	inline P_API float Round(float f)
 	{
 		return std::round(f);
 	}
-	inline PIPE_API double Round(double f)
+	inline P_API double Round(double f)
 	{
 		return std::round(f);
 	}
-	inline PIPE_API i32 RoundToInt(float f)
+	inline P_API i32 RoundToInt(float f)
 	{
 		return i32(Round(f));
 	}
@@ -191,12 +190,12 @@ namespace p
 	 * @param f Floating point value to convert
 	 * @return The rounded integer
 	 */
-	inline PIPE_API float RoundFromZero(float f)
+	inline P_API float RoundFromZero(float f)
 	{
 		return (f < 0.0f) ? Floor(f) : Ceil(f);
 	}
 
-	inline PIPE_API double RoundFromZero(double d)
+	inline P_API double RoundFromZero(double d)
 	{
 		return (d < 0.0) ? Floor(d) : Ceil(d);
 	}
@@ -207,12 +206,12 @@ namespace p
 	 * @param v Floating point value to convert
 	 * @return The rounded integer
 	 */
-	inline PIPE_API float RoundToZero(float f)
+	inline P_API float RoundToZero(float f)
 	{
 		return (f < 0.0f) ? Ceil(f) : Floor(f);
 	}
 
-	inline PIPE_API double RoundToZero(double d)
+	inline P_API double RoundToZero(double d)
 	{
 		return (d < 0.0) ? Ceil(d) : Floor(d);
 	}
@@ -223,12 +222,12 @@ namespace p
 	 * @param F		Floating point value to convert
 	 * @return		The rounded integer
 	 */
-	inline PIPE_API float RoundToNegativeInfinity(float f)
+	inline P_API float RoundToNegativeInfinity(float f)
 	{
 		return Floor(f);
 	}
 
-	inline PIPE_API double RoundToNegativeInfinity(double d)
+	inline P_API double RoundToNegativeInfinity(double d)
 	{
 		return Floor(d);
 	}
@@ -239,12 +238,12 @@ namespace p
 	 * @param f		Floating point value to convert
 	 * @return		The rounded integer
 	 */
-	inline PIPE_API float RoundToPositiveInfinity(float f)
+	inline P_API float RoundToPositiveInfinity(float f)
 	{
 		return Ceil(f);
 	}
 
-	inline PIPE_API double RoundToPositiveInfinity(double d)
+	inline P_API double RoundToPositiveInfinity(double d)
 	{
 		return Ceil(d);
 	}
@@ -254,11 +253,11 @@ namespace p
 	 * @param f	Floating point value to convert
 	 * @return		A float between >=0 and < 1.
 	 */
-	inline PIPE_API float Frac(float f)
+	inline P_API float Frac(float f)
 	{
 		return f - p::Floor(f);
 	}
-	inline PIPE_API double Frac(double d)
+	inline P_API double Frac(double d)
 	{
 		return d - p::Floor(d);
 	}
@@ -270,19 +269,19 @@ namespace p
 		return std::sqrt(val);
 	}
 
-	inline PIPE_API float InvSqrt(float x)
+	inline P_API float InvSqrt(float x)
 	{
 		return 1.f / Sqrt(x);
 	}
-	inline PIPE_API double InvSqrt(double x)
+	inline P_API double InvSqrt(double x)
 	{
 		return 1. / Sqrt(x);
 	}
-	inline PIPE_API float InvSqrt(i32 x)
+	inline P_API float InvSqrt(i32 x)
 	{
 		return 1.f / Sqrt(x);
 	}
-	inline PIPE_API double InvSqrt(i64 x)
+	inline P_API double InvSqrt(i64 x)
 	{
 		return 1. / Sqrt(x);
 	}
@@ -294,7 +293,7 @@ namespace p
 	}
 
 	template<SignedIntegral T>
-	PIPE_API constexpr T Pow(T value, u32 power)
+	P_API constexpr T Pow(T value, u32 power)
 	{
 		if (power == 0)
 		{
@@ -309,7 +308,7 @@ namespace p
 		return result;
 	}
 	template<UnsignedIntegral T>
-	PIPE_API constexpr T Pow(T value, u32 power)
+	P_API constexpr T Pow(T value, u32 power)
 	{
 		if (power == 0)
 		{
@@ -390,11 +389,11 @@ namespace p
 		return a - b * (a / b);
 	}
 
-	PIPE_API void SinCos(float value, float& outSin, float& outCos);
-	PIPE_API float Sin(float value);
-	PIPE_API float Cos(float value);
+	P_API void SinCos(float value, float& outSin, float& outCos);
+	P_API float Sin(float value);
+	P_API float Cos(float value);
 
-	PIPE_API float Atan2(float Y, float X);
+	P_API float Atan2(float Y, float X);
 
 	/**
 	 * Computes the ASin of a scalar value.
@@ -402,7 +401,7 @@ namespace p
 	 * @param Value  input angle
 	 * @return ASin of Value
 	 */
-	inline PIPE_API float FastAsin(float Value)
+	inline P_API float FastAsin(float Value)
 	{
 		// Note:  We use FASTASIN_HALF_PI instead of HALF_PI inside of FastASin(), since it was
 		// the value that accompanied the minimax coefficients below. It is important to use
@@ -434,24 +433,24 @@ namespace p
 		return (nonnegative ? fastAsinHalfPi - result : result - fastAsinHalfPi);
 	}
 
-	inline PIPE_API bool NearlyEqual(float a, float b, float tolerance = smallNumber)
+	inline P_API bool NearlyEqual(float a, float b, float tolerance = smallNumber)
 	{
 		return Abs(b - a) <= tolerance;
 	}
 
-	inline PIPE_API float Log(float k)
+	inline P_API float Log(float k)
 	{
 		return std::log(k);
 	}
-	inline PIPE_API float Log(float k, float base)
+	inline P_API float Log(float k, float base)
 	{
 		return Log(k) / Log(base);
 	}
-	inline PIPE_API double Log(double k)
+	inline P_API double Log(double k)
 	{
 		return std::log(k);
 	}
-	inline PIPE_API double Log(double k, double base)
+	inline P_API double Log(double k, double base)
 	{
 		return Log(k) / Log(base);
 	}
@@ -461,11 +460,11 @@ namespace p
 		return std::log(k);
 	}
 
-	inline PIPE_API float Log2(float k)
+	inline P_API float Log2(float k)
 	{
 		return std::log2f(k);
 	}
-	inline PIPE_API double Log2(double k)
+	inline P_API double Log2(double k)
 	{
 		return std::log2(k);
 	}
@@ -475,11 +474,11 @@ namespace p
 		return std::log2(double(k));
 	}
 
-	inline PIPE_API const float Exp2(const float k)
+	inline P_API const float Exp2(const float k)
 	{
 		return std::exp2(k);
 	}
-	inline PIPE_API const double Exp2(const double k)
+	inline P_API const double Exp2(const double k)
 	{
 		return std::exp2(k);
 	}
@@ -495,9 +494,9 @@ namespace p
 		return (value & (value - 1)) == T(0);
 	}
 
-	PIPE_API float ClampAngle(float a);
+	P_API float ClampAngle(float a);
 
-	PIPE_API float NormalizeAngle(float a);
+	P_API float NormalizeAngle(float a);
 
-	PIPE_API float ClampAngle(float a, float min, float max);
+	P_API float ClampAngle(float a, float min, float max);
 }    // namespace p

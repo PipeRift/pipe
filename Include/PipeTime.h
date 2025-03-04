@@ -9,7 +9,6 @@
 #include <chrono>
 
 
-
 namespace p
 {
 	namespace Chrono = std::chrono;
@@ -118,7 +117,7 @@ namespace p
 	 *
 	 * @see DateTime
 	 */
-	struct PIPE_API Timespan
+	struct P_API Timespan
 	{
 	private:
 #pragma warning(push)
@@ -743,7 +742,7 @@ namespace p
 	 * @see FDateRange
 	 * @see FTimespan
 	 */
-	struct PIPE_API DateTime
+	struct P_API DateTime
 	{
 	protected:
 		/** Holds the days per month in a non-leap year. */
@@ -1379,7 +1378,7 @@ namespace p
 	};
 
 
-	struct PIPE_API FrameTime
+	struct P_API FrameTime
 	{
 	protected:
 		DateTime previousTime;

@@ -12,26 +12,26 @@ namespace p
 {
 	/** Path API */
 
-	PIPE_API bool ExistsAsFile(const Path& path);
-	PIPE_API bool ExistsAsFolder(const Path& path);
-	PIPE_API SpaceInfo Space(const Path& target);
+	P_API bool ExistsAsFile(const Path& path);
+	P_API bool ExistsAsFolder(const Path& path);
+	P_API SpaceInfo Space(const Path& target);
 
 
 	/** String API */
 
-	PIPE_API bool CreateFolder(StringView path, bool bRecursive = false);
-	PIPE_API bool Delete(StringView path, bool bExcludeIfNotEmpty = true, bool bLogErrors = true);
+	P_API bool CreateFolder(StringView path, bool bRecursive = false);
+	P_API bool Delete(StringView path, bool bExcludeIfNotEmpty = true, bool bLogErrors = true);
 
 	// TODO: Implement plural copy and move
-	PIPE_API bool Copy(StringView origin, StringView destination,
+	P_API bool Copy(StringView origin, StringView destination,
 	    CopyOptions options = CopyOptions::Overwrite | CopyOptions::Recursive);
-	PIPE_API bool Move(StringView origin, StringView destination);
-	PIPE_API bool Rename(StringView origin, StringView destination);
+	P_API bool Move(StringView origin, StringView destination);
+	P_API bool Rename(StringView origin, StringView destination);
 
-	PIPE_API bool LoadStringFile(StringView path, String& result, sizet extraPadding = 0);
-	PIPE_API bool SaveStringFile(StringView path, StringView data);
+	P_API bool LoadStringFile(StringView path, String& result, sizet extraPadding = 0);
+	P_API bool SaveStringFile(StringView path, StringView data);
 
-	PIPE_API bool Exists(StringView path);
-	PIPE_API bool IsFolder(StringView path);
-	PIPE_API bool IsFile(StringView path);
+	P_API bool Exists(StringView path);
+	P_API bool IsFolder(StringView path);
+	P_API bool IsFile(StringView path);
 }    // namespace p

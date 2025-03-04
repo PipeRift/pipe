@@ -61,7 +61,7 @@ namespace p
 	/**
 	 * Implements a globally unique identifier.
 	 */
-	struct PIPE_API Guid
+	struct P_API Guid
 	{
 	public:
 		/** Default constructor. */
