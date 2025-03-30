@@ -9,12 +9,6 @@
 
 namespace p
 {
-	template<typename T>
-	constexpr void Swap(T& a, T& b) noexcept
-	{
-		std::swap(a, b);
-	}
-
 	// Forward arg as movable
 	template<typename T>
 	constexpr RemoveReference<T>&& Move(T&& arg) noexcept
@@ -39,12 +33,50 @@ namespace p
 
 	template<typename T, typename OtherT = T>
 	constexpr T Exchange(T& value, OtherT&& newValue) noexcept(
-	    IsMoveConstructible<T>&& IsAssignable<T&, OtherT>)
+	    IsMoveConstructible<T> && IsAssignable<T&, OtherT>)
 	{
 		// assign _New_val to _Val, return previous _Val
 		T oldValue = p::Forward<T>(value);
 		value      = p::Forward<OtherT>(newValue);
 		return oldValue;
+	}
+
+	template<typename T>
+	constexpr void Swap(T& a, T& b, T& tmp) noexcept
+	    requires(IsMoveConstructible<T> && IsMoveAssignable<T>)
+	{
+		tmp = Move(a);
+		a   = Move(b);
+		b   = Move(tmp);
+	}
+
+	template<typename T>
+	constexpr void Swap(T& a, T& b) noexcept
+	{
+		T tmp;
+		Swap(a, b, tmp);
+	}
+
+	template<typename T, sizet Size>
+	constexpr void Swap(T (&a)[Size], T (&b)[Size], T& tmp) noexcept
+	{
+		if (&a != &b)
+		{
+			T* first  = a;
+			T* last   = first + Size;
+			T* first2 = b;
+			for (; first != last; ++first, ++first2)
+			{
+				Swap(*first, *first2, tmp);
+			}
+		}
+	}
+
+	template<typename T, sizet Size>
+	constexpr void Swap(T (&a)[Size], T (&b)[Size]) noexcept
+	{
+		T tmp;
+		Swap(a, b, tmp);
 	}
 
 	[[noreturn]] inline void Unreachable()

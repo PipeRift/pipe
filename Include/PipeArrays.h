@@ -427,6 +427,29 @@ namespace p
 			}
 		}
 
+		constexpr i32 Rotate(i32 num)
+		{
+			if (IsEmpty())
+			{
+				return 0;
+			}
+			num %= Size();
+			if (num == 0)
+			{
+				return num;
+			}
+			else if (num < 0)
+			{
+				num += Size();
+			}
+
+			auto mid = begin() + num;
+			std::reverse(begin(), mid);
+			std::reverse(mid, end());
+			std::reverse(begin(), end());
+			return num;
+		}
+
 		template<typename Predicate>
 		void Sort(Predicate predicate)
 		{
