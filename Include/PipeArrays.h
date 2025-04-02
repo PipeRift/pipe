@@ -98,7 +98,7 @@ namespace p
 
 		constexpr TArrayIterator& operator++() noexcept
 		{
-			Verify();
+			VerifyOffset(1);
 			++ptr;
 			return *this;
 		}
@@ -112,7 +112,7 @@ namespace p
 
 		constexpr TArrayIterator& operator--() noexcept
 		{
-			Verify();
+			VerifyOffset(-1);
 			--ptr;
 			return *this;
 		}
