@@ -640,6 +640,42 @@ namespace p
 		{
 			return FindSorted(value, sortPredicate) != NO_INDEX;
 		}
+
+		constexpr const Type* Max()
+		{
+			const Type* latestMax = nullptr;
+			if (size > 0)
+			{
+				latestMax = &data[0];
+				for (i32 i = 1; i < size; ++i)
+				{
+					const Type& value = data[i];
+					if (value > *latestMax)
+					{
+						latestMax = &value;
+					}
+				}
+			}
+			return latestMax;
+		}
+
+		constexpr const Type* Min()
+		{
+			const Type* latestMin = nullptr;
+			if (size > 0)
+			{
+				latestMin = &data[0];
+				for (i32 i = 1; i < size; ++i)
+				{
+					const Type& value = data[i];
+					if (value < *latestMin)
+					{
+						latestMin = &value;
+					}
+				}
+			}
+			return latestMin;
+		}
 #pragma endregion Search
 
 		template<typename OtherType>
