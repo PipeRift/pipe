@@ -199,7 +199,7 @@ namespace p
 		{
 #if P_DEBUG
 			P_CheckMsg(ptr, "Iterator is null");
-			P_CheckMsg(range->Data() <= ptr && ptr < (range->Data() + range->Size()),
+			P_CheckMsg(range->Data() <= ptr && ptr <= (range->Data() + range->Size()),
 			    "Iterator is out of range");
 #endif
 		}
