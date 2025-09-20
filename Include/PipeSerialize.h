@@ -170,7 +170,7 @@ namespace p
 	P_API void Read(Reader& r, StringView& val);
 
 	template<typename T1, typename T2>
-	void Read(Reader& r, TPair<T1, T2>& val)
+	void Read(Reader& r, p::TPair<T1, T2>& val)
 	{
 		r.BeginObject();
 		r.Next("first", val.first);
@@ -275,10 +275,10 @@ namespace p
 		template<typename T>
 		void Serialize(const T& val)
 		{
-			// static_assert(Writable<T>,
-			//     "Type must be writable! No valid write function found. E.g: 'Write(Writer& w, "
-			//     "const T& value)'");
-			// if constexpr (Writable<T>)
+			static_assert(Writable<T>,
+			    "Type must be writable! No valid write function found. E.g: 'Write(Writer& w, "
+			    "const T& value)'");
+			if constexpr (Writable<T>)
 			{
 				Write(*this, val);
 			}
@@ -326,7 +326,7 @@ namespace p
 	P_API void Write(Writer& w, StringView val);
 
 	template<typename T1, typename T2>
-	void Write(Writer& w, TPair<T1, T2>& val)
+	void Write(Writer& w, const p::TPair<T1, T2>& val)
 	{
 		w.BeginObject();
 		w.Next("first", val.first);
@@ -472,7 +472,7 @@ namespace p
 	// and Write
 	template<typename T>
 	void Read(Reader& ct, T& val)
-	    requires(bool(TFlags<T>::HasSingleSerialize && TFlags<T>::HasMemberSerialize))
+	    requires(bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		val.Serialize(commonContext);
@@ -489,7 +489,7 @@ namespace p
 	// and Write
 	template<typename T>
 	void Write(Writer& ct, const T& val)
-	    requires(bool(TFlags<T>::HasSingleSerialize && TFlags<T>::HasMemberSerialize))
+	    requires(bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		const_cast<T&>(val).Serialize(commonContext);
