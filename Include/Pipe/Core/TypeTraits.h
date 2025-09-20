@@ -40,6 +40,19 @@ namespace p
 		template<>
 		struct TIsChar<const WideChar> : std::true_type
 		{};
+
+		// determine whether _Ty can be copy-initialized with {}
+		template<typename T, typename = void>
+		struct TIsImplicitlyDefaultConstructible : std::false_type
+		{};
+
+		template<typename T>
+		void TImplicitlyDefaultConstruct(const T&);
+
+		template<typename T>
+		struct TIsImplicitlyDefaultConstructible<T,
+		    std::void_t<decltype(ImplicitlyDefaultConstruct<T>({}))>> : std::true_type
+		{};
 	}    // namespace details
 
 	template<typename T>
@@ -83,6 +96,9 @@ namespace p
 
 	template<typename T>
 	concept IsDefaultConstructible = std::is_default_constructible_v<T>;
+	// Determine whether T can be copy-initialized with {}
+	template<typename T>
+	concept IsImplicitlyDefaultConstructible = details::TIsImplicitlyDefaultConstructible<T>::value;
 	template<typename T>
 	concept IsTriviallyDefaultConstructible = std::is_trivially_default_constructible_v<T>;
 
@@ -98,6 +114,8 @@ namespace p
 	template<typename T>
 	concept IsTriviallyCopyable = std::is_trivially_copyable_v<T>;
 
+	template<typename To, typename From>
+	concept IsConvertible = std::is_convertible_v<To, From>;
 
 	template<typename To, typename From>
 	concept IsAssignable = std::is_assignable_v<To, From>;

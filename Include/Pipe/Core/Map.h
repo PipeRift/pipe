@@ -39,7 +39,7 @@ namespace p
 		using KeyType   = Key;
 		using ValueType = Value;
 		using KeyEqual  = std::equal_to<>;
-		using Allocator = STLAllocator<TPair<Key, Value>>;
+		using Allocator = STLAllocator<std::pair<Key, Value>>;
 		using HashMapType =
 		    tsl::sparse_map<KeyType, ValueType, TMapHash<KeyType>, KeyEqual, Allocator>;
 
