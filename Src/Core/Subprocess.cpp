@@ -61,6 +61,7 @@ namespace p
 	{
 		uintptr_t Internal     = 0;
 		uintptr_t InternalHigh = 0;
+	#pragma warning(disable:4201)    // Avoid warning about nameless struct
 		union
 		{
 			struct
@@ -70,6 +71,7 @@ namespace p
 			} DUMMYSTRUCTNAME;
 			void* Pointer;
 		} DUMMYUNIONNAME;
+	#pragma warning(default:4201)
 
 		void* hEvent = nullptr;
 
