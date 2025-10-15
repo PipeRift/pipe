@@ -83,6 +83,28 @@ namespace p
 			return const_cast<Type&>(*Insert(value));
 		}
 
+		Iterator InsertOrAssign(Type&& value)
+		{
+			Iterator it = set.find(value);
+			if (it != end())
+			{
+				const_cast<Type&>(*it) = Move(value);
+				return it;
+			}
+			return set.insert(Move(value)).first;
+		}
+
+		Iterator InsertOrAssign(const Type& value)
+		{
+			Iterator it = set.find(value);
+			if (it != end())
+			{
+				const_cast<Type&>(*it) = value;
+				return it;
+			}
+			return set.insert(value).first;
+		}
+
 		void Append(const TSet<Type>& other)
 		{
 			if (other.Size() > 0)

@@ -108,6 +108,30 @@ namespace p
 			return map.insert({Move(key), ValueType{}}).first;
 		}
 
+		template<typename OtherT = ValueType>
+		TPair<Iterator, bool> InsertOrAssign(const KeyType& key, OtherT&& value)
+		{
+			return map.insert_or_assign(key, std::forward<OtherT>(value));
+		}
+
+		template<typename OtherT = ValueType>
+		TPair<Iterator, bool> InsertOrAssign(KeyType&& key, OtherT&& value)
+		{
+			return map.insert_or_assign(Move(key), Forward<OtherT>(value));
+		}
+
+		template<typename OtherT = ValueType>
+		Iterator InsertOrAssign(ConstIterator hint, const KeyType& key, OtherT&& value)
+		{
+			return map.insert_or_assign(hint, key, Forward<OtherT>(value));
+		}
+
+		template<typename OtherT = ValueType>
+		Iterator InsertOrAssign(ConstIterator hint, KeyType&& key, OtherT&& value)
+		{
+			return map.insert_or_assign(hint, Move(key), Forward<OtherT>(value));
+		}
+
 		void Append(const TMap<KeyType, ValueType>& other)
 		{
 			if (other.Size() > 0)
