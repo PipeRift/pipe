@@ -2269,7 +2269,7 @@ namespace p
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
 		if (bAdded)
 		{
-			ptr = MakeOwned<Static>(Forward<Static>(value));
+			ptr = MakeOwned<Static>(p::Forward<Static>(value));
 		}
 		return *ptr.GetUnsafe<Static>();
 	}
