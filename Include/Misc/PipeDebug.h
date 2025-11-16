@@ -40,7 +40,7 @@ namespace p
 		ChildrenCallback onDrawChildren;
 	};
 
-	using InspectionDebugFlags = u64;
+	using InspectionDebugFlags = u32;
 	enum InspectionDebugFlags_
 	{
 		IDF_None    = 0,         // -> No flags
@@ -887,7 +887,7 @@ namespace p
 				    ImGui::CalcTextSize(errorMsg) + ImGui::GetStyle().FramePadding * 2.0f;
 
 				ImGui::SetCursorPos(ImGui::GetCursorPos() + ((regionAvail - textSize) * 0.5f));
-				ImGui::Text(errorMsg);
+				ImGui::Text("%s", errorMsg);
 				ImGui::PopTextColor();
 			}
 
@@ -1217,11 +1217,12 @@ namespace p
 
 		if (ImGui::BeginPopup("Filter"))
 		{
-			ImGui::CheckboxFlags("Native", &reflectDbg.typeFlagsFilter, u64(TF_Native));
-			ImGui::CheckboxFlags("Enum", &reflectDbg.typeFlagsFilter, u64(TF_Enum));
-			ImGui::CheckboxFlags("Struct", &reflectDbg.typeFlagsFilter, u64(TF_Struct));
-			ImGui::CheckboxFlags("Object", &reflectDbg.typeFlagsFilter, u64(TF_Object));
-			ImGui::CheckboxFlags("Container", &reflectDbg.typeFlagsFilter, u64(TF_Container));
+			ImGui::CheckboxFlags("Native", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Native));
+			ImGui::CheckboxFlags("Enum", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Enum));
+			ImGui::CheckboxFlags("Struct", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Struct));
+			ImGui::CheckboxFlags("Object", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Object));
+			ImGui::CheckboxFlags(
+			    "Container", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Container));
 			ImGui::EndPopup();
 		}
 		if (ImGui::Button("Settings"))

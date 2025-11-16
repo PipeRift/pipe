@@ -9,11 +9,7 @@ namespace p::Strings
 	TOptional<T> InternalToNumber(StringView str)
 	{
 		T val;
-#if __cpp_lib_to_chars >= 202306L
-		if (std::from_chars(str.data(), str.data() + str.size(), val))
-#else
 		if (std::from_chars(str.data(), str.data() + str.size(), val).ec == std::errc{})
-#endif
 		{
 			return val;
 		}

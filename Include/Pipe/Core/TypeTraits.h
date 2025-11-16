@@ -89,8 +89,8 @@ namespace p
 	template<typename T>
 	concept IsTrivial = std::is_trivial_v<T>;
 
-	template<typename T>
-	concept IsConstructible = std::is_constructible_v<T>;
+	template<typename T, typename... Args>
+	concept IsConstructible = std::is_constructible_v<T, Args...>;
 	template<typename T>
 	concept IsTriviallyConstructible = std::is_trivially_constructible_v<T>;
 

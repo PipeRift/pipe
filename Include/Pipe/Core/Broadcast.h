@@ -116,7 +116,10 @@ namespace p
 			if (method)
 			{
 				EventHandle handle{};
-				rawListeners.Add({handle.Id(), Move(method), nullptr});
+				rawListeners.Add({
+				    {handle.Id(), Move(method)},
+                    nullptr
+                });
 				return handle;
 			}
 

@@ -12,7 +12,7 @@
 
 #pragma once
 
-#if _WIN32
+#if defined(_WIN32)
 	#ifndef WIN32_LEAN_AND_MEAN
 		#define WIN32_LEAN_AND_MEAN 1
 	#endif
@@ -27,14 +27,14 @@
 	#include <future>    // std::async
 
 
-#elif __EMSCRIPTEN__
+#elif defined(__EMSCRIPTEN__)
 	#include <emscripten.h>
 
 #else
 	#ifndef _POSIX_C_SOURCE
 		#define _POSIX_C_SOURCE 2    // for popen()
 	#endif
-	#ifdef __APPLE__
+	#if defined(__APPLE__)
 		#ifndef _DARWIN_C_SOURCE
 			#define _DARWIN_C_SOURCE
 		#endif
@@ -185,10 +185,10 @@ namespace pfd
 			// High level function to abort
 			bool kill();
 
-#if _WIN32
+#if defined(_WIN32)
 			void start_func(std::function<std::string(int*)> const& fun);
 			static BOOL CALLBACK enum_windows_callback(HWND hwnd, LPARAM lParam);
-#elif __EMSCRIPTEN__
+#elif defined(__EMSCRIPTEN__)
 			void start(int exit_code);
 #else
 			void start_process(std::vector<std::string> const& command);
@@ -204,13 +204,13 @@ namespace pfd
 			bool m_running = false;
 			std::string m_stdout;
 			int m_exit_code = -1;
-#if _WIN32
+#if defined(_WIN32)
 			std::future<std::string> m_future;
 			std::set<HWND> m_windows;
 			std::condition_variable m_cond;
 			std::mutex m_mutex;
 			DWORD m_tid;
-#elif __EMSCRIPTEN__ || __NX__
+#elif defined(__EMSCRIPTEN__) || __NX__
 			// FIXME: do something
 #else
 			pid_t m_pid = 0;
@@ -221,7 +221,7 @@ namespace pfd
 		class platform
 		{
 		protected:
-#if _WIN32
+#if defined(_WIN32)
 			// Helper class around LoadLibraryA() and GetProcAddress() with some safety
 			class dll
 			{
@@ -321,7 +321,7 @@ namespace pfd
 			std::string string_result();
 			std::vector<std::string> vector_result();
 
-#if _WIN32
+#if defined(_WIN32)
 			static int CALLBACK bffcallback(HWND hwnd, UINT uMsg, LPARAM, LPARAM pData);
 	#if PFD_HAS_IFILEDIALOG
 			std::string select_folder_vista(IFileDialog* ifd, bool force_path);
@@ -436,7 +436,7 @@ namespace pfd
 	namespace internal
 	{
 
-	#if _WIN32
+	#if defined(_WIN32)
 		static inline std::wstring str2wstr(std::string const& str)
 		{
 			int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
@@ -492,10 +492,10 @@ namespace pfd
 
 		static inline bool is_directory(std::string const& path)
 		{
-	#if _WIN32
+	#if defined(_WIN32)
 			auto attr = GetFileAttributesA(path.c_str());
 			return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY);
-	#elif __EMSCRIPTEN__
+	#elif defined(__EMSCRIPTEN__)
 			// TODO
 			return false;
 	#else
@@ -533,14 +533,18 @@ namespace pfd
 		flags(flag::is_scanned) &= !resync;
 
 		if (flags(flag::is_scanned))
+		{
 			return;
+		}
 
 		auto pfd_verbose = internal::getenv("PFD_VERBOSE");
 		auto match_no    = std::regex("(|0|no|false)", std::regex_constants::icase);
 		if (!std::regex_match(pfd_verbose, match_no))
+		{
 			flags(flag::is_verbose) = true;
+		}
 
-	#if _WIN32
+	#if defined(_WIN32)
 		flags(flag::is_vista) = internal::is_vista();
 	#elif !__APPLE__
 		flags(flag::has_zenity) = check_program("zenity");
@@ -553,9 +557,13 @@ namespace pfd
 		{
 			auto desktop_name = internal::getenv("XDG_SESSION_DESKTOP");
 			if (desktop_name == std::string("gnome"))
+			{
 				flags(flag::has_kdialog) = false;
+			}
 			else if (desktop_name == std::string("KDE"))
+			{
 				flags(flag::has_zenity) = false;
+			}
 		}
 	#endif
 
@@ -564,11 +572,11 @@ namespace pfd
 
 	inline bool settings::available()
 	{
-	#if _WIN32
+	#if defined(_WIN32)
 		return true;
-	#elif __APPLE__
+	#elif defined(__APPLE__)
 		return true;
-	#elif __EMSCRIPTEN__
+	#elif defined(__EMSCRIPTEN__)
 		// FIXME: Return true after implementation is complete.
 		return false;
 	#else
@@ -591,10 +599,10 @@ namespace pfd
 	// Check whether a program is present using “which”.
 	inline bool settings::check_program(std::string const& program)
 	{
-	#if _WIN32
+	#if defined(_WIN32)
 		(void)program;
 		return false;
-	#elif __EMSCRIPTEN__
+	#elif defined(__EMSCRIPTEN__)
 		(void)program;
 		return false;
 	#else
@@ -608,7 +616,7 @@ namespace pfd
 
 	inline bool settings::is_osascript() const
 	{
-	#ifdef __APPLE__
+	#if defined(__APPLE__)
 		return true;
 	#else
 		return false;
@@ -639,11 +647,13 @@ namespace pfd
 	// path implementation
 	inline std::string path::home()
 	{
-	#if _WIN32
+	#if defined(_WIN32)
 		// First try the USERPROFILE environment variable
 		auto user_profile = internal::getenv("USERPROFILE");
 		if (user_profile.size() > 0)
+		{
 			return user_profile;
+		}
 		// Otherwise, try GetUserProfileDirectory()
 		HANDLE token       = nullptr;
 		DWORD len          = MAX_PATH;
@@ -656,33 +666,41 @@ namespace pfd
 			get_user_profile_directory(token, buf, &len);
 			CloseHandle(token);
 			if (*buf)
+			{
 				return buf;
+			}
 		}
-	#elif __EMSCRIPTEN__
+	#elif defined(__EMSCRIPTEN__)
 		return "/";
 	#else
 		// First try the HOME environment variable
 		auto home = internal::getenv("HOME");
 		if (home.size() > 0)
+		{
 			return home;
+		}
 		// Otherwise, try getpwuid_r()
 		size_t len = 4096;
 		#if defined(_SC_GETPW_R_SIZE_MAX)
 		auto size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
 		if (size_max != -1)
+		{
 			len = size_t(size_max);
+		}
 		#endif
 		std::vector<char> buf(len);
 		struct passwd pwd, *result;
 		if (getpwuid_r(getuid(), &pwd, buf.data(), buf.size(), &result) == 0)
+		{
 			return result->pw_dir;
+		}
 	#endif
 		return "/";
 	}
 
 	inline std::string path::separator()
 	{
-	#if _WIN32
+	#if defined(_WIN32)
 		return "\\";
 	#else
 		return "/";
@@ -695,27 +713,31 @@ namespace pfd
 	{
 		stop();
 		if (exit_code)
+		{
 			*exit_code = m_exit_code;
+		}
 		return m_stdout;
 	}
 
 	inline bool internal::executor::kill()
 	{
-	#if _WIN32
+	#if defined(_WIN32)
 		if (m_future.valid())
 		{
 			// Close all windows that weren’t open when we started the future
 			auto previous_windows = m_windows;
 			EnumWindows(&enum_windows_callback, (LPARAM)this);
 			for (auto hwnd : m_windows)
+			{
 				if (previous_windows.find(hwnd) == previous_windows.end())
 				{
 					SendMessage(hwnd, WM_CLOSE, 0, 0);
 					// Also send IDNO in case of a Yes/No or Abort/Retry/Ignore messagebox
 					SendMessage(hwnd, WM_COMMAND, IDNO, 0);
 				}
+			}
 		}
-	#elif __EMSCRIPTEN__ || __NX__
+	#elif defined(__EMSCRIPTEN__) || __NX__
 		// FIXME: do something
 		return false;    // cannot kill
 	#else
@@ -725,7 +747,7 @@ namespace pfd
 		return true;
 	}
 
-	#if _WIN32
+	#if defined(_WIN32)
 	inline BOOL CALLBACK internal::executor::enum_windows_callback(HWND hwnd, LPARAM lParam)
 	{
 		auto that = (executor*)lParam;
@@ -733,12 +755,14 @@ namespace pfd
 		DWORD pid;
 		auto tid = GetWindowThreadProcessId(hwnd, &pid);
 		if (tid == that->m_tid)
+		{
 			that->m_windows.insert(hwnd);
+		}
 		return TRUE;
 	}
 	#endif
 
-	#if _WIN32
+	#if defined(_WIN32)
 	inline void internal::executor::start_func(std::function<std::string(int*)> const& fun)
 	{
 		stop();
@@ -757,7 +781,7 @@ namespace pfd
 		m_running = true;
 	}
 
-	#elif __EMSCRIPTEN__
+	#elif defined(__EMSCRIPTEN__)
 	inline void internal::executor::start(int exit_code)
 	{
 		m_exit_code = exit_code;
@@ -772,11 +796,15 @@ namespace pfd
 
 		int in[2], out[2];
 		if (pipe(in) != 0 || pipe(out) != 0)
+		{
 			return;
+		}
 
 		m_pid = fork();
 		if (m_pid < 0)
+		{
 			return;
+		}
 
 		close(in[m_pid ? 0 : 1]);
 		close(out[m_pid ? 1 : 0]);
@@ -819,9 +847,11 @@ namespace pfd
 	inline bool internal::executor::ready(int timeout /* = default_wait_timeout */)
 	{
 		if (!m_running)
+		{
 			return true;
+		}
 
-	#if _WIN32
+	#if defined(_WIN32)
 		if (m_future.valid())
 		{
 			auto status = m_future.wait_for(std::chrono::milliseconds(timeout));
@@ -841,7 +871,7 @@ namespace pfd
 
 			m_stdout = m_future.get();
 		}
-	#elif __EMSCRIPTEN__ || __NX__
+	#elif defined(__EMSCRIPTEN__) || __NX__
 		// FIXME: do something
 		(void)timeout;
 	#else
@@ -878,12 +908,14 @@ namespace pfd
 	{
 		// Loop until the user closes the dialog
 		while (!ready())
+		{
 			;
+		}
 	}
 
 	// dll implementation
 
-	#if _WIN32
+	#if defined(_WIN32)
 	inline internal::platform::dll::dll(std::string const& name)
 	    : handle(::LoadLibraryA(name.c_str()))
 	{}
@@ -891,13 +923,15 @@ namespace pfd
 	inline internal::platform::dll::~dll()
 	{
 		if (handle)
+		{
 			::FreeLibrary(handle);
+		}
 	}
 	#endif    // _WIN32
 
 	// ole32_dll implementation
 
-	#if _WIN32
+	#if defined(_WIN32)
 	inline internal::platform::ole32_dll::ole32_dll() : dll("ole32.dll")
 	{
 		// Use COINIT_MULTITHREADED because COINIT_APARTMENTTHREADED causes crashes.
@@ -909,7 +943,9 @@ namespace pfd
 	inline internal::platform::ole32_dll::~ole32_dll()
 	{
 		if (is_initialized())
+		{
 			proc<void WINAPI()>(*this, "CoUninitialize")();
+		}
 	}
 
 	inline bool internal::platform::ole32_dll::is_initialized()
@@ -920,14 +956,16 @@ namespace pfd
 
 	// new_style_context implementation
 
-	#if _WIN32
+	#if defined(_WIN32)
 	inline internal::platform::new_style_context::new_style_context()
 	{
 		// Only create one activation context for the whole app lifetime.
 		static HANDLE hctx = create();
 
 		if (hctx != INVALID_HANDLE_VALUE)
+		{
 			ActivateActCtx(hctx, &m_cookie);
+		}
 	}
 
 	inline internal::platform::new_style_context::~new_style_context()
@@ -985,7 +1023,7 @@ namespace pfd
 
 	inline std::vector<std::string> internal::dialog::desktop_helper() const
 	{
-	#ifdef __APPLE__
+	#if defined(__APPLE__)
 		return {"osascript"};
 	#else
 		return {flags(flag::has_zenity) ? "zenity"
@@ -1020,7 +1058,7 @@ namespace pfd
 			case icon::question: return "question";
 			// Zenity wants "information" but WinForms wants "info"
 			/* case icon::info: */ default:
-	#if _WIN32
+	#if defined(_WIN32)
 				return "info";
 	#else
 				return "information";
@@ -1033,7 +1071,9 @@ namespace pfd
 	{
 		int not_first = 0;
 		for (auto& e : v)
+		{
 			s << (not_first++ ? " " : "") << e;
+		}
 		return s;
 	}
 
@@ -1067,7 +1107,7 @@ namespace pfd
 	    std::string const& default_path /* = "" */,
 	    std::vector<std::string> const& filters /* = {} */, opt options /* = opt::none */)
 	{
-	#if _WIN32
+	#if defined(_WIN32)
 		std::string filter_list;
 		std::regex whitespace("  *");
 		for (size_t i = 0; i + 1 < filters.size(); i += 2)
@@ -1213,7 +1253,7 @@ namespace pfd
 
 			return "";
 		});
-	#elif __EMSCRIPTEN__
+	#elif defined(__EMSCRIPTEN__)
 		// FIXME: do something
 		(void)in_type;
 		(void)title;
@@ -1233,7 +1273,9 @@ namespace pfd
 				default:
 					script += " file";
 					if (options & opt::multiselect)
+					{
 						script += " with multiple selections allowed";
+					}
 					break;
 				case type::folder: script += " folder"; break;
 			}
@@ -1241,9 +1283,13 @@ namespace pfd
 			if (default_path.size())
 			{
 				if (in_type == type::folder || is_directory(default_path))
+				{
 					script += " default location ";
+				}
 				else
+				{
 					script += " default name ";
+				}
 				script += osascript_quote(default_path);
 			}
 
@@ -1254,7 +1300,9 @@ namespace pfd
 				// Concatenate all user-provided filter patterns
 				std::string patterns;
 				for (size_t i = 0; i < filters.size() / 2; ++i)
+				{
 					patterns += " " + filters[2 * i + 1];
+				}
 
 				// Split the pattern list to check whether "*" is in there; if it
 				// is, we have to disable filters because there is no mechanism in
@@ -1268,9 +1316,13 @@ namespace pfd
 				{
 					auto pat = iter->str();
 					if (pat == "*" || pat == "*.*")
+					{
 						has_filter = false;
+					}
 					else if (internal::starts_with(pat, "*."))
+					{
 						filter_list += "," + osascript_quote(pat.substr(2, pat.size() - 2));
+					}
 				}
 
 				if (has_filter && filter_list.size() > 0)
@@ -1309,7 +1361,9 @@ namespace pfd
 			auto filename_arg = "--filename=" + default_path;
 			if (in_type != type::folder && !ends_with(default_path, "/")
 			    && internal::is_directory(default_path))
+			{
 				filename_arg += "/";
+			}
 			command.push_back(filename_arg);
 
 			command.push_back("--title");
@@ -1323,13 +1377,21 @@ namespace pfd
 			}
 
 			if (in_type == type::save)
+			{
 				command.push_back("--save");
+			}
 			if (in_type == type::folder)
+			{
 				command.push_back("--directory");
+			}
 			if (!(options & opt::force_overwrite))
+			{
 				command.push_back("--confirm-overwrite");
+			}
 			if (options & opt::multiselect)
+			{
 				command.push_back("--multiple");
+			}
 		}
 		else if (is_kdialog())
 		{
@@ -1349,7 +1411,9 @@ namespace pfd
 
 			std::string filter;
 			for (size_t i = 0; i < filters.size() / 2; ++i)
+			{
 				filter += (i == 0 ? "" : " | ") + filters[2 * i] + "(" + filters[2 * i + 1] + ")";
+			}
 			command.push_back(filter);
 
 			command.push_back("--title");
@@ -1357,7 +1421,9 @@ namespace pfd
 		}
 
 		if (flags(flag::is_verbose))
+		{
 			std::cerr << "pfd: " << command << std::endl;
+		}
 
 		m_async->start_process(command);
 	#endif
@@ -1365,21 +1431,23 @@ namespace pfd
 
 	inline std::string internal::file_dialog::string_result()
 	{
-	#if _WIN32
+	#if defined(_WIN32)
 		return m_async->result();
 	#else
 		auto ret = m_async->result();
 		// Strip potential trailing newline (zenity). Also strip trailing slash
 		// added by osascript for consistency with other backends.
 		while (!ret.empty() && (ret.back() == '\n' || ret.back() == '/'))
+		{
 			ret.pop_back();
+		}
 		return ret;
 	#endif
 	}
 
 	inline std::vector<std::string> internal::file_dialog::vector_result()
 	{
-	#if _WIN32
+	#if defined(_WIN32)
 		m_async->result();
 		return m_vector_result;
 	#else
@@ -1390,7 +1458,9 @@ namespace pfd
 			// Split result along newline characters
 			auto i = result.find('\n');
 			if (i == 0 || i == std::string::npos)
+			{
 				break;
+			}
 			ret.push_back(result.substr(0, i));
 			result = result.substr(i + 1, result.size());
 		}
@@ -1398,7 +1468,7 @@ namespace pfd
 	#endif
 	}
 
-	#if _WIN32
+	#if defined(_WIN32)
 	// Use a static function to pass as BFFCALLBACK for legacy folder select
 	inline int CALLBACK internal::file_dialog::bffcallback(
 	    HWND hwnd, UINT uMsg, LPARAM, LPARAM pData)
@@ -1427,7 +1497,9 @@ namespace pfd
 		    shell32, "SHCreateItemFromParsingName");
 
 		if (!create_item)
+		{
 			return "";
+		}
 
 		auto hr = create_item(m_wdefault_path.c_str(), nullptr, IID_PPV_ARGS(&folder));
 
@@ -1440,9 +1512,13 @@ namespace pfd
 		if (SUCCEEDED(hr))
 		{
 			if (force_path)
+			{
 				ifd->SetFolder(folder);
+			}
 			else
+			{
 				ifd->SetDefaultFolder(folder);
+			}
 			folder->Release();
 		}
 
@@ -1474,7 +1550,9 @@ namespace pfd
 						std::cerr << "pfd: failed to get path for " << name << std::endl;
 					}
 					else
+					{
 						std::cerr << "pfd: item of unknown type selected" << std::endl;
+					}
 				}
 
 				item->Release();
@@ -1493,10 +1571,12 @@ namespace pfd
 	inline notify::notify(
 	    std::string const& title, std::string const& message, icon _icon /* = icon::info */)
 	{
-		if (_icon == icon::question)    // Not supported by notifications
+		if (_icon == icon::question)
+		{    // Not supported by notifications
 			_icon = icon::info;
+		}
 
-	#if _WIN32
+	#if defined(_WIN32)
 		// Use a static shared pointer for notify_icon so that we can delete
 		// it whenever we need to display a new one, and we can also wait
 		// until the program has finished running.
@@ -1567,7 +1647,7 @@ namespace pfd
 
 		// Display the new icon
 		Shell_NotifyIconW(NIM_ADD, nid.get());
-	#elif __EMSCRIPTEN__
+	#elif defined(__EMSCRIPTEN__)
 		// FIXME: do something
 		(void)title;
 		(void)message;
@@ -1600,7 +1680,9 @@ namespace pfd
 		}
 
 		if (flags(flag::is_verbose))
+		{
 			std::cerr << "pfd: " << command << std::endl;
+		}
 
 		m_async->start_process(command);
 	#endif
@@ -1611,7 +1693,7 @@ namespace pfd
 	inline message::message(std::string const& title, std::string const& text,
 	    choice _choice /* = choice::ok_cancel */, icon _icon /* = icon::info */)
 	{
-	#if _WIN32
+	#if defined(_WIN32)
 		// Use MB_SYSTEMMODAL rather than MB_TOPMOST to ensure the message window is brought
 		// to front. See https://github.com/samhocevar/portable-file-dialogs/issues/52
 		UINT style = MB_SYSTEMMODAL;
@@ -1658,7 +1740,7 @@ namespace pfd
 			return "";
 		});
 
-	#elif __EMSCRIPTEN__
+	#elif defined(__EMSCRIPTEN__)
 		std::string full_message;
 		switch (_icon)
 		{
@@ -1679,7 +1761,9 @@ namespace pfd
 		m_async->start(EM_ASM_INT(
 		    {
 			    if ($1)
+			    {
 				    return window.confirm(UTF8ToString($0)) ? 0 : -1;
+			    }
 			    alert(UTF8ToString($0));
 			    return 0;
 		    },
@@ -1813,10 +1897,14 @@ namespace pfd
 			{
 				std::string flag = "--";
 				if (_icon == icon::warning || _icon == icon::error)
+				{
 					flag += "warning";
+				}
 				flag += "yesno";
 				if (_choice == choice::yes_no_cancel)
+				{
 					flag += "cancel";
+				}
 				command.push_back(flag);
 				if (_choice == choice::yes_no || _choice == choice::yes_no_cancel)
 				{
@@ -1831,11 +1919,15 @@ namespace pfd
 
 			// Must be after the above part
 			if (_choice == choice::ok_cancel)
+			{
 				command.insert(command.end(), {"--yes-label", "OK", "--no-label", "Cancel"});
+			}
 		}
 
 		if (flags(flag::is_verbose))
+		{
 			std::cerr << "pfd: " << command << std::endl;
+		}
 
 		m_async->start_process(command);
 	#endif
@@ -1848,21 +1940,37 @@ namespace pfd
 		// osascript will say "button returned:Cancel\n"
 		// and others will just say "Cancel\n"
 		if (internal::ends_with(ret, "Cancel\n"))
+		{
 			return button::cancel;
+		}
 		if (internal::ends_with(ret, "OK\n"))
+		{
 			return button::ok;
+		}
 		if (internal::ends_with(ret, "Yes\n"))
+		{
 			return button::yes;
+		}
 		if (internal::ends_with(ret, "No\n"))
+		{
 			return button::no;
+		}
 		if (internal::ends_with(ret, "Abort\n"))
+		{
 			return button::abort;
+		}
 		if (internal::ends_with(ret, "Retry\n"))
+		{
 			return button::retry;
+		}
 		if (internal::ends_with(ret, "Ignore\n"))
+		{
 			return button::ignore;
+		}
 		if (m_mappings.count(exit_code) != 0)
+		{
 			return m_mappings[exit_code];
+		}
 		return exit_code == 0 ? button::ok : button::cancel;
 	}
 
