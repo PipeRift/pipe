@@ -1152,7 +1152,7 @@ namespace p
 #pragma region Removals
 	public:
 		/**
-		 * Delete the first item that match another provided item
+		 * Delete the first item that matches another item
 		 * @return number of deleted items
 		 */
 		i32 Remove(const Type& item, bool shouldShrink = true)
@@ -1160,12 +1160,73 @@ namespace p
 			return RemoveAt(Super::FindIndex(item), shouldShrink);
 		}
 
+		/**
+		 * Delete the first item that matches another item by swapping with the last.
+		 * Doesn't preserve order.
+		 * @return number of deleted items
+		 */
+		i32 RemoveSwap(const Type& item, bool shouldShrink = true)
+		{
+			return RemoveAtSwap(Super::FindIndex(item), shouldShrink);
+		}
+
+		/**
+		 * Delete the first items that match another list of items.
+		 * NOTE: Make sure you need this behavior instead of RemoveAll().
+		 * @return number of deleted items
+		 */
+		i32 Remove(const IArray<const Type>& items, bool shouldShrink = true)
+		{
+			const i32 lastSize = Super::size;
+			for (const auto& item : items)
+			{
+				RemoveAt(Super::FindIndex(item), false);
+			}
+			if (shouldShrink)
+			{
+				Shrink();
+			}
+			return lastSize - Super::size;
+		}
 		i32 Remove(const IArray<Mut<Type>>& items, bool shouldShrink = true)
+		{
+			return Remove(reinterpret_cast<const IArray<const Type>&>(items), shouldShrink);
+		}
+
+		/**
+		 * Delete the first items that match another list of items by swapping with the last.
+		 * Doesn't preserve order.
+		 * NOTE: Make sure you need this behavior instead of RemoveAll().
+		 * @return number of deleted items
+		 */
+		i32 RemoveSwap(const IArray<const Type>& items, bool shouldShrink = true)
+		{
+			const i32 lastSize = Super::size;
+			for (const auto& item : items)
+			{
+				RemoveAtSwap(Super::FindIndex(item), false);
+			}
+			if (shouldShrink)
+			{
+				Shrink();
+			}
+			return lastSize - Super::size;
+		}
+		i32 RemoveSwap(const IArray<Mut<Type>>& items, bool shouldShrink = true)
+		{
+			return RemoveSwap(reinterpret_cast<const IArray<const Type>&>(items), shouldShrink);
+		}
+
+		/**
+		 * Delete all items that match another item
+		 * @return number of deleted items
+		 */
+		i32 RemoveAll(const Type& item, bool shouldShrink = true)
 		{
 			const i32 lastSize = Super::size;
 			for (i32 i = 0; i < Super::size; ++i)
 			{
-				if (items.Contains(Super::data[i]))
+				if (item == Super::data[i])
 				{
 					RemoveAtUnsafe(i, false);
 					--i;    // Repeat same index
@@ -1178,7 +1239,34 @@ namespace p
 			return lastSize - Super::size;
 		}
 
-		i32 Remove(const IArray<const Type>& items, bool shouldShrink = true)
+		/**
+		 * Delete all items that match another item by swapping with the last.
+		 * Doesn't preserve order.
+		 * @return number of deleted items
+		 */
+		i32 RemoveAllSwap(const Type& item, bool shouldShrink = true)
+		{
+			const i32 lastSize = Super::size;
+			for (i32 i = 0; i < Super::size; ++i)
+			{
+				if (item == Super::data[i])
+				{
+					RemoveAtSwapUnsafe(i, false);
+					--i;    // Repeat same index
+				}
+			}
+			if (shouldShrink)
+			{
+				Shrink();
+			}
+			return lastSize - Super::size;
+		}
+
+		/**
+		 * Delete all items that match another list of items.
+		 * @return number of deleted items
+		 */
+		i32 RemoveAll(const IArray<const Type>& items, bool shouldShrink = true)
 		{
 			const i32 lastSize = Super::size;
 			for (i32 i = 0; i < Super::size; ++i)
@@ -1195,6 +1283,38 @@ namespace p
 			}
 			return lastSize - Super::size;
 		}
+		i32 RemoveAll(const IArray<Mut<Type>>& items, bool shouldShrink = true)
+		{
+			return RemoveAll(reinterpret_cast<const IArray<const Type>&>(items), shouldShrink);
+		}
+
+		/**
+		 * Delete all items that match another list of items by swapping with the last.
+		 * Doesn't preserve order.
+		 * @return number of deleted items
+		 */
+		i32 RemoveAllSwap(const IArray<const Type>& items, bool shouldShrink = true)
+		{
+			const i32 lastSize = Super::size;
+			for (i32 i = 0; i < Super::size; ++i)
+			{
+				if (items.Contains(Super::data[i]))
+				{
+					RemoveAtSwapUnsafe(i, false);
+					--i;    // Repeat same index
+				}
+			}
+			if (shouldShrink)
+			{
+				Shrink();
+			}
+			return lastSize - Super::size;
+		}
+		i32 RemoveAllSwap(const IArray<Mut<Type>>& items, bool shouldShrink = true)
+		{
+			return RemoveAllSwap(reinterpret_cast<const IArray<const Type>&>(items), shouldShrink);
+		}
+
 
 		// Removes an item assuming the array is sorted
 		template<typename OtherType, typename SortPredicate = TLess<>>
