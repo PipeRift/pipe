@@ -1491,6 +1491,18 @@ namespace p
 			return GetPool<const C>()->Size();
 		}
 
+		template<typename C>
+		void ClearPool() const
+		{
+			GetPool<C>()->Clear();
+		}
+
+		template<typename... C>
+		void ClearPool() const requires(sizeof...(C) > 1)
+		{
+			(ClearPool<C>(), ...);
+		}
+
 		EntityContext& GetContext() const
 		{
 			return context;
