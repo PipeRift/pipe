@@ -210,7 +210,7 @@ namespace pfd
 			std::condition_variable m_cond;
 			std::mutex m_mutex;
 			DWORD m_tid;
-#elif defined(__EMSCRIPTEN__) || __NX__
+#elif defined(__EMSCRIPTEN__) || defined(__NX__)
 			// FIXME: do something
 #else
 			pid_t m_pid = 0;
@@ -222,7 +222,7 @@ namespace pfd
 		{
 		protected:
 #if defined(_WIN32)
-			// Helper class around LoadLibraryA() and GetProcAddress() with some safety
+			// Helper class around LoadLibraryA() and GetProcAddress() wi#if _MSC_VERth some safety
 			class dll
 			{
 			public:
@@ -508,7 +508,7 @@ namespace pfd
 
 		static inline std::string getenv(std::string const& str)
 		{
-	#if _MSC_VER
+	#if defined(_MSC_VER)
 			char* buf   = nullptr;
 			size_t size = 0;
 			if (_dupenv_s(&buf, &size, str.c_str()) == 0 && buf)
@@ -546,7 +546,7 @@ namespace pfd
 
 	#if defined(_WIN32)
 		flags(flag::is_vista) = internal::is_vista();
-	#elif !__APPLE__
+	#elif !defined(__APPLE__)
 		flags(flag::has_zenity) = check_program("zenity");
 		flags(flag::has_matedialog) = check_program("matedialog");
 		flags(flag::has_qarma) = check_program("qarma");
@@ -737,7 +737,7 @@ namespace pfd
 				}
 			}
 		}
-	#elif defined(__EMSCRIPTEN__) || __NX__
+	#elif defined(__EMSCRIPTEN__) || defined(__NX__)
 		// FIXME: do something
 		return false;    // cannot kill
 	#else
@@ -871,7 +871,7 @@ namespace pfd
 
 			m_stdout = m_future.get();
 		}
-	#elif defined(__EMSCRIPTEN__) || __NX__
+	#elif defined(__EMSCRIPTEN__) || defined(__NX__)
 		// FIXME: do something
 		(void)timeout;
 	#else
