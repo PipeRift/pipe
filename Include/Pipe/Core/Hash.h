@@ -12,6 +12,7 @@ namespace p
 {
 	P_API sizet HashBytes(void const* ptr, sizet const len);
 	P_API sizet HashInt(u64 x);
+	P_API sizet HashCombine(sizet a, sizet b);
 
 
 	// FNV String hash

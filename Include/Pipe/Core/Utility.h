@@ -33,7 +33,7 @@ namespace p
 
 	template<typename T, typename OtherT = T>
 	constexpr T Exchange(T& value, OtherT&& newValue) noexcept(
-	    IsMoveConstructible<T> && IsAssignable<T&, OtherT>)
+	    IsMoveConstructible<T>&& IsAssignable<T&, OtherT>)
 	{
 		// assign _New_val to _Val, return previous _Val
 		T oldValue = p::Forward<T>(value);
