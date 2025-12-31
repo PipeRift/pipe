@@ -67,26 +67,27 @@ namespace p
 		//	x ^= x >> 27;
 		//
 		// (https://mostlymangling.blogspot.com/2019/12/stronger-better-morer-moremur-better.html)
-		constexpr sizet HashMix(sizet x) requires(Limits<sizet>::digits == 64)
+		constexpr sizet HashMix(sizet x)
 		{
-			constexpr u64 m = 0xe9846af9b1a615d;
-			x ^= x >> 32;
-			x *= m;
-			x ^= x >> 32;
-			x *= m;
-			x ^= x >> 28;
-			return x;
-		}
-
-		constexpr sizet HashMix(sizet x) requires(Limits<sizet>::digits == 32)
-		{
-			constexpr u32 m1 = 0x21f0aaad;
-			constexpr u32 m2 = 0x735a2d97;
-			x ^= x >> 16;
-			x *= m1;
-			x ^= x >> 15;
-			x *= m2;
-			x ^= x >> 15;
+			if constexpr (Limits<sizet>::digits == 64)
+			{    // 64 bit mixing
+				constexpr u64 m = 0xe9846af9b1a615d;
+				x ^= x >> 32;
+				x *= m;
+				x ^= x >> 32;
+				x *= m;
+				x ^= x >> 28;
+			}
+			else
+			{    // 32 bit mixing
+				constexpr u32 m1 = 0x21f0aaad;
+				constexpr u32 m2 = 0x735a2d97;
+				x ^= x >> 16;
+				x *= m1;
+				x ^= x >> 15;
+				x *= m2;
+				x ^= x >> 15;
+			}
 			return x;
 		}
 	}    // namespace detail
