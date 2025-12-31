@@ -503,7 +503,8 @@ namespace p
 
 
 #pragma region Search
-		Iterator FindIt(const Type& value) const
+		template<typename T = Type>
+		Iterator FindIt(const T& value) const
 		{
 			for (Type *p = data, *end = data + size; p != end; ++p)
 			{
@@ -515,7 +516,7 @@ namespace p
 			return end();
 		}
 
-		Iterator FindIt(TFunction<bool(const Type&)> cb) const
+		Iterator FindItIf(TFunction<bool(const Type&)> cb) const
 		{
 			for (Type *p = data, *end = data + size; p != end; ++p)
 			{
@@ -527,7 +528,8 @@ namespace p
 			return end();
 		}
 
-		i32 FindIndex(const Type& value) const
+		template<typename T = Type>
+		i32 FindIndex(const T& value) const
 		{
 			ConstIterator found = FindIt(value);
 			if (found != end())
@@ -537,9 +539,9 @@ namespace p
 			return NO_INDEX;
 		}
 
-		i32 FindIndex(TFunction<bool(const Type&)> cb) const
+		i32 FindIndexIf(TFunction<bool(const Type&)> cb) const
 		{
-			ConstIterator found = FindIt(Move(cb));
+			ConstIterator found = FindItIf(Move(cb));
 			if (found != end())
 			{
 				return i32(found - begin());
@@ -547,28 +549,30 @@ namespace p
 			return NO_INDEX;
 		}
 
-		Type* Find(const Type& value) const
+		template<typename T = Type>
+		Type* Find(const T& value) const
 		{
 			Iterator it = FindIt(value);
 			return it != end() ? &*it : nullptr;
 		}
 
-		Type* Find(TFunction<bool(const Type&)> cb) const
+		Type* FindIf(TFunction<bool(const Type&)> cb) const
 		{
-			Iterator it = FindIt(Move(cb));
+			Iterator it = FindItIf(Move(cb));
 			return it != end() ? &*it : nullptr;
 		}
 
-		Type& FindRef(const Type& value) const
+		template<typename T = Type>
+		Type& FindRef(const T& value) const
 		{
 			Iterator it = FindIt(value);
 			P_Check(it != end());
 			return *it;
 		}
 
-		Type& FindRef(TFunction<bool(const Type&)> cb) const
+		Type& FindRefIf(TFunction<bool(const Type&)> cb) const
 		{
-			Iterator it = FindIt(Move(cb));
+			Iterator it = FindItIf(Move(cb));
 			P_Check(it != end());
 			return *it;
 		}
