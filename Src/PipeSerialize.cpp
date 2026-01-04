@@ -321,13 +321,23 @@ namespace p
 
 
 #pragma region JsonFormat
+	static constexpr StringView emptyJSON{"{}"};
 	JsonFormatReader::JsonFormatReader(StringView data)
 	{
+		if (data.empty())
+		{
+			data = emptyJSON;
+		}
 		InternalInit((char*)data.data(), data.length(), false);
 	}
 
 	JsonFormatReader::JsonFormatReader(String& data)
 	{
+		if (data.empty())
+		{
+			data.append(emptyJSON);
+		}
+
 		// Ensure there is at least 4 bytes of extra memory at the end for insitu reading.
 		if (data.capacity() - data.size() < 4)
 		{
