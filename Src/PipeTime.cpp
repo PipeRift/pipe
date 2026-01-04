@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "PipeTime.h"
 
@@ -241,10 +241,14 @@ namespace p
 		u32 Hour = GetHour();
 
 		if (Hour < 1)
+		{
 			return 12;
+		}
 
 		if (Hour > 12)
+		{
 			return (Hour - 12);
+		}
 
 		return Hour;
 	}

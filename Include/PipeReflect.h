@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
@@ -677,9 +677,11 @@ public:
                                                                                                   \
 	static void __BuildProperty(p::MetaCounter<id_name>)                                          \
 	{                                                                                             \
-		p::AddTypeProperty<decltype(name)>([](void* instance) {                                   \
+		p::AddTypeProperty<decltype(name)>(                                                       \
+		    [](void* instance) {                                                                  \
 			return (void*)&static_cast<Self*>(instance)->name;                                    \
-		}, #name, p::InitPropertyFlags(flags));                                                   \
+		    },                                                                                    \
+		    #name, p::InitPropertyFlags(flags));                                                  \
 		/* Registry next property if any */                                                       \
 		__BuildProperty(p::MetaCounter<id_name + 1>{});                                           \
 	}                                                                                             \

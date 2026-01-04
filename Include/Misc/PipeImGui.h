@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 // ImGui helpers for Pipe
@@ -186,11 +186,15 @@ namespace ImGui
 	    const char* hint = "...", float width = 0.0f)
 	{
 		if (width != 0.0f)
+		{
 			SetNextItemWidth(width);
+		}
 		bool value_changed =
 		    InputTextWithHint(label, hint, filter.InputBuf, IM_ARRAYSIZE(filter.InputBuf));
 		if (value_changed)
+		{
 			filter.Build();
+		}
 		return value_changed;
 	}
 

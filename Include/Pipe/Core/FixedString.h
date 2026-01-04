@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #pragma once
 
@@ -220,7 +220,9 @@ namespace p
 		constexpr static sizetype calculate_substr_size()
 		{
 			if constexpr (pos >= size)
+			{
 				return 0;
+			}
 
 			constexpr sizetype rcount = std::min(count, size - pos);
 
@@ -261,7 +263,9 @@ namespace p
 		    const same_with_other_size<M>& str, sizetype pos = 0) const noexcept
 		{
 			if constexpr (M > N)
+			{
 				return npos;
+			}
 			return sv().find(str.sv(), pos);
 		}
 		[[nodiscard]] constexpr sizetype find(string_view_type sv, sizetype pos = 0) const noexcept
@@ -286,7 +290,9 @@ namespace p
 		    const same_with_other_size<M>& str, sizetype pos = npos) const noexcept
 		{
 			if constexpr (M > N)
+			{
 				return npos;
+			}
 			return sv().rfind(str.sv(), pos);
 		}
 		[[nodiscard]] constexpr sizetype rfind(
@@ -312,7 +318,9 @@ namespace p
 		    const same_with_other_size<M>& str, sizetype pos = 0) const noexcept
 		{
 			if constexpr (M > N)
+			{
 				return npos;
+			}
 			return sv().find_first_of(str.sv(), pos);
 		}
 		[[nodiscard]] constexpr sizetype find_first_of(
@@ -340,7 +348,9 @@ namespace p
 		    const same_with_other_size<M>& str, sizetype pos = npos) const noexcept
 		{
 			if constexpr (M > N)
+			{
 				return npos;
+			}
 			return sv().find_last_of(str.sv(), pos);
 		}
 		[[nodiscard]] constexpr sizetype find_last_of(
@@ -369,7 +379,9 @@ namespace p
 		    const same_with_other_size<M>& str, sizetype pos = 0) const noexcept
 		{
 			if constexpr (M > N)
+			{
 				return npos;
+			}
 			return sv().find_first_of(str.sv(), pos);
 		}
 		[[nodiscard]] constexpr sizetype find_first_not_of(
@@ -398,7 +410,9 @@ namespace p
 		    const same_with_other_size<M>& str, sizetype pos = npos) const noexcept
 		{
 			if constexpr (M > N)
+			{
 				return npos;
+			}
 			return sv().find_last_of(str.sv(), pos);
 		}
 		[[nodiscard]] constexpr sizetype find_last_not_of(
@@ -502,7 +516,9 @@ namespace p
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
 		if constexpr (M1 != M2)
+		{
 			return false;
+		}
 		using lhs_type = std::decay_t<decltype(lhs)>;
 		using sv_type  = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) == rhs;
@@ -562,7 +578,9 @@ namespace p
 	    const TFixedString<M2, CharType, TTraits>& rhs)
 	{
 		if constexpr (M1 != M2)
+		{
 			return true;
+		}
 		using lhs_type = std::decay_t<decltype(lhs)>;
 		using sv_type = typename lhs_type::string_view_type;
 		return static_cast<sv_type>(lhs) != rhs;

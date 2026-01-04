@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 // Some functions are adaptations for StringView from std::filesystem
 
 #include "Pipe/Files/Paths.h"
@@ -68,9 +68,13 @@ namespace p
 			{
 				auto elem = *pp;
 				if (elem == "..")
+				{
 					--count;
+				}
 				else if (elem != "." && elem != "")
+				{
 					++count;
+				}
 			}
 			return count;
 		}
@@ -224,7 +228,9 @@ namespace p
 			{
 				--extensionFirst;
 				if (extensionFirst[0] == '.')
+				{
 					break;
+				}
 			}
 
 			if (extensionFirst > filenameFirst)
@@ -332,7 +338,9 @@ namespace p
 			{
 				--stemLast;
 				if (stemLast[0] == '.')
+				{
 					break;
+				}
 			}
 
 			if (stemLast > stemFirst)
@@ -366,7 +374,9 @@ namespace p
 		if (!newExtension.empty())
 		{
 			if (newExtension[0] != details::dot)
+			{
 				path.push_back(details::dot);
+			}
 			path.append(newExtension);
 		}
 	}
@@ -564,7 +574,9 @@ namespace p
 			if (pp.InRootName() && ppBase.InRootName())
 			{
 				if (*pp != *ppBase)
+				{
 					return {};
+				}
 			}
 			else if (CheckIterMismatchAtBase())
 			{
@@ -572,9 +584,13 @@ namespace p
 			}
 
 			if (pp.InRootPath())
+			{
 				++pp;
+			}
 			if (ppBase.InRootPath())
+			{
 				++ppBase;
+			}
 			if (CheckIterMismatchAtBase())
 			{
 				return {};
@@ -592,25 +608,35 @@ namespace p
 
 		// If there is no mismatch, return ".".
 		if (!pp && !ppBase)
+		{
 			return ".";
+		}
 
 		// Otherwise, determine the number of elements, 'n', which are not dot or
 		// dot-dot minus the number of dot-dot elements.
 		i32 elemCount = details::DetermineLexicalElementCount(ppBase);
 		if (elemCount < 0)
+		{
 			return {};
+		}
 
 		// if n == 0 and (a == end() || a->empty()), returns "."; otherwise
 		if (elemCount == 0 && (pp.AtEnd() || *pp == ""))
+		{
 			return ".";
+		}
 
 		// return a path constructed with 'n' dot-dot elements, followed by the
 		// elements of '*this' after the mismatch.
 		String tmp;
 		while (elemCount--)
+		{
 			AppendToPath(tmp, "..");
+		}
 		for (; pp; ++pp)
+		{
 			AppendToPath(tmp, *pp);
+		}
 		return tmp;
 	}
 	void SetCanonical(String& path)
@@ -683,9 +709,13 @@ namespace p
 			case State::InRootName: {
 				const char* tkEnd = ConsumeAllSeparators(start, end);
 				if (tkEnd)
+				{
 					MakeState(State::InRootDir, start, tkEnd);
+				}
 				else
+				{
 					MakeState(State::InFilenames, start, ConsumeName(start, end));
+				}
 				break;
 			}
 			case State::InRootDir:
@@ -801,9 +831,13 @@ namespace p
 			case State::AtEnd: return "";
 			case State::InRootDir:
 				if (rawEntry[0] == '\\')
+				{
 					return "\\";
+				}
 				else
+				{
 					return "/";
+				}
 			case State::InTrailingSep: return "";
 			case State::InRootName:
 			case State::InFilenames: return rawEntry;
@@ -923,11 +957,15 @@ namespace p
 	const char* PathIterator::ConsumeAllSeparators(const char* p, const char* end) const noexcept
 	{
 		if (p == nullptr || p == end || !IsSeparator(*p))
+		{
 			return nullptr;
+		}
 		const int Inc = p < end ? 1 : -1;
 		p += Inc;
 		while (p != end && IsSeparator(*p))
+		{
 			p += Inc;
+		}
 		return p;
 	}
 
@@ -937,16 +975,22 @@ namespace p
 	{
 		const char* ret = ConsumeAllSeparators(p, end);
 		if (ret == nullptr)
+		{
 			return nullptr;
+		}
 		if (p < end)
 		{
 			if (ret == p + N)
+			{
 				return ret;
+			}
 		}
 		else
 		{
 			if (ret == p - N)
+			{
 				return ret;
+			}
 		}
 		return nullptr;
 	}
@@ -955,11 +999,15 @@ namespace p
 	{
 		const char* start = p;
 		if (p == nullptr || p == end || IsSeparator(*p))
+		{
 			return nullptr;
+		}
 		const int inc = p < end ? 1 : -1;
 		p += inc;
 		while (p != end && !IsSeparator(*p))
+		{
 			p += inc;
+		}
 		if (p == end && inc < 0)
 		{
 			// Iterating backwards and Consumed all the rest of the input.
@@ -967,7 +1015,9 @@ namespace p
 			// a root name.
 			const char* rootEnd = ConsumeRootName(end + 1, start);
 			if (rootEnd)
+			{
 				return rootEnd - 1;
+			}
 		}
 		return p;
 	}
@@ -975,17 +1025,23 @@ namespace p
 	const char* PathIterator::ConsumeDriveLetter(const char* p, const char* end) const noexcept
 	{
 		if (p == end)
+		{
 			return nullptr;
+		}
 		if (p < end)
 		{
 			if (p + 1 == end || !details::IsDriveLetter(p[0]) || p[1] != ':')
+			{
 				return nullptr;
+			}
 			return p + 2;
 		}
 		else
 		{
 			if (p - 1 == end || !details::IsDriveLetter(p[-1]) || p[0] != ':')
+			{
 				return nullptr;
+			}
 			return p - 2;
 		}
 	}
@@ -993,20 +1049,30 @@ namespace p
 	const char* PathIterator::ConsumeNetworkRoot(const char* p, const char* end) const noexcept
 	{
 		if (p == end)
+		{
 			return nullptr;
+		}
 		if (p < end)
+		{
 			return ConsumeName(ConsumeNSeparators(p, end, 2), end);
+		}
 		else
+		{
 			return ConsumeNSeparators(ConsumeName(p, end), end, 2);
+		}
 	}
 
 	const char* PathIterator::ConsumeRootName(const char* p, const char* end) const noexcept
 	{
 #if P_PLATFORM_WINDOWS
 		if (const char* ret = ConsumeDriveLetter(p, end))
+		{
 			return ret;
+		}
 		if (const char* ret = ConsumeNetworkRoot(p, end))
+		{
 			return ret;
+		}
 #endif
 		return nullptr;
 	}

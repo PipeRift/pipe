@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
 #include "Pipe/Core/Hash.h"
@@ -88,10 +88,12 @@ namespace p
 	template<typename T>
 	inline consteval TypeId GetTypeId() requires(!IsConst<T>)
 	{
-		return TypeId{p::GetStringHash(P_UNIQUE_FUNCTION_ID)
+		return TypeId
+		{
+			p::GetStringHash(P_UNIQUE_FUNCTION_ID)
 #if P_DEBUG
-		                  ,
-		    GetTypeName<T>()
+			    ,
+			    GetTypeName<T>()
 #endif
 		};
 	}

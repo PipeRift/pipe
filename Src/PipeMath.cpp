@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "PipeMath.h"
 
@@ -150,7 +150,9 @@ namespace p
 		float t1              = yAbsBigger ? absX : absY;    // Min(absX, absY)
 
 		if (t0 == 0.f)
+		{
 			return 0.f;
+		}
 
 		float t3 = t1 / t0;
 		float t4 = t3 * t3;
@@ -186,7 +188,9 @@ namespace p
 		a = ClampAngle(a);    //[0,360)
 
 		if (a > 180.f)
+		{
 			a -= 360.f;
+		}
 		return a;    //(-180, 180]
 	}
 

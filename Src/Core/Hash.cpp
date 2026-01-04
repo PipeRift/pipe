@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 // Based on martinus/robin-hood-hashing
 
 #include "Pipe/Core/Hash.h"

@@ -1,4 +1,4 @@
-// Copyright 2015-2024 Piperift - All rights reserved
+// Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include <bandit/bandit.h>
 #include <Pipe/Core/Limits.h>
@@ -7,7 +7,6 @@
 #include <PipePlatform.h>
 
 #include <cmath>
-
 
 
 using namespace snowhouse;
