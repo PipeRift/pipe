@@ -263,12 +263,13 @@ namespace p
 			    typeId, {Move(onDrawRow), Move(onDrawChildren)});
 		}
 	}
-	#define P_DECLARE_COMMON_VALUE_TYPEINSPECTION(type, valueCode)                                 \
-		RegisterTypeInspection<type>([](StringView label, void* data, TypeId typeId, bool& open) { \
-			InspectSetKeyAsText(label);                                                            \
-			InspectSetValueColumn();                                                               \
-			type& value = *static_cast<type*>(data);                                               \
-			valueCode                                                                              \
+	#define P_DECLARE_COMMON_VALUE_TYPEINSPECTION(type, valueCode)        \
+		p::RegisterTypeInspection<type>(                                  \
+		    [](StringView label, void* data, TypeId typeId, bool& open) { \
+			InspectSetKeyAsText(label);                                   \
+			InspectSetValueColumn();                                      \
+			type& value = *static_cast<type*>(data);                      \
+			valueCode                                                     \
 		})
 	void RegisterPipeTypeInspections()
 	{
