@@ -634,9 +634,9 @@ namespace p
 			return FindIt(value) != end();
 		}
 
-		bool Contains(TFunction<bool(const Type&)> cb) const
+		bool ContainsIf(TFunction<bool(const Type&)> cb) const
 		{
-			return FindIt(Move(cb)) != end();
+			return FindItIf(Move(cb)) != end();
 		}
 
 		template<typename Value, typename SortPredicate = TLess<>>
