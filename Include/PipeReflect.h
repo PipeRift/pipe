@@ -56,6 +56,12 @@ namespace p
 		return HasMemberBuildType<T>() || HasExternalBuildType<T>();
 	}
 
+	template<typename T>
+	consteval bool HasStaticFlags()
+	{
+		return requires() { T::staticFlags; };
+	}
+
 	template<u32 N>
 	struct MetaCounter : MetaCounter<N - 1>
 	{
@@ -190,7 +196,10 @@ namespace p
 		TF_Enum      = 1 << 5,
 		TF_Struct    = 1 << 3,
 		TF_Object    = 1 << 4,
-		TF_Container = 1 << 6
+		TF_Container = 1 << 6,
+
+		TF_ECS_AutoModify = 1 << 7    // -> In ECS, should this type be marked modified
+		                              // automatically when added, written or removed?
 
 		// Any other flags up to 64 bytes are available to the user
 	};
@@ -338,6 +347,24 @@ namespace p
 	P_API TypeFlags GetTypeFlags(TypeId id);
 	P_API bool HasTypeFlags(TypeId id, TypeFlags flags);
 	P_API bool HasAnyTypeFlags(TypeId id, TypeFlags flags);
+	template<typename T>
+	constexpr bool HasTypeStaticFlags(TypeFlags flags)
+	{
+		if constexpr (HasStaticFlags<T>())
+		{
+			return (T::staticFlags & flags) == flags;
+		}
+		return false;
+	}
+	template<typename T>
+	constexpr bool HasAnyTypeStaticFlags(TypeFlags flags)
+	{
+		if constexpr (HasStaticFlags<T>())
+		{
+			return (T::staticFlags & flags) > 0;
+		}
+		return false;
+	}
 	/// @return the properties of this type, excluding those of the parent (if any)
 	P_API TView<const TypeProperty> GetOwnTypeProperties(TypeId id);
 	/// @return the properties of this type
@@ -608,24 +635,24 @@ namespace p
 
 /** Defines a Class */
 #define P_CLASS_HEADER_NO_FLAGS(type) P_CLASS_HEADER_FLAGS(type, p::TF_None)
-#define P_CLASS_HEADER_FLAGS(type, flags)                                    \
-public:                                                                      \
-	using Self                                    = type;                    \
-	static constexpr p::TypeFlags staticTypeFlags = p::InitTypeFlags(flags); \
-                                                                             \
-	p::TypeId ProvideTypeId() const override                                 \
-	{                                                                        \
-		return p::GetTypeId<Self>();                                         \
+#define P_CLASS_HEADER_FLAGS(type, flags)                                \
+public:                                                                  \
+	using Self                                = type;                    \
+	static constexpr p::TypeFlags staticFlags = p::InitTypeFlags(flags); \
+                                                                         \
+	p::TypeId ProvideTypeId() const override                             \
+	{                                                                    \
+		return p::GetTypeId<Self>();                                     \
 	}
 
 
 /** Defines an Struct */
 #define P_STRUCT_HEADER_NO_FLAGS(type) P_STRUCT_HEADER_FLAGS(type, p::TF_None)
-#define P_STRUCT_HEADER_FLAGS(type, flags)                                   \
-public:                                                                      \
-	using Self                                    = type;                    \
-	static constexpr p::TypeFlags staticTypeFlags = p::InitTypeFlags(flags); \
-	static_assert(!(staticTypeFlags & p::TF_Abstract), "Only objects can use TF_Abstract");
+#define P_STRUCT_HEADER_FLAGS(type, flags)                               \
+public:                                                                  \
+	using Self                                = type;                    \
+	static constexpr p::TypeFlags staticFlags = p::InitTypeFlags(flags); \
+	static_assert(!(staticFlags & p::TF_Abstract), "Only objects can use TF_Abstract");
 
 
 #define P_REFLECTION_BODY(buildCode)                                      \
@@ -639,7 +666,7 @@ public:                                                                   \
 	}                                                                     \
 	void ReadProperties(p::Reader& r)                                     \
 	{                                                                     \
-		if constexpr (!(staticTypeFlags & p::TF_NotSerialized))           \
+		if constexpr (!(staticFlags & p::TF_NotSerialized))               \
 		{                                                                 \
 			CallSuperReadProperties<Self>(*this, r);                      \
 			__ReadProperty(r, p::MetaCounter<0>{});                       \
@@ -647,7 +674,7 @@ public:                                                                   \
 	}                                                                     \
 	void WriteProperties(p::Writer& w) const                              \
 	{                                                                     \
-		if constexpr (!(staticTypeFlags & p::TF_NotSerialized))           \
+		if constexpr (!(staticFlags & p::TF_NotSerialized))               \
 		{                                                                 \
 			CallSuperWriteProperties<Self>(*this, w);                     \
 			__WriteProperty(w, p::MetaCounter<0>{});                      \
@@ -895,7 +922,7 @@ namespace p
 			return p::GetTypeId<Object>();
 		}
 
-		static constexpr p::TypeFlags staticTypeFlags = TF_None;
+		static constexpr p::TypeFlags staticFlags = TF_None;
 
 		P_REFLECTION_BODY({})
 

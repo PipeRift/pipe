@@ -1166,6 +1166,11 @@ namespace p
 			{
 				pool->Remove(ids);
 			}
+
+			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
+			{
+				AssurePool<CMdfd<Component>>().Add(ids.begin(), ids.end(), {});
+			}
 		}
 		template<typename... Component>
 		void Remove(TView<const Id> ids) requires(sizeof...(Component) > 1)
