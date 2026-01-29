@@ -18,9 +18,9 @@ namespace p
 		const sizet pos = Strings::Find(str, ":");
 		if (pos != StringView::npos)
 		{
-			auto idx = Strings::ToNumber<IdTraits<Id>::Index>({str.data(), str.data() + pos});
-			auto v   = Strings::ToNumber<IdTraits<Id>::Version>(
-                {str.data() + pos + 1, str.data() + str.size()});
+			auto idx = Strings::ToNumber<Id::Index>({str.data(), str.data() + pos});
+			auto v =
+			    Strings::ToNumber<Id::Version>({str.data() + pos + 1, str.data() + str.size()});
 			if (idx && v)
 			{
 				return MakeId(*idx, *v);
@@ -28,7 +28,7 @@ namespace p
 		}
 		else if (context)
 		{
-			if (auto idx = Strings::ToNumber<IdTraits<Id>::Index>(str))
+			if (auto idx = Strings::ToNumber<Id::Index>(str))
 			{
 				if (auto v = context->GetIdRegistry().GetValidVersion(*idx))
 				{
@@ -77,14 +77,14 @@ namespace p
 
 	bool IdRegistry::Destroy(Id id)
 	{
-		const Index index = GetIdIndex(id);
+		const Index index = id.GetIndex();
 		if (entities.IsValidIndex(index))
 		{
 			Id& storedId = entities[index];
 			if (id == storedId)
 			{
 				// Increase version to invalidate current entity
-				storedId = MakeId(index, GetIdVersion(storedId) + 1u);
+				storedId = MakeId(index, storedId.GetVersion() + 1u);
 				available.Add(index);
 				return true;
 			}
@@ -98,14 +98,14 @@ namespace p
 		const u32 lastAvailable = available.Size();
 		for (Id id : ids)
 		{
-			const Index index = GetIdIndex(id);
+			const Index index = id.GetIndex();
 			if (entities.IsValidIndex(index))
 			{
 				Id& storedId = entities[index];
 				if (id == storedId)
 				{
 					// Increase version to invalidate current entity
-					storedId = MakeId(index, GetIdVersion(storedId) + 1u);
+					storedId = MakeId(index, storedId.GetVersion() + 1u);
 					available.Add(index);
 				}
 			}
@@ -115,22 +115,22 @@ namespace p
 
 	bool IdRegistry::IsValid(Id id) const
 	{
-		const Index index = GetIdIndex(id);
+		const Index index = id.GetIndex();
 		return entities.IsValidIndex(index) && entities[p::i32(index)] == id;
 	}
 
 	bool IdRegistry::WasRemoved(Id id) const
 	{
-		const Index index = GetIdIndex(id);
+		const Index index = id.GetIndex();
 		return entities.IsValidIndex(index)
-		    && GetIdVersion(entities[p::i32(index)]) > GetIdVersion(id);
+		    && entities[p::i32(index)].GetVersion() > id.GetVersion();
 	}
 
 	TOptional<IdRegistry::Version> IdRegistry::GetValidVersion(IdRegistry::Index idx) const
 	{
 		if (entities.IsValidIndex(idx))
 		{
-			return GetIdVersion(entities[p::i32(idx)]);
+			return entities[p::i32(idx)].GetVersion();
 		}
 		return TOptional<Version>{};
 	}
@@ -325,7 +325,7 @@ namespace p
 		for (i32 i = 0; i < other.Size(); ++i)
 		{
 			const Id id = other.idList[i];
-			if (GetIdVersion(id) != NoIdVersion)
+			if (id.GetVersion() != NoIdVersion)
 			{
 				EmplaceId(id, true);
 			}
@@ -356,7 +356,7 @@ namespace p
 	BasePool::Index BasePool::EmplaceId(const Id id, bool forceBack)
 	{
 		P_CheckMsg(!Has(id), "Set already contains entity");
-		const auto idIndex = GetIdIndex(id);
+		const auto idIndex = id.GetIndex();
 
 		if (lastRemovedIndex != NO_INDEX && !forceBack)
 		{
@@ -377,7 +377,7 @@ namespace p
 
 	void BasePool::PopId(Id id)
 	{
-		const Index index = GetIdIndex(id);
+		const Index index = id.GetIndex();
 		i32& idIndex      = idIndices[index];
 
 		idList[idIndex]  = MakeId(index, NoIdVersion);    // Mark invalid but keep index
@@ -387,10 +387,10 @@ namespace p
 
 	void BasePool::PopSwapId(Id id)
 	{
-		i32& idIndex = idIndices[GetIdIndex(id)];
+		i32& idIndex = idIndices[id.GetIndex()];
 		idList.RemoveAtSwapUnsafe(idIndex);
 
-		i32& lastIndex = idIndices[GetIdIndex(idList.Last())];
+		i32& lastIndex = idIndices[idList.Last().GetIndex()];
 		// Move last element to current index
 		idIndex   = lastIndex;
 		lastIndex = NO_INDEX;
@@ -402,16 +402,16 @@ namespace p
 		{
 			for (Id id : idList)
 			{
-				idIndices[GetIdIndex(id)] = NO_INDEX;
+				idIndices[id.GetIndex()] = NO_INDEX;
 			}
 		}
 		else
 		{
 			for (Id id : idList)
 			{
-				if (GetIdVersion(id) != NoIdVersion)
+				if (id.GetVersion() != NoIdVersion)
 				{
-					idIndices[GetIdIndex(id)] = NO_INDEX;
+					idIndices[id.GetIndex()] = NO_INDEX;
 				}
 			}
 		}

@@ -153,7 +153,7 @@
 	#define P_RESTRICT
 	#define P_ATTR_MALLOC
 #endif
-#pragma endregion Macros
+#pragma endregion Platform Macros
 
 
 #pragma region Platform Types

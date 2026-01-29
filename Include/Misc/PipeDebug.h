@@ -669,13 +669,13 @@ namespace p
 			{
 				idText = "Invalid";
 			}
-			else if (auto version = p::GetIdVersion(id); version > 0)
+			else if (auto version = id.GetVersion(); version > 0)
 			{
-				p::Strings::FormatTo(idText, "{}:{}", p::GetIdIndex(id), version);
+				p::Strings::FormatTo(idText, "{}:{}", id.GetIndex(), version);
 			}
 			else
 			{
-				p::Strings::FormatTo(idText, "{}", p::GetIdIndex(id));
+				p::Strings::FormatTo(idText, "{}", id.GetIndex());
 			}
 
 			if (!ecsDbg.filter.PassFilter(idText.c_str(), idText.c_str() + idText.size()))

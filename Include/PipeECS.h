@@ -12,79 +12,134 @@
 #include "PipeReflect.h"
 
 
-////////////////////////////////
-// ENTITY IDS
-//
+#ifndef P_ID_IS_64BIT
+	#define P_ID_IS_64BIT 0
+#endif
+
+
 namespace p
 {
+	////////////////////////////////
+	// FORWARD DECLARATIONS
+	//
 	struct EntityContext;
 
 
+	////////////////////////////////
+	// ENTITY IDS
+	//
+#pragma region Ids
 	/** An Id is an integer composed of both index and version that identifies an entity */
-	enum class Id : u32
+	struct P_API Id
 	{
-	};
-}    // namespace p
-P_NATIVE(p::Id);
+#pragma warning(push)
+#pragma warning(disable:4201)    // Avoid warning about nameless struct
+#if P_ID_IS_64BIT
+		using Value                          = u64;
+		using Index                          = u32;
+		using Version                        = u32;
+		using Difference                     = i64;
+		static constexpr Index indexMask     = 0xffffffff;
+		static constexpr Version versionMask = 0xffffffff;
 
-namespace p
-{
-	/** IdTraits define properties of an Id type based on its size */
-	template<typename Type>
-	struct IdTraits;
-	template<>
-	struct IdTraits<u32>
+	protected:
+		union
+		{
+			struct
+			{
+				Index index;
+				Version version;
+			};
+			Value raw;
+		};
+#else
+		using Value                          = u32;
+		using Index                          = u32;
+		using Version                        = u16;
+		using Difference                     = i64;
+		static constexpr Index indexMask     = 0xfffff;
+		static constexpr Version versionMask = 0xfff;
+
+	protected:
+		union
+		{
+			struct
+			{
+				Index index:20;
+				Version version:12;
+			};
+			Value raw;
+		};
+#endif
+#pragma warning(pop)
+
+	private:
+		constexpr Id(Value raw) : raw(raw) {}
+
+	public:
+
+		constexpr Id() : index{indexMask}, version{versionMask} {}
+		constexpr Id(Index index, Version version) : index{index}, version{version} {}
+
+		constexpr bool operator==(const Id other) const
+		{
+			return raw == other.raw;
+		}
+		constexpr bool operator!=(const Id other) const
+		{
+			return raw != other.raw;
+		}
+		constexpr bool operator<(const Id other) const
+		{
+			return raw < other.raw;
+		}
+		constexpr bool operator<=(const Id other) const
+		{
+			return raw <= other.raw;
+		}
+		constexpr bool operator>(const Id other) const
+		{
+			return raw > other.raw;
+		}
+		constexpr bool operator>=(const Id other) const
+		{
+			return raw >= other.raw;
+		}
+
+		static constexpr Id MakeRaw(Value raw)
+		{
+			return Id(raw);
+		}
+
+		constexpr Value GetRaw() const
+		{
+			return raw;
+		}
+		constexpr Index GetIndex() const
+		{
+			return index;
+		}
+		constexpr Version GetVersion() const
+		{
+			return version;
+		}
+	};
+
+	inline sizet GetHash(const Id id)
 	{
-		using Entity     = u32;
-		using Index      = u32;
-		using Version    = u16;
-		using Difference = i64;
-
-		static constexpr Entity indexMask   = 0xfffff;
-		static constexpr Entity versionMask = 0xfff;
-		static constexpr sizet indexShift   = 20u;
-	};
-	template<>
-	struct IdTraits<u64>
-	{
-		using Entity     = u64;
-		using Index      = u32;
-		using Version    = u32;
-		using Difference = i64;
-
-		static constexpr Entity indexMask   = 0xffffffff;
-		static constexpr Entity versionMask = 0xffffffff;
-		static constexpr sizet indexShift   = 32u;
-	};
-	template<>
-	struct IdTraits<Id> : public IdTraits<UnderlyingType<Id>>
-	{};
+		return GetHash(id.GetRaw());
+	}
 
 	// Creates an id from a combination of index and version. This does NOT create an entity.
-	constexpr Id MakeId(IdTraits<Id>::Index index = IdTraits<Id>::indexMask,
-	    IdTraits<Id>::Version version             = IdTraits<Id>::versionMask)
+	constexpr Id MakeId(Id::Index index = 0, Id::Version version = Id::versionMask)
 	{
-		return Id{(index & IdTraits<Id>::indexMask)
-		          | (IdTraits<Id>::Entity(version) << IdTraits<Id>::indexShift)};
+		return Id(index, version);
 	}
 
-	// Extract the index from an id
-	constexpr IdTraits<Id>::Index GetIdIndex(Id id)
-	{
-		return IdTraits<Id>::Index{IdTraits<Id>::Entity(id) & IdTraits<Id>::indexMask};
-	}
-
-	// Extract the version from an id
-	constexpr IdTraits<Id>::Version GetIdVersion(Id id)
-	{
-		constexpr auto mask = IdTraits<Id>::versionMask << IdTraits<Id>::indexShift;
-		return IdTraits<Id>::Version((IdTraits<Id>::Entity(id) & mask) >> IdTraits<Id>::indexShift);
-	}
 
 	// Invalid value of an Id
-	constexpr Id NoId                           = MakeId();
-	constexpr IdTraits<Id>::Version NoIdVersion = GetIdVersion(NoId);
-	constexpr IdTraits<Id>::Index NoIdIndex     = GetIdIndex(NoId);
+	constexpr Id NoId                 = MakeId();
+	constexpr Id::Version NoIdVersion = Id::versionMask;
 
 	/**
 	 * @param id to check
@@ -93,7 +148,7 @@ namespace p
 	 */
 	constexpr bool IsNone(Id id)
 	{
-		return GetIdVersion(id) == GetIdVersion(NoId);
+		return id.GetVersion() == NoIdVersion;
 	}
 
 	inline String ToString(Id id)
@@ -102,24 +157,24 @@ namespace p
 		{
 			return "NoId";
 		}
-		return Strings::Format("{}:{}", p::GetIdIndex(id), p::GetIdVersion(id));
+		return Strings::Format("{}:{}", id.GetIndex(), id.GetVersion());
 	}
 
 	/**
 	 * Resolve an entity id from an string.
 	 * The expected format is {}:{} where first is the index and second is the version.
-	 * If a context is provided, providing the index alone as a number will resolve it slast valid
-	 * version
+	 * If a context is provided, providing the index alone as a number will resolve it slast
+	 * valid version
 	 */
 	P_API Id IdFromString(String str, EntityContext* context);
 
 
-	/** IdRegistry tracks the existance and versioning of ids. Used internally by the ECS context */
+	/** IdRegistry tracks the existance and versioning of ids. Used internally by the ECS
+	 * context */
 	struct P_API IdRegistry
 	{
-		using Traits  = IdTraits<Id>;
-		using Index   = Traits::Index;
-		using Version = Traits::Version;
+		using Index   = Id::Index;
+		using Version = Id::Version;
 
 	private:
 
@@ -152,11 +207,61 @@ namespace p
 		template<typename Callback>
 		void Each(Callback cb) const;
 	};
+#pragma endregion Ids
 
 
-	////////////////////////////////
-	// SERIALIZATION
-	//
+////////////////////////////////
+// COMPONENTS
+//
+#pragma region Components
+	/**
+	 * Modified component
+	 * Optionally, a component can be marked modified when written. This can be used when
+	 * filtering.
+	 */
+	template<typename T>
+	struct CMdfd
+	{
+		P_STRUCT(CMdfd)
+	};
+
+	/**
+	 * Removed component
+	 * Optionally, an entity can be marked removed instead of actually removed and then flushed
+	 * manually along with all other removed entities.
+	 * @see RemoveId()
+	 */
+	struct P_API CPendingRemove
+	{
+		P_STRUCT(CPendingRemove)
+	};
+
+	struct P_API CParent
+	{
+		P_STRUCT(CParent)
+
+		P_PROP(children, PF_Edit)
+		TArray<Id> children;
+	};
+	P_API void Read(Reader& ct, CParent& val);
+	P_API void Write(Writer& ct, const CParent& val);
+
+	struct P_API CChild
+	{
+		P_STRUCT(CChild)
+
+		P_PROP(parent, PF_Edit)
+		Id parent = NoId;
+	};
+	P_API void Read(Reader& ct, CChild& val);
+	P_API void Write(Writer& ct, const CChild& val);
+#pragma endregion Components
+
+
+////////////////////////////////
+// SERIALIZATION
+//
+#pragma region Serialization
 
 	// Mark an entity as not serialized (it will be entirely ignored by the serializer)
 	struct CNotSerialized
@@ -253,11 +358,13 @@ namespace p
 
 	void P_API Read(p::Reader& ct, p::Id& val);
 	void P_API Write(p::Writer& ct, p::Id val);
+#pragma endregion Serialization
 
 
-	////////////////////////////////
-	// POOLS
-	//
+////////////////////////////////
+// POOLS
+//
+#pragma region Pools
 
 	enum class DeletionPolicy : u8
 	{
@@ -268,7 +375,7 @@ namespace p
 	/** Iterates the Ids contained in a pool */
 	struct P_API PoolIterator final
 	{
-		using difference_type   = typename IdTraits<Id>::Difference;
+		using difference_type   = typename Id::Difference;
 		using value_type        = Id;
 		using pointer           = const value_type*;
 		using reference         = const value_type&;
@@ -370,7 +477,7 @@ namespace p
 
 	struct P_API BasePool
 	{
-		using Index = IdTraits<Id>::Index;
+		using Index = Id::Index;
 
 		using Iterator        = PoolIterator;
 		using ReverseIterator = std::reverse_iterator<Iterator>;
@@ -434,7 +541,7 @@ namespace p
 		}
 		inline i32 GetIndexFromId(const Id id) const
 		{
-			return GetIndexFromId(GetIdIndex(id));
+			return GetIndexFromId(id.GetIndex());
 		}
 		Id GetIdFromIndex(i32 index) const
 		{
@@ -458,7 +565,7 @@ namespace p
 
 		bool Has(Id id) const
 		{
-			const i32* const index = idIndices.At(GetIdIndex(id));
+			const i32* const index = idIndices.At(id.GetIndex());
 			return index && *index != NO_INDEX;
 		}
 
@@ -850,7 +957,7 @@ namespace p
 			{
 				for (i32 i = 0; i < Size(); ++i)
 				{
-					if (GetIdVersion(idList[i]) != NoIdVersion)
+					if (idList[i].GetVersion() != NoIdVersion)
 					{
 						data.RemoveAt(i);
 					}
@@ -864,7 +971,7 @@ namespace p
 		void Compact()
 		{
 			i32 from = idList.Size();
-			for (; from && GetIdVersion(idList[from - 1]) == NoIdVersion; --from) {}
+			for (; from && idList[from - 1].GetVersion() == NoIdVersion; --from) {}
 
 			for (i32 to = lastRemovedIndex; to != NO_INDEX && from;)
 			{
@@ -880,10 +987,10 @@ namespace p
 					auto& listTo = idList[i32(to)];
 					p::Swap(idList[from], listTo);
 
-					idIndices[GetIdIndex(listTo)] = to;
-					to                            = from;
+					idIndices[listTo.GetIndex()] = to;
+					to                           = from;
 
-					for (; from && GetIdVersion(idList[from - 1]) == NoIdVersion; --from) {}
+					for (; from && idList[from - 1].GetVersion() == NoIdVersion; --from) {}
 				}
 			}
 
@@ -896,8 +1003,8 @@ namespace p
 			P_CheckMsg(Has(a), "Set does not contain entity");
 			P_CheckMsg(Has(b), "Set does not contain entity");
 
-			i32& aListIdx = idIndices[GetIdIndex(a)];
-			i32& bListIdx = idIndices[GetIdIndex(b)];
+			i32& aListIdx = idIndices[a.GetIndex()];
+			i32& bListIdx = idIndices[b.GetIndex()];
 
 			p::Swap(idList[aListIdx], idList[bListIdx]);
 			p::Swap(aListIdx, bListIdx);
@@ -941,12 +1048,13 @@ namespace p
 		BasePool* GetPool() const;
 		bool operator<(const PoolInstance& other) const;
 	};
+#pragma endregion Pools
 
 
-	////////////////////////////////
-	// CONTEXT
-	//
-
+////////////////////////////////
+// CONTEXT
+//
+#pragma region Context
 	struct P_API SortLessStatics
 	{
 		bool operator()(const OwnPtr& a, const OwnPtr& b) const
@@ -1254,12 +1362,13 @@ namespace p
 		template<typename T>
 		PoolInstance CreatePoolInstance() const;
 	};
+#pragma endregion Context
 
 
-	////////////////////////////////
-	// ACCESSES
-	//
-
+////////////////////////////////
+// ACCESSES
+//
+#pragma region Accesses
 	enum class AccessMode : u8
 	{
 		Read,
@@ -1566,11 +1675,13 @@ namespace p
 			return 0;
 		}
 	};
+#pragma endregion Accesses
 
 
-	////////////////////////////////
-	// FILTERING
-	//
+////////////////////////////////
+// FILTERING
+//
+#pragma region Filtering
 
 	/** Remove ids containing a component from 'ids'. Does not guarantee order. */
 	P_API void ExcludeIdsWith(
@@ -1961,32 +2072,13 @@ namespace p
 			return ids.IsEmpty() ? NoId : ids[0];
 		}
 	}
+#pragma endregion Filtering
 
 
-	////////////////////////////////
-	// HIERARCHY
-	//
-
-	struct P_API CParent
-	{
-		P_STRUCT(CParent)
-
-		P_PROP(children, PF_Edit)
-		TArray<Id> children;
-	};
-	P_API void Read(Reader& ct, CParent& val);
-	P_API void Write(Writer& ct, const CParent& val);
-
-	struct P_API CChild
-	{
-		P_STRUCT(CChild)
-
-		P_PROP(parent, PF_Edit)
-		Id parent = NoId;
-	};
-	P_API void Read(Reader& ct, CChild& val);
-	P_API void Write(Writer& ct, const CChild& val);
-
+////////////////////////////////
+// HIERARCHY
+//
+#pragma region Hierarchy
 
 	// Link a list of nodes at the end of the parent children list
 	P_API void AttachId(
@@ -2019,7 +2111,8 @@ namespace p
 	/** Obtain all children ids from the provided parent Ids. Examples:
 	 * - All children of A (where A->B->C) are B and C.
 	 * - All children of A and D (where A->B->C, D->E->F) are B, C, E and F.
-	 * - All children of A and B (where A->B->C->D) are B, C, D, C, D (duplicates are not handled).
+	 * - All children of A and B (where A->B->C->D) are B, C, D, C, D (duplicates are not
+	 * handled).
 	 */
 	P_API void GetAllIdChildren(TAccessRef<CParent> access, TView<const Id> parentIds,
 	    TArray<Id>& outChildrenIds, u32 depth = 1);
@@ -2063,11 +2156,13 @@ namespace p
 	P_API bool ValidateParentIdLinks(TAccessRef<CChild, CParent> access, TView<Id> parents);
 
 	P_API void GetRootIds(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots);
+#pragma endregion Hierarchy
 
 
-	////////////////////////////////
-	// DEFINITIONS
-	//
+////////////////////////////////
+// DEFINITIONS
+//
+#pragma region Definitions
 
 	template<typename Callback>
 	void IdRegistry::Each(Callback cb) const
@@ -2084,7 +2179,7 @@ namespace p
 			for (i32 i = 0; i < entities.Size(); ++i)
 			{
 				const Id id = entities[i];
-				if (GetIdIndex(id) == i)
+				if (id.GetIndex() == i)
 				{
 					cb(id);
 				}
@@ -2297,7 +2392,10 @@ namespace p
 		}
 		return *ptr.GetUnsafe<Static>();
 	}
+#pragma endregion Definitions
 }    // namespace p
+
+P_NATIVE(p::Id);
 
 template<>
 struct std::formatter<p::Id> : public std::formatter<p::u64>
@@ -2309,8 +2407,8 @@ struct std::formatter<p::Id> : public std::formatter<p::u64>
 		{
 			return std::format_to(ctx.out(), "NoId");
 		}
-		const auto index   = p::GetIdIndex(id);
-		const auto version = p::GetIdVersion(id);
+		const auto index   = id.GetIndex();
+		const auto version = id.GetVersion();
 		return std::vformat_to(ctx.out(), "{}:{}", std::make_format_args(index, version));
 	}
 };
