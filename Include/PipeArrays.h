@@ -383,17 +383,6 @@ namespace p
 			return *reinterpret_cast<const IArray<const Type>*>(this);
 		}
 
-		constexpr Type& First() const
-		{
-			P_Check(size != 0);
-			return data[0];
-		}
-		constexpr Type& Last() const
-		{
-			P_Check(size != 0);
-			return data[size - 1];
-		}
-
 
 #pragma region Sort
 		void Swap(i32 firstIdx, i32 secondIdx)
@@ -1686,38 +1675,51 @@ namespace p
 		{
 			return *arena;
 		}
+
+	public:
 #pragma endregion Storage
 
 
 #pragma region Subviews
-		constexpr TView<T> FirstUnsafe(i32 n) const
+		constexpr Type& First() const
 		{
-			return {data, n};
+			P_Check(Super::size != 0);
+			return Super::data[0];
 		}
-		constexpr TView<T> First(i32 n) const
+		constexpr Type& Last() const
 		{
-			n = Clamp(n, 0, size);
+			P_Check(Super::size != 0);
+			return Super::data[Super::size - 1];
+		}
+
+		constexpr TView<Type> FirstUnsafe(i32 n) const
+		{
+			return {Super::data, n};
+		}
+		constexpr TView<Type> First(i32 n) const
+		{
+			n = Clamp(n, 0, Super::size);
 			return FirstUnsafe(n);
 		}
 
-		constexpr TView<T> LastUnsafe(i32 n) const
+		constexpr TView<Type> LastUnsafe(i32 n) const
 		{
-			return {data + (size - n), n};
+			return {Super::data + (Super::size - n), n};
 		}
-		constexpr TView<T> Last(i32 n) const
+		constexpr TView<Type> Last(i32 n) const
 		{
-			n = Clamp(n, 0, size);
+			n = Clamp(n, 0, Super::size);
 			return LastUnsafe(n);
 		}
 
-		constexpr TView<T> SliceUnsafe(i32 offset, i32 n) const
+		constexpr TView<Type> SliceUnsafe(i32 offset, i32 n) const
 		{
-			return {data + offset, n};
+			return {Super::data + offset, n};
 		}
-		constexpr TView<T> Slice(i32 offset, i32 n) const
+		constexpr TView<Type> Slice(i32 offset, i32 n) const
 		{
-			offset = Clamp(offset, 0, size - 1);
-			n      = Clamp(n, 0, size);
+			offset = Clamp(offset, 0, Super::size - 1);
+			n      = Clamp(n, 0, Super::size);
 			return LastUnsafe(n);
 		}
 #pragma endregion Subviews
@@ -1799,34 +1801,45 @@ namespace p
 		}
 
 #pragma region Subviews
+		constexpr Type& First() const
+		{
+			P_Check(Super::size != 0);
+			return Super::data[0];
+		}
+		constexpr Type& Last() const
+		{
+			P_Check(Super::size != 0);
+			return Super::data[Super::size - 1];
+		}
+
 		constexpr TView FirstUnsafe(i32 n) const
 		{
-			return {data, n};
+			return {Super::data, n};
 		}
 		constexpr TView First(i32 n) const
 		{
-			n = Clamp(n, 0, size);
+			n = Clamp(n, 0, Super::size);
 			return FirstUnsafe(n);
 		}
 
 		constexpr TView LastUnsafe(i32 n) const
 		{
-			return {data + (size - n), n};
+			return {Super::data + (Super::size - n), n};
 		}
 		constexpr TView Last(i32 n) const
 		{
-			n = Clamp(n, 0, size);
+			n = Clamp(n, 0, Super::size);
 			return LastUnsafe(n);
 		}
 
 		constexpr TView SliceUnsafe(i32 offset, i32 n) const
 		{
-			return {data + offset, n};
+			return {Super::data + offset, n};
 		}
 		constexpr TView Slice(i32 offset, i32 n) const
 		{
-			offset = Clamp(offset, 0, size - 1);
-			n      = Clamp(n, 0, size);
+			offset = Clamp(offset, 0, Super::size - 1);
+			n      = Clamp(n, 0, Super::size);
 			return LastUnsafe(n);
 		}
 #pragma endregion Subviews
