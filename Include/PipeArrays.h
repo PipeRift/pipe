@@ -682,6 +682,7 @@ namespace p
 		}
 #pragma endregion Search
 
+
 		template<typename OtherType>
 		bool operator==(const IArray<OtherType>& other) const
 		{
@@ -1688,6 +1689,40 @@ namespace p
 #pragma endregion Storage
 
 
+#pragma region Subviews
+		constexpr TView<T> FirstUnsafe(i32 n) const
+		{
+			return {data, n};
+		}
+		constexpr TView<T> First(i32 n) const
+		{
+			n = Clamp(n, 0, size);
+			return FirstUnsafe(n);
+		}
+
+		constexpr TView<T> LastUnsafe(i32 n) const
+		{
+			return {data + (size - n), n};
+		}
+		constexpr TView<T> Last(i32 n) const
+		{
+			n = Clamp(n, 0, size);
+			return LastUnsafe(n);
+		}
+
+		constexpr TView<T> SliceUnsafe(i32 offset, i32 n) const
+		{
+			return {data + offset, n};
+		}
+		constexpr TView<T> Slice(i32 offset, i32 n) const
+		{
+			offset = Clamp(offset, 0, size - 1);
+			n      = Clamp(n, 0, size);
+			return LastUnsafe(n);
+		}
+#pragma endregion Subviews
+
+
 	protected:
 		void CopyFrom(const IArray<const Type>& other);
 
@@ -1762,6 +1797,39 @@ namespace p
 			Super::size = other.size;
 			return *this;
 		}
+
+#pragma region Subviews
+		constexpr TView FirstUnsafe(i32 n) const
+		{
+			return {data, n};
+		}
+		constexpr TView First(i32 n) const
+		{
+			n = Clamp(n, 0, size);
+			return FirstUnsafe(n);
+		}
+
+		constexpr TView LastUnsafe(i32 n) const
+		{
+			return {data + (size - n), n};
+		}
+		constexpr TView Last(i32 n) const
+		{
+			n = Clamp(n, 0, size);
+			return LastUnsafe(n);
+		}
+
+		constexpr TView SliceUnsafe(i32 offset, i32 n) const
+		{
+			return {data + offset, n};
+		}
+		constexpr TView Slice(i32 offset, i32 n) const
+		{
+			offset = Clamp(offset, 0, size - 1);
+			n      = Clamp(n, 0, size);
+			return LastUnsafe(n);
+		}
+#pragma endregion Subviews
 	};
 
 
