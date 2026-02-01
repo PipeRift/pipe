@@ -40,8 +40,36 @@ namespace p
 	}
 
 
+	IdRegistry::IdRegistry(IdRegistry&& other)
+	{
+		std::unique_lock lock{other.mutex};
+		entities  = Move(other.entities);
+		available = Move(other.available);
+	}
+	IdRegistry::IdRegistry(const IdRegistry& other)
+	{
+		std::shared_lock lock{other.mutex};
+		entities  = other.entities;
+		available = other.available;
+	}
+	IdRegistry& IdRegistry::operator=(IdRegistry&& other)
+	{
+		std::unique_lock lock{other.mutex};
+		entities  = Move(other.entities);
+		available = Move(other.available);
+		return *this;
+	}
+	IdRegistry& IdRegistry::operator=(const IdRegistry& other)
+	{
+		std::shared_lock lock{other.mutex};
+		entities  = other.entities;
+		available = other.available;
+		return *this;
+	}
+
 	Id IdRegistry::Create()
 	{
+		std::unique_lock lock{mutex};
 		if (!available.IsEmpty())
 		{
 			const Index index = available.Last();
@@ -56,44 +84,31 @@ namespace p
 
 	void IdRegistry::Create(TView<Id> newIds)
 	{
-		const i32 availablesUsed = Min(newIds.Size(), available.Size());
-		for (i32 i = 0; i < availablesUsed; ++i)
+		std::unique_lock lock{mutex};
+		const i32 nRecicled = Min(newIds.Size(), available.Size());
+		if (nRecicled > 0)
 		{
-			const Index index = available.Last();
-			newIds[i]         = entities[index];
+			for (i32 i = 0; i < nRecicled; ++i)
+			{
+				const Index index = available.Last();
+				newIds[i]         = entities[index];
+			}
+			available.RemoveLast(nRecicled);
+			newIds = newIds.LastUnsafe(newIds.Size() - nRecicled);
 		}
-		available.RemoveLast(availablesUsed);
 
 		// Remaining entities
-		const u32 remainingSize = newIds.Size() - availablesUsed;
-		entities.Reserve(entities.Size() + remainingSize);
-		for (i32 i = availablesUsed; i < newIds.Size(); ++i)
+		const int32 firstIndex = entities.Size();
+		for (i32 i = 0; i < newIds.Size(); ++i)
 		{
-			const Id id = MakeId(entities.Size(), 0);
-			entities.Add(id);
-			newIds[i] = id;
+			newIds[i] = MakeId(firstIndex + i, 0);
 		}
-	}
-
-	bool IdRegistry::Destroy(Id id)
-	{
-		const Index index = id.GetIndex();
-		if (entities.IsValidIndex(index))
-		{
-			Id& storedId = entities[index];
-			if (id == storedId)
-			{
-				// Increase version to invalidate current entity
-				storedId = MakeId(index, storedId.GetVersion() + 1u);
-				available.Add(index);
-				return true;
-			}
-		}
-		return false;
+		entities.Append(newIds);
 	}
 
 	bool IdRegistry::Destroy(TView<const Id> ids)
 	{
+		std::unique_lock lock{mutex};
 		available.Reserve(available.Size() + ids.Size());
 		const u32 lastAvailable = available.Size();
 		for (Id id : ids)
@@ -115,12 +130,14 @@ namespace p
 
 	bool IdRegistry::IsValid(Id id) const
 	{
+		std::shared_lock lock{mutex};
 		const Index index = id.GetIndex();
 		return entities.IsValidIndex(index) && entities[p::i32(index)] == id;
 	}
 
 	bool IdRegistry::WasRemoved(Id id) const
 	{
+		std::shared_lock lock{mutex};
 		const Index index = id.GetIndex();
 		return entities.IsValidIndex(index)
 		    && entities[p::i32(index)].GetVersion() > id.GetVersion();
@@ -128,6 +145,7 @@ namespace p
 
 	TOptional<IdRegistry::Version> IdRegistry::GetValidVersion(IdRegistry::Index idx) const
 	{
+		std::shared_lock lock{mutex};
 		if (entities.IsValidIndex(idx))
 		{
 			return entities[p::i32(idx)].GetVersion();
@@ -863,7 +881,8 @@ namespace p
 		for (const BasePool* pool : pools)
 		{
 			if (!P_EnsureMsg(pool,
-			        "One of the pools is null. Is the access missing one or more of the specified "
+			        "One of the pools is null. Is the access missing one or more of the "
+			        "specified "
 			        "components?"))
 			{
 				return;
@@ -905,7 +924,8 @@ namespace p
 		for (const BasePool* pool : pools)
 		{
 			if (!P_EnsureMsg(pool,
-			        "One of the pools is null. Is the access missing one or more of the specified "
+			        "One of the pools is null. Is the access missing one or more of the "
+			        "specified "
 			        "components?"))
 			{
 				return;
@@ -930,7 +950,8 @@ namespace p
 		for (const BasePool* pool : pools)
 		{
 			if (!P_EnsureMsg(pool,
-			        "One of the pools is null. Is the access missing one or more of the specified "
+			        "One of the pools is null. Is the access missing one or more of the "
+			        "specified "
 			        "components?"))
 			{
 				return;

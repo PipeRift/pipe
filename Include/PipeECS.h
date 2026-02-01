@@ -11,6 +11,8 @@
 #include "PipePlatform.h"
 #include "PipeReflect.h"
 
+#include <shared_mutex>
+
 
 #ifndef P_ID_IS_64BIT
 	#define P_ID_IS_64BIT 0
@@ -181,19 +183,21 @@ namespace p
 		TArray<Id> entities;
 		TArray<Index> available;
 
+		// Support for multi-threaded entity creation and removal
+		mutable std::shared_mutex mutex;
+
 
 	public:
 
 		IdRegistry() {}
-		IdRegistry(IdRegistry&& other)                 = default;
-		IdRegistry(const IdRegistry& other)            = default;
-		IdRegistry& operator=(IdRegistry&& other)      = default;
-		IdRegistry& operator=(const IdRegistry& other) = default;
+		IdRegistry(IdRegistry&& other);
+		IdRegistry(const IdRegistry& other);
+		IdRegistry& operator=(IdRegistry&& other);
+		IdRegistry& operator=(const IdRegistry& other);
 
 
 		Id Create();
 		void Create(TView<Id> newIds);
-		bool Destroy(Id id);
 		bool Destroy(TView<const Id> ids);
 		bool IsValid(Id id) const;
 		bool WasRemoved(Id id) const;
