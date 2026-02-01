@@ -170,12 +170,12 @@ namespace p
 			Id& entity = entities[i];
 			if (entity == NoId)
 			{
-				entity = context.Create();
+				entity = CreateId(context);
 			}
 			ids[i] = entity;
 		}
 		// Create all non-root entities
-		context.Create({ids.Data() + maxSize, ids.Data() + ids.Size()});
+		CreateIds(context, {ids.Data() + maxSize, ids.Data() + ids.Size()});
 
 		if (EnterNext("components"))
 		{
@@ -201,7 +201,7 @@ namespace p
 		Id parent = GetIdParent(context, entity);
 		if (entity == NoId)
 		{
-			entity = context.Create();
+			entity = CreateId(context);
 		}
 		ids.Assign(&entity, 1);
 
@@ -333,7 +333,7 @@ namespace p
 	    : idIndices{*other.arena}
 	    , idList{*other.arena}
 	    , arena{other.arena}
-	    , deletionPolicy{other.deletionPolicy}
+	    , removePolicy{other.removePolicy}
 	    , typeId{other.typeId}
 	    , context{other.context}
 	{
@@ -355,7 +355,7 @@ namespace p
 	    , idList{Move(other.idList)}
 	    , arena{other.arena}
 	    , lastRemovedIndex{Exchange(other.lastRemovedIndex, NO_INDEX)}
-	    , deletionPolicy{other.deletionPolicy}
+	    , removePolicy{other.removePolicy}
 	    , typeId{Exchange(other.typeId, {})}
 	    , context{other.context}
 	{}
@@ -365,7 +365,7 @@ namespace p
 		idList           = Move(other.idList);
 		arena            = other.arena;
 		lastRemovedIndex = Exchange(other.lastRemovedIndex, NO_INDEX);
-		deletionPolicy   = other.deletionPolicy;
+		removePolicy     = other.removePolicy;
 		typeId           = other.typeId;
 		context          = other.context;
 		return *this;
@@ -534,15 +534,6 @@ namespace p
 		Reset();
 		MoveFrom(Move(other));
 		return *this;
-	}
-
-	Id EntityContext::Create()
-	{
-		return idRegistry.Create();
-	}
-	void EntityContext::Create(TView<Id> ids)
-	{
-		idRegistry.Create(ids);
 	}
 
 	void EntityContext::Destroy(const Id id)
@@ -1004,6 +995,17 @@ namespace p
 			}
 		}
 	}
+
+
+	Id CreateId(EntityContext& ctx)
+	{
+		return ctx.GetIdRegistry().Create();
+	}
+	void CreateIds(EntityContext& ctx, TView<Id> ids)
+	{
+		ctx.GetIdRegistry().Create(ids);
+	}
+
 
 	void AttachId(
 	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TView<const Id> children)

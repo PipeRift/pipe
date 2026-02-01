@@ -235,9 +235,9 @@ namespace p
 	 * manually along with all other removed entities.
 	 * @see RemoveId()
 	 */
-	struct P_API CPendingRemove
+	struct P_API CRemoved
 	{
-		P_STRUCT(CPendingRemove)
+		P_STRUCT(CRemoved)
 	};
 
 	struct P_API CParent
@@ -369,8 +369,7 @@ namespace p
 // POOLS
 //
 #pragma region Pools
-
-	enum class DeletionPolicy : u8
+	enum class PoolRemovePolicy : u8
 	{
 		Swap,
 		InPlace
@@ -492,7 +491,7 @@ namespace p
 		TArray<Id> idList;
 		Arena* arena         = nullptr;
 		i32 lastRemovedIndex = NO_INDEX;
-		DeletionPolicy deletionPolicy;
+		PoolRemovePolicy removePolicy;
 
 		TypeId typeId;
 		EntityContext* context = nullptr;
@@ -500,11 +499,11 @@ namespace p
 		TBroadcast<EntityContext&, TView<const Id>> onRemove;
 
 
-		BasePool(TypeId typeId, EntityContext& ast, DeletionPolicy deletionPolicy, Arena& arena)
+		BasePool(TypeId typeId, EntityContext& ast, PoolRemovePolicy removePolicy, Arena& arena)
 		    : idIndices{arena}
 		    , idList{arena}
 		    , arena{&arena}
-		    , deletionPolicy{deletionPolicy}
+		    , removePolicy{removePolicy}
 		    , typeId{typeId}
 		    , context{&ast}
 		{
@@ -671,7 +670,7 @@ namespace p
 
 	public:
 		TPool(EntityContext& ast, Arena& arena = GetCurrentArena())
-		    : BasePool(p::GetTypeId<T>(), ast, DeletionPolicy::InPlace, arena), data{arena}
+		    : BasePool(p::GetTypeId<T>(), ast, PoolRemovePolicy::InPlace, arena), data{arena}
 		{}
 		TPool(const TPool& other) : BasePool(other), data{*other.arena}
 		{
@@ -843,7 +842,7 @@ namespace p
 		{
 			P_Check(Has(id));
 			OnRemoved({id});
-			if (deletionPolicy == DeletionPolicy::InPlace)
+			if (removePolicy == PoolRemovePolicy::InPlace)
 			{
 				Pop(id);
 			}
@@ -857,7 +856,7 @@ namespace p
 		{
 			OnRemoved(ids);
 			i32 removed = 0;
-			if (deletionPolicy == DeletionPolicy::InPlace)
+			if (removePolicy == PoolRemovePolicy::InPlace)
 			{
 				for (Id id : ids)
 				{
@@ -885,7 +884,7 @@ namespace p
 		void RemoveUnsafe(TView<const Id> ids) override
 		{
 			OnRemoved(ids);
-			if (deletionPolicy == DeletionPolicy::InPlace)
+			if (removePolicy == PoolRemovePolicy::InPlace)
 			{
 				for (Id id : ids)
 				{
@@ -1059,6 +1058,12 @@ namespace p
 // CONTEXT
 //
 #pragma region Context
+	enum class IdRemovePolicy : u8
+	{
+		Instant,
+		Deferred
+	};
+
 	struct P_API SortLessStatics
 	{
 		bool operator()(const OwnPtr& a, const OwnPtr& b) const
@@ -1083,6 +1088,7 @@ namespace p
 		IdRegistry idRegistry;
 		mutable TArray<PoolInstance> pools;
 		TArray<OwnPtr> statics;
+		IdRemovePolicy removePolicy = IdRemovePolicy::Instant;
 
 
 	public:
@@ -1097,9 +1103,6 @@ namespace p
 		EntityContext& operator=(EntityContext&& other) noexcept;
 
 #pragma region Entities
-		Id Create();
-		void Create(Id id);
-		void Create(TView<Id> ids);
 		void Destroy(Id id);
 		void Destroy(TView<const Id> ids);
 
@@ -1230,6 +1233,10 @@ namespace p
 		}
 
 		const IdRegistry& GetIdRegistry() const
+		{
+			return idRegistry;
+		}
+		IdRegistry& GetIdRegistry()
 		{
 			return idRegistry;
 		}
@@ -2082,6 +2089,21 @@ namespace p
 		}
 	}
 #pragma endregion Filtering
+
+
+////////////////////////////////
+// EDITING
+//
+#pragma region Editing
+
+	// Create
+	P_API Id CreateId(EntityContext& ctx);
+	P_API void CreateIds(EntityContext& ctx, TView<Id> Ids);
+
+	// Remove
+
+
+#pragma endregion Editing
 
 
 ////////////////////////////////
