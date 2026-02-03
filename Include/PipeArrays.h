@@ -1779,24 +1779,24 @@ namespace p
 		}
 		constexpr TView(const IArray<Type>& value, i32 firstN)
 		{
-			Super::data = value.data;
-			Super::size = Min(value.size, firstN);
+			Super::data = value.Data();
+			Super::size = Min(value.Size(), firstN);
 		}
 		constexpr TView(const IArray<Mut<Type>>& value, i32 firstN) requires(IsConst<Type>)
 		{
-			Super::data = value.data;
-			Super::size = Min(value.size, firstN);
+			Super::data = value.Data();
+			Super::size = Min(value.Size(), firstN);
 		}
 		constexpr TView& operator=(const IArray<Type>& other)
 		{
-			Super::data = other.data;
-			Super::size = other.size;
+			Super::data = other.Data();
+			Super::size = other.Size();
 			return *this;
 		}
 		constexpr TView& operator=(const IArray<Mut<Type>>& other) requires(IsConst<Type>)
 		{
-			Super::data = other.data;
-			Super::size = other.size;
+			Super::data = other.Data();
+			Super::size = other.Size();
 			return *this;
 		}
 
