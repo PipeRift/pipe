@@ -102,7 +102,7 @@ namespace p
 		}
 
 		// Remaining entities
-		const int32 firstIndex = entities.Size();
+		const i32 firstIndex = entities.Size();
 		for (i32 i = 0; i < newIds.Size(); ++i)
 		{
 			newIds[i] = MakeId(firstIndex + i, 0);
