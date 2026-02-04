@@ -126,7 +126,7 @@ go_bandit([]() {
 			AssertThat(ids.Size(), Equals(3));
 			for (i32 i = 0; i < list.Size(); ++i)
 			{
-				AssertThat(list[i], Equals(Id(i)));
+				AssertThat(list[i].GetIndex(), Equals(i));
 				AssertThat(ids.IsValid(list[i]), Is().True());
 			}
 		});
@@ -138,6 +138,21 @@ go_bandit([]() {
 			AssertThat(ids.Size(), Equals(3));
 
 			AssertThat(ids.Remove(list), Is().True());
+			AssertThat(ids.Size(), Equals(0));
+
+			for (i32 i = 0; i < list.Size(); ++i)
+			{
+				AssertThat(ids.IsValid(list[i]), Is().False());
+			}
+		});
+
+		it("Can remove many ids (deferred)", [&]() {
+			IdRegistry ids;
+			TArray<Id> list(3);
+			ids.Create(list);
+			AssertThat(ids.Size(), Equals(3));
+
+			AssertThat(ids.DeferredRemove(list), Is().True());
 			AssertThat(ids.Size(), Equals(0));
 
 			for (i32 i = 0; i < list.Size(); ++i)
