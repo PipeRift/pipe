@@ -84,9 +84,22 @@ go_bandit([]() {
 
 			it("Doesn't list removed ids", [&]() {
 				TAccess<TypeB> access{ctx};
-				ctx.Destroy(id2);    // Remove first in the pool
-				ctx.Destroy(id3);    // Remove last in the pool
-				ctx.Destroy(id4);    // Remove last in the pool
+				RmId(ctx, id2, RmIdFlags::Instant);    // Remove first in the pool
+				RmId(ctx, id3, RmIdFlags::Instant);    // Remove last in the pool
+				RmId(ctx, id4, RmIdFlags::Instant);    // Remove last in the pool
+
+				TArray<Id> ids = FindAllIdsWith<TypeB>(access);
+				AssertThat(ids.Contains(NoId), Is().False());
+				AssertThat(ids.Size(), Equals(1));
+			});
+
+			it("Doesn't list (deferred) removed ids", [&]() {
+				TAccess<TypeB> access{ctx};
+				RmId(ctx, id2);    // Remove first in the pool
+				RmId(ctx, id3);    // Remove last in the pool
+				RmId(ctx, id4);    // Remove last in the pool
+
+				ctx.FlushDeferredRemoves();
 
 				TArray<Id> ids = FindAllIdsWith<TypeB>(access);
 				AssertThat(ids.Contains(NoId), Is().False());

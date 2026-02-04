@@ -18,7 +18,7 @@ namespace p::ecs
 
 	enum class PoolDeletionPolicy : u8;
 	struct PoolIterator;
-	struct BasePool;
+	struct IPool;
 	template<typename T>
 	struct TPool;
 	struct PoolInstance;

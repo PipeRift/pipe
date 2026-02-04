@@ -139,7 +139,7 @@ go_bandit([]() {
 			Id id = ctx.Create();
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 
-			ctx.Destroy(id);
+			RmId(ctx, id);
 			AssertThat(ctx.IsValid(id), Is().False());
 
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
@@ -216,7 +216,7 @@ go_bandit([]() {
 			EntityContext ctx;
 			Id id = ctx.Create();
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
-			ctx.Destroy(id);
+			p::RmId(ctx, id);
 
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
 			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
@@ -228,7 +228,7 @@ go_bandit([]() {
 			EntityContext ctx;
 			Id id = ctx.Create();
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
-			ctx.Destroy(id);
+			RmId(ctx, id);
 
 			id = ctx.Create();
 			ctx.Add<NonEmptyComponent>(id);

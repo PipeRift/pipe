@@ -43,27 +43,31 @@ namespace p
 	IdRegistry::IdRegistry(IdRegistry&& other)
 	{
 		std::unique_lock lock{other.mutex};
-		entities  = Move(other.entities);
-		available = Move(other.available);
+		entities        = Move(other.entities);
+		available       = Move(other.available);
+		deferredRemoves = Move(other.deferredRemoves);
 	}
 	IdRegistry::IdRegistry(const IdRegistry& other)
 	{
 		std::shared_lock lock{other.mutex};
-		entities  = other.entities;
-		available = other.available;
+		entities        = other.entities;
+		available       = other.available;
+		deferredRemoves = other.deferredRemoves;
 	}
 	IdRegistry& IdRegistry::operator=(IdRegistry&& other)
 	{
 		std::unique_lock lock{other.mutex};
-		entities  = Move(other.entities);
-		available = Move(other.available);
+		entities        = Move(other.entities);
+		available       = Move(other.available);
+		deferredRemoves = Move(other.deferredRemoves);
 		return *this;
 	}
 	IdRegistry& IdRegistry::operator=(const IdRegistry& other)
 	{
 		std::shared_lock lock{other.mutex};
-		entities  = other.entities;
-		available = other.available;
+		entities        = other.entities;
+		available       = other.available;
+		deferredRemoves = other.deferredRemoves;
 		return *this;
 	}
 
@@ -106,10 +110,10 @@ namespace p
 		entities.Append(newIds);
 	}
 
-	bool IdRegistry::Destroy(TView<const Id> ids)
+	bool IdRegistry::Remove(TView<const Id> ids)
 	{
 		std::unique_lock lock{mutex};
-		available.Reserve(available.Size() + ids.Size());
+		available.ReserveMore(ids.Size());
 		const u32 lastAvailable = available.Size();
 		for (Id id : ids)
 		{
@@ -126,6 +130,38 @@ namespace p
 			}
 		}
 		return (available.Size() - lastAvailable) > 0;
+	}
+
+	bool IdRegistry::DeferredRemove(TView<const Id> ids)
+	{
+		std::unique_lock lock{mutex};
+		deferredRemoves.ReserveMore(ids.Size());
+		const u32 lastPending = deferredRemoves.Size();
+		for (Id id : ids)
+		{
+			const Index index = id.GetIndex();
+			if (entities.IsValidIndex(index))
+			{
+				Id& storedId = entities[index];
+				if (id == storedId)
+				{
+					deferredRemoves.Add(storedId);
+					// Increase version to invalidate current entity
+					storedId = MakeId(index, storedId.GetVersion() + 1u);
+				}
+			}
+		}
+		return (deferredRemoves.Size() - lastPending) > 0;
+	}
+
+	void IdRegistry::FlushDeferredRemoves()
+	{
+		available.ReserveMore(deferredRemoves.Size());
+		for (Id id : deferredRemoves)
+		{
+			available.Add(id.GetIndex());
+		}
+		deferredRemoves.Clear();
 	}
 
 	bool IdRegistry::IsValid(Id id) const
@@ -170,12 +206,12 @@ namespace p
 			Id& entity = entities[i];
 			if (entity == NoId)
 			{
-				entity = CreateId(context);
+				entity = AddId(context);
 			}
 			ids[i] = entity;
 		}
 		// Create all non-root entities
-		CreateIds(context, {ids.Data() + maxSize, ids.Data() + ids.Size()});
+		AddId(context, {ids.Data() + maxSize, ids.Data() + ids.Size()});
 
 		if (EnterNext("components"))
 		{
@@ -201,7 +237,7 @@ namespace p
 		Id parent = GetIdParent(context, entity);
 		if (entity == NoId)
 		{
-			entity = CreateId(context);
+			entity = AddId(context);
 		}
 		ids.Assign(&entity, 1);
 
@@ -329,14 +365,53 @@ namespace p
 	}
 
 
-	BasePool::BasePool(const BasePool& other)
-	    : idIndices{*other.arena}
-	    , idList{*other.arena}
-	    , arena{other.arena}
-	    , removePolicy{other.removePolicy}
-	    , typeId{other.typeId}
-	    , context{other.context}
+	IPool::Iterator IPool::begin() const
 	{
+		const TArray<Id>& idList = GetIdList();
+		return Iterator{idList, static_cast<Index>(idList.Size())};
+	}
+	IPool::Iterator IPool::end() const
+	{
+		return Iterator{GetIdList(), {}};
+	}
+	IPool::Iterator IPool::cbegin() const
+	{
+		return begin();
+	}
+	IPool::Iterator IPool::cend() const
+	{
+		return end();
+	}
+	IPool::ReverseIterator IPool::rbegin() const
+	{
+		return std::make_reverse_iterator(end());
+	}
+	IPool::ReverseIterator IPool::rend() const
+	{
+		return std::make_reverse_iterator(begin());
+	}
+	IPool::ReverseIterator IPool::crbegin() const
+	{
+		return rbegin();
+	}
+	IPool::ReverseIterator IPool::crend() const
+	{
+		return rend();
+	}
+
+
+	ComponentPool::ComponentPool(TypeId typeId, PoolRemovePolicy removePolicy, Arena& arena)
+	    : IPool(typeId), idIndices{arena}, idList{arena}, arena{&arena}, removePolicy{removePolicy}
+	{
+		BindOnPageAllocated();
+	}
+
+	ComponentPool::ComponentPool(const ComponentPool& other)
+	    : IPool(other.typeId), idIndices{*other.arena}, idList{*other.arena}
+	{
+		arena        = other.arena;
+		removePolicy = other.removePolicy;
+		typeId       = other.typeId;
 		BindOnPageAllocated();
 		idList.Reserve(other.idList.Size());
 		idIndices.Reserve(other.idIndices.Capacity());
@@ -350,28 +425,51 @@ namespace p
 		}
 	}
 
-	BasePool::BasePool(BasePool&& other) noexcept
-	    : idIndices{Move(other.idIndices)}
-	    , idList{Move(other.idList)}
-	    , arena{other.arena}
-	    , lastRemovedIndex{Exchange(other.lastRemovedIndex, NO_INDEX)}
-	    , removePolicy{other.removePolicy}
-	    , typeId{Exchange(other.typeId, {})}
-	    , context{other.context}
-	{}
-	BasePool& BasePool::operator=(BasePool&& other) noexcept
+	ComponentPool::ComponentPool(ComponentPool&& other) noexcept
+	    : IPool(other.typeId), idIndices{Move(other.idIndices)}, idList{Move(other.idList)}
 	{
+		BindOnPageAllocated();
+		arena            = other.arena;
+		lastRemovedIndex = Exchange(other.lastRemovedIndex, NO_INDEX);
+		removePolicy     = other.removePolicy;
+		typeId           = other.typeId;
+	}
+
+	ComponentPool& ComponentPool::operator=(const ComponentPool& other) noexcept
+	{
+		typeId       = other.typeId;
+		idIndices    = {*other.arena};
+		idList       = {*other.arena};
+		arena        = other.arena;
+		removePolicy = other.removePolicy;
+		typeId       = other.typeId;
+		BindOnPageAllocated();
+		idList.Reserve(other.idList.Size());
+		idIndices.Reserve(other.idIndices.Capacity());
+		for (i32 i = 0; i < other.Size(); ++i)
+		{
+			const Id id = other.idList[i];
+			if (id.GetVersion() != NoIdVersion)
+			{
+				EmplaceId(id, true);
+			}
+		}
+		return *this;
+	}
+
+	ComponentPool& ComponentPool::operator=(ComponentPool&& other) noexcept
+	{
+		typeId           = other.typeId;
 		idIndices        = Move(other.idIndices);
 		idList           = Move(other.idList);
 		arena            = other.arena;
 		lastRemovedIndex = Exchange(other.lastRemovedIndex, NO_INDEX);
 		removePolicy     = other.removePolicy;
 		typeId           = other.typeId;
-		context          = other.context;
 		return *this;
 	}
 
-	BasePool::Index BasePool::EmplaceId(const Id id, bool forceBack)
+	ComponentPool::Index ComponentPool::EmplaceId(const Id id, bool forceBack)
 	{
 		P_CheckMsg(!Has(id), "Set already contains entity");
 		const auto idIndex = id.GetIndex();
@@ -393,7 +491,7 @@ namespace p
 		}
 	}
 
-	void BasePool::PopId(Id id)
+	void ComponentPool::PopId(Id id)
 	{
 		const Index index = id.GetIndex();
 		i32& idIndex      = idIndices[index];
@@ -403,7 +501,7 @@ namespace p
 		idIndex          = NO_INDEX;
 	}
 
-	void BasePool::PopSwapId(Id id)
+	void ComponentPool::PopSwapId(Id id)
 	{
 		i32& idIndex = idIndices[id.GetIndex()];
 		idList.RemoveAtSwapUnsafe(idIndex);
@@ -414,7 +512,7 @@ namespace p
 		lastIndex = NO_INDEX;
 	}
 
-	void BasePool::ClearIds()
+	void ComponentPool::ClearIds()
 	{
 		if (lastRemovedIndex == NO_INDEX)
 		{
@@ -438,14 +536,33 @@ namespace p
 		idList.Clear();
 	}
 
-	void BasePool::BindOnPageAllocated()
+	void ComponentPool::BindOnPageAllocated()
 	{
 		idIndices.onPageAllocated = [](i32 index, i32* page, i32 size) {
 			std::uninitialized_fill_n(page, size, NO_INDEX);
 		};
 	}
 
-	i32 GetSmallestPool(TView<const BasePool* const> pools)
+	TPool<CRemoved>::TPool(p::EntityContext& ctx, Arena& arena)
+	    : IPool(p::GetTypeId<CRemoved>()), idRegistry{&ctx.GetIdRegistry()}
+	{}
+
+	i32 TPool<CRemoved>::Size() const
+	{
+		return idRegistry->GetDeferredRemovals().Size();
+	}
+
+	void TPool<CRemoved>::Add(Id id, CRemoved)
+	{
+		idRegistry->DeferredRemove(id);
+	}
+
+	const TArray<Id>& TPool<CRemoved>::GetIdList() const
+	{
+		return idRegistry->GetDeferredRemovals();
+	}
+
+	i32 GetSmallestPool(TView<const IPool* const> pools)
 	{
 		sizet minSize = Limits<sizet>::Max();
 		i32 minIndex  = NO_INDEX;
@@ -462,7 +579,7 @@ namespace p
 	}
 
 
-	PoolInstance::PoolInstance(TypeId componentId, TUniquePtr<BasePool>&& pool)
+	PoolInstance::PoolInstance(TypeId componentId, TUniquePtr<IPool>&& pool)
 	    : componentId{componentId}, pool{Move(pool)}
 	{}
 	PoolInstance::PoolInstance(PoolInstance&& other) noexcept
@@ -502,7 +619,7 @@ namespace p
 		return componentId;
 	}
 
-	BasePool* PoolInstance::GetPool() const
+	IPool* PoolInstance::GetPool() const
 	{
 		return pool.Get();
 	}
@@ -536,27 +653,9 @@ namespace p
 		return *this;
 	}
 
-	void EntityContext::Destroy(const Id id)
-	{
-		for (auto& pool : pools)
-		{
-			pool.GetPool()->Remove(id);
-		}
-		idRegistry.Destroy(id);
-	}
-
-	void EntityContext::Destroy(TView<const Id> ids)
-	{
-		for (auto& pool : pools)
-		{
-			pool.GetPool()->Remove(ids);
-		}
-		idRegistry.Destroy(ids);
-	}
-
 	void* EntityContext::AddDefault(TypeId typeId, Id id)
 	{
-		if (BasePool* pool = GetPool(typeId))
+		if (IPool* pool = GetPool(typeId))
 		{
 			return pool->AddDefault(id);
 		}
@@ -565,20 +664,19 @@ namespace p
 
 	void EntityContext::Remove(TypeId typeId, Id id)
 	{
-		if (BasePool* pool = GetPool(typeId))
+		if (IPool* pool = GetPool(typeId))
 		{
 			pool->Remove(id);
 		}
 	}
 
-	BasePool* EntityContext::GetPool(TypeId componentId) const
+	IPool* EntityContext::GetPool(TypeId componentId) const
 	{
 		const i32 index = pools.FindSorted(PoolInstance{componentId, {}});
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
 	}
 
-	void EntityContext::GetPools(
-	    TView<const TypeId> componentIds, TArray<BasePool*>& outPools) const
+	void EntityContext::GetPools(TView<const TypeId> componentIds, TArray<IPool*>& outPools) const
 	{
 		for (const TypeId componentId : componentIds)
 		{
@@ -599,7 +697,6 @@ namespace p
 		for (const PoolInstance& otherInstance : other.pools)
 		{
 			PoolInstance instance{otherInstance};
-			instance.pool->SetOwnerContext(*this);
 			pools.Add(Move(instance));
 		}
 
@@ -611,11 +708,7 @@ namespace p
 	{
 		idRegistry = Move(other.idRegistry);
 		pools      = Move(other.pools);
-		for (auto& instance : pools)
-		{
-			instance.pool->SetOwnerContext(*this);
-		}
-		statics = Move(other.statics);
+		statics    = Move(other.statics);
 
 		// TODO: Move statics
 		// TODO: Cache pools
@@ -700,7 +793,7 @@ namespace p
 	}
 
 
-	void ExcludeIdsWith(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIdsWith(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		for (i32 i = ids.Size() - 1; i >= 0; --i)
 		{
@@ -715,7 +808,7 @@ namespace p
 		}
 	}
 
-	void ExcludeIdsWithStable(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIdsWithStable(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ids.RemoveIf(
 		    [pool](Id id) {
@@ -724,7 +817,7 @@ namespace p
 		    shouldShrink);
 	}
 
-	void ExcludeIdsWithout(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIdsWithout(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		for (i32 i = ids.Size() - 1; i >= 0; --i)
 		{
@@ -739,7 +832,7 @@ namespace p
 		}
 	}
 
-	void ExcludeIdsWithoutStable(const BasePool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIdsWithoutStable(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
 		ids.RemoveIf(
 		    [pool](Id id) {
@@ -748,7 +841,7 @@ namespace p
 		    shouldShrink);
 	}
 
-	void FindIdsWith(const BasePool* pool, TView<const Id> source, TArray<Id>& results)
+	void FindIdsWith(const IPool* pool, TView<const Id> source, TArray<Id>& results)
 	{
 		if (pool)
 		{
@@ -762,8 +855,7 @@ namespace p
 			}
 		}
 	}
-	void FindIdsWith(
-	    TView<const BasePool* const> pools, TView<const Id> source, TArray<Id>& results)
+	void FindIdsWith(TView<const IPool* const> pools, TView<const Id> source, TArray<Id>& results)
 	{
 		FindIdsWith(pools.First(), source, results);
 		for (i32 i = 1; i < pools.Size(); ++i)
@@ -772,7 +864,7 @@ namespace p
 		}
 	}
 
-	void FindIdsWithout(const BasePool* pool, TView<const Id> source, TArray<Id>& results)
+	void FindIdsWithout(const IPool* pool, TView<const Id> source, TArray<Id>& results)
 	{
 		if (pool)
 		{
@@ -793,7 +885,7 @@ namespace p
 	}
 
 	void ExtractIdsWith(
-	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		for (i32 i = source.Size() - 1; i >= 0; --i)
@@ -812,7 +904,7 @@ namespace p
 	}
 
 	void ExtractIdsWithStable(
-	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		source.RemoveIf(
@@ -828,7 +920,7 @@ namespace p
 	}
 
 	void ExtractIdsWithout(
-	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		results.ReserveMore(source.Size());
 		for (i32 i = source.Size() - 1; i >= 0; --i)
@@ -847,7 +939,7 @@ namespace p
 	}
 
 	void ExtractIdsWithoutStable(
-	    const BasePool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		source.RemoveIf(
@@ -862,14 +954,14 @@ namespace p
 		    shouldShrink);
 	}
 
-	void FindAllIdsWith(TView<const BasePool* const> pools, TArray<Id>& ids)
+	void FindAllIdsWith(TView<const IPool* const> pools, TArray<Id>& ids)
 	{
 		if (pools.IsEmpty())
 		{
 			return;
 		}
 
-		for (const BasePool* pool : pools)
+		for (const IPool* pool : pools)
 		{
 			if (!P_EnsureMsg(pool,
 			        "One of the pools is null. Is the access missing one or more of the "
@@ -880,8 +972,8 @@ namespace p
 			}
 		}
 
-		const i32 smallestIdx        = GetSmallestPool(pools);
-		const BasePool* iterablePool = pools[smallestIdx];
+		const i32 smallestIdx     = GetSmallestPool(pools);
+		const IPool* iterablePool = pools[smallestIdx];
 
 		ids.Clear(false);
 		ids.Reserve(iterablePool->Size());
@@ -899,20 +991,20 @@ namespace p
 		{
 			if (i != smallestIdx)
 			{
-				const BasePool* pool = pools[i];
+				const IPool* pool = pools[i];
 				ExcludeIdsWithout(pool, ids, false);
 			}
 		}
 	}
 
-	void FindAllIdsWithAny(TView<const BasePool* const> pools, TArray<Id>& ids)
+	void FindAllIdsWithAny(TView<const IPool* const> pools, TArray<Id>& ids)
 	{
 		if (pools.IsEmpty())
 		{
 			return;
 		}
 
-		for (const BasePool* pool : pools)
+		for (const IPool* pool : pools)
 		{
 			if (!P_EnsureMsg(pool,
 			        "One of the pools is null. Is the access missing one or more of the "
@@ -924,13 +1016,13 @@ namespace p
 		}
 
 		ids.Clear();
-		for (const BasePool* pool : pools)
+		for (const IPool* pool : pools)
 		{
 			ids.Append(pool->begin(), pool->end());
 		}
 	}
 
-	void FindAllIdsWithAnyUnique(TView<const BasePool* const> pools, TArray<Id>& ids)
+	void FindAllIdsWithAnyUnique(TView<const IPool* const> pools, TArray<Id>& ids)
 	{
 		if (pools.IsEmpty())
 		{
@@ -938,7 +1030,7 @@ namespace p
 		}
 
 		i32 maxPossibleSize = 0;
-		for (const BasePool* pool : pools)
+		for (const IPool* pool : pools)
 		{
 			if (!P_EnsureMsg(pool,
 			        "One of the pools is null. Is the access missing one or more of the "
@@ -953,7 +1045,7 @@ namespace p
 
 		TSet<Id> idsSet;
 		idsSet.Reserve(maxPossibleSize);
-		for (const BasePool* pool : pools)
+		for (const IPool* pool : pools)
 		{
 			for (Id id : *pool)
 			{
@@ -997,13 +1089,38 @@ namespace p
 	}
 
 
-	Id CreateId(EntityContext& ctx)
+	Id AddId(EntityContext& ctx)
 	{
 		return ctx.GetIdRegistry().Create();
 	}
-	void CreateIds(EntityContext& ctx, TView<Id> ids)
+	void AddId(EntityContext& ctx, TView<Id> ids)
 	{
 		ctx.GetIdRegistry().Create(ids);
+	}
+
+	void RmId(EntityContext& ctx, TView<const Id> ids, RmIdFlags flags)
+	{
+		TArray<Id> allIds;    // Only used when removing children. Here for scope purposes.
+		if (HasFlag(flags, p::RmIdFlags::RemoveChildren))
+		{
+			allIds.Append(ids);
+			GetAllIdChildren(ctx, ids, allIds);
+			// No children to detach since we will remove all of them
+			ids = allIds;
+		}
+
+		if (HasFlag(flags, p::RmIdFlags::Instant))
+		{
+			for (auto& pool : ctx.GetPools())
+			{
+				pool.GetPool()->Remove(ids);
+			}
+			ctx.GetIdRegistry().Remove(ids);
+		}
+		else
+		{
+			ctx.GetIdRegistry().DeferredRemove(ids);
+		}
 	}
 
 
@@ -1264,25 +1381,6 @@ namespace p
 			}
 			Swap(currentIds, parentIds);
 			parentIds.Clear(false);
-		}
-	}
-
-	void RemoveId(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TView<Id> ids, bool deep)
-	{
-		DetachIdParent(access, ids, true);
-
-		if (deep)
-		{
-			TArray<Id> allIds;
-			allIds.Append(ids);
-			GetAllIdChildren(access, ids, allIds);
-			// No children to detach since we will remove all of them
-			access.GetContext().Destroy(allIds);
-		}
-		else
-		{
-			DetachIdChildren(access, ids);
-			access.GetContext().Destroy(ids);
 		}
 	}
 

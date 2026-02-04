@@ -28,14 +28,24 @@ namespace p
 
 
 	////////////////////////////////
-	// ENTITY IDS
+	// DECLARATIONS
 	//
+	enum class RmIdFlags : u8
+	{
+		// Default: Deferred & keep children
+		None = 0,
+		// Remove entities instantly instead of waiting (deferred)
+		Instant = 1 << 0,
+		// Remove children entities of the ones being removed
+		RemoveChildren = 1 << 1
+	};
+	P_DEFINE_FLAG_OPERATORS(RmIdFlags)
+
+
 #pragma region Ids
 	/** An Id is an integer composed of both index and version that identifies an entity */
 	struct P_API Id
 	{
-#pragma warning(push)
-#pragma warning(disable:4201)    // Avoid warning about nameless struct
 #if P_ID_IS_64BIT
 		using Value                          = u64;
 		using Index                          = u32;
@@ -43,17 +53,7 @@ namespace p
 		using Difference                     = i64;
 		static constexpr Index indexMask     = 0xffffffff;
 		static constexpr Version versionMask = 0xffffffff;
-
-	protected:
-		union
-		{
-			struct
-			{
-				Index index;
-				Version version;
-			};
-			Value raw;
-		};
+		static constexpr sizet indexShift    = 32u;
 #else
 		using Value                          = u32;
 		using Index                          = u32;
@@ -61,51 +61,51 @@ namespace p
 		using Difference                     = i64;
 		static constexpr Index indexMask     = 0xfffff;
 		static constexpr Version versionMask = 0xfff;
-
-	protected:
-		union
-		{
-			struct
-			{
-				Index index:20;
-				Version version:12;
-			};
-			Value raw;
-		};
+		static constexpr sizet indexShift    = 20u;
 #endif
-#pragma warning(pop)
+
+		Value value;
 
 	private:
-		constexpr Id(Value raw) : raw(raw) {}
+		explicit constexpr Id(Value value) : value(value) {}
 
 	public:
 
-		constexpr Id() : index{indexMask}, version{versionMask} {}
-		constexpr Id(Index index, Version version) : index{index}, version{version} {}
+		constexpr Id() : Id(indexMask, versionMask) {}
+		constexpr Id(Index index, Version version)
+		    : value{(index & indexMask) | ((Value)version << indexShift)}
+		{}
+		constexpr Id(const Id& other) : Id(other.value) {}
+		constexpr Id& operator=(const Id& other)
+		{
+			value = other.value;
+			return *this;
+		}
+
 
 		constexpr bool operator==(const Id other) const
 		{
-			return raw == other.raw;
+			return value == other.value;
 		}
 		constexpr bool operator!=(const Id other) const
 		{
-			return raw != other.raw;
+			return value != other.value;
 		}
 		constexpr bool operator<(const Id other) const
 		{
-			return raw < other.raw;
+			return value < other.value;
 		}
 		constexpr bool operator<=(const Id other) const
 		{
-			return raw <= other.raw;
+			return value <= other.value;
 		}
 		constexpr bool operator>(const Id other) const
 		{
-			return raw > other.raw;
+			return value > other.value;
 		}
 		constexpr bool operator>=(const Id other) const
 		{
-			return raw >= other.raw;
+			return value >= other.value;
 		}
 
 		static constexpr Id MakeRaw(Value raw)
@@ -113,23 +113,20 @@ namespace p
 			return Id(raw);
 		}
 
-		constexpr Value GetRaw() const
-		{
-			return raw;
-		}
 		constexpr Index GetIndex() const
 		{
-			return index;
+			return value & indexMask;
 		}
 		constexpr Version GetVersion() const
 		{
-			return version;
+			constexpr auto mask = versionMask << indexShift;
+			return (value & mask) >> indexShift;
 		}
 	};
 
 	inline sizet GetHash(const Id id)
 	{
-		return GetHash(id.GetRaw());
+		return GetHash(id.value);
 	}
 
 	// Creates an id from a combination of index and version. This does NOT create an entity.
@@ -169,54 +166,9 @@ namespace p
 	 * valid version
 	 */
 	P_API Id IdFromString(String str, EntityContext* context);
-
-
-	/** IdRegistry tracks the existance and versioning of ids. Used internally by the ECS
-	 * context */
-	struct P_API IdRegistry
-	{
-		using Index   = Id::Index;
-		using Version = Id::Version;
-
-	private:
-
-		TArray<Id> entities;
-		TArray<Index> available;
-
-		// Support for multi-threaded entity creation and removal
-		mutable std::shared_mutex mutex;
-
-
-	public:
-
-		IdRegistry() {}
-		IdRegistry(IdRegistry&& other);
-		IdRegistry(const IdRegistry& other);
-		IdRegistry& operator=(IdRegistry&& other);
-		IdRegistry& operator=(const IdRegistry& other);
-
-
-		Id Create();
-		void Create(TView<Id> newIds);
-		bool Destroy(TView<const Id> ids);
-		bool IsValid(Id id) const;
-		bool WasRemoved(Id id) const;
-		TOptional<Version> GetValidVersion(Index idx) const;
-
-		u32 Size() const
-		{
-			return entities.Size() - available.Size();
-		}
-
-		template<typename Callback>
-		void Each(Callback cb) const;
-	};
 #pragma endregion Ids
 
 
-////////////////////////////////
-// COMPONENTS
-//
 #pragma region Components
 	/**
 	 * Modified component
@@ -226,18 +178,18 @@ namespace p
 	template<typename T>
 	struct CMdfd
 	{
-		P_STRUCT(CMdfd)
+		P_STRUCT(CMdfd, TF_NotSerialized)
 	};
 
 	/**
 	 * Removed component
 	 * Optionally, an entity can be marked removed instead of actually removed and then flushed
 	 * manually along with all other removed entities.
-	 * @see RemoveId()
+	 * @see RmId()
 	 */
 	struct P_API CRemoved
 	{
-		P_STRUCT(CRemoved)
+		P_STRUCT(CRemoved, TF_NotSerialized)
 	};
 
 	struct P_API CParent
@@ -260,6 +212,63 @@ namespace p
 	P_API void Read(Reader& ct, CChild& val);
 	P_API void Write(Writer& ct, const CChild& val);
 #pragma endregion Components
+
+
+	////////////////////////////////
+	// COMPONENTS
+	//
+#pragma region Id Register
+	/** IdRegistry tracks the existance and versioning of ids. Used internally by the ECS
+	 * context */
+	struct P_API IdRegistry
+	{
+		using Index   = Id::Index;
+		using Version = Id::Version;
+
+	private:
+		TArray<Id> entities;
+		TArray<Index> available;
+		TArray<Id> deferredRemoves;    // List of ids that are invalid but not removed yet.
+
+		Arena* arena = nullptr;
+
+		// Support for multi-threaded entity creation and removal
+		mutable std::shared_mutex mutex;
+
+
+	public:
+
+		IdRegistry(Arena& arena = GetCurrentArena())
+		    : entities{arena}, available{arena}, deferredRemoves{arena}, arena{&arena}
+		{}
+		IdRegistry(IdRegistry&& other);
+		IdRegistry(const IdRegistry& other);
+		IdRegistry& operator=(IdRegistry&& other);
+		IdRegistry& operator=(const IdRegistry& other);
+
+
+		Id Create();
+		void Create(TView<Id> newIds);
+		bool Remove(TView<const Id> ids);
+		bool DeferredRemove(TView<const Id> ids);
+		void FlushDeferredRemoves();
+		const TArray<Id>& GetDeferredRemovals() const
+		{
+			return deferredRemoves;
+		}
+		bool IsValid(Id id) const;
+		bool WasRemoved(Id id) const;
+		TOptional<Version> GetValidVersion(Index idx) const;
+
+		u32 Size() const
+		{
+			return entities.Size() - available.Size();
+		}
+
+		template<typename Callback>
+		void Each(Callback cb) const;
+	};
+#pragma endregion Id Register
 
 
 ////////////////////////////////
@@ -477,15 +486,60 @@ namespace p
 		}
 	};
 
-
-	struct P_API BasePool
+	struct P_API IPool
 	{
-		using Index = Id::Index;
-
+		using Index           = Id::Index;
 		using Iterator        = PoolIterator;
 		using ReverseIterator = std::reverse_iterator<Iterator>;
 
+	protected:
+		TypeId typeId;
 
+
+	public:
+		IPool(TypeId typeId) : typeId{typeId} {}
+		virtual ~IPool() {}
+
+		// Returns the data pointer of a component if contained
+		virtual bool Has(Id id) const                  = 0;
+		virtual i32 Size() const                       = 0;
+		virtual void* AddDefault(Id id)                = 0;
+		virtual bool Remove(Id id)                     = 0;
+		virtual void RemoveUnsafe(Id id)               = 0;
+		virtual i32 Remove(TView<const Id> ids)        = 0;
+		virtual void RemoveUnsafe(TView<const Id> ids) = 0;
+		virtual void* TryGetVoid(Id id)                = 0;
+		virtual void Clear()                           = 0;
+		virtual TUniquePtr<IPool> Clone()              = 0;
+		virtual const TArray<Id>& GetIdList() const    = 0;
+
+		bool IsEmpty() const
+		{
+			return Size() > 0;
+		}
+
+		TypeId GetTypeId() const
+		{
+			return typeId;
+		}
+
+		// Standard functions:
+	public:
+
+		Iterator begin() const;
+		Iterator end() const;
+		Iterator cbegin() const;
+		Iterator cend() const;
+		ReverseIterator rbegin() const;
+		ReverseIterator rend() const;
+		ReverseIterator crbegin() const;
+		ReverseIterator crend() const;
+	};
+
+	i32 GetSmallestPool(TView<const IPool* const> pools);
+
+	struct P_API ComponentPool : public IPool
+	{
 	protected:
 		TPageBuffer<i32, 4096> idIndices;
 		TArray<Id> idList;
@@ -493,50 +547,35 @@ namespace p
 		i32 lastRemovedIndex = NO_INDEX;
 		PoolRemovePolicy removePolicy;
 
-		TypeId typeId;
-		EntityContext* context = nullptr;
-		TBroadcast<EntityContext&, TView<const Id>> onAdd;
-		TBroadcast<EntityContext&, TView<const Id>> onRemove;
+		TBroadcast<TView<const Id>> onAdd;
+		TBroadcast<TView<const Id>> onRemove;
 
 
-		BasePool(TypeId typeId, EntityContext& ast, PoolRemovePolicy removePolicy, Arena& arena)
-		    : idIndices{arena}
-		    , idList{arena}
-		    , arena{&arena}
-		    , removePolicy{removePolicy}
-		    , typeId{typeId}
-		    , context{&ast}
-		{
-			BindOnPageAllocated();
-		}
-		BasePool(const BasePool& other);
-		BasePool(BasePool&& other) noexcept;
-		BasePool& operator=(BasePool&& other) noexcept;
+		ComponentPool(TypeId typeId, PoolRemovePolicy removePolicy, Arena& arena);
+		ComponentPool(const ComponentPool& other);
+		ComponentPool(ComponentPool&& other) noexcept;
+		ComponentPool& operator=(const ComponentPool& other) noexcept;
+		ComponentPool& operator=(ComponentPool&& other) noexcept;
 
 		void OnAdded(TView<const Id> ids)
 		{
-			onAdd.Broadcast(*context, ids);
+			if (!ids.IsEmpty())
+			{
+				onAdd.Broadcast(ids);
+			}
 		}
 
 		void OnRemoved(TView<const Id> ids)
 		{
 			if (!ids.IsEmpty())
 			{
-				onRemove.Broadcast(*context, ids);
+				onRemove.Broadcast(ids);
 			}
 		}
 
 	public:
-		virtual ~BasePool() {}
+		virtual ~ComponentPool() {}
 
-		// Returns the data pointer of a component if contianed
-		virtual void* TryGetVoid(Id id) = 0;
-
-		virtual void* AddDefault(Id id)                = 0;
-		virtual bool Remove(Id id)                     = 0;
-		virtual void RemoveUnsafe(Id id)               = 0;
-		virtual i32 Remove(TView<const Id> ids)        = 0;
-		virtual void RemoveUnsafe(TView<const Id> ids) = 0;
 
 		inline i32 GetIndexFromId(const Index index) const
 		{
@@ -551,22 +590,7 @@ namespace p
 			return index < idList.Size() ? idList[index] : NoId;
 		}
 
-		virtual void SetOwnerContext(EntityContext& destination)
-		{
-			context = &destination;
-		}
-		virtual TUniquePtr<BasePool> Clone() = 0;
-
-		TypeId GetTypeId() const
-		{
-			return typeId;
-		}
-		EntityContext& GetContext() const
-		{
-			return *context;
-		}
-
-		bool Has(Id id) const
+		bool Has(Id id) const override
 		{
 			const i32* const index = idIndices.At(id.GetIndex());
 			return index && *index != NO_INDEX;
@@ -574,36 +598,34 @@ namespace p
 
 		Iterator Find(const Id id) const
 		{
-			return Has(id) ? Iterator{idList, GetIndexFromId(id)} : end();
+			const i32* const index = idIndices.At(id.GetIndex());
+			return index && *index != NO_INDEX ? Iterator{idList, *index} : end();
 		}
 
-		i32 Size() const
+		i32 Size() const override
 		{
 			return idList.Size();
 		}
 
 		bool IsEmpty() const
 		{
-			return idList.IsEmpty();
+			return Size() > 0;
 		}
 
-		// Return pointer to internal list of ids
-		Id* Data() const
+		const TArray<Id>& GetIdList() const override
 		{
-			return idList.Data();
+			return idList;
 		}
 
-		TBroadcast<EntityContext&, TView<const Id>>& OnAdd()
+		TBroadcast<TView<const Id>>& OnAdd()
 		{
 			return onAdd;
 		}
 
-		TBroadcast<EntityContext&, TView<const Id>>& OnRemove()
+		TBroadcast<TView<const Id>>& OnRemove()
 		{
 			return onRemove;
 		}
-
-		virtual void Clear() = 0;
 
 	protected:
 
@@ -615,64 +637,24 @@ namespace p
 
 		void ClearIds();
 
-
-		// Standard functions:
-	public:
-
-		Iterator begin() const
-		{
-			return Iterator{idList, static_cast<Index>(idList.Size())};
-		}
-		Iterator end() const
-		{
-			return Iterator{idList, {}};
-		}
-		Iterator cbegin() const
-		{
-			return begin();
-		}
-		Iterator cend() const
-		{
-			return end();
-		}
-		ReverseIterator rbegin() const
-		{
-			return std::make_reverse_iterator(end());
-		}
-		ReverseIterator rend() const
-		{
-			return std::make_reverse_iterator(begin());
-		}
-		ReverseIterator crbegin() const
-		{
-			return rbegin();
-		}
-		ReverseIterator crend() const
-		{
-			return rend();
-		}
-
 	private:
 
 		void BindOnPageAllocated();
 	};
 
 
-	i32 GetSmallestPool(TView<const BasePool* const> pools);
-
-
 	template<typename T>
-	struct TPool : public BasePool
+	struct TPool : public ComponentPool
 	{
 	private:
 		TPageBuffer<T, 1024> data;
 
 
 	public:
-		TPool(EntityContext& ast, Arena& arena = GetCurrentArena())
-		    : BasePool(p::GetTypeId<T>(), ast, PoolRemovePolicy::InPlace, arena), data{arena}
+		TPool(p::EntityContext& ctx, Arena& arena = GetCurrentArena())
+		    : ComponentPool(p::GetTypeId<T>(), PoolRemovePolicy::InPlace, arena), data{arena}
 		{}
-		TPool(const TPool& other) : BasePool(other), data{*other.arena}
+		TPool(const TPool& other) : ComponentPool(other), data{*other.arena}
 		{
 			if constexpr (!p::IsEmpty<T>)
 			{
@@ -694,6 +676,33 @@ namespace p
 					}
 				}
 			}
+		}
+		TPool& operator=(const TPool& other)
+		{
+			ComponentPool::operator=(other);
+			data = TPageBuffer<T, 1024>{*other.arena};
+
+			if constexpr (!p::IsEmpty<T>)
+			{
+				data.Reserve(other.data.Capacity());
+				i32 u = 0;
+				for (i32 i = 0; i < other.Size(); ++i, ++u)
+				{
+					const Id id = other.idList[i];
+					if (id != NoId)
+					{
+						if constexpr (IsCopyConstructible<T>)
+						{
+							data.Insert(u, other.data[i]);
+						}
+						else
+						{
+							data.Insert(u);
+						}
+					}
+				}
+			}
+			return *this;
 		}
 		~TPool() override
 		{
@@ -917,16 +926,28 @@ namespace p
 
 		T* TryGet(Id id)
 		{
-			if (!p::IsEmpty<T> && Has(id))
+			if constexpr (!p::IsEmpty<T>)
 			{
-				return &data[GetIndexFromId(id)];
+				const i32* const index = idIndices.At(id.GetIndex());
+				if (index && *index != NO_INDEX)    // Has(id)
+				{
+					return &data[*index];
+				}
 			}
 			return nullptr;
 		}
 
 		const T* TryGet(Id id) const
 		{
-			return Has(id) ? &data[GetIndexFromId(id)] : nullptr;
+			if constexpr (!p::IsEmpty<T>)
+			{
+				const i32* const index = idIndices.At(id.GetIndex());
+				if (index && *index != NO_INDEX)    // Has(id)
+				{
+					return &data[*index];
+				}
+			}
+			return nullptr;
 		}
 
 		void* TryGetVoid(Id id) override
@@ -934,7 +955,7 @@ namespace p
 			return TryGet(id);
 		}
 
-		TUniquePtr<BasePool> Clone() override
+		TUniquePtr<IPool> Clone() override
 		{
 			return p::MakeUnique<TPool<T>>(*this);
 		}
@@ -1036,19 +1057,108 @@ namespace p
 		}
 	};
 
+	// CRemoved pool is special in the sense that it acts as an interface to deferred removals in
+	// the IdRegistry
+	template<>
+	struct P_API TPool<CRemoved> : public IPool
+	{
+		using T = CRemoved;
+
+		p::IdRegistry* idRegistry = nullptr;
+
+	public:
+		TPool(p::EntityContext& ctx, Arena& arena = GetCurrentArena());
+		TPool(const TPool& other) : IPool(p::GetTypeId<T>()), idRegistry{other.idRegistry} {}
+		TPool& operator=(const TPool& other)
+		{
+			return *this;
+		}
+		~TPool()
+		{
+			Clear();
+		}
+
+		bool Has(Id id) const override
+		{
+			return GetIdList().Contains(id);
+		}
+
+		i32 Size() const override;
+
+		bool IsEmpty() const
+		{
+			return Size() > 0;
+		}
+
+		void* AddDefault(Id id) override
+		{
+			Add(id, {});
+			return nullptr;
+		}
+
+		void Add(Id id, CRemoved);
+
+		template<typename It>
+		void Add(It first, It last, const T& value = {}) requires(IsCopyConstructible<T>)
+		{}
+
+		template<typename It, typename CIt>
+		void Add(It first, It last, CIt from)
+		    requires(IsSame<std::decay_t<typename std::iterator_traits<CIt>::value_type>, T>)
+		{}
+
+		bool Remove(Id id) override
+		{
+			return false;
+		}
+
+		void RemoveUnsafe(Id id) override {}
+
+		i32 Remove(TView<const Id> ids) override
+		{
+			return 0;
+		}
+
+		void RemoveUnsafe(TView<const Id> ids) override {}
+
+		T* TryGet(Id id)
+		{
+			return nullptr;
+		}
+
+		const T* TryGet(Id id) const
+		{
+			return nullptr;
+		}
+
+		void* TryGetVoid(Id id) override
+		{
+			return nullptr;
+		}
+
+		TUniquePtr<IPool> Clone() override
+		{
+			return {};    // Can not clone
+		}
+
+		void Clear() override {}
+
+		const TArray<Id>& GetIdList() const override;
+	};
+
 
 	struct P_API PoolInstance
 	{
 		TypeId componentId{};
-		TUniquePtr<BasePool> pool;
+		TUniquePtr<IPool> pool;
 
-		PoolInstance(TypeId componentId, TUniquePtr<BasePool>&& pool);
+		PoolInstance(TypeId componentId, TUniquePtr<IPool>&& pool);
 		PoolInstance(PoolInstance&& other) noexcept;
 		explicit PoolInstance(const PoolInstance& other);
 		PoolInstance& operator=(PoolInstance&& other) noexcept;
 		PoolInstance& operator=(const PoolInstance& other);
 		TypeId GetId() const;
-		BasePool* GetPool() const;
+		IPool* GetPool() const;
 		bool operator<(const PoolInstance& other) const;
 	};
 #pragma endregion Pools
@@ -1103,9 +1213,6 @@ namespace p
 		EntityContext& operator=(EntityContext&& other) noexcept;
 
 #pragma region Entities
-		void Destroy(Id id);
-		void Destroy(TView<const Id> ids);
-
 		// Reflection helpers
 		void* AddDefault(TypeId typeId, Id id);
 		void Remove(TypeId typeId, Id id);
@@ -1284,13 +1391,13 @@ namespace p
 		void Reset(bool keepStatics = false);
 
 		template<typename Component>
-		TBroadcast<EntityContext&, TView<const Id>>& OnAdd()
+		TBroadcast<TView<const Id>>& OnAdd()
 		{
 			return AssurePool<Component>().OnAdd();
 		}
 
 		template<typename Component>
-		TBroadcast<EntityContext&, TView<const Id>>& OnRemove()
+		TBroadcast<TView<const Id>>& OnRemove()
 		{
 			return AssurePool<Component>().OnRemove();
 		}
@@ -1299,11 +1406,11 @@ namespace p
 		template<typename T>
 		TPool<Mut<T>>& AssurePool() const;
 
-		BasePool* GetPool(TypeId componentId) const;
-		void GetPools(TView<const TypeId> componentIds, TArray<BasePool*>& outPools) const;
-		void GetPools(TView<const TypeId> componentIds, TArray<const BasePool*>& outPools) const
+		IPool* GetPool(TypeId componentId) const;
+		void GetPools(TView<const TypeId> componentIds, TArray<IPool*>& outPools) const;
+		void GetPools(TView<const TypeId> componentIds, TArray<const IPool*>& outPools) const
 		{
-			GetPools(componentIds, reinterpret_cast<TArray<BasePool*>&>(outPools));
+			GetPools(componentIds, reinterpret_cast<TArray<IPool*>&>(outPools));
 		}
 
 		template<typename T>
@@ -1662,7 +1769,7 @@ namespace p
 
 		EntityContext& ast;
 		TArray<TypeAccess> types;
-		TArray<BasePool*> pools;
+		TArray<IPool*> pools;
 
 
 	public:
@@ -1700,68 +1807,67 @@ namespace p
 #pragma region Filtering
 
 	/** Remove ids containing a component from 'ids'. Does not guarantee order. */
-	P_API void ExcludeIdsWith(
-	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	P_API void ExcludeIdsWith(const IPool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids containing a component from 'ids'. Guarantees order. */
 	P_API void ExcludeIdsWithStable(
-	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	    const IPool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids NOT containing a component from 'ids'. Does not guarantee order. */
 	P_API void ExcludeIdsWithout(
-	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	    const IPool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 	/** Remove ids NOT containing a component from 'ids'. Guarantees order. */
 	P_API void ExcludeIdsWithoutStable(
-	    const BasePool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	    const IPool* pool, TArray<Id>& ids, const bool shouldShrink = true);
 
 
 	/** Find ids containing a component from a list 'source' into 'results'. */
-	P_API void FindIdsWith(const BasePool* pool, TView<const Id> source, TArray<Id>& results);
+	P_API void FindIdsWith(const IPool* pool, TView<const Id> source, TArray<Id>& results);
 	P_API void FindIdsWith(
-	    TView<const BasePool* const> pools, TView<const Id> source, TArray<Id>& results);
+	    TView<const IPool* const> pools, TView<const Id> source, TArray<Id>& results);
 
 	/** Find ids NOT containing a component from a list 'source' into 'results'. */
-	P_API void FindIdsWithout(const BasePool* pool, TView<const Id> source, TArray<Id>& results);
+	P_API void FindIdsWithout(const IPool* pool, TView<const Id> source, TArray<Id>& results);
 
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Does not guarantee order.
 	 */
-	P_API void ExtractIdsWith(const BasePool* pool, TArray<Id>& source, TArray<Id>& results,
-	    const bool shouldShrink = true);
+	P_API void ExtractIdsWith(
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Guarantees order.
 	 */
-	P_API void ExtractIdsWithStable(const BasePool* pool, TArray<Id>& source, TArray<Id>& results,
-	    const bool shouldShrink = true);
+	P_API void ExtractIdsWithStable(
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Does not guarantee order.
 	 */
-	P_API void ExtractIdsWithout(const BasePool* pool, TArray<Id>& source, TArray<Id>& results,
-	    const bool shouldShrink = true);
+	P_API void ExtractIdsWithout(
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
 
 	/**
 	 * Find and remove ids not containing a component from list 'source' into 'results'.
 	 * Guarantees order.
 	 */
-	P_API void ExtractIdsWithoutStable(const BasePool* pool, TArray<Id>& source,
-	    TArray<Id>& results, const bool shouldShrink = true);
+	P_API void ExtractIdsWithoutStable(
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
 
 
 	/** Find all ids containing all of the components */
-	P_API void FindAllIdsWith(TView<const BasePool* const> pools, TArray<Id>& ids);
+	P_API void FindAllIdsWith(TView<const IPool* const> pools, TArray<Id>& ids);
 
 	/** Find all ids containing any of the components. Includes possible duplicates */
-	P_API void FindAllIdsWithAny(TView<const BasePool* const> pools, TArray<Id>& ids);
+	P_API void FindAllIdsWithAny(TView<const IPool* const> pools, TArray<Id>& ids);
 
 	/** Find all ids containing any of the components. Prevents duplicates */
-	P_API void FindAllIdsWithAnyUnique(TView<const BasePool* const> pools, TArray<Id>& ids);
+	P_API void FindAllIdsWithAnyUnique(TView<const IPool* const> pools, TArray<Id>& ids);
 
 
 	// Templated API
@@ -2074,7 +2180,7 @@ namespace p
 	{
 		if constexpr (sizeof...(C) == 1)    // Only one component?
 		{
-			const BasePool* pool = access.template GetPool<const C...>();
+			const IPool* pool = access.template GetPool<const C...>();
 			if (pool && pool->Size() > 0)
 			{
 				return *pool->begin();
@@ -2097,12 +2203,11 @@ namespace p
 #pragma region Editing
 
 	// Create
-	P_API Id CreateId(EntityContext& ctx);
-	P_API void CreateIds(EntityContext& ctx, TView<Id> Ids);
+	P_API Id AddId(EntityContext& ctx);
+	P_API void AddId(EntityContext& ctx, TView<Id> Ids);
 
 	// Remove
-
-
+	P_API void RmId(EntityContext& ctx, TView<const Id> ids, RmIdFlags flags = RmIdFlags::None);
 #pragma endregion Editing
 
 
@@ -2164,9 +2269,6 @@ namespace p
 	// void Copy(Tree& ast, t TArray<Id>& nodes, TArray<Id>& outNewNodes);
 	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);
 	// void CopyAndTransferAllChildrenDeep(Tree& ast, Id root, Id otherRoot);
-
-	P_API void RemoveId(
-	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, TView<Id> nodes, bool deep = false);
 
 	/**
 	 * Iterates children nodes making sure child->parent links are correct or fixed
@@ -2350,7 +2452,7 @@ namespace p
 			index = pools.Add(CreatePoolInstance<T>());
 		}
 
-		BasePool* pool = pools[index].GetPool();
+		IPool* pool = pools[index].GetPool();
 		return *static_cast<TPool<Mut<T>>*>(pool);
 	}
 
