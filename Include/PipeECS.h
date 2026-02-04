@@ -251,7 +251,7 @@ namespace p
 		void Create(TView<Id> newIds);
 		bool Remove(TView<const Id> ids);
 		bool DeferredRemove(TView<const Id> ids);
-		void FlushDeferredRemovals();
+		bool FlushDeferredRemovals();
 		const TArray<Id>& GetDeferredRemovals() const
 		{
 			return deferredRemoves;

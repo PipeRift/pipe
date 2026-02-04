@@ -12,14 +12,6 @@
 #include <string.h>
 
 
-#ifndef P_PLATFORM_WINDOWS
-	#if defined(_WIN64) || defined(_WIN32)
-		#define P_PLATFORM_WINDOWS 1
-	#else
-		#define P_PLATFORM_WINDOWS 0
-	#endif
-#endif
-
 #if P_PLATFORM_WINDOWS
 	#include <io.h>
 	#include <Windows.h>

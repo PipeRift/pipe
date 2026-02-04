@@ -18,7 +18,7 @@ namespace snowhouse
 		static std::string ToString(Id id)
 		{
 			std::stringstream stream;
-			stream << "Id(" << UnderlyingType<Id>(id) << ")";
+			stream << "Id(" << id.value << ")";
 			return stream.str();
 		}
 	};

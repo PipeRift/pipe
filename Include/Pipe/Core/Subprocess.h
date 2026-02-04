@@ -7,6 +7,15 @@
 #include "Pipe/Export.h"
 #include "PipeArrays.h"
 
+// Including PipePlatform.h would be overkill just for this
+#ifndef P_PLATFORM_WINDOWS
+	#if defined(_WIN64) || defined(_WIN32)
+		#define P_PLATFORM_WINDOWS 1
+	#else
+		#define P_PLATFORM_WINDOWS 0
+	#endif
+#endif
+
 
 namespace p
 {
@@ -48,7 +57,7 @@ namespace p
 		FILE* coutFile = nullptr;
 		FILE* cerrFile = nullptr;
 
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 		void* hProcess     = nullptr;
 		void* hStdInput    = nullptr;
 		void* hEventOutput = nullptr;
