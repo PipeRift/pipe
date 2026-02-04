@@ -24,7 +24,7 @@ go_bandit([]() {
 			static bool calledAdd;
 
 			EntityContext origin;
-			Id id = origin.Create();
+			Id id = AddId(origin);
 
 			calledAdd = false;
 			astPtr    = &origin;
@@ -66,7 +66,7 @@ go_bandit([]() {
 			static bool calledAdd;
 
 			EntityContext origin;
-			Id id = origin.Create();
+			Id id = AddId(origin);
 
 			calledAdd = false;
 			astPtr    = &origin;

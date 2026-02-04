@@ -36,7 +36,7 @@ go_bandit([]() {
 				AssertThat(access.Has<TypeA>(id), Is().False());
 				AssertThat(accessConst.Has<TypeA>(id), Is().False());
 
-				id = ctx.Create();
+				id = AddId(ctx);
 				AssertThat(access.Has<TypeA>(id), Is().False());
 				AssertThat(accessConst.Has<TypeA>(id), Is().False());
 

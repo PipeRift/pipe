@@ -43,11 +43,11 @@ go_bandit([]() {
 	describe("ECS.Filtering", [&]() {
 		before_each([&]() {
 			ctx = {};
-			id1 = ctx.Create();
-			id2 = ctx.Create();
-			id3 = ctx.Create();
-			id4 = ctx.Create();
-			id5 = ctx.Create();
+			id1 = AddId(ctx);
+			id2 = AddId(ctx);
+			id3 = AddId(ctx);
+			id4 = AddId(ctx);
+			id5 = AddId(ctx);
 			ctx.Add<TypeA>(id1);
 			ctx.Add<TypeA, TypeB, TypeC>(id2);
 			ctx.Add<TypeB, TypeC>(id3);

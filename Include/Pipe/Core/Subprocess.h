@@ -11,7 +11,7 @@
 #include <string.h>
 
 
-#if !defined(_MSC_VER)
+#if !defined(_WIN64) && !defined(_WIN32)
 	#include <signal.h>
 	#include <spawn.h>
 	#include <stdlib.h>
