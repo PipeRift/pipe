@@ -91,9 +91,9 @@ go_bandit([]() {
 
 		it("Removed id index gets reused", [&]() {
 			IdRegistry ids;
-			ids.Create(1);
+			ids.Create();
 			Id id = ids.Create();
-			ids.Create(1);
+			ids.Create();
 			AssertThat(ids.Remove(id), Is().True());
 			Id id2 = ids.Create();
 			AssertThat(id2.GetIndex(), Equals(id.GetIndex()));
@@ -103,13 +103,13 @@ go_bandit([]() {
 
 		it("Deferred removed id index doesn't get reused until flushed", [&]() {
 			IdRegistry ids;
-			ids.Create(1);
+			ids.Create();
 			Id id = ids.Create();
-			ids.Create(1);
+			ids.Create();
 			AssertThat(ids.DeferredRemove(id), Is().True());
 			Id id2 = ids.Create();
 			AssertThat(id2.GetIndex(), !Equals(id.GetIndex()));
-			ids.FlushDeferredRemoves();
+			ids.FlushDeferredRemovals();
 			Id id3 = ids.Create();
 			AssertThat(id3.GetIndex(), Equals(id.GetIndex()));
 			Id id4 = ids.Create();

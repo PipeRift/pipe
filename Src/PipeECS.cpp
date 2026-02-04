@@ -154,7 +154,7 @@ namespace p
 		return (deferredRemoves.Size() - lastPending) > 0;
 	}
 
-	void IdRegistry::FlushDeferredRemoves()
+	void IdRegistry::FlushDeferredRemovals()
 	{
 		available.ReserveMore(deferredRemoves.Size());
 		for (Id id : deferredRemoves)
@@ -1098,7 +1098,7 @@ namespace p
 		ctx.GetIdRegistry().Create(ids);
 	}
 
-	void RmId(EntityContext& ctx, TView<const Id> ids, RmIdFlags flags)
+	bool RmId(EntityContext& ctx, TView<const Id> ids, RmIdFlags flags)
 	{
 		TArray<Id> allIds;    // Only used when removing children. Here for scope purposes.
 		if (HasFlag(flags, p::RmIdFlags::RemoveChildren))
@@ -1115,12 +1115,22 @@ namespace p
 			{
 				pool.GetPool()->Remove(ids);
 			}
-			ctx.GetIdRegistry().Remove(ids);
+			return ctx.GetIdRegistry().Remove(ids);
 		}
 		else
 		{
-			ctx.GetIdRegistry().DeferredRemove(ids);
+			return ctx.GetIdRegistry().DeferredRemove(ids);
 		}
+	}
+
+	bool FlushDeferredRemovals(EntityContext& ctx)
+	{
+		TView<Id> ids = ctx.GetIdRegistry().GetDeferredRemovals();
+		for (auto& pool : ctx.GetPools())
+		{
+			pool.GetPool()->Remove(ids);
+		}
+		ctx.GetIdRegistry().FlushDeferredRemovals();
 	}
 
 

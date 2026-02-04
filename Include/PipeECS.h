@@ -251,7 +251,7 @@ namespace p
 		void Create(TView<Id> newIds);
 		bool Remove(TView<const Id> ids);
 		bool DeferredRemove(TView<const Id> ids);
-		void FlushDeferredRemoves();
+		void FlushDeferredRemovals();
 		const TArray<Id>& GetDeferredRemovals() const
 		{
 			return deferredRemoves;
@@ -2207,7 +2207,8 @@ namespace p
 	P_API void AddId(EntityContext& ctx, TView<Id> Ids);
 
 	// Remove
-	P_API void RmId(EntityContext& ctx, TView<const Id> ids, RmIdFlags flags = RmIdFlags::None);
+	P_API bool RmId(EntityContext& ctx, TView<const Id> ids, RmIdFlags flags = RmIdFlags::None);
+	P_API bool FlushDeferredRemovals(EntityContext& ctx);
 #pragma endregion Editing
 
 

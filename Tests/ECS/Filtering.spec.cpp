@@ -99,7 +99,7 @@ go_bandit([]() {
 				RmId(ctx, id3);    // Remove last in the pool
 				RmId(ctx, id4);    // Remove last in the pool
 
-				ctx.FlushDeferredRemoves();
+				FlushDeferredRemovals(ctx);
 
 				TArray<Id> ids = FindAllIdsWith<TypeB>(access);
 				AssertThat(ids.Contains(NoId), Is().False());
