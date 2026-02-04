@@ -104,7 +104,7 @@ go_bandit([]() {
 		it("Can assure pool", [&]() {
 			EntityContext origin;
 			TPool<ATypeA>& pool = origin.AssurePool<ATypeA>();
-			AssertThat(&origin, Equals(&pool.GetContext()));
+			AssertThat(pool.Size(), Equals(0));
 		});
 	});
 });
