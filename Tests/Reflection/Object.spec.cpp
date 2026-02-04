@@ -38,7 +38,7 @@ go_bandit([]() {
 				auto owner2 = p::MakeOwned<TestObject>(owner);
 
 				AssertThat(owner2->bConstructed, Equals(true));
-				AssertThat(owner2->GetOwner().IsValid(), Equals(true));
+				AssertThat(owner2->GetOwner().Get(), Equals(owner.Get()));
 			});
 		});
 	});

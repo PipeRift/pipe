@@ -64,7 +64,7 @@ go_bandit([]() {
 			static bool calledAdd;
 
 			EntityContext origin;
-			Id id = AddId(ctx);
+			Id id = AddId(origin);
 
 			calledAdd = false;
 			ctxPtr    = &origin;

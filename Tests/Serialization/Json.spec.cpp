@@ -13,11 +13,8 @@ go_bandit([]() {
 	describe("Serialization.Json", []() {
 		describe("Reader", [&]() {
 			it("Can create a reader", [&]() {
-				JsonFormatReader reader{""};
-				AssertThat(reader.IsValid(), Equals(false));
-
-				JsonFormatReader reader2{"{}"};
-				AssertThat(reader2.IsValid(), Equals(true));
+				JsonFormatReader reader{"{}"};
+				AssertThat(reader.IsValid(), Is().True());
 			});
 
 			it("Can read from object value", [&]() {

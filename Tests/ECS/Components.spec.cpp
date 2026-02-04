@@ -139,9 +139,29 @@ go_bandit([]() {
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 
+			RmId(ctx, id, p::RmIdFlags::Instant);
+			AssertThat(ctx.IsValid(id), Is().False());
+
+			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
+			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
+			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
+			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
+		});
+
+		it("Components are removed after node is deleted (deferred)", [&]() {
+			EntityContext ctx;
+			Id id = AddId(ctx);
+			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
+
 			RmId(ctx, id);
 			AssertThat(ctx.IsValid(id), Is().False());
 
+			AssertThat(ctx.Has<EmptyComponent>(id), Is().True());
+			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
+			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
+			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+
+			FlushDeferredRemovals(ctx);
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
 			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
 			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
@@ -216,8 +236,28 @@ go_bandit([]() {
 			EntityContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
-			p::RmId(ctx, id);
+			RmId(ctx, id, p::RmIdFlags::Instant);
+			AssertThat(ctx.IsValid(id), Is().False());
 
+			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
+			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
+			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
+			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
+		});
+
+		it("Components are removed with the entity (deferred)", [&]() {
+			EntityContext ctx;
+			Id id = AddId(ctx);
+			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
+			RmId(ctx, id);
+			AssertThat(ctx.IsValid(id), Is().False());
+
+			AssertThat(ctx.Has<EmptyComponent>(id), Is().True());
+			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
+			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
+			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+
+			FlushDeferredRemovals(ctx);
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
 			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
 			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());

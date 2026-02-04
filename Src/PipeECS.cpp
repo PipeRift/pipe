@@ -154,14 +154,19 @@ namespace p
 		return (deferredRemoves.Size() - lastPending) > 0;
 	}
 
-	void IdRegistry::FlushDeferredRemovals()
+	bool IdRegistry::FlushDeferredRemovals()
 	{
-		available.ReserveMore(deferredRemoves.Size());
-		for (Id id : deferredRemoves)
+		if (deferredRemoves.Size() > 0)
 		{
-			available.Add(id.GetIndex());
+			available.ReserveMore(deferredRemoves.Size());
+			for (Id id : deferredRemoves)
+			{
+				available.Add(id.GetIndex());
+			}
+			deferredRemoves.Clear();
+			return true;
 		}
-		deferredRemoves.Clear();
+		return false;
 	}
 
 	bool IdRegistry::IsValid(Id id) const
@@ -187,6 +192,11 @@ namespace p
 			return entities[p::i32(idx)].GetVersion();
 		}
 		return TOptional<Version>{};
+	}
+
+	u32 IdRegistry::Size() const
+	{
+		return entities.Size() - available.Size() - deferredRemoves.Size();
 	}
 
 
@@ -1130,7 +1140,7 @@ namespace p
 		{
 			pool.GetPool()->Remove(ids);
 		}
-		ctx.GetIdRegistry().FlushDeferredRemovals();
+		return ctx.GetIdRegistry().FlushDeferredRemovals();
 	}
 
 

@@ -260,10 +260,7 @@ namespace p
 		bool WasRemoved(Id id) const;
 		TOptional<Version> GetValidVersion(Index idx) const;
 
-		u32 Size() const
-		{
-			return entities.Size() - available.Size();
-		}
+		u32 Size() const;
 
 		template<typename Callback>
 		void Each(Callback cb) const;
