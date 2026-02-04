@@ -7,19 +7,6 @@
 #include "Pipe/Export.h"
 #include "PipeArrays.h"
 
-#include <stdio.h>
-#include <string.h>
-
-
-#if !defined(_WIN64) && !defined(_WIN32)
-	#include <signal.h>
-	#include <spawn.h>
-	#include <stdlib.h>
-	#include <sys/types.h>
-	#include <sys/wait.h>
-	#include <unistd.h>
-#endif
-
 
 namespace p
 {
