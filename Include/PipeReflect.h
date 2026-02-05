@@ -846,7 +846,7 @@ namespace p
 namespace p
 {
 #pragma region Objects
-	class P_API BaseObject : public Casteable
+	class P_API BaseObject : public Castable
 	{
 	protected:
 		BaseObject() = default;
@@ -953,7 +953,7 @@ namespace p
 	/**
 	 * Cast a pointer into another type doing up-casting
 	 */
-	template<IsCasteable To, IsCasteable From>
+	template<IsCastable To, IsCastable From>
 	To* Cast(From* value) requires(Derived<From, To>)
 	{
 		return value;
@@ -962,7 +962,7 @@ namespace p
 	/**
 	 * Cast a pointer into another type doing down-casting
 	 */
-	template<IsCasteable To, IsCasteable From>
+	template<IsCastable To, IsCastable From>
 	To* Cast(From* value) requires(Derived<std::remove_pointer_t<To>, From, false>)
 	{
 		static_assert(!IsPointer<To>,

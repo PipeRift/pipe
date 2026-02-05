@@ -41,7 +41,7 @@ namespace p
 
 
 #pragma region Reader
-	struct P_API Reader : public Casteable
+	struct P_API Reader : public Castable
 	{
 		friend IFormatReader;
 		IFormatReader* formatReader = nullptr;
@@ -199,7 +199,7 @@ namespace p
 
 
 #pragma region Writer
-	struct P_API Writer : public Casteable
+	struct P_API Writer : public Castable
 	{
 		friend IFormatWriter;
 		IFormatWriter* formatWriter = nullptr;

@@ -34,13 +34,13 @@ and set it to one of the values used by the __cplusplus predefined macro.
 
 For instance,
     #define UTF_CPP_CPLUSPLUS 199711L
-will cause the UTF-8 CPP library to use only types and language features available in the C++ 98
-standard. Some library features will be disabled.
+will cause the UTF-8 CPP library to use only types and language features available in the C++ 98 standard.
+Some library features will be disabled.
 
 If you leave UTF_CPP_CPLUSPLUS undefined, it will be internally assigned to __cplusplus.
 */
 
-#include "Pipe/Extern/utf8/checked.h"
-#include "Pipe/Extern/utf8/unchecked.h"
+#include "utf8/checked.h"
+#include "utf8/unchecked.h"
 
-#endif    // header guard
+#endif // header guard
