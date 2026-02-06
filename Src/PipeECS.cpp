@@ -43,31 +43,31 @@ namespace p
 	IdRegistry::IdRegistry(IdRegistry&& other)
 	{
 		std::unique_lock lock{other.mutex};
-		entities        = Move(other.entities);
-		available       = Move(other.available);
-		deferredRemoves = Move(other.deferredRemoves);
+		entities         = Move(other.entities);
+		available        = Move(other.available);
+		deferredRemovals = Move(other.deferredRemovals);
 	}
 	IdRegistry::IdRegistry(const IdRegistry& other)
 	{
 		std::shared_lock lock{other.mutex};
-		entities        = other.entities;
-		available       = other.available;
-		deferredRemoves = other.deferredRemoves;
+		entities         = other.entities;
+		available        = other.available;
+		deferredRemovals = other.deferredRemovals;
 	}
 	IdRegistry& IdRegistry::operator=(IdRegistry&& other)
 	{
 		std::unique_lock lock{other.mutex};
-		entities        = Move(other.entities);
-		available       = Move(other.available);
-		deferredRemoves = Move(other.deferredRemoves);
+		entities         = Move(other.entities);
+		available        = Move(other.available);
+		deferredRemovals = Move(other.deferredRemovals);
 		return *this;
 	}
 	IdRegistry& IdRegistry::operator=(const IdRegistry& other)
 	{
 		std::shared_lock lock{other.mutex};
-		entities        = other.entities;
-		available       = other.available;
-		deferredRemoves = other.deferredRemoves;
+		entities         = other.entities;
+		available        = other.available;
+		deferredRemovals = other.deferredRemovals;
 		return *this;
 	}
 
@@ -135,8 +135,8 @@ namespace p
 	bool IdRegistry::Remove(TView<const Id> ids)
 	{
 		std::unique_lock lock{mutex};
-		deferredRemoves.ReserveMore(ids.Size());
-		const u32 lastPending = deferredRemoves.Size();
+		deferredRemovals.ReserveMore(ids.Size());
+		const u32 lastPending = deferredRemovals.Size();
 		for (Id id : ids)
 		{
 			const Index index = id.GetIndex();
@@ -145,25 +145,25 @@ namespace p
 				Id& storedId = entities[index];
 				if (id == storedId)
 				{
-					deferredRemoves.AddSorted(storedId);
+					deferredRemovals.AddSorted(storedId);
 					// Increase version to invalidate current entity
 					storedId = MakeId(index, storedId.GetVersion() + 1u);
 				}
 			}
 		}
-		return (deferredRemoves.Size() - lastPending) > 0;
+		return (deferredRemovals.Size() - lastPending) > 0;
 	}
 
 	bool IdRegistry::FlushDeferredRemovals()
 	{
-		if (deferredRemoves.Size() > 0)
+		if (deferredRemovals.Size() > 0)
 		{
-			available.ReserveMore(deferredRemoves.Size());
-			for (Id id : deferredRemoves)
+			available.ReserveMore(deferredRemovals.Size());
+			for (Id id : deferredRemovals)
 			{
 				available.Add(id.GetIndex());
 			}
-			deferredRemoves.Clear();
+			deferredRemovals.Clear();
 			return true;
 		}
 		return false;
@@ -196,7 +196,7 @@ namespace p
 
 	u32 IdRegistry::Size() const
 	{
-		return entities.Size() - available.Size() - deferredRemoves.Size();
+		return entities.Size() - available.Size() - deferredRemovals.Size();
 	}
 
 
@@ -1120,7 +1120,7 @@ namespace p
 	bool RmId(EntityContext& ctx, TView<const Id> ids, RmIdFlags flags)
 	{
 		TArray<Id> allIds;    // Only used when removing children. Here for scope purposes.
-		if (HasFlag(flags, p::RmIdFlags::RemoveChildren))
+		if (!HasFlag(flags, p::RmIdFlags::KeepChildren))
 		{
 			allIds.Append(ids);
 			GetAllIdChildren(ctx, ids, allIds);

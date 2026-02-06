@@ -36,8 +36,8 @@ namespace p
 		None = 0,
 		// Remove entities instantly instead of waiting (deferred)
 		Instant = 1 << 0,
-		// Remove children entities of the ones being removed
-		RemoveChildren = 1 << 1
+		// Keep children entities of the ones being removed
+		KeepChildren = 1 << 1
 	};
 	P_DEFINE_FLAG_OPERATORS(RmIdFlags)
 
@@ -228,7 +228,7 @@ namespace p
 	private:
 		TArray<Id> entities;
 		TArray<Index> available;
-		TArray<Id> deferredRemoves;    // List of ids that are invalid but not removed yet.
+		TArray<Id> deferredRemovals;    // List of ids that are invalid but not removed yet.
 
 		Arena* arena = nullptr;
 
@@ -239,7 +239,7 @@ namespace p
 	public:
 
 		IdRegistry(Arena& arena = GetCurrentArena())
-		    : entities{arena}, available{arena}, deferredRemoves{arena}, arena{&arena}
+		    : entities{arena}, available{arena}, deferredRemovals{arena}, arena{&arena}
 		{}
 		IdRegistry(IdRegistry&& other);
 		IdRegistry(const IdRegistry& other);
@@ -254,7 +254,7 @@ namespace p
 		bool FlushDeferredRemovals();
 		const TArray<Id>& GetDeferredRemovals() const
 		{
-			return deferredRemoves;
+			return deferredRemovals;
 		}
 		bool IsValid(Id id) const;
 		bool WasRemoved(Id id) const;
@@ -1290,7 +1290,6 @@ namespace p
 		template<typename Component>
 		Component& Get(const Id id) const
 		{
-			P_Check(IsValid(id));
 			auto* const pool = GetPool<Component>();
 			P_Check(pool);
 			return pool->Get(id);
@@ -1298,7 +1297,6 @@ namespace p
 		template<typename... Component>
 		TTuple<Component&...> Get(const Id id) const requires(sizeof...(Component) > 1)
 		{
-			P_Check(IsValid(id));
 			return std::forward_as_tuple(Get<Component>(id)...);
 		}
 		template<typename Component>
@@ -1310,14 +1308,12 @@ namespace p
 		template<typename... Component>
 		TTuple<Component*...> TryGet(const Id id) const requires(sizeof...(Component) > 1)
 		{
-			P_Check(IsValid(id));
 			return std::forward_as_tuple(TryGet<Component>(id)...);
 		}
 
 		template<typename Component>
 		Component& GetOrAdd(Id id)
 		{
-			P_Check(IsValid(id));
 			return AssurePool<Component>().GetOrAdd(id);
 		}
 
@@ -2296,7 +2292,7 @@ namespace p
 	template<typename Callback>
 	void IdRegistry::Each(Callback cb) const
 	{
-		if (available.IsEmpty())
+		if (available.IsEmpty() && deferredRemovals.IsEmpty())
 		{
 			for (i32 i = 0; i < entities.Size(); ++i)
 			{
