@@ -110,7 +110,7 @@ namespace p
 		entities.Append(newIds);
 	}
 
-	bool IdRegistry::Remove(TView<const Id> ids)
+	bool IdRegistry::RemoveInstant(TView<const Id> ids)
 	{
 		std::unique_lock lock{mutex};
 		available.ReserveMore(ids.Size());
@@ -132,7 +132,7 @@ namespace p
 		return (available.Size() - lastAvailable) > 0;
 	}
 
-	bool IdRegistry::DeferredRemove(TView<const Id> ids)
+	bool IdRegistry::Remove(TView<const Id> ids)
 	{
 		std::unique_lock lock{mutex};
 		deferredRemoves.ReserveMore(ids.Size());
@@ -145,7 +145,7 @@ namespace p
 				Id& storedId = entities[index];
 				if (id == storedId)
 				{
-					deferredRemoves.Add(storedId);
+					deferredRemoves.AddSorted(storedId);
 					// Increase version to invalidate current entity
 					storedId = MakeId(index, storedId.GetVersion() + 1u);
 				}
@@ -564,7 +564,7 @@ namespace p
 
 	void TPool<CRemoved>::Add(Id id, CRemoved)
 	{
-		idRegistry->DeferredRemove(id);
+		idRegistry->Remove(id);
 	}
 
 	const TArray<Id>& TPool<CRemoved>::GetIdList() const
@@ -640,7 +640,10 @@ namespace p
 	}
 
 
-	EntityContext::EntityContext() {}
+	EntityContext::EntityContext()
+	{
+		AssurePool<CRemoved>();
+	}
 
 	EntityContext::EntityContext(const EntityContext& other) noexcept
 	{
@@ -706,9 +709,13 @@ namespace p
 		// Copy component pools. Assume already sorted
 		for (const PoolInstance& otherInstance : other.pools)
 		{
-			PoolInstance instance{otherInstance};
-			pools.Add(Move(instance));
+			if (otherInstance.pool->Size() > 0)
+			{
+				pools.Add(PoolInstance{otherInstance});
+			}
 		}
+
+		AssurePool<CRemoved>().idRegistry = &idRegistry;
 
 		// TODO: Copy statics
 		// TODO: Cache pools
@@ -719,6 +726,8 @@ namespace p
 		idRegistry = Move(other.idRegistry);
 		pools      = Move(other.pools);
 		statics    = Move(other.statics);
+
+		AssurePool<CRemoved>().idRegistry = &idRegistry;
 
 		// TODO: Move statics
 		// TODO: Cache pools
@@ -1125,11 +1134,11 @@ namespace p
 			{
 				pool.GetPool()->Remove(ids);
 			}
-			return ctx.GetIdRegistry().Remove(ids);
+			return ctx.GetIdRegistry().RemoveInstant(ids);
 		}
 		else
 		{
-			return ctx.GetIdRegistry().DeferredRemove(ids);
+			return ctx.GetIdRegistry().Remove(ids);
 		}
 	}
 

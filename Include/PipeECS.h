@@ -249,8 +249,8 @@ namespace p
 
 		Id Create();
 		void Create(TView<Id> newIds);
+		bool RemoveInstant(TView<const Id> ids);
 		bool Remove(TView<const Id> ids);
-		bool DeferredRemove(TView<const Id> ids);
 		bool FlushDeferredRemovals();
 		const TArray<Id>& GetDeferredRemovals() const
 		{
@@ -1059,25 +1059,23 @@ namespace p
 	template<>
 	struct P_API TPool<CRemoved> : public IPool
 	{
+		friend EntityContext;
 		using T = CRemoved;
 
 		p::IdRegistry* idRegistry = nullptr;
 
 	public:
 		TPool(p::EntityContext& ctx, Arena& arena = GetCurrentArena());
-		TPool(const TPool& other) : IPool(p::GetTypeId<T>()), idRegistry{other.idRegistry} {}
+		TPool(const TPool& other) = delete;
+		TPool(TPool&& other)      = delete;
 		TPool& operator=(const TPool& other)
 		{
 			return *this;
 		}
-		~TPool()
-		{
-			Clear();
-		}
 
 		bool Has(Id id) const override
 		{
-			return GetIdList().Contains(id);
+			return GetIdList().ContainsSorted(id);
 		}
 
 		i32 Size() const override;

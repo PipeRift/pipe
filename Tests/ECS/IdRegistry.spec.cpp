@@ -39,7 +39,7 @@ go_bandit([]() {
 			IdRegistry ids;
 			Id id = ids.Create();
 			AssertThat(ids.Size(), Equals(1));
-			AssertThat(ids.Remove(id), Is().True());
+			AssertThat(ids.RemoveInstant(id), Is().True());
 			AssertThat(ids.IsValid(id), Is().False());
 			AssertThat(ids.Size(), Equals(0));
 		});
@@ -48,7 +48,7 @@ go_bandit([]() {
 			IdRegistry ids;
 			Id id1 = ids.Create();
 			ids.Create();
-			AssertThat(ids.Remove(id1), Is().True());
+			AssertThat(ids.RemoveInstant(id1), Is().True());
 			AssertThat(ids.IsValid(id1), Is().False());
 			AssertThat(ids.Size(), Equals(1));
 		});
@@ -57,7 +57,7 @@ go_bandit([]() {
 			IdRegistry ids;
 			ids.Create();
 			Id id2 = ids.Create();
-			AssertThat(ids.Remove(id2), Is().True());
+			AssertThat(ids.RemoveInstant(id2), Is().True());
 			AssertThat(ids.IsValid(id2), Is().False());
 			AssertThat(ids.Size(), Equals(1));
 		});
@@ -66,7 +66,7 @@ go_bandit([]() {
 			IdRegistry ids;
 			Id id = ids.Create();
 			AssertThat(ids.Size(), Equals(1));
-			AssertThat(ids.DeferredRemove(id), Is().True());
+			AssertThat(ids.Remove(id), Is().True());
 			AssertThat(ids.IsValid(id), Is().False());
 			AssertThat(ids.Size(), Equals(0));
 		});
@@ -75,7 +75,7 @@ go_bandit([]() {
 			IdRegistry ids;
 			Id id1 = ids.Create();
 			ids.Create();
-			AssertThat(ids.DeferredRemove(id1), Is().True());
+			AssertThat(ids.Remove(id1), Is().True());
 			AssertThat(ids.IsValid(id1), Is().False());
 			AssertThat(ids.Size(), Equals(1));
 		});
@@ -84,7 +84,7 @@ go_bandit([]() {
 			IdRegistry ids;
 			ids.Create();
 			Id id2 = ids.Create();
-			AssertThat(ids.DeferredRemove(id2), Is().True());
+			AssertThat(ids.Remove(id2), Is().True());
 			AssertThat(ids.IsValid(id2), Is().False());
 			AssertThat(ids.Size(), Equals(1));
 		});
@@ -94,7 +94,7 @@ go_bandit([]() {
 			ids.Create();
 			Id id = ids.Create();
 			ids.Create();
-			AssertThat(ids.Remove(id), Is().True());
+			AssertThat(ids.RemoveInstant(id), Is().True());
 			Id id2 = ids.Create();
 			AssertThat(id2.GetIndex(), Equals(id.GetIndex()));
 			Id id3 = ids.Create();
@@ -106,7 +106,7 @@ go_bandit([]() {
 			ids.Create();
 			Id id = ids.Create();
 			ids.Create();
-			AssertThat(ids.DeferredRemove(id), Is().True());
+			AssertThat(ids.Remove(id), Is().True());
 			Id id2 = ids.Create();
 			AssertThat(id2.GetIndex(), !Equals(id.GetIndex()));
 			ids.FlushDeferredRemovals();
@@ -137,7 +137,7 @@ go_bandit([]() {
 			ids.Create(list);
 			AssertThat(ids.Size(), Equals(3));
 
-			AssertThat(ids.Remove(list), Is().True());
+			AssertThat(ids.RemoveInstant(list), Is().True());
 			AssertThat(ids.Size(), Equals(0));
 
 			for (i32 i = 0; i < list.Size(); ++i)
@@ -152,7 +152,7 @@ go_bandit([]() {
 			ids.Create(list);
 			AssertThat(ids.Size(), Equals(3));
 
-			AssertThat(ids.DeferredRemove(list), Is().True());
+			AssertThat(ids.Remove(list), Is().True());
 			AssertThat(ids.Size(), Equals(0));
 
 			for (i32 i = 0; i < list.Size(); ++i)

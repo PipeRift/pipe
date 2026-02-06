@@ -204,5 +204,23 @@ go_bandit([]() {
 			ExcludeIdsWithout<TypeC>(ctx, ids4);
 			AssertThat(ids4.Contains(id1), Is().False());
 		});
+
+		it("Can filter CRemoved", [&]() {
+			RmId(ctx, id1);
+			RmId(ctx, id2);
+			RmId(ctx, id3);
+
+			TArray<Id> ids1 = FindAllIdsWith<TypeA>(ctx);
+			AssertThat(ids1.Contains(id1), Is().True());
+			TArray<Id> ids2 = FindAllIdsWith<CRemoved>(ctx);
+			AssertThat(ids2.Contains(id1), Is().True());
+			AssertThat(ids2.Contains(id2), Is().True());
+			AssertThat(ids2.Contains(id3), Is().True());
+			AssertThat(ids2.Size(), Equals(3));
+
+			TArray<Id> ids3 = FindAllIdsWith<CRemoved, TypeA>(ctx);
+			AssertThat(ids3.Contains(id1), Is().True());
+			AssertThat(ids3.Contains(id2), Is().True());
+		});
 	});
 });

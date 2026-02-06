@@ -190,6 +190,7 @@ go_bandit([]() {
 			AssertThat(ctxb.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
 
 			// Holds component values
+			AssertThat(ctxb.Has<NonEmptyComponent>(id2), Is().True());
 			AssertThat(ctxb.Get<NonEmptyComponent>(id2).a, Equals(2));
 		});
 
@@ -273,6 +274,18 @@ go_bandit([]() {
 			id = AddId(ctx);
 			ctx.Add<NonEmptyComponent>(id);
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
+			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
+			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+		});
+
+		it("Can access CRemoved", [&]() {
+			EntityContext ctx;
+			Id id = AddId(ctx);
+			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
+			RmId(ctx, id);
+
+			AssertThat(ctx.Has<CRemoved>(id), Is().True());
+			AssertThat(ctx.Has<EmptyComponent>(id), Is().True());
 			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
 		});
