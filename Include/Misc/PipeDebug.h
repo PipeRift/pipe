@@ -136,9 +136,9 @@ namespace p
 		TArray<DebugECSInspector> inspectors{1};
 
 		// Updated on tick
-		TArray<const BasePool*> includePools;
-		TArray<const BasePool*> excludePools;
-		TArray<const BasePool*> previewPools;
+		TArray<const IPool*> includePools;
+		TArray<const IPool*> excludePools;
+		TArray<const IPool*> previewPools;
 
 		// Layout
 		bool resetLayout    = true;
@@ -747,7 +747,7 @@ namespace p
 			ImGui::PushStyleCompact();
 			static String poolName;
 			ImGui::PushButtonColor(previewColor);
-			for (const BasePool* previewPool : ecsDbg.previewPools)
+			for (const IPool* previewPool : ecsDbg.previewPools)
 			{
 				if (previewPool && previewPool->Has(id))
 				{
@@ -1008,7 +1008,7 @@ namespace p
 					FindAllIdsWith(ecsDbg.includePools, ids);
 				}
 
-				for (const BasePool* pool : ecsDbg.excludePools)
+				for (const IPool* pool : ecsDbg.excludePools)
 				{
 					ExcludeIdsWithStable(pool, ids, false);
 				}

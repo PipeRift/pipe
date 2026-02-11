@@ -8,18 +8,28 @@
 #include "PipeArrays.h"
 #include "PipePlatform.h"
 
+#include <stdio.h>
+#include <string.h>
 
-#if defined(_MSC_VER)
-	#include <Windows.h>
+
+#if P_PLATFORM_WINDOWS
 	#include <io.h>
+	#include <Windows.h>
 #else
+	#include <signal.h>
+	#include <spawn.h>
+	#include <stdlib.h>
+	#include <sys/types.h>
+	#include <sys/wait.h>
+	#include <unistd.h>
+
 extern char** environ;
 #endif
 
 
 namespace p
 {
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 	struct SubprocessInfo
 	{
 		void* hProcess;
@@ -86,7 +96,7 @@ namespace p
 		p::Swap(cinFile, other.cinFile);
 		p::Swap(coutFile, other.coutFile);
 		p::Swap(cerrFile, other.cerrFile);
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 		p::Swap(hProcess, other.hProcess);
 		p::Swap(hStdInput, other.hStdInput);
 		p::Swap(hEventOutput, other.hEventOutput);
@@ -109,7 +119,7 @@ namespace p
 	}
 
 
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 	const char* GetSystemErrorMessage(char* buffer, i32 size, i32 error)
 	{
 		P_Check(buffer && size);
@@ -189,7 +199,7 @@ namespace p
 		Subprocess instance;
 		instance.options = options;
 
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 		i32 i, j;
 		u64 flags                                = 0;
 		static constexpr u64 startFUseStdHandles = 0x00000100;
@@ -585,7 +595,7 @@ namespace p
 
 	i32 WaitProcess(Subprocess* process, i32* outReturnCode)
 	{
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 		const u64 infinite = 0xFFFFFFFF;
 
 		if (process->cinFile)
@@ -672,7 +682,7 @@ namespace p
 			process->cerrFile = nullptr;
 		}
 
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 		if (process->hProcess)
 		{
 			CloseHandle(process->hProcess);
@@ -700,7 +710,7 @@ namespace p
 
 	i32 TerminateProcess(Subprocess* process)
 	{
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 		if (process->hProcess)
 		{
 			u32 killed_process_exit_code;
@@ -727,7 +737,7 @@ namespace p
 
 	unsigned ReadProcessCout(Subprocess* process, char* buffer, u32 size)
 	{
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 		void* handle;
 		u64 bytesRead = 0;
 		SubprocessOverlapped overlapped;
@@ -775,7 +785,7 @@ namespace p
 
 	unsigned ReadProcessCerr(Subprocess* process, char* buffer, unsigned size)
 	{
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 		void* handle;
 		u64 bytesRead = 0;
 		SubprocessOverlapped overlapped;
@@ -828,7 +838,7 @@ namespace p
 			return false;
 		}
 
-#if defined(_MSC_VER)
+#if P_PLATFORM_WINDOWS
 		constexpr u64 zero          = 0x0;
 		constexpr u64 wait_object_0 = 0x00000000L;
 

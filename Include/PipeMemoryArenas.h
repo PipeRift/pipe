@@ -35,6 +35,12 @@ namespace p
 			return false;
 		}
 		void Free(void* ptr, sizet size) {}
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<DummyArena>();
+		}
 	};
 #pragma endregion Dummy Arena
 
@@ -55,6 +61,12 @@ namespace p
 		const MemoryStats* GetStats() const override
 		{
 			return &stats;
+		}
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<HeapArena>();
 		}
 	};
 #pragma endregion Heap Arena
@@ -110,6 +122,12 @@ namespace p
 		const MemoryStats* GetStats() const override
 		{
 			return &stats;
+		}
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<MonoLinearArena>();
 		}
 	};
 
@@ -230,6 +248,12 @@ namespace p
 		void Release();
 
 		void Grow(sizet size, sizet align = 0);
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<MultiLinearArena>();
+		}
 	};
 #pragma endregion Multi Linear
 
@@ -320,6 +344,12 @@ namespace p
 		void ReduceSlot(
 		    i32 slotIndex, Slot& slot, u8* const allocationStart, u8* const allocationEnd);
 		void AbsorbFreeSpace(u8* const allocationStart, u8* const allocationEnd);
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<BestFitArena>();
+		}
 	};
 #pragma endregion Best Fit Arena
 
@@ -414,6 +444,12 @@ namespace p
 		void AbsorbFreeSpace(u32 allocationStart, u32 allocationEnd);
 
 		static u32 ToOffset(void* data, void* block);
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<BigBestFitArena>();
+		}
 	};
 #pragma endregion Big Best Fit Arena
 }    // namespace p

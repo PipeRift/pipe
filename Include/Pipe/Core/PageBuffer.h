@@ -118,9 +118,10 @@ namespace p
 
 		Type* At(sizet index)
 		{
-			if (Type* page = pages[GetPage(index)])
+			const i32 pageIndex = GetPage(index);
+			if (pageIndex < pages.Size() && pages[pageIndex])
 			{
-				return page + GetOffset(index);
+				return pages[pageIndex] + GetOffset(index);
 			}
 			return nullptr;
 		}

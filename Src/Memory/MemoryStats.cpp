@@ -37,6 +37,12 @@ namespace p
 		{
 			std::free(ptr);
 		}
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<MemoryStatsArena>();
+		}
 	};
 
 	// Getter to ensure readiness at static init time

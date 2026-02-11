@@ -19,15 +19,15 @@ jobs:
       matrix:
         config: [Release, Debug]
         os:
-          - windows-2022
+          - windows-2025
           - ubuntu-24.04
           - macos-15
         compiler:
           - clang-18
-          - gcc-14
+          - gcc-15
           - msvc
         exclude:
-          - os: windows-2022
+          - os: windows-2025
             compiler: gcc-14
           - os: ubuntu-24.04
             compiler: msvc
@@ -46,21 +46,21 @@ jobs:
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
-          # Skip compiler setup for macos clang-17
-          compiler: ${{ (contains(matrix.os, 'macos') && matrix.compiler == 'clang-17') && '' || matrix.compiler }}
+          # Skip compiler setup for macos clang
+          compiler: ${{ (contains(matrix.os, 'macos') && contains(matrix.compiler, 'clang')) && '' || matrix.compiler }}
           vcvarsall: ${{ contains(matrix.os, 'windows') }}
           cmake: true
           ninja: true
 
-      - name: (MacOS) Install clang-17 through brew
-        if: contains(matrix.os, 'macos') && matrix.compiler == 'clang-17'
+      - name: (MacOS) Install clang through brew
+        if: contains(matrix.os, 'macos') && contains(matrix.compiler, 'clang')
         run: |
-          brew install llvm@17
-          export LLVM_DIR="$(brew --prefix llvm@17)/lib/cmake"
-          echo "CC=$(brew --prefix llvm@17)/bin/clang" >> $GITHUB_ENV
-          echo "CXX=$(brew --prefix llvm@17)/bin/clang++" >> $GITHUB_ENV
-          echo "$(brew --prefix llvm@17)/bin" >> $GITHUB_PATH
-          brew link --overwrite llvm@17
+          brew install llvm@18
+          export LLVM_DIR="$(brew --prefix llvm@18)/lib/cmake"
+          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
+          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
+          brew link --overwrite llvm@18
 
       - name: Cache Build
         uses: actions/cache@v4

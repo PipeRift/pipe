@@ -20,20 +20,20 @@ struct ATypeB
 go_bandit([]() {
 	describe("ECS", []() {
 		it("Can copy tree", [&]() {
-			static EntityContext* astPtr = nullptr;
+			static EntityContext* ctxPtr = nullptr;
 			static bool calledAdd;
 
 			EntityContext origin;
-			Id id = origin.Create();
+			Id id = AddId(origin);
 
 			calledAdd = false;
-			astPtr    = &origin;
-			origin.OnAdd<ATypeA>().Bind([](EntityContext& ast, auto ids) {
+			ctxPtr    = &origin;
+			origin.OnAdd<ATypeA>().Bind([&origin](auto ids) {
 				for (Id id : ids)
 				{
-					AssertThat(ast.Has<ATypeA>(id), Equals(true));
+					AssertThat(origin.Has<ATypeA>(id), Equals(true));
 				}
-				AssertThat(astPtr, Equals(&ast));
+				AssertThat(ctxPtr, Equals(&origin));
 				calledAdd = true;
 			});
 			origin.Add<ATypeA>(id);
@@ -42,40 +42,38 @@ go_bandit([]() {
 			EntityContext target{origin};
 			AssertThat(origin.IsValid(id), Equals(true));
 			AssertThat(origin.Has<ATypeA>(id), Equals(true));
-
 			AssertThat(target.IsValid(id), Equals(true));
 			AssertThat(target.Has<ATypeA>(id), Equals(true));
 
 			calledAdd = false;
-			astPtr    = &target;
-			target.OnAdd<ATypeB>().Bind([](EntityContext& ast, auto ids) {
+			ctxPtr    = &target;
+			target.OnAdd<ATypeB>().Bind([&target](auto ids) {
 				for (Id id : ids)
 				{
-					AssertThat(ast.Has<ATypeB>(id), Equals(true));
+					AssertThat(target.Has<ATypeB>(id), Equals(true));
 				}
-				AssertThat(astPtr, Equals(&ast));
+				AssertThat(ctxPtr, Equals(&target));
 				calledAdd = true;
 			});
-
 			target.Add<ATypeB>(id);
 			AssertThat(calledAdd, Equals(true));
 		});
 
 		it("Can move tree", [&]() {
-			static EntityContext* astPtr = nullptr;
+			static EntityContext* ctxPtr = nullptr;
 			static bool calledAdd;
 
 			EntityContext origin;
-			Id id = origin.Create();
+			Id id = AddId(origin);
 
 			calledAdd = false;
-			astPtr    = &origin;
-			origin.OnAdd<ATypeA>().Bind([](EntityContext& ast, auto ids) {
+			ctxPtr    = &origin;
+			origin.OnAdd<ATypeA>().Bind([&origin](auto ids) {
 				for (Id id : ids)
 				{
-					AssertThat(ast.Has<ATypeA>(id), Equals(true));
+					AssertThat(origin.Has<ATypeA>(id), Equals(true));
 				}
-				AssertThat(astPtr, Equals(&ast));
+				AssertThat(ctxPtr, Equals(&origin));
 				calledAdd = true;
 			});
 			origin.Add<ATypeA>(id);
@@ -88,13 +86,13 @@ go_bandit([]() {
 			AssertThat(target.Has<ATypeA>(id), Equals(true));
 
 			calledAdd = false;
-			astPtr    = &target;
-			target.OnAdd<ATypeB>().Bind([](EntityContext& ast, auto ids) {
+			ctxPtr    = &target;
+			target.OnAdd<ATypeB>().Bind([&target](auto ids) {
 				for (Id id : ids)
 				{
-					AssertThat(ast.Has<ATypeB>(id), Equals(true));
+					AssertThat(target.Has<ATypeB>(id), Equals(true));
 				}
-				AssertThat(astPtr, Equals(&ast));
+				AssertThat(ctxPtr, Equals(&target));
 				calledAdd = true;
 			});
 			target.Add<ATypeB>(id);
@@ -104,7 +102,7 @@ go_bandit([]() {
 		it("Can assure pool", [&]() {
 			EntityContext origin;
 			TPool<ATypeA>& pool = origin.AssurePool<ATypeA>();
-			AssertThat(&origin, Equals(&pool.GetContext()));
+			AssertThat(pool.Size(), Equals(0));
 		});
 	});
 });

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/Limits.h"
+#include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 
@@ -394,7 +395,7 @@ namespace p
 
 
 	/** Arena defines the API used on all other arena types */
-	class P_API Arena
+	class P_API Arena : public Castable
 	{
 	public:
 		using AllocSignature        = void*(Arena*, sizet size);
@@ -508,6 +509,12 @@ namespace p
 		{
 			return nullptr;
 		}
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<Arena>();
+		}
 	};
 
 	class P_API ChildArena : public Arena
@@ -521,6 +528,12 @@ namespace p
 		Arena& GetParentArena() const
 		{
 			return *parent;
+		}
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<ChildArena>();
 		}
 	};
 #pragma endregion Arena

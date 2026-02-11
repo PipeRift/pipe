@@ -17,7 +17,7 @@ namespace snowhouse
 		static std::string ToString(Id id)
 		{
 			std::stringstream stream;
-			stream << "Id(" << UnderlyingType<Id>(id) << ")";
+			stream << "Id(" << id.value << ")";
 			return stream.str();
 		}
 	};
@@ -29,9 +29,8 @@ go_bandit([]() {
 		it("Can create one id", [&]() {
 			IdRegistry ids;
 			AssertThat(ids.Size(), Equals(0));
-
 			Id id = ids.Create();
-			AssertThat(id, !Equals(Id(NoId)));
+			AssertThat(id, !Equals(NoId));
 			AssertThat(ids.IsValid(id), Is().True());
 			AssertThat(ids.Size(), Equals(1));
 		});
@@ -40,31 +39,81 @@ go_bandit([]() {
 			IdRegistry ids;
 			Id id = ids.Create();
 			AssertThat(ids.Size(), Equals(1));
-
-			AssertThat(ids.Destroy(id), Is().True());
+			AssertThat(ids.RemoveInstant(id), Is().True());
 			AssertThat(ids.IsValid(id), Is().False());
 			AssertThat(ids.Size(), Equals(0));
 		});
 
 		it("Can create two and remove first", [&]() {
 			IdRegistry ids;
-
 			Id id1 = ids.Create();
 			ids.Create();
-			AssertThat(ids.Destroy(id1), Is().True());
+			AssertThat(ids.RemoveInstant(id1), Is().True());
 			AssertThat(ids.IsValid(id1), Is().False());
 			AssertThat(ids.Size(), Equals(1));
 		});
 
 		it("Can create two and remove last", [&]() {
 			IdRegistry ids;
-
 			ids.Create();
 			Id id2 = ids.Create();
-
-			AssertThat(ids.Destroy(id2), Is().True());
+			AssertThat(ids.RemoveInstant(id2), Is().True());
 			AssertThat(ids.IsValid(id2), Is().False());
 			AssertThat(ids.Size(), Equals(1));
+		});
+
+		it("Can remove one id (deferred)", [&]() {
+			IdRegistry ids;
+			Id id = ids.Create();
+			AssertThat(ids.Size(), Equals(1));
+			AssertThat(ids.Remove(id), Is().True());
+			AssertThat(ids.IsValid(id), Is().False());
+			AssertThat(ids.Size(), Equals(0));
+		});
+
+		it("Can create two and remove first (deferred)", [&]() {
+			IdRegistry ids;
+			Id id1 = ids.Create();
+			ids.Create();
+			AssertThat(ids.Remove(id1), Is().True());
+			AssertThat(ids.IsValid(id1), Is().False());
+			AssertThat(ids.Size(), Equals(1));
+		});
+
+		it("Can create two and remove last (deferred)", [&]() {
+			IdRegistry ids;
+			ids.Create();
+			Id id2 = ids.Create();
+			AssertThat(ids.Remove(id2), Is().True());
+			AssertThat(ids.IsValid(id2), Is().False());
+			AssertThat(ids.Size(), Equals(1));
+		});
+
+		it("Removed id index gets reused", [&]() {
+			IdRegistry ids;
+			ids.Create();
+			Id id = ids.Create();
+			ids.Create();
+			AssertThat(ids.RemoveInstant(id), Is().True());
+			Id id2 = ids.Create();
+			AssertThat(id2.GetIndex(), Equals(id.GetIndex()));
+			Id id3 = ids.Create();
+			AssertThat(id3.GetIndex(), !Equals(id.GetIndex()));
+		});
+
+		it("Deferred removed id index doesn't get reused until flushed", [&]() {
+			IdRegistry ids;
+			ids.Create();
+			Id id = ids.Create();
+			ids.Create();
+			AssertThat(ids.Remove(id), Is().True());
+			Id id2 = ids.Create();
+			AssertThat(id2.GetIndex(), !Equals(id.GetIndex()));
+			ids.FlushDeferredRemovals();
+			Id id3 = ids.Create();
+			AssertThat(id3.GetIndex(), Equals(id.GetIndex()));
+			Id id4 = ids.Create();
+			AssertThat(id4.GetIndex(), !Equals(id.GetIndex()));
 		});
 
 		it("Can create many ids", [&]() {
@@ -77,7 +126,7 @@ go_bandit([]() {
 			AssertThat(ids.Size(), Equals(3));
 			for (i32 i = 0; i < list.Size(); ++i)
 			{
-				AssertThat(list[i], Equals(Id(i)));
+				AssertThat(list[i].GetIndex(), Equals(i));
 				AssertThat(ids.IsValid(list[i]), Is().True());
 			}
 		});
@@ -88,7 +137,22 @@ go_bandit([]() {
 			ids.Create(list);
 			AssertThat(ids.Size(), Equals(3));
 
-			AssertThat(ids.Destroy(list), Is().True());
+			AssertThat(ids.RemoveInstant(list), Is().True());
+			AssertThat(ids.Size(), Equals(0));
+
+			for (i32 i = 0; i < list.Size(); ++i)
+			{
+				AssertThat(ids.IsValid(list[i]), Is().False());
+			}
+		});
+
+		it("Can remove many ids (deferred)", [&]() {
+			IdRegistry ids;
+			TArray<Id> list(3);
+			ids.Create(list);
+			AssertThat(ids.Size(), Equals(3));
+
+			AssertThat(ids.Remove(list), Is().True());
 			AssertThat(ids.Size(), Equals(0));
 
 			for (i32 i = 0; i < list.Size(); ++i)

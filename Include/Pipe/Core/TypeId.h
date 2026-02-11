@@ -105,8 +105,8 @@ namespace p
 	}
 
 
-#pragma region Casteable
-	struct Casteable
+#pragma region Castable
+	struct Castable
 	{
 	private:
 		mutable TypeId typeId;
@@ -126,8 +126,8 @@ namespace p
 	};
 
 	template<typename T>
-	concept IsCasteable = Derived<std::remove_pointer_t<T>, Casteable, false>;
-#pragma endregion Casteable
+	concept IsCastable = Derived<std::remove_pointer_t<T>, Castable, false>;
+#pragma endregion Castable
 }    // namespace p
 
 

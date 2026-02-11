@@ -18,7 +18,7 @@ namespace snowhouse
 		static std::string ToString(Id id)
 		{
 			std::stringstream stream;
-			stream << "Id(" << UnderlyingType<Id>(id) << ")";
+			stream << "Id(" << id.value << ")";
 			return stream.str();
 		}
 	};
@@ -43,11 +43,11 @@ go_bandit([]() {
 	describe("ECS.Filtering", [&]() {
 		before_each([&]() {
 			ctx = {};
-			id1 = ctx.Create();
-			id2 = ctx.Create();
-			id3 = ctx.Create();
-			id4 = ctx.Create();
-			id5 = ctx.Create();
+			id1 = AddId(ctx);
+			id2 = AddId(ctx);
+			id3 = AddId(ctx);
+			id4 = AddId(ctx);
+			id5 = AddId(ctx);
 			ctx.Add<TypeA>(id1);
 			ctx.Add<TypeA, TypeB, TypeC>(id2);
 			ctx.Add<TypeB, TypeC>(id3);
@@ -84,9 +84,22 @@ go_bandit([]() {
 
 			it("Doesn't list removed ids", [&]() {
 				TAccess<TypeB> access{ctx};
-				ctx.Destroy(id2);    // Remove first in the pool
-				ctx.Destroy(id3);    // Remove last in the pool
-				ctx.Destroy(id4);    // Remove last in the pool
+				RmId(ctx, id2, RmIdFlags::Instant);    // Remove first in the pool
+				RmId(ctx, id3, RmIdFlags::Instant);    // Remove last in the pool
+				RmId(ctx, id4, RmIdFlags::Instant);    // Remove last in the pool
+
+				TArray<Id> ids = FindAllIdsWith<TypeB>(access);
+				AssertThat(ids.Contains(NoId), Is().False());
+				AssertThat(ids.Size(), Equals(1));
+			});
+
+			it("Doesn't list (deferred) removed ids", [&]() {
+				TAccess<TypeB> access{ctx};
+				RmId(ctx, id2);    // Remove first in the pool
+				RmId(ctx, id3);    // Remove last in the pool
+				RmId(ctx, id4);    // Remove last in the pool
+
+				FlushDeferredRemovals(ctx);
 
 				TArray<Id> ids = FindAllIdsWith<TypeB>(access);
 				AssertThat(ids.Contains(NoId), Is().False());
@@ -190,6 +203,24 @@ go_bandit([]() {
 			TArray<Id> ids4 = FindAllIdsWithAny<TypeA>(ctx);
 			ExcludeIdsWithout<TypeC>(ctx, ids4);
 			AssertThat(ids4.Contains(id1), Is().False());
+		});
+
+		it("Can filter CRemoved", [&]() {
+			RmId(ctx, id1);
+			RmId(ctx, id2);
+			RmId(ctx, id3);
+
+			TArray<Id> ids1 = FindAllIdsWith<TypeA>(ctx);
+			AssertThat(ids1.Contains(id1), Is().True());
+			TArray<Id> ids2 = FindAllIdsWith<CRemoved>(ctx);
+			AssertThat(ids2.Contains(id1), Is().True());
+			AssertThat(ids2.Contains(id2), Is().True());
+			AssertThat(ids2.Contains(id3), Is().True());
+			AssertThat(ids2.Size(), Equals(3));
+
+			TArray<Id> ids3 = FindAllIdsWith<CRemoved, TypeA>(ctx);
+			AssertThat(ids3.Contains(id1), Is().True());
+			AssertThat(ids3.Contains(id2), Is().True());
 		});
 	});
 });
