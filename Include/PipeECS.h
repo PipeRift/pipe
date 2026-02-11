@@ -1860,6 +1860,8 @@ namespace p
 	/** Find all ids containing any of the components. Prevents duplicates */
 	P_API void FindAllIdsWithAnyUnique(TView<const IPool* const> pools, TArray<Id>& ids);
 
+	P_API Id GetFirstIdWith(TView<const IPool* const> pools);
+
 
 	// Templated API
 
@@ -2086,7 +2088,7 @@ namespace p
 	template<typename... C, typename AccessType>
 	void FindAllIdsWith(const AccessType& access, TArray<Id>& ids) requires(sizeof...(C) >= 1)
 	{
-		FindAllIdsWith({&access.template AssurePool<const C>()...}, ids);
+		FindAllIdsWith({access.template GetPool<const C>()...}, ids);
 	}
 
 
@@ -2116,7 +2118,7 @@ namespace p
 	template<typename... C, typename AccessType>
 	void FindAllIdsWithAny(const AccessType& access, TArray<Id>& ids) requires(sizeof...(C) >= 1)
 	{
-		FindAllIdsWithAny({&access.template AssurePool<const C>()...}, ids);
+		FindAllIdsWithAny({access.template GetPool<const C>()...}, ids);
 	}
 
 	/**
@@ -2131,7 +2133,7 @@ namespace p
 	void FindAllIdsWithAnyUnique(const AccessType& access, TArray<Id>& ids)
 	    requires(sizeof...(C) >= 1)
 	{
-		FindAllIdsWithAnyUnique({&access.template AssurePool<const C>()...}, ids);
+		FindAllIdsWithAnyUnique({access.template GetPool<const C>()...}, ids);
 	}
 
 	/**
@@ -2167,23 +2169,9 @@ namespace p
 	}
 
 	template<typename... C, typename AccessType>
-	Id GetFirstId(const AccessType& access)
+	Id GetFirstIdWith(const AccessType& access)
 	{
-		if constexpr (sizeof...(C) == 1)    // Only one component?
-		{
-			const IPool* pool = access.template GetPool<const C...>();
-			if (pool && pool->Size() > 0)
-			{
-				return *pool->begin();
-			}
-			return NoId;
-		}
-		else
-		{
-			TArray<Id> ids;
-			FindAllIdsWith<C...>(access, ids);
-			return ids.IsEmpty() ? NoId : ids[0];
-		}
+		return GetFirstIdWith({access.template GetPool<const C>()...});
 	}
 #pragma endregion Filtering
 

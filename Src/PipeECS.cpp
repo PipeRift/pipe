@@ -578,10 +578,14 @@ namespace p
 		i32 minIndex  = NO_INDEX;
 		for (i32 i = 0; i < pools.Size(); ++i)
 		{
-			const i32 size = pools[i]->Size();
-			if (size < minSize)
+			auto* pool = pools[i];
+			if (!pool || pool->Size() <= 0)    // Empty/inexistent pools are the smallest possible
 			{
-				minSize  = size;
+				return i;
+			}
+			else if (pool->Size() < minSize)
+			{
+				minSize  = pool->Size();
 				minIndex = i;
 			}
 		}
@@ -975,26 +979,21 @@ namespace p
 
 	void FindAllIdsWith(TView<const IPool* const> pools, TArray<Id>& ids)
 	{
+		ids.Clear(false);
 		if (pools.IsEmpty())
 		{
 			return;
 		}
-
-		for (const IPool* pool : pools)
-		{
-			if (!P_EnsureMsg(pool,
-			        "One of the pools is null. Is the access missing one or more of the "
-			        "specified "
-			        "components?"))
-			{
-				return;
-			}
-		}
-
 		const i32 smallestIdx     = GetSmallestPool(pools);
 		const IPool* iterablePool = pools[smallestIdx];
 
-		ids.Clear(false);
+		// An empty iterable pool means at least one of the required components will never be there,
+		// so we return nothing
+		if (!iterablePool || iterablePool->Size() == 0)
+		{
+			return;
+		}
+
 		ids.Reserve(iterablePool->Size());
 		for (Id id : *iterablePool)
 		{
@@ -1018,6 +1017,7 @@ namespace p
 
 	void FindAllIdsWithAny(TView<const IPool* const> pools, TArray<Id>& ids)
 	{
+		ids.Clear(false);
 		if (pools.IsEmpty())
 		{
 			return;
@@ -1025,24 +1025,16 @@ namespace p
 
 		for (const IPool* pool : pools)
 		{
-			if (!P_EnsureMsg(pool,
-			        "One of the pools is null. Is the access missing one or more of the "
-			        "specified "
-			        "components?"))
+			if (pool)
 			{
-				return;
+				ids.Append(pool->begin(), pool->end());
 			}
-		}
-
-		ids.Clear();
-		for (const IPool* pool : pools)
-		{
-			ids.Append(pool->begin(), pool->end());
 		}
 	}
 
 	void FindAllIdsWithAnyUnique(TView<const IPool* const> pools, TArray<Id>& ids)
 	{
+		ids.Clear(false);
 		if (pools.IsEmpty())
 		{
 			return;
@@ -1051,29 +1043,48 @@ namespace p
 		i32 maxPossibleSize = 0;
 		for (const IPool* pool : pools)
 		{
-			if (!P_EnsureMsg(pool,
-			        "One of the pools is null. Is the access missing one or more of the "
-			        "specified "
-			        "components?"))
+			if (pool)
 			{
-				return;
+				maxPossibleSize += pool->Size();
 			}
-
-			maxPossibleSize += pool->Size();
 		}
 
 		TSet<Id> idsSet;
 		idsSet.Reserve(maxPossibleSize);
 		for (const IPool* pool : pools)
 		{
-			for (Id id : *pool)
+			if (pool)
 			{
-				idsSet.Insert(id);
+				for (Id id : *pool)
+				{
+					idsSet.Insert(id);
+				}
 			}
 		}
 
-		ids.Clear();
 		ids.Append(idsSet.begin(), idsSet.end());
+	}
+
+	Id GetFirstIdWith(TView<const IPool* const> pools)
+	{
+		if (pools.Size() == 1)
+		{
+			const auto* pool = pools[0];
+			if (pool && pool->Size() > 0)
+			{
+				return *pool->begin();
+			}
+		}
+		else
+		{
+			TArray<Id> ids;
+			FindAllIdsWith(pools, ids);
+			if (!ids.IsEmpty())
+			{
+				return ids[0];
+			}
+		}
+		return NoId;
 	}
 
 	void Read(Reader& ct, CParent& val)
