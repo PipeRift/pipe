@@ -73,16 +73,8 @@ namespace p
 
 	Id IdRegistry::Create()
 	{
-		std::unique_lock lock{mutex};
-		if (!available.IsEmpty())
-		{
-			const Index index = available.Last();
-			available.RemoveLast();
-			return entities[index];
-		}
-
-		const Id id = MakeId(entities.Size(), 0);
-		entities.Add(id);
+		Id id;
+		Create(id);
 		return id;
 	}
 
@@ -95,7 +87,9 @@ namespace p
 			for (i32 i = 0; i < nRecicled; ++i)
 			{
 				const Index index = available.Last();
-				newIds[i]         = entities[index];
+				auto& id          = entities[i32(index)];
+				id = MakeId(index, id.GetVersion());    // Set entity index to mark it as valid
+				newIds[i] = id;
 			}
 			available.RemoveLast(nRecicled);
 			newIds = newIds.LastUnsafe(newIds.Size() - nRecicled);
@@ -120,11 +114,11 @@ namespace p
 			const Index index = id.GetIndex();
 			if (entities.IsValidIndex(index))
 			{
-				Id& storedId = entities[index];
+				Id& storedId = entities[i32(index)];
 				if (id == storedId)
 				{
-					// Increase version to invalidate current entity
-					storedId = MakeId(index, storedId.GetVersion() + 1u);
+					// Increase version and reset index to invalidate current entity
+					storedId = MakeId(Id::indexMask, storedId.GetVersion() + 1u);
 					available.Add(index);
 				}
 			}
@@ -146,8 +140,8 @@ namespace p
 				if (id == storedId)
 				{
 					deferredRemovals.AddSorted(storedId);
-					// Increase version to invalidate current entity
-					storedId = MakeId(index, storedId.GetVersion() + 1u);
+					// Increase version and reset index to invalidate current entity
+					storedId = MakeId(Id::indexMask, storedId.GetVersion() + 1u);
 				}
 			}
 		}

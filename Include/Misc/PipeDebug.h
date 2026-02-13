@@ -727,8 +727,20 @@ namespace p
 
 
 			ImGui::TableSetColumnIndex(1);    // Id
-			const CParent* parent = access.TryGet<const CParent>(id);
-			bool hasChildren      = parent && !parent->children.IsEmpty();
+			static TArray<Id> children;
+			children.Clear(false);
+			if (const CParent* parent = access.TryGet<const CParent>(id))
+			{
+				children.Reserve(parent->children.Size());
+				for (Id id : parent->children)
+				{
+					if (access.IsValid(id))
+					{
+						children.Add(id);
+					}
+				}
+			}
+			const bool hasChildren = !children.IsEmpty();
 
 			bool open = false;
 			static p::Tag font{"WorkSans"};
@@ -763,7 +775,7 @@ namespace p
 
 			if (hasChildren && open)
 			{
-				for (Id child : parent->children)
+				for (Id child : children)
 				{
 					DrawIdInTable(access, child, ecsDbg);
 				}
