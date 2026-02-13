@@ -1871,7 +1871,7 @@ namespace p
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
-	 * @see ExcludeWithStable(), ExcludeWithout()
+	 * @see ExcludeIdsWithStable(), ExcludeIdsWithout()
 	 */
 	template<typename C, typename AccessType>
 	void ExcludeIdsWith(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
@@ -1907,7 +1907,7 @@ namespace p
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
-	 * @see ExcludeWith(), ExcludeWithoutStable()
+	 * @see ExcludeIdsWith(), ExcludeIdsWithoutStable()
 	 */
 	template<typename C, typename AccessType>
 	void ExcludeIdsWithStable(
@@ -1928,7 +1928,7 @@ namespace p
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
-	 * @see ExcludeWithoutStable(), ExcludeWith()
+	 * @see ExcludeIdsWithoutStable(), ExcludeIdsWith()
 	 */
 	template<typename C, typename AccessType>
 	void ExcludeIdsWithout(
@@ -1950,7 +1950,7 @@ namespace p
 	 * @param access from where to access pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
-	 * @see ExcludeWithout(), ExcludeWithStable()
+	 * @see ExcludeIdsWithout(), ExcludeIdsWithStable()
 	 */
 	template<typename C, typename AccessType>
 	void ExcludeIdsWithoutStable(
@@ -1963,6 +1963,44 @@ namespace p
 	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
 	{
 		(ExcludeIdsWithoutStable<C>(access, ids, shouldShrink), ...);
+	}
+
+	/**
+	 * Remove ids that are invalid.
+	 *
+	 * @param access
+	 * @param ids array that will be modified
+	 * @param shouldShrink if true, the ids array will be shrink at the end
+	 * @see ExcludeIdsInvalidStable()
+	 */
+	template<typename AccessType>
+	void ExcludeIdsInvalid(
+	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	{
+		ids.RemoveIfSwap(
+		    [&access](Id id) {
+			return !access.IsValid(id);
+		    },
+		    shouldShrink);
+	}
+
+	/**
+	 * Remove ids that are invalid. Guarantees order.
+	 *
+	 * @param access
+	 * @param ids array that will be modified
+	 * @param shouldShrink if true, the ids array will be shrink at the end
+	 * @see ExcludeIdsInvalid()
+	 */
+	template<typename AccessType>
+	void ExcludeIdsInvalidStable(
+	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	{
+		ids.RemoveIf(
+		    [&access](Id id) {
+			return !access.IsValid(id);
+		    },
+		    shouldShrink);
 	}
 
 
