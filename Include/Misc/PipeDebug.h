@@ -732,11 +732,11 @@ namespace p
 			if (const CParent* parent = access.TryGet<const CParent>(id))
 			{
 				children.Reserve(parent->children.Size());
-				for (Id id : parent->children)
+				for (Id childId : parent->children)
 				{
-					if (access.IsValid(id))
+					if (access.IsValid(childId))
 					{
-						children.Add(id);
+						children.Add(childId);
 					}
 				}
 			}
