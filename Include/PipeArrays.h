@@ -1596,7 +1596,10 @@ namespace p
 			{
 				return Super::data == inlineBuffer.Data();
 			}
-			return false;
+			else
+			{
+				return false;
+			}
 		}
 
 		constexpr Type* GetInlineBuffer() const
@@ -1605,7 +1608,10 @@ namespace p
 			{
 				return inlineBuffer.Data();
 			}
-			return nullptr;
+			else
+			{
+				return nullptr;
+			}
 		}
 
 	protected:
