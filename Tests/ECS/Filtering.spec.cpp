@@ -34,7 +34,7 @@ struct TypeC
 
 
 go_bandit([]() {
-	EntityContext ctx;
+	IdContext ctx;
 	Id id1;
 	Id id2;
 	Id id3;
@@ -57,7 +57,7 @@ go_bandit([]() {
 
 		describe("FindAllIdsWith/FindAllIdsWithAny", [&]() {
 			it("Can get list matching all", [&]() {
-				TAccess<TypeA, TypeB, TypeC> access{ctx};
+				TIdScope<TypeA, TypeB, TypeC> access{ctx};
 				TArray<Id> typeIds = FindAllIdsWith<TypeA>(access);
 				AssertThat(typeIds.Contains(id1), Is().True());
 				AssertThat(typeIds.Contains(id2), Is().True());
@@ -70,7 +70,7 @@ go_bandit([]() {
 			});
 
 			it("Can get list matching any", [&]() {
-				TAccess<TypeA, TypeB, TypeC> access{ctx};
+				TIdScope<TypeA, TypeB, TypeC> access{ctx};
 				TArray<Id> typeIds = FindAllIdsWithAny<TypeA>(access);
 				AssertThat(typeIds.Contains(id1), Is().True());
 				AssertThat(typeIds.Contains(id2), Is().True());
@@ -83,7 +83,7 @@ go_bandit([]() {
 			});
 
 			it("Doesn't list removed ids", [&]() {
-				TAccess<TypeB> access{ctx};
+				TIdScope<TypeB> access{ctx};
 				RmId(ctx, id2, RmIdFlags::Instant);    // Remove first in the pool
 				RmId(ctx, id3, RmIdFlags::Instant);    // Remove last in the pool
 				RmId(ctx, id4, RmIdFlags::Instant);    // Remove last in the pool
@@ -94,7 +94,7 @@ go_bandit([]() {
 			});
 
 			it("Doesn't list (deferred) removed ids", [&]() {
-				TAccess<TypeB> access{ctx};
+				TIdScope<TypeB> access{ctx};
 				RmId(ctx, id2);    // Remove first in the pool
 				RmId(ctx, id3);    // Remove last in the pool
 				RmId(ctx, id4);    // Remove last in the pool
@@ -109,7 +109,7 @@ go_bandit([]() {
 
 		describe("ExcludeIdsWith", [&]() {
 			it("Removes ids containing component", [&]() {
-				TAccess<TypeA, TypeB, TypeC> access{ctx};
+				TIdScope<TypeA, TypeB, TypeC> access{ctx};
 				TArray<Id> typeIds = FindAllIdsWithAny<TypeA>(access);
 
 				ExcludeIdsWith<TypeC>(access, typeIds);
@@ -119,7 +119,7 @@ go_bandit([]() {
 			});
 
 			it("Removes ids not containing component", [&]() {
-				TAccess<TypeA, TypeB, TypeC> access{ctx};
+				TIdScope<TypeA, TypeB, TypeC> access{ctx};
 				TArray<Id> typeIds = FindAllIdsWithAny<TypeA>(access);
 
 				ExcludeIdsWithout<TypeC>(access, typeIds);
@@ -129,7 +129,7 @@ go_bandit([]() {
 			});
 
 			it("Removes ids containing multiple component", [&]() {
-				TAccess<TypeA, TypeB, TypeC> access{ctx};
+				TIdScope<TypeA, TypeB, TypeC> access{ctx};
 				TArray<Id> typeIds = FindAllIdsWithAny<TypeA, TypeB, TypeC>(access);
 
 				ExcludeIdsWith<TypeB, TypeC>(access, typeIds);
@@ -143,7 +143,7 @@ go_bandit([]() {
 			it("Finds ids containing a component from a list", [&]() {
 				TArray<Id> source{id1, id2, id3};
 
-				TAccess<TypeA> access{ctx};
+				TIdScope<TypeA> access{ctx};
 				TArray<Id> typeIds = FindIdsWith<TypeA>(access, source);
 				AssertThat(typeIds.Contains(id1), Is().True());
 				AssertThat(typeIds.Contains(id2), Is().True());
@@ -153,7 +153,7 @@ go_bandit([]() {
 			it("Finds ids not containing a component from a list", [&]() {
 				TArray<Id> source{id1, id2, id3};
 
-				TAccess<TypeA> access{ctx};
+				TIdScope<TypeA> access{ctx};
 				TArray<Id> ids = FindIdsWithout<TypeA>(access, source);
 				AssertThat(ids.Contains(id1), Is().False());
 				AssertThat(ids.Contains(id2), Is().False());
@@ -165,7 +165,7 @@ go_bandit([]() {
 			it("Finds and removes ids containing a component from a list", [&]() {
 				TArray<Id> source{id1, id2, id3};
 
-				TAccess<TypeA> access{ctx};
+				TIdScope<TypeA> access{ctx};
 				TArray<Id> ids = ExtractIdsWith<TypeA>(access, source);
 				AssertThat(ids.Contains(id1), Is().True());
 				AssertThat(ids.Contains(id2), Is().True());
@@ -178,7 +178,7 @@ go_bandit([]() {
 			it("Finds and removes ids not containing a component from a list", [&]() {
 				TArray<Id> source{id1, id2, id3};
 
-				TAccess<TypeA> access{ctx};
+				TIdScope<TypeA> access{ctx};
 				TArray<Id> ids = ExtractIdsWithout<TypeA>(access, source);
 				AssertThat(ids.Contains(id1), Is().False());
 				AssertThat(ids.Contains(id2), Is().False());

@@ -63,7 +63,7 @@ u32 TestComponent::destructed = 0;
 go_bandit([]() {
 	describe("ECS.Components", []() {
 		it("Can add one component", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			Id id = AddId(ctx);
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
 			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
@@ -79,7 +79,7 @@ go_bandit([]() {
 		});
 
 		it("Can remove one component", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 
@@ -95,7 +95,7 @@ go_bandit([]() {
 		});
 
 		it("Can add many components", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			TArray<Id> ids{3};
 			AddId(ctx, ids);
 			ctx.AddN(ids, NonEmptyComponent{2});
@@ -109,7 +109,7 @@ go_bandit([]() {
 		});
 
 		it("Can remove many components", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			TArray<Id> ids{3};
 			AddId(ctx, ids);
 			ctx.AddN(ids, NonEmptyComponent{2});
@@ -135,7 +135,7 @@ go_bandit([]() {
 		});
 
 		it("Components are removed after node is deleted", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 
@@ -149,7 +149,7 @@ go_bandit([]() {
 		});
 
 		it("Components are removed after node is deleted (deferred)", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 
@@ -169,7 +169,7 @@ go_bandit([]() {
 		});
 
 		it("Components keep state when added", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.AddN(id, NonEmptyComponent{2});
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
@@ -177,14 +177,14 @@ go_bandit([]() {
 		});
 
 		it("Can copy registry", []() {
-			EntityContext ctxa;
+			IdContext ctxa;
 
 			Id id = AddId(ctxa);
 			ctxa.Add<EmptyComponent, NonEmptyComponent>(id);
 			Id id2 = AddId(ctxa);
 			ctxa.AddN(id2, NonEmptyComponent{2});
 
-			EntityContext ctxb{ctxa};
+			IdContext ctxb{ctxa};
 			AssertThat(ctxb.Has<EmptyComponent>(id), Is().True());
 			AssertThat(ctxb.Has<NonEmptyComponent>(id), Is().True());
 			AssertThat(ctxb.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
@@ -195,7 +195,7 @@ go_bandit([]() {
 		});
 
 		it("Can check components", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			Id id = NoId;
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
 			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
@@ -213,7 +213,7 @@ go_bandit([]() {
 			NonEmptyComponent::destructed = 0;
 			TestComponent::destructed     = 0;
 
-			EntityContext ctx;
+			IdContext ctx;
 			TArray<Id> ids{3};
 			AddId(ctx, ids);
 			ctx.AddN(ids, NonEmptyComponent{2});
@@ -234,7 +234,7 @@ go_bandit([]() {
 		});
 
 		it("Components are removed with the entity", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 			RmId(ctx, id, p::RmIdFlags::Instant);
@@ -247,7 +247,7 @@ go_bandit([]() {
 		});
 
 		it("Components are removed with the entity (deferred)", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 			RmId(ctx, id);
@@ -266,7 +266,7 @@ go_bandit([]() {
 		});
 
 		it("Can access components on recicled entities", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 			RmId(ctx, id);
@@ -279,7 +279,7 @@ go_bandit([]() {
 		});
 
 		it("Can access CRemoved", [&]() {
-			EntityContext ctx;
+			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 			RmId(ctx, id);

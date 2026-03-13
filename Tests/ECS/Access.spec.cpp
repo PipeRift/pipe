@@ -19,8 +19,8 @@ go_bandit([]() {
 	describe("ECS.Access", []() {
 		describe("Templated", []() {
 			it("Can cache pools", [&]() {
-				EntityContext ctx;
-				TAccess<TWrite<TypeA>, TypeB> access{ctx};
+				IdContext ctx;
+				TIdScope<Writes<TypeA, TypeB>> access{ctx};
 
 				AssertThat(access.GetPool<TypeA>(), Equals(ctx.GetPool<TypeA>()));
 				AssertThat(access.GetPool<const TypeA>(), Equals(ctx.GetPool<TypeA>()));
@@ -28,10 +28,10 @@ go_bandit([]() {
 			});
 
 			it("Can check if contained", [&]() {
-				EntityContext ctx;
+				IdContext ctx;
 				TPool<TypeA>& pool = ctx.AssurePool<TypeA>();
-				TAccess<TWrite<TypeA>> access{ctx};
-				TAccess<TypeA> accessConst{ctx};
+				TIdScope<Writes<TypeA>> access{ctx};
+				TIdScope<TypeA> accessConst{ctx};
 				Id id = NoId;
 				AssertThat(access.Has<TypeA>(id), Is().False());
 				AssertThat(accessConst.Has<TypeA>(id), Is().False());
@@ -44,25 +44,25 @@ go_bandit([]() {
 				AssertThat(access.Has<TypeA>(id), Is().True());
 				AssertThat(accessConst.Has<TypeA>(id), Is().True());
 
-				TAccess<TypeA, TypeB> access2{ctx};
+				TIdScope<TypeA, TypeB> access2{ctx};
 				ctx.Add<TypeB>(id);
 				AssertThat(access2.Has<TypeB>(id), Is().True());
 			});
 
 			it("Can initialize superset", [&]() {
-				EntityContext ctx;
+				IdContext ctx;
 				TPool<TypeA>& typePool = ctx.AssurePool<TypeA>();
 
-				TAccess<TWrite<TypeA>, TWrite<TypeB>> access1{ctx};
-				TAccess<TWrite<TypeA>> superset1{access1};
+				TIdScope<Writes<TypeA, TypeB>> access1{ctx};
+				TIdScope<Writes<TypeA>> superset1{access1};
 				AssertThat(superset1.GetPool<TypeA>(), Equals(&typePool));
 
-				TAccess<TWrite<TypeA>, TWrite<TypeB>> access2{ctx};
-				TAccess<TypeA> superset2{access2};
+				TIdScope<Writes<TypeA, TypeB>> access2{ctx};
+				TIdScope<TypeA> superset2{access2};
 				AssertThat(superset2.GetPool<const TypeA>(), Equals(&typePool));
 
-				TAccess<TWrite<TypeA>, TWrite<TypeB>> access3{ctx};
-				TAccess<TypeA> superset3{access3};
+				TIdScope<Writes<TypeA, TypeB>> access3{ctx};
+				TIdScope<TypeA> superset3{access3};
 				AssertThat(superset1.GetPool<TypeA>(), Equals(&typePool));
 			});
 		});

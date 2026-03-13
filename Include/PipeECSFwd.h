@@ -25,23 +25,17 @@ namespace p::ecs
 
 
 	struct SortLessStatics;
-	struct EntityContext;
+	struct IdContext;
 
-	enum class AccessMode : u8;
-	struct TypeAccess;
-	template<typename T, AccessMode inMode>
-	struct TTypeAccess;
-	template<typename T>
-	struct TRead;
-	template<typename T>
-	struct TWrite;
-	template<typename T>
-	struct TTypeAccessInfo;
 	template<typename... T>
-	struct TAccess;
+	struct TTypeList;    // TODO: Move to a TemplatesFwd header
+
+	struct IdScope;
+
 	template<typename... T>
-	using TAccessRef = const TAccess<T...>&;
-	struct Access;
+	struct TIdScope;
+	template<typename... T>
+	using TIdScopeRef = const TIdScope<T...>&;
 
 	struct CChild;
 	struct CParent;
