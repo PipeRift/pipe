@@ -166,17 +166,26 @@ namespace p
 			using Type     = typename TTypeListUnique<NextList, Rest...>::Type;
 		};
 
-		// Used for when TypeList helpers need TyleList but it is not defined yet
-		template<typename... T>
-		struct TDummyList
+		template<typename List, template<typename> typename Predicate>
+		struct TFilter;
+
+		template<template<typename> typename Predicate>
+		struct TFilter<TTypeList<>, Predicate>
 		{
-			using AsList = TTypeList<T...>;
+			using Type = TTypeList<>;    // Empty result
 		};
-		template<typename... T, typename... Other>
-		constexpr TDummyList<T..., Other...> operator+(TDummyList<T...>, TDummyList<Other...>)
+
+		template<typename Head, typename... Tail, template<typename> typename Predicate>
+		struct TFilter<TTypeList<Head, Tail...>, Predicate>
 		{
-			return {};
-		}
+			// Filter the remaining types (Tail...)
+			using FilteredTail = typename TFilter<TTypeList<Tail...>, Predicate>::Type;
+			// Include Head if predicate is true; otherwise, use FilteredTail directly
+			using Type = Select<Predicate<Head>::value,
+			    typename FilteredTail::template Prepend<Head>,    // Prepend Head to FilteredTail
+			    FilteredTail                                      // Skip Head
+			    >;
+		};
 	};    // namespace Detail
 
 
@@ -236,12 +245,6 @@ namespace p
 		    : public Detail::TTypeListUnique<TTypeList<S...>, T...>
 		{};
 
-		template<template<typename> typename Predicate, typename... Remaining>
-		struct TFilter
-		{
-			using type = TTypeList<>;
-		};
-
 		template<typename... Args>
 		struct TFirst : TypeIdentity<void>
 		{};
@@ -266,11 +269,6 @@ namespace p
 		template<template<typename> class W>
 		using WrapConstRef = TTypeList<const W<T>&...>;
 
-		template<template<typename> typename Predicate>
-		using Filter = decltype((
-		    Detail::TDummyList<>{} + ...
-		    + Select<Predicate<T>::value, Detail::TDummyList<T>, Detail::TDummyList<>>{}))::AsList;
-
 		template<template<typename> class M>
 		using Map = TTypeList<typename M<T>::Type...>;
 
@@ -294,6 +292,9 @@ namespace p
 
 		template<typename Default = void>
 		using First = typename TFirst<Default>::Type;
+
+		template<template<typename> typename Predicate>
+		using Filter = Detail::TFilter<TTypeList<T...>, Predicate>::Type;
 
 		static constexpr auto Call(auto predicate)
 		{

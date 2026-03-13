@@ -1162,16 +1162,15 @@ namespace p
 		template<typename Component>
 		CopyConst<TPool<Mut<Component>>, Component>& AssurePool() const
 		{
-			return AsParent().AssurePool<Component>();
+			return AsParent().template AssurePool<Component>();
 		}
 
 		template<typename Component>
 		CopyConst<TPool<Mut<Component>>, Component>* GetPool() const
 		{
-			return AsParent().GetPool<Component>();
+			return AsParent().template GetPool<Component>();
 		}
 
-		template<typename Component>
 		IdContext& GetContext() const
 		{
 			return AsParent().GetContext();
@@ -1215,8 +1214,8 @@ namespace p
 					if (!mdfdPool.Has(id))    // If we store value, we only add if it it wasn't
 					                          // modified already
 					{
-						Component* comp = pool->TryGet<Component>(id);
-						if constexpr (IsMoveConstructible<Component>())
+						Component* comp = pool->template TryGet<Component>(id);
+						if constexpr (IsMoveConstructible<Component>)
 						{
 							mdfdPool.Add(
 							    id, comp ? CMdfd<Component>{p::Move(*comp)} : CMdfd<Component>{});
@@ -1237,6 +1236,7 @@ namespace p
 		template<typename Component>
 		decltype(auto) Add(Id id, Component&& value = {}) const requires(IsMutable<Component>)
 		{
+			P_Check(IsValid(id));
 			auto& pool = AssurePool<Component>();
 			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
 			{
@@ -1247,6 +1247,7 @@ namespace p
 		template<typename Component>
 		decltype(auto) Add(Id id, const Component& value) const requires(IsMutable<Component>)
 		{
+			P_Check(IsValid(id));
 			auto& pool = AssurePool<Component>();
 			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
 			{
@@ -1363,16 +1364,18 @@ namespace p
 		template<typename Component>
 		Component& GetOrAdd(Id id) const requires(IsMutable<Component>)
 		{
-			auto* pool = GetPool<Component>();
-			if (pool->Has(id))
+			auto& pool = AssurePool<Component>();
+
+			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
 			{
-				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-				{
-					MarkModified<Component>(id, pool);
-				}
-				return pool->Get(id);
+				MarkModified<Component>(id, *pool);
 			}
-			return pool->Add(id);
+
+			if (pool.Has(id))
+			{
+				return pool.Get(id);
+			}
+			return pool.Add(id);
 		}
 
 		template<typename... Component>
@@ -1412,7 +1415,7 @@ namespace p
 		}
 	};
 
-	struct P_API IdContext /* : public TIdOperations<IdContext>*/
+	struct P_API IdContext : public TIdOperations<IdContext>
 	{
 	private:
 		IdRegistry idRegistry;
@@ -1434,213 +1437,8 @@ namespace p
 
 #pragma region Entities
 		// Reflection helpers
-		void* AddDefault(TypeId typeId, Id id);
-		void Remove(TypeId typeId, Id id);
-
-
-		template<typename Component>
-		void MarkModified(TView<const Id> ids, const TPool<Component>* pool = nullptr) const
-		{
-			if (!pool)
-			{
-				pool = GetPool<const Component>();
-				if (!pool)
-				{
-					return;
-				}
-			}
-
-			auto& mdfdPool = AssurePool<CMdfd<Component>>();
-			if constexpr (StoresLastModified<Component>)
-			{
-				mdfdPool.ReserveMore(ids.Size());
-				for (Id id : ids)
-				{
-					Component* comp = pool->TryGet<Component>(id);
-					if constexpr (IsMoveConstructible<Component>())
-					{
-						mdfdPool.Add(
-						    id, comp ? CMdfd<Component>{p::Move(*comp)} : CMdfd<Component>{});
-					}
-					else
-					{
-						mdfdPool.Add(id, comp ? CMdfd<Component>{*comp} : CMdfd<Component>{});
-					}
-				}
-			}
-			else
-			{
-				mdfdPool.Add(ids.begin(), ids.end(), CMdfd<Component>{});
-			}
-		}
-
-
-		// Adds Component to an entity (if the entity doesnt have it already)
-		template<typename Component>
-		decltype(auto) Add(Id id, Component&& value = {}) const requires(IsMutable<Component>)
-		{
-			P_Check(IsValid(id));
-			auto& pool = AssurePool<Component>();
-			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-			{
-				MarkModified<Component>(id, &pool);
-			}
-			return pool.Add(id, p::Forward<Component>(value));
-		}
-		template<typename Component>
-		decltype(auto) Add(Id id, const Component& value) const requires(IsMutable<Component>)
-		{
-			P_Check(IsValid(id));
-			auto& pool = AssurePool<Component>();
-			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-			{
-				MarkModified<Component>(id, &pool);
-			}
-			return pool.Add(id, value);
-		}
-		// Adds Component to an entity (if the entity doesnt have it already)
-		template<typename... Component>
-		void Add(Id id) requires(sizeof...(Component) > 1)
-		{
-			P_Check(IsValid(id));
-			(Add<Component>(id), ...);
-		}
-
-		// Add Component to many entities (if they dont have it already)
-		template<typename Component>
-		decltype(auto) AddN(TView<const Id> ids, const Component& value = {})
-		{
-			auto& pool = AssurePool<Component>();
-			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-			{
-				MarkModified<Component>(ids, &pool);
-			}
-			return pool.Add(ids.begin(), ids.end(), value);
-		}
-
-		template<typename Component>
-		void AddN(TView<const Id> ids, const TView<const Component>& values)
-		{
-			P_Check(ids.Size() == values.Size());
-			auto& pool = AssurePool<Component>();
-			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-			{
-				MarkModified<Component>(ids, &pool);
-			}
-			pool.Add(ids.begin(), ids.end(), values.begin());
-		}
-
-		// Add Components to many entities (if they don't have it already)
-		template<typename... Component>
-		void AddN(TView<const Id> ids) requires(sizeof...(Component) > 1)
-		{
-			(Add<Component>(ids), ...);
-		}
-
-
-		template<typename Component>
-		void Remove(const Id id)
-		{
-			if (auto* pool = GetPool<Component>())
-			{
-				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-				{
-					MarkModified<Component>(id, pool);
-				}
-				pool->Remove(id);
-			}
-		}
-
-		template<typename... Component>
-		void Remove(const Id id) requires(sizeof...(Component) > 1)
-		{
-			(Remove<Component>(id), ...);
-		}
-		template<typename Component>
-		void Remove(TView<const Id> ids)
-		{
-			if (auto* pool = GetPool<Component>())
-			{
-				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-				{
-					MarkModified<Component>(ids, pool);
-				}
-				pool->Remove(ids);
-			}
-		}
-
-		template<typename... Component>
-		void Remove(TView<const Id> ids) requires(sizeof...(Component) > 1)
-		{
-			(Remove<Component>(ids), ...);
-		}
-
-		template<typename Component>
-		Component& Get(const Id id) const
-		{
-			auto* const pool = GetPool<Component>();
-			P_Check(pool);
-			if constexpr (IsMutable<Component>
-			              && HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-			{
-				MarkModified<Component>(id, pool);
-			}
-			return pool->Get(id);
-		}
-		template<typename... Component>
-		TTuple<Component&...> Get(const Id id) const requires(sizeof...(Component) > 1)
-		{
-			return std::forward_as_tuple(Get<Component>(id)...);
-		}
-		template<typename Component>
-		Component* TryGet(const Id id) const
-		{
-			auto* const pool = GetPool<Component>();
-			P_Check(pool);
-			Component* value = pool->TryGet(id);
-			if constexpr (IsMutable<Component>
-			              && HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-			{
-				if (value)
-				{
-					MarkModified<Component>(id, pool);
-				}
-			}
-			return value;
-		}
-		template<typename... Component>
-		TTuple<Component*...> TryGet(const Id id) const requires(sizeof...(Component) > 1)
-		{
-			return std::forward_as_tuple(TryGet<Component>(id)...);
-		}
-
-		template<typename Component>
-		Component& GetOrAdd(Id id)
-		{
-			auto* pool = GetPool<Component>();
-			if (pool->Has(id))
-			{
-				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-				{
-					MarkModified<Component>(id, pool);
-				}
-				return pool->Get(id);
-			}
-			return pool->Add(id);
-		}
-
-		template<typename Component>
-		bool Has(Id id) const
-		{
-			const auto* pool = GetPool<Component>();
-			return pool && pool->Has(id);
-		}
-
-		template<typename... Component>
-		bool Has(Id id) const requires(sizeof...(Component) >= 2)
-		{
-			return (Has<const Component>(id) && ...);
-		}
+		void* AddByTypeId(TypeId typeId, Id id);
+		void RemoveByTypeId(TypeId typeId, Id id);
 
 		const IdRegistry& GetIdRegistry() const
 		{
@@ -1693,15 +1491,20 @@ namespace p
 
 		void Reset(bool keepStatics = false);
 
+		IdContext& GetContext() const
+		{
+			return *const_cast<IdContext*>(this);
+		}
+
 		// Finds or creates a pool
 		template<typename T>
 		TPool<Mut<T>>& AssurePool() const;
 
-		IPool* GetPool(TypeId componentId) const;
-		void GetPools(TView<const TypeId> componentIds, TArray<IPool*>& outPools) const;
-		void GetPools(TView<const TypeId> componentIds, TArray<const IPool*>& outPools) const
+		IPool* GetPool(TypeId typeId) const;
+		void GetPools(TView<const TypeId> typeIds, TArray<IPool*>& outPools) const;
+		void GetPools(TView<const TypeId> typeIds, TArray<const IPool*>& outPools) const
 		{
-			GetPools(componentIds, reinterpret_cast<TArray<IPool*>&>(outPools));
+			GetPools(typeIds, reinterpret_cast<TArray<IPool*>&>(outPools));
 		}
 
 		template<typename T>
@@ -1789,21 +1592,21 @@ namespace p
 		static constexpr bool value = HasAnyTypeStaticFlags<T>(TF_ECS_AutoModify);
 	};
 
-	template<typename W, typename R>
-	struct TIdScopeBase : public TIdOperations<TIdScopeBase<W, R>>
+
+	// Base for TIdScope. Assumes all types are mutable (not const)
+	template<typename W, typename... R>
+	struct TIdScopeBase : public TIdOperations<TIdScopeBase<W, R...>>
 	{
-		template<typename W2, typename R2>
+		template<typename W2, typename... R2>
 		friend struct TIdScopeBase;
 
 	private:
-		using RawWrites    = W::template Wrap<Mut>;
-		using RawReads     = R::template Wrap<Mut>;
-		using ModifyWrites = RawWrites::template Filter<TIsAutoModified>::template Wrap<CMdfd>;
-		using ModifyReads  = RawReads::template Filter<TIsAutoModified>::template Wrap<CMdfd>;
+		using ModifyWrites = W::template Filter<TIsAutoModified>;
+		using ModifyReads = TTypeList<R...>::template Filter<TIsAutoModified>::template Wrap<CMdfd>;
 
 	public:
-		using WriteDependencies = RawWrites::template Append<ModifyWrites>;
-		using ReadDependencies  = RawReads::template Append<ModifyReads>;
+		using WriteDependencies = W::template Append<ModifyWrites>;
+		using ReadDependencies  = TTypeList<R...>::template Append<ModifyReads>;
 		using Dependencies      = ReadDependencies::template Append<WriteDependencies>::Deduplicate;
 		using Pools             = Dependencies::template WrapPtr<TPool>;
 		using Tuple             = Pools::template To<std::tuple>;
@@ -1830,7 +1633,6 @@ namespace p
 		TIdScopeBase(const TIdScopeBase<T2...>& other) : context{other.context}
 		{
 			using Other = TIdScopeBase<T2...>;
-
 
 			constexpr bool validReads = Dependencies::Call([]<typename... T>() {
 				return (Other::template IsReadable<T>() && ...);
@@ -1933,15 +1735,15 @@ namespace p
 	{};
 
 	template<typename... R>
-	struct TIdScope : public TIdScopeBase<TTypeList<>, TTypeList<R...>>
+	struct TIdScope : public TIdScopeBase<Writes<>, Mut<R>...>
 	{
-		using TIdScopeBase<TTypeList<>, TTypeList<R...>>::TIdScopeBase;
+		using TIdScopeBase<Writes<>, Mut<R>...>::TIdScopeBase;
 	};
 
 	template<typename... W, typename... R>
-	struct TIdScope<Writes<W...>, R...> : public TIdScopeBase<TTypeList<W...>, TTypeList<R...>>
+	struct TIdScope<Writes<W...>, R...> : public TIdScopeBase<Writes<Mut<W>...>, Mut<R>...>
 	{
-		using TIdScopeBase<TTypeList<W...>, TTypeList<R...>>::TIdScopeBase;
+		using TIdScopeBase<Writes<Mut<W>...>, Mut<R>...>::TIdScopeBase;
 	};
 
 
@@ -1958,7 +1760,7 @@ namespace p
 
 
 	public:
-		IdScope(IdContext& ast, const TArray<TypeId>& types) : context{context} {}
+		IdScope(IdContext& ctx, const TArray<TypeId>& types) : context{ctx} {}
 
 		template<typename... T>
 		IdScope(TIdScopeRef<T...> scope) : context{scope.context}
@@ -2582,23 +2384,23 @@ namespace p
 	template<typename T>
 	inline void EntityWriter::SerializePool()
 	{
-		TArray<TPair<i32, Id>> componentIds;    // TODO: Make sure this is needed
+		TArray<TPair<i32, Id>> typeIds;    // TODO: Make sure this is needed
 
 		auto* pool = context.GetPool<const T>();
 		if (pool)
 		{
-			componentIds.Reserve(Min(i32(pool->Size()), ids.Size()));
+			typeIds.Reserve(Min(i32(pool->Size()), ids.Size()));
 			for (i32 i = 0; i < ids.Size(); ++i)
 			{
 				const Id id = ids[i];
 				if (pool->Has(id))
 				{
-					componentIds.Add({i, id});
+					typeIds.Add({i, id});
 				}
 			}
 		}
 
-		if (componentIds.IsEmpty())
+		if (typeIds.IsEmpty())
 		{
 			return;
 		}
@@ -2612,7 +2414,7 @@ namespace p
 			{
 				String key;
 				BeginObject();
-				for (auto id : componentIds)
+				for (auto id : typeIds)
 				{
 					key.clear();
 					Strings::FormatTo(key, "{}", id.first);
@@ -2635,7 +2437,7 @@ namespace p
 				}
 				else
 				{
-					Serialize(pool->Get(componentIds.First().second));
+					Serialize(pool->Get(typeIds.First().second));
 				}
 			}
 			Leave();

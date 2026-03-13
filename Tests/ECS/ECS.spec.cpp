@@ -21,23 +21,12 @@ go_bandit([]() {
 	describe("ECS", []() {
 		it("Can copy tree", [&]() {
 			static IdContext* ctxPtr = nullptr;
-			static bool calledAdd;
 
 			IdContext origin;
 			Id id = AddId(origin);
 
-			calledAdd = false;
-			ctxPtr    = &origin;
-			origin.OnAdd<ATypeA>().Bind([&origin](auto ids) {
-				for (Id id : ids)
-				{
-					AssertThat(origin.Has<ATypeA>(id), Equals(true));
-				}
-				AssertThat(ctxPtr, Equals(&origin));
-				calledAdd = true;
-			});
+			ctxPtr = &origin;
 			origin.Add<ATypeA>(id);
-			AssertThat(calledAdd, Equals(true));
 
 			IdContext target{origin};
 			AssertThat(origin.IsValid(id), Equals(true));
@@ -45,18 +34,9 @@ go_bandit([]() {
 			AssertThat(target.IsValid(id), Equals(true));
 			AssertThat(target.Has<ATypeA>(id), Equals(true));
 
-			calledAdd = false;
-			ctxPtr    = &target;
-			target.OnAdd<ATypeB>().Bind([&target](auto ids) {
-				for (Id id : ids)
-				{
-					AssertThat(target.Has<ATypeB>(id), Equals(true));
-				}
-				AssertThat(ctxPtr, Equals(&target));
-				calledAdd = true;
-			});
+			ctxPtr = &target;
 			target.Add<ATypeB>(id);
-			AssertThat(calledAdd, Equals(true));
+			AssertThat(target.Has<ATypeB>(id), Equals(true));
 		});
 
 		it("Can move tree", [&]() {
@@ -68,15 +48,8 @@ go_bandit([]() {
 
 			calledAdd = false;
 			ctxPtr    = &origin;
-			origin.OnAdd<ATypeA>().Bind([&origin](auto ids) {
-				for (Id id : ids)
-				{
-					AssertThat(origin.Has<ATypeA>(id), Equals(true));
-				}
-				AssertThat(ctxPtr, Equals(&origin));
-				calledAdd = true;
-			});
 			origin.Add<ATypeA>(id);
+			AssertThat(origin.Has<ATypeA>(id), Equals(true));
 			AssertThat(calledAdd, Equals(true));
 
 			IdContext target{Move(origin)};
@@ -87,16 +60,8 @@ go_bandit([]() {
 
 			calledAdd = false;
 			ctxPtr    = &target;
-			target.OnAdd<ATypeB>().Bind([&target](auto ids) {
-				for (Id id : ids)
-				{
-					AssertThat(target.Has<ATypeB>(id), Equals(true));
-				}
-				AssertThat(ctxPtr, Equals(&target));
-				calledAdd = true;
-			});
 			target.Add<ATypeB>(id);
-			AssertThat(calledAdd, Equals(true));
+			AssertThat(target.Has<ATypeB>(id), Equals(true));
 		});
 
 		it("Can assure pool", [&]() {

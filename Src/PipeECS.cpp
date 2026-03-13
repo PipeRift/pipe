@@ -664,7 +664,7 @@ namespace p
 		return *this;
 	}
 
-	void* IdContext::AddDefault(TypeId typeId, Id id)
+	void* IdContext::AddByTypeId(TypeId typeId, Id id)
 	{
 		if (IPool* pool = GetPool(typeId))
 		{
@@ -673,7 +673,7 @@ namespace p
 		return nullptr;
 	}
 
-	void IdContext::Remove(TypeId typeId, Id id)
+	void IdContext::RemoveByTypeId(TypeId typeId, Id id)
 	{
 		if (IPool* pool = GetPool(typeId))
 		{
@@ -687,9 +687,9 @@ namespace p
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
 	}
 
-	void IdContext::GetPools(TView<const TypeId> componentIds, TArray<IPool*>& outPools) const
+	void IdContext::GetPools(TView<const TypeId> typeIds, TArray<IPool*>& outPools) const
 	{
-		for (const TypeId componentId : componentIds)
+		for (const TypeId componentId : typeIds)
 		{
 			const i32 index = pools.FindSorted(PoolInstance{componentId, {}});
 			if (index != NO_INDEX)
