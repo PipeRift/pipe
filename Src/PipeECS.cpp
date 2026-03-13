@@ -6,6 +6,8 @@
 #include "Pipe/Core/Limits.h"
 #include "Pipe/Core/Set.h"
 
+#include <mutex>
+
 
 namespace p
 {
