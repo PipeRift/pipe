@@ -9,41 +9,61 @@
 
 namespace p
 {
+	template<class T>
+	struct TypeIdentity
+	{
+		using Type = T;
+	};
+
+	template<typename T, T v>
+	struct Constant
+	{
+		static constexpr T value = v;
+		using ValueType          = T;
+		using Type               = Constant;
+		constexpr operator T() const noexcept
+		{
+			return value;
+		}
+	};
+	using TrueType  = Constant<bool, true>;
+	using FalseType = Constant<bool, false>;
+
 	namespace details
 	{
 		template<class T>
-		struct TIsRValueReference : std::false_type
+		struct TIsRValueReference : FalseType
 		{};
 		template<class T>
-		struct TIsRValueReference<T&&> : std::true_type
+		struct TIsRValueReference<T&&> : TrueType
 		{};
 
 		template<class T>
-		struct TIsLValueReference : std::false_type
+		struct TIsLValueReference : FalseType
 		{};
 		template<class T>
-		struct TIsLValueReference<T&> : std::true_type
+		struct TIsLValueReference<T&> : TrueType
 		{};
 
 		template<typename T>
-		struct TIsChar : std::false_type
+		struct TIsChar : FalseType
 		{};
 		template<>
-		struct TIsChar<AnsiChar> : std::true_type
+		struct TIsChar<AnsiChar> : TrueType
 		{};
 		template<>
-		struct TIsChar<WideChar> : std::true_type
+		struct TIsChar<WideChar> : TrueType
 		{};
 		template<>
-		struct TIsChar<const AnsiChar> : std::true_type
+		struct TIsChar<const AnsiChar> : TrueType
 		{};
 		template<>
-		struct TIsChar<const WideChar> : std::true_type
+		struct TIsChar<const WideChar> : TrueType
 		{};
 
 		// determine whether _Ty can be copy-initialized with {}
 		template<typename T, typename = void>
-		struct TIsImplicitlyDefaultConstructible : std::false_type
+		struct TIsImplicitlyDefaultConstructible : FalseType
 		{};
 
 		template<typename T>
@@ -51,7 +71,7 @@ namespace p
 
 		template<typename T>
 		struct TIsImplicitlyDefaultConstructible<T,
-		    std::void_t<decltype(ImplicitlyDefaultConstruct<T>({}))>> : std::true_type
+		    std::void_t<decltype(ImplicitlyDefaultConstruct<T>({}))>> : TrueType
 		{};
 	}    // namespace details
 
@@ -294,10 +314,10 @@ namespace p
 
 
 	template<typename T, typename = int>
-	struct HasInlineCapacityMember : std::false_type
+	struct HasInlineCapacityMember : FalseType
 	{};
 	template<typename T>
-	struct HasInlineCapacityMember<T, decltype((void)T::inlineCapacity, 0)> : std::true_type
+	struct HasInlineCapacityMember<T, decltype((void)T::inlineCapacity, 0)> : TrueType
 	{};
 
 	template<typename T>

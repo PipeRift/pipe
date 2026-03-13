@@ -176,14 +176,14 @@ namespace p
 		DebugECSContext ecs;
 		DebugReflectContext reflect;
 
-		EntityContext* ctx = nullptr;
+		IdContext* ctx = nullptr;
 
 		bool initialized  = false;
 		bool isFirstDebug = true;
 
 
 		DebugContext() = default;
-		DebugContext(EntityContext& ctx) : ctx{&ctx} {}
+		DebugContext(IdContext& ctx) : ctx{&ctx} {}
 	};
 
 	bool BeginDebug(DebugContext& Context);
@@ -221,7 +221,7 @@ namespace p
 
 
 	// For internal use only
-	EntityContext& GetDebugCtx()
+	IdContext& GetDebugCtx()
 	{
 		return *currentContext->ctx;
 	}
@@ -552,7 +552,7 @@ namespace p
 	#pragma region ECS
 	i32 DebugECSInspector::uniqueIdCounter = 0;
 
-	using DrawNodeAccess = TAccessRef<CParent, CChild>;
+	using DrawNodeAccess = TIdScopeRef<CParent, CChild>;
 	namespace details
 	{
 		bool ChooseTypePopup(const char* label, ImGuiTextFilter& filter, TypeId& selectedTypeId)
@@ -1282,7 +1282,7 @@ namespace p
 			return false;
 		}
 
-		if (!P_EnsureMsg(context.ctx, "Debug Context does not contain a valid EntityContext."))
+		if (!P_EnsureMsg(context.ctx, "Debug Context does not contain a valid IdContext."))
 		{
 			return false;
 		}

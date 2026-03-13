@@ -198,8 +198,10 @@ namespace p
 		TF_Object    = 1 << 4,
 		TF_Container = 1 << 6,
 
-		TF_ECS_AutoModify = 1 << 7    // -> In ECS, should this type be marked modified
-		                              // automatically when added, written or removed?
+		TF_ECS_AutoModify = 1 << 7,          // -> In ECS, should this type be marked modified
+		                                     // automatically when added, written or removed?
+		TF_ECS_StoreLastModified = 1 << 8    // -> In ECS, should this type's last value be stored
+		                                     // in the CMdfd component before being removed?
 
 		// Any other flags up to 64 bytes are available to the user
 	};
