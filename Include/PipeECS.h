@@ -200,6 +200,17 @@ namespace p
 		using Type = T;
 	};
 
+	template<typename Component>
+	static constexpr bool IsMdfdType() requires(!HasTypeMember<Component>)
+	{
+		return false;
+	}
+	template<typename Component>
+	static constexpr bool IsMdfdType() requires(HasTypeMember<Component>)
+	{
+		return IsSame<CMdfd<typename Component::Type>, Component>;
+	}
+
 	/**
 	 * Removed component
 	 * Optionally, an entity can be marked removed instead of actually removed and then flushed
