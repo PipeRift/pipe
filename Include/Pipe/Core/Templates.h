@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 
@@ -199,6 +200,7 @@ namespace p
 		using type = TTypeList;
 
 		static constexpr auto size = sizeof...(T);
+		static constexpr TypeId typeIds[]{GetTypeId<T>...};
 
 
 		template<typename U>

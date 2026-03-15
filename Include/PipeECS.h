@@ -1234,6 +1234,12 @@ namespace p
 		}
 
 		template<typename Component>
+		bool IsModified(Id id) const
+		{
+			return Has<CMdfd<Mut<Component>>>(id);
+		}
+
+		template<typename Component>
 		decltype(auto) Add(Id id, Component&& value = {}) const requires(IsMutable<Component>)
 		{
 			P_Check(IsValid(id));
@@ -1601,20 +1607,15 @@ namespace p
 		friend struct TIdScopeBase;
 
 	private:
-		using ModifyWrites = W::template Filter<TIsAutoModified>;
+		using ModifyWrites = W::template Filter<TIsAutoModified>::template Wrap<CMdfd>;
 		using ModifyReads = TTypeList<R...>::template Filter<TIsAutoModified>::template Wrap<CMdfd>;
 
 	public:
-		using WriteDependencies = W::template Append<ModifyWrites>;
-		using ReadDependencies  = TTypeList<R...>::template Append<ModifyReads>;
-		using Dependencies      = ReadDependencies::template Append<WriteDependencies>::Deduplicate;
-		using Pools             = Dependencies::template WrapPtr<TPool>;
-		using Tuple             = Pools::template To<std::tuple>;
-
-		// template<typename... R2>
-		// using Reads = TIdScope<WriteDependencies, R..., R2...>;
-		// template<typename... W2>
-		// using Writes = TIdScope<typename WriteDependencies::template Append<W2...>, R...>;
+		using WDependencies  = W::template Append<ModifyWrites>;
+		using RDependencies  = TTypeList<R...>::template Append<ModifyReads>;
+		using RWDependencies = RDependencies::template Append<WDependencies>::Deduplicate;
+		using Pools          = RWDependencies::template WrapPtr<TPool>;
+		using Tuple          = Pools::template To<std::tuple>;
 
 	protected:
 		IdContext& context;
@@ -1622,7 +1623,7 @@ namespace p
 
 	public:
 		TIdScopeBase(IdContext& context)
-		    : context{context}, pools(Dependencies::Call([&context]<typename... T> {
+		    : context{context}, pools(RWDependencies::Call([&context]<typename... T> {
 			    return Tuple{&context.AssurePool<T>()...};
 		    }))
 		{}
@@ -1634,11 +1635,11 @@ namespace p
 		{
 			using Other = TIdScopeBase<T2...>;
 
-			constexpr bool validReads = Dependencies::Call([]<typename... T>() {
+			constexpr bool validReads = RWDependencies::Call([]<typename... T>() {
 				return (Other::template IsReadable<T>() && ...);
 			});
 
-			constexpr bool validWrites = WriteDependencies::Call([]<typename... T>() {
+			constexpr bool validWrites = WDependencies::Call([]<typename... T>() {
 				return (Other::template IsWritable<T>() && ...);
 			});
 
@@ -1650,7 +1651,7 @@ namespace p
 			// Prevent compiler errors, we already have static_asserts
 			if constexpr (validReads && validWrites)
 			{
-				pools = Dependencies::Call([&other]<typename... T> {
+				pools = RWDependencies::Call([&other]<typename... T> {
 					return Tuple{std::get<TPool<T>*>(other.pools)...};
 				});
 			}
@@ -1719,13 +1720,13 @@ namespace p
 		template<typename Component>
 		static constexpr bool IsReadable()
 		{
-			return Dependencies::template Contains<Mut<Component>>();
+			return RWDependencies::template Contains<Mut<Component>>();
 		}
 
 		template<typename Component>
 		static constexpr bool IsWritable()
 		{
-			return IsMutable<Component> && WriteDependencies::template Contains<Component>();
+			return IsMutable<Component> && WDependencies::template Contains<Component>();
 		}
 	};
 

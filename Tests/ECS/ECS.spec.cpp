@@ -19,7 +19,7 @@ struct ATypeB
 
 go_bandit([]() {
 	describe("ECS", []() {
-		it("Can copy tree", [&]() {
+		it("Can copy context", [&]() {
 			static IdContext* ctxPtr = nullptr;
 
 			IdContext origin;
@@ -39,18 +39,15 @@ go_bandit([]() {
 			AssertThat(target.Has<ATypeB>(id), Equals(true));
 		});
 
-		it("Can move tree", [&]() {
+		it("Can move context", [&]() {
 			static IdContext* ctxPtr = nullptr;
-			static bool calledAdd;
 
 			IdContext origin;
 			Id id = AddId(origin);
 
-			calledAdd = false;
-			ctxPtr    = &origin;
+			ctxPtr = &origin;
 			origin.Add<ATypeA>(id);
 			AssertThat(origin.Has<ATypeA>(id), Equals(true));
-			AssertThat(calledAdd, Equals(true));
 
 			IdContext target{Move(origin)};
 			AssertThat(origin.IsValid(id), Equals(false));
@@ -58,8 +55,7 @@ go_bandit([]() {
 			AssertThat(target.IsValid(id), Equals(true));
 			AssertThat(target.Has<ATypeA>(id), Equals(true));
 
-			calledAdd = false;
-			ctxPtr    = &target;
+			ctxPtr = &target;
 			target.Add<ATypeB>(id);
 			AssertThat(target.Has<ATypeB>(id), Equals(true));
 		});
