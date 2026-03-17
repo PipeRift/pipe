@@ -769,19 +769,19 @@ go_bandit([]() {
 			});
 
 			it("Can iterate non empty", [&]() {
-				TArray<i32, 5> data{1, 3, 4};
+				TArray<i32, 5> data1{1, 3, 4};
 				const i32 mirror[]{1, 3, 4};
 				i32 counter = 0;
-				for (i32 v : data)
+				for (i32 v : data1)
 				{
 					AssertThat(v, Equals(mirror[counter]));
 					++counter;
 				}
 				AssertThat(counter, Equals(3));
 
-				TArray<i32, 0> data{1, 3, 4};    // Without inline capacity
+				TArray<i32, 0> data2{1, 3, 4};    // Without inline capacity
 				counter = 0;
-				for (i32 v : data)
+				for (i32 v : data2)
 				{
 					AssertThat(v, Equals(mirror[counter]));
 					++counter;

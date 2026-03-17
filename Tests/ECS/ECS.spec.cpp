@@ -9,11 +9,11 @@ using namespace bandit;
 using namespace p;
 
 
-struct ATypeA
+struct ECSTypeA
 {
 	bool value = false;
 };
-struct ATypeB
+struct ECSTypeB
 {};
 
 
@@ -26,17 +26,17 @@ go_bandit([]() {
 			Id id = AddId(origin);
 
 			ctxPtr = &origin;
-			origin.Add<ATypeA>(id);
+			origin.Add<ECSTypeA>(id);
 
 			IdContext target{origin};
 			AssertThat(origin.IsValid(id), Equals(true));
-			AssertThat(origin.Has<ATypeA>(id), Equals(true));
+			AssertThat(origin.Has<ECSTypeA>(id), Equals(true));
 			AssertThat(target.IsValid(id), Equals(true));
-			AssertThat(target.Has<ATypeA>(id), Equals(true));
+			AssertThat(target.Has<ECSTypeA>(id), Equals(true));
 
 			ctxPtr = &target;
-			target.Add<ATypeB>(id);
-			AssertThat(target.Has<ATypeB>(id), Equals(true));
+			target.Add<ECSTypeB>(id);
+			AssertThat(target.Has<ECSTypeB>(id), Equals(true));
 		});
 
 		it("Can move context", [&]() {
@@ -46,23 +46,23 @@ go_bandit([]() {
 			Id id = AddId(origin);
 
 			ctxPtr = &origin;
-			origin.Add<ATypeA>(id);
-			AssertThat(origin.Has<ATypeA>(id), Equals(true));
+			origin.Add<ECSTypeA>(id);
+			AssertThat(origin.Has<ECSTypeA>(id), Equals(true));
 
 			IdContext target{Move(origin)};
 			AssertThat(origin.IsValid(id), Equals(false));
 
 			AssertThat(target.IsValid(id), Equals(true));
-			AssertThat(target.Has<ATypeA>(id), Equals(true));
+			AssertThat(target.Has<ECSTypeA>(id), Equals(true));
 
 			ctxPtr = &target;
-			target.Add<ATypeB>(id);
-			AssertThat(target.Has<ATypeB>(id), Equals(true));
+			target.Add<ECSTypeB>(id);
+			AssertThat(target.Has<ECSTypeB>(id), Equals(true));
 		});
 
 		it("Can assure pool", [&]() {
 			IdContext origin;
-			TPool<ATypeA>& pool = origin.AssurePool<ATypeA>();
+			TPool<ECSTypeA>& pool = origin.AssurePool<ECSTypeA>();
 			AssertThat(pool.Size(), Equals(0));
 		});
 	});

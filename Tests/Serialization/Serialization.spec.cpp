@@ -9,28 +9,28 @@ using namespace bandit;
 using namespace p;
 
 
-struct TypeA
+struct SerTypeA
 {
 	bool value = false;
 };
-void Read(Reader& ct, TypeA& val)
+void Read(Reader& ct, SerTypeA& val)
 {
 	ct.BeginObject();
 	ct.Next("value", val.value);
 }
-void Write(Writer& ct, const TypeA& val)
+void Write(Writer& ct, const SerTypeA& val)
 {
 	ct.BeginObject();
 	ct.Next("value", val.value);
 }
 
 
-struct TypeB
+struct SerTypeB
 {
 	bool value = false;
 };
 template<>
-struct p::TFlags<TypeB> : public p::DefaultTFlags
+struct p::TFlags<SerTypeB> : public p::DefaultTFlags
 {
 	enum
 	{
@@ -38,14 +38,14 @@ struct p::TFlags<TypeB> : public p::DefaultTFlags
 	};
 };
 
-void Serialize(ReadWriter& ct, TypeB& val)
+void Serialize(ReadWriter& ct, SerTypeB& val)
 {
 	ct.BeginObject();
 	ct.Next("value", val.value);
 }
 
 
-struct TypeC
+struct SerTypeC
 {
 	bool value = false;
 
@@ -61,7 +61,7 @@ struct TypeC
 	}
 };
 template<>
-struct p::TFlags<TypeC> : public p::DefaultTFlags
+struct p::TFlags<SerTypeC> : public p::DefaultTFlags
 {
 	enum
 	{
@@ -70,7 +70,7 @@ struct p::TFlags<TypeC> : public p::DefaultTFlags
 };
 
 
-struct TypeD
+struct SerTypeD
 {
 	bool value = false;
 
@@ -81,7 +81,7 @@ struct TypeD
 	}
 };
 template<>
-struct p::TFlags<TypeD> : public p::DefaultTFlags
+struct p::TFlags<SerTypeD> : public p::DefaultTFlags
 {
 	enum
 	{
@@ -95,7 +95,7 @@ go_bandit([]() {
 	describe("Serialization", []() {
 		describe("Serializers in global scope", [&]() {
 			it("Can use custom Read()", [&]() {
-				TypeA val{};
+				SerTypeA val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
 				Reader& ct = reader;
@@ -105,7 +105,7 @@ go_bandit([]() {
 			});
 
 			it("Can use custom Write()", [&]() {
-				TypeA val{};
+				SerTypeA val{};
 				val.value = true;
 
 				JsonFormatWriter writer{};
@@ -116,7 +116,7 @@ go_bandit([]() {
 			});
 
 			it("Can use Serialize() instead of Read()", [&]() {
-				TypeB val{};
+				SerTypeB val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
 				Reader& ct = reader;
@@ -126,7 +126,7 @@ go_bandit([]() {
 			});
 
 			it("Can use Serialize() instead of Write()", [&]() {
-				TypeB val{};
+				SerTypeB val{};
 				val.value = true;
 
 				JsonFormatWriter writer{};
@@ -139,7 +139,7 @@ go_bandit([]() {
 
 		describe("Serializers as members", [&]() {
 			it("Can use custom Read()", [&]() {
-				TypeC val{};
+				SerTypeC val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
 				Reader& ct = reader;
@@ -149,7 +149,7 @@ go_bandit([]() {
 			});
 
 			it("Can use custom Write()", [&]() {
-				TypeC val{};
+				SerTypeC val{};
 				val.value = true;
 
 				JsonFormatWriter writer{};
@@ -160,7 +160,7 @@ go_bandit([]() {
 			});
 
 			it("Can use Serialize() instead of Read()", [&]() {
-				TypeD val{};
+				SerTypeD val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
 				Reader& ct = reader;
@@ -170,7 +170,7 @@ go_bandit([]() {
 			});
 
 			it("Can use Serialize() instead of Write()", [&]() {
-				TypeD val{};
+				SerTypeD val{};
 				val.value = true;
 
 				JsonFormatWriter writer{};

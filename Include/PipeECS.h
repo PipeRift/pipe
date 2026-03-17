@@ -1370,18 +1370,20 @@ namespace p
 		template<typename Component>
 		Component* TryGet(Id id) const
 		{
-			auto* const pool = GetPool<Component>();
-			P_Check(pool);
-			Component* value = pool->TryGet(id);
-			if constexpr (IsMutable<Component>
-			              && HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnGet))
+			if (auto* const pool = GetPool<Component>()) [[likely]]
 			{
-				if (value)
+				Component* value = pool->TryGet(id);
+				if constexpr (IsMutable<Component>
+				              && HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnGet))
 				{
-					Modify<Component>(id, pool);
+					if (value)
+					{
+						Modify<Component>(id, pool);
+					}
 				}
+				return value;
 			}
-			return value;
+			return nullptr;
 		}
 
 		template<typename Component>
