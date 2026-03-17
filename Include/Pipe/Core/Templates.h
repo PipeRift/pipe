@@ -11,85 +11,6 @@
 
 namespace p
 {
-	template<typename... Type>
-	struct TTypeList
-	{
-		using type = TTypeList;
-
-		static constexpr auto size = sizeof...(Type);
-	};
-
-	template<typename... Type, typename... Other>
-	constexpr TTypeList<Type..., Other...> operator+(TTypeList<Type...>, TTypeList<Other...>)
-	{
-		return {};
-	}
-
-	template<std::size_t, typename>
-	struct TTypeListIterator;
-
-	template<std::size_t index, typename Type, typename... Other>
-	struct TTypeListIterator<index, TTypeList<Type, Other...>>
-	    : TTypeListIterator<index - 1u, TTypeList<Other...>>
-	{};
-
-	template<typename Type, typename... Other>
-	struct TTypeListIterator<0u, TTypeList<Type, Other...>>
-	{
-		/*! @brief Searched type. */
-		using type = Type;
-	};
-
-	template<typename... T>
-	struct TJoinList;
-
-	template<typename... ATypes, typename... BTypes>
-	struct TJoinList<TTypeList<ATypes...>, TTypeList<BTypes...>>
-	{
-		using Type = TTypeList<ATypes..., BTypes...>;
-	};
-
-	template<typename... ATypes, typename... BTypes>
-	struct TJoinList<TTypeList<ATypes...>, BTypes...>
-	{
-		using Type = TTypeList<ATypes..., BTypes...>;
-	};
-
-	template<typename... T>
-	using JoinList = TJoinList<T...>;
-
-
-	/**
-	 * @brief Helper type.
-	 * @tparam Index Index of the type to return.
-	 * @tparam List Type list to search into.
-	 */
-	template<std::size_t index, typename List>
-	using TTypeListIndex = typename TTypeListIterator<index, List>::type;
-
-
-	namespace Internal
-	{
-		template<typename T, typename List>
-		struct TTypeListContains;
-
-		template<typename T, typename... Us>
-		struct TTypeListContains<T, const TTypeList<Us...>>
-		    : std::disjunction<std::is_same<T, Us>...>
-		{};
-
-		template<typename T, typename... Us>
-		struct TTypeListContains<T, TTypeList<Us...>> : std::disjunction<std::is_same<T, Us>...>
-		{};
-	}    // namespace Internal
-
-	template<typename List, typename T>
-	constexpr bool ListContains()
-	{
-		return Internal::TTypeListContains<T, List>::value;
-	}
-
-
 	template<typename T1, typename T2>
 	struct TPair
 	{
@@ -198,7 +119,7 @@ namespace p
 	using TTuple = std::tuple<T...>;
 
 
-	namespace Internal
+	namespace Detail
 	{
 		template<typename T, typename Tuple>
 		struct TTupleContains;
@@ -210,11 +131,209 @@ namespace p
 		template<typename T, typename... Us>
 		struct TTupleContains<T, TTuple<Us...>> : std::disjunction<std::is_same<T, Us>...>
 		{};
-	}    // namespace Internal
+	}    // namespace Detail
 
 	template<typename Tuple, typename T>
 	constexpr bool TupleContains()
 	{
-		return Internal::TTupleContains<T, Tuple>::value;
+		return Detail::TTupleContains<T, Tuple>::value;
 	}
+
+
+	template<typename... T>
+	struct TTypeList;
+
+	namespace Detail
+	{
+		template<typename T>
+		struct TIsTypeList : FalseType
+		{};
+		template<typename... T>
+		struct TIsTypeList<TTypeList<T...>> : TrueType
+		{};
+
+		template<typename ResultList, typename... Remaining>
+		struct TTypeListUnique
+		{
+			using Type = ResultList;
+		};
+
+		template<typename ResultList, typename First, typename... Rest>
+		struct TTypeListUnique<ResultList, First, Rest...>
+		{
+			using NextList = Select<ResultList::template Contains<First>(), ResultList,
+			    typename ResultList::template Append<First>>;
+			using Type     = typename TTypeListUnique<NextList, Rest...>::Type;
+		};
+
+		template<typename List, template<typename> typename Predicate>
+		struct TFilter;
+
+		template<template<typename> typename Predicate>
+		struct TFilter<TTypeList<>, Predicate>
+		{
+			using Type = TTypeList<>;    // Empty result
+		};
+
+		template<typename Head, typename... Tail, template<typename> typename Predicate>
+		struct TFilter<TTypeList<Head, Tail...>, Predicate>
+		{
+			// Filter the remaining types (Tail...)
+			using FilteredTail = typename TFilter<TTypeList<Tail...>, Predicate>::Type;
+			// Include Head if predicate is true; otherwise, use FilteredTail directly
+			using Type = Select<Predicate<Head>::value,
+			    typename FilteredTail::template Prepend<Head>,    // Prepend Head to FilteredTail
+			    FilteredTail                                      // Skip Head
+			    >;
+		};
+	};    // namespace Detail
+
+
+	template<typename T>
+	concept IsTypeList = Detail::TIsTypeList<T>::value;
+
+
+	template<typename... T>
+	struct TTypeList
+	{
+		using type = TTypeList;
+
+		static constexpr auto size = sizeof...(T);
+
+
+		template<typename U>
+		static consteval bool Contains()
+		{
+			return (std::is_same_v<T, U> || ...);
+		}
+
+	private:
+		template<typename... S>
+		struct TAppend
+		{
+			using Type = TTypeList<T..., S...>;
+		};
+		template<typename... S>
+		struct TAppend<TTypeList<S...>>
+		{
+			using Type = TTypeList<T..., S...>;
+		};
+		template<typename... S>
+		struct TPrepend
+		{
+			using Type = TTypeList<S..., T...>;
+		};
+		template<typename... S>
+		struct TPrepend<TTypeList<S...>>
+		{
+			using Type = TTypeList<S..., T...>;
+		};
+
+		template<typename... S>
+		struct TAppendUnique : public Detail::TTypeListUnique<TTypeList<T...>, S...>
+		{};
+		template<typename... S>
+		struct TAppendUnique<TTypeList<S...>>
+		    : public Detail::TTypeListUnique<TTypeList<T...>, S...>
+		{};
+
+		template<typename... S>
+		struct TPrependUnique : public Detail::TTypeListUnique<TTypeList<S...>, T...>
+		{};
+		template<typename... S>
+		struct TPrependUnique<TTypeList<S...>>
+		    : public Detail::TTypeListUnique<TTypeList<S...>, T...>
+		{};
+
+		template<typename... Args>
+		struct TFirst : TypeIdentity<void>
+		{};
+		template<typename First, typename... Rest>
+		struct TFirst<First, Rest...> : TypeIdentity<First>
+		{};
+
+
+	public:
+		template<template<typename> class W>
+		using Wrap = TTypeList<W<T>...>;
+
+		template<template<typename> class W>
+		using WrapPtr = TTypeList<W<T>*...>;
+
+		template<template<typename> class W>
+		using WrapConstPtr = TTypeList<const W<T>*...>;
+
+		template<template<typename> class W>
+		using WrapRef = TTypeList<W<T>&...>;
+
+		template<template<typename> class W>
+		using WrapConstRef = TTypeList<const W<T>&...>;
+
+		template<template<typename> class M>
+		using Map = TTypeList<typename M<T>::Type...>;
+
+		template<typename... S>
+		using Append = TAppend<S...>::Type;
+
+		template<typename... S>
+		using Prepend = TPrepend<S...>::Type;
+
+		template<typename... S>
+		using AppendUnique = TAppendUnique<S...>::Type;
+
+		template<typename... S>
+		using PrependUnique = TPrependUnique<S...>::Type;
+
+		using Deduplicate = typename Detail::template TTypeListUnique<TTypeList<>, T...>::Type;
+
+		// Conversion
+		template<template<typename...> class U>
+		using To = U<T...>;
+
+		template<typename Default = void>
+		using First = typename TFirst<Default>::Type;
+
+		template<template<typename> typename Predicate>
+		using Filter = Detail::TFilter<TTypeList<T...>, Predicate>::Type;
+
+		static constexpr auto Call(auto predicate)
+		{
+			return predicate.template operator()<T...>();
+		}
+		static constexpr void ForEach(auto predicate)
+		{
+			(predicate.template operator()<T>(), ...);
+		}
+	};
+
+	template<typename... T, typename... Other>
+	constexpr TTypeList<T..., Other...> operator+(TTypeList<T...>, TTypeList<Other...>)
+	{
+		return {};
+	}
+
+
+	template<std::size_t, typename>
+	struct TTypeListIterator;
+
+	template<std::size_t index, typename T, typename... Other>
+	struct TTypeListIterator<index, TTypeList<T, Other...>>
+	    : TTypeListIterator<index - 1u, TTypeList<Other...>>
+	{};
+
+	template<typename T, typename... Other>
+	struct TTypeListIterator<0u, TTypeList<T, Other...>>
+	{
+		/*! @brief Searched type. */
+		using Type = T;
+	};
+
+
+	/**
+	 * @brief Helper type.
+	 * @tparam Index Index of the type to return.
+	 * @tparam List Type list to search into.
+	 */
+	template<std::size_t index, typename List>
+	using TTypeListIndex = typename TTypeListIterator<index, List>::Type;
 }    // namespace p

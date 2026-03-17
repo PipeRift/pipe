@@ -198,8 +198,17 @@ namespace p
 		TF_Object    = 1 << 4,
 		TF_Container = 1 << 6,
 
-		TF_ECS_AutoModify = 1 << 7    // -> In ECS, should this type be marked modified
-		                              // automatically when added, written or removed?
+		// -> In ECS, should this type's last value be stored in the CMdfd component before being
+		// removed?
+		TF_ECS_StoreLastModified = 1 << 7,
+		// -> In ECS, should this type be marked modified automatically on add?
+		TF_ECS_ModifyOnAdd = 1 << 8,
+		// -> In ECS, should this type be marked modified automatically on get?
+		TF_ECS_ModifyOnGet = 1 << 9,
+		// -> In ECS, should this type be marked modified automatically on remove?
+		TF_ECS_ModifyOnRm = 1 << 10,
+		// -> In ECS, should this type be marked modified automatically on add, get or remove?
+		TF_ECS_ModifyOnEdit = TF_ECS_ModifyOnAdd | TF_ECS_ModifyOnGet | TF_ECS_ModifyOnRm,
 
 		// Any other flags up to 64 bytes are available to the user
 	};
@@ -352,7 +361,7 @@ namespace p
 	{
 		if constexpr (HasStaticFlags<T>())
 		{
-			return (T::staticFlags & flags) == flags;
+			return HasAllFlags(T::staticFlags, flags);
 		}
 		return false;
 	}
@@ -361,7 +370,7 @@ namespace p
 	{
 		if constexpr (HasStaticFlags<T>())
 		{
-			return (T::staticFlags & flags) > 0;
+			return HasAnyFlags(T::staticFlags, flags);
 		}
 		return false;
 	}

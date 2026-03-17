@@ -6,10 +6,12 @@
 #include "Pipe/Core/Limits.h"
 #include "Pipe/Core/Set.h"
 
+#include <mutex>
+
 
 namespace p
 {
-	Id IdFromString(String str, EntityContext* context)
+	Id IdFromString(String str, IdContext* context)
 	{
 		if (str == "NoId")
 		{
@@ -255,7 +257,7 @@ namespace p
 		return ids;
 	}
 
-	EntityContext& EntityReader::GetContext()
+	IdContext& EntityReader::GetContext()
 	{
 		return context;
 	}
@@ -326,7 +328,7 @@ namespace p
 
 	void EntityWriter::RemoveIgnoredEntities(TArray<Id>& entities)
 	{
-		TAccess<CNotSerialized> access{context};
+		TIdScope<CNotSerialized> access{context};
 		for (i32 i = 0; i < entities.Size(); ++i)
 		{
 			if (access.Has<CNotSerialized>(entities[i]))
@@ -547,7 +549,7 @@ namespace p
 		};
 	}
 
-	TPool<CRemoved>::TPool(p::EntityContext& ctx, Arena& arena)
+	TPool<CRemoved>::TPool(p::IdContext& ctx, Arena& arena)
 	    : IPool(p::GetTypeId<CRemoved>()), idRegistry{&ctx.GetIdRegistry()}
 	{}
 
@@ -638,33 +640,33 @@ namespace p
 	}
 
 
-	EntityContext::EntityContext()
+	IdContext::IdContext()
 	{
 		AssurePool<CRemoved>();
 	}
 
-	EntityContext::EntityContext(const EntityContext& other) noexcept
+	IdContext::IdContext(const IdContext& other) noexcept
 	{
 		CopyFrom(other);
 	}
-	EntityContext::EntityContext(EntityContext&& other) noexcept
+	IdContext::IdContext(IdContext&& other) noexcept
 	{
 		MoveFrom(Move(other));
 	}
-	EntityContext& EntityContext::operator=(const EntityContext& other) noexcept
+	IdContext& IdContext::operator=(const IdContext& other) noexcept
 	{
 		Reset();
 		CopyFrom(other);
 		return *this;
 	}
-	EntityContext& EntityContext::operator=(EntityContext&& other) noexcept
+	IdContext& IdContext::operator=(IdContext&& other) noexcept
 	{
 		Reset();
 		MoveFrom(Move(other));
 		return *this;
 	}
 
-	void* EntityContext::AddDefault(TypeId typeId, Id id)
+	void* IdContext::AddByTypeId(TypeId typeId, Id id)
 	{
 		if (IPool* pool = GetPool(typeId))
 		{
@@ -673,7 +675,7 @@ namespace p
 		return nullptr;
 	}
 
-	void EntityContext::Remove(TypeId typeId, Id id)
+	void IdContext::RemoveByTypeId(TypeId typeId, Id id)
 	{
 		if (IPool* pool = GetPool(typeId))
 		{
@@ -681,15 +683,15 @@ namespace p
 		}
 	}
 
-	IPool* EntityContext::GetPool(TypeId componentId) const
+	IPool* IdContext::GetPool(TypeId componentId) const
 	{
 		const i32 index = pools.FindSorted(PoolInstance{componentId, {}});
 		return index != NO_INDEX ? pools[index].GetPool() : nullptr;
 	}
 
-	void EntityContext::GetPools(TView<const TypeId> componentIds, TArray<IPool*>& outPools) const
+	void IdContext::GetPools(TView<const TypeId> typeIds, TArray<IPool*>& outPools) const
 	{
-		for (const TypeId componentId : componentIds)
+		for (const TypeId componentId : typeIds)
 		{
 			const i32 index = pools.FindSorted(PoolInstance{componentId, {}});
 			if (index != NO_INDEX)
@@ -699,7 +701,7 @@ namespace p
 		}
 	}
 
-	void EntityContext::CopyFrom(const EntityContext& other)
+	void IdContext::CopyFrom(const IdContext& other)
 	{
 		// Copy entities
 		idRegistry = other.idRegistry;
@@ -719,7 +721,7 @@ namespace p
 		// TODO: Cache pools
 	}
 
-	void EntityContext::MoveFrom(EntityContext&& other)
+	void IdContext::MoveFrom(IdContext&& other)
 	{
 		idRegistry = Move(other.idRegistry);
 		pools      = Move(other.pools);
@@ -731,17 +733,17 @@ namespace p
 		// TODO: Cache pools
 	}
 
-	bool EntityContext::IsValid(Id id) const
+	bool IdContext::IsValid(Id id) const
 	{
 		return idRegistry.IsValid(id);
 	}
 
-	bool EntityContext::WasRemoved(Id id) const
+	bool IdContext::WasRemoved(Id id) const
 	{
 		return idRegistry.WasRemoved(id);
 	}
 
-	bool EntityContext::IsOrphan(const Id id) const
+	bool IdContext::IsOrphan(const Id id) const
 	{
 		for (const auto& instance : pools)
 		{
@@ -753,21 +755,21 @@ namespace p
 		return true;
 	}
 
-	void* EntityContext::TryGetStatic(TypeId typeId)
+	void* IdContext::TryGetStatic(TypeId typeId)
 	{
 		const i32 index = statics.FindSorted<TypeId, SortLessStatics>(typeId);
 		return index != NO_INDEX ? statics[index].Get() : nullptr;
 	}
-	const void* EntityContext::TryGetStatic(TypeId typeId) const
+	const void* IdContext::TryGetStatic(TypeId typeId) const
 	{
 		const i32 index = statics.FindSorted<TypeId, SortLessStatics>(typeId);
 		return index != NO_INDEX ? statics[index].Get() : nullptr;
 	}
-	bool EntityContext::HasStatic(TypeId typeId) const
+	bool IdContext::HasStatic(TypeId typeId) const
 	{
 		return statics.FindSorted<TypeId, SortLessStatics>(typeId) != NO_INDEX;
 	}
-	bool EntityContext::RemoveStatic(TypeId typeId)
+	bool IdContext::RemoveStatic(TypeId typeId)
 	{
 		const i32 index = statics.FindSorted<TypeId, SortLessStatics>(typeId);
 		if (index != NO_INDEX)
@@ -778,7 +780,7 @@ namespace p
 		return false;
 	}
 
-	void EntityContext::Reset(bool keepStatics)
+	void IdContext::Reset(bool keepStatics)
 	{
 		idRegistry = {};
 		pools.Clear();
@@ -788,7 +790,7 @@ namespace p
 		}
 	}
 
-	OwnPtr& EntityContext::FindOrAddStaticPtr(
+	OwnPtr& IdContext::FindOrAddStaticPtr(
 	    TArray<OwnPtr>& statics, const TypeId typeId, bool* bAdded)
 	{
 		i32 index = statics.LowerBound<TypeId, SortLessStatics>(typeId);
@@ -1100,7 +1102,7 @@ namespace p
 	}
 
 
-	void RemoveChildFromCParent(TAccessRef<TWrite<CParent>> access, Id parent, Id child)
+	void RemoveChildFromCParent(TIdScopeRef<Writes<CParent>> access, Id parent, Id child)
 	{
 		if (auto* cParent = access.TryGet<CParent>(parent))
 		{
@@ -1113,16 +1115,16 @@ namespace p
 	}
 
 
-	Id AddId(EntityContext& ctx)
+	Id AddId(IdContext& ctx)
 	{
 		return ctx.GetIdRegistry().Create();
 	}
-	void AddId(EntityContext& ctx, TView<Id> ids)
+	void AddId(IdContext& ctx, TView<Id> ids)
 	{
 		ctx.GetIdRegistry().Create(ids);
 	}
 
-	bool RmId(EntityContext& ctx, TView<const Id> ids, RmIdFlags flags)
+	bool RmId(IdContext& ctx, TView<const Id> ids, RmIdFlags flags)
 	{
 		TArray<Id> allIds;    // Only used when removing children. Here for scope purposes.
 		if (!HasFlag(flags, p::RmIdFlags::KeepChildren))
@@ -1147,7 +1149,7 @@ namespace p
 		}
 	}
 
-	bool FlushDeferredRemovals(EntityContext& ctx)
+	bool FlushDeferredRemovals(IdContext& ctx)
 	{
 		TView<Id> ids = ctx.GetIdRegistry().GetDeferredRemovals();
 		for (auto& pool : ctx.GetPools())
@@ -1158,8 +1160,7 @@ namespace p
 	}
 
 
-	void AttachId(
-	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TView<const Id> children)
+	void AttachId(TIdScopeRef<Writes<CChild, CParent>> access, Id parent, TView<const Id> children)
 	{
 		children.Each([&access, parent](Id childId) {
 			if (auto* cChild = access.TryGet<CChild>(childId))
@@ -1181,8 +1182,8 @@ namespace p
 		access.GetOrAdd<CParent>(parent).children.Append(children);
 	}
 
-	void AttachIdAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent,
-	    TView<Id> childrenIds, Id prevChild)
+	void AttachIdAfter(
+	    TIdScopeRef<Writes<CChild, CParent>> access, Id parent, TView<Id> childrenIds, Id prevChild)
 	{
 		childrenIds.Each([&access, parent](Id child) {
 			if (auto* cChild = access.TryGet<CChild>(child))
@@ -1205,15 +1206,15 @@ namespace p
 		childrenList.Insert(prevIndex, childrenIds);
 	}
 
-	void TransferIdChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
-	    TView<const Id> childrenIds, Id destination)
+	void TransferIdChildren(
+	    TIdScopeRef<Writes<CChild, CParent>> access, TView<const Id> childrenIds, Id destination)
 	{
 		DetachIdParent(access, childrenIds, true);
 		AttachId(access, destination, childrenIds);
 	}
 
-	void DetachIdParent(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TView<const Id> childrenIds, bool keepComponents)
+	void DetachIdParent(TIdScopeRef<Writes<CParent, CChild>> access, TView<const Id> childrenIds,
+	    bool keepComponents)
 	{
 		TArray<Id> parents;
 		parents.Reserve(childrenIds.Size());
@@ -1275,8 +1276,8 @@ namespace p
 		}
 	}
 
-	void DetachIdChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TView<const Id> parents, bool keepComponents)
+	void DetachIdChildren(
+	    TIdScopeRef<Writes<CParent, CChild>> access, TView<const Id> parents, bool keepComponents)
 	{
 		if (keepComponents)
 		{
@@ -1306,14 +1307,14 @@ namespace p
 		}
 	}
 
-	const TArray<Id>* GetIdChildren(TAccessRef<CParent> access, Id node)
+	const TArray<Id>* GetIdChildren(TIdScopeRef<CParent> access, Id node)
 	{
 		auto* cParent = access.TryGet<const CParent>(node);
 		return cParent ? &cParent->children : nullptr;
 	}
 
 	void GetIdChildren(
-	    TAccessRef<CParent> access, TView<const Id> parentIds, TArray<Id>& outChildrenIds)
+	    TIdScopeRef<CParent> access, TView<const Id> parentIds, TArray<Id>& outChildrenIds)
 	{
 		parentIds.Each([&access, &outChildrenIds](Id id) {
 			if (const auto* cParent = access.TryGet<const CParent>(id))
@@ -1323,7 +1324,7 @@ namespace p
 		});
 	}
 
-	void GetAllIdChildren(TAccessRef<CParent> access, TView<const Id> parentIds,
+	void GetAllIdChildren(TIdScopeRef<CParent> access, TView<const Id> parentIds,
 	    TArray<Id>& outChildrenIds, u32 depth)
 	{
 		P_Check(depth > 0);
@@ -1339,7 +1340,7 @@ namespace p
 		}
 	}
 
-	Id GetIdParent(TAccessRef<CChild> access, Id childId)
+	Id GetIdParent(TIdScopeRef<CChild> access, Id childId)
 	{
 		if (const auto* cChild = access.TryGet<const CChild>(childId))
 		{
@@ -1348,7 +1349,8 @@ namespace p
 		return NoId;
 	}
 
-	void GetIdParent(TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents)
+	void GetIdParent(
+	    TIdScopeRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents)
 	{
 		outParents.Clear(false);
 		for (Id childId : childrenIds)
@@ -1361,7 +1363,7 @@ namespace p
 		}
 	}
 	void GetAllIdParents(
-	    TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents)
+	    TIdScopeRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents)
 	{
 		outParents.Clear(false);
 
@@ -1377,7 +1379,7 @@ namespace p
 		}
 	}
 
-	Id FindIdParent(TAccessRef<CChild> access, Id childId, const TFunction<bool(Id)>& callback)
+	Id FindIdParent(TIdScopeRef<CChild> access, Id childId, const TFunction<bool(Id)>& callback)
 	{
 		while (!IsNone(childId))
 		{
@@ -1389,7 +1391,7 @@ namespace p
 		}
 		return NoId;
 	}
-	void FindIdParents(TAccessRef<CChild> access, TView<const Id> childrenIds,
+	void FindIdParents(TIdScopeRef<CChild> access, TView<const Id> childrenIds,
 	    TArray<Id>& outParentIds, const TFunction<bool(Id)>& callback)
 	{
 		outParentIds.Clear(false);
@@ -1419,7 +1421,7 @@ namespace p
 	}
 
 
-	bool FixParentIdLinks(TAccessRef<TWrite<CChild>, CParent> access, TView<Id> parents)
+	bool FixParentIdLinks(TIdScopeRef<Writes<CChild>, CParent> access, TView<Id> parents)
 	{
 		bool fixed = false;
 		for (Id parentId : parents)
@@ -1447,7 +1449,7 @@ namespace p
 		return fixed;
 	}
 
-	bool ValidateParentIdLinks(TAccessRef<CChild, CParent> access, TView<Id> parents)
+	bool ValidateParentIdLinks(TIdScopeRef<CChild, CParent> access, TView<Id> parents)
 	{
 		for (Id parentId : parents)
 		{
@@ -1466,7 +1468,7 @@ namespace p
 		return true;
 	}
 
-	void GetRootIds(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots)
+	void GetRootIds(TIdScopeRef<CChild, CParent> access, TArray<Id>& outRoots)
 	{
 		outRoots = FindAllIdsWith<CParent>(access);
 		ExcludeIdsWith<CChild>(access, outRoots);

@@ -1,7 +1,6 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include "Pipe/Core/Broadcast.h"
 #include "Pipe/Core/Map.h"
 #include "Pipe/Core/PageBuffer.h"
 #include "Pipe/Core/Templates.h"
@@ -24,7 +23,7 @@ namespace p
 	////////////////////////////////
 	// FORWARD DECLARATIONS
 	//
-	struct EntityContext;
+	struct IdContext;
 
 
 	////////////////////////////////
@@ -162,24 +161,55 @@ namespace p
 	/**
 	 * Resolve an entity id from an string.
 	 * The expected format is {}:{} where first is the index and second is the version.
-	 * If a context is provided, providing the index alone as a number will resolve it slast
+	 * If a context is provided, providing the index alone as a number will resolve its last
 	 * valid version
 	 */
-	P_API Id IdFromString(String str, EntityContext* context);
+	P_API Id IdFromString(String str, IdContext* context);
 #pragma endregion Ids
 
 
 #pragma region Components
+	// clang-format off
+	template<typename T>
+	concept StoresLastModified = !IsEmpty<T> && HasAnyTypeStaticFlags<T>(TF_ECS_StoreLastModified)
+	    && (IsCopyConstructible<T> || IsMoveConstructible<T>);
+	// clang-format on
+
+	template<typename T>
+	struct CMdfdWithLast
+	{
+		P_STRUCT(CMdfdWithLast, TF_NotSerialized)
+
+		P_PROP(Last)
+		T Last;
+	};
+
+	struct CMdfdWithoutLast
+	{};
+
 	/**
 	 * Modified component
 	 * Optionally, a component can be marked modified when written. This can be used when
 	 * filtering.
 	 */
 	template<typename T>
-	struct CMdfd
+	struct CMdfd : public Select<StoresLastModified<T>, CMdfdWithLast<T>, CMdfdWithoutLast>
 	{
 		P_STRUCT(CMdfd, TF_NotSerialized)
+
+		using Type = T;
 	};
+
+	template<typename Component>
+	static constexpr bool IsMdfdType() requires(!HasTypeMember<Component>)
+	{
+		return false;
+	}
+	template<typename Component>
+	static constexpr bool IsMdfdType() requires(HasTypeMember<Component>)
+	{
+		return IsSame<CMdfd<typename Component::Type>, Component>;
+	}
 
 	/**
 	 * Removed component
@@ -282,7 +312,7 @@ namespace p
 		using Super = Reader;
 		P_STRUCT(EntityReader)
 
-		EntityContext& context;
+		IdContext& context;
 
 		// While serializing we create ids as Ids appear and link them.
 		TArray<Id> ids;
@@ -290,8 +320,7 @@ namespace p
 
 
 	public:
-		EntityReader(const p::Reader& parent, EntityContext& context)
-		    : Reader(parent), context{context}
+		EntityReader(const p::Reader& parent, IdContext& context) : Reader(parent), context{context}
 		{}
 
 		void SerializeEntities(p::TArray<Id>& entities, TFunction<void(EntityReader&)> onReadPools);
@@ -308,7 +337,7 @@ namespace p
 		}
 
 		const TArray<Id>& GetIds() const;
-		EntityContext& GetContext();
+		IdContext& GetContext();
 
 	protected:
 		TypeId ProvideTypeId() const override
@@ -323,7 +352,7 @@ namespace p
 		using Super = Writer;
 		P_STRUCT(EntityWriter)
 
-		EntityContext& context;
+		IdContext& context;
 
 		// While serializing we create ids as Ids appear and link them.
 		TArray<Id> ids;
@@ -332,9 +361,7 @@ namespace p
 
 
 	public:
-		EntityWriter(const Writer& parent, EntityContext& context)
-		    : Writer(parent), context{context}
-		{}
+		EntityWriter(const Writer& parent, IdContext& context) : Writer(parent), context{context} {}
 
 		void SerializeEntities(const TArray<Id>& entities,
 		    TFunction<void(EntityWriter&)> onWritePools, bool includeChildren = true);
@@ -544,9 +571,6 @@ namespace p
 		i32 lastRemovedIndex = NO_INDEX;
 		PoolRemovePolicy removePolicy;
 
-		TBroadcast<TView<const Id>> onAdd;
-		TBroadcast<TView<const Id>> onRemove;
-
 
 		ComponentPool(TypeId typeId, PoolRemovePolicy removePolicy, Arena& arena);
 		ComponentPool(const ComponentPool& other);
@@ -554,21 +578,6 @@ namespace p
 		ComponentPool& operator=(const ComponentPool& other) noexcept;
 		ComponentPool& operator=(ComponentPool&& other) noexcept;
 
-		void OnAdded(TView<const Id> ids)
-		{
-			if (!ids.IsEmpty())
-			{
-				onAdd.Broadcast(ids);
-			}
-		}
-
-		void OnRemoved(TView<const Id> ids)
-		{
-			if (!ids.IsEmpty())
-			{
-				onRemove.Broadcast(ids);
-			}
-		}
 
 	public:
 		virtual ~ComponentPool() {}
@@ -614,16 +623,6 @@ namespace p
 			return idList;
 		}
 
-		TBroadcast<TView<const Id>>& OnAdd()
-		{
-			return onAdd;
-		}
-
-		TBroadcast<TView<const Id>>& OnRemove()
-		{
-			return onRemove;
-		}
-
 	protected:
 
 		Index EmplaceId(const Id id, bool forceBack);
@@ -648,7 +647,7 @@ namespace p
 
 
 	public:
-		TPool(p::EntityContext& ctx, Arena& arena = GetCurrentArena())
+		TPool(p::IdContext& ctx, Arena& arena = GetCurrentArena())
 		    : ComponentPool(p::GetTypeId<T>(), PoolRemovePolicy::InPlace, arena), data{arena}
 		{}
 		TPool(const TPool& other) : ComponentPool(other), data{*other.arena}
@@ -736,10 +735,8 @@ namespace p
 				{
 					data.Reserve(index + 1u);
 					T* const value = data.Insert(index, p::Forward<Args>(args)...);
-					OnAdded({id});
 					return *value;
 				}
-				OnAdded({id});
 			}
 		}
 
@@ -777,7 +774,6 @@ namespace p
 					}
 				}
 			}
-			OnAdded(ids);
 		}
 
 		template<typename It, typename CIt>
@@ -826,12 +822,6 @@ namespace p
 				}
 				++from;
 			}
-			OnAdded(ids);
-		}
-
-		T& GetOrAdd(const Id id) requires(!p::IsEmpty<T>)
-		{
-			return Has(id) ? Get(id) : Add(id);
 		}
 
 		bool Remove(Id id) override
@@ -847,7 +837,6 @@ namespace p
 		void RemoveUnsafe(Id id) override
 		{
 			P_Check(Has(id));
-			OnRemoved({id});
 			if (removePolicy == PoolRemovePolicy::InPlace)
 			{
 				Pop(id);
@@ -860,7 +849,6 @@ namespace p
 
 		i32 Remove(TView<const Id> ids) override
 		{
-			OnRemoved(ids);
 			i32 removed = 0;
 			if (removePolicy == PoolRemovePolicy::InPlace)
 			{
@@ -889,7 +877,6 @@ namespace p
 
 		void RemoveUnsafe(TView<const Id> ids) override
 		{
-			OnRemoved(ids);
 			if (removePolicy == PoolRemovePolicy::InPlace)
 			{
 				for (Id id : ids)
@@ -960,10 +947,18 @@ namespace p
 		void Reserve(sizet size)
 		{
 			idList.Reserve(size);
-			if (size > Size())
+			if constexpr (!p::IsEmpty<T>)
 			{
-				data.Reserve(size);
+				if (size > Size())
+				{
+					data.Reserve(size);
+				}
 			}
+		}
+
+		void ReserveMore(sizet size)
+		{
+			Reserve(Size() + size);
 		}
 
 		void Shrink()
@@ -1059,13 +1054,13 @@ namespace p
 	template<>
 	struct P_API TPool<CRemoved> : public IPool
 	{
-		friend EntityContext;
+		friend IdContext;
 		using T = CRemoved;
 
 		p::IdRegistry* idRegistry = nullptr;
 
 	public:
-		TPool(p::EntityContext& ctx, Arena& arena = GetCurrentArena());
+		TPool(p::IdContext& ctx, Arena& arena = GetCurrentArena());
 		TPool(const TPool& other) = delete;
 		TPool(TPool&& other)      = delete;
 		TPool& operator=(const TPool& other)
@@ -1160,6 +1155,268 @@ namespace p
 
 
 ////////////////////////////////
+// OPERATIONS
+//
+#pragma region Operations
+	/**
+	 * IdOperations contains shared logic to view and edit components and statics in Contexts and
+	 * Scopes This class assumes GetPool and AssurePool are present in Parent
+	 */
+	template<typename Parent>
+	struct TIdOperations
+	{
+		const Parent& AsParent() const
+		{
+			return *static_cast<const Parent*>(this);
+		}
+
+		template<typename Component>
+		CopyConst<TPool<Mut<Component>>, Component>& AssurePool() const
+		{
+			return AsParent().template AssurePool<Component>();
+		}
+
+		template<typename Component>
+		CopyConst<TPool<Mut<Component>>, Component>* GetPool() const
+		{
+			return AsParent().template GetPool<Component>();
+		}
+
+		IdContext& GetContext() const
+		{
+			return AsParent().GetContext();
+		}
+
+		template<typename Component>
+		i32 Size() const
+		{
+			return GetPool<const Component>()->Size();
+		}
+
+		bool IsValid(Id id) const
+		{
+			return GetContext().IsValid(id);
+		}
+
+		template<typename Component>
+		bool Has(Id id) const
+		{
+			const auto* pool = GetPool<const Component>();
+			return pool && pool->Has(id);
+		}
+		template<typename... Component>
+		bool Has(Id id) const requires(sizeof...(Component) > 1)
+		{
+			return (Has<Component>(id) && ...);
+		}
+
+		template<typename Component>
+		void Modify(TView<const Id> ids, TPool<Component>* pool = nullptr) const
+		{
+			auto& mdfdPool = AssurePool<CMdfd<Component>>();
+			if constexpr (StoresLastModified<Component>)
+			{
+				if (!pool)
+				{
+					pool = GetPool<Component>();
+					if (!pool)
+					{
+						return;
+					}
+				}
+
+				mdfdPool.ReserveMore(ids.Size());
+				for (Id id : ids)
+				{
+					if (!mdfdPool.Has(id))    // If we store value, we only add if it it wasn't
+					                          // modified already
+					{
+						Component* comp = pool->TryGet(id);
+						if constexpr (IsMoveConstructible<Component>)
+						{
+							mdfdPool.Add(
+							    id, comp ? CMdfd<Component>{p::Move(*comp)} : CMdfd<Component>{});
+						}
+						else
+						{
+							mdfdPool.Add(id, comp ? CMdfd<Component>{*comp} : CMdfd<Component>{});
+						}
+					}
+				}
+			}
+			else
+			{
+				mdfdPool.Add(ids.begin(), ids.end(), CMdfd<Component>{});
+			}
+		}
+
+		template<typename Component>
+		bool IsModified(Id id) const
+		{
+			return Has<CMdfd<Mut<Component>>>(id);
+		}
+
+		template<typename Component>
+		decltype(auto) Add(Id id, Component&& value = {}) const requires(IsMutable<Component>)
+		{
+			P_Check(IsValid(id));
+			auto& pool = AssurePool<Component>();
+			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
+			{
+				Modify<Component>(id, &pool);
+			}
+			return pool.Add(id, p::Forward<Component>(value));
+		}
+		template<typename Component>
+		decltype(auto) Add(Id id, const Component& value) const requires(IsMutable<Component>)
+		{
+			P_Check(IsValid(id));
+			auto& pool = AssurePool<Component>();
+			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
+			{
+				Modify<Component>(id, &pool);
+			}
+			return pool.Add(id, value);
+		}
+
+		// Add component to an entities (if they dont have it already)
+		template<typename... Component>
+		void Add(Id id) const requires((IsMutable<Component> && ...) && sizeof...(Component) > 1)
+		{
+			(Add<Component>(id), ...);
+		}
+
+		// Add component to many entities (if they dont have it already)
+		template<typename Component>
+		decltype(auto) AddN(TView<const Id> ids, const Component& value = {}) const
+		{
+			auto& pool = AssurePool<Component>();
+			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
+			{
+				Modify<Component>(ids, &pool);
+			}
+			return pool.Add(ids.begin(), ids.end(), value);
+		}
+
+		template<typename Component>
+		void AddN(TView<const Id> ids, const TView<const Component>& values)
+		{
+			P_Check(ids.Size() == values.Size());
+			auto& pool = AssurePool<Component>();
+			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
+			{
+				Modify<Component>(ids, &pool);
+			}
+			pool.Add(ids.begin(), ids.end(), values.begin());
+		}
+
+		// Add components to many entities (if they dont have it already)
+		template<typename... Component>
+		void AddN(TView<const Id> ids) const
+		    requires((IsMutable<Component> && ...) && sizeof...(Component) > 1)
+		{
+			(AddN<Component>(ids), ...);
+		}
+
+
+		template<typename Component>
+		void Remove(const Id id) const requires(IsMutable<Component>)
+		{
+			if (auto* pool = GetPool<Component>())
+			{
+				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnRm))
+				{
+					Modify<Component>(id, pool);
+				}
+				pool->Remove(id);
+			}
+		}
+		template<typename... Component>
+		void Remove(const Id id) const requires(sizeof...(Component) > 1)
+		{
+			(Remove<Component>(id), ...);
+		}
+		template<typename Component>
+		void Remove(TView<const Id> ids) const requires(IsMutable<Component>)
+		{
+			if (auto* pool = GetPool<Component>())
+			{
+				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnRm))
+				{
+					Modify<Component>(ids, pool);
+				}
+				pool->Remove(ids);
+			}
+		}
+		template<typename... Component>
+		void Remove(TView<const Id> ids) const requires(sizeof...(Component) > 1)
+		{
+			(Remove<Component>(ids), ...);
+		}
+
+		template<typename Component>
+		Component& Get(Id id) const
+		{
+			auto* const pool = GetPool<Component>();
+			P_Check(pool);
+			if constexpr (IsMutable<Component>
+			              && HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnGet))
+			{
+				Modify<Component>(id, pool);
+			}
+			return pool->Get(id);
+		}
+
+		template<typename Component>
+		Component* TryGet(Id id) const
+		{
+			auto* const pool = GetPool<Component>();
+			P_Check(pool);
+			Component* value = pool->TryGet(id);
+			if constexpr (IsMutable<Component>
+			              && HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnGet))
+			{
+				if (value)
+				{
+					Modify<Component>(id, pool);
+				}
+			}
+			return value;
+		}
+
+		template<typename Component>
+		Component& GetOrAdd(Id id) const requires(IsMutable<Component>)
+		{
+			auto& pool = AssurePool<Component>();
+
+			if (pool.Has(id))
+			{
+				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnGet))
+				{
+					Modify<Component>(id, *pool);
+				}
+				return pool.Get(id);
+			}
+			else
+			{
+				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
+				{
+					Modify<Component>(id, *pool);
+				}
+				return pool.Add(id);
+			}
+		}
+
+		template<typename... Component>
+		void ClearPool() const
+		{
+			(GetPool<Component>()->Clear(), ...);
+		}
+	};
+#pragma endregion Operations
+
+
+////////////////////////////////
 // CONTEXT
 //
 #pragma region Context
@@ -1187,7 +1444,7 @@ namespace p
 		}
 	};
 
-	struct P_API EntityContext
+	struct P_API IdContext : public TIdOperations<IdContext>
 	{
 	private:
 		IdRegistry idRegistry;
@@ -1197,138 +1454,20 @@ namespace p
 
 
 	public:
-		EntityContext();
-		~EntityContext()
+		IdContext();
+		~IdContext()
 		{
 			Reset();
 		}
-		explicit EntityContext(const EntityContext& other) noexcept;
-		explicit EntityContext(EntityContext&& other) noexcept;
-		EntityContext& operator=(const EntityContext& other) noexcept;
-		EntityContext& operator=(EntityContext&& other) noexcept;
+		explicit IdContext(const IdContext& other) noexcept;
+		explicit IdContext(IdContext&& other) noexcept;
+		IdContext& operator=(const IdContext& other) noexcept;
+		IdContext& operator=(IdContext&& other) noexcept;
 
 #pragma region Entities
 		// Reflection helpers
-		void* AddDefault(TypeId typeId, Id id);
-		void Remove(TypeId typeId, Id id);
-
-		// Adds Component to an entity (if the entity doesnt have it already)
-		template<typename C>
-		decltype(auto) Add(Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
-		{
-			P_Check(IsValid(id));
-			return AssurePool<C>().Add(id, p::Forward<C>(value));
-		}
-		template<typename C>
-		decltype(auto) Add(Id id, const C& value) const requires(IsSame<C, Mut<C>>)
-		{
-			P_Check(IsValid(id));
-			return AssurePool<C>().Add(id, value);
-		}
-		// Adds Component to an entity (if the entity doesnt have it already)
-		template<typename... Component>
-		void Add(Id id) requires(sizeof...(Component) > 1)
-		{
-			P_Check(IsValid(id));
-			(Add<Component>(id), ...);
-		}
-
-		// Add Component to many entities (if they dont have it already)
-		template<typename Component>
-		decltype(auto) AddN(TView<const Id> ids, const Component& value = {})
-		{
-			return AssurePool<Component>().Add(ids.begin(), ids.end(), value);
-		}
-
-		// Add Components to many entities (if they don't have it already)
-		template<typename... Component>
-		void AddN(TView<const Id> ids) requires(sizeof...(Component) > 1)
-		{
-			(Add<Component>(ids), ...);
-		}
-
-		template<typename Component>
-		void AddN(TView<const Id> ids, const TView<const Component>& values)
-		{
-			P_Check(ids.Size() == values.Size());
-			AssurePool<Component>().Add(ids.begin(), ids.end(), values.begin());
-		}
-
-
-		template<typename Component>
-		void Remove(const Id id)
-		{
-			if (auto* pool = GetPool<Component>())
-			{
-				pool->Remove(id);
-			}
-		}
-		template<typename... Component>
-		void Remove(const Id id) requires(sizeof...(Component) > 1)
-		{
-			(Remove<Component>(id), ...);
-		}
-		template<typename Component>
-		void Remove(TView<const Id> ids)
-		{
-			if (auto* pool = GetPool<Component>())
-			{
-				pool->Remove(ids);
-			}
-
-			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-			{
-				AssurePool<CMdfd<Component>>().Add(ids.begin(), ids.end(), {});
-			}
-		}
-		template<typename... Component>
-		void Remove(TView<const Id> ids) requires(sizeof...(Component) > 1)
-		{
-			(Remove<Component>(ids), ...);
-		}
-
-		template<typename Component>
-		Component& Get(const Id id) const
-		{
-			auto* const pool = GetPool<Component>();
-			P_Check(pool);
-			return pool->Get(id);
-		}
-		template<typename... Component>
-		TTuple<Component&...> Get(const Id id) const requires(sizeof...(Component) > 1)
-		{
-			return std::forward_as_tuple(Get<Component>(id)...);
-		}
-		template<typename Component>
-		Component* TryGet(const Id id) const
-		{
-			auto* const pool = GetPool<Component>();
-			return pool ? pool->TryGet(id) : nullptr;
-		}
-		template<typename... Component>
-		TTuple<Component*...> TryGet(const Id id) const requires(sizeof...(Component) > 1)
-		{
-			return std::forward_as_tuple(TryGet<Component>(id)...);
-		}
-
-		template<typename Component>
-		Component& GetOrAdd(Id id)
-		{
-			return AssurePool<Component>().GetOrAdd(id);
-		}
-
-		template<typename Component>
-		bool Has(Id id) const
-		{
-			const auto* pool = GetPool<Component>();
-			return pool && pool->Has(id);
-		}
-
-		template<typename... Component>
-		bool Has(Id id) const requires(sizeof...(Component) >= 2)
-		{
-			return (Has<const Component>(id) && ...);
-		}
+		void* AddByTypeId(TypeId typeId, Id id);
+		void RemoveByTypeId(TypeId typeId, Id id);
 
 		const IdRegistry& GetIdRegistry() const
 		{
@@ -1381,27 +1520,20 @@ namespace p
 
 		void Reset(bool keepStatics = false);
 
-		template<typename Component>
-		TBroadcast<TView<const Id>>& OnAdd()
+		IdContext& GetContext() const
 		{
-			return AssurePool<Component>().OnAdd();
-		}
-
-		template<typename Component>
-		TBroadcast<TView<const Id>>& OnRemove()
-		{
-			return AssurePool<Component>().OnRemove();
+			return *const_cast<IdContext*>(this);
 		}
 
 		// Finds or creates a pool
 		template<typename T>
 		TPool<Mut<T>>& AssurePool() const;
 
-		IPool* GetPool(TypeId componentId) const;
-		void GetPools(TView<const TypeId> componentIds, TArray<IPool*>& outPools) const;
-		void GetPools(TView<const TypeId> componentIds, TArray<const IPool*>& outPools) const
+		IPool* GetPool(TypeId typeId) const;
+		void GetPools(TView<const TypeId> typeIds, TArray<IPool*>& outPools) const;
+		void GetPools(TView<const TypeId> typeIds, TArray<const IPool*>& outPools) const
 		{
-			GetPools(componentIds, reinterpret_cast<TArray<IPool*>&>(outPools));
+			GetPools(typeIds, reinterpret_cast<TArray<IPool*>&>(outPools));
 		}
 
 		template<typename T>
@@ -1467,8 +1599,8 @@ namespace p
 #pragma endregion Statics
 
 	private:
-		void CopyFrom(const EntityContext& other);
-		void MoveFrom(EntityContext&& other);
+		void CopyFrom(const IdContext& other);
+		void MoveFrom(IdContext&& other);
 
 		static OwnPtr& FindOrAddStaticPtr(
 		    TArray<OwnPtr>& statics, const TypeId typeId, bool* bAdded = nullptr);
@@ -1480,119 +1612,83 @@ namespace p
 
 
 ////////////////////////////////
-// ACCESSES
+// ID SCOPES
 //
-#pragma region Accesses
-	enum class AccessMode : u8
+#pragma region IdScopes
+	template<typename T>
+	struct TIsAutoModified
 	{
-		Read,
-		Write
+		static constexpr bool value = HasAnyTypeStaticFlags<T>(TF_ECS_ModifyOnEdit);
 	};
 
-	struct TypeAccess
+
+	// Base for TIdScope. Assumes all types are mutable (not const)
+	template<typename W, typename... R>
+	struct TIdScopeBase : public TIdOperations<TIdScopeBase<W, R...>>
 	{
-		TypeId typeId   = TypeId::None();
-		AccessMode mode = AccessMode::Read;
-
-		constexpr TypeAccess() = default;
-		constexpr TypeAccess(TypeId typeId, AccessMode mode) : typeId{typeId}, mode{mode} {}
-	};
-
-	template<typename T, AccessMode inMode>
-	struct TTypeAccess : TypeAccess
-	{
-		using Type = Mut<T>;
-
-		constexpr TTypeAccess() : TypeAccess(GetTypeId<T>(), inMode) {}
-	};
-
-	template<typename T>
-	struct TRead : public TTypeAccess<T, AccessMode::Read>
-	{};
-
-	template<typename T>
-	struct TWrite : public TTypeAccess<T, AccessMode::Write>
-	{};
-
-	template<typename T>
-	struct TTypeAccessInfo
-	{
-		using Type                       = Mut<T>;
-		static constexpr AccessMode mode = AccessMode::Read;
-	};
-	template<typename T>
-	requires Derived<T, TypeAccess>
-	struct TTypeAccessInfo<T>
-	{
-		using Type                       = typename T::Type;
-		static constexpr AccessMode mode = T().mode;
-	};
-	template<typename T>
-	using AsComponent = typename TTypeAccessInfo<T>::Type;
-
-
-	template<typename... T>
-	struct TAccess
-	{
-		template<typename... K>
-		friend struct TAccess;
-
-		using Components    = TTypeList<T...>;
-		using RawComponents = TTypeList<AsComponent<T>...>;
+		template<typename W2, typename... R2>
+		friend struct TIdScopeBase;
 
 	private:
-		TypeId typeId;
-		EntityContext& context;
-		TTuple<TPool<AsComponent<T>>*...> pools;
-
+		using ModifyWrites = W::template Filter<TIsAutoModified>::template Wrap<CMdfd>;
+		using ModifyReads = TTypeList<R...>::template Filter<TIsAutoModified>::template Wrap<CMdfd>;
 
 	public:
-		TAccess(EntityContext& context)
-		    : context{context}, pools{&context.AssurePool<AsComponent<T>>()...}
+		using WDependencies  = W::template Append<ModifyWrites>;
+		using RDependencies  = TTypeList<R...>::template Append<ModifyReads>;
+		using RWDependencies = RDependencies::template Append<WDependencies>::Deduplicate;
+		using Pools          = RWDependencies::template WrapPtr<TPool>;
+		using Tuple          = Pools::template To<std::tuple>;
+
+	protected:
+		IdContext& context;
+		Tuple pools;
+
+	public:
+		TIdScopeBase(IdContext& context)
+		    : context{context}, pools(RWDependencies::Call([&context]<typename... T> {
+			    return Tuple{&context.AssurePool<T>()...};
+		    }))
 		{}
-		TAccess(const TAccess& other) : context{other.context}, pools{other.pools} {}
+		TIdScopeBase(const TIdScopeBase& other) : context{other.context}, pools{other.pools} {}
 
-		// Construct a child access (super-set) from another access
+		// Construct a child scope (super-set) from another scope
 		template<typename... T2>
-		TAccess(const TAccess<T2...>& other) : context{other.context}
+		TIdScopeBase(const TIdScopeBase<T2...>& other) : context{other.context}
 		{
-			using Other = TAccess<T2...>;
+			using Other = TIdScopeBase<T2...>;
 
-			constexpr bool validConstants = (Other::template HasType<T>() && ...);
-			constexpr bool validMutables =
-			    ((Other::template IsWritable<T>() || TTypeAccessInfo<T>::mode != AccessMode::Write)
-			        && ...);
-			static_assert(validConstants, "Parent access lacks dependencies from this access.");
+			constexpr bool validReads = RWDependencies::Call([]<typename... T>() {
+				return (Other::template IsReadable<T>() && ...);
+			});
+
+			constexpr bool validWrites = WDependencies::Call([]<typename... T>() {
+				return (Other::template IsWritable<T>() && ...);
+			});
+
 			static_assert(
-			    validMutables, "Parent access lacks *mutable* dependencies from this access.");
+			    validReads, "Parent scope lacks read dependencies required by this scope.");
+			static_assert(
+			    validWrites, "Parent scope lacks *write* dependencies required by this scope.");
 
-			if constexpr (validConstants && validMutables)
+			// Prevent compiler errors, we already have static_asserts
+			if constexpr (validReads && validWrites)
 			{
-				pools = {std::get<TPool<AsComponent<T>>*>(other.pools)...};
+				pools = RWDependencies::Call([&other]<typename... T> {
+					return Tuple{std::get<TPool<T>*>(other.pools)...};
+				});
 			}
 		}
 
-		template<typename C>
-		TPool<Mut<C>>* GetPool() const requires(IsMutable<C>)
-		{
-			static_assert(IsWritable<C>(), "Can't modify components of this type");
-			if constexpr (IsWritable<C>())    // Prevent missleading errors if condition fails
-			{
-				return std::get<TPool<Mut<C>>*>(pools);
-			}
-			else
-			{
-				return nullptr;
-			}
-		}
 
-		template<typename C>
-		const TPool<Mut<C>>* GetPool() const requires(IsConst<C>)
+		template<typename Component>
+		TPool<Mut<Component>>* GetPool() const requires(IsMutable<Component>)
 		{
-			static_assert(IsReadable<C>(), "Can't read components of this type");
-			if constexpr (IsReadable<C>())    // Prevent missleading errors if condition fails
+			static_assert(IsWritable<Component>(), "Can't modify components of this type");
+			if constexpr (IsWritable<Component>())    // Prevent missleading errors if condition
+			                                          // fails
 			{
-				return std::get<TPool<Mut<C>>*>(pools);
+				return std::get<TPool<Mut<Component>>*>(pools);
 			}
 			else
 			{
@@ -1600,184 +1696,108 @@ namespace p
 			}
 		}
 
-		template<typename C>
-		TPool<Mut<C>>& AssurePool() const requires(IsMutable<C>)
+		template<typename Component>
+		const TPool<Mut<Component>>* GetPool() const requires(IsConst<Component>)
 		{
-			return *GetPool<C>();
-		}
-
-		template<typename C>
-		const TPool<Mut<C>>& AssurePool() const requires(IsConst<C>)
-		{
-			return *GetPool<C>();
-		}
-
-		bool IsValid(Id id) const
-		{
-			return context.IsValid(id);
-		}
-
-		template<typename... C>
-		bool Has(Id id) const requires(sizeof...(C) >= 1)
-		{
-			return (GetPool<const C>()->Has(id) && ...);
-		}
-
-		template<typename C>
-		decltype(auto) Add(Id id, C&& value = {}) const requires(IsSame<C, Mut<C>>)
-		{
-			return GetPool<C>()->Add(id, p::Forward<C>(value));
-		}
-		template<typename C>
-		decltype(auto) Add(Id id, const C& value) const requires(IsSame<C, Mut<C>>)
-		{
-			return GetPool<C>()->Add(id, value);
-		}
-
-		// Add component to an entities (if they dont have it already)
-		template<typename... C>
-		void Add(Id id) const requires((IsSame<C, Mut<C>> && ...) && sizeof...(C) > 1)
-		{
-			(Add<C>(id), ...);
-		}
-
-		// Add component to many entities (if they dont have it already)
-		template<typename C>
-		decltype(auto) AddN(TView<const Id> ids, const C& value = {}) const
-		{
-			return GetPool<C>()->Add(ids.begin(), ids.end(), value);
-		}
-
-		// Add components to many entities (if they dont have it already)
-		template<typename... C>
-		void AddN(TView<const Id> ids) const
-		    requires((IsSame<C, Mut<C>> && ...) && sizeof...(C) > 1)
-		{
-			(AddN<C>(ids), ...);
-		}
-
-
-		template<typename C>
-		void Remove(const Id id) const requires(IsSame<C, Mut<C>>)
-		{
-			if (auto* pool = GetPool<C>())
+			static_assert(IsReadable<Component>(), "Can't read components of this type");
+			if constexpr (IsReadable<Component>())    // Prevent missleading errors if condition
+			                                          // fails
 			{
-				pool->Remove(id);
+				return std::get<TPool<Mut<Component>>*>(pools);
+			}
+			else
+			{
+				return nullptr;
 			}
 		}
-		template<typename... C>
-		void Remove(const Id id) const requires(sizeof...(C) > 1)
+
+		template<typename Component>
+		TPool<Component>& AssurePool() const requires(IsMutable<Component>)
 		{
-			(Remove<C>(id), ...);
-		}
-		template<typename C>
-		void Remove(TView<const Id> ids) const requires(IsSame<C, Mut<C>>)
-		{
-			if (auto* pool = GetPool<C>())
-			{
-				pool->Remove(ids);
-			}
-		}
-		template<typename... C>
-		void Remove(TView<const Id> ids) const requires(sizeof...(C) > 1)
-		{
-			(Remove<C>(ids), ...);
+			return *GetPool<Component>();
 		}
 
-		template<typename C>
-		C& Get(Id id) const
+		template<typename Component>
+		const TPool<Mut<Component>>& AssurePool() const requires(IsConst<Component>)
 		{
-			return GetPool<C>()->Get(id);
+			return *GetPool<Component>();
 		}
 
-		template<typename C>
-		C* TryGet(Id id) const
-		{
-			return GetPool<C>()->TryGet(id);
-		}
 
-		template<typename C>
-		C& GetOrAdd(Id id) const requires(IsMutable<C>)
-		{
-			return GetPool<C>()->GetOrAdd(id);
-		}
-
-		i32 Size() const
-		{
-			static_assert(sizeof...(T) == 1, "Can only get the size of single component accesses");
-			return GetPool<T...>()->Size();
-		}
-
-		template<typename C>
-		i32 Size() const
-		{
-			return GetPool<const C>()->Size();
-		}
-
-		template<typename C>
-		void ClearPool() const
-		{
-			GetPool<C>()->Clear();
-		}
-
-		template<typename... C>
-		void ClearPool() const requires(sizeof...(C) > 1)
-		{
-			(ClearPool<C>(), ...);
-		}
-
-		EntityContext& GetContext() const
+		IdContext& GetContext() const
 		{
 			return context;
 		}
 
-
-		template<typename C>
-		static constexpr bool HasType()
+		template<typename Component>
+		static constexpr bool IsMdfdType() requires(!HasTypeMember<Component>)
 		{
-			return ListContains<RawComponents, AsComponent<C>>();
+			return false;
+		}
+		template<typename Component>
+		static constexpr bool IsMdfdType() requires(HasTypeMember<Component>)
+		{
+			return IsSame<CMdfd<typename Component::Type>, Component>;
 		}
 
-		template<typename C>
+		template<typename Component>
 		static constexpr bool IsReadable()
 		{
-			return HasType<C>();
+			return RWDependencies::template Contains<Mut<Component>>();
 		}
 
-		template<typename C>
+		template<typename Component>
 		static constexpr bool IsWritable()
 		{
-			return IsMutable<C> && ListContains<Components, TWrite<AsComponent<C>>>();
+			return IsMutable<Component> && WDependencies::template Contains<Component>();
 		}
 	};
 
-	template<typename... T>
-	using TAccessRef = const TAccess<T...>&;
 
-	struct Access
+	template<typename... T>
+	struct Writes : public TTypeList<T...>
+	{};
+
+	template<typename... R>
+	struct TIdScope : public TIdScopeBase<Writes<>, Mut<R>...>
+	{
+		using TIdScopeBase<Writes<>, Mut<R>...>::TIdScopeBase;
+	};
+
+	template<typename... W, typename... R>
+	struct TIdScope<Writes<W...>, R...> : public TIdScopeBase<Writes<Mut<W>...>, Mut<R>...>
+	{
+		using TIdScopeBase<Writes<Mut<W>...>, Mut<R>...>::TIdScopeBase;
+	};
+
+
+	template<typename... T>
+	using TIdScopeRef = const TIdScope<T...>&;
+
+	struct IdScope : public TIdOperations<IdScope>
 	{
 	protected:
 
-		EntityContext& ast;
-		TArray<TypeAccess> types;
+		IdContext& context;
+		// TArray<TypeAccess> types;
 		TArray<IPool*> pools;
 
 
 	public:
-		Access(EntityContext& ast, const TArray<TypeId>& types) : ast{ast} {}
+		IdScope(IdContext& ctx, const TArray<TypeId>& types) : context{ctx} {}
 
 		template<typename... T>
-		Access(TAccessRef<T...> access) : ast{access.ast}
+		IdScope(TIdScopeRef<T...> scope) : context{scope.context}
 		{}
 
-		template<typename C>
-		TPool<Mut<C>>* GetPool() const requires(IsMutable<C>)
+		template<typename Component>
+		TPool<Mut<Component>>* GetPool() const requires(IsMutable<Component>)
 		{
 			return nullptr;
 		}
 
-		template<typename C>
-		const TPool<Mut<C>>* GetPool() const requires(IsConst<C>)
+		template<typename Component>
+		const TPool<Mut<Component>>* GetPool() const requires(IsConst<Component>)
 		{
 			return nullptr;
 		}
@@ -1789,7 +1809,7 @@ namespace p
 			return 0;
 		}
 	};
-#pragma endregion Accesses
+#pragma endregion IdScopees
 
 
 ////////////////////////////////
@@ -1868,21 +1888,21 @@ namespace p
 	/**
 	 * Remove ids containing a component from 'ids'. Does not guarantee order.
 	 *
-	 * @param access from where to access pools
+	 * @param scope from where to scope pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see ExcludeIdsWithStable(), ExcludeIdsWithout()
 	 */
-	template<typename C, typename AccessType>
-	void ExcludeIdsWith(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	template<typename Component, typename Scope>
+	void ExcludeIdsWith(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		ExcludeIdsWith(&access.template AssurePool<const C>(), ids, shouldShrink);
+		ExcludeIdsWith(&scope.template AssurePool<const Component>(), ids, shouldShrink);
 	}
-	template<typename... C, typename AccessType>
-	void ExcludeIdsWith(const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
-	    requires(sizeof...(C) > 1)
+	template<typename... Component, typename Scope>
+	void ExcludeIdsWith(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	    requires(sizeof...(Component) > 1)
 	{
-		(ExcludeIdsWith<C>(access, ids, shouldShrink), ...);
+		(ExcludeIdsWith<Component>(scope, ids, shouldShrink), ...);
 	}
 
 	template<typename Predicate>
@@ -1904,82 +1924,79 @@ namespace p
 	/**
 	 * Remove ids containing a component from 'ids'. Guarantees order.
 	 *
-	 * @param access from where to access pools
+	 * @param scope from where to scope pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see ExcludeIdsWith(), ExcludeIdsWithoutStable()
 	 */
-	template<typename C, typename AccessType>
-	void ExcludeIdsWithStable(
-	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	template<typename Component, typename Scope>
+	void ExcludeIdsWithStable(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		ExcludeIdsWithStable(&access.template AssurePool<const C>(), ids, shouldShrink);
+		ExcludeIdsWithStable(&scope.template AssurePool<const Component>(), ids, shouldShrink);
 	}
-	template<typename... C, typename AccessType>
-	void ExcludeIdsWithStable(const AccessType& access, TArray<Id>& ids,
-	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	template<typename... Component, typename Scope>
+	void ExcludeIdsWithStable(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	    requires(sizeof...(Component) > 1)
 	{
-		(ExcludeIdsWithStable<C>(access, ids, shouldShrink), ...);
+		(ExcludeIdsWithStable<Component>(scope, ids, shouldShrink), ...);
 	}
 
 	/**
 	 * Remove ids NOT containing a component from 'ids'. Does not guarantee order.
 	 *
-	 * @param access from where to access pools
+	 * @param scope from where to scope pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see ExcludeIdsWithoutStable(), ExcludeIdsWith()
 	 */
-	template<typename C, typename AccessType>
-	void ExcludeIdsWithout(
-	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	template<typename Component, typename Scope>
+	void ExcludeIdsWithout(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		ExcludeIdsWithout(&access.template AssurePool<const C>(), ids, shouldShrink);
+		ExcludeIdsWithout(&scope.template AssurePool<const Component>(), ids, shouldShrink);
 	}
 
-	template<typename... C, typename AccessType>
-	void ExcludeIdsWithout(const AccessType& access, TArray<Id>& ids,
-	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	template<typename... Component, typename Scope>
+	void ExcludeIdsWithout(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	    requires(sizeof...(Component) > 1)
 	{
-		(ExcludeIdsWithout<C>(access, ids, shouldShrink), ...);
+		(ExcludeIdsWithout<Component>(scope, ids, shouldShrink), ...);
 	}
 
 	/**
 	 * Remove ids NOT containing a component from 'ids'. Guarantees order.
 	 *
-	 * @param access from where to access pools
+	 * @param scope from where to scope pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see ExcludeIdsWithout(), ExcludeIdsWithStable()
 	 */
-	template<typename C, typename AccessType>
+	template<typename Component, typename Scope>
 	void ExcludeIdsWithoutStable(
-	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
 	{
-		ExcludeIdsWithoutStable(&access.template AssurePool<const C>(), ids, shouldShrink);
+		ExcludeIdsWithoutStable(&scope.template AssurePool<const Component>(), ids, shouldShrink);
 	}
-	template<typename... C, typename AccessType>
-	void ExcludeIdsWithoutStable(const AccessType& access, TArray<Id>& ids,
-	    const bool shouldShrink = true) requires(sizeof...(C) > 1)
+	template<typename... Component, typename Scope>
+	void ExcludeIdsWithoutStable(const Scope& scope, TArray<Id>& ids,
+	    const bool shouldShrink = true) requires(sizeof...(Component) > 1)
 	{
-		(ExcludeIdsWithoutStable<C>(access, ids, shouldShrink), ...);
+		(ExcludeIdsWithoutStable<Component>(scope, ids, shouldShrink), ...);
 	}
 
 	/**
 	 * Remove ids that are invalid.
 	 *
-	 * @param access
+	 * @param scope
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see ExcludeIdsInvalidStable()
 	 */
-	template<typename AccessType>
-	void ExcludeIdsInvalid(
-	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	template<typename Scope>
+	void ExcludeIdsInvalid(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
 	{
 		ids.RemoveIfSwap(
-		    [&access](Id id) {
-			return !access.IsValid(id);
+		    [&scope](Id id) {
+			return !scope.IsValid(id);
 		    },
 		    shouldShrink);
 	}
@@ -1987,55 +2004,55 @@ namespace p
 	/**
 	 * Remove ids that are invalid. Guarantees order.
 	 *
-	 * @param access
+	 * @param scope
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see ExcludeIdsInvalid()
 	 */
-	template<typename AccessType>
+	template<typename Scope>
 	void ExcludeIdsInvalidStable(
-	    const AccessType& access, TArray<Id>& ids, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
 	{
 		ids.RemoveIf(
-		    [&access](Id id) {
-			return !access.IsValid(id);
+		    [&scope](Id id) {
+			return !scope.IsValid(id);
 		    },
 		    shouldShrink);
 	}
 
 
 	/** Find ids containing a component from a list 'source' into 'results'. */
-	template<typename C, typename AccessType>
-	void FindIdsWith(const AccessType& access, const TView<Id>& source, TArray<Id>& results)
+	template<typename Component, typename Scope>
+	void FindIdsWith(const Scope& scope, const TView<Id>& source, TArray<Id>& results)
 	{
-		FindIdsWith(&access.template AssurePool<const C>(), source, results);
+		FindIdsWith(&scope.template AssurePool<const Component>(), source, results);
 	}
-	template<typename... C, typename AccessType>
-	void FindIdsWith(const AccessType& access, const TView<Id>& source, TArray<Id>& results)
-	    requires(sizeof...(C) > 1)
+	template<typename... Component, typename Scope>
+	void FindIdsWith(const Scope& scope, const TView<Id>& source, TArray<Id>& results)
+	    requires(sizeof...(Component) > 1)
 	{
-		FindIdsWith({&access.template AssurePool<const C>()...}, source, results);
+		FindIdsWith({&scope.template AssurePool<const Component>()...}, source, results);
 	}
 
-	template<typename... C, typename AccessType>
-	TArray<Id> FindIdsWith(const AccessType& access, const TView<Id>& source)
+	template<typename... Component, typename Scope>
+	TArray<Id> FindIdsWith(const Scope& scope, const TView<Id>& source)
 	{
 		TArray<Id> results;
-		FindIdsWith<C...>(access, source, results);
+		FindIdsWith<Component...>(scope, source, results);
 		return Move(results);
 	}
 
 	/** Find ids NOT containing a component from a list 'source' into 'results'. */
-	template<typename C, typename AccessType>
-	void FindIdsWithout(const AccessType& access, const TArray<Id>& source, TArray<Id>& results)
+	template<typename Component, typename Scope>
+	void FindIdsWithout(const Scope& scope, const TArray<Id>& source, TArray<Id>& results)
 	{
-		FindIdsWithout(&access.template AssurePool<const C>(), source, results);
+		FindIdsWithout(&scope.template AssurePool<const Component>(), source, results);
 	}
-	template<typename C, typename AccessType>
-	TArray<Id> FindIdsWithout(const AccessType& access, const TArray<Id>& source)
+	template<typename Component, typename Scope>
+	TArray<Id> FindIdsWithout(const Scope& scope, const TArray<Id>& source)
 	{
 		TArray<Id> results;
-		FindIdsWithout<C>(access, source, results);
+		FindIdsWithout<Component>(scope, source, results);
 		return Move(results);
 	}
 
@@ -2043,18 +2060,18 @@ namespace p
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Does not guarantee order.
 	 */
-	template<typename C, typename AccessType>
-	void ExtractIdsWith(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
-	    const bool shouldShrink = true)
+	template<typename Component, typename Scope>
+	void ExtractIdsWith(
+	    const Scope& scope, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
 	{
-		ExtractIdsWith(&access.template AssurePool<const C>(), source, results);
+		ExtractIdsWith(&scope.template AssurePool<const Component>(), source, results);
 	}
-	template<typename C, typename AccessType>
+	template<typename Component, typename Scope>
 	TArray<Id> ExtractIdsWith(
-	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = true)
 	{
 		TArray<Id> results;
-		ExtractIdsWith<C>(access, source, results);
+		ExtractIdsWith<Component>(scope, source, results);
 		return Move(results);
 	}
 
@@ -2062,18 +2079,18 @@ namespace p
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Guarantees order.
 	 */
-	template<typename C, typename AccessType>
-	void ExtractIdsWithStable(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
-	    const bool shouldShrink = true)
+	template<typename Component, typename Scope>
+	void ExtractIdsWithStable(
+	    const Scope& scope, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
 	{
-		ExtractIdsWithStable(&access.template AssurePool<const C>(), source, results);
+		ExtractIdsWithStable(&scope.template AssurePool<const Component>(), source, results);
 	}
-	template<typename C, typename AccessType>
+	template<typename Component, typename Scope>
 	TArray<Id> ExtractIdsWithStable(
-	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = true)
 	{
 		TArray<Id> results;
-		ExtractIdsWithStable<C>(access, source, results);
+		ExtractIdsWithStable<Component>(scope, source, results);
 		return Move(results);
 	}
 
@@ -2081,18 +2098,18 @@ namespace p
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Does not guarantee order.
 	 */
-	template<typename C, typename AccessType>
-	void ExtractIdsWithout(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
-	    const bool shouldShrink = true)
+	template<typename Component, typename Scope>
+	void ExtractIdsWithout(
+	    const Scope& scope, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
 	{
-		ExtractIdsWithout(&access.template AssurePool<const C>(), source, results);
+		ExtractIdsWithout(&scope.template AssurePool<const Component>(), source, results);
 	}
-	template<typename C, typename AccessType>
+	template<typename Component, typename Scope>
 	TArray<Id> ExtractIdsWithout(
-	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = true)
 	{
 		TArray<Id> results;
-		ExtractIdsWithout<C>(access, source, results);
+		ExtractIdsWithout<Component>(scope, source, results);
 		return Move(results);
 	}
 
@@ -2100,18 +2117,18 @@ namespace p
 	 * Find and remove ids not containing a component from list 'source' into 'results'.
 	 * Guarantees order.
 	 */
-	template<typename C, typename AccessType>
-	void ExtractIdsWithoutStable(const AccessType& access, TArray<Id>& source, TArray<Id>& results,
-	    const bool shouldShrink = true)
+	template<typename Component, typename Scope>
+	void ExtractIdsWithoutStable(
+	    const Scope& scope, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
 	{
-		ExtractIdsWithoutStable(&access.template AssurePool<const C>(), source, results);
+		ExtractIdsWithoutStable(&scope.template AssurePool<const Component>(), source, results);
 	}
-	template<typename C, typename AccessType>
+	template<typename Component, typename Scope>
 	TArray<Id> ExtractIdsWithoutStable(
-	    const AccessType& access, TArray<Id>& source, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = true)
 	{
 		TArray<Id> results;
-		ExtractIdsWithoutStable<C>(access, source, results);
+		ExtractIdsWithoutStable<Component>(scope, source, results);
 		return Move(results);
 	}
 
@@ -2119,29 +2136,29 @@ namespace p
 	/**
 	 * Find all ids containing all of the components
 	 *
-	 * @param access from where to access pools
+	 * @param scope from where to scope pools
 	 * @param ids array where matching ids will be added
 	 * @see FindAllIdsWithAny()
 	 */
-	template<typename... C, typename AccessType>
-	void FindAllIdsWith(const AccessType& access, TArray<Id>& ids) requires(sizeof...(C) >= 1)
+	template<typename... Component, typename Scope>
+	void FindAllIdsWith(const Scope& scope, TArray<Id>& ids) requires(sizeof...(Component) >= 1)
 	{
-		FindAllIdsWith({access.template GetPool<const C>()...}, ids);
+		FindAllIdsWith({scope.template GetPool<const Component>()...}, ids);
 	}
 
 
 	/**
 	 * Find all ids containing all of the components
 	 *
-	 * @param access from where to access pools
+	 * @param scope from where to scope pools
 	 * @return ids array with matching ids
 	 * @see FindAllIdsWithAny()
 	 */
-	template<typename... C, typename AccessType>
-	TArray<Id> FindAllIdsWith(const AccessType& access) requires(sizeof...(C) >= 1)
+	template<typename... Component, typename Scope>
+	TArray<Id> FindAllIdsWith(const Scope& scope) requires(sizeof...(Component) >= 1)
 	{
 		TArray<Id> ids;
-		FindAllIdsWith<C...>(access, ids);
+		FindAllIdsWith<Component...>(scope, ids);
 		return Move(ids);
 	}
 
@@ -2149,44 +2166,44 @@ namespace p
 	 * Find all ids containing any of the components.
 	 * Includes possible duplicates
 	 *
-	 * @param access from where to access pools
+	 * @param scope from where to scope pools
 	 * @param ids array where matching ids will be added
 	 * @see FindAllIdsWith()
 	 */
-	template<typename... C, typename AccessType>
-	void FindAllIdsWithAny(const AccessType& access, TArray<Id>& ids) requires(sizeof...(C) >= 1)
+	template<typename... Component, typename Scope>
+	void FindAllIdsWithAny(const Scope& scope, TArray<Id>& ids) requires(sizeof...(Component) >= 1)
 	{
-		FindAllIdsWithAny({access.template GetPool<const C>()...}, ids);
+		FindAllIdsWithAny({scope.template GetPool<const Component>()...}, ids);
 	}
 
 	/**
 	 * Find all ids containing any of the components.
 	 * Prevents duplicates
 	 *
-	 * @param access from where to access pools
+	 * @param scope from where to scope pools
 	 * @param ids array where matching ids will be added
 	 * @see FindAllIdsWithAnyUnique()
 	 */
-	template<typename... C, typename AccessType>
-	void FindAllIdsWithAnyUnique(const AccessType& access, TArray<Id>& ids)
-	    requires(sizeof...(C) >= 1)
+	template<typename... Component, typename Scope>
+	void FindAllIdsWithAnyUnique(const Scope& scope, TArray<Id>& ids)
+	    requires(sizeof...(Component) >= 1)
 	{
-		FindAllIdsWithAnyUnique({access.template GetPool<const C>()...}, ids);
+		FindAllIdsWithAnyUnique({scope.template GetPool<const Component>()...}, ids);
 	}
 
 	/**
 	 * Find all ids containing any of the components.
 	 * Includes possible duplicates
 	 *
-	 * @param access from where to access pools
+	 * @param scope from where to scope pools
 	 * @return ids array with matching ids
 	 * @see FindAllIdsWith()
 	 */
-	template<typename... C, typename AccessType>
-	TArray<Id> FindAllIdsWithAny(const AccessType& access) requires(sizeof...(C) >= 1)
+	template<typename... Component, typename Scope>
+	TArray<Id> FindAllIdsWithAny(const Scope& scope) requires(sizeof...(Component) >= 1)
 	{
 		TArray<Id> ids;
-		FindAllIdsWithAny<C...>(access, ids);
+		FindAllIdsWithAny<Component...>(scope, ids);
 		return Move(ids);
 	}
 
@@ -2194,22 +2211,22 @@ namespace p
 	 * Find all ids containing any of the components.
 	 * Prevents duplicates
 	 *
-	 * @param access from where to access pools
+	 * @param scope from where to scope pools
 	 * @return ids array with matching ids
 	 * @see FindAllIdsWithAny()
 	 */
-	template<typename... C, typename AccessType>
-	TArray<Id> FindAllIdsWithAnyUnique(const AccessType& access) requires(sizeof...(C) >= 1)
+	template<typename... Component, typename Scope>
+	TArray<Id> FindAllIdsWithAnyUnique(const Scope& scope) requires(sizeof...(Component) >= 1)
 	{
 		TArray<Id> ids;
-		FindAllIdsWithAnyUnique<C...>(access, ids);
+		FindAllIdsWithAnyUnique<Component...>(scope, ids);
 		return Move(ids);
 	}
 
-	template<typename... C, typename AccessType>
-	Id GetFirstIdWith(const AccessType& access)
+	template<typename... Component, typename Scope>
+	Id GetFirstIdWith(const Scope& scope)
 	{
-		return GetFirstIdWith({access.template GetPool<const C>()...});
+		return GetFirstIdWith({scope.template GetPool<const Component>()...});
 	}
 #pragma endregion Filtering
 
@@ -2220,12 +2237,12 @@ namespace p
 #pragma region Editing
 
 	// Create
-	P_API Id AddId(EntityContext& ctx);
-	P_API void AddId(EntityContext& ctx, TView<Id> Ids);
+	P_API Id AddId(IdContext& ctx);
+	P_API void AddId(IdContext& ctx, TView<Id> Ids);
 
 	// Remove
-	P_API bool RmId(EntityContext& ctx, TView<const Id> ids, RmIdFlags flags = RmIdFlags::None);
-	P_API bool FlushDeferredRemovals(EntityContext& ctx);
+	P_API bool RmId(IdContext& ctx, TView<const Id> ids, RmIdFlags flags = RmIdFlags::None);
+	P_API bool FlushDeferredRemovals(IdContext& ctx);
 #pragma endregion Editing
 
 
@@ -2236,23 +2253,23 @@ namespace p
 
 	// Link a list of nodes at the end of the parent children list
 	P_API void AttachId(
-	    TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent, TView<const Id> children);
+	    TIdScopeRef<Writes<CChild, CParent>> scope, Id parent, TView<const Id> children);
 	// Link a list of nodes after prevChild in the list of children nodes
-	P_API void AttachIdAfter(TAccessRef<TWrite<CChild>, TWrite<CParent>> access, Id parent,
-	    TView<Id> childrenIds, Id prevChild);
-	P_API void TransferIdChildren(TAccessRef<TWrite<CChild>, TWrite<CParent>> access,
-	    TView<const Id> childrenIds, Id destination);
-	// TODO: void TransferAllChildren(Tree& ast, Id origin, Id destination);
-	P_API void DetachIdParent(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
+	P_API void AttachIdAfter(
+	    TIdScopeRef<Writes<CChild, CParent>> scope, Id parent, TView<Id> childrenIds, Id prevChild);
+	P_API void TransferIdChildren(
+	    TIdScopeRef<Writes<CChild, CParent>> scope, TView<const Id> childrenIds, Id destination);
+	// TODO: void TransferAllChildren(IdContext& context, Id origin, Id destination);
+	P_API void DetachIdParent(TIdScopeRef<Writes<CParent, CChild>> scope,
 	    TView<const Id> childrenIds, bool keepComponents);
-	P_API void DetachIdChildren(TAccessRef<TWrite<CParent>, TWrite<CChild>> access,
-	    TView<const Id> parents, bool keepComponents = false);
+	P_API void DetachIdChildren(TIdScopeRef<Writes<CParent, CChild>> scope, TView<const Id> parents,
+	    bool keepComponents = false);
 
 	/** Obtain direct children ids from the provided parent Id. Examples:
 	 * - Children of A (where A->B->C) is B.
 	 * - Children of A (where A->B, A->C) are B and C.
 	 */
-	P_API const TArray<Id>* GetIdChildren(TAccessRef<CParent> access, Id node);
+	P_API const TArray<Id>* GetIdChildren(TIdScopeRef<CParent> scope, Id node);
 
 	/** Obtain direct children ids from the provided parent Ids. Examples:
 	 * - Children of A (where A->B->C) is B.
@@ -2260,7 +2277,7 @@ namespace p
 	 * - Children of A and B (where A->B->C) are B, C.
 	 */
 	P_API void GetIdChildren(
-	    TAccessRef<CParent> access, TView<const Id> nodes, TArray<Id>& outChildrenIds);
+	    TIdScopeRef<CParent> scope, TView<const Id> nodes, TArray<Id>& outChildrenIds);
 
 	/** Obtain all children ids from the provided parent Ids. Examples:
 	 * - All children of A (where A->B->C) are B and C.
@@ -2268,25 +2285,25 @@ namespace p
 	 * - All children of A and B (where A->B->C->D) are B, C, D, C, D (duplicates are not
 	 * handled).
 	 */
-	P_API void GetAllIdChildren(TAccessRef<CParent> access, TView<const Id> parentIds,
+	P_API void GetAllIdChildren(TIdScopeRef<CParent> scope, TView<const Id> parentIds,
 	    TArray<Id>& outChildrenIds, u32 depth = 1);
 
-	P_API Id GetIdParent(TAccessRef<CChild> access, Id childId);
+	P_API Id GetIdParent(TIdScopeRef<CChild> scope, Id childId);
 	P_API void GetIdParent(
-	    TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents);
+	    TIdScopeRef<CChild> scope, TView<const Id> childrenIds, TArray<Id>& outParents);
 	P_API void GetAllIdParents(
-	    TAccessRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents);
+	    TIdScopeRef<CChild> scope, TView<const Id> childrenIds, TArray<Id>& outParents);
 
 	/**
 	 * Find a parent id matching a delegate
 	 */
-	P_API Id FindIdParent(TAccessRef<CChild> access, Id child, const TFunction<bool(Id)>& callback);
-	P_API void FindIdParents(TAccessRef<CChild> access, TView<const Id> childrenIds,
+	P_API Id FindIdParent(TIdScopeRef<CChild> scope, Id child, const TFunction<bool(Id)>& callback);
+	P_API void FindIdParents(TIdScopeRef<CChild> scope, TView<const Id> childrenIds,
 	    TArray<Id>& outParents, const TFunction<bool(Id)>& callback);
 
-	// void Copy(Tree& ast, t TArray<Id>& nodes, TArray<Id>& outNewNodes);
-	// void CopyDeep(Tree& ast, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);
-	// void CopyAndTransferAllChildrenDeep(Tree& ast, Id root, Id otherRoot);
+	// void Copy(IdContext& context, t TArray<Id>& nodes, TArray<Id>& outNewNodes);
+	// void CopyDeep(IdContext& context, const TArray<Id>& rootNodes, TArray<Id>& outNewRootNodes);
+	// void CopyAndTransferAllChildrenDeep(IdContext& context, Id root, Id otherRoot);
 
 	/**
 	 * Iterates children nodes making sure child->parent links are correct or fixed
@@ -2295,7 +2312,7 @@ namespace p
 	 * @parents: where to look for children to fix up
 	 * @return true if an incorrect link was found and fixed
 	 */
-	P_API bool FixParentIdLinks(TAccessRef<TWrite<CChild>, CParent> access, TView<Id> parents);
+	P_API bool FixParentIdLinks(TIdScopeRef<Writes<CChild>, CParent> scope, TView<Id> parents);
 
 	/**
 	 * Iterates children nodes looking for invalid child->parent links
@@ -2304,9 +2321,9 @@ namespace p
 	 * @parents: where to look for children
 	 * @return true if an incorrect link was found
 	 */
-	P_API bool ValidateParentIdLinks(TAccessRef<CChild, CParent> access, TView<Id> parents);
+	P_API bool ValidateParentIdLinks(TIdScopeRef<CChild, CParent> scope, TView<Id> parents);
 
-	P_API void GetRootIds(TAccessRef<CChild, CParent> access, TArray<Id>& outRoots);
+	P_API void GetRootIds(TIdScopeRef<CChild, CParent> scope, TArray<Id>& outRoots);
 #pragma endregion Hierarchy
 
 
@@ -2352,7 +2369,7 @@ namespace p
 				BeginObject();
 				for (i32 i = 0; i < ids.Size(); ++i)
 				{
-					const Id node = ids[i];
+					const Id id = ids[i];
 					key.clear();
 					Strings::FormatTo(key, "{}", i);
 
@@ -2360,12 +2377,12 @@ namespace p
 					{
 						if constexpr (!IsEmpty<T>)
 						{
-							T& comp = pool.GetOrAdd(node);
+							T& comp = pool.Has(id) ? pool.Get(id) : pool.Add(id);
 							Serialize(comp);
 						}
 						else
 						{
-							pool.Add(node);
+							pool.Add(id);
 						}
 						Leave();
 					}
@@ -2375,7 +2392,8 @@ namespace p
 			{
 				if constexpr (!IsEmpty<T>)
 				{
-					T& comp = pool.GetOrAdd(ids[0]);
+					const Id id = ids[0];
+					T& comp     = pool.Has(id) ? pool.Get(id) : pool.Add(id);
 					Serialize(comp);
 				}
 				else
@@ -2390,23 +2408,23 @@ namespace p
 	template<typename T>
 	inline void EntityWriter::SerializePool()
 	{
-		TArray<TPair<i32, Id>> componentIds;    // TODO: Make sure this is needed
+		TArray<TPair<i32, Id>> typeIds;    // TODO: Make sure this is needed
 
 		auto* pool = context.GetPool<const T>();
 		if (pool)
 		{
-			componentIds.Reserve(Min(i32(pool->Size()), ids.Size()));
+			typeIds.Reserve(Min(i32(pool->Size()), ids.Size()));
 			for (i32 i = 0; i < ids.Size(); ++i)
 			{
 				const Id id = ids[i];
 				if (pool->Has(id))
 				{
-					componentIds.Add({i, id});
+					typeIds.Add({i, id});
 				}
 			}
 		}
 
-		if (componentIds.IsEmpty())
+		if (typeIds.IsEmpty())
 		{
 			return;
 		}
@@ -2420,7 +2438,7 @@ namespace p
 			{
 				String key;
 				BeginObject();
-				for (auto id : componentIds)
+				for (auto id : typeIds)
 				{
 					key.clear();
 					Strings::FormatTo(key, "{}", id.first);
@@ -2443,7 +2461,7 @@ namespace p
 				}
 				else
 				{
-					Serialize(pool->Get(componentIds.First().second));
+					Serialize(pool->Get(typeIds.First().second));
 				}
 			}
 			Leave();
@@ -2453,7 +2471,7 @@ namespace p
 
 
 	template<typename T>
-	inline TPool<Mut<T>>& EntityContext::AssurePool() const
+	inline TPool<Mut<T>>& IdContext::AssurePool() const
 	{
 		const TypeId componentId = RegisterTypeId<Mut<T>>();
 
@@ -2475,17 +2493,17 @@ namespace p
 	}
 
 	template<typename T>
-	inline PoolInstance EntityContext::CreatePoolInstance() const
+	inline PoolInstance IdContext::CreatePoolInstance() const
 	{
 		constexpr TypeId componentId = GetTypeId<Mut<T>>();
 
-		auto& self = const_cast<EntityContext&>(*this);
+		auto& self = const_cast<IdContext&>(*this);
 		PoolInstance instance{componentId, MakeUnique<TPool<Mut<T>>>(self)};
 		return Move(instance);
 	}
 
 	template<typename Static>
-	inline Static& EntityContext::SetStatic()
+	inline Static& IdContext::SetStatic()
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
 		ptr         = MakeOwned<Static>();
@@ -2493,7 +2511,7 @@ namespace p
 	}
 
 	template<typename Static>
-	inline Static& EntityContext::SetStatic(Static&& value)
+	inline Static& IdContext::SetStatic(Static&& value)
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
 		ptr         = MakeOwned<Static>(p::Forward<Static>(value));
@@ -2501,7 +2519,7 @@ namespace p
 	}
 
 	template<typename Static>
-	inline Static& EntityContext::SetStatic(const Static& value)
+	inline Static& IdContext::SetStatic(const Static& value)
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
 		ptr         = MakeOwned<Static>(value);
@@ -2509,7 +2527,7 @@ namespace p
 	}
 
 	template<typename Static>
-	inline Static& EntityContext::GetOrSetStatic()
+	inline Static& IdContext::GetOrSetStatic()
 	{
 		bool bAdded = false;
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
@@ -2521,7 +2539,7 @@ namespace p
 	}
 
 	template<typename Static>
-	inline Static& EntityContext::GetOrSetStatic(Static&& value)
+	inline Static& IdContext::GetOrSetStatic(Static&& value)
 	{
 		bool bAdded = false;
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
@@ -2533,7 +2551,7 @@ namespace p
 	}
 
 	template<typename Static>
-	inline Static& EntityContext::GetOrSetStatic(const Static& value)
+	inline Static& IdContext::GetOrSetStatic(const Static& value)
 	{
 		bool bAdded = false;
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
