@@ -1198,21 +1198,27 @@ namespace p
 			return GetContext().IsValid(id);
 		}
 
-		template<typename... Component>
-		bool Has(Id id) const requires(sizeof...(Component) >= 1)
+		template<typename Component>
+		bool Has(Id id) const
 		{
-			return (GetPool<const Component>()->Has(id) && ...);
+			const auto* pool = GetPool<const Component>();
+			return pool && pool->Has(id);
+		}
+		template<typename... Component>
+		bool Has(Id id) const requires(sizeof...(Component) > 1)
+		{
+			return (Has<Component>(id) && ...);
 		}
 
 		template<typename Component>
-		void MarkModified(TView<const Id> ids, const TPool<Component>* pool = nullptr) const
+		void MarkModified(TView<const Id> ids, TPool<Component>* pool = nullptr) const
 		{
 			auto& mdfdPool = AssurePool<CMdfd<Component>>();
 			if constexpr (StoresLastModified<Component>)
 			{
 				if (!pool)
 				{
-					pool = GetPool<const Component>();
+					pool = GetPool<Component>();
 					if (!pool)
 					{
 						return;
@@ -1225,7 +1231,7 @@ namespace p
 					if (!mdfdPool.Has(id))    // If we store value, we only add if it it wasn't
 					                          // modified already
 					{
-						Component* comp = pool->template TryGet<Component>(id);
+						Component* comp = pool->TryGet(id);
 						if constexpr (IsMoveConstructible<Component>)
 						{
 							mdfdPool.Add(
