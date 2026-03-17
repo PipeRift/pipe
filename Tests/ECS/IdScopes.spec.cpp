@@ -17,7 +17,7 @@ struct TypeB
 };
 struct TypeC
 {
-	P_STRUCT(TypeC, TF_ECS_AutoModify)
+	P_STRUCT(TypeC, TF_ECS_ModifyOnEdit)
 
 	bool data;    // Not empty type
 };
@@ -79,7 +79,7 @@ go_bandit([]() {
 				Id id = AddId(ctx);
 				TIdScope<Writes<CMdfd<TypeC>>> scope1{ctx};
 				AssertThat(scope1.Has<CMdfd<TypeC>>(id), Is().False());
-				scope1.MarkModified<TypeC>(id);
+				scope1.Modify<TypeC>(id);
 				AssertThat(scope1.Has<CMdfd<TypeC>>(id), Is().True());
 				AssertThat(scope1.IsModified<TypeC>(id), Is().True());
 
@@ -87,7 +87,7 @@ go_bandit([]() {
 				AssertThat(scope1.Has<CMdfd<TypeC>>(id), Is().False());
 				AssertThat(scope1.IsModified<TypeC>(id), Is().False());
 
-				scope1.MarkModified<TypeC>(id);
+				scope1.Modify<TypeC>(id);
 				AssertThat(scope1.Has<CMdfd<TypeC>>(id), Is().True());
 				AssertThat(scope1.IsModified<TypeC>(id), Is().True());
 			});

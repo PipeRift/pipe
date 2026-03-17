@@ -1211,7 +1211,7 @@ namespace p
 		}
 
 		template<typename Component>
-		void MarkModified(TView<const Id> ids, TPool<Component>* pool = nullptr) const
+		void Modify(TView<const Id> ids, TPool<Component>* pool = nullptr) const
 		{
 			auto& mdfdPool = AssurePool<CMdfd<Component>>();
 			if constexpr (StoresLastModified<Component>)
@@ -1261,9 +1261,9 @@ namespace p
 		{
 			P_Check(IsValid(id));
 			auto& pool = AssurePool<Component>();
-			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
+			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
 			{
-				MarkModified<Component>(id, &pool);
+				Modify<Component>(id, &pool);
 			}
 			return pool.Add(id, p::Forward<Component>(value));
 		}
@@ -1272,9 +1272,9 @@ namespace p
 		{
 			P_Check(IsValid(id));
 			auto& pool = AssurePool<Component>();
-			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
+			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
 			{
-				MarkModified<Component>(id, &pool);
+				Modify<Component>(id, &pool);
 			}
 			return pool.Add(id, value);
 		}
@@ -1291,9 +1291,9 @@ namespace p
 		decltype(auto) AddN(TView<const Id> ids, const Component& value = {}) const
 		{
 			auto& pool = AssurePool<Component>();
-			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
+			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
 			{
-				MarkModified<Component>(ids, &pool);
+				Modify<Component>(ids, &pool);
 			}
 			return pool.Add(ids.begin(), ids.end(), value);
 		}
@@ -1303,9 +1303,9 @@ namespace p
 		{
 			P_Check(ids.Size() == values.Size());
 			auto& pool = AssurePool<Component>();
-			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
+			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
 			{
-				MarkModified<Component>(ids, &pool);
+				Modify<Component>(ids, &pool);
 			}
 			pool.Add(ids.begin(), ids.end(), values.begin());
 		}
@@ -1324,9 +1324,9 @@ namespace p
 		{
 			if (auto* pool = GetPool<Component>())
 			{
-				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
+				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnRm))
 				{
-					MarkModified<Component>(id, pool);
+					Modify<Component>(id, pool);
 				}
 				pool->Remove(id);
 			}
@@ -1341,9 +1341,9 @@ namespace p
 		{
 			if (auto* pool = GetPool<Component>())
 			{
-				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
+				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnRm))
 				{
-					MarkModified<Component>(ids, pool);
+					Modify<Component>(ids, pool);
 				}
 				pool->Remove(ids);
 			}
@@ -1360,9 +1360,9 @@ namespace p
 			auto* const pool = GetPool<Component>();
 			P_Check(pool);
 			if constexpr (IsMutable<Component>
-			              && HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
+			              && HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnGet))
 			{
-				MarkModified<Component>(id, pool);
+				Modify<Component>(id, pool);
 			}
 			return pool->Get(id);
 		}
@@ -1374,11 +1374,11 @@ namespace p
 			P_Check(pool);
 			Component* value = pool->TryGet(id);
 			if constexpr (IsMutable<Component>
-			              && HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
+			              && HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnGet))
 			{
 				if (value)
 				{
-					MarkModified<Component>(id, pool);
+					Modify<Component>(id, pool);
 				}
 			}
 			return value;
@@ -1389,16 +1389,22 @@ namespace p
 		{
 			auto& pool = AssurePool<Component>();
 
-			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_AutoModify))
-			{
-				MarkModified<Component>(id, *pool);
-			}
-
 			if (pool.Has(id))
 			{
+				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnGet))
+				{
+					Modify<Component>(id, *pool);
+				}
 				return pool.Get(id);
 			}
-			return pool.Add(id);
+			else
+			{
+				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
+				{
+					Modify<Component>(id, *pool);
+				}
+				return pool.Add(id);
+			}
 		}
 
 		template<typename... Component>
@@ -1612,7 +1618,7 @@ namespace p
 	template<typename T>
 	struct TIsAutoModified
 	{
-		static constexpr bool value = HasAnyTypeStaticFlags<T>(TF_ECS_AutoModify);
+		static constexpr bool value = HasAnyTypeStaticFlags<T>(TF_ECS_ModifyOnEdit);
 	};
 
 

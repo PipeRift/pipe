@@ -319,6 +319,7 @@ go_bandit([]() {
 				AssertThat(data[0], Equals(0));
 			});
 		});
+
 		describe("Append", []() {
 			it("Can append defaulted", [&]() {
 				TInlineArray<i32, 0> data;
@@ -384,6 +385,7 @@ go_bandit([]() {
 				AssertThat(data.Data(), Equals(data.GetInlineBuffer()));
 			});
 		});
+
 		describe("Assign", []() {
 			it("Can assign defaulted", [&]() {
 				TInlineArray<i32, 0> data;
@@ -449,6 +451,7 @@ go_bandit([]() {
 				AssertThat(data.Data(), Equals(data.GetInlineBuffer()));
 			});
 		});
+
 		describe("Insert", []() {
 			it("Can insert at empty", [&]() {
 				TInlineArray<i32, 0> data;
@@ -585,6 +588,7 @@ go_bandit([]() {
 				AssertThat(data[11], Equals(3));
 			});
 		});
+
 		describe("Remove", []() {
 			it("Can remove at index", []() {
 				TInlineArray<i32, 0> data{1, 2, 3, 4};
@@ -659,54 +663,54 @@ go_bandit([]() {
 				AssertThat(data.RemoveAtSwap(0, 2), Equals(true));    // Remove first
 				AssertThat(data, Equals(TInlineArray<i32, 0>{6}));
 			});
-		});
 
-		it("Can RemoveLast", [&]() {
-			TArray<i32> data{1, 4, 6};
-			data.RemoveLast();
-			AssertThat(data.Size(), Equals(2));
-			AssertThat(data[0], Equals(1));
-			AssertThat(data[1], Equals(4));
-			AssertThat(data.Capacity(), Equals(2));
-		});
-
-		it("Can RemoveLast N", [&]() {
-			TArray<i32> dataA{1, 4, 6};
-			dataA.RemoveLast(2);
-			AssertThat(dataA.Size(), Equals(1));
-			AssertThat(dataA[0], Equals(1));
-			AssertThat(dataA.Capacity(), Equals(1));
-
-			TArray<i32> dataB{1, 4, 6};
-			dataB.RemoveLast(3);
-			AssertThat(dataB.Size(), Equals(0));
-			AssertThat(dataB.Capacity(), Equals(0));
-		});
-
-		it("Can RemoveIf", [&]() {
-			TArray<i32> data{1, 4, 5, 6};
-
-			AssertThat(data.Size(), Equals(4));
-
-			data.RemoveIf([](i32 v) {
-				return v == 1 || v == 6;
+			it("Can RemoveLast", [&]() {
+				TArray<i32> data{1, 4, 6};
+				data.RemoveLast();
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(1));
+				AssertThat(data[1], Equals(4));
+				AssertThat(data.Capacity(), Equals(2));
 			});
-			AssertThat(data.Size(), Equals(2));
-			AssertThat(data[0], Equals(4));
-			AssertThat(data[1], Equals(5));
-		});
 
-		it("Can RemoveIfSwap", [&]() {
-			TArray<i32> data{1, 4, 5, 6};
+			it("Can RemoveLast N", [&]() {
+				TArray<i32> dataA{1, 4, 6};
+				dataA.RemoveLast(2);
+				AssertThat(dataA.Size(), Equals(1));
+				AssertThat(dataA[0], Equals(1));
+				AssertThat(dataA.Capacity(), Equals(1));
 
-			AssertThat(data.Size(), Equals(4));
-
-			data.RemoveIfSwap([](i32 v) {
-				return v == 1 || v == 6;
+				TArray<i32> dataB{1, 4, 6};
+				dataB.RemoveLast(3);
+				AssertThat(dataB.Size(), Equals(0));
+				AssertThat(dataB.Capacity(), Equals(0));
 			});
-			AssertThat(data.Size(), Equals(2));
-			AssertThat(data[0], Equals(5));
-			AssertThat(data[1], Equals(4));
+
+			it("Can RemoveIf", [&]() {
+				TArray<i32> data{1, 4, 5, 6};
+
+				AssertThat(data.Size(), Equals(4));
+
+				data.RemoveIf([](i32 v) {
+					return v == 1 || v == 6;
+				});
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(4));
+				AssertThat(data[1], Equals(5));
+			});
+
+			it("Can RemoveIfSwap", [&]() {
+				TArray<i32> data{1, 4, 5, 6};
+
+				AssertThat(data.Size(), Equals(4));
+
+				data.RemoveIfSwap([](i32 v) {
+					return v == 1 || v == 6;
+				});
+				AssertThat(data.Size(), Equals(2));
+				AssertThat(data[0], Equals(5));
+				AssertThat(data[1], Equals(4));
+			});
 		});
 
 		it("Can Sort", [&]() {
@@ -743,6 +747,35 @@ go_bandit([]() {
 
 			AssertThat(data.AddUniqueSorted(36), Equals(6));
 			AssertThat(data.Size(), Equals(7));
+		});
+
+		describe("Iterate", []() {
+			it("Can iterate empty", [&]() {
+				TInlineArray<i32, 5> data1{};
+				i32 counter = 0;
+				for (i32 v : data1)
+				{
+					++counter;
+				}
+				AssertThat(counter, Equals(0));
+				TArray<i32> data2{};
+				counter = 0;
+				for (i32 v : data2)
+				{
+					++counter;
+				}
+				AssertThat(counter, Equals(0));
+			});
+
+			it("Can iterate empty", [&]() {
+				TInlineArray<i32, 5> data{};
+				i32 counter = 0;
+				for (i32 v : data)
+				{
+					++counter;
+				}
+				AssertThat(counter, Equals(0));
+			});
 		});
 	});
 });
