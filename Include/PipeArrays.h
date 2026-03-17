@@ -19,17 +19,6 @@
 namespace p
 {
 	////////////////////////////////
-	// FORWARD DECLARATIONS
-	//
-
-	template<typename Type>
-	struct IArray;
-
-	template<typename Type, u32 InlineCapacity>
-	struct TInlineArray;
-
-
-	////////////////////////////////
 	// RANGES
 	//
 
@@ -316,7 +305,7 @@ namespace p
 		i32 size   = 0;
 
 
-		// Do not use IArray as a container itself. See TView, TArray and TInlineArray.
+		// Do not use IArray as a container itself. See TView, TArray and TArray.
 		constexpr IArray() = default;
 
 	public:
@@ -752,13 +741,13 @@ namespace p
 
 	/** An array type with a fixed amount of elements. */
 	template<typename Type, u32 InlineCapacity>
-	struct TInlineArray : public IArray<Type>
+	struct TArray : public IArray<Type>
 	{
 		using Super = IArray<Type>;
 
 	public:
 		template<typename OtherType, u32 OtherInlineCapacity>
-		friend struct TInlineArray;
+		friend struct TArray;
 
 		static constexpr i32 inlineCapacity = InlineCapacity;
 
@@ -770,80 +759,79 @@ namespace p
 
 #pragma region Constructors
 	public:
-		constexpr TInlineArray() = default;
-		constexpr TInlineArray(i32 initialSize)
+		constexpr TArray() = default;
+		constexpr TArray(i32 initialSize)
 		{
 			Assign(initialSize);
 		}
-		constexpr TInlineArray(i32 initialSize, const Type& value)
+		constexpr TArray(i32 initialSize, const Type& value)
 		{
 			Assign(initialSize, value);
 		}
-		constexpr TInlineArray(std::initializer_list<Type> initList)
+		constexpr TArray(std::initializer_list<Type> initList)
 		{
 			Assign(Move(initList));
 		}
 		template<typename It>
-		constexpr TInlineArray(const It& beginIt, const It& endIt)
+		constexpr TArray(const It& beginIt, const It& endIt)
 		{
 			Append(beginIt, endIt);
 		}
-		TInlineArray(const Type* data, i32 sizeNum)
+		TArray(const Type* data, i32 sizeNum)
 		{
 			Assign(data, sizeNum);
 		}
-		TInlineArray(const Type* first, const Type* last)
+		TArray(const Type* first, const Type* last)
 		{
 			Assign(first, std::distance(first, last));
 		}
 
-		constexpr TInlineArray(Arena& arena) : arena{&arena} {}
-		constexpr TInlineArray(Arena& arena, i32 initialSize) : arena{&arena}
+		constexpr TArray(Arena& arena) : arena{&arena} {}
+		constexpr TArray(Arena& arena, i32 initialSize) : arena{&arena}
 		{
 			Assign(initialSize);
 		}
-		constexpr TInlineArray(Arena& arena, i32 initialSize, const Type& value) : arena{&arena}
+		constexpr TArray(Arena& arena, i32 initialSize, const Type& value) : arena{&arena}
 		{
 			Assign(initialSize, value);
 		}
-		constexpr TInlineArray(Arena& arena, std::initializer_list<Type> initList) : arena{&arena}
+		constexpr TArray(Arena& arena, std::initializer_list<Type> initList) : arena{&arena}
 		{
 			Assign(Move(initList));
 		}
 		template<typename It>
-		constexpr TInlineArray(Arena& arena, const It& beginIt, const It& endIt) : arena{&arena}
+		constexpr TArray(Arena& arena, const It& beginIt, const It& endIt) : arena{&arena}
 		{
 			Append(beginIt, endIt);
 		}
-		TInlineArray(Arena& arena, const Type* data, i32 sizeNum) : arena{&arena}
+		TArray(Arena& arena, const Type* data, i32 sizeNum) : arena{&arena}
 		{
 			Assign(data, sizeNum);
 		}
-		TInlineArray(Arena& arena, const Type* first, const Type* last) : arena{&arena}
+		TArray(Arena& arena, const Type* first, const Type* last) : arena{&arena}
 		{
 			Assign(first, std::distance(first, last));
 		}
 
 		template<u32 OtherInlineCapacity>
-		TInlineArray(TInlineArray<Type, OtherInlineCapacity>&& other)
+		TArray(TArray<Type, OtherInlineCapacity>&& other)
 		{
-			MoveFrom(p::Forward<TInlineArray<Type, OtherInlineCapacity>>(other));
+			MoveFrom(p::Forward<TArray<Type, OtherInlineCapacity>>(other));
 		}
 		template<u32 OtherInlineCapacity>
-		TInlineArray<Type, InlineCapacity>& operator=(
-		    TInlineArray<Type, OtherInlineCapacity>&& other)
+		TArray<Type, InlineCapacity>& operator=(TArray<Type, OtherInlineCapacity>&& other)
 		{
 			if (this != (void*)&other)
 			{
-				MoveFrom(p::Forward<TInlineArray<Type, OtherInlineCapacity>>(other));
+				MoveFrom(p::Forward<TArray<Type, OtherInlineCapacity>>(other));
 			}
 			return *this;
 		}
-		TInlineArray(const TInlineArray& other)
+		TArray(const TArray& other)
 		{
 			CopyFrom(other);
 		}
-		TInlineArray& operator=(const TInlineArray& other)
+		TArray& operator=(const TArray& other)
 		{
 			if (this != (void*)&other)
 			{
@@ -851,11 +839,11 @@ namespace p
 			}
 			return *this;
 		}
-		TInlineArray(const IArray<const Type>& other)
+		TArray(const IArray<const Type>& other)
 		{
 			CopyFrom(other);
 		}
-		TInlineArray& operator=(const IArray<const Type>& other)
+		TArray& operator=(const IArray<const Type>& other)
 		{
 			if (this != (void*)&other)
 			{
@@ -863,7 +851,7 @@ namespace p
 			}
 			return *this;
 		}
-		~TInlineArray()
+		~TArray()
 		{
 			Clear(true);
 		}
@@ -1082,9 +1070,9 @@ namespace p
 			CopyFrom(values);
 		}
 		template<i32 OtherInlineCapacity>
-		void Assign(TInlineArray<Type, OtherInlineCapacity>&& values) requires(IsMutable<Type>)
+		void Assign(TArray<Type, OtherInlineCapacity>&& values) requires(IsMutable<Type>)
 		{
-			MoveFrom(p::Forward<TInlineArray<Type, OtherInlineCapacity>>(values));
+			MoveFrom(p::Forward<TArray<Type, OtherInlineCapacity>>(values));
 		}
 		void Assign(std ::initializer_list<Type> initList)
 		{
@@ -1735,7 +1723,7 @@ namespace p
 		void CopyFrom(const IArray<const Type>& other);
 
 		template<u32 OtherInlineCapacity>
-		void MoveFrom(TInlineArray<Type, OtherInlineCapacity>&& other);
+		void MoveFrom(TArray<Type, OtherInlineCapacity>&& other);
 	};
 
 
@@ -1857,7 +1845,7 @@ namespace p
 	//
 
 	template<typename Type, u32 InlineCapacity>
-	void TInlineArray<Type, InlineCapacity>::AddUninitialized(i32 count)
+	void TArray<Type, InlineCapacity>::AddUninitialized(i32 count)
 	{
 		P_CheckMsg(count >= 0, "Can't add less than zero elements.");
 		const i32 newSize = Super::size + count;
@@ -1869,7 +1857,7 @@ namespace p
 	}
 
 	template<typename Type, u32 InlineCapacity>
-	void TInlineArray<Type, InlineCapacity>::InsertUninitialized(i32 atIndex, i32 count)
+	void TArray<Type, InlineCapacity>::InsertUninitialized(i32 atIndex, i32 count)
 	{
 		P_Check(atIndex >= 0 && atIndex <= Super::size);
 
@@ -1911,7 +1899,7 @@ namespace p
 	}
 
 	template<typename Type, u32 InlineCapacity>
-	void TInlineArray<Type, InlineCapacity>::CopyFrom(const IArray<const Type>& other)
+	void TArray<Type, InlineCapacity>::CopyFrom(const IArray<const Type>& other)
 	{
 		Clear(false);
 		Reserve(other.Size());
@@ -1921,8 +1909,7 @@ namespace p
 
 	template<typename Type, u32 InlineCapacity>
 	template<u32 OtherInlineCapacity>
-	void TInlineArray<Type, InlineCapacity>::MoveFrom(
-	    TInlineArray<Type, OtherInlineCapacity>&& other)
+	void TArray<Type, InlineCapacity>::MoveFrom(TArray<Type, OtherInlineCapacity>&& other)
 	{
 		if (other.UsesInlineBuffer())    // We can't move from an inline buffer, so we move items
 		{

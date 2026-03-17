@@ -5,6 +5,10 @@
 #include "PipePlatform.h"
 
 
+#ifndef P_ARRAY_DEFAULT_INLINECAPACITY
+	#define P_ARRAY_DEFAULT_INLINECAPACITY 0
+#endif
+
 namespace p
 {
 	////////////////////////////////
@@ -14,14 +18,11 @@ namespace p
 	template<typename Type>
 	struct IArray;
 
-	template<typename Type, u32 InlineCapacity>
-	struct TInlineArray;
+	template<typename Type, u32 InlineCapacity = P_ARRAY_DEFAULT_INLINECAPACITY>
+	struct TArray;
 
 	template<typename Type>
-	using TArray = TInlineArray<Type, 0>;
-
-	template<typename Type>
-	using TSmallArray = TInlineArray<Type, 5>;
+	using TSmallArray = TArray<Type, 5>;
 
 	template<typename Type>
 	struct TView;

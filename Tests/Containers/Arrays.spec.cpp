@@ -33,11 +33,11 @@ struct MoveType
 go_bandit([]() {
 	describe("Containers.InlineArray", []() {
 		it("Can initialize", [&]() {
-			TInlineArray<i32, 5> data1{};
-			TInlineArray<i32, 5> data2(3);
-			TInlineArray<i32, 5> data3{3, 3, 3, 3};
-			TInlineArray<i32, 5> data4(3, 1);
-			TInlineArray<i32, 5> data5(6, 1);
+			TArray<i32, 5> data1{};
+			TArray<i32, 5> data2(3);
+			TArray<i32, 5> data3{3, 3, 3, 3};
+			TArray<i32, 5> data4(3, 1);
+			TArray<i32, 5> data5(6, 1);
 
 			AssertThat(data1.Size(), Equals(0));
 			AssertThat(data1.Capacity(), Equals(0));
@@ -63,21 +63,21 @@ go_bandit([]() {
 
 		describe("Copy", []() {
 			it("Can copy empty", [&]() {
-				TInlineArray<i32, 5> source1{};
-				TInlineArray<i32, 5> target1 = source1;    // NOLINT
+				TArray<i32, 5> source1{};
+				TArray<i32, 5> target1 = source1;    // NOLINT
 				AssertThat(target1.Data(), Equals(nullptr));
 				AssertThat(target1.Size(), Equals(0));
 				AssertThat(target1.Capacity(), Equals(0));
-				TInlineArray<i32, 0> source2{};
-				TInlineArray<i32, 0> target2 = source2;    // NOLINT
+				TArray<i32, 0> source2{};
+				TArray<i32, 0> target2 = source2;    // NOLINT
 				AssertThat(target2.Data(), Equals(nullptr));
 				AssertThat(target2.Size(), Equals(0));
 				AssertThat(target2.Capacity(), Equals(0));
 			});
 
 			it("Can copy dynamic to dynamic", [&]() {
-				TInlineArray<i32, 5> source{3, 4, 5, 6, 7, 8};    // Not inline buffer
-				TInlineArray<i32, 5> target = source;
+				TArray<i32, 5> source{3, 4, 5, 6, 7, 8};    // Not inline buffer
+				TArray<i32, 5> target = source;
 				AssertThat(source.Size(), Equals(6));
 				AssertThat(source.Capacity(), Equals(6));
 				AssertThat(target.Size(), Equals(6));
@@ -91,8 +91,8 @@ go_bandit([]() {
 			});
 
 			it("Can copy inline to inline", [&]() {
-				TInlineArray<i32, 5> source{3, 4, 5, 6};    // Not inline buffer
-				TInlineArray<i32, 5> target;
+				TArray<i32, 5> source{3, 4, 5, 6};    // Not inline buffer
+				TArray<i32, 5> target;
 				target = source;
 				AssertThat(source.Size(), Equals(4));
 				AssertThat(source.Capacity(), Equals(5));
@@ -104,15 +104,15 @@ go_bandit([]() {
 				AssertThat(target[3], Equals(6));
 				AssertThat(source.Data(), Equals(source.GetInlineBuffer()));
 				AssertThat(target.Data(), Equals(target.GetInlineBuffer()));
-				TInlineArray<i32, 4> target2;    // Copy to a different size
+				TArray<i32, 4> target2;    // Copy to a different size
 				target2 = source;
 				AssertThat(source.Data(), Equals(source.GetInlineBuffer()));
 				AssertThat(target2.Data(), Equals(target2.GetInlineBuffer()));
 			});
 
 			it("Can copy dynamic to inline", [&]() {
-				TInlineArray<i32, 0> source{3, 4, 5, 6};    // Not inline buffer
-				TInlineArray<i32, 5> target;
+				TArray<i32, 0> source{3, 4, 5, 6};    // Not inline buffer
+				TArray<i32, 5> target;
 				target = source;
 				AssertThat(source.Size(), Equals(4));
 				AssertThat(source.Capacity(), Equals(4));
@@ -127,8 +127,8 @@ go_bandit([]() {
 			});
 
 			it("Can copy inline to dynamic", [&]() {
-				TInlineArray<i32, 5> source{3, 4, 5, 6};    // Not inline buffer
-				TInlineArray<i32, 0> target;
+				TArray<i32, 5> source{3, 4, 5, 6};    // Not inline buffer
+				TArray<i32, 0> target;
 				target = source;
 				AssertThat(source.Size(), Equals(4));
 				AssertThat(source.Capacity(), Equals(5));
@@ -145,28 +145,28 @@ go_bandit([]() {
 
 		describe("Move", []() {
 			it("Can move empty", [&]() {
-				TInlineArray<MoveType, 5> source1{};
-				TInlineArray<MoveType, 5> target1 = Move(source1);
+				TArray<MoveType, 5> source1{};
+				TArray<MoveType, 5> target1 = Move(source1);
 				AssertThat(target1.Data(), Equals(nullptr));
 				AssertThat(target1.Size(), Equals(0));
 				AssertThat(target1.Capacity(), Equals(0));
-				TInlineArray<MoveType, 0> source2{};
-				TInlineArray<MoveType, 0> target2 = Move(source2);
+				TArray<MoveType, 0> source2{};
+				TArray<MoveType, 0> target2 = Move(source2);
 				AssertThat(target2.Data(), Equals(nullptr));
 				AssertThat(target2.Size(), Equals(0));
 				AssertThat(target2.Capacity(), Equals(0));
 			});
 
 			it("Can move dynamic to dynamic", [&]() {
-				TInlineArray<MoveType, 5> source{};    // Not inline buffer
+				TArray<MoveType, 5> source{};    // Not inline buffer
 				source.Add(3);
 				source.Add(4);
 				source.Add(5);
 				source.Add(6);
 				source.Add(7);
 				source.Add(8);
-				MoveType* sourceData             = source.Data();
-				TInlineArray<MoveType, 5> target = Move(source);
+				MoveType* sourceData       = source.Data();
+				TArray<MoveType, 5> target = Move(source);
 				AssertThat(source.Size(), Equals(0));
 				AssertThat(source.Capacity(), Equals(0));
 				AssertThat(target.Size(), Equals(6));
@@ -179,17 +179,17 @@ go_bandit([]() {
 			});
 
 			it("Can move inline to inline", [&]() {
-				TInlineArray<MoveType, 5> source{};    // Not inline buffer
+				TArray<MoveType, 5> source{};    // Not inline buffer
 				source.Add(3);
 				source.Add(4);
 				source.Add(5);
 				source.Add(6);
-				TInlineArray<MoveType, 5> source2{};    // Not inline buffer
+				TArray<MoveType, 5> source2{};    // Not inline buffer
 				source2.Add(3);
 				source2.Add(4);
 				source2.Add(5);
 				source2.Add(6);
-				TInlineArray<MoveType, 5> target;
+				TArray<MoveType, 5> target;
 				target = Move(source);
 				AssertThat(source.Size(), Equals(0));
 				AssertThat(source.Capacity(), Equals(0));
@@ -199,20 +199,20 @@ go_bandit([]() {
 				AssertThat(target[3].value, Equals(6));
 				AssertThat(source.Data(), Equals(nullptr));
 				AssertThat(target.Data(), Equals(target.GetInlineBuffer()));
-				TInlineArray<MoveType, 4> target2;    // Copy to a different size
+				TArray<MoveType, 4> target2;    // Copy to a different size
 				target2 = Move(source2);
 				AssertThat(source2.Data(), Equals(nullptr));
 				AssertThat(target2.Data(), Equals(target2.GetInlineBuffer()));
 			});
 
 			it("Can move dynamic to inline", [&]() {
-				TInlineArray<MoveType, 0> source{};    // Not inline buffer
+				TArray<MoveType, 0> source{};    // Not inline buffer
 				source.Add(3);
 				source.Add(4);
 				source.Add(5);
 				source.Add(6);
 				MoveType* sourceData = source.Data();
-				TInlineArray<MoveType, 5> target;
+				TArray<MoveType, 5> target;
 				target = Move(source);
 				AssertThat(source.Size(), Equals(0));
 				AssertThat(source.Capacity(), Equals(0));
@@ -228,12 +228,12 @@ go_bandit([]() {
 			});
 
 			it("Can move inline to dynamic", [&]() {
-				TInlineArray<MoveType, 5> source{};    // Inline buffer
+				TArray<MoveType, 5> source{};    // Inline buffer
 				source.Add(3);
 				source.Add(4);
 				source.Add(5);
 				source.Add(6);
-				TInlineArray<MoveType, 0> target;
+				TArray<MoveType, 0> target;
 				target = Move(source);
 				AssertThat(source.Size(), Equals(0));
 				AssertThat(source.Capacity(), Equals(0));
@@ -249,9 +249,9 @@ go_bandit([]() {
 		});
 
 		it("Can access data", [&]() {
-			TInlineArray<i32, 0> data1;
-			TInlineArray<i32, 0> data2{1};
-			TInlineArray<i32, 4> data3{1};
+			TArray<i32, 0> data1;
+			TArray<i32, 0> data2{1};
+			TArray<i32, 4> data3{1};
 
 			AssertThat(data1.Data(), Equals(nullptr));
 			AssertThat(data2.Data(), !Equals(nullptr));
@@ -260,7 +260,7 @@ go_bandit([]() {
 
 		describe("Add", []() {
 			it("Can add to dynamic", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Reserve(2);    // Reserve because we are not testing reallocation here
 				data.Add(3);
 				AssertThat(data.Size(), Equals(1));
@@ -271,7 +271,7 @@ go_bandit([]() {
 			});
 
 			it("Can add to inline", [&]() {
-				TInlineArray<i32, 2> data;
+				TArray<i32, 2> data;
 				data.Add(3);
 				AssertThat(data.Size(), Equals(1));
 				AssertThat(data[0], Equals(3));
@@ -281,7 +281,7 @@ go_bandit([]() {
 			});
 
 			it("Can add to correct buffers", [&]() {
-				TInlineArray<i32, 2> data;
+				TArray<i32, 2> data;
 				data.Add(3);
 				data.Add(4);
 				AssertThat(data.Data(), Equals(data.GetInlineBuffer()));
@@ -294,7 +294,7 @@ go_bandit([]() {
 			});
 
 			it("Can add value by move", [&]() {
-				TInlineArray<MoveType, 0> data;
+				TArray<MoveType, 0> data;
 				MoveType tmp{2};
 				data.Add(Move(tmp));
 				data.Add(MoveType{3});
@@ -304,7 +304,7 @@ go_bandit([]() {
 			});
 
 			it("Can add value by copy", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				i32 tmp = 2;
 				data.Add(tmp);
 				data.Add(3);
@@ -314,7 +314,7 @@ go_bandit([]() {
 			});
 
 			it("Can add defaulted", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Add();
 				AssertThat(data[0], Equals(0));
 			});
@@ -322,7 +322,7 @@ go_bandit([]() {
 
 		describe("Append", []() {
 			it("Can append defaulted", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Append(2);
 				AssertThat(data.Size(), Equals(2));
 				AssertThat(data[0], Equals(0));
@@ -336,7 +336,7 @@ go_bandit([]() {
 			});
 
 			it("Can append value", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Append(2, 234);
 				AssertThat(data.Size(), Equals(2));
 				AssertThat(data[0], Equals(234));
@@ -350,7 +350,7 @@ go_bandit([]() {
 			});
 
 			it("Can assign multiple values", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				i32 buffer[]{24, 53};
 				i32 buffer2[]{74, 51};
 				data.Append(buffer, 2);
@@ -366,7 +366,7 @@ go_bandit([]() {
 			});
 
 			it("Can append to dynamic", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Reserve(2);    // Reserve because we are not testing reallocation here
 				data.Append(2, 33);
 				AssertThat(data.Size(), Equals(2));
@@ -376,7 +376,7 @@ go_bandit([]() {
 			});
 
 			it("Can assign to inline", [&]() {
-				TInlineArray<i32, 4> data;
+				TArray<i32, 4> data;
 				data.Reserve(2);    // Reserve because we are not testing reallocation here
 				data.Append(2, 33);
 				AssertThat(data.Size(), Equals(2));
@@ -388,7 +388,7 @@ go_bandit([]() {
 
 		describe("Assign", []() {
 			it("Can assign defaulted", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Assign(2);
 				AssertThat(data.Size(), Equals(2));
 				AssertThat(data[0], Equals(0));
@@ -402,7 +402,7 @@ go_bandit([]() {
 			});
 
 			it("Can assign value", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Assign(2, 234);
 				AssertThat(data.Size(), Equals(2));
 				AssertThat(data[0], Equals(234));
@@ -416,7 +416,7 @@ go_bandit([]() {
 			});
 
 			it("Can assign multiple values", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				i32 buffer[]{24, 53};
 				i32 buffer2[]{74, 51};
 				data.Assign(buffer, 2);
@@ -432,7 +432,7 @@ go_bandit([]() {
 			});
 
 			it("Can assign to dynamic", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Reserve(2);    // Reserve because we are not testing reallocation here
 				data.Assign(2, 33);
 				AssertThat(data.Size(), Equals(2));
@@ -442,7 +442,7 @@ go_bandit([]() {
 			});
 
 			it("Can assign to inline", [&]() {
-				TInlineArray<i32, 4> data;
+				TArray<i32, 4> data;
 				data.Reserve(2);    // Reserve because we are not testing reallocation here
 				data.Assign(2, 33);
 				AssertThat(data.Size(), Equals(2));
@@ -454,7 +454,7 @@ go_bandit([]() {
 
 		describe("Insert", []() {
 			it("Can insert at empty", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Insert(0, 12);
 				AssertThat(data.Size(), Equals(1));
 				AssertThat(data[0], Equals(12));
@@ -465,14 +465,14 @@ go_bandit([]() {
 			});
 
 			it("Can insert at end", [&]() {
-				TInlineArray<i32, 0> data{12, 34};
+				TArray<i32, 0> data{12, 34};
 				data.Insert(2, 12);
 				AssertThat(data.Size(), Equals(3));
 				AssertThat(data[2], Equals(12));
 			});
 
 			it("Can insert to inline", [&]() {
-				TInlineArray<i32, 4> data;
+				TArray<i32, 4> data;
 				data.Insert(0, 12);
 				data.Insert(0, 21);
 				AssertThat(data.Size(), Equals(2));
@@ -480,7 +480,7 @@ go_bandit([]() {
 			});
 
 			it("Can insert copied value", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Insert(0, 32);    // Insert at empty
 				AssertThat(data.Size(), Equals(1));
 				AssertThat(data[0], Equals(32));
@@ -501,7 +501,7 @@ go_bandit([]() {
 			});
 
 			it("Can insert many values", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				data.Insert(0, 2, 32);    // Insert at empty
 				AssertThat(data.Size(), Equals(2));
 				AssertThat(data[0], Equals(32));
@@ -526,7 +526,7 @@ go_bandit([]() {
 			});
 
 			it("Can insert moved value", [&]() {
-				TInlineArray<MoveType, 0> data;
+				TArray<MoveType, 0> data;
 				MoveType tmp{34};
 				data.Insert(0, Move(tmp));    // Insert at empty
 				AssertThat(data.Size(), Equals(1));
@@ -555,7 +555,7 @@ go_bandit([]() {
 			});
 
 			it("Can insert buffer", [&]() {
-				TInlineArray<i32, 0> data;
+				TArray<i32, 0> data;
 				i32 src[]{34, 23, 844};
 				data.Insert(0, src, 3);    // Insert at empty
 				AssertThat(data.Size(), Equals(3));
@@ -591,24 +591,24 @@ go_bandit([]() {
 
 		describe("Remove", []() {
 			it("Can remove at index", []() {
-				TInlineArray<i32, 0> data{1, 2, 3, 4};
+				TArray<i32, 0> data{1, 2, 3, 4};
 
 				// Check invalid inputs
 				AssertThat(data.RemoveAt(-1), Equals(false));
 				AssertThat(data.RemoveAt(4), Equals(false));
 
 				AssertThat(data.RemoveAt(3), Equals(true));    // Remove last
-				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3}));
+				AssertThat(data, Equals(TArray<i32, 0>{1, 2, 3}));
 
 				AssertThat(data.RemoveAt(1), Equals(true));    // Remove in the middle
-				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 3}));
+				AssertThat(data, Equals(TArray<i32, 0>{1, 3}));
 
 				AssertThat(data.RemoveAt(0), Equals(true));    // remove first
-				AssertThat(data, Equals(TInlineArray<i32, 0>{3}));
+				AssertThat(data, Equals(TArray<i32, 0>{3}));
 			});
 
 			it("Can remove many at index", []() {
-				TInlineArray<i32, 0> data{1, 2, 3, 4, 5, 6, 7, 8};
+				TArray<i32, 0> data{1, 2, 3, 4, 5, 6, 7, 8};
 
 				// Check invalid inputs
 				AssertThat(data.RemoveAt(-1, 2), Equals(false));
@@ -616,34 +616,34 @@ go_bandit([]() {
 				AssertThat(data.RemoveAt(7, 2), Equals(false));
 
 				AssertThat(data.RemoveAt(6, 2), Equals(true));    // Remove last
-				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3, 4, 5, 6}));
+				AssertThat(data, Equals(TArray<i32, 0>{1, 2, 3, 4, 5, 6}));
 
 				AssertThat(data.RemoveAt(2, 2), Equals(true));    // Remove in the middle
-				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 5, 6}));
+				AssertThat(data, Equals(TArray<i32, 0>{1, 2, 5, 6}));
 
 				AssertThat(data.RemoveAt(0, 2), Equals(true));    // Remove first
-				AssertThat(data, Equals(TInlineArray<i32, 0>{5, 6}));
+				AssertThat(data, Equals(TArray<i32, 0>{5, 6}));
 			});
 
 			it("Can remove swap at index", []() {
-				TInlineArray<i32, 0> data{1, 2, 3, 4, 5};
+				TArray<i32, 0> data{1, 2, 3, 4, 5};
 
 				// Check invalid inputs
 				AssertThat(data.RemoveAtSwap(-1), Equals(false));
 				AssertThat(data.RemoveAtSwap(5), Equals(false));
 
 				AssertThat(data.RemoveAtSwap(3), Equals(true));    // Remove last
-				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3, 5}));
+				AssertThat(data, Equals(TArray<i32, 0>{1, 2, 3, 5}));
 
 				AssertThat(data.RemoveAtSwap(1), Equals(true));    // Remove swapping
-				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 5, 3}));
+				AssertThat(data, Equals(TArray<i32, 0>{1, 5, 3}));
 
 				AssertThat(data.RemoveAtSwap(0), Equals(true));    // Remove first
-				AssertThat(data, Equals(TInlineArray<i32, 0>{3, 5}));
+				AssertThat(data, Equals(TArray<i32, 0>{3, 5}));
 			});
 
 			it("Can remove swap many at index", []() {
-				TInlineArray<i32, 0> data{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+				TArray<i32, 0> data{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 				// Check invalid inputs
 				AssertThat(data.RemoveAtSwap(-1, 2), Equals(false));
@@ -651,17 +651,17 @@ go_bandit([]() {
 				AssertThat(data.RemoveAtSwap(9, 2), Equals(false));
 
 				AssertThat(data.RemoveAtSwap(8, 2), Equals(true));    // Remove last
-				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 2, 3, 4, 5, 6, 7, 8}));
+				AssertThat(data, Equals(TArray<i32, 0>{1, 2, 3, 4, 5, 6, 7, 8}));
 
 				AssertThat(data.RemoveAtSwap(1, 2), Equals(true));    // Removes swapping
-				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 7, 8, 4, 5, 6}));
+				AssertThat(data, Equals(TArray<i32, 0>{1, 7, 8, 4, 5, 6}));
 
 				AssertThat(
 				    data.RemoveAtSwap(1, 3), Equals(true));    // Removes swapping with less left
-				AssertThat(data, Equals(TInlineArray<i32, 0>{1, 5, 6}));
+				AssertThat(data, Equals(TArray<i32, 0>{1, 5, 6}));
 
 				AssertThat(data.RemoveAtSwap(0, 2), Equals(true));    // Remove first
-				AssertThat(data, Equals(TInlineArray<i32, 0>{6}));
+				AssertThat(data, Equals(TArray<i32, 0>{6}));
 			});
 
 			it("Can RemoveLast", [&]() {
@@ -751,14 +751,15 @@ go_bandit([]() {
 
 		describe("Iterate", []() {
 			it("Can iterate empty", [&]() {
-				TInlineArray<i32, 5> data1{};
+				TArray<i32, 5> data1{};
 				i32 counter = 0;
 				for (i32 v : data1)
 				{
 					++counter;
 				}
+
 				AssertThat(counter, Equals(0));
-				TArray<i32> data2{};
+				TArray<i32, 0> data2{};    // Without inline capacity
 				counter = 0;
 				for (i32 v : data2)
 				{
@@ -767,14 +768,25 @@ go_bandit([]() {
 				AssertThat(counter, Equals(0));
 			});
 
-			it("Can iterate empty", [&]() {
-				TInlineArray<i32, 5> data{};
+			it("Can iterate non empty", [&]() {
+				TArray<i32, 5> data{1, 3, 4};
+				const i32 mirror[]{1, 3, 4};
 				i32 counter = 0;
 				for (i32 v : data)
 				{
+					AssertThat(v, Equals(mirror[counter]));
 					++counter;
 				}
-				AssertThat(counter, Equals(0));
+				AssertThat(counter, Equals(3));
+
+				TArray<i32, 0> data{1, 3, 4};    // Without inline capacity
+				counter = 0;
+				for (i32 v : data)
+				{
+					AssertThat(v, Equals(mirror[counter]));
+					++counter;
+				}
+				AssertThat(counter, Equals(3));
 			});
 		});
 	});

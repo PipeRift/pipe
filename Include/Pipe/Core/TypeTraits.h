@@ -308,7 +308,7 @@ namespace p
 	struct IArray;
 
 	template<typename Type, u32 InlineCapacity>
-	struct TInlineArray;
+	struct TArray;
 	template<typename Key, typename Value>
 	class TMap;
 
@@ -326,7 +326,7 @@ namespace p
 		// Check if we are dealing with a TArray
 		if constexpr (HasItemTypeMember<T> && HasInlineCapacityMember<T>::value)
 		{
-			return Derived<T, TInlineArray<typename T::ItemType, T::inlineCapacity>>;
+			return Derived<T, TArray<typename T::ItemType, T::inlineCapacity>>;
 		}
 		return false;
 	}

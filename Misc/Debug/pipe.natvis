@@ -13,7 +13,7 @@ https://docs.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-na
 -->
 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-    <Type Name="p::TInlineArray&lt;*,*&gt;">
+    <Type Name="p::TArray&lt;*,*&gt;">
         <DisplayString>{{size={size} capacity={capacity}}}</DisplayString>
         <Expand>
             <Item Name="size">size</Item>

@@ -6,15 +6,11 @@
 #include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
+#include "PipeArraysFwd.h"
 
 
 namespace p
 {
-
-	template<typename Type, u32 InlineCapacity>
-	struct TInlineArray;
-
-
 #pragma region Memory Ops
 	namespace Details
 	{
@@ -503,7 +499,7 @@ namespace p
 		{
 			return 0;
 		}
-		virtual void GetBlocks(TInlineArray<ArenaBlock, 0>& /**outBlocks*/) const {}
+		virtual void GetBlocks(TArray<ArenaBlock>& /**outBlocks*/) const {}
 
 		virtual const struct MemoryStats* GetStats() const
 		{
