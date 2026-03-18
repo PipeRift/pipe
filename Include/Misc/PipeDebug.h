@@ -665,18 +665,7 @@ namespace p
 		{
 			static p::String idText;
 			idText.clear();
-			if (id == NoId)
-			{
-				idText = "Invalid";
-			}
-			else if (auto version = id.GetVersion(); version > 0)
-			{
-				p::Strings::FormatTo(idText, "{}:{}", id.GetIndex(), version);
-			}
-			else
-			{
-				p::Strings::FormatTo(idText, "{}", id.GetIndex());
-			}
+			ToString(id, idText);
 
 			if (!ecsDbg.filter.PassFilter(idText.c_str(), idText.c_str() + idText.size()))
 			{

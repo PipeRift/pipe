@@ -149,13 +149,27 @@ namespace p
 		return id.GetVersion() == NoIdVersion;
 	}
 
-	inline String ToString(Id id)
+	inline void ToString(Id id, String& str)
 	{
 		if (id == NoId)
 		{
-			return "NoId";
+			str = "NoId";
 		}
-		return Strings::Format("{}:{}", id.GetIndex(), id.GetVersion());
+		else if (auto version = id.GetVersion(); version > 0)
+		{
+			Strings::FormatTo(str, "{}:{}", id.GetIndex(), version);
+		}
+		else
+		{
+			Strings::FormatTo(str, "{}", id.GetIndex());
+		}
+	}
+
+	inline String ToString(Id id)
+	{
+		String str;
+		ToString(id, str);
+		return str;
 	}
 
 	/**
@@ -1188,9 +1202,10 @@ namespace p
 		}
 
 		template<typename Component>
-		i32 Size() const
+		i32 PoolSize() const
 		{
-			return GetPool<const Component>()->Size();
+			const auto* pool = GetPool<const Component>();
+			return pool ? pool->Size() : 0;
 		}
 
 		bool IsValid(Id id) const
