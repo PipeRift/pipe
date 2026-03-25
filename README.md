@@ -61,11 +61,13 @@ If you feel a feature should be added feel free to propose it [creating an issue
 - Time and Duration
 
 #### ECS
- - ECS library using other modules
+ - ECS library using other Pipe modules
  - Context: An instance of ECS with its entities, components and statics
  - Components: One instance per entity
  - Statics: Unique instances of a type
  - Integration with reflection
+
+See [ECS Documentation](Docs/PipeECS.md).
 
 
 ## Software Quality
