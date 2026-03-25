@@ -10,7 +10,7 @@ Of *Entity-Component-System*, Pipe has **Ids** (*entities*) and **Components** (
 It does not implement or dictate any specific way to do logic (*systems*).
 However, it does provide efficient filtering and iteration of ids that you can use in your logic.
 
-![[Assets/Architecture.png]]
+![Architecture](Assets/Architecture.png)
 As you can see above, each **id** can have one or more **components**.
 In the example:
 - Id **0** has **Location**, **Velocity** and **Player**.
@@ -21,7 +21,7 @@ In the example:
 Each component type is stored closely together in a "**pool**". This makes iteration and reads/writes very performant, specially compared to traditional OOP.
 
 If we think about it as memory, its closer to this:
-![[Architecture-Memory.png]]
+![Architecture Memory](Assets/Architecture-Memory.png)
 Ids are stored together in memory, and pools do the same.
 
 ### Id Context
