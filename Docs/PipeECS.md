@@ -142,18 +142,18 @@ p::FindAllIdsWithAny<Location, Velocity>(context);
 // We can exclude:
 // Ids that have Location and Velocity but don't have Player
 p::TArray<p::Id> playersToMove = p::FindAllIdsWith<Location, Velocity>(context);
-p::ExcludeIdsWithout<Player>(context, ids); //
+p::ExcludeIdsWithout<Player>(context, ids); // Keep ids with Player
 ```
 
 There are many functions available:
 
-|            | FindAll                                      | Find                        | Exclude                        | Extract                        |     |
-| ---------- | -------------------------------------------- | --------------------------- | ------------------------------ | ------------------------------ | --- |
-| With       | FindAllIdsWith                               | FindIdsWith                 | ExcludeIdsWith                 | ExtractIdsWith                 |     |
-| With Any   | FindAllIdsWithAny<br>FindAllIdsWithAnyUnique | FindIdsWithAny<br>(TODO)    | ExcludeIdsWithAny<br>(TODO)    | ExtractIdsWithAny<br>(TODO)    |     |
-| Without    |                                              | FindIdsWithout              | ExcludeIdsWithout              | ExtractIdsWithout              |     |
-| WithoutAny |                                              | FindIdsWithoutAny<br>(TODO) | ExcludeIdsWithoutAny<br>(TODO) | ExtractIdsWithoutAny<br>(TODO) |     |
-| Invalid    |                                              |                             | ExcludeIdsInvalid              |                                |     |
+|            | FindAll                                      | Find                        | Exclude                        | Extract                        |
+| ---------- | -------------------------------------------- | --------------------------- | ------------------------------ | ------------------------------ |
+| With       | FindAllIdsWith                               | FindIdsWith                 | ExcludeIdsWith                 | ExtractIdsWith                 |
+| With Any   | FindAllIdsWithAny<br>FindAllIdsWithAnyUnique | FindIdsWithAny<br>(TODO)    | ExcludeIdsWithAny<br>(TODO)    | ExtractIdsWithAny<br>(TODO)    |
+| Without    |                                              | FindIdsWithout              | ExcludeIdsWithout              | ExtractIdsWithout              |
+| WithoutAny |                                              | FindIdsWithoutAny<br>(TODO) | ExcludeIdsWithoutAny<br>(TODO) | ExtractIdsWithoutAny<br>(TODO) |
+| Invalid    |                                              |                             | ExcludeIdsInvalid              |                                |
 Some other functions to mention:
 - GetFirstIdWith()
 - context.GetAllIds() (TODO)
