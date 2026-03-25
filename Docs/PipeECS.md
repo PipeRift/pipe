@@ -33,16 +33,16 @@ They can be easily copied, serialized, subset, etc.
 ### Id Scope
 **Scopes** represent guaranteed access to a subset of component pools of a **Context** or of another **Scope**.
 
-This means while with the context you can work with any component. In an scope you are limited to a few.
+This means while with the context you can work with any component. In a scope you are limited to a few.
 
 Some examples:
-- An scope that can **read** *Location* and *Velocity* **can't read** *Player*.
-- An scope that can **write** *Location* **can read** *Location*.
-- An scope that can **read** *Location* **can't write** *Location*.
+- A scope that can **read** *Location* and *Velocity* **can't read** *Player*.
+- A scope that can **write** *Location* **can read** *Location*.
+- A scope that can **read** *Location* **can't write** *Location*.
 
 In the case of a Scope being a **subset of another Scope**, it simply doesn't allow the use of components that are not in the parent.
-- An scope that can **read** *Location* **can't** have a parent that **can't read or write** *Velocity*.
-- An scope that can **read** *Location* **can't** have a parent that **can't read or write** *Velocity*.
+- A scope that can **read** *Location* **can't** have a parent that **can't read or write** *Velocity*.
+- A scope that can **read** *Location* **can't** have a parent that **can't read or write** *Velocity*.
 
 As to why we need scopes, two main reasons:  **Performance** and **Thread-safety**
 - Scopes **increase performance (significantly)** by caching the pools they can read or write.
@@ -91,16 +91,16 @@ context.Remove<Location>(id); // Removes component
 ```cpp
 p::IdContext context;
 
-// An scope that can READ Location
+// Scope that can READ Location
 p::TScope<Location> scope1(context);
 
-// An scope that can READ Location and Velocity
+// Scope that can READ Location and Velocity
 p::TScope<Location, Velocity> scope2(context);
 
-// An scope that can WRITE Location, and READ Location and Velocity
+// Scope that can WRITE Location, and READ Location and Velocity
 p::TScope<p::Writes<Location>, Velocity> scope3(context);
 
-// An scope that can WRITE or READ Location and Velocity
+// Scope that can WRITE or READ Location and Velocity
 p::TScope<p::Writes<Location, Velocity>> scope4(context);
 ```
 
