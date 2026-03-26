@@ -6,6 +6,7 @@ This Pipe module contains a complete [ECS](https://en.wikipedia.org/wiki/Entity_
 There are similarities with other well-known ECS systems like [entt](https://github.com/skypjack/entt) but this implementation has some key differences.
 ## Architecture
 Of *Entity-Component-System*, Pipe has **Ids** (*entities*) and **Components** (*components*).
+Ids are identifiers without data, and Components are data structures bound to an Id.
 
 It does not implement or dictate any specific way to do logic (*systems*).
 However, it does provide efficient filtering and iteration of ids that you can use in your logic.
@@ -22,7 +23,7 @@ Each component type is stored closely together in a "**pool**". This makes itera
 
 If we think about it as memory, its closer to this:
 ![Architecture Memory](Assets/Architecture-Memory.png)
-Ids are stored together in memory, and pools do the same.
+Ids are stored together in memory. Each pool does the same.
 
 ### Id Context
 Think of the **Id Context** as the "*world*" or the "*registry*" of ECS. It owns ids and all their components.
@@ -33,7 +34,7 @@ They can be easily copied, serialized, subset, etc.
 ### Id Scope
 **Scopes** represent guaranteed access to a subset of component pools of a **Context** or of another **Scope**.
 
-This means while with the context you can work with any component. In a scope you are limited to a few.
+This means that while with the context you can work with any component, with a scope you are intentionally limited to a few.
 
 Some examples:
 - A scope that can **read** *Location* and *Velocity* **can't read** *Player*.
@@ -52,13 +53,13 @@ As to why we need scopes, two main reasons:  **Performance** and **Thread-safety
 > Scopes do NOT iterate ids! See [Filtering](#Filtering).
 
 ### Filtering
-Filtering is done by combining an extensive list of functions that use contexts and scopes to efficiently get a list of ids to iterate and work with.
+Filtering is done by combining an extensive set of functions that use contexts and scopes to efficiently get a list of ids to iterate and work with.
 
-For filtering we simply process an array of ids in whatever way we need.
-It does only that.
+So, filtering is simply processing an array of ids in whatever way we need.
+Just that.
 
-For example, find ids that have Location and Velocity and iterate them to *apply movement*.
-But then I exclude those that are not players, and iterate again to *notify players that have moved*.
+For example: Find ids that have Location and Velocity and iterate them to *apply movement*.
+Then, exclude those that are not players, and iterate again to *notify players that have moved*.
 
 ## Quick Start
 
