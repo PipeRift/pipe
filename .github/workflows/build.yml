@@ -44,21 +44,10 @@ jobs:
       - name: Setup Cpp
         uses: aminya/setup-cpp@v1
         with:
-          # Skip compiler setup for macos clang
-          compiler: ${{ (contains(matrix.os, 'macos') && contains(matrix.compiler, 'clang')) && '' || matrix.compiler }}
+          compiler: ${{ matrix.compiler }}
           vcvarsall: ${{ contains(matrix.os, 'windows') }}
           cmake: true
           ninja: true
-
-      - name: (MacOS) Install clang through brew
-        if: contains(matrix.os, 'macos') && contains(matrix.compiler, 'clang')
-        run: |
-          brew install llvm@19
-          export LLVM_DIR="$(brew --prefix llvm@19)/lib/cmake"
-          echo "CC=$(brew --prefix llvm@19)/bin/clang" >> $GITHUB_ENV
-          echo "CXX=$(brew --prefix llvm@19)/bin/clang++" >> $GITHUB_ENV
-          echo "$(brew --prefix llvm@19/bin" >> $GITHUB_PATH
-          brew link --overwrite llvm@19
 
       - name: Cache Build
         uses: actions/cache@v4
