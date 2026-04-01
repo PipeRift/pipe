@@ -739,7 +739,11 @@ namespace p
 	// ARRAYS
 	//
 
-	/** An array type with a fixed amount of elements. */
+	/** An Array contains a dynamic list of elements stored in a single block of memory.
+	 * @param Type of the elements stored in the array
+	 * @param InlineCapacity (default 0) refers to the maximum size to which data will be stored
+	 * inside the array itself (instead of allocated)
+	 */
 	template<typename Type, u32 InlineCapacity>
 	struct TArray : public IArray<Type>
 	{
@@ -1727,6 +1731,11 @@ namespace p
 	};
 
 
+	/** A View points to one or more elements contiguous in memory, usually from an array.
+	 * References may also become views of size 1.
+	 * Elements can't be added or removed, but they can be read, modified, sorted, searched, etc.
+	 * @param Type of the elements stored in the view
+	 */
 	template<typename Type>
 	struct TView : public IArray<Type>
 	{
@@ -1837,6 +1846,175 @@ namespace p
 			return LastUnsafe(n);
 		}
 #pragma endregion Subviews
+	};
+
+
+	class PIPE_API BitArray
+	{
+	private:
+		/** The number of bits in this bit array */
+		i32 size = 0;
+		TArray<u32> bits;
+
+
+	public:
+		BitArray() = default;
+		BitArray(i32 newSize);
+		BitArray(i32 newSize, bool value);
+		BitArray(u32* data, i32 newSize);
+		BitArray(Arena& arena) : bits(arena) {}
+		BitArray(Arena& arena, i32 newSize);
+		BitArray(Arena& arena, i32 newSize, bool value);
+		BitArray(Arena& arena, u32* data, i32 newSize);
+
+		BitArray(BitArray&& other) noexcept;
+		BitArray(const BitArray& other);
+		BitArray& operator=(BitArray&& other) noexcept;
+		BitArray& operator=(const BitArray& other);
+
+		/** @return true if a bit is set */
+		bool IsSet(i32 index) const;
+
+		// Set all bits in this array
+		void SetAllTrue();
+
+		// Clear all bits in this array
+		void SetAllFalse();
+
+		// Set all bits in this array to value
+		void SetAll(bool value);
+
+		// Set a single bit
+		void SetTrue(i32 index);
+
+		// Clear a single bit
+		void SetFalse(i32 index);
+
+		void Set(i32 index, bool value);
+
+		// Flip a single bit
+		void Flip(i32 index)
+		{
+			Set(index, !IsSet(index));
+		};
+
+		// Fill with a 32-bit pattern
+		void FillBitArray(u32 pattern);
+
+		void Resize(i32 newSize, const bool shouldShrink = true);
+
+		void Resize(i32 newSize, bool value, const bool shouldShrink = true);
+
+		void Clear();
+
+		// Returns index of next set bit in array (wraps around)
+		i32 GetNextSet(i32 index) const;
+
+		// @return index of previous set bit in array (wraps around)
+		i32 GetPreviousSet(i32 index) const;
+
+		/**
+		 * Count the number of set bits in this array  FromIndex <= bit < ToIndex
+		 */
+		i32 CountSetBits(i32 fromIndex = 0, i32 toIndex = NO_INDEX) const;
+
+		// @return the number of bits in this bit array
+		i32 Size() const
+		{
+			return size;
+		}
+		// @return the number of bits reserved on the buffer
+		i32 Capacity() const
+		{
+			return bits.Capacity() * i32(sizeof(i32)) * 8;
+		}
+
+		/** @return true if index is contained on the bit array */
+		bool IsValidIndex(i32 index) const
+		{
+			return index != NO_INDEX && index < Size();
+		}
+
+		/** @return true if a bit is set */
+		bool IsEmpty() const
+		{
+			return Size() <= 0;
+		}
+
+		bool operator[](i32 index) const
+		{
+			return IsSet(index);
+		}
+
+		BitArray operator~()
+		{
+			BitArray result(size);
+			for (i32 i = 0; i < bits.Size(); ++i)
+			{
+				result.bits[i] = ~bits[i];
+			}
+			return result;
+		}
+		BitArray& operator^=(const BitArray& other)
+		{
+			const i32 minSize = bits.Size() < other.bits.Size() ? bits.Size() : other.bits.Size();
+			for (i32 i = 0; i < minSize; ++i)
+			{
+				bits[i] ^= other.bits[i];
+			}
+			return *this;
+		}
+
+		BitArray& operator&=(const BitArray& other)
+		{
+			const i32 minSize = bits.Size() < other.bits.Size() ? bits.Size() : other.bits.Size();
+			for (i32 i = 0; i < minSize; ++i)
+			{
+				bits[i] &= other.bits[i];
+			}
+			return *this;
+		}
+		BitArray& operator|=(const BitArray& other)
+		{
+			const i32 minSize = bits.Size() < other.bits.Size() ? bits.Size() : other.bits.Size();
+			for (i32 i = 0; i < minSize; ++i)
+			{
+				bits[i] |= other.bits[i];
+			}
+			return *this;
+		}
+		BitArray operator^(const BitArray& other)
+		{
+			BitArray result((size < other.size) ? size : other.size);
+			for (i32 i = 0; i < result.bits.Size(); ++i)
+			{
+				result.bits[i] = bits[i] ^ other.bits[i];
+			}
+			return result;
+		}
+		BitArray operator&(const BitArray& other)
+		{
+			BitArray result((size < other.size) ? size : other.size);
+			for (i32 i = 0; i < result.bits.Size(); ++i)
+			{
+				result.bits[i] = bits[i] & other.bits[i];
+			}
+			return result;
+		}
+		BitArray operator|(const BitArray& other)
+		{
+			BitArray result((size < other.size) ? size : other.size);
+			for (i32 i = 0; i < result.bits.Size(); ++i)
+			{
+				result.bits[i] = bits[i] | other.bits[i];
+			}
+			return result;
+		}
+
+		static constexpr i32 CalculateDataSize(i32 bitSize)
+		{
+			return ((bitSize - 1) >> 5) + 1;
+		}
 	};
 
 

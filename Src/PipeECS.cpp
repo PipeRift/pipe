@@ -860,9 +860,57 @@ namespace p
 		    shouldShrink);
 	}
 
+	void ExcludeIdsWithoutAny(
+	    TView<const IPool* const> pools, TArray<Id>& ids, const bool shouldShrink)
+	{
+		BitArray hasCounts{ids.Size()};
+		for (auto* pool : pools)
+		{
+			for (i32 i = 0; i < ids.Size(); ++i)
+			{
+				if (!hasCounts.IsSet(i) && pool->Has(ids[i]))
+				{
+					hasCounts.SetTrue(i);
+				}
+			}
+		}
+
+		for (i32 i = ids.Size() - 1; i >= 0; --i)
+		{
+			if (hasCounts.IsSet(i))
+			{
+				ids.RemoveAtSwapUnsafe(i);
+			}
+		}
+	}
+
+	void ExcludeIdsWithoutAnyStable(
+	    TView<const IPool* const> pools, TArray<Id>& ids, const bool shouldShrink)
+	{
+		BitArray hasCounts{ids.Size()};
+		for (auto* pool : pools)
+		{
+			for (i32 i = 0; i < ids.Size(); ++i)
+			{
+				if (!hasCounts.IsSet(i) && pool->Has(ids[i]))
+				{
+					hasCounts.SetTrue(i);
+				}
+			}
+		}
+
+		for (i32 i = ids.Size() - 1; i >= 0; --i)
+		{
+			if (hasCounts.IsSet(i))
+			{
+				ids.RemoveAtUnsafe(i);
+			}
+		}
+	}
+
 	void FindIdsWith(const IPool* pool, TView<const Id> source, TArray<Id>& results)
 	{
-		if (pool)
+		if (pool) [[likely]]
 		{
 			results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 			for (Id id : source)
@@ -874,18 +922,24 @@ namespace p
 			}
 		}
 	}
+
 	void FindIdsWith(TView<const IPool* const> pools, TView<const Id> source, TArray<Id>& results)
 	{
-		FindIdsWith(pools.First(), source, results);
-		for (i32 i = 1; i < pools.Size(); ++i)
+		const i32 smallestIdx     = GetSmallestPool(pools);
+		const IPool* smallestPool = pools[smallestIdx];
+		FindIdsWith(smallestPool, source, results);
+		for (i32 i = 0; i < pools.Size(); ++i)
 		{
-			ExcludeIdsWithout(pools[i], results, false);
+			if (i != smallestIdx)
+			{
+				ExcludeIdsWithout(pools[i], results, false);
+			}
 		}
 	}
 
 	void FindIdsWithout(const IPool* pool, TView<const Id> source, TArray<Id>& results)
 	{
-		if (pool)
+		if (pool) [[likely]]
 		{
 			results.ReserveMore(source.Size());
 			for (Id id : source)
@@ -1021,7 +1075,7 @@ namespace p
 
 		for (const IPool* pool : pools)
 		{
-			if (pool)
+			if (pool) [[likely]]
 			{
 				ids.Append(pool->begin(), pool->end());
 			}
@@ -1036,20 +1090,10 @@ namespace p
 			return;
 		}
 
-		i32 maxPossibleSize = 0;
-		for (const IPool* pool : pools)
-		{
-			if (pool)
-			{
-				maxPossibleSize += pool->Size();
-			}
-		}
-
 		TSet<Id> idsSet;
-		idsSet.Reserve(maxPossibleSize);
 		for (const IPool* pool : pools)
 		{
-			if (pool)
+			if (pool) [[likely]]
 			{
 				for (Id id : *pool)
 				{

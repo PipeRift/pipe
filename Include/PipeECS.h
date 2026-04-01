@@ -1834,20 +1834,26 @@ namespace p
 //
 #pragma region Filtering
 
-	/** Remove ids containing a component from 'ids'. Does not guarantee order. */
-	P_API void ExcludeIdsWith(const IPool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	/** Remove ids containing a component. Does not guarantee order. */
+	P_API void ExcludeIdsWith(const IPool* pool, TArray<Id>& ids, const bool shouldShrink = false);
 
-	/** Remove ids containing a component from 'ids'. Guarantees order. */
+	/** Remove ids containing a component. Guarantees order. */
 	P_API void ExcludeIdsWithStable(
-	    const IPool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	    const IPool* pool, TArray<Id>& ids, const bool shouldShrink = false);
 
-	/** Remove ids NOT containing a component from 'ids'. Does not guarantee order. */
+	/** Remove ids NOT containing a component. Does not guarantee order. */
 	P_API void ExcludeIdsWithout(
-	    const IPool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	    const IPool* pool, TArray<Id>& ids, const bool shouldShrink = false);
 
-	/** Remove ids NOT containing a component from 'ids'. Guarantees order. */
+	/** Remove ids NOT containing a component. Guarantees order. */
 	P_API void ExcludeIdsWithoutStable(
-	    const IPool* pool, TArray<Id>& ids, const bool shouldShrink = true);
+	    const IPool* pool, TArray<Id>& ids, const bool shouldShrink = false);
+
+	P_API void ExcludeIdsWithoutAny(
+	    TView<const IPool* const> pools, TArray<Id>& ids, const bool shouldShrink = false);
+
+	P_API void ExcludeIdsWithoutAnyStable(
+	    TView<const IPool* const> pools, TArray<Id>& ids, const bool shouldShrink = false);
 
 
 	/** Find ids containing a component from a list 'source' into 'results'. */
@@ -1863,29 +1869,29 @@ namespace p
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Does not guarantee order.
 	 */
-	P_API void ExtractIdsWith(
-	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+	P_API void ExtractIdsWith(const IPool* pool, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = false);
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Guarantees order.
 	 */
-	P_API void ExtractIdsWithStable(
-	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+	P_API void ExtractIdsWithStable(const IPool* pool, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = false);
 
 	/**
 	 * Find and remove ids containing a component from list 'source' into 'results'.
 	 * Does not guarantee order.
 	 */
-	P_API void ExtractIdsWithout(
-	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+	P_API void ExtractIdsWithout(const IPool* pool, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = false);
 
 	/**
 	 * Find and remove ids not containing a component from list 'source' into 'results'.
 	 * Guarantees order.
 	 */
-	P_API void ExtractIdsWithoutStable(
-	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true);
+	P_API void ExtractIdsWithoutStable(const IPool* pool, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = false);
 
 
 	/** Find all ids containing all of the components */
@@ -1903,101 +1909,136 @@ namespace p
 	// Templated API
 
 	/**
-	 * Remove ids containing a component from 'ids'. Does not guarantee order.
+	 * Remove ids containing a component. Does not guarantee order.
 	 *
-	 * @param scope from where to scope pools
+	 * @param scope from where to get pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see ExcludeIdsWithStable(), ExcludeIdsWithout()
 	 */
 	template<typename Component, typename Scope>
-	void ExcludeIdsWith(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	void ExcludeIdsWith(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	{
 		ExcludeIdsWith(&scope.template AssurePool<const Component>(), ids, shouldShrink);
 	}
 	template<typename... Component, typename Scope>
-	void ExcludeIdsWith(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	void ExcludeIdsWith(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	    requires(sizeof...(Component) > 1)
 	{
 		(ExcludeIdsWith<Component>(scope, ids, shouldShrink), ...);
 	}
 
-	template<typename Predicate>
-	void ExcludeIdsWith(TArray<Id>& ids, Predicate predicate, const bool shouldShrink = true)
-	{
-		for (i32 i = ids.Size() - 1; i >= 0; --i)
-		{
-			if (predicate(ids[i]))
-			{
-				ids.RemoveAtSwapUnsafe(i);
-			}
-		}
-		if (shouldShrink)
-		{
-			ids.Shrink();
-		}
-	}
-
 	/**
-	 * Remove ids containing a component from 'ids'. Guarantees order.
+	 * Remove ids containing a component. Guarantees order.
 	 *
-	 * @param scope from where to scope pools
+	 * @param scope from where to get pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see ExcludeIdsWith(), ExcludeIdsWithoutStable()
 	 */
 	template<typename Component, typename Scope>
-	void ExcludeIdsWithStable(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	void ExcludeIdsWithStable(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	{
 		ExcludeIdsWithStable(&scope.template AssurePool<const Component>(), ids, shouldShrink);
 	}
 	template<typename... Component, typename Scope>
-	void ExcludeIdsWithStable(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	void ExcludeIdsWithStable(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	    requires(sizeof...(Component) > 1)
 	{
 		(ExcludeIdsWithStable<Component>(scope, ids, shouldShrink), ...);
 	}
 
 	/**
-	 * Remove ids NOT containing a component from 'ids'. Does not guarantee order.
+	 * Remove ids matching a predicate. Does not guarantee order.
 	 *
-	 * @param scope from where to scope pools
+	 * @param ids array that will be modified
+	 * @param predicate to call for each id
+	 * @param shouldShrink if true, the ids array will be shrink at the end
+	 * @see ExcludeIdsWith(), ExcludeIdsWithout()
+	 */
+	template<typename Predicate>
+	void ExcludeIdsIf(TArray<Id>& ids, Predicate predicate, const bool shouldShrink = false)
+	{
+		ids.RemoveIfSwap(Forward(predicate), shouldShrink);
+	}
+
+	/**
+	 * Remove ids matching a predicate. Does not guarantee order.
+	 *
+	 * @param ids array that will be modified
+	 * @param predicate to call for each id
+	 * @param shouldShrink if true, the ids array will be shrink at the end
+	 * @see ExcludeIdsWith(), ExcludeIdsWithout()
+	 */
+	template<typename Predicate>
+	void ExcludeIdsIfStable(TArray<Id>& ids, Predicate predicate, const bool shouldShrink = false)
+	{
+		ids.RemoveIf(Forward(predicate), shouldShrink);
+	}
+
+	/**
+	 * Remove ids NOT containing a component. Does not guarantee order.
+	 *
+	 * @param scope from where to get pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see ExcludeIdsWithoutStable(), ExcludeIdsWith()
 	 */
 	template<typename Component, typename Scope>
-	void ExcludeIdsWithout(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	void ExcludeIdsWithout(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	{
 		ExcludeIdsWithout(&scope.template AssurePool<const Component>(), ids, shouldShrink);
 	}
 
 	template<typename... Component, typename Scope>
-	void ExcludeIdsWithout(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	void ExcludeIdsWithout(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	    requires(sizeof...(Component) > 1)
 	{
 		(ExcludeIdsWithout<Component>(scope, ids, shouldShrink), ...);
 	}
 
 	/**
-	 * Remove ids NOT containing a component from 'ids'. Guarantees order.
+	 * Remove ids NOT containing a component. Guarantees order.
 	 *
-	 * @param scope from where to scope pools
+	 * @param scope from where to get pools
 	 * @param ids array that will be modified
 	 * @param shouldShrink if true, the ids array will be shrink at the end
 	 * @see ExcludeIdsWithout(), ExcludeIdsWithStable()
 	 */
 	template<typename Component, typename Scope>
 	void ExcludeIdsWithoutStable(
-	    const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	{
 		ExcludeIdsWithoutStable(&scope.template AssurePool<const Component>(), ids, shouldShrink);
 	}
 	template<typename... Component, typename Scope>
 	void ExcludeIdsWithoutStable(const Scope& scope, TArray<Id>& ids,
-	    const bool shouldShrink = true) requires(sizeof...(Component) > 1)
+	    const bool shouldShrink = false) requires(sizeof...(Component) > 1)
 	{
 		(ExcludeIdsWithoutStable<Component>(scope, ids, shouldShrink), ...);
+	}
+
+	/**
+	 * Remove ids NOT containing any of the given components. Does not guarantee order.
+	 *
+	 * @param scope from where to get pools
+	 * @param ids array that will be modified
+	 * @param shouldShrink if true, the ids array will be shrink at the end
+	 * @see ExcludeIdsWithoutStable(), ExcludeIdsWith()
+	 */
+	template<typename... Component, typename Scope>
+	void ExcludeIdsWithoutAny(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
+	    requires(sizeof...(Component) >= 1)
+	{
+		ExcludeIdsWithoutAny({scope.template GetPool<const Component>()...}, ids, shouldShrink);
+	}
+
+	template<typename... Component, typename Scope>
+	void ExcludeIdsWithoutAnyStable(const Scope& scope, TArray<Id>& ids,
+	    const bool shouldShrink = false) requires(sizeof...(Component) >= 1)
+	{
+		ExcludeIdsWithoutAnyStable(
+		    {scope.template GetPool<const Component>()...}, ids, shouldShrink);
 	}
 
 	/**
@@ -2009,7 +2050,7 @@ namespace p
 	 * @see ExcludeIdsInvalidStable()
 	 */
 	template<typename Scope>
-	void ExcludeIdsInvalid(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	void ExcludeIdsInvalid(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	{
 		ids.RemoveIfSwap(
 		    [&scope](Id id) {
@@ -2028,7 +2069,7 @@ namespace p
 	 */
 	template<typename Scope>
 	void ExcludeIdsInvalidStable(
-	    const Scope& scope, TArray<Id>& ids, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	{
 		ids.RemoveIf(
 		    [&scope](Id id) {
@@ -2078,14 +2119,14 @@ namespace p
 	 * Does not guarantee order.
 	 */
 	template<typename Component, typename Scope>
-	void ExtractIdsWith(
-	    const Scope& scope, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
+	void ExtractIdsWith(const Scope& scope, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = false)
 	{
 		ExtractIdsWith(&scope.template AssurePool<const Component>(), source, results);
 	}
 	template<typename Component, typename Scope>
 	TArray<Id> ExtractIdsWith(
-	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = false)
 	{
 		TArray<Id> results;
 		ExtractIdsWith<Component>(scope, source, results);
@@ -2097,14 +2138,14 @@ namespace p
 	 * Guarantees order.
 	 */
 	template<typename Component, typename Scope>
-	void ExtractIdsWithStable(
-	    const Scope& scope, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
+	void ExtractIdsWithStable(const Scope& scope, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = false)
 	{
 		ExtractIdsWithStable(&scope.template AssurePool<const Component>(), source, results);
 	}
 	template<typename Component, typename Scope>
 	TArray<Id> ExtractIdsWithStable(
-	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = false)
 	{
 		TArray<Id> results;
 		ExtractIdsWithStable<Component>(scope, source, results);
@@ -2116,14 +2157,14 @@ namespace p
 	 * Does not guarantee order.
 	 */
 	template<typename Component, typename Scope>
-	void ExtractIdsWithout(
-	    const Scope& scope, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
+	void ExtractIdsWithout(const Scope& scope, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = false)
 	{
 		ExtractIdsWithout(&scope.template AssurePool<const Component>(), source, results);
 	}
 	template<typename Component, typename Scope>
 	TArray<Id> ExtractIdsWithout(
-	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = false)
 	{
 		TArray<Id> results;
 		ExtractIdsWithout<Component>(scope, source, results);
@@ -2135,14 +2176,14 @@ namespace p
 	 * Guarantees order.
 	 */
 	template<typename Component, typename Scope>
-	void ExtractIdsWithoutStable(
-	    const Scope& scope, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink = true)
+	void ExtractIdsWithoutStable(const Scope& scope, TArray<Id>& source, TArray<Id>& results,
+	    const bool shouldShrink = false)
 	{
 		ExtractIdsWithoutStable(&scope.template AssurePool<const Component>(), source, results);
 	}
 	template<typename Component, typename Scope>
 	TArray<Id> ExtractIdsWithoutStable(
-	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = true)
+	    const Scope& scope, TArray<Id>& source, const bool shouldShrink = false)
 	{
 		TArray<Id> results;
 		ExtractIdsWithoutStable<Component>(scope, source, results);
@@ -2153,7 +2194,7 @@ namespace p
 	/**
 	 * Find all ids containing all of the components
 	 *
-	 * @param scope from where to scope pools
+	 * @param scope from where to get pools
 	 * @param ids array where matching ids will be added
 	 * @see FindAllIdsWithAny()
 	 */
@@ -2167,7 +2208,7 @@ namespace p
 	/**
 	 * Find all ids containing all of the components
 	 *
-	 * @param scope from where to scope pools
+	 * @param scope from where to get pools
 	 * @return ids array with matching ids
 	 * @see FindAllIdsWithAny()
 	 */
@@ -2183,7 +2224,7 @@ namespace p
 	 * Find all ids containing any of the components.
 	 * Includes possible duplicates
 	 *
-	 * @param scope from where to scope pools
+	 * @param scope from where to get pools
 	 * @param ids array where matching ids will be added
 	 * @see FindAllIdsWith()
 	 */
@@ -2197,7 +2238,7 @@ namespace p
 	 * Find all ids containing any of the components.
 	 * Prevents duplicates
 	 *
-	 * @param scope from where to scope pools
+	 * @param scope from where to get pools
 	 * @param ids array where matching ids will be added
 	 * @see FindAllIdsWithAnyUnique()
 	 */
@@ -2212,7 +2253,7 @@ namespace p
 	 * Find all ids containing any of the components.
 	 * Includes possible duplicates
 	 *
-	 * @param scope from where to scope pools
+	 * @param scope from where to get pools
 	 * @return ids array with matching ids
 	 * @see FindAllIdsWith()
 	 */
@@ -2228,7 +2269,7 @@ namespace p
 	 * Find all ids containing any of the components.
 	 * Prevents duplicates
 	 *
-	 * @param scope from where to scope pools
+	 * @param scope from where to get pools
 	 * @return ids array with matching ids
 	 * @see FindAllIdsWithAny()
 	 */

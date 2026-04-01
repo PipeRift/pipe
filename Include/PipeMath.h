@@ -6,6 +6,7 @@
 #include "Pipe/Core/Utility.h"
 #include "PipePlatform.h"
 
+#include <bit>
 #include <cmath>
 
 
@@ -499,4 +500,17 @@ namespace p
 	P_API float NormalizeAngle(float a);
 
 	P_API float ClampAngle(float a, float min, float max);
+
+	P_API constexpr i32 CountBits(u64 value)
+	{
+#if P_PLATFORM_LINUX || P_PLATFORM_MACOS
+		return __builtin_popcountll(value);
+#else
+		// https://en.wikipedia.org/wiki/Hamming_weight
+		value -= (value >> 1) & 0x5555555555555555ull;
+		value = (value & 0x3333333333333333ull) + ((value >> 2) & 0x3333333333333333ull);
+		value = (value + (value >> 4)) & 0x0f0f0f0f0f0f0f0full;
+		return (value * 0x0101010101010101) >> 56;
+#endif
+	}
 }    // namespace p
