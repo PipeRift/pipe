@@ -28,7 +28,7 @@ jobs:
           - msvc
         exclude:
           - os: windows-2025
-            compiler: gcc-14
+            compiler: gcc-15
           - os: ubuntu-24.04
             compiler: msvc
           - os: macos-15
