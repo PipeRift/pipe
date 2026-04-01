@@ -33,8 +33,6 @@ jobs:
             compiler: msvc
           - os: macos-15
             compiler: msvc
-          - os: macos-15
-            compiler: clang-19
     env:
       os-name: ${{ contains(matrix.os, 'windows') && 'Windows' || (contains(matrix.os, 'ubuntu') && 'Linux' || 'MacOS') }}
     steps:
