@@ -199,17 +199,17 @@ namespace p
 		// An 8-bit character type - In-memory only. 8-bit representation. Should
 		// really be char8_t but making this the generic option is easier for
 		// compilers which don't fully support C++11 yet (i.e. MSVC).
-		using Char8 = unsigned char;
+		using Char8 = char8_t;
 
 		// A 16-bit character type - In-memory only. 16-bit representation. Should
 		// really be char16_t but making this the generic option is easier for
 		// compilers which don't fully support C++11 yet (i.e. MSVC).
-		using Char16 = unsigned short int;
+		using Char16 = char16_t;
 
 		// A 32-bit character type - In-memory only.  32-bit representation.  Should
 		// really be char32_t but making this the generic option is easier for
 		// compilers which don't fully support C++11 yet (i.e. MSVC).
-		using Char32 = unsigned int;
+		using Char32 = char32_t;
 
 		// unsigned int the same size as a pointer
 		using uPtr = SelectIntPointerType<std::uint32_t, std::uint64_t, sizeof(void*)>::TIntPointer;
