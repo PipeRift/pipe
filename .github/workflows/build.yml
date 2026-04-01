@@ -56,7 +56,7 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
-        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+        run: cmake -GNinja -S . -B Build -DCMAKE_BUILD_TYPE=${{ matrix.config }} -DCMAKE_OSX_DEPLOYMENT_TARGET=13.3 # FIX: Enable convchar library on macos
 
       - name: Build
         run: cmake --build Build --config ${{ matrix.config }}
