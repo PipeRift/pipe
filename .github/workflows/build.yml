@@ -23,7 +23,7 @@ jobs:
           - ubuntu-24.04
           - macos-15
         compiler:
-          - clang-18
+          - clang-19
           - gcc-15
           - msvc
         exclude:
@@ -34,7 +34,7 @@ jobs:
           - os: macos-15
             compiler: msvc
           - os: macos-15
-            compiler: clang-18
+            compiler: clang-19
     env:
       os-name: ${{ contains(matrix.os, 'windows') && 'Windows' || (contains(matrix.os, 'ubuntu') && 'Linux' || 'MacOS') }}
     steps:
@@ -55,12 +55,12 @@ jobs:
       - name: (MacOS) Install clang through brew
         if: contains(matrix.os, 'macos') && contains(matrix.compiler, 'clang')
         run: |
-          brew install llvm@18
-          export LLVM_DIR="$(brew --prefix llvm@18)/lib/cmake"
-          echo "CC=$(brew --prefix llvm@18)/bin/clang" >> $GITHUB_ENV
-          echo "CXX=$(brew --prefix llvm@18)/bin/clang++" >> $GITHUB_ENV
-          echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
-          brew link --overwrite llvm@18
+          brew install llvm@19
+          export LLVM_DIR="$(brew --prefix llvm@19)/lib/cmake"
+          echo "CC=$(brew --prefix llvm@19)/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix llvm@19)/bin/clang++" >> $GITHUB_ENV
+          echo "$(brew --prefix llvm@19/bin" >> $GITHUB_PATH
+          brew link --overwrite llvm@19
 
       - name: Cache Build
         uses: actions/cache@v4
