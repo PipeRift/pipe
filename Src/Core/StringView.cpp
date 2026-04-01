@@ -2,6 +2,8 @@
 
 #include "Pipe/Core/StringView.h"
 
+#include <charconv>
+
 
 namespace p::Strings
 {
