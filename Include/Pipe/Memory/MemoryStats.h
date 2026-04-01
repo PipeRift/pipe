@@ -22,7 +22,7 @@ namespace p
 	{
 		bool operator()(const AllocationStats& a, const AllocationStats& b) const
 		{
-			return a.ptr + a.size < b.ptr;
+			return a.ptr < b.ptr;
 		}    // namespace p
 
 		bool operator()(void* a, const AllocationStats& b) const
@@ -32,7 +32,7 @@ namespace p
 
 		bool operator()(const AllocationStats& a, void* b) const
 		{
-			return a.ptr + a.size < b;
+			return a.ptr < b;
 		}
 	};
 
