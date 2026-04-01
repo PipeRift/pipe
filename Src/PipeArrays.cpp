@@ -9,9 +9,21 @@ namespace p
 	BitArray::BitArray(i32 newSize, bool value)
 	    : size(newSize), bits(((size - 1) >> 5) + 1, value ? 0xffffffff : 0x00000000)
 	{}
-	BitArray::BitArray(u32* data, i32 newSize)
+	BitArray::BitArray(const u32* data, i32 newSize)
 	    : size{newSize}, bits(data, CalculateDataSize(newSize))
 	{}
+
+	BitArray::BitArray(const bool* data, i32 newSize)
+	    : size{newSize}, bits(CalculateDataSize(newSize))
+	{
+		for (i32 i = 0; i < newSize; ++i)
+		{
+			if (data[i])
+			{
+				SetTrue(i);
+			}
+		}
+	}
 
 	BitArray::BitArray(Arena& arena, i32 newSize)
 	    : size(newSize), bits(arena, CalculateDataSize(newSize))
@@ -19,9 +31,21 @@ namespace p
 	BitArray::BitArray(Arena& arena, i32 newSize, bool value)
 	    : size(newSize), bits(arena, CalculateDataSize(newSize), value ? 0xffffffff : 0x00000000)
 	{}
-	BitArray::BitArray(Arena& arena, u32* data, i32 newSize)
+	BitArray::BitArray(Arena& arena, const u32* data, i32 newSize)
 	    : size{newSize}, bits(arena, data, CalculateDataSize(newSize))
 	{}
+
+	BitArray::BitArray(Arena& arena, const bool* data, i32 newSize)
+	    : size{newSize}, bits(arena, CalculateDataSize(newSize))
+	{
+		for (i32 i = 0; i < newSize; ++i)
+		{
+			if (data[i])
+			{
+				SetTrue(i);
+			}
+		}
+	}
 
 	BitArray::BitArray(BitArray&& other) noexcept
 	{
@@ -88,11 +112,6 @@ namespace p
 		word                = (word & ~(1 << bitOffset)) | (u32(value) << bitOffset);
 	}
 
-	void BitArray::Flip(i32 index)
-	{
-		Set(index, !IsSet(index));
-	};
-
 	void BitArray::FillBitArray(u32 pattern)
 	{
 		for (i32 i = 0; i < bits.Size(); ++i)
@@ -101,13 +120,13 @@ namespace p
 		}
 	}
 
-	void BitArray::Resize(i32 newSize, const bool shouldShrink = true)
+	void BitArray::Resize(i32 newSize, const bool shouldShrink)
 	{
 		size = newSize;
 		bits.Resize(((newSize - 1) >> 5) + 1, shouldShrink);
 	}
 
-	void BitArray::Resize(i32 newSize, bool value, const bool shouldShrink = true)
+	void BitArray::Resize(i32 newSize, bool value, const bool shouldShrink)
 	{
 		size = newSize;
 		bits.Resize(((newSize - 1) >> 5) + 1, value ? 0xffffffff : 0x00000000, shouldShrink);
@@ -167,7 +186,7 @@ namespace p
 		return NO_INDEX;
 	}
 
-	i32 BitArray::CountSetBits(i32 fromIndex = 0, i32 toIndex = NO_INDEX) const
+	i32 BitArray::CountSetBits(i32 fromIndex, i32 toIndex) const
 	{
 		if (toIndex == NO_INDEX)
 		{

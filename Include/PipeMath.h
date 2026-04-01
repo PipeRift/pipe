@@ -6,7 +6,6 @@
 #include "Pipe/Core/Utility.h"
 #include "PipePlatform.h"
 
-#include <bit>
 #include <cmath>
 
 

@@ -863,7 +863,7 @@ namespace p
 	void ExcludeIdsWithoutAny(
 	    TView<const IPool* const> pools, TArray<Id>& ids, const bool shouldShrink)
 	{
-		BitArray hasCounts{ids.Size()};
+		BitArray hasCounts(ids.Size());
 		for (auto* pool : pools)
 		{
 			for (i32 i = 0; i < ids.Size(); ++i)
@@ -887,7 +887,7 @@ namespace p
 	void ExcludeIdsWithoutAnyStable(
 	    TView<const IPool* const> pools, TArray<Id>& ids, const bool shouldShrink)
 	{
-		BitArray hasCounts{ids.Size()};
+		BitArray hasCounts(ids.Size());
 		for (auto* pool : pools)
 		{
 			for (i32 i = 0; i < ids.Size(); ++i)

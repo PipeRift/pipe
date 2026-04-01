@@ -1849,7 +1849,7 @@ namespace p
 	};
 
 
-	class PIPE_API BitArray
+	class P_API BitArray
 	{
 	private:
 		/** The number of bits in this bit array */
@@ -1861,11 +1861,19 @@ namespace p
 		BitArray() = default;
 		BitArray(i32 newSize);
 		BitArray(i32 newSize, bool value);
-		BitArray(u32* data, i32 newSize);
+		BitArray(const u32* data, i32 newSize);
+		BitArray(const bool* data, i32 newSize);
+		BitArray(std::initializer_list<bool> initList)
+		    : BitArray(initList.begin(), i32(initList.size()))
+		{}
 		BitArray(Arena& arena) : bits(arena) {}
 		BitArray(Arena& arena, i32 newSize);
 		BitArray(Arena& arena, i32 newSize, bool value);
-		BitArray(Arena& arena, u32* data, i32 newSize);
+		BitArray(Arena& arena, const u32* data, i32 newSize);
+		BitArray(Arena& arena, const bool* data, i32 newSize);
+		BitArray(Arena& arena, std::initializer_list<bool> initList)
+		    : BitArray(arena, initList.begin(), i32(initList.size()))
+		{}
 
 		BitArray(BitArray&& other) noexcept;
 		BitArray(const BitArray& other);
@@ -1918,6 +1926,11 @@ namespace p
 		 */
 		i32 CountSetBits(i32 fromIndex = 0, i32 toIndex = NO_INDEX) const;
 
+		constexpr u32* Data() const
+		{
+			return bits.Data();
+		}
+
 		// @return the number of bits in this bit array
 		i32 Size() const
 		{
@@ -1926,7 +1939,7 @@ namespace p
 		// @return the number of bits reserved on the buffer
 		i32 Capacity() const
 		{
-			return bits.Capacity() * i32(sizeof(i32)) * 8;
+			return bits.Capacity() * sizeof(u32) * 8;
 		}
 
 		/** @return true if index is contained on the bit array */

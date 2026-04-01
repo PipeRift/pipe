@@ -31,7 +31,7 @@ struct MoveType
 
 
 go_bandit([]() {
-	describe("Containers.InlineArray", []() {
+	describe("Containers.Array", []() {
 		it("Can initialize", [&]() {
 			TArray<i32, 5> data1{};
 			TArray<i32, 5> data2(3);
@@ -787,6 +787,99 @@ go_bandit([]() {
 					++counter;
 				}
 				AssertThat(counter, Equals(3));
+			});
+		});
+	});
+
+	describe("Containers.BitArray", []() {
+		it("Can initialize", [&]() {
+			BitArray data1{};
+			BitArray data2(3);
+			BitArray data3(3, true);
+			BitArray data4(91, true);
+			BitArray data5{false, true, false, true, false, true};
+
+			AssertThat(data1.Size(), Equals(0));
+			AssertThat(data1.Capacity(), Equals(0));
+			AssertThat(data2.Size(), Equals(3));
+			AssertThat(data2.Capacity(), Equals(32));
+			AssertThat(data3.Size(), Equals(3));
+			AssertThat(data3.Capacity(), Equals(32));
+			AssertThat(data4.Size(), Equals(91));
+			AssertThat(data4.Capacity(), Equals(96));
+			AssertThat(data5.Size(), Equals(6));
+			AssertThat(data5.Capacity(), Equals(32));
+
+			AssertThat(data2[0], Equals(false));
+			AssertThat(data2[2], Equals(false));
+			AssertThat(data3[0], Equals(true));
+			AssertThat(data3[2], Equals(true));
+			AssertThat(data4[0], Equals(true));
+			AssertThat(data4[90], Equals(true));
+			AssertThat(data5[0], Equals(false));
+			AssertThat(data5[1], Equals(true));
+			AssertThat(data5[2], Equals(false));
+			AssertThat(data5[3], Equals(true));
+			AssertThat(data5[4], Equals(false));
+			AssertThat(data5[5], Equals(true));
+		});
+
+		describe("Copy", []() {
+			it("Can copy empty", [&]() {
+				BitArray source1{};
+				BitArray target1 = source1;    // NOLINT
+				AssertThat(target1.Data(), Equals(nullptr));
+				AssertThat(target1.Size(), Equals(0));
+				AssertThat(target1.Capacity(), Equals(0));
+				BitArray source2{};
+				BitArray target2 = source2;    // NOLINT
+				AssertThat(target2.Data(), Equals(nullptr));
+				AssertThat(target2.Size(), Equals(0));
+				AssertThat(target2.Capacity(), Equals(0));
+			});
+
+			it("Can copy", [&]() {
+				BitArray source{false, true, false, true, false, true};
+				BitArray target = source;
+				AssertThat(source.Size(), Equals(6));
+				AssertThat(source.Capacity(), IsGreaterThanOrEqualTo(6));
+				AssertThat(target.Size(), Equals(6));
+				AssertThat(target.Capacity(), IsGreaterThanOrEqualTo(6));
+				AssertThat(target[1], Equals(true));
+				AssertThat(target[2], Equals(false));
+				AssertThat(target[3], Equals(true));
+				AssertThat(source.Data(), !Equals(nullptr));
+				AssertThat(target.Data(), !Equals(nullptr));
+			});
+		});
+
+		describe("Move", []() {
+			it("Can move empty", [&]() {
+				BitArray source1{};
+				BitArray target1 = Move(source1);
+				AssertThat(target1.Data(), Equals(nullptr));
+				AssertThat(target1.Size(), Equals(0));
+				AssertThat(target1.Capacity(), Equals(0));
+				BitArray source2{};
+				BitArray target2 = Move(source2);
+				AssertThat(target2.Data(), Equals(nullptr));
+				AssertThat(target2.Size(), Equals(0));
+				AssertThat(target2.Capacity(), Equals(0));
+			});
+
+			it("Can move", [&]() {
+				BitArray source{false, true, false, true, false, true};
+				u32* sourceData = source.Data();
+				BitArray target = Move(source);
+				AssertThat(source.Size(), Equals(0));
+				AssertThat(source.Capacity(), Equals(0));
+				AssertThat(target.Size(), Equals(6));
+				AssertThat(target.Capacity(), IsGreaterThanOrEqualTo(6));
+				AssertThat(target[1], Equals(true));
+				AssertThat(target[2], Equals(false));
+				AssertThat(target[3], Equals(true));
+				AssertThat(source.Data(), Equals(nullptr));
+				AssertThat(target.Data(), Equals(sourceData));
 			});
 		});
 	});
