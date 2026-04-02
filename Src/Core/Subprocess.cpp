@@ -614,7 +614,7 @@ namespace p
 
 		if (outReturnCode)
 		{
-			if (!::GetExitCodeProcess(process->hProcess, reinterpret_cast<::DWORD*>(outReturnCode)))
+			if (!::GetExitCodeProcess(process->hProcess, reinterpret_cast<DWORD*>(outReturnCode)))
 			{
 				return -1;
 			}
@@ -745,7 +745,7 @@ namespace p
 
 		handle = reinterpret_cast<void*>(_get_osfhandle(::_fileno(process->coutFile)));
 
-		if (!::ReadFile(handle, buffer, size, (::DWORD*)&bytesRead,
+		if (!::ReadFile(handle, buffer, size, (DWORD*)&bytesRead,
 		        reinterpret_cast<_OVERLAPPED*>(&overlapped)))
 		{
 			const u64 errorIoPending = 997;
@@ -754,8 +754,8 @@ namespace p
 			// Means we've got an async read!
 			if (error == errorIoPending)
 			{
-				if (!::GetOverlappedResult(handle, reinterpret_cast<_OVERLAPPED*>(&overlapped),
-				        (::DWORD*)&bytesRead, 1))
+				if (!::GetOverlappedResult(
+				        handle, reinterpret_cast<_OVERLAPPED*>(&overlapped), (DWORD*)&bytesRead, 1))
 				{
 					const u64 errorIoIncomplete = 996;
 					const u64 errorHandleEOF    = 38;
@@ -793,7 +793,7 @@ namespace p
 
 		handle = reinterpret_cast<void*>(_get_osfhandle(::_fileno(process->cerrFile)));
 
-		if (!::ReadFile(handle, buffer, size, (::DWORD*)&bytesRead,
+		if (!::ReadFile(handle, buffer, size, (DWORD*)&bytesRead,
 		        reinterpret_cast<_OVERLAPPED*>(&overlapped)))
 		{
 			const u64 errorIoPending = 997;
@@ -802,8 +802,8 @@ namespace p
 			// Means we've got an async read!
 			if (error == errorIoPending)
 			{
-				if (!::GetOverlappedResult(handle, reinterpret_cast<_OVERLAPPED*>(&overlapped),
-				        (::DWORD*)&bytesRead, 1))
+				if (!::GetOverlappedResult(
+				        handle, reinterpret_cast<_OVERLAPPED*>(&overlapped), (DWORD*)&bytesRead, 1))
 				{
 					const u64 errorIoIncomplete = 996;
 					const u64 errorHandleEOF    = 38;

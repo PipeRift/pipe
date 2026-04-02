@@ -234,12 +234,12 @@ namespace p
 
 		if (IsFolder(path))
 		{
-			const String fullPath{path};
-			::ShellExecuteA(nullptr, "explore", fullPath.data(), nullptr, nullptr, SW_SHOWNORMAL);
+			const String parameters{path};    // Make sure path is /0 terminated
+			::ShellExecuteA(nullptr, "explore", parameters.data(), nullptr, nullptr, SW_SHOWNORMAL);
 		}
 		else if (IsFile(path))
 		{
-			String parameters = Strings::Format("/select,{}", path);
+			const String parameters = Strings::Format("/select,{}", path);
 			::ShellExecuteA(
 			    nullptr, "open", "explorer.exe", parameters.data(), nullptr, SW_SHOWNORMAL);
 		}
