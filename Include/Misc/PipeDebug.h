@@ -133,7 +133,7 @@ namespace p
 		ImGuiTextFilter filter;
 		ImGuiTextFilter typeChooserFilter;
 
-		TArray<DebugECSInspector> inspectors{1};
+		TArray<DebugECSInspector> inspectors{};
 
 		// Updated on tick
 		TArray<const IPool*> includePools;
@@ -884,8 +884,6 @@ namespace p
 				inspector.pendingFocus = false;
 			}
 
-			ImGui::SetNextWindowPos(
-			    ImGui::GetCursorScreenPos() + ImVec2(20, 20), ImGuiCond_Appearing);
 			ImGui::SetNextWindowSizeConstraints(ImVec2(300.f, 200.f), ImVec2(800, FLT_MAX));
 			if (ImGui::Begin(name.c_str(), open, ImGuiWindowFlags_MenuBar))
 			{
