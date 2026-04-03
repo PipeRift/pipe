@@ -156,6 +156,7 @@ namespace p
 
 #pragma endregion ECS
 
+
 #pragma region Reflection
 	struct DebugReflectContext
 	{
@@ -170,11 +171,19 @@ namespace p
 #pragma endregion Reflection
 
 
+#pragma region Memory
+	struct DebugMemoryContext
+	{};
+
+	void DrawMemory(const char* label = "Memory", bool* open = nullptr, ImGuiWindowFlags flags = 0);
+#pragma endregion Memory
+
 	struct DebugContext
 	{
 		DebugInspectionContext inspection;
 		DebugECSContext ecs;
 		DebugReflectContext reflect;
+		DebugMemoryContext memory;
 
 		IdContext* ctx = nullptr;
 
@@ -1260,6 +1269,27 @@ namespace p
 	}
 	#pragma endregion Reflection
 
+	#pragma region Memory
+	namespace details
+	{}    // namespace details
+
+	void DrawMemory(const char* label, bool* open, ImGuiWindowFlags flags)
+	{
+		if (!EnsureInsideDebug)
+		{
+			return;
+		}
+
+		auto& memoryDbg = currentContext->memory;
+
+		ImGui::Begin(label, open, flags);
+		ImGui::BeginChild("arenasChild", ImVec2(0.f, 100.f));
+		ImGui::EndChild();
+		ImGui::BeginChild("memoryChild", ImVec2(0.f, ImGui::GetContentRegionAvail().y));
+		ImGui::EndChild();
+		ImGui::End();
+	}
+	#pragma endregion Memory
 
 	bool BeginDebug(DebugContext& context)
 	{
