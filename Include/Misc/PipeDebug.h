@@ -202,6 +202,85 @@ namespace p
 	///////////////////////////////////////////////////////////
 	// Implementation
 #ifdef P_DEBUG_IMPLEMENTATION
+
+	// Even if the imgui implementation doesn't have math operators enabled, we force those we need
+	#if !defined(IMGUI_DEFINE_MATH_OPERATORS) && !defined(IMGUI_DEFINE_MATH_OPERATORS_IMPLEMENTED)
+	// ImVec2 operators
+	inline ImVec2 operator*(const ImVec2& lhs, const float rhs)
+	{
+		return ImVec2(lhs.x * rhs, lhs.y * rhs);
+	}
+	inline ImVec2 operator/(const ImVec2& lhs, const float rhs)
+	{
+		return ImVec2(lhs.x / rhs, lhs.y / rhs);
+	}
+	inline ImVec2 operator+(const ImVec2& lhs, const ImVec2& rhs)
+	{
+		return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y);
+	}
+	inline ImVec2 operator-(const ImVec2& lhs, const ImVec2& rhs)
+	{
+		return ImVec2(lhs.x - rhs.x, lhs.y - rhs.y);
+	}
+	inline ImVec2 operator*(const ImVec2& lhs, const ImVec2& rhs)
+	{
+		return ImVec2(lhs.x * rhs.x, lhs.y * rhs.y);
+	}
+	inline ImVec2 operator/(const ImVec2& lhs, const ImVec2& rhs)
+	{
+		return ImVec2(lhs.x / rhs.x, lhs.y / rhs.y);
+	}
+	inline ImVec2 operator-(const ImVec2& lhs)
+	{
+		return ImVec2(-lhs.x, -lhs.y);
+	}
+	inline ImVec2& operator*=(ImVec2& lhs, const float rhs)
+	{
+		lhs.x *= rhs;
+		lhs.y *= rhs;
+		return lhs;
+	}
+	inline ImVec2& operator/=(ImVec2& lhs, const float rhs)
+	{
+		lhs.x /= rhs;
+		lhs.y /= rhs;
+		return lhs;
+	}
+	inline ImVec2& operator+=(ImVec2& lhs, const ImVec2& rhs)
+	{
+		lhs.x += rhs.x;
+		lhs.y += rhs.y;
+		return lhs;
+	}
+	inline ImVec2& operator-=(ImVec2& lhs, const ImVec2& rhs)
+	{
+		lhs.x -= rhs.x;
+		lhs.y -= rhs.y;
+		return lhs;
+	}
+	inline ImVec2& operator*=(ImVec2& lhs, const ImVec2& rhs)
+	{
+		lhs.x *= rhs.x;
+		lhs.y *= rhs.y;
+		return lhs;
+	}
+	inline ImVec2& operator/=(ImVec2& lhs, const ImVec2& rhs)
+	{
+		lhs.x /= rhs.x;
+		lhs.y /= rhs.y;
+		return lhs;
+	}
+	inline bool operator==(const ImVec2& lhs, const ImVec2& rhs)
+	{
+		return lhs.x == rhs.x && lhs.y == rhs.y;
+	}
+	inline bool operator!=(const ImVec2& lhs, const ImVec2& rhs)
+	{
+		return lhs.x != rhs.x || lhs.y != rhs.y;
+	}
+	#endif
+
+
 	namespace details
 	{
 		// We replace ImGui's GetCurrentWindow() in case "GImGui" has been overriden which can cause
@@ -514,7 +593,7 @@ namespace p
 		InspectSetKeyColumn();
 		ImGui::AlignTextToFramePadding();
 		ImGui::Unindent();
-		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_AllowItemOverlap
+		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_AllowOverlap
 		                               | ImGuiTreeNodeFlags_SpanAllColumns
 		                               | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0)
 		                               | (defaultOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0);
@@ -808,100 +887,100 @@ namespace p
 			ImGui::SetNextWindowPos(
 			    ImGui::GetCursorScreenPos() + ImVec2(20, 20), ImGuiCond_Appearing);
 			ImGui::SetNextWindowSizeConstraints(ImVec2(300.f, 200.f), ImVec2(800, FLT_MAX));
-			ImGui::Begin(name.c_str(), open, ImGuiWindowFlags_MenuBar);
-
-			if (ImGui::BeginMenuBar())
+			if (ImGui::Begin(name.c_str(), open, ImGuiWindowFlags_MenuBar))
 			{
-				if (ImGui::BeginMenu("Settings"))
+				if (ImGui::BeginMenuBar())
 				{
-					ImGui::AlignTextToFramePadding();
-					ImGui::Text("Id");
-					ImGui::SameLine();
-					String asString = ToString(inspector.id);
-					ImGui::SetNextItemWidth(100.f);
-					if (ImGui::InputText("##IdValue", asString,
-					        ImGuiInputTextFlags_EnterReturnsTrue
-					            | ImGuiInputTextFlags_EscapeClearsAll))
+					if (ImGui::BeginMenu("Settings"))
 					{
-						nextId = IdFromString(asString, &GetDebugCtx());
+						ImGui::AlignTextToFramePadding();
+						ImGui::Text("Id");
+						ImGui::SameLine();
+						String asString = ToString(inspector.id);
+						ImGui::SetNextItemWidth(100.f);
+						if (ImGui::InputText("##IdValue", asString,
+						        ImGuiInputTextFlags_EnterReturnsTrue
+						            | ImGuiInputTextFlags_EscapeClearsAll))
+						{
+							nextId = IdFromString(asString, &GetDebugCtx());
+						}
+
+						ImGui::CheckboxFlags("Edit Mode", &inspector.flags, IDF_EditAll);
+
+						ImGui::SeparatorText("Advanced");
+						ImGui::CheckboxFlags("View All Properties", &inspector.flags, IDF_ViewAll);
+						ImGui::EndMenu();
 					}
+					ImGui::DrawFilterWithHint(
+					    inspector.filter, "##filter", "Search components...", -36.f);
 
-					ImGui::CheckboxFlags("Edit Mode", &inspector.flags, IDF_EditAll);
-
-					ImGui::SeparatorText("Advanced");
-					ImGui::CheckboxFlags("View All Properties", &inspector.flags, IDF_ViewAll);
-					ImGui::EndMenu();
+					if (ImGui::MenuItem("-->"))
+					{
+						clone = true;
+					}
+					ImGui::EndMenuBar();
 				}
-				ImGui::DrawFilterWithHint(
-				    inspector.filter, "##filter", "Search components...", -36.f);
 
-				if (ImGui::MenuItem("-->"))
+				if (valid && BeginInspection("##Inspector", {}, inspector.flags))
 				{
-					clone = true;
-				}
-				ImGui::EndMenuBar();
-			}
-
-			if (valid && BeginInspection("##Inspector", {}, inspector.flags))
-			{
-				String componentLabel;
-				for (const auto& poolInstance : GetDebugCtx().GetPools())
-				{
-					if (!poolInstance.GetPool()->Has(inspector.id))
+					String componentLabel;
+					for (const auto& poolInstance : GetDebugCtx().GetPools())
 					{
-						continue;
-					}
+						if (!poolInstance.GetPool()->Has(inspector.id))
+						{
+							continue;
+						}
 
-					componentLabel.clear();
+						componentLabel.clear();
 
-					Strings::FormatTo(componentLabel, "{}",
-					    RemoveNamespace(GetTypeName(poolInstance.componentId)));
+						Strings::FormatTo(componentLabel, "{}",
+						    RemoveNamespace(GetTypeName(poolInstance.componentId)));
 
-					if (!inspector.filter.PassFilter(componentLabel.c_str()))
-					{
-						continue;
-					}
+						if (!inspector.filter.PassFilter(componentLabel.c_str()))
+						{
+							continue;
+						}
 
-					ImGuiTreeNodeFlags headerFlags =
-					    ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAllColumns;
-					void* data = poolInstance.GetPool()->TryGetVoid(inspector.id);
-					if (!data)
-					{
-						headerFlags |= ImGuiTreeNodeFlags_Leaf;
+						ImGuiTreeNodeFlags headerFlags =
+						    ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAllColumns;
+						void* data = poolInstance.GetPool()->TryGetVoid(inspector.id);
+						if (!data)
+						{
+							headerFlags |= ImGuiTreeNodeFlags_Leaf;
+						}
+						ImGui::TableNextRow();
+						InspectSetKeyColumn();
+						if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
+						{
+							ImGui::Indent();
+							InspectProperties(data, poolInstance.componentId);
+							ImGui::Unindent();
+						}
 					}
-					ImGui::TableNextRow();
-					InspectSetKeyColumn();
-					if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
-					{
-						ImGui::Indent();
-						InspectProperties(data, poolInstance.componentId);
-						ImGui::Unindent();
-					}
-				}
-				EndInspection();
-			}
-			else
-			{
-				ImGui::PushTextColor(errorTextColor);
-				const char* errorMsg;
-				if (inspector.id == NoId)
-				{
-					errorMsg = "No entity";
+					EndInspection();
 				}
 				else
 				{
-					errorMsg = removed ? "Removed entity" : "Invalid entity";
+					ImGui::PushTextColor(errorTextColor);
+					const char* errorMsg;
+					if (inspector.id == NoId)
+					{
+						errorMsg = "No entity";
+					}
+					else
+					{
+						errorMsg = removed ? "Removed entity" : "Invalid entity";
+					}
+
+					auto regionAvail = ImGui::GetContentRegionAvail();
+					auto textSize =
+					    ImGui::CalcTextSize(errorMsg) + ImGui::GetStyle().FramePadding * 2.0f;
+
+					ImGui::SetCursorPos(ImGui::GetCursorPos() + ((regionAvail - textSize) * 0.5f));
+					ImGui::Text("%s", errorMsg);
+					ImGui::PopTextColor();
 				}
-
-				auto regionAvail = ImGui::GetContentRegionAvail();
-				auto textSize =
-				    ImGui::CalcTextSize(errorMsg) + ImGui::GetStyle().FramePadding * 2.0f;
-
-				ImGui::SetCursorPos(ImGui::GetCursorPos() + ((regionAvail - textSize) * 0.5f));
-				ImGui::Text("%s", errorMsg);
-				ImGui::PopTextColor();
 			}
-
 			ImGui::End();
 
 			// Update after drawing
@@ -935,40 +1014,42 @@ namespace p
 		{
 			hasDocking = true;
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-			ImGui::Begin(label, open, flags | ImGuiWindowFlags_MenuBar);
-			ImGui::PopStyleVar();
-
-			if (ImGui::BeginMenuBar())
+			if (ImGui::Begin(label, open, flags | ImGuiWindowFlags_MenuBar))
 			{
-				if (ImGui::BeginMenu("Settings"))
+				ImGui::PopStyleVar();
+
+				if (ImGui::BeginMenuBar())
 				{
-					if (ImGui::MenuItem("Reset Layout"))
+					if (ImGui::BeginMenu("Settings"))
 					{
-						ecsDbg.resetLayout = true;
+						if (ImGui::MenuItem("Reset Layout"))
+						{
+							ecsDbg.resetLayout = true;
+						}
+						ImGui::EndMenu();
 					}
-					ImGui::EndMenu();
+					ImGui::EndMenuBar();
 				}
-				ImGui::EndMenuBar();
+
+				ImGuiID dockspaceId = ImGui::GetID(label);
+				if (ecsDbg.resetLayout || ImGui::DockBuilderGetNode(dockspaceId) == 0)
+				{
+					ecsDbg.resetLayout = false;
+					// Clear any preexisting layouts associated with the ID we just chose
+					ImGui::DockBuilderRemoveNode(dockspaceId);
+					ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_KeepAliveOnly);
+
+					ImGui::DockBuilderSplitNode(
+					    dockspaceId, ImGuiDir_Right, 0.4f, &ecsDbg.rightDockId, &ecsDbg.leftDockId);
+
+					ImGui::DockBuilderGetNode(ecsDbg.leftDockId)->LocalFlags |=
+					    ImGuiDockNodeFlags_AutoHideTabBar;
+					ImGui::DockBuilderFinish(dockspaceId);
+
+					refreshingLayout = true;
+				}
+				ImGui::DockSpace(dockspaceId, ImVec2{0.f, 0.f});
 			}
-
-			ImGuiID dockspaceId = ImGui::GetID(label);
-			if (ecsDbg.resetLayout || ImGui::DockBuilderGetNode(dockspaceId) == 0)
-			{
-				ecsDbg.resetLayout = false;
-				// Clear any preexisting layouts associated with the ID we just chose
-				ImGui::DockBuilderRemoveNode(dockspaceId);
-				ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_KeepAliveOnly);
-
-				ImGui::DockBuilderSplitNode(
-				    dockspaceId, ImGuiDir_Right, 0.4f, &ecsDbg.rightDockId, &ecsDbg.leftDockId);
-
-				ImGui::DockBuilderGetNode(ecsDbg.leftDockId)->LocalFlags |=
-				    ImGuiDockNodeFlags_AutoHideTabBar;
-				ImGui::DockBuilderFinish(dockspaceId);
-
-				refreshingLayout = true;
-			}
-			ImGui::DockSpace(dockspaceId, ImVec2{0.f, 0.f});
 			ImGui::End();
 		}
 
@@ -1055,8 +1136,8 @@ namespace p
 				}
 				ImGui::EndTable();
 			}
-			ImGui::End();
 		}
+		ImGui::End();
 
 		{    // DrawECSInspectors
 			String uniqueId;
@@ -1224,47 +1305,51 @@ namespace p
 
 		auto& reflectDbg = currentContext->reflect;
 
-		ImGui::Begin(label, open, flags);
-
-		if (ImGui::BeginPopup("Filter"))
+		if (ImGui::Begin(label, open, flags))
 		{
-			ImGui::CheckboxFlags("Native", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Native));
-			ImGui::CheckboxFlags("Enum", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Enum));
-			ImGui::CheckboxFlags("Struct", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Struct));
-			ImGui::CheckboxFlags("Object", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Object));
-			ImGui::CheckboxFlags(
-			    "Container", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Container));
-			ImGui::EndPopup();
-		}
-		if (ImGui::Button("Settings"))
-		{
-			ImGui::OpenPopup("Filter");
-		}
-
-		ImGui::SameLine();
-		reflectDbg.filter.Draw("##Filter", -100.0f);
-
-		static ImGuiTableFlags tableFlags =
-		    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
-		    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
-		ImGui::BeginChild("typesTableChild", ImVec2(0.f, ImGui::GetContentRegionAvail().y));
-		if (ImGui::BeginTable("typesTable", 4, tableFlags))
-		{
-			ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_IndentEnable);
-			ImGui::TableSetupColumn("Name");
-			ImGui::TableSetupColumn("Flags");
-			ImGui::TableSetupColumn("Parent");
-
-			ImGui::TableSetupScrollFreeze(0, 1);
-			ImGui::TableHeadersRow();
-
-			for (TypeId type : GetRegisteredTypeIds())
+			if (ImGui::BeginPopup("Filter"))
 			{
-				details::DrawType(reflectDbg, type);
+				ImGui::CheckboxFlags(
+				    "Native", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Native));
+				ImGui::CheckboxFlags("Enum", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Enum));
+				ImGui::CheckboxFlags(
+				    "Struct", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Struct));
+				ImGui::CheckboxFlags(
+				    "Object", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Object));
+				ImGui::CheckboxFlags(
+				    "Container", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Container));
+				ImGui::EndPopup();
 			}
-			ImGui::EndTable();
+			if (ImGui::Button("Settings"))
+			{
+				ImGui::OpenPopup("Filter");
+			}
+
+			ImGui::SameLine();
+			reflectDbg.filter.Draw("##Filter", -100.0f);
+
+			static ImGuiTableFlags tableFlags =
+			    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
+			    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
+			ImGui::BeginChild("typesTableChild", ImVec2(0.f, ImGui::GetContentRegionAvail().y));
+			if (ImGui::BeginTable("typesTable", 4, tableFlags))
+			{
+				ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_IndentEnable);
+				ImGui::TableSetupColumn("Name");
+				ImGui::TableSetupColumn("Flags");
+				ImGui::TableSetupColumn("Parent");
+
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableHeadersRow();
+
+				for (TypeId type : GetRegisteredTypeIds())
+				{
+					details::DrawType(reflectDbg, type);
+				}
+				ImGui::EndTable();
+			}
+			ImGui::EndChild();
 		}
-		ImGui::EndChild();
 		ImGui::End();
 	}
 	#pragma endregion Reflection
@@ -1282,11 +1367,13 @@ namespace p
 
 		auto& memoryDbg = currentContext->memory;
 
-		ImGui::Begin(label, open, flags);
-		ImGui::BeginChild("arenasChild", ImVec2(0.f, 100.f));
-		ImGui::EndChild();
-		ImGui::BeginChild("memoryChild", ImVec2(0.f, ImGui::GetContentRegionAvail().y));
-		ImGui::EndChild();
+		if (ImGui::Begin(label, open, flags))
+		{
+			ImGui::BeginChild("arenasChild", ImVec2(0.f, 100.f));
+			ImGui::EndChild();
+			ImGui::BeginChild("memoryChild", ImVec2(0.f, ImGui::GetContentRegionAvail().y));
+			ImGui::EndChild();
+		}
 		ImGui::End();
 	}
 	#pragma endregion Memory

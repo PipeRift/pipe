@@ -19,6 +19,9 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeImGui requires v1.9
 
 namespace ImGui
 {
+	///////////////////////////////////////////////////////////
+	// Definition
+
 	namespace details
 	{
 		struct InputTextCallbackStringUserData
@@ -269,4 +272,10 @@ namespace ImGui
 		return {color.x, color.y, color.z, color.w};
 	}
 #pragma endregion Style
+
+
+	///////////////////////////////////////////////////////////
+	// Implementation
+#ifdef P_IMGUI_IMPLEMENTATION
+#endif
 }    // namespace ImGui
