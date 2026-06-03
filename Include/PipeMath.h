@@ -37,6 +37,68 @@ namespace p
 	}
 
 	template<typename Type>
+	static constexpr Type* Max(Type* values, u32 count)
+	{
+		if (!values || count <= 0)
+		{
+			return nullptr;
+		}
+		Type* max = values;
+		for (u32 i = 1; i < count; ++i)
+		{
+			Type* v = values + i;
+			if (*v > *max)
+			{
+				max = v;
+			}
+		}
+		return max;
+	}
+
+	template<typename Type>
+	static constexpr Type* Min(Type* values, u32 count)
+	{
+		if (!values || count <= 0)
+		{
+			return nullptr;
+		}
+		Type* min = values;
+		for (u32 i = 1; i < count; ++i)
+		{
+			Type* v = values + i;
+			if (*v < *min)
+			{
+				min = v;
+			}
+		}
+		return min;
+	}
+
+	template<typename Type>
+	static constexpr std::pair<Type*, Type*> MinMax(Type* values, u32 count)
+	{
+		if (!values || count <= 0)
+		{
+			return {nullptr, nullptr};
+		}
+		Type* min = values;
+		Type* max = values;
+		for (u32 i = 1; i < count; ++i)
+		{
+			Type* v = values + i;
+			if (*v < *min)
+			{
+				min = v;
+			}
+			if (*v > *max)
+			{
+				max = v;
+			}
+		}
+		return {min, max};
+	}
+
+	template<typename Type>
 	static constexpr Type Clamp(Type a, Type min, Type max)
 	{
 		return Max(min, Min(a, max));
@@ -372,10 +434,21 @@ namespace p
 	}
 
 	template<FloatingPoint Type>
-	static constexpr float Mod(Type a, Type b)
+	static inline constexpr float Mod(Type a, Type b)
 	{
-		return a - b * Floor(a / b);
-	}
+		if constexpr(IsSame<Type, float>)
+		{
+			return fmodf(a, b);
+		}
+		else if constexpr(IsSame<Type, double>)
+		{
+			return fmod(a, b);
+		}
+		else
+		{
+			return a - b * Floor(a / b);
+		}
+		}
 
 	template<SignedIntegral Type>
 	static constexpr Type Mod(Type a, Type b)

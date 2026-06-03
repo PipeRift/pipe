@@ -17,10 +17,42 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeImGui requires v1.9
 #include <imgui.h>
 
 
+namespace p
+{
+	///////////////////////////////////////////////////////////
+	// Conversions
+
+	inline ImVec2 ToIM(v2 value)
+	{
+		return {value.x, value.y};
+	}
+	inline v2 FromIM(ImVec2 value)
+	{
+		return {value.x, value.y};
+	}
+	inline ImVec4 ToIM(const v4& value)
+	{
+		return {value.x, value.y, value.z, value.w};
+	}
+	inline v4 FromIMVector(const ImVec4& value)
+	{
+		return {value.x, value.y, value.z, value.w};
+	}
+	inline ImVec4 ToIM(const LinearColor& value)
+	{
+		return {value.r, value.g, value.b, value.a};
+	}
+	inline LinearColor FromIM(const ImVec4& value)
+	{
+		return {value.x, value.y, value.z, value.w};
+	}
+};
+
+
 namespace ImGui
 {
 	///////////////////////////////////////////////////////////
-	// Definition
+	// Internals
 
 	namespace details
 	{
@@ -56,7 +88,7 @@ namespace ImGui
 
 
 	///////////////////////////////////////////////////////////
-	// Definition
+	// Definitions
 
 	inline void PushID(p::StringView id)
 	{

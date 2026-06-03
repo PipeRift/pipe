@@ -206,12 +206,22 @@ namespace p
 			}
 			else if constexpr (to == ColorMode::Linear && from == ColorMode::HSV)
 			{
-				const float hDiv60         = this->h / 60.0f;
+				float hue = Mod(this->h, 360.f);
+				if ( hue < 0.f ) hue += 360.f;
+				const float saturation = p::Clamp(this->s,0.f,1.f);
+				const float value = this->v;
+
+				const float hDiv60         = hue / 60.0f;
 				const float hDiv60Floor    = Floor(hDiv60);
 				const float hDiv60Fraction = hDiv60 - hDiv60Floor;
-
 				const u32 swizzleIndex = u32(hDiv60Floor) % 6;
 
+				const float rgbValues[4] = {
+					value,
+					value * (1.0f - saturation),
+					value * (1.0f - (hDiv60Fraction * saturation)),
+					value * (1.0f - ((1.0f - hDiv60Fraction) * saturation)),
+				};
 				constexpr u32 rgbSwizzle[6][3] = {
 				    {0, 3, 1},
                     {2, 0, 1},
@@ -220,17 +230,17 @@ namespace p
                     {3, 1, 0},
                     {0, 1, 2}
                 };
-				const float rgbValues[4] = {
-				    this->v,
-				    this->v * (1.0f - this->h),
-				    this->v * (1.0f - (hDiv60Fraction * this->h)),
-				    this->v * (1.0f - ((1.0f - hDiv60Fraction) * this->h)),
-				};
-				return {rgbValues[rgbSwizzle[swizzleIndex][0]],
-				    rgbValues[rgbSwizzle[swizzleIndex][1]], rgbValues[rgbSwizzle[swizzleIndex][2]],
+				return {
+					rgbValues[rgbSwizzle[swizzleIndex][0]],
+				    rgbValues[rgbSwizzle[swizzleIndex][1]],
+					rgbValues[rgbSwizzle[swizzleIndex][2]],
 				    this->a};
 			}
 			else if constexpr (to == ColorMode::RGBA && from == ColorMode::HSV)
+			{
+				return Convert<ColorMode::Linear>().template Convert<to>();
+			}
+			else if constexpr (to == ColorMode::HSV && from == ColorMode::RGBA)
 			{
 				return Convert<ColorMode::Linear>().template Convert<to>();
 			}
@@ -409,7 +419,10 @@ namespace p
 				P_CheckMsg(false, "operator*(scalar) is not allowed on HSV");
 				return {};
 			}
-			return {this->r * scalar, this->g * scalar, this->b * scalar, this->a * scalar};
+			else
+			{
+				return {this->r * scalar, this->g * scalar, this->b * scalar, this->a * scalar};
+			}
 		}
 		constexpr TColor& operator*=(float scalar)
 		{
