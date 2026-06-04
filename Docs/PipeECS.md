@@ -1,9 +1,11 @@
 # Pipe ECS
 Defined in header [<PipeECS.h>](https://github.com/PipeRift/pipe/blob/main/Include/PipeECS.h)
 
-This Pipe module contains a complete [ECS](https://en.wikipedia.org/wiki/Entity_component_system) (Entity Component System) implementation based on component pools.
+## Overview
 
+This Pipe module contains a complete [ECS](https://en.wikipedia.org/wiki/Entity_component_system) (Entity Component System) implementation based on component pools.
 There are similarities with other well-known ECS systems like [entt](https://github.com/skypjack/entt) but this implementation has some key differences.
+
 ## Architecture
 Of *Entity-Component-System*, Pipe has **Ids** (*entities*) and **Components** (*components*).
 Ids are identifiers without data, and Components are data structures bound to an Id.

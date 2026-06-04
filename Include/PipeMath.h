@@ -18,7 +18,6 @@ namespace p
 	constexpr float degToRad = pi / 180.f;
 
 	constexpr float smallNumber     = 1.e-4f;
-	constexpr float smallerNumber   = 0.00001f;
 	constexpr float verySmallNumber = 1.e-8f;
 	constexpr float bigNumber       = 3.4e+38f;
 	constexpr float euler           = 2.71828182845904523536f;
@@ -170,7 +169,7 @@ namespace p
 	template<FloatingPoint T>
 	static constexpr T Floor(T v)
 	{
-		if (std::is_constant_evaluated())
+		if constexpr (std::is_constant_evaluated())
 		{
 			if (IsNAN(v))
 			{
@@ -187,7 +186,10 @@ namespace p
 			const i64 i = static_cast<i64>(v);
 			return T(v < i ? i - 1 : i);
 		}
-		return std::floor(v);
+		else
+		{
+			return std::floor(v);
+		}
 	}
 
 	P_API constexpr i32 FloorToI32(float f)
@@ -204,7 +206,7 @@ namespace p
 	template<FloatingPoint T>
 	static constexpr T Ceil(T v)
 	{
-		if (std::is_constant_evaluated())
+		if constexpr (std::is_constant_evaluated())
 		{
 			if (IsNAN(v))
 			{
@@ -221,7 +223,10 @@ namespace p
 			const i64 i = static_cast<i64>(v);
 			return T(v > i ? i + 1 : i);
 		}
-		return std::ceil(v);
+		else
+		{
+			return std::ceil(v);
+		}
 	}
 	P_API constexpr i32 CeilToI32(float f)
 	{
@@ -233,17 +238,33 @@ namespace p
 	}
 
 
-	inline P_API float Round(float f)
+	template<FloatingPoint T>
+	static constexpr T Round(T v)
 	{
-		return std::round(f);
+		if constexpr(std::is_constant_evaluated())
+		{
+			if (IsNAN(v))
+			{
+				return v;
+			}
+			else if (IsInf(v))
+			{
+				return v;
+			}
+        	return (v >= 0.0) ? i64(v + 0.5) : i64(v - 0.5);
+		}
+		else
+		{
+			return std::round(v);
+		}
 	}
-	inline P_API double Round(double f)
+	P_API constexpr i32 RoundToI32(float v)
 	{
-		return std::round(f);
+		return i32(Round(v));
 	}
-	inline P_API i32 RoundToInt(float f)
+	P_API constexpr i32 RoundToI32(double v)
 	{
-		return i32(Round(f));
+		return i64(Round(v));
 	}
 
 	/**

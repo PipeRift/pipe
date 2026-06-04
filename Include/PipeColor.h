@@ -646,8 +646,8 @@ namespace p
 		/** useful to detect if a light contribution needs to be rendered */
 		bool IsAlmostBlack() const
 		{
-			return Square(this->r) < smallerNumber && Square(this->g) < smallerNumber
-			    && Square(this->b) < smallerNumber;
+			return Square(this->r) < smallNumber && Square(this->g) < smallNumber
+			    && Square(this->b) < smallNumber;
 		}
 
 		/**
@@ -774,7 +774,7 @@ namespace p
 	extern constexpr void ComputeAndFixedColorAndIntensity(
 	    LinearColor& linearColor, Color& outColor, float& outIntensity)
 	{
-		const float maxComponent = Max(smallerNumber, linearColor.r, linearColor.g, linearColor.b);
+		const float maxComponent = Max(smallNumber, linearColor.r, linearColor.g, linearColor.b);
 		outColor                 = (linearColor / maxComponent).Convert<ColorMode::RGBA>();
 		outIntensity             = maxComponent;
 	}
