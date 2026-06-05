@@ -9,9 +9,12 @@ using namespace bandit;
 using namespace p;
 
 
-go_bandit([]() {
-	describe("Core.Tag", []() {
-		it("Can copy empty", [&]() {
+go_bandit([]()
+{
+	describe("Core.Tag", []()
+	{
+		it("Can copy empty", [&]()
+		{
 			Tag tag{};
 			Tag tag2{"Ahh"};
 			AssertThat(p::GetHash(tag), Equals(0));
@@ -22,23 +25,27 @@ go_bandit([]() {
 			AssertThat(p::GetHash(tag2), Equals(0));
 			AssertThat(tag2.IsNone(), Equals(true));
 		});
-		it("Can assign from literal", [&]() {
+		it("Can assign from literal", [&]()
+		{
 			Tag tag{"Kiwi"};
 			AssertThat(tag.AsString(), Equals("Kiwi"));
 		});
 
-		it("Can assign from string", [&]() {
+		it("Can assign from string", [&]()
+		{
 			String str{"Kiwi"};
 			Tag tag{str};
 			AssertThat(tag.AsString(), Equals("Kiwi"));
 		});
 
-		it("Can retrieve string data", [&]() {
+		it("Can retrieve string data", [&]()
+		{
 			Tag tag{"Kiwi"};
 			AssertThat(tag.AsString(), Equals("Kiwi"));
 		});
 
-		it("Can compare tags", [&]() {
+		it("Can compare tags", [&]()
+		{
 			Tag tagKiwi{"Kiwi"};
 			Tag tagKiwi2{"Kiwi"};
 			Tag tagApple{"Apple"};
@@ -46,7 +53,8 @@ go_bandit([]() {
 			AssertThat(tagKiwi, !Equals(tagApple));
 		});
 
-		it("Different instances share string allocation", [&]() {
+		it("Different instances share string allocation", [&]()
+		{
 			Tag tagKiwi{"Kiwi"};
 			Tag tagKiwi2{"Kiwi"};
 			Tag tagApple{"Apple"};
@@ -54,7 +62,8 @@ go_bandit([]() {
 			AssertThat(tagKiwi.AsString().data(), !Equals(tagApple.AsString().data()));
 		});
 
-		it("Can check invalid/none", [&]() {
+		it("Can check invalid/none", [&]()
+		{
 			Tag tagValid{"Kiwi"};
 			Tag tagInvalid{};
 			AssertThat(tagValid.IsNone(), Equals(false));
@@ -63,14 +72,16 @@ go_bandit([]() {
 			AssertThat(tagInvalid, Equals(Tag::None()));
 		});
 
-		it("Contains correct hashes", [&]() {
+		it("Contains correct hashes", [&]()
+		{
 			Tag tagKiwi{"Kiwi"};
 			Tag tagKiwi2{"Kiwi"};
 			AssertThat(p::GetHash(tagKiwi), Equals(p::GetHash(tagKiwi2)));
 			AssertThat(p::GetHash(tagKiwi), Equals(p::GetHash("Kiwi")));
 		});
 
-		it("Can copy tag", [&]() {
+		it("Can copy tag", [&]()
+		{
 			Tag tagKiwi{"Kiwi"};
 			Tag tagApple{"Apple"};
 			Tag tagCopy = tagKiwi;
@@ -83,7 +94,8 @@ go_bandit([]() {
 			AssertThat(tagCopy, Equals(tagApple));
 		});
 
-		it("Can move tag", [&]() {
+		it("Can move tag", [&]()
+		{
 			Tag tagKiwi{"Kiwi"};
 			Tag tagApple{"Apple"};
 			Tag tagMove = Move(tagKiwi);

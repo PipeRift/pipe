@@ -9,9 +9,12 @@ using namespace snowhouse;
 using namespace bandit;
 
 
-go_bandit([]() {
-	describe("Files.Paths", []() {
-		it("Can get root name and path", [&]() {
+go_bandit([]()
+{
+	describe("Files.Paths", []()
+	{
+		it("Can get root name and path", [&]()
+		{
 #if P_PLATFORM_WINDOWS
 			AssertThat(p::GetRootPathName("F:\\SomeFolder\\AnotherFolder"), Equals("F:"));
 			AssertThat(p::GetRootPath("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\"));
@@ -23,7 +26,8 @@ go_bandit([]() {
 			AssertThat(p::GetRootPath("/AnotherFolder"), Equals("/"));
 		});
 
-		it("Can get relative path", [&]() {
+		it("Can get relative path", [&]()
+		{
 #if P_PLATFORM_WINDOWS
 			AssertThat(p::GetRelativePath("F:\\SomeFolder\\AnotherFolder"),
 			    Equals("SomeFolder\\AnotherFolder"));
@@ -34,7 +38,8 @@ go_bandit([]() {
 			    Equals("SomeFolder/AnotherFolder"));
 		});
 
-		it("Can check absolute path", [&]() {
+		it("Can check absolute path", [&]()
+		{
 			AssertThat(p::IsAbsolutePath("//host"), Equals(true));
 #if P_PLATFORM_WINDOWS
 			AssertThat(p::IsAbsolutePath("F:\\SomeFolder\\AnotherFolder"), Equals(true));
@@ -45,7 +50,8 @@ go_bandit([]() {
 			AssertThat(p::IsAbsolutePath("SomeFolder/AnotherFolder"), Equals(false));
 		});
 
-		it("Can check relative path", [&]() {
+		it("Can check relative path", [&]()
+		{
 #if P_PLATFORM_WINDOWS
 			AssertThat(p::IsRelativePath("F:\\SomeFolder\\AnotherFolder"), Equals(false));
 #elif P_PLATFORM_LINUX
@@ -55,7 +61,8 @@ go_bandit([]() {
 			AssertThat(p::IsRelativePath("SomeFolder/AnotherFolder"), Equals(true));
 		});
 
-		it("Can get parent path", [&]() {
+		it("Can get parent path", [&]()
+		{
 #if P_PLATFORM_WINDOWS
 			AssertThat(p::GetParentPath("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\SomeFolder"));
 #endif
@@ -64,11 +71,13 @@ go_bandit([]() {
 			AssertThat(p::GetParentPath("/SomeFolder/SomeFile.txt"), Equals("/SomeFolder"));
 		});
 
-		it("Executable path is not empty", [&]() {
+		it("Executable path is not empty", [&]()
+		{
 			AssertThat(p::PlatformPaths::GetExecutablePath(), !Equals(""));
 		});
 
-		it("Can get extension", [&]() {
+		it("Can get extension", [&]()
+		{
 #if P_PLATFORM_WINDOWS
 			AssertThat(p::GetExtension("F:\\SomeFolder\\AnotherFolder.lib"), Equals(".lib"));
 			AssertThat(p::GetExtension("F:\\AnotherFolder.lib"), Equals(".lib"));
@@ -86,7 +95,8 @@ go_bandit([]() {
 			AssertThat(p::GetExtension("AnotherFolder"), Equals(""));
 		});
 
-		it("Can check extension", [&]() {
+		it("Can check extension", [&]()
+		{
 #if P_PLATFORM_WINDOWS
 			AssertThat(p::HasExtension("F:\\SomeFolder\\AnotherFolder.lib"), Equals(true));
 			AssertThat(p::HasExtension("F:\\AnotherFolder.lib"), Equals(true));
@@ -104,7 +114,8 @@ go_bandit([]() {
 			AssertThat(p::HasExtension("AnotherFolder"), Equals(false));
 		});
 
-		it("Can replace extension", [&]() {
+		it("Can replace extension", [&]()
+		{
 			p::String path;
 #if P_PLATFORM_WINDOWS
 			path = "F:\\SomeFolder\\AnotherFolder.lib";
@@ -129,7 +140,8 @@ go_bandit([]() {
 			AssertThat(path, Equals(p::String{"AnotherFolder.txt"}));
 		});
 
-		it("Can get stem", [&]() {
+		it("Can get stem", [&]()
+		{
 #if P_PLATFORM_WINDOWS
 			AssertThat(p::GetStem("F:\\SomeFolder\\AnotherFolder.lib"), Equals("AnotherFolder"));
 			AssertThat(p::GetStem("F:\\AnotherFolder.lib"), Equals("AnotherFolder"));
@@ -148,7 +160,8 @@ go_bandit([]() {
 			AssertThat(p::GetStem(""), Equals(""));
 		});
 
-		it("Can check stem", [&]() {
+		it("Can check stem", [&]()
+		{
 #if P_PLATFORM_WINDOWS
 			AssertThat(p::HasStem("F:\\SomeFolder\\AnotherFolder.lib"), Equals(true));
 			AssertThat(p::HasStem("F:\\AnotherFolder.lib"), Equals(true));
@@ -168,7 +181,8 @@ go_bandit([]() {
 		});
 
 
-		it("Can append to path", [&]() {
+		it("Can append to path", [&]()
+		{
 			AssertThat(p::JoinPaths("", ""), Equals(p::StringView{""}));
 			AssertThat(p::JoinPaths("", "/"), Equals(p::StringView{"/"}));
 			AssertThat(p::JoinPaths("", "bar"), Equals(p::StringView{"bar"}));

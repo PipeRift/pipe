@@ -472,7 +472,7 @@ namespace p
 	// and Write
 	template<typename T>
 	void Read(Reader& ct, T& val)
-	    requires(bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
+	    requires(bool(TFlags<T>::HasSingleSerialize && TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		val.Serialize(commonContext);
@@ -489,7 +489,7 @@ namespace p
 	// and Write
 	template<typename T>
 	void Write(Writer& ct, const T& val)
-	    requires(bool(TFlags<T>::HasSingleSerialize&& TFlags<T>::HasMemberSerialize))
+	    requires(bool(TFlags<T>::HasSingleSerialize && TFlags<T>::HasMemberSerialize))
 	{
 		ReadWriter commonContext{ct};
 		const_cast<T&>(val).Serialize(commonContext);

@@ -456,13 +456,15 @@ namespace p
 	template<typename T>
 	void AssignSerializableTypeOps(TypeOps& ops)
 	{
-		ops.read = [](Reader& r, void* instance) {
+		ops.read = [](Reader& r, void* instance)
+		{
 			if constexpr (Readable<T>)
 			{
 				r.Serialize(*static_cast<T*>(instance));
 			}
 		};
-		ops.write = [](Writer& w, void* instance) {
+		ops.write = [](Writer& w, void* instance)
+		{
 			if constexpr (Writable<T>)
 			{
 				w.Serialize(*static_cast<T*>(instance));
@@ -495,7 +497,8 @@ namespace p
 	template<typename T>
 	void AssignObjectTypeOps(ObjectTypeOps& ops)
 	{
-		ops.onNew = [](Arena& arena) -> BaseObject* {
+		ops.onNew = [](Arena& arena) -> BaseObject*
+		{
 			if constexpr (!IsAbstract<T> && !IsSame<T, BaseObject>)
 			{
 				return new (p::Alloc<T>(arena)) T();
@@ -572,7 +575,8 @@ namespace p
 		TTypeAutoRegister()
 		{
 #if P_AUTOREGISTER_ENABLED
-			OnReflectInit([] {
+			OnReflectInit([]
+			{
 				RegisterTypeId<T>();
 			});
 #endif
@@ -713,11 +717,10 @@ public:
                                                                                                   \
 	static void __BuildProperty(p::MetaCounter<id_name>)                                          \
 	{                                                                                             \
-		p::AddTypeProperty<decltype(name)>(                                                       \
-		    [](void* instance) {                                                                  \
+		p::AddTypeProperty<decltype(name)>([](void* instance)                                     \
+		{                                                                                         \
 			return (void*)&static_cast<Self*>(instance)->name;                                    \
-		    },                                                                                    \
-		    #name, p::InitPropertyFlags(flags));                                                  \
+		}, #name, p::InitPropertyFlags(flags));                                                   \
 		/* Registry next property if any */                                                       \
 		__BuildProperty(p::MetaCounter<id_name + 1>{});                                           \
 	}                                                                                             \

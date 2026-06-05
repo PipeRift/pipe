@@ -21,9 +21,12 @@ struct TestStruct
 };
 
 
-go_bandit([]() {
-	describe("Reflection.Macros", []() {
-		it("Can get property names", [&]() {
+go_bandit([]()
+{
+	describe("Reflection.Macros", []()
+	{
+		it("Can get property names", [&]()
+		{
 			p::TypeId testStructType = p::RegisterTypeId<TestStruct>();
 
 			AssertThat(p::HasTypeFlags(testStructType, p::TF_Struct), Equals(true));

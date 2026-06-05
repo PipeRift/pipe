@@ -55,9 +55,12 @@ struct MoveType
 };
 
 
-go_bandit([]() {
-	describe("Memory.Operations", []() {
-		it("Can default construct", [&]() {
+go_bandit([]()
+{
+	describe("Memory.Operations", []()
+	{
+		it("Can default construct", [&]()
+		{
 			// Check that it inits to 0
 			bool boolValues[2]{true, true};    // Assign simulated garbage
 			ConstructItems(boolValues, 2);
@@ -98,7 +101,8 @@ go_bandit([]() {
 			AssertThat(boolsValues[1].value2, Is().EqualTo(false));
 		});
 
-		it("Can value construct", [&]() {
+		it("Can value construct", [&]()
+		{
 			bool boolValues[2]{false, false};    // Assign simulated garbage
 			ConstructItems(boolValues, 2, true);
 			AssertThat(boolValues[0], Is().EqualTo(true));
@@ -135,7 +139,8 @@ go_bandit([]() {
 			AssertThat(boolsValues[1].value2, Is().EqualTo(true));
 		});
 
-		it("Can copy construct", [&]() {
+		it("Can copy construct", [&]()
+		{
 			bool boolValues[2]{false, false};    // Assign simulated garbage
 			bool srcBoolValues[2]{true, false};
 			CopyConstructItems(boolValues, 2, srcBoolValues);
@@ -187,7 +192,8 @@ go_bandit([]() {
 			AssertThat(copyValues[1].value, Is().EqualTo(75));
 		});
 
-		it("Can move construct", [&]() {
+		it("Can move construct", [&]()
+		{
 			bool boolValues[2]{false, false};    // Assign simulated garbage
 			bool srcBoolValues[2]{true, false};
 			MoveConstructItems(boolValues, 2, srcBoolValues);

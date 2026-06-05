@@ -46,54 +46,67 @@ namespace snowhouse
 }    // namespace snowhouse
 
 
-go_bandit([]() {
-	describe("Math.Color", []() {
-		describe("LinearColor", []() {
-			it("Can Shade", [&]() {
+go_bandit([]()
+{
+	describe("Math.Color", []()
+	{
+		describe("LinearColor", []()
+		{
+			it("Can Shade", [&]()
+			{
 				AssertThat(LinearColor::White().Shade(1.0f), Equals(LinearColor::Black()));
 				AssertThat(LinearColor::White().Shade(0.5f), Equals(LinearColor::Gray()));
 				constexpr LinearColor color{Color::FromHex(0x80ced7)};
 				AssertThat(color.Shade(0.5f), Equals(LinearColor{Color::FromHex(0x40676B)}));
 			});
 
-			it("Shade doesn't change alpha", [&]() {
+			it("Shade doesn't change alpha", [&]()
+			{
 				AssertThat(LinearColor::White().Translucency(0.5f).Shade(1.0f).a,
 				    EqualsWithDelta(0.5f, 0.01f));
 			});
 
-			it("Can Tint", [&]() {
+			it("Can Tint", [&]()
+			{
 				AssertThat(LinearColor::Black().Tint(1.0f), Equals(LinearColor::White()));
 				AssertThat(LinearColor::Black().Tint(0.5f), Equals(LinearColor::Gray()));
 				AssertThat(Color::FromHex(0x80ced7).Tint(0.5f), Equals(Color::FromHex(0xbfe6eb)));
 			});
 
-			it("Tint doesn't change alpha", [&]() {
+			it("Tint doesn't change alpha", [&]()
+			{
 				AssertThat(LinearColor::Black().Translucency(0.5f).Tint(1.0f).a,
 				    EqualsWithDelta(0.5f, 0.01f));
 			});
 		});
-		describe("Color", []() {
-			it("Can Shade", [&]() {
+		describe("Color", []()
+		{
+			it("Can Shade", [&]()
+			{
 				AssertThat(Color::White().Shade(1.0f), Equals(Color::Black()));
 				AssertThat(Color::White().Shade(0.5f), Equals(Color::Gray()));
 				AssertThat(Color::FromHex(0x80ced7).Shade(0.5f), Equals(Color::FromHex(0x40676B)));
 			});
 
-			it("Shade doesn't change alpha", [&]() {
+			it("Shade doesn't change alpha", [&]()
+			{
 				AssertThat(Color::White().Translucency(127).Shade(1.0f).a, Equals(127));
 			});
 
-			it("Can Tint", [&]() {
+			it("Can Tint", [&]()
+			{
 				AssertThat(Color::Black().Tint(1.0f), Equals(Color::White()));
 				AssertThat(Color::Black().Tint(0.5f), Equals(Color::Gray()));
 				AssertThat(Color::FromHex(0x80ced7).Tint(0.5f), Equals(Color::FromHex(0xbfe6eb)));
 			});
 
-			it("Tint doesn't change alpha", [&]() {
+			it("Tint doesn't change alpha", [&]()
+			{
 				AssertThat(Color::Black().Translucency(127).Tint(1.0f).a, Equals(127));
 			});
 
-			it("Can convert to linear", [&]() {
+			it("Can convert to linear", [&]()
+			{
 				AssertThat(LinearColor{Color::White()}, Equals(LinearColor::White()));
 				AssertThat(LinearColor{Color::Black()}, Equals(LinearColor::Black()));
 				AssertThat(LinearColor{Color::Gray()}, Equals(LinearColor::Gray()));

@@ -54,67 +54,67 @@
 #define ANKERL_NANOBENCH_PRIVATE_CXX17() 201703L
 
 #if ANKERL_NANOBENCH(CXX) >= ANKERL_NANOBENCH(CXX17)
-#	define ANKERL_NANOBENCH_PRIVATE_NODISCARD() [[nodiscard]]
+	#define ANKERL_NANOBENCH_PRIVATE_NODISCARD() [[nodiscard]]
 #else
-#	define ANKERL_NANOBENCH_PRIVATE_NODISCARD()
+	#define ANKERL_NANOBENCH_PRIVATE_NODISCARD()
 #endif
 
 #if defined(__clang__)
-#	define ANKERL_NANOBENCH_PRIVATE_IGNORE_PADDED_PUSH() \
+	#define ANKERL_NANOBENCH_PRIVATE_IGNORE_PADDED_PUSH() \
 		_Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wpadded\"")
-#	define ANKERL_NANOBENCH_PRIVATE_IGNORE_PADDED_POP() _Pragma("clang diagnostic pop")
+	#define ANKERL_NANOBENCH_PRIVATE_IGNORE_PADDED_POP() _Pragma("clang diagnostic pop")
 #else
-#	define ANKERL_NANOBENCH_PRIVATE_IGNORE_PADDED_PUSH()
-#	define ANKERL_NANOBENCH_PRIVATE_IGNORE_PADDED_POP()
+	#define ANKERL_NANOBENCH_PRIVATE_IGNORE_PADDED_PUSH()
+	#define ANKERL_NANOBENCH_PRIVATE_IGNORE_PADDED_POP()
 #endif
 
 #if defined(__GNUC__)
-#	define ANKERL_NANOBENCH_PRIVATE_IGNORE_EFFCPP_PUSH() \
+	#define ANKERL_NANOBENCH_PRIVATE_IGNORE_EFFCPP_PUSH() \
 		_Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Weffc++\"")
-#	define ANKERL_NANOBENCH_PRIVATE_IGNORE_EFFCPP_POP() _Pragma("GCC diagnostic pop")
+	#define ANKERL_NANOBENCH_PRIVATE_IGNORE_EFFCPP_POP() _Pragma("GCC diagnostic pop")
 #else
-#	define ANKERL_NANOBENCH_PRIVATE_IGNORE_EFFCPP_PUSH()
-#	define ANKERL_NANOBENCH_PRIVATE_IGNORE_EFFCPP_POP()
+	#define ANKERL_NANOBENCH_PRIVATE_IGNORE_EFFCPP_PUSH()
+	#define ANKERL_NANOBENCH_PRIVATE_IGNORE_EFFCPP_POP()
 #endif
 
 #if defined(ANKERL_NANOBENCH_LOG_ENABLED)
-#	include <iostream>
-#	define ANKERL_NANOBENCH_LOG(x)                                                 \
+	#include <iostream>
+	#define ANKERL_NANOBENCH_LOG(x)                                                 \
 		do                                                                          \
 		{                                                                           \
 			std::cout << __FUNCTION__ << "@" << __LINE__ << ": " << x << std::endl; \
 		} while (0)
 #else
-#	define ANKERL_NANOBENCH_LOG(x) \
+	#define ANKERL_NANOBENCH_LOG(x) \
 		do                          \
 		{                           \
 		} while (0)
 #endif
 
 #if defined(__linux__) && !defined(ANKERL_NANOBENCH_DISABLE_PERF_COUNTERS)
-#	define ANKERL_NANOBENCH_PRIVATE_PERF_COUNTERS() 1
+	#define ANKERL_NANOBENCH_PRIVATE_PERF_COUNTERS() 1
 #else
-#	define ANKERL_NANOBENCH_PRIVATE_PERF_COUNTERS() 0
+	#define ANKERL_NANOBENCH_PRIVATE_PERF_COUNTERS() 0
 #endif
 
 #if defined(__clang__)
-#	define ANKERL_NANOBENCH_NO_SANITIZE(...) __attribute__((no_sanitize(__VA_ARGS__)))
+	#define ANKERL_NANOBENCH_NO_SANITIZE(...) __attribute__((no_sanitize(__VA_ARGS__)))
 #else
-#	define ANKERL_NANOBENCH_NO_SANITIZE(...)
+	#define ANKERL_NANOBENCH_NO_SANITIZE(...)
 #endif
 
 #if defined(_MSC_VER)
-#	define ANKERL_NANOBENCH_PRIVATE_NOINLINE() __declspec(noinline)
+	#define ANKERL_NANOBENCH_PRIVATE_NOINLINE() __declspec(noinline)
 #else
-#	define ANKERL_NANOBENCH_PRIVATE_NOINLINE() __attribute__((noinline))
+	#define ANKERL_NANOBENCH_PRIVATE_NOINLINE() __attribute__((noinline))
 #endif
 
 // workaround missing "is_trivially_copyable" in g++ < 5.0
 // See https://stackoverflow.com/a/31798726/48181
 #if defined(__GNUC__) && __GNUC__ < 5
-#	define ANKERL_NANOBENCH_IS_TRIVIALLY_COPYABLE(...) __has_trivial_copy(__VA_ARGS__)
+	#define ANKERL_NANOBENCH_IS_TRIVIALLY_COPYABLE(...) __has_trivial_copy(__VA_ARGS__)
 #else
-#	define ANKERL_NANOBENCH_IS_TRIVIALLY_COPYABLE(...) \
+	#define ANKERL_NANOBENCH_IS_TRIVIALLY_COPYABLE(...) \
 		std::is_trivially_copyable<__VA_ARGS__>::value
 #endif
 
@@ -398,7 +398,7 @@ namespace ankerl
 
 		namespace detail
 		{
-			template <typename T>
+			template<typename T>
 			struct PerfCountSet;
 
 			class IterationLogic;
@@ -409,7 +409,7 @@ namespace ankerl
 #endif
 
 		}    // namespace detail
-	}        // namespace nanobench
+	}    // namespace nanobench
 }    // namespace ankerl
 
 // definitions ////////////////////////////////////////////////////////////////////////////////////
@@ -420,7 +420,7 @@ namespace ankerl
 	{
 		namespace detail
 		{
-			template <typename T>
+			template<typename T>
 			struct PerfCountSet
 			{
 				T pageFaults{};
@@ -565,7 +565,7 @@ namespace ankerl
 			Rng& operator=(Rng const&) = delete;
 
 			// moving is ok
-			Rng(Rng&&) noexcept = default;
+			Rng(Rng&&) noexcept            = default;
 			Rng& operator=(Rng&&) noexcept = default;
 			~Rng() noexcept                = default;
 
@@ -656,7 +656,7 @@ namespace ankerl
 			 *
 			 * @param container The whole container will be shuffled.
 			 */
-			template <typename Container>
+			template<typename Container>
 			void shuffle(Container& container) noexcept;
 
 			/**
@@ -726,11 +726,11 @@ namespace ankerl
 
 			  @tparam Op The code to benchmark.
 			 */
-			template <typename Op>
+			template<typename Op>
 			ANKERL_NANOBENCH(NOINLINE)
 			Bench& run(char const* benchmarkName, Op&& op);
 
-			template <typename Op>
+			template<typename Op>
 			ANKERL_NANOBENCH(NOINLINE)
 			Bench& run(std::string const& benchmarkName, Op&& op);
 
@@ -739,7 +739,7 @@ namespace ankerl
 			 * set name.
 			 * @tparam Op The code to benchmark.
 			 */
-			template <typename Op>
+			template<typename Op>
 			ANKERL_NANOBENCH(NOINLINE)
 			Bench& run(Op&& op);
 
@@ -768,7 +768,7 @@ namespace ankerl
 			 * @tparam T Any input type is internally cast to `double`.
 			 * @param b batch size
 			 */
-			template <typename T>
+			template<typename T>
 			Bench& batch(T b) noexcept;
 			ANKERL_NANOBENCH(NODISCARD) double batch() const noexcept;
 
@@ -974,7 +974,7 @@ namespace ankerl
 
 			  @endverbatim
 			 */
-			template <typename Arg>
+			template<typename Arg>
 			Bench& doNotOptimizeAway(Arg&& arg);
 
 			/*!
@@ -993,7 +993,7 @@ namespace ankerl
 			  @param b Length of N for the next benchmark run, so it is possible to calculate
 			  `bigO`.
 			 */
-			template <typename T>
+			template<typename T>
 			Bench& complexityN(T b) noexcept;
 			ANKERL_NANOBENCH(NODISCARD) double complexityN() const noexcept;
 
@@ -1057,10 +1057,10 @@ namespace ankerl
 			 * `log2(log2(n))`.
 			 * @return BigO Error calculation, which is streamable to std::cout.
 			 */
-			template <typename Op>
+			template<typename Op>
 			BigO complexityBigO(char const* name, Op op) const;
 
-			template <typename Op>
+			template<typename Op>
 			BigO complexityBigO(std::string const& name, Op op) const;
 
 			/*!
@@ -1089,7 +1089,7 @@ namespace ankerl
 		 * @param arg The input that we mark as being used, even though we don't do anything with
 		 * it.
 		 */
-		template <typename Arg>
+		template<typename Arg>
 		void doNotOptimizeAway(Arg&& arg);
 
 		namespace detail
@@ -1097,7 +1097,7 @@ namespace ankerl
 #if defined(_MSC_VER)
 			void doNotOptimizeAwaySink(void const*);
 
-			template <typename T>
+			template<typename T>
 			void doNotOptimizeAway(T const& val);
 
 #else
@@ -1107,23 +1107,23 @@ namespace ankerl
 			// problems in some cases. Google Benchmark seemed to be the most well tested anyways.
 			// see
 			// https://github.com/google/benchmark/blob/master/include/benchmark/benchmark.h#L307
-			template <typename T>
+			template<typename T>
 			void doNotOptimizeAway(T const& val)
 			{
 				// NOLINTNEXTLINE(hicpp-no-assembler)
 				asm volatile("" : : "r,m"(val) : "memory");
 			}
 
-			template <typename T>
+			template<typename T>
 			void doNotOptimizeAway(T& val)
 			{
-#	if defined(__clang__)
+	#if defined(__clang__)
 				// NOLINTNEXTLINE(hicpp-no-assembler)
 				asm volatile("" : "+r,m"(val) : : "memory");
-#	else
+	#else
 				// NOLINTNEXTLINE(hicpp-no-assembler)
 				asm volatile("" : "+m,r"(val) : : "memory");
-#	endif
+	#endif
 			}
 #endif
 
@@ -1152,7 +1152,7 @@ namespace ankerl
 			class PerformanceCounters
 			{
 			public:
-				PerformanceCounters(PerformanceCounters const&) = delete;
+				PerformanceCounters(PerformanceCounters const&)            = delete;
 				PerformanceCounters& operator=(PerformanceCounters const&) = delete;
 
 				PerformanceCounters();
@@ -1184,7 +1184,7 @@ namespace ankerl
 		public:
 			using RangeMeasure = std::vector<std::pair<double, double>>;
 
-			template <typename Op>
+			template<typename Op>
 			static RangeMeasure mapRangeMeasure(RangeMeasure data, Op op)
 			{
 				for (auto& rangeMeasure : data)
@@ -1196,12 +1196,12 @@ namespace ankerl
 
 			static RangeMeasure collectRangeMeasure(std::vector<Result> const& results);
 
-			template <typename Op>
+			template<typename Op>
 			BigO(char const* bigOName, RangeMeasure const& rangeMeasure, Op rangeToN)
 			    : BigO(bigOName, mapRangeMeasure(rangeMeasure, rangeToN))
 			{}
 
-			template <typename Op>
+			template<typename Op>
 			BigO(std::string const& bigOName, RangeMeasure const& rangeMeasure, Op rangeToN)
 			    : BigO(bigOName, mapRangeMeasure(rangeMeasure, rangeToN))
 			{}
@@ -1270,7 +1270,7 @@ namespace ankerl
 			return d - 1.0;
 		}
 
-		template <typename Container>
+		template<typename Container>
 		void Rng::shuffle(Container& container) noexcept
 		{
 			auto size = static_cast<uint32_t>(container.size());
@@ -1287,7 +1287,7 @@ namespace ankerl
 			return (x << k) | (x >> (64U - k));
 		}
 
-		template <typename Op>
+		template<typename Op>
 		ANKERL_NANOBENCH_NO_SANITIZE("integer")
 		Bench& Bench::run(Op&& op)
 		{
@@ -1314,27 +1314,27 @@ namespace ankerl
 		}
 
 		// Performs all evaluations.
-		template <typename Op>
+		template<typename Op>
 		Bench& Bench::run(char const* benchmarkName, Op&& op)
 		{
 			name(benchmarkName);
 			return run(std::forward<Op>(op));
 		}
 
-		template <typename Op>
+		template<typename Op>
 		Bench& Bench::run(std::string const& benchmarkName, Op&& op)
 		{
 			name(benchmarkName);
 			return run(std::forward<Op>(op));
 		}
 
-		template <typename Op>
+		template<typename Op>
 		BigO Bench::complexityBigO(char const* benchmarkName, Op op) const
 		{
 			return BigO(benchmarkName, BigO::collectRangeMeasure(mResults), op);
 		}
 
-		template <typename Op>
+		template<typename Op>
 		BigO Bench::complexityBigO(std::string const& benchmarkName, Op op) const
 		{
 			return BigO(benchmarkName, BigO::collectRangeMeasure(mResults), op);
@@ -1342,7 +1342,7 @@ namespace ankerl
 
 		// Set the batch size, e.g. number of processed bytes, or some other metric for the size of
 		// the processed data in each iteration. Any argument is cast to double.
-		template <typename T>
+		template<typename T>
 		Bench& Bench::batch(T b) noexcept
 		{
 			mConfig.mBatch = static_cast<double>(b);
@@ -1350,7 +1350,7 @@ namespace ankerl
 		}
 
 		// Sets the computation complexity of the next run. Any argument is cast to double.
-		template <typename T>
+		template<typename T>
 		Bench& Bench::complexityN(T n) noexcept
 		{
 			mConfig.mComplexityN = static_cast<double>(n);
@@ -1358,7 +1358,7 @@ namespace ankerl
 		}
 
 		// Convenience: makes sure none of the given arguments are optimized away by the compiler.
-		template <typename Arg>
+		template<typename Arg>
 		Bench& Bench::doNotOptimizeAway(Arg&& arg)
 		{
 			detail::doNotOptimizeAway(std::forward<Arg>(arg));
@@ -1366,7 +1366,7 @@ namespace ankerl
 		}
 
 		// Makes sure none of the given arguments are optimized away by the compiler.
-		template <typename Arg>
+		template<typename Arg>
 		void doNotOptimizeAway(Arg&& arg)
 		{
 			detail::doNotOptimizeAway(std::forward<Arg>(arg));
@@ -1375,7 +1375,7 @@ namespace ankerl
 		namespace detail
 		{
 #if defined(_MSC_VER)
-			template <typename T>
+			template<typename T>
 			void doNotOptimizeAway(T const& val)
 			{
 				doNotOptimizeAwaySink(&val);
@@ -1384,38 +1384,38 @@ namespace ankerl
 #endif
 
 		}    // namespace detail
-	}        // namespace nanobench
+	}    // namespace nanobench
 }    // namespace ankerl
 
 #if defined(ANKERL_NANOBENCH_IMPLEMENT)
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// implementation part - only visible in .cpp
-///////////////////////////////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	// implementation part - only visible in .cpp
+	///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#	include <algorithm>    // sort, reverse
-#	include <atomic>      // sortPredicate_exchange_strong in loop overhead
-#	include <cstdlib>     // getenv
-#	include <cstring>     // strstr, strncmp
-#	include <fstream>     // ifstream to parse proc files
-#	include <iomanip>     // setw, setprecision
-#	include <iostream>    // cout
-#	include <numeric>     // accumulate
-#	include <random>      // random_device
-#	include <sstream>     // to_s in Number
-#	include <stdexcept>    // throw for rendering templates
-#	include <tuple>        // std::tie
-#	if defined(__linux__)
-#		include <unistd.h>    //sysconf
-#	endif
-#	if ANKERL_NANOBENCH(PERF_COUNTERS)
-#		include <linux/perf_event.h>
-#		include <sys/ioctl.h>
-#		include <sys/syscall.h>
-#		include <unistd.h>
+	#include <algorithm>    // sort, reverse
+	#include <atomic>       // sortPredicate_exchange_strong in loop overhead
+	#include <cstdlib>      // getenv
+	#include <cstring>      // strstr, strncmp
+	#include <fstream>      // ifstream to parse proc files
+	#include <iomanip>      // setw, setprecision
+	#include <iostream>     // cout
+	#include <numeric>      // accumulate
+	#include <random>       // random_device
+	#include <sstream>      // to_s in Number
+	#include <stdexcept>    // throw for rendering templates
+	#include <tuple>        // std::tie
+	#if defined(__linux__)
+		#include <unistd.h>    //sysconf
+	#endif
+	#if ANKERL_NANOBENCH(PERF_COUNTERS)
+		#include <linux/perf_event.h>
+		#include <sys/ioctl.h>
+		#include <sys/syscall.h>
+		#include <unistd.h>
 
-#		include <map>    // map
-#	endif
+		#include <map>    // map
+	#endif
 
 // declarations ///////////////////////////////////////////////////////////////////////////////////
 
@@ -1438,8 +1438,8 @@ namespace ankerl
 				class MarkDownCode;
 
 			}    // namespace fmt
-		}        // namespace detail
-	}            // namespace nanobench
+		}    // namespace detail
+	}    // namespace nanobench
 }    // namespace ankerl
 
 // definitions ////////////////////////////////////////////////////////////////////////////////////
@@ -1453,7 +1453,7 @@ namespace ankerl
 		namespace detail
 		{
 			// helpers to get double values
-			template <typename T>
+			template<typename T>
 			inline double d(T t) noexcept
 			{
 				return static_cast<double>(t);
@@ -1592,12 +1592,12 @@ namespace ankerl
 				std::vector<Node> children;
 				Type type;
 
-				template <size_t N>
+				template<size_t N>
 				// NOLINTNEXTLINE(hicpp-avoid-c-arrays,modernize-avoid-c-arrays,cppcoreguidelines-avoid-c-arrays)
 				bool operator==(char const (&str)[N]) const noexcept
 				{
-					return static_cast<size_t>(std::distance(begin, end) + 1) == N &&
-					       0 == strncmp(str, begin, N - 1);
+					return static_cast<size_t>(std::distance(begin, end) + 1) == N
+					    && 0 == strncmp(str, begin, N - 1);
 				}
 			};
 			ANKERL_NANOBENCH(IGNORE_PADDED_POP)
@@ -1939,9 +1939,7 @@ namespace ankerl
 								}
 								break;
 
-							case Node::Type::tag:
-								generateResultTag(n, r, out);
-								break;
+							case Node::Type::tag: generateResultTag(n, r, out); break;
 						}
 					}
 				}
@@ -1956,7 +1954,7 @@ namespace ankerl
 			bool isEndlessRunning(std::string const& name);
 			bool isWarningsEnabled();
 
-			template <typename T>
+			template<typename T>
 			T parseFile(std::string const& filename);
 
 			void gatherStabilityInformation(
@@ -2000,10 +1998,10 @@ namespace ankerl
 					void restore();
 
 					// don't allow copying / moving
-					StreamStateRestorer(StreamStateRestorer const&) = delete;
+					StreamStateRestorer(StreamStateRestorer const&)            = delete;
 					StreamStateRestorer& operator=(StreamStateRestorer const&) = delete;
 					StreamStateRestorer(StreamStateRestorer&&)                 = delete;
-					StreamStateRestorer& operator=(StreamStateRestorer&&) = delete;
+					StreamStateRestorer& operator=(StreamStateRestorer&&)      = delete;
 
 				private:
 					std::ostream& mStream;
@@ -2072,8 +2070,8 @@ namespace ankerl
 				std::ostream& operator<<(std::ostream& os, MarkDownCode const& mdCode);
 
 			}    // namespace fmt
-		}        // namespace detail
-	}            // namespace nanobench
+		}    // namespace detail
+	}    // namespace nanobench
 }    // namespace ankerl
 
 // implementation /////////////////////////////////////////////////////////////////////////////////
@@ -2118,8 +2116,8 @@ namespace ankerl
 							{
 								throw std::runtime_error(
 								    "render: can only use section 'measurement' here if there is a "
-								    "single result, but there are " +
-								    detail::fmt::to_s(results.size()));
+								    "single result, but there are "
+								    + detail::fmt::to_s(results.size()));
 							}
 							// when we only have a single result, we can immediately go into its
 							// measurement.
@@ -2176,28 +2174,28 @@ namespace ankerl
 		{
 			PerformanceCounters& performanceCounters()
 			{
-#	if defined(__clang__)
-#		pragma clang diagnostic push
-#		pragma clang diagnostic ignored "-Wexit-time-destructors"
-#	endif
+	#if defined(__clang__)
+		#pragma clang diagnostic push
+		#pragma clang diagnostic ignored "-Wexit-time-destructors"
+	#endif
 				static PerformanceCounters pc;
-#	if defined(__clang__)
-#		pragma clang diagnostic pop
-#	endif
+	#if defined(__clang__)
+		#pragma clang diagnostic pop
+	#endif
 				return pc;
 			}
 
-// Windows version of doNotOptimizeAway
-// see https://github.com/google/benchmark/blob/master/include/benchmark/benchmark.h#L307
-// see https://github.com/facebook/folly/blob/master/folly/Benchmark.h#L280
-// see https://docs.microsoft.com/en-us/cpp/preprocessor/optimize
-#	if defined(_MSC_VER)
-#		pragma optimize("", off)
+	// Windows version of doNotOptimizeAway
+	// see https://github.com/google/benchmark/blob/master/include/benchmark/benchmark.h#L307
+	// see https://github.com/facebook/folly/blob/master/folly/Benchmark.h#L280
+	// see https://docs.microsoft.com/en-us/cpp/preprocessor/optimize
+	#if defined(_MSC_VER)
+		#pragma optimize("", off)
 			void doNotOptimizeAwaySink(void const*) {}
-#		pragma optimize("", on)
-#	endif
+		#pragma optimize("", on)
+	#endif
 
-			template <typename T>
+			template<typename T>
 			T parseFile(std::string const& filename)
 			{
 				std::ifstream fin(filename);
@@ -2208,14 +2206,14 @@ namespace ankerl
 
 			char const* getEnv(char const* name)
 			{
-#	if defined(_MSC_VER)
-#		pragma warning(push)
-#		pragma warning(disable : 4996)    // getenv': This function or variable may be unsafe.
-#	endif
+	#if defined(_MSC_VER)
+		#pragma warning(push)
+		#pragma warning(disable:4996)    // getenv': This function or variable may be unsafe.
+	#endif
 				return std::getenv(name);
-#	if defined(_MSC_VER)
-#		pragma warning(pop)
-#	endif
+	#if defined(_MSC_VER)
+		#pragma warning(pop)
+	#endif
 			}
 
 			bool isEndlessRunning(std::string const& name)
@@ -2240,13 +2238,13 @@ namespace ankerl
 
 				bool recommendCheckFlags = false;
 
-#	if defined(DEBUG)
+	#if defined(DEBUG)
 				warnings.emplace_back("DEBUG defined");
 				recommendCheckFlags = true;
-#	endif
+	#endif
 
 				bool recommendPyPerf = false;
-#	if defined(__linux__)
+	#if defined(__linux__)
 				auto nprocs = sysconf(_SC_NPROCESSORS_CONF);
 				if (nprocs <= 0)
 				{
@@ -2268,9 +2266,9 @@ namespace ankerl
 							auto minMHz = static_cast<double>(minFreq) / 1000.0;
 							auto maxMHz = static_cast<double>(maxFreq) / 1000.0;
 							warnings.emplace_back(
-							    "CPU frequency scaling enabled: CPU " + idStr + " between " +
-							    detail::fmt::Number(1, 1, minMHz).to_s() + " and " +
-							    detail::fmt::Number(1, 1, maxMHz).to_s() + " MHz");
+							    "CPU frequency scaling enabled: CPU " + idStr + " between "
+							    + detail::fmt::Number(1, 1, minMHz).to_s() + " and "
+							    + detail::fmt::Number(1, 1, maxMHz).to_s() + " MHz");
 							recommendPyPerf = true;
 							break;
 						}
@@ -2280,8 +2278,8 @@ namespace ankerl
 					    "/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor");
 					if ("performance" != currentGovernor)
 					{
-						warnings.emplace_back("CPU governor is '" + currentGovernor +
-						                      "' but should be 'performance'");
+						warnings.emplace_back("CPU governor is '" + currentGovernor
+						                      + "' but should be 'performance'");
 						recommendPyPerf = true;
 					}
 
@@ -2291,7 +2289,7 @@ namespace ankerl
 						recommendPyPerf = true;
 					}
 				}
-#	endif
+	#endif
 
 				if (recommendCheckFlags)
 				{
@@ -2471,9 +2469,9 @@ namespace ankerl
 
 				void add(std::chrono::nanoseconds elapsed, PerformanceCounters const& pc) noexcept
 				{
-#	if defined(ANKERL_NANOBENCH_LOG_ENABLED)
+	#if defined(ANKERL_NANOBENCH_LOG_ENABLED)
 					auto oldIters = mNumIters;
-#	endif
+	#endif
 
 					switch (mState)
 					{
@@ -2565,10 +2563,10 @@ namespace ankerl
 							double d = 100.0;
 							if (!mBench.results().empty())
 							{
-								d = rMedian <= 0.0 ? 0.0
-								                   : mBench.results().front().median(
-								                         Result::Measure::elapsed) /
-								                         rMedian * 100.0;
+								d = rMedian <= 0.0
+								      ? 0.0
+								      : mBench.results().front().median(Result::Measure::elapsed)
+								            / rMedian * 100.0;
 							}
 							columns.emplace_back(11, 1, "relative", "%", d);
 						}
@@ -2617,8 +2615,8 @@ namespace ankerl
 								double p = 0.0;
 								if (rBraMedian >= 1e-9)
 								{
-									p = 100.0 * mResult.median(Result::Measure::branchmisses) /
-									    rBraMedian;
+									p = 100.0 * mResult.median(Result::Measure::branchmisses)
+									  / rBraMedian;
 								}
 								columns.emplace_back(10, 1, "miss%", "%", p);
 							}
@@ -2683,8 +2681,8 @@ namespace ankerl
 							os << fmt::MarkDownCode(mBench.name());
 							if (showUnstable)
 							{
-								auto avgIters = static_cast<double>(mTotalNumIters) /
-								                static_cast<double>(mBench.epochs());
+								auto avgIters = static_cast<double>(mTotalNumIters)
+								              / static_cast<double>(mBench.epochs());
 								// NOLINTNEXTLINE(bugprone-incorrect-roundings)
 								auto suggestedIters = static_cast<uint64_t>(avgIters * 10 + 0.5);
 
@@ -2742,7 +2740,7 @@ namespace ankerl
 				results.emplace_back(std::move(mPimpl->mResult));
 			}
 
-#	if ANKERL_NANOBENCH(PERF_COUNTERS)
+	#if ANKERL_NANOBENCH(PERF_COUNTERS)
 
 			ANKERL_NANOBENCH(IGNORE_PADDED_PUSH)
 			class LinuxPerformanceCounters
@@ -2819,13 +2817,13 @@ namespace ankerl
 				void updateResults(uint64_t numIters);
 
 				// rounded integer division
-				template <typename T>
+				template<typename T>
 				static inline T divRounded(T a, T divisor)
 				{
 					return (a + divisor / 2) / divisor;
 				}
 
-				template <typename Op>
+				template<typename Op>
 				ANKERL_NANOBENCH_NO_SANITIZE("integer")
 				void calibrate(Op&& op)
 				{
@@ -2872,10 +2870,11 @@ namespace ankerl
 						uint64_t const numIters = 100000U + (std::random_device{}() & 3);
 						uint64_t n              = numIters;
 						uint32_t x              = 1234567;
-						auto fn                 = [&]() {
-                            x ^= x << 13;
-                            x ^= x >> 17;
-                            x ^= x << 5;
+						auto fn                 = [&]()
+						{
+							x ^= x << 13;
+							x ^= x >> 17;
+							x ^= x << 5;
 						};
 
 						beginMeasure();
@@ -2903,11 +2902,11 @@ namespace ankerl
 						{
 							// factor 2 because we have two instructions per loop
 							auto m1       = measure1[i] > mCalibratedOverhead[i]
-							                    ? measure1[i] - mCalibratedOverhead[i]
-							                    : 0;
+							                  ? measure1[i] - mCalibratedOverhead[i]
+							                  : 0;
 							auto m2       = measure2[i] > mCalibratedOverhead[i]
-							                    ? measure2[i] - mCalibratedOverhead[i]
-							                    : 0;
+							                  ? measure2[i] - mCalibratedOverhead[i]
+							                  : 0;
 							auto overhead = m1 * 2 > m2 ? m1 * 2 - m2 : 0;
 
 							mLoopOverhead[i] = divRounded(overhead, numIters);
@@ -3025,16 +3024,16 @@ namespace ankerl
 				pea.exclude_hv     = 1;
 
 				// NOLINTNEXTLINE(hicpp-signed-bitwise)
-				pea.read_format = PERF_FORMAT_GROUP | PERF_FORMAT_ID |
-				                  PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING;
+				pea.read_format = PERF_FORMAT_GROUP | PERF_FORMAT_ID
+				                | PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING;
 
 				const int pid = 0;           // the current process
 				const int cpu = -1;          // all CPUs
-#		if defined(PERF_FLAG_FD_CLOEXEC)    // since Linux 3.14
+		#if defined(PERF_FLAG_FD_CLOEXEC)    // since Linux 3.14
 				const unsigned long flags = PERF_FLAG_FD_CLOEXEC;
-#		else
+		#else
 				const unsigned long flags = 0;
-#		endif
+		#endif
 
 				auto fd =
 				    static_cast<int>(syscall(__NR_perf_event_open, &pea, pid, cpu, mFd, flags));
@@ -3068,30 +3067,29 @@ namespace ankerl
 			}
 
 			PerformanceCounters::PerformanceCounters()
-			    : mPc(new LinuxPerformanceCounters())
-			    , mVal()
-			    , mHas()
+			    : mPc(new LinuxPerformanceCounters()), mVal(), mHas()
 			{
 				mHas.pageFaults         = mPc->monitor(PERF_COUNT_SW_PAGE_FAULTS,
-                    LinuxPerformanceCounters::Target(&mVal.pageFaults, true, false));
+				    LinuxPerformanceCounters::Target(&mVal.pageFaults, true, false));
 				mHas.cpuCycles          = mPc->monitor(PERF_COUNT_HW_REF_CPU_CYCLES,
-                    LinuxPerformanceCounters::Target(&mVal.cpuCycles, true, false));
+				    LinuxPerformanceCounters::Target(&mVal.cpuCycles, true, false));
 				mHas.contextSwitches    = mPc->monitor(PERF_COUNT_SW_CONTEXT_SWITCHES,
-                    LinuxPerformanceCounters::Target(&mVal.contextSwitches, true, false));
+				    LinuxPerformanceCounters::Target(&mVal.contextSwitches, true, false));
 				mHas.instructions       = mPc->monitor(PERF_COUNT_HW_INSTRUCTIONS,
-                    LinuxPerformanceCounters::Target(&mVal.instructions, true, true));
+				    LinuxPerformanceCounters::Target(&mVal.instructions, true, true));
 				mHas.branchInstructions = mPc->monitor(PERF_COUNT_HW_BRANCH_INSTRUCTIONS,
 				    LinuxPerformanceCounters::Target(&mVal.branchInstructions, true, false));
 				mHas.branchMisses       = mPc->monitor(PERF_COUNT_HW_BRANCH_MISSES,
-                    LinuxPerformanceCounters::Target(&mVal.branchMisses, true, false));
+				    LinuxPerformanceCounters::Target(&mVal.branchMisses, true, false));
 				// mHas.branchMisses = false;
 
 				mPc->start();
-				mPc->calibrate([] {
+				mPc->calibrate([]
+				{
 					auto before = ankerl::nanobench::Clock::now();
 					auto after  = ankerl::nanobench::Clock::now();
-					(void) before;
-					(void) after;
+					(void)before;
+					(void)after;
 				});
 
 				if (mPc->hasError())
@@ -3124,7 +3122,7 @@ namespace ankerl
 				mPc->updateResults(numIters);
 			}
 
-#	else
+	#else
 
 			PerformanceCounters::PerformanceCounters()  = default;
 			PerformanceCounters::~PerformanceCounters() = default;
@@ -3132,7 +3130,7 @@ namespace ankerl
 			void PerformanceCounters::endMeasure() {}
 			void PerformanceCounters::updateResults(uint64_t) {}
 
-#	endif
+	#endif
 
 			ANKERL_NANOBENCH(NODISCARD)
 			PerfCountSet<uint64_t> const& PerformanceCounters::val() const noexcept
@@ -3187,15 +3185,11 @@ namespace ankerl
 				}
 
 				Number::Number(int width, int precision, int64_t value)
-				    : mWidth(width)
-				    , mPrecision(precision)
-				    , mValue(static_cast<double>(value))
+				    : mWidth(width), mPrecision(precision), mValue(static_cast<double>(value))
 				{}
 
 				Number::Number(int width, int precision, double value)
-				    : mWidth(width)
-				    , mPrecision(precision)
-				    , mValue(value)
+				    : mWidth(width), mPrecision(precision), mValue(value)
 				{}
 
 				std::ostream& Number::write(std::ostream& os) const
@@ -3233,11 +3227,7 @@ namespace ankerl
 
 				MarkDownColumn::MarkDownColumn(
 				    int w, int prec, std::string const& tit, std::string const& suff, double val)
-				    : mWidth(w)
-				    , mPrecision(prec)
-				    , mTitle(tit)
-				    , mSuffix(suff)
-				    , mValue(val)
+				    : mWidth(w), mPrecision(prec), mTitle(tit), mSuffix(suff), mValue(val)
 				{}
 
 				std::string MarkDownColumn::title() const
@@ -3297,26 +3287,26 @@ namespace ankerl
 					return mdCode.write(os);
 				}
 			}    // namespace fmt
-		}        // namespace detail
+		}    // namespace detail
 
 		// provide implementation here so it's only generated once
-		Config::Config()        = default;
-		Config::~Config()       = default;
+		Config::Config()                         = default;
+		Config::~Config()                        = default;
 		Config& Config::operator=(Config const&) = default;
-		Config& Config::operator=(Config&&) = default;
-		Config::Config(Config const&)       = default;
-		Config::Config(Config&&) noexcept   = default;
+		Config& Config::operator=(Config&&)      = default;
+		Config::Config(Config const&)            = default;
+		Config::Config(Config&&) noexcept        = default;
 
 		// provide implementation here so it's only generated once
-		Result::~Result()       = default;
+		Result::~Result()                        = default;
 		Result& Result::operator=(Result const&) = default;
-		Result& Result::operator=(Result&&) = default;
-		Result::Result(Result const&)       = default;
-		Result::Result(Result&&) noexcept   = default;
+		Result& Result::operator=(Result&&)      = default;
+		Result::Result(Result const&)            = default;
+		Result::Result(Result&&) noexcept        = default;
 
 		namespace detail
 		{
-			template <typename T>
+			template<typename T>
 			inline constexpr typename std::underlying_type<T>::type u(T val) noexcept
 			{
 				return static_cast<typename std::underlying_type<T>::type>(val);
@@ -3325,8 +3315,7 @@ namespace ankerl
 
 		// Result returned after a benchmark has finished. Can be used as a baseline for relative().
 		Result::Result(Config const& benchmarkConfig)
-		    : mConfig(benchmarkConfig)
-		    , mNameToMeasurements{detail::u(Result::Measure::_size)}
+		    : mConfig(benchmarkConfig), mNameToMeasurements{detail::u(Result::Measure::_size)}
 		{}
 
 		void Result::add(
@@ -3573,9 +3562,9 @@ namespace ankerl
 			mConfig.mOut = &std::cout;
 		}
 
-		Bench::Bench(Bench&&) = default;
-		Bench& Bench::operator=(Bench&&) = default;
-		Bench::Bench(Bench const&)       = default;
+		Bench::Bench(Bench&&)                 = default;
+		Bench& Bench::operator=(Bench&&)      = default;
+		Bench::Bench(Bench const&)            = default;
 		Bench& Bench::operator=(Bench const&) = default;
 		Bench::~Bench() noexcept              = default;
 
@@ -3811,22 +3800,28 @@ namespace ankerl
 		{
 			std::vector<BigO> bigOs;
 			auto rangeMeasure = BigO::collectRangeMeasure(mResults);
-			bigOs.emplace_back("O(1)", rangeMeasure, [](double) {
+			bigOs.emplace_back("O(1)", rangeMeasure, [](double)
+			{
 				return 1.0;
 			});
-			bigOs.emplace_back("O(n)", rangeMeasure, [](double n) {
+			bigOs.emplace_back("O(n)", rangeMeasure, [](double n)
+			{
 				return n;
 			});
-			bigOs.emplace_back("O(log n)", rangeMeasure, [](double n) {
+			bigOs.emplace_back("O(log n)", rangeMeasure, [](double n)
+			{
 				return std::log2(n);
 			});
-			bigOs.emplace_back("O(n log n)", rangeMeasure, [](double n) {
+			bigOs.emplace_back("O(n log n)", rangeMeasure, [](double n)
+			{
 				return n * std::log2(n);
 			});
-			bigOs.emplace_back("O(n^2)", rangeMeasure, [](double n) {
+			bigOs.emplace_back("O(n^2)", rangeMeasure, [](double n)
+			{
 				return n * n;
 			});
-			bigOs.emplace_back("O(n^3)", rangeMeasure, [](double n) {
+			bigOs.emplace_back("O(n^3)", rangeMeasure, [](double n)
+			{
 				return n * n * n;
 			});
 			std::sort(bigOs.begin(), bigOs.end());
@@ -3875,8 +3870,8 @@ namespace ankerl
 			if (data.size() != 2)
 			{
 				throw std::runtime_error(
-				    "ankerl::nanobench::Rng::Rng: needed exactly 2 entries in data, but got " +
-				    std::to_string(data.size()));
+				    "ankerl::nanobench::Rng::Rng: needed exactly 2 entries in data, but got "
+				    + std::to_string(data.size()));
 			}
 			mX = data[0];
 			mY = data[1];
@@ -3954,8 +3949,8 @@ namespace ankerl
 
 		bool BigO::operator<(BigO const& other) const noexcept
 		{
-			return std::tie(mNormalizedRootMeanSquare, mName) <
-			       std::tie(other.mNormalizedRootMeanSquare, other.mName);
+			return std::tie(mNormalizedRootMeanSquare, mName)
+			     < std::tie(other.mNormalizedRootMeanSquare, other.mName);
 		}
 
 		std::ostream& operator<<(std::ostream& os, BigO const& bigO)

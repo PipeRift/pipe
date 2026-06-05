@@ -23,17 +23,22 @@ public:
 };
 
 
-go_bandit([]() {
-	describe("Reflection.Object", []() {
-		describe("Pointers", []() {
-			it("Can create object", [&]() {
+go_bandit([]()
+{
+	describe("Reflection.Object", []()
+	{
+		describe("Pointers", []()
+		{
+			it("Can create object", [&]()
+			{
 				auto owner = p::MakeOwned<TestObject>();
 
 				AssertThat(owner.Get(), Is().Not().EqualTo(nullptr));
 				AssertThat(owner->bConstructed, Equals(true));
 			});
 
-			it("Can create object with owner", [&]() {
+			it("Can create object with owner", [&]()
+			{
 				auto owner  = p::MakeOwned<TestObject>();
 				auto owner2 = p::MakeOwned<TestObject>(owner);
 

@@ -450,19 +450,23 @@ namespace p
 		template<Derived<Arena, false> T>
 		void Interface()
 		{
-			doAlloc = [](Arena* self, sizet size) {
+			doAlloc = [](Arena* self, sizet size)
+			{
 				static_assert(ImplementsAlloc<T>() && "Alloc is not implemented");
 				return static_cast<T*>(self)->Alloc(size);
 			};
-			doAllocAligned = [](Arena* self, sizet size, sizet align) {
+			doAllocAligned = [](Arena* self, sizet size, sizet align)
+			{
 				static_assert(ImplementsAllocAligned<T>() && "Alloc (aligned) is not implemented");
 				return static_cast<T*>(self)->Alloc(size, align);
 			};
-			doRealloc = [](Arena* self, void* ptr, sizet ptrSize, sizet size) {
+			doRealloc = [](Arena* self, void* ptr, sizet ptrSize, sizet size)
+			{
 				static_assert(ImplementsRealloc<T>() && "Realloc is not implemented");
 				return static_cast<T*>(self)->Realloc(ptr, ptrSize, size);
 			};
-			doFree = [](Arena* self, void* ptr, sizet size) {
+			doFree = [](Arena* self, void* ptr, sizet size)
+			{
 				static_assert(ImplementsFree<T>() && "Free is not implemented");
 				return static_cast<T*>(self)->Free(ptr, size);
 			};

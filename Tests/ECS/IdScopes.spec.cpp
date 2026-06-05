@@ -23,10 +23,14 @@ struct ScopeTypeC
 };
 
 
-go_bandit([]() {
-	describe("ECS.IdScopes", []() {
-		describe("Templated", []() {
-			it("Can cache pools", [&]() {
+go_bandit([]()
+{
+	describe("ECS.IdScopes", []()
+	{
+		describe("Templated", []()
+		{
+			it("Can cache pools", [&]()
+			{
 				IdContext ctx;
 				TIdScope<Writes<ScopeTypeA, ScopeTypeB>> scope{ctx};
 
@@ -35,7 +39,8 @@ go_bandit([]() {
 				AssertThat(scope.GetPool<const ScopeTypeB>(), Equals(ctx.GetPool<ScopeTypeB>()));
 			});
 
-			it("Can check if contained", [&]() {
+			it("Can check if contained", [&]()
+			{
 				IdContext ctx;
 				TPool<ScopeTypeA>& pool = ctx.AssurePool<ScopeTypeA>();
 				TIdScope<Writes<ScopeTypeA>> scope{ctx};
@@ -57,7 +62,8 @@ go_bandit([]() {
 				AssertThat(scope2.Has<ScopeTypeB>(id), Is().True());
 			});
 
-			it("Can initialize superset", [&]() {
+			it("Can initialize superset", [&]()
+			{
 				IdContext ctx;
 				TPool<ScopeTypeA>& typePool = ctx.AssurePool<ScopeTypeA>();
 
@@ -74,7 +80,8 @@ go_bandit([]() {
 				AssertThat(superset1.GetPool<ScopeTypeA>(), Equals(&typePool));
 			});
 
-			it("Can mark modify", [&]() {
+			it("Can mark modify", [&]()
+			{
 				IdContext ctx;
 				Id id = AddId(ctx);
 				TIdScope<Writes<CMdfd<ScopeTypeC>>> scope1{ctx};
@@ -92,7 +99,8 @@ go_bandit([]() {
 				AssertThat(scope1.IsModified<ScopeTypeC>(id), Is().True());
 			});
 
-			it("Can mark modify automatically", [&]() {
+			it("Can mark modify automatically", [&]()
+			{
 				IdContext ctx;
 				Id id         = AddId(ctx);
 				using MyScope = TIdScope<Writes<ScopeTypeC, ScopeTypeB>, CMdfd<ScopeTypeB>>;

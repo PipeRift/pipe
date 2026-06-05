@@ -30,21 +30,26 @@ struct Foo
 inline bool Foo::called = false;
 
 
-go_bandit([]() {
-	describe("Core.Function", []() {
-		it("Can create empty", [&]() {
+go_bandit([]()
+{
+	describe("Core.Function", []()
+	{
+		it("Can create empty", [&]()
+		{
 			TFunction<void()> func{};
 			AssertThat(func.IsBound(), Equals(false));
 			AssertThat(bool(func), Equals(false));
 		});
 
-		it("Can create from function", [&]() {
+		it("Can create from function", [&]()
+		{
 			TFunction<void()> func{Foo::StaticFunc};
 
 			AssertThat(func.IsBound(), Equals(true));
 		});
 
-		it("Can compare functions", [&]() {
+		it("Can compare functions", [&]()
+		{
 			TFunction<void()> func1{Foo::StaticFunc};
 			TFunction<void()> func2{Foo::StaticFunc};
 			TFunction<void()> func3{&Foo::StaticFunc};
@@ -59,7 +64,8 @@ go_bandit([]() {
 			// AssertThat(func1 == func5, Equals(false));
 		});
 
-		it("Can call static functions", [&]() {
+		it("Can call static functions", [&]()
+		{
 			TFunction<void()> func1{Foo::StaticFunc};
 			TFunction<void()> func2{&Foo::StaticFunc};
 
@@ -72,11 +78,13 @@ go_bandit([]() {
 			AssertThat(Foo::called, Equals(true));
 		});
 
-		it("Can call lambda functions", [&]() {
+		it("Can call lambda functions", [&]()
+		{
 			static bool called;
 			called = false;
 
-			TFunction<void()> func = []() {
+			TFunction<void()> func = []()
+			{
 				called = true;
 			};
 			func();

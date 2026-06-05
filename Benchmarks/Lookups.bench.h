@@ -30,7 +30,8 @@ void RunLookupsBenchmarks()
 				data.Add(i);
 			}
 			u64 i = 0;
-			lookups.run("Array - Linear Search", [&data, &i] {
+			lookups.run("Array - Linear Search", [&data, &i]
+			{
 				ankerl::nanobench::doNotOptimizeAway(data.Find(i));
 				++i;
 			});
@@ -43,7 +44,8 @@ void RunLookupsBenchmarks()
 				data.Add(i);
 			}
 			u64 i = 0;
-			lookups.run("Array - Binary Search", [&data, &i] {
+			lookups.run("Array - Binary Search", [&data, &i]
+			{
 				ankerl::nanobench::doNotOptimizeAway(data.FindSorted(i));
 				++i;
 			});
@@ -56,7 +58,8 @@ void RunLookupsBenchmarks()
 				data.Insert(i);
 			}
 			u64 i = 0;
-			lookups.run("HashSet", [&data, &i] {
+			lookups.run("HashSet", [&data, &i]
+			{
 				ankerl::nanobench::doNotOptimizeAway(data.Find(i));
 				++i;
 			});

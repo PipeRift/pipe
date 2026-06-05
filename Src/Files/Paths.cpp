@@ -568,7 +568,8 @@ namespace p
 		{    // perform root-name/root-directory mismatch checks
 			auto pp                      = PathIterator::CreateBegin(path);
 			auto ppBase                  = PathIterator::CreateBegin(base);
-			auto CheckIterMismatchAtBase = [&]() {
+			auto CheckIterMismatchAtBase = [&]()
+			{
 				return pp.state != ppBase.state && (pp.InRootPath() || ppBase.InRootPath());
 			};
 			if (pp.InRootName() && ppBase.InRootName())

@@ -18,7 +18,8 @@ void RunArenasBenchmarks()
 		    .maxEpochTime(p::Seconds{1});
 
 		{
-			consecutiveAlloc.relative(true).run("OS (malloc)", [&] {
+			consecutiveAlloc.relative(true).run("OS (malloc)", [&]
+			{
 				ankerl::nanobench::doNotOptimizeAway(p::Alloc(16));
 			});
 		}
@@ -26,7 +27,8 @@ void RunArenasBenchmarks()
 		{
 			p::HeapArena arenat;
 			p::Arena& arena{arenat};
-			consecutiveAlloc.run("HeapArena", [&arena] {
+			consecutiveAlloc.run("HeapArena", [&arena]
+			{
 				ankerl::nanobench::doNotOptimizeAway(arena.Alloc(16));
 			});
 		}
@@ -34,7 +36,8 @@ void RunArenasBenchmarks()
 		{
 			p::MonoLinearArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
-			consecutiveAlloc.run("MonoLinearArena", [&arena] {
+			consecutiveAlloc.run("MonoLinearArena", [&arena]
+			{
 				ankerl::nanobench::doNotOptimizeAway(arena.Alloc(16));
 			});
 		}
@@ -42,7 +45,8 @@ void RunArenasBenchmarks()
 		{
 			p::MultiLinearArena arenat{};
 			p::Arena& arena{arenat};
-			consecutiveAlloc.run("MultiLinearArena", [&arena] {
+			consecutiveAlloc.run("MultiLinearArena", [&arena]
+			{
 				ankerl::nanobench::doNotOptimizeAway(arena.Alloc(16));
 			});
 		}
@@ -50,7 +54,8 @@ void RunArenasBenchmarks()
 		{
 			p::BestFitArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
-			consecutiveAlloc.run("BestFitArena", [&arena] {
+			consecutiveAlloc.run("BestFitArena", [&arena]
+			{
 				ankerl::nanobench::doNotOptimizeAway(arena.Alloc(16));
 			});
 		}
@@ -58,7 +63,8 @@ void RunArenasBenchmarks()
 		{
 			p::BestFitArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
-			consecutiveAlloc.run("BigBestFitArena", [&arena] {
+			consecutiveAlloc.run("BigBestFitArena", [&arena]
+			{
 				arena.Alloc(16);
 			});
 		}
@@ -80,7 +86,8 @@ void RunArenasBenchmarks()
 			}
 
 			p::i32 i = 0;
-			consecutiveFree.relative(true).run("OS (malloc)", [&i, &allocated] {
+			consecutiveFree.relative(true).run("OS (malloc)", [&i, &allocated]
+			{
 				p::Free(allocated[i], 16);
 				++i;
 			});
@@ -101,7 +108,8 @@ void RunArenasBenchmarks()
 			}
 
 			p::i32 i = 0;
-			consecutiveFree.run("HeapArena", [&arena, &i, &allocated] {
+			consecutiveFree.run("HeapArena", [&arena, &i, &allocated]
+			{
 				arena.Free(allocated[i], 16);
 				++i;
 			});
@@ -122,7 +130,8 @@ void RunArenasBenchmarks()
 			}
 
 			p::i32 i = 0;
-			consecutiveFree.run("MonoLinearArena", [&arena, &i, &allocated] {
+			consecutiveFree.run("MonoLinearArena", [&arena, &i, &allocated]
+			{
 				arena.Free(allocated[i], 16);
 				++i;
 			});
@@ -143,7 +152,8 @@ void RunArenasBenchmarks()
 			}
 
 			p::i32 i = 0;
-			consecutiveFree.run("MultiLinearArena", [&arena, &i, &allocated] {
+			consecutiveFree.run("MultiLinearArena", [&arena, &i, &allocated]
+			{
 				arena.Free(allocated[i], 16);
 				++i;
 			});
@@ -164,7 +174,8 @@ void RunArenasBenchmarks()
 			}
 
 			p::i32 i = 0;
-			consecutiveFree.run("BestFitArena", [&arena, &i, &allocated] {
+			consecutiveFree.run("BestFitArena", [&arena, &i, &allocated]
+			{
 				arena.Free(allocated[i], 16);
 				++i;
 			});
@@ -185,7 +196,8 @@ void RunArenasBenchmarks()
 			}
 
 			p::i32 i = 0;
-			consecutiveFree.run("BigBestFitArena", [&arena, &i, &allocated] {
+			consecutiveFree.run("BigBestFitArena", [&arena, &i, &allocated]
+			{
 				arena.Free(allocated[i], 16);
 				++i;
 			});
@@ -204,7 +216,8 @@ void RunArenasBenchmarks()
 		    .maxEpochTime(p::Seconds{1});
 
 		{
-			allocSequence.relative(true).run("OS (malloc)", [] {
+			allocSequence.relative(true).run("OS (malloc)", []
+			{
 				void* p  = p::Alloc(16);
 				void* p2 = p::Alloc(21);
 				p::Free(p, 16);
@@ -220,7 +233,8 @@ void RunArenasBenchmarks()
 		{
 			p::HeapArena arenat;
 			p::Arena& arena{arenat};
-			allocSequence.run("HeapArena", [&arena] {
+			allocSequence.run("HeapArena", [&arena]
+			{
 				void* p  = arena.Alloc(16);
 				void* p2 = arena.Alloc(21);
 				arena.Free(p, 16);
@@ -236,7 +250,8 @@ void RunArenasBenchmarks()
 		{
 			p::MonoLinearArena arenat;
 			p::Arena& arena{arenat};
-			allocSequence.run("MonoLinearArena", [&arena] {
+			allocSequence.run("MonoLinearArena", [&arena]
+			{
 				void* p  = arena.Alloc(16);
 				void* p2 = arena.Alloc(21);
 				arena.Free(p, 16);
@@ -252,7 +267,8 @@ void RunArenasBenchmarks()
 		{
 			p::MultiLinearArena arenat;
 			p::Arena& arena{arenat};
-			allocSequence.run("MultiLinearArena", [&arena] {
+			allocSequence.run("MultiLinearArena", [&arena]
+			{
 				void* p  = arena.Alloc(16);
 				void* p2 = arena.Alloc(21);
 				arena.Free(p, 16);
@@ -268,7 +284,8 @@ void RunArenasBenchmarks()
 		{
 			p::BestFitArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
-			allocSequence.run("BestFitArena", [&arena] {
+			allocSequence.run("BestFitArena", [&arena]
+			{
 				void* p  = arena.Alloc(16);
 				void* p2 = arena.Alloc(21);
 				arena.Free(p, 16);
@@ -284,7 +301,8 @@ void RunArenasBenchmarks()
 		{
 			p::BigBestFitArena arenat{100 * p::Memory::MB};
 			p::Arena& arena{arenat};
-			allocSequence.run("BigBestFitArena", [&arena] {
+			allocSequence.run("BigBestFitArena", [&arena]
+			{
 				void* p  = arena.Alloc(16);
 				void* p2 = arena.Alloc(21);
 				arena.Free(p, 16);
@@ -314,7 +332,8 @@ void RunArenasBenchmarks()
 			}
 
 			ankerl::nanobench::Rng rng(122);
-			randomSequence.relative(true).run("OS (malloc)", [&rng, &allocated] {
+			randomSequence.relative(true).run("OS (malloc)", [&rng, &allocated]
+			{
 				if (rng() & 1U)
 				{
 					void* ptr = p::Alloc(16);
@@ -347,7 +366,8 @@ void RunArenasBenchmarks()
 			}
 
 			ankerl::nanobench::Rng rng(122);
-			randomSequence.run("HeapArena", [&arena, &rng, &allocated] {
+			randomSequence.run("HeapArena", [&arena, &rng, &allocated]
+			{
 				if (rng() & 1U)
 				{
 					void* ptr = arena.Alloc(16);
@@ -380,7 +400,8 @@ void RunArenasBenchmarks()
 			}
 
 			ankerl::nanobench::Rng rng(122);
-			randomSequence.run("MonoLinearArena", [&arena, &rng, &allocated] {
+			randomSequence.run("MonoLinearArena", [&arena, &rng, &allocated]
+			{
 				if (rng() & 1U)
 				{
 					void* ptr = arena.Alloc(16);
@@ -413,7 +434,8 @@ void RunArenasBenchmarks()
 			}
 
 			ankerl::nanobench::Rng rng(122);
-			randomSequence.run("MultiLinearArena", [&arena, &rng, &allocated] {
+			randomSequence.run("MultiLinearArena", [&arena, &rng, &allocated]
+			{
 				if (rng() & 1U)
 				{
 					void* ptr = arena.Alloc(16);
@@ -446,7 +468,8 @@ void RunArenasBenchmarks()
 			}
 
 			ankerl::nanobench::Rng rng(122);
-			randomSequence.run("BestFitArena", [&arena, &rng, &allocated] {
+			randomSequence.run("BestFitArena", [&arena, &rng, &allocated]
+			{
 				if (rng() & 1U)
 				{
 					void* ptr = arena.Alloc(16);
@@ -479,7 +502,8 @@ void RunArenasBenchmarks()
 			}
 
 			ankerl::nanobench::Rng rng(122);
-			randomSequence.run("BigBestFitArena", [&arena, &rng, &allocated] {
+			randomSequence.run("BigBestFitArena", [&arena, &rng, &allocated]
+			{
 				if (rng() & 1U)
 				{
 					void* ptr = arena.Alloc(16);

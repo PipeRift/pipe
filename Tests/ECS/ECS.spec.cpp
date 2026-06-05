@@ -17,9 +17,12 @@ struct ECSTypeB
 {};
 
 
-go_bandit([]() {
-	describe("ECS", []() {
-		it("Can copy context", [&]() {
+go_bandit([]()
+{
+	describe("ECS", []()
+	{
+		it("Can copy context", [&]()
+		{
 			static IdContext* ctxPtr = nullptr;
 
 			IdContext origin;
@@ -39,7 +42,8 @@ go_bandit([]() {
 			AssertThat(target.Has<ECSTypeB>(id), Equals(true));
 		});
 
-		it("Can move context", [&]() {
+		it("Can move context", [&]()
+		{
 			static IdContext* ctxPtr = nullptr;
 
 			IdContext origin;
@@ -60,7 +64,8 @@ go_bandit([]() {
 			AssertThat(target.Has<ECSTypeB>(id), Equals(true));
 		});
 
-		it("Can assure pool", [&]() {
+		it("Can assure pool", [&]()
+		{
 			IdContext origin;
 			TPool<ECSTypeA>& pool = origin.AssurePool<ECSTypeA>();
 			AssertThat(pool.Size(), Equals(0));

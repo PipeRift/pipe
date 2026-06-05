@@ -27,9 +27,12 @@ namespace Space
 }    // namespace Space
 
 
-go_bandit([]() {
-	describe("Reflection.TypeName", []() {
-		it("Can get Platform type names", [&]() {
+go_bandit([]()
+{
+	describe("Reflection.TypeName", []()
+	{
+		it("Can get Platform type names", [&]()
+		{
 			AssertThat(GetTypeName<u8>(), Equals("u8"));
 			AssertThat(GetTypeName<u16>(), Equals("u16"));
 			AssertThat(GetTypeName<u32>(), Equals("u32"));
@@ -43,32 +46,39 @@ go_bandit([]() {
 			AssertThat(GetTypeName<String>(), Equals("String"));
 		});
 
-		it("Can get Native type names", [&]() {
+		it("Can get Native type names", [&]()
+		{
 			AssertThat(GetTypeName<bool>(), Equals("bool"));
 			AssertThat(GetTypeName<float>(), Equals("float"));
 			AssertThat(GetTypeName<double>(), Equals("double"));
 		});
 
-		it("Can get Class names", [&]() {
+		it("Can get Class names", [&]()
+		{
 			AssertThat(GetTypeName<AClass>(), Equals("AClass"));
 		});
 
-		it("Can get Struct names", [&]() {
+		it("Can get Struct names", [&]()
+		{
 			AssertThat(GetTypeName<AnStruct>(), Equals("AnStruct"));
 		});
 
-		it("Can get names with namespaces", [&]() {
+		it("Can get names with namespaces", [&]()
+		{
 			AssertThat(GetTypeName<Space::Other>(), Equals("Space::Other"));
 		});
 
-		describe("Containers", []() {
-			it("Can get TArray names", [&]() {
+		describe("Containers", []()
+		{
+			it("Can get TArray names", [&]()
+			{
 				AssertThat(GetTypeName<TArray<Guid>>(), Equals("TArray"));
 				AssertThat(GetFullTypeName<TArray<Guid>>(), Equals("TArray<p::Guid>"));
 				AssertThat(GetFullTypeName<TArray<Guid>>(false), Equals("TArray<Guid>"));
 			});
 
-			it("Can get TMap names", [&]() {
+			it("Can get TMap names", [&]()
+			{
 				auto name = GetTypeName<TMap<u8, bool>>();
 				AssertThat(name, Equals("TMap"));
 

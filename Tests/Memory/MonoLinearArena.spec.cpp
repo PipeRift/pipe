@@ -9,16 +9,20 @@ using namespace bandit;
 using namespace p;
 
 
-go_bandit([]() {
-	describe("Memory.MonoLinearArena", []() {
-		it("Reserves a block on construction", [&]() {
+go_bandit([]()
+{
+	describe("Memory.MonoLinearArena", []()
+	{
+		it("Reserves a block on construction", [&]()
+		{
 			MonoLinearArena arena{1024};
 
 			AssertThat(arena.GetAvailableMemory(), Is().EqualTo(1024));
 			AssertThat(arena.GetStats()->used, Is().EqualTo(0));
 		});
 
-		it("Can allocate outside the block", [&]() {
+		it("Can allocate outside the block", [&]()
+		{
 			MonoLinearArena arena{256};
 
 			AssertThat(arena.GetAvailableMemory(), Is().EqualTo(256));
@@ -27,7 +31,8 @@ go_bandit([]() {
 			arena.Free(p, 512);
 		});
 
-		it("Can free from outside the block", [&]() {
+		it("Can free from outside the block", [&]()
+		{
 			MonoLinearArena arena{256};
 
 			void* p = arena.Alloc(512);
@@ -36,7 +41,8 @@ go_bandit([]() {
 			AssertThat(arena.GetAvailableMemory(), Is().EqualTo(256));
 		});
 
-		it("Can free active block", [&]() {
+		it("Can free active block", [&]()
+		{
 			MonoLinearArena arena{1024};
 			arena.Release();
 
@@ -45,7 +51,8 @@ go_bandit([]() {
 			AssertThat(blocks.Size(), Equals(1));
 		});
 
-		it("Can allocate", [&]() {
+		it("Can allocate", [&]()
+		{
 			MonoLinearArena arena{1024};
 			void* p = arena.Alloc(sizeof(float));
 			AssertThat(p, Is().Not().Null());
@@ -54,7 +61,8 @@ go_bandit([]() {
 			arena.Free(p, sizeof(float));
 		});
 
-		it("Can allocate with alignment", [&]() {
+		it("Can allocate with alignment", [&]()
+		{
 			MonoLinearArena arena{1024};
 
 			void* p0 = arena.Alloc(sizeof(bool));
@@ -72,7 +80,8 @@ go_bandit([]() {
 			arena.Free(p2, sizeof(float));
 		});
 
-		it("Can allocate after release", [&]() {
+		it("Can allocate after release", [&]()
+		{
 			MonoLinearArena arena{1024};
 			arena.Release();
 			void* p = arena.Alloc(sizeof(float));
@@ -84,7 +93,8 @@ go_bandit([]() {
 			arena.Free(p, sizeof(float));
 		});
 
-		it("Can free block after Free", [&]() {
+		it("Can free block after Free", [&]()
+		{
 			MonoLinearArena arena{1024};
 			void* p = arena.Alloc(256);
 			AssertThat(arena.GetStats()->used, Is().EqualTo(256));
@@ -92,7 +102,8 @@ go_bandit([]() {
 			AssertThat(arena.GetStats()->used, Is().EqualTo(0));
 		});
 
-		it("Allocates at correct addresses", [&]() {
+		it("Allocates at correct addresses", [&]()
+		{
 			MonoLinearArena arena{1024};
 
 			TArray<ArenaBlock> blocks;

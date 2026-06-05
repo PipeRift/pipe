@@ -15,16 +15,20 @@ struct TypeOfSize
 	p::u8 data[size]{0};    // Fill data for debugging
 };
 
-go_bandit([]() {
-	describe("Memory.BigBestFitArena", []() {
-		it("Reserves a block on construction", [&]() {
+go_bandit([]()
+{
+	describe("Memory.BigBestFitArena", []()
+	{
+		it("Reserves a block on construction", [&]()
+		{
 			BigBestFitArena arena{1024};
 			AssertThat(arena.GetFreeSize(), Equals(1024));
 			AssertThat(*arena.GetBlock(), Is().Not().Null());
 			AssertThat(arena.GetBlock().size, Is().EqualTo(1024));
 		});
 
-		it("Can allocate", [&]() {
+		it("Can allocate", [&]()
+		{
 			BigBestFitArena arena{1024};
 
 			void* p = arena.Alloc(4);
@@ -33,7 +37,8 @@ go_bandit([]() {
 			AssertThat(arena.Contains(p), Is().True());
 		});
 
-		it("Allocates at correct addresses", [&]() {
+		it("Allocates at correct addresses", [&]()
+		{
 			BigBestFitArena arena{1024};
 
 			const auto* blockPtr = static_cast<const p::u8*>(*arena.GetBlock());
@@ -50,7 +55,8 @@ go_bandit([]() {
 			AssertThat(p2, Is().EqualTo(expectedP2));
 		});
 
-		it("Detects there is not enough space", [&]() {
+		it("Detects there is not enough space", [&]()
+		{
 			BigBestFitArena arena{32};
 
 			// 16 bytes
@@ -70,7 +76,8 @@ go_bandit([]() {
 			AssertThat(p3, Is().Null());
 		});
 
-		it("Allocates with alignment", [&]() {
+		it("Allocates with alignment", [&]()
+		{
 			BigBestFitArena arena{1024};
 
 			void* b = arena.Alloc(1);
@@ -92,7 +99,8 @@ go_bandit([]() {
 			AssertThat(p::GetAlignmentPadding(p3, 32), Is().EqualTo(0));
 		});
 
-		it("Can free", [&]() {
+		it("Can free", [&]()
+		{
 			BigBestFitArena arena{64};
 
 			void* p = arena.Alloc(32);
@@ -104,7 +112,8 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSize(), Equals(64));
 		});
 
-		it("Can free multiple", [&]() {
+		it("Can free multiple", [&]()
+		{
 			BigBestFitArena arena{64};
 
 			void* p = arena.Alloc(16);
@@ -124,7 +133,8 @@ go_bandit([]() {
 			AssertThat(arena.GetFreeSize(), Equals(64));
 		});
 
-		it("Can free in between allocations", [&]() {
+		it("Can free in between allocations", [&]()
+		{
 			BigBestFitArena arena{64};
 
 			void* p = arena.Alloc(16);
@@ -155,7 +165,8 @@ go_bandit([]() {
 			AssertThat(slotStart + slot.size, Equals(static_cast<p::u8*>(p3) - 8));
 		});
 
-		it("Can merge previous and next slots on free", [&]() {
+		it("Can merge previous and next slots on free", [&]()
+		{
 			BigBestFitArena arena{64};
 
 			void* p = arena.Alloc(16);
@@ -194,7 +205,8 @@ go_bandit([]() {
 			    slotStart + slot.size, Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 		});
 
-		it("Can merge previous slot on free", [&]() {
+		it("Can merge previous slot on free", [&]()
+		{
 			BigBestFitArena arena{48};
 
 			void* p = arena.Alloc(16);
@@ -222,7 +234,8 @@ go_bandit([]() {
 			    slotStart + slot.size, Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 		});
 
-		it("Can merge next slot on free", [&]() {
+		it("Can merge next slot on free", [&]()
+		{
 			BigBestFitArena arena{48};
 
 			void* p = arena.Alloc(16);
@@ -250,7 +263,8 @@ go_bandit([]() {
 			    slotStart + slot.size, Equals(static_cast<const p::u8*>(arena.GetBlock().End())));
 		});
 
-		it("Ensures a big alignment leaves a gap", [&]() {
+		it("Ensures a big alignment leaves a gap", [&]()
+		{
 			BigBestFitArena arena{128};
 
 			// We ensure first allocation aligns the block (just for the test)

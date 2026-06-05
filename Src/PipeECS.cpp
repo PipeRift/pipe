@@ -544,7 +544,8 @@ namespace p
 
 	void ComponentPool::BindOnPageAllocated()
 	{
-		idIndices.onPageAllocated = [](i32 index, i32* page, i32 size) {
+		idIndices.onPageAllocated = [](i32 index, i32* page, i32 size)
+		{
 			std::uninitialized_fill_n(page, size, NO_INDEX);
 		};
 	}
@@ -829,11 +830,10 @@ namespace p
 
 	void ExcludeIdsWithStable(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
-		ids.RemoveIf(
-		    [pool](Id id) {
+		ids.RemoveIf([pool](Id id)
+		{
 			return pool->Has(id);
-		    },
-		    shouldShrink);
+		}, shouldShrink);
 	}
 
 	void ExcludeIdsWithout(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
@@ -853,11 +853,10 @@ namespace p
 
 	void ExcludeIdsWithoutStable(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
 	{
-		ids.RemoveIf(
-		    [pool](Id id) {
+		ids.RemoveIf([pool](Id id)
+		{
 			return !pool->Has(id);
-		    },
-		    shouldShrink);
+		}, shouldShrink);
 	}
 
 	void ExcludeIdsWithoutAny(
@@ -980,16 +979,15 @@ namespace p
 	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
-		source.RemoveIf(
-		    [pool, &results](Id id) {
+		source.RemoveIf([pool, &results](Id id)
+		{
 			if (pool->Has(id))
 			{
 				results.Add(id);
 				return true;
 			}
 			return false;
-		    },
-		    shouldShrink);
+		}, shouldShrink);
 	}
 
 	void ExtractIdsWithout(
@@ -1015,16 +1013,15 @@ namespace p
 	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
 	{
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
-		source.RemoveIf(
-		    [pool, &results](Id id) {
+		source.RemoveIf([pool, &results](Id id)
+		{
 			if (!pool->Has(id))
 			{
 				results.Add(id);
 				return true;
 			}
 			return false;
-		    },
-		    shouldShrink);
+		}, shouldShrink);
 	}
 
 	void FindAllIdsWith(TView<const IPool* const> pools, TArray<Id>& ids)
@@ -1206,7 +1203,8 @@ namespace p
 
 	void AttachId(TIdScopeRef<Writes<CChild, CParent>> access, Id parent, TView<const Id> children)
 	{
-		children.Each([&access, parent](Id childId) {
+		children.Each([&access, parent](Id childId)
+		{
 			if (auto* cChild = access.TryGet<CChild>(childId))
 			{
 				if (cChild->parent == parent
@@ -1229,7 +1227,8 @@ namespace p
 	void AttachIdAfter(
 	    TIdScopeRef<Writes<CChild, CParent>> access, Id parent, TView<Id> childrenIds, Id prevChild)
 	{
-		childrenIds.Each([&access, parent](Id child) {
+		childrenIds.Each([&access, parent](Id child)
+		{
 			if (auto* cChild = access.TryGet<CChild>(child))
 			{
 				if (P_EnsureMsg(IsNone(cChild->parent),
@@ -1263,7 +1262,8 @@ namespace p
 		TArray<Id> parents;
 		parents.Reserve(childrenIds.Size());
 
-		childrenIds.Each([&access, &parents](Id child) {
+		childrenIds.Each([&access, &parents](Id child)
+		{
 			if (auto* cChild = access.TryGet<CChild>(child))
 			{
 				parents.Add(cChild->parent);
@@ -1273,7 +1273,8 @@ namespace p
 
 		if (!keepComponents)
 		{
-			childrenIds.Each([&access](Id child) {
+			childrenIds.Each([&access](Id child)
+			{
 				access.Remove<CChild>(child);
 			});
 		}
@@ -1325,7 +1326,8 @@ namespace p
 	{
 		if (keepComponents)
 		{
-			parents.Each([&access](Id parent) {
+			parents.Each([&access](Id parent)
+			{
 				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
 					for (Id child : cParent->children)
@@ -1338,7 +1340,8 @@ namespace p
 		}
 		else
 		{
-			parents.Each([&access](Id parent) {
+			parents.Each([&access](Id parent)
+			{
 				if (auto* cParent = access.TryGet<CParent>(parent))
 				{
 					for (Id child : cParent->children)
@@ -1360,7 +1363,8 @@ namespace p
 	void GetIdChildren(
 	    TIdScopeRef<CParent> access, TView<const Id> parentIds, TArray<Id>& outChildrenIds)
 	{
-		parentIds.Each([&access, &outChildrenIds](Id id) {
+		parentIds.Each([&access, &outChildrenIds](Id id)
+		{
 			if (const auto* cParent = access.TryGet<const CParent>(id))
 			{
 				outChildrenIds.Append(cParent->children);

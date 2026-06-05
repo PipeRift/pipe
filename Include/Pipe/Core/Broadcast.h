@@ -139,7 +139,8 @@ namespace p
 				}
 				else
 				{
-					return Bind([instance, method](Params... params) {
+					return Bind([instance, method](Params... params)
+					{
 						(instance->*method)(params...);
 					});
 				}
@@ -157,8 +158,9 @@ namespace p
 			if (instance && method)
 			{
 				Type* const instancePtr = *instance;
-				Function func           = [instancePtr, method](Params... params) {
-                    (instancePtr->*method)(params...);
+				Function func           = [instancePtr, method](Params... params)
+				{
+					(instancePtr->*method)(params...);
 				};
 
 				EventHandle handle{};
@@ -177,7 +179,8 @@ namespace p
 				return false;
 			}
 
-			return rawListeners.RemoveIfSwap([handle](const auto& listener) {
+			return rawListeners.RemoveIfSwap([handle](const auto& listener)
+			{
 				return listener.id == handle.Id();
 			}) > 0;
 		}
@@ -187,7 +190,8 @@ namespace p
 		{
 			if (instance) [[likely]]
 			{
-				return ptrListeners.RemoveIfSwap([instance](const auto& listener) {
+				return ptrListeners.RemoveIfSwap([instance](const auto& listener)
+				{
 					return !listener.instance || listener.instance == instance;
 				}) > 0;
 			}
@@ -199,7 +203,8 @@ namespace p
 		{
 			if (instance) [[likely]]
 			{
-				return rawListeners.RemoveIfSwap([instance](const auto& listener) {
+				return rawListeners.RemoveIfSwap([instance](const auto& listener)
+				{
 					return listener.instance == instance;
 				}) > 0;
 			}

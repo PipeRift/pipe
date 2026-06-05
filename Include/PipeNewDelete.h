@@ -9,8 +9,9 @@
 
 
 #if defined(__cplusplus)
-	#include "PipePlatform.h"
 	#include "PipeMemory.h"
+	#include "PipePlatform.h"
+
 	#include <new>
 
 

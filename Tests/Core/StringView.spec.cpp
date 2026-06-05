@@ -10,22 +10,27 @@ using namespace bandit;
 using namespace p;
 
 
-go_bandit([]() {
-	describe("Core.StringView", []() {
-		it("Can assign from literal", [&]() {
+go_bandit([]()
+{
+	describe("Core.StringView", []()
+	{
+		it("Can assign from literal", [&]()
+		{
 			StringView v{"Kiwi"};
 			AssertThat(v, Equals("Kiwi"));
 			AssertThat(v.size(), Equals(4));
 		});
 
-		it("Can assign from string", [&]() {
+		it("Can assign from string", [&]()
+		{
 			String str{"Kiwi"};
 			StringView v{str};
 			AssertThat(v, Equals("Kiwi"));
 			AssertThat(v.size(), Equals(4));
 		});
 
-		it("Can copy empty", [&]() {
+		it("Can copy empty", [&]()
+		{
 			StringView str{};
 			StringView str2{" "};
 			AssertThat(str.empty(), Equals(true));
@@ -37,7 +42,8 @@ go_bandit([]() {
 			AssertThat((u8*)str2.data(), Equals(nullptr));
 		});
 
-		it("Can retrieve string data", [&]() {
+		it("Can retrieve string data", [&]()
+		{
 			StringView v{"Kiwi"};
 			AssertThat(v.data(), Equals("Kiwi"));
 			AssertThat(v.size(), Equals(4));
@@ -46,7 +52,8 @@ go_bandit([]() {
 			AssertThat(v2.size(), Equals(0));
 		});
 
-		it("Can compare", [&]() {
+		it("Can compare", [&]()
+		{
 			StringView vKiwi{"Kiwi"};
 			StringView vKiwi2{"Kiwi"};
 			StringView vApple{"Apple"};
@@ -54,7 +61,8 @@ go_bandit([]() {
 			AssertThat(vKiwi, !Equals(vApple));
 		});
 
-		it("Can copy", [&]() {
+		it("Can copy", [&]()
+		{
 			StringView vKiwi{"Kiwi"};
 			StringView vApple{"Apple"};
 			StringView vCopy = vKiwi;
@@ -67,7 +75,8 @@ go_bandit([]() {
 			AssertThat(vCopy, Equals(vApple));
 		});
 
-		it("Can move", [&]() {
+		it("Can move", [&]()
+		{
 			StringView vKiwi{"Kiwi"};
 			StringView vApple{"Apple"};
 			StringView vMove = Move(vKiwi);
@@ -76,8 +85,10 @@ go_bandit([]() {
 			AssertThat(vMove, Equals("Apple"));
 		});
 
-		describe("Strings", []() {
-			it("Can Find", [&]() {
+		describe("Strings", []()
+		{
+			it("Can Find", [&]()
+			{
 				StringView v{"Kiwiwi"};
 
 				// Find Chars

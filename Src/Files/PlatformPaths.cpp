@@ -10,19 +10,19 @@
 
 
 #if P_PLATFORM_WINDOWS
-	#include <Windows.h>
 	#include <combaseapi.h>
 	#include <shlobj.h> /* SHGetKnownFolderPath(), FOLDERID_... */
+	#include <Windows.h>
 #elif P_PLATFORM_LINUX
+	#include <pwd.h>
 	#include <unistd.h>
-	#include <pwd.h>
 #elif P_PLATFORM_MACOS
-	#include <pwd.h>
+	#include <fcntl.h>
+	#include <libproc.h>
 	#include <mach-o/dyld.h>
 	#include <mach/thread_act.h>
 	#include <mach/thread_policy.h>
-	#include <libproc.h>
-	#include <fcntl.h>
+	#include <pwd.h>
 	#include <unistd.h>
 #endif
 
@@ -113,7 +113,8 @@ namespace p
 		static String executablePath;
 		if (executablePath.empty())
 		{
-			GetStringFromWindowsAPI(executablePath, [](char* buffer, sizet size) {
+			GetStringFromWindowsAPI(executablePath, [](char* buffer, sizet size)
+			{
 				return GetModuleFileNameA(nullptr, buffer, u32(size));
 			});
 		}
@@ -213,7 +214,8 @@ namespace p
 	StringView WindowsPlatformPaths::GetCurrentPath()
 	{
 		static String path;
-		GetStringFromWindowsAPI(path, [](char* buffer, sizet size) {
+		GetStringFromWindowsAPI(path, [](char* buffer, sizet size)
+		{
 			return ::GetCurrentDirectoryA(size, buffer);
 		});
 		return path;

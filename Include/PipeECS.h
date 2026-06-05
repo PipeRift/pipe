@@ -1001,7 +1001,8 @@ namespace p
 		void Compact()
 		{
 			i32 from = idList.Size();
-			for (; from && idList[from - 1].GetVersion() == NoIdVersion; --from) {}
+			for (; from && idList[from - 1].GetVersion() == NoIdVersion; --from)
+			{}
 
 			for (i32 to = lastRemovedIndex; to != NO_INDEX && from;)
 			{
@@ -1020,7 +1021,8 @@ namespace p
 					idIndices[listTo.GetIndex()] = to;
 					to                           = from;
 
-					for (; from && idList[from - 1].GetVersion() == NoIdVersion; --from) {}
+					for (; from && idList[from - 1].GetVersion() == NoIdVersion; --from)
+					{}
 				}
 			}
 
@@ -1512,7 +1514,8 @@ namespace p
 		template<typename Callback>
 		void EachOrphan(Callback cb) const
 		{
-			Each([this, &cb](const Id id) {
+			Each([this, &cb](const Id id)
+			{
 				if (IsOrphan(id))
 				{
 					cb(id);
@@ -1663,9 +1666,11 @@ namespace p
 
 	public:
 		TIdScopeBase(IdContext& context)
-		    : context{context}, pools(RWDependencies::Call([&context]<typename... T> {
-			    return Tuple{&context.AssurePool<T>()...};
-		    }))
+		    : context{context}
+		    , pools(RWDependencies::Call([&context]<typename... T>
+		{
+			return Tuple{&context.AssurePool<T>()...};
+		}))
 		{}
 		TIdScopeBase(const TIdScopeBase& other) : context{other.context}, pools{other.pools} {}
 
@@ -1675,11 +1680,13 @@ namespace p
 		{
 			using Other = TIdScopeBase<T2...>;
 
-			constexpr bool validReads = RWDependencies::Call([]<typename... T>() {
+			constexpr bool validReads = RWDependencies::Call([]<typename... T>()
+			{
 				return (Other::template IsReadable<T>() && ...);
 			});
 
-			constexpr bool validWrites = WDependencies::Call([]<typename... T>() {
+			constexpr bool validWrites = WDependencies::Call([]<typename... T>()
+			{
 				return (Other::template IsWritable<T>() && ...);
 			});
 
@@ -1691,7 +1698,8 @@ namespace p
 			// Prevent compiler errors, we already have static_asserts
 			if constexpr (validReads && validWrites)
 			{
-				pools = RWDependencies::Call([&other]<typename... T> {
+				pools = RWDependencies::Call([&other]<typename... T>
+				{
 					return Tuple{std::get<TPool<T>*>(other.pools)...};
 				});
 			}
@@ -2052,11 +2060,10 @@ namespace p
 	template<typename Scope>
 	void ExcludeIdsInvalid(const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	{
-		ids.RemoveIfSwap(
-		    [&scope](Id id) {
+		ids.RemoveIfSwap([&scope](Id id)
+		{
 			return !scope.IsValid(id);
-		    },
-		    shouldShrink);
+		}, shouldShrink);
 	}
 
 	/**
@@ -2071,11 +2078,10 @@ namespace p
 	void ExcludeIdsInvalidStable(
 	    const Scope& scope, TArray<Id>& ids, const bool shouldShrink = false)
 	{
-		ids.RemoveIf(
-		    [&scope](Id id) {
+		ids.RemoveIf([&scope](Id id)
+		{
 			return !scope.IsValid(id);
-		    },
-		    shouldShrink);
+		}, shouldShrink);
 	}
 
 

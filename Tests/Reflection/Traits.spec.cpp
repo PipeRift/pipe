@@ -40,17 +40,22 @@ namespace p
 }    // namespace p
 
 
-go_bandit([]() {
-	describe("Reflection.Traits", []() {
-		describe("Read/Write properties", []() {
-			it("Can check for read properties", [&]() {
+go_bandit([]()
+{
+	describe("Reflection.Traits", []()
+	{
+		describe("Read/Write properties", []()
+		{
+			it("Can check for read properties", [&]()
+			{
 				AssertThat(p::HasReadProperties<TestNotSerializable>(), Is().False());
 				AssertThat(p::HasReadProperties<TestSerializable>(), Is().True());
 				AssertThat(p::Readable<TestNotSerializable>, Is().False());
 				AssertThat(p::Readable<TestSerializable>, Is().True());
 			});
 
-			it("Can check for write properties", [&]() {
+			it("Can check for write properties", [&]()
+			{
 				AssertThat(p::HasWriteProperties<TestNotSerializable>(), Is().False());
 				AssertThat(p::HasWriteProperties<TestSerializable>(), Is().True());
 				AssertThat(p::Writable<TestNotSerializable>, Is().False());
@@ -58,34 +63,42 @@ go_bandit([]() {
 			});
 		});
 
-		describe("Read/Write external", []() {
-			it("Can check for read properties", [&]() {
+		describe("Read/Write external", []()
+		{
+			it("Can check for read properties", [&]()
+			{
 				AssertThat(p::Readable<TestNotSerializable>, Is().False());
 				AssertThat(p::Readable<TestExternal>, Is().True());
 			});
 
-			it("Can check for write properties", [&]() {
+			it("Can check for write properties", [&]()
+			{
 				AssertThat(p::Writable<TestNotSerializable>, Is().False());
 				AssertThat(p::Writable<TestExternal>, Is().True());
 			});
 		});
 
-		describe("Read/Write external in namespace", []() {
-			it("Can check for read properties", [&]() {
+		describe("Read/Write external in namespace", []()
+		{
+			it("Can check for read properties", [&]()
+			{
 				AssertThat(p::Readable<p::TestExternal2>, Is().True());
 			});
 
-			it("Can check for write properties", [&]() {
+			it("Can check for write properties", [&]()
+			{
 				AssertThat(p::Writable<p::TestExternal2>, Is().True());
 			});
 		});
 
-		it("Can check super", []() {
+		it("Can check super", []()
+		{
 			AssertThat(p::HasSuper<TestNotSerializable>(), Is().False());
 			AssertThat(p::HasSuper<TestWithSuper>(), Is().True());
 		});
 
-		it("Can build type on Arrays", []() {
+		it("Can build type on Arrays", []()
+		{
 			AssertThat(p::CanBuildType<p::TArray<bool>>(), Is().True());
 			AssertThat(p::HasExternalBuildType<p::TArray<bool>>(), Is().True());
 		});

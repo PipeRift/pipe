@@ -91,10 +91,14 @@ struct p::TFlags<SerTypeD> : public p::DefaultTFlags
 };
 
 
-go_bandit([]() {
-	describe("Serialization", []() {
-		describe("Serializers in global scope", [&]() {
-			it("Can use custom Read()", [&]() {
+go_bandit([]()
+{
+	describe("Serialization", []()
+	{
+		describe("Serializers in global scope", [&]()
+		{
+			it("Can use custom Read()", [&]()
+			{
 				SerTypeA val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
@@ -104,7 +108,8 @@ go_bandit([]() {
 				AssertThat(val.value, Equals(true));
 			});
 
-			it("Can use custom Write()", [&]() {
+			it("Can use custom Write()", [&]()
+			{
 				SerTypeA val{};
 				val.value = true;
 
@@ -115,7 +120,8 @@ go_bandit([]() {
 				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
 			});
 
-			it("Can use Serialize() instead of Read()", [&]() {
+			it("Can use Serialize() instead of Read()", [&]()
+			{
 				SerTypeB val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
@@ -125,7 +131,8 @@ go_bandit([]() {
 				AssertThat(val.value, Equals(true));
 			});
 
-			it("Can use Serialize() instead of Write()", [&]() {
+			it("Can use Serialize() instead of Write()", [&]()
+			{
 				SerTypeB val{};
 				val.value = true;
 
@@ -137,8 +144,10 @@ go_bandit([]() {
 			});
 		});
 
-		describe("Serializers as members", [&]() {
-			it("Can use custom Read()", [&]() {
+		describe("Serializers as members", [&]()
+		{
+			it("Can use custom Read()", [&]()
+			{
 				SerTypeC val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
@@ -148,7 +157,8 @@ go_bandit([]() {
 				AssertThat(val.value, Equals(true));
 			});
 
-			it("Can use custom Write()", [&]() {
+			it("Can use custom Write()", [&]()
+			{
 				SerTypeC val{};
 				val.value = true;
 
@@ -159,7 +169,8 @@ go_bandit([]() {
 				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
 			});
 
-			it("Can use Serialize() instead of Read()", [&]() {
+			it("Can use Serialize() instead of Read()", [&]()
+			{
 				SerTypeD val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
@@ -169,7 +180,8 @@ go_bandit([]() {
 				AssertThat(val.value, Equals(true));
 			});
 
-			it("Can use Serialize() instead of Write()", [&]() {
+			it("Can use Serialize() instead of Write()", [&]()
+			{
 				SerTypeD val{};
 				val.value = true;
 

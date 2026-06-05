@@ -88,12 +88,9 @@ namespace p
 	template<typename T>
 	inline consteval TypeId GetTypeId() requires(!IsConst<T>)
 	{
-		return TypeId
-		{
-			p::GetStringHash(P_UNIQUE_FUNCTION_ID)
+		return TypeId{p::GetStringHash(P_UNIQUE_FUNCTION_ID),
 #if P_DEBUG
-			    ,
-			    GetTypeName<T>()
+		    GetTypeName<T>()
 #endif
 		};
 	}

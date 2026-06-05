@@ -24,9 +24,12 @@ struct StaticTypeThree
 };
 
 
-go_bandit([]() {
-	describe("ECS.Statics", []() {
-		it("Can set an static", [&]() {
+go_bandit([]()
+{
+	describe("ECS.Statics", []()
+	{
+		it("Can set an static", [&]()
+		{
 			IdContext ast;
 			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
 			auto& var = ast.SetStatic<StaticType>({4});
@@ -34,7 +37,8 @@ go_bandit([]() {
 			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
 			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(false));
 		});
-		it("Can set two statics", [&]() {
+		it("Can set two statics", [&]()
+		{
 			IdContext ast;
 			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
 			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(false));
@@ -45,7 +49,8 @@ go_bandit([]() {
 			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
 			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(true));
 		});
-		it("Can replace an static", [&]() {
+		it("Can replace an static", [&]()
+		{
 			IdContext ast;
 			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
 			ast.SetStatic<StaticType>({4});
@@ -53,14 +58,16 @@ go_bandit([]() {
 			AssertThat(ast.GetStatic<StaticType>().i, Equals(2));
 			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
 		});
-		it("Can get or set an static", [&]() {
+		it("Can get or set an static", [&]()
+		{
 			IdContext ast;
 			// Can set
 			AssertThat(ast.GetOrSetStatic<StaticType>({4}).i, Equals(4));
 			// Can get
 			AssertThat(ast.GetOrSetStatic<StaticType>({10}).i, Equals(4));
 		});
-		it("Can remove an static", [&]() {
+		it("Can remove an static", [&]()
+		{
 			IdContext ast;
 			ast.SetStatic<StaticType>();
 			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
@@ -70,7 +77,8 @@ go_bandit([]() {
 			AssertThat(ast.RemoveStatic<StaticType>(), Is().False());
 		});
 
-		it("Can get statics", [&]() {
+		it("Can get statics", [&]()
+		{
 			IdContext ast;
 			ast.SetStatic<StaticType>({4});
 			ast.SetStatic<StaticTypeTwo>({2});

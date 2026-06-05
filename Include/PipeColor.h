@@ -48,7 +48,7 @@ namespace p
 #pragma warning(default:4201)
 
 	protected:
-		constexpr TColorData() : r(0), g(0), b(0), a(255){};
+		constexpr TColorData() : r(0), g(0), b(0), a(255) {};
 		constexpr TColorData(u8 r, u8 g, u8 b, u8 a) : r(r), g(g), b(b), a(a) {}
 	};
 
@@ -207,20 +207,23 @@ namespace p
 			else if constexpr (to == ColorMode::Linear && from == ColorMode::HSV)
 			{
 				float hue = Mod(this->h, 360.f);
-				if ( hue < 0.f ) hue += 360.f;
-				const float saturation = p::Clamp(this->s,0.f,1.f);
-				const float value = this->v;
+				if (hue < 0.f)
+				{
+					hue += 360.f;
+				}
+				const float saturation = p::Clamp(this->s, 0.f, 1.f);
+				const float value      = this->v;
 
 				const float hDiv60         = hue / 60.0f;
 				const float hDiv60Floor    = Floor(hDiv60);
 				const float hDiv60Fraction = hDiv60 - hDiv60Floor;
-				const u32 swizzleIndex = u32(hDiv60Floor) % 6;
+				const u32 swizzleIndex     = u32(hDiv60Floor) % 6;
 
 				const float rgbValues[4] = {
-					value,
-					value * (1.0f - saturation),
-					value * (1.0f - (hDiv60Fraction * saturation)),
-					value * (1.0f - ((1.0f - hDiv60Fraction) * saturation)),
+				    value,
+				    value * (1.0f - saturation),
+				    value * (1.0f - (hDiv60Fraction * saturation)),
+				    value * (1.0f - ((1.0f - hDiv60Fraction) * saturation)),
 				};
 				constexpr u32 rgbSwizzle[6][3] = {
 				    {0, 3, 1},
@@ -230,10 +233,8 @@ namespace p
                     {3, 1, 0},
                     {0, 1, 2}
                 };
-				return {
-					rgbValues[rgbSwizzle[swizzleIndex][0]],
-				    rgbValues[rgbSwizzle[swizzleIndex][1]],
-					rgbValues[rgbSwizzle[swizzleIndex][2]],
+				return {rgbValues[rgbSwizzle[swizzleIndex][0]],
+				    rgbValues[rgbSwizzle[swizzleIndex][1]], rgbValues[rgbSwizzle[swizzleIndex][2]],
 				    this->a};
 			}
 			else if constexpr (to == ColorMode::RGBA && from == ColorMode::HSV)
@@ -456,7 +457,8 @@ namespace p
 			}
 			else
 			{
-				return {this->r * invScalar, this->g * invScalar, this->b * invScalar, this->a * invScalar};
+				return {this->r * invScalar, this->g * invScalar, this->b * invScalar,
+				    this->a * invScalar};
 			}
 		}
 		constexpr TColor& operator/=(float scalar)
@@ -474,7 +476,7 @@ namespace p
 			else
 			{
 				return this->r == other.r && this->g == other.g && this->b == other.b
-			        && this->a == other.a;
+				    && this->a == other.a;
 			}
 		}
 		constexpr bool operator!=(const TColor& other) const
@@ -521,7 +523,8 @@ namespace p
 			return Data()[i];
 		}
 
-		constexpr TColor Clamp(float min = 0.f, float max = 1.f) const requires(mode != ColorMode::RGBA)
+		constexpr TColor Clamp(float min = 0.f, float max = 1.f) const
+		    requires(mode != ColorMode::RGBA)
 		{
 			return {p::Clamp(this->r, min, max), p::Clamp(this->g, min, max),
 			    p::Clamp(this->b, min, max), p::Clamp(this->a, min, max)};

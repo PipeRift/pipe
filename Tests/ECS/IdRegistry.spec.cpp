@@ -24,9 +24,12 @@ namespace snowhouse
 }    // namespace snowhouse
 
 
-go_bandit([]() {
-	describe("ECS.IdRegistry", []() {
-		it("Can create one id", [&]() {
+go_bandit([]()
+{
+	describe("ECS.IdRegistry", []()
+	{
+		it("Can create one id", [&]()
+		{
 			IdRegistry ids;
 			AssertThat(ids.Size(), Equals(0));
 			Id id = ids.Create();
@@ -35,7 +38,8 @@ go_bandit([]() {
 			AssertThat(ids.Size(), Equals(1));
 		});
 
-		it("Can remove one id", [&]() {
+		it("Can remove one id", [&]()
+		{
 			IdRegistry ids;
 			Id id = ids.Create();
 			AssertThat(ids.Size(), Equals(1));
@@ -44,7 +48,8 @@ go_bandit([]() {
 			AssertThat(ids.Size(), Equals(0));
 		});
 
-		it("Can create two and remove first", [&]() {
+		it("Can create two and remove first", [&]()
+		{
 			IdRegistry ids;
 			Id id1 = ids.Create();
 			ids.Create();
@@ -53,7 +58,8 @@ go_bandit([]() {
 			AssertThat(ids.Size(), Equals(1));
 		});
 
-		it("Can create two and remove last", [&]() {
+		it("Can create two and remove last", [&]()
+		{
 			IdRegistry ids;
 			ids.Create();
 			Id id2 = ids.Create();
@@ -62,7 +68,8 @@ go_bandit([]() {
 			AssertThat(ids.Size(), Equals(1));
 		});
 
-		it("Can remove one id (deferred)", [&]() {
+		it("Can remove one id (deferred)", [&]()
+		{
 			IdRegistry ids;
 			Id id = ids.Create();
 			AssertThat(ids.Size(), Equals(1));
@@ -71,7 +78,8 @@ go_bandit([]() {
 			AssertThat(ids.Size(), Equals(0));
 		});
 
-		it("Can create two and remove first (deferred)", [&]() {
+		it("Can create two and remove first (deferred)", [&]()
+		{
 			IdRegistry ids;
 			Id id1 = ids.Create();
 			ids.Create();
@@ -80,7 +88,8 @@ go_bandit([]() {
 			AssertThat(ids.Size(), Equals(1));
 		});
 
-		it("Can create two and remove last (deferred)", [&]() {
+		it("Can create two and remove last (deferred)", [&]()
+		{
 			IdRegistry ids;
 			ids.Create();
 			Id id2 = ids.Create();
@@ -89,7 +98,8 @@ go_bandit([]() {
 			AssertThat(ids.Size(), Equals(1));
 		});
 
-		it("Removed id index gets reused", [&]() {
+		it("Removed id index gets reused", [&]()
+		{
 			IdRegistry ids;
 			ids.Create();
 			Id id = ids.Create();
@@ -101,7 +111,8 @@ go_bandit([]() {
 			AssertThat(id3.GetIndex(), !Equals(id.GetIndex()));
 		});
 
-		it("Deferred removed id index doesn't get reused until flushed", [&]() {
+		it("Deferred removed id index doesn't get reused until flushed", [&]()
+		{
 			IdRegistry ids;
 			ids.Create();
 			Id id = ids.Create();
@@ -116,7 +127,8 @@ go_bandit([]() {
 			AssertThat(id4.GetIndex(), !Equals(id.GetIndex()));
 		});
 
-		it("Can create many ids", [&]() {
+		it("Can create many ids", [&]()
+		{
 			IdRegistry ids;
 			AssertThat(ids.Size(), Equals(0));
 
@@ -131,7 +143,8 @@ go_bandit([]() {
 			}
 		});
 
-		it("Can remove many ids", [&]() {
+		it("Can remove many ids", [&]()
+		{
 			IdRegistry ids;
 			TArray<Id> list(3);
 			ids.Create(list);
@@ -146,7 +159,8 @@ go_bandit([]() {
 			}
 		});
 
-		it("Can remove many ids (deferred)", [&]() {
+		it("Can remove many ids (deferred)", [&]()
+		{
 			IdRegistry ids;
 			TArray<Id> list(3);
 			ids.Create(list);

@@ -27,9 +27,12 @@ struct Dummy
 };
 
 
-go_bandit([]() {
-	describe("ECS.PageBuffer", []() {
-		it("Can reserve", [&]() {
+go_bandit([]()
+{
+	describe("ECS.PageBuffer", []()
+	{
+		it("Can reserve", [&]()
+		{
 			TPageBuffer<Dummy, 2> buffer{GetCurrentArena()};
 
 			AssertThat(buffer.GetPagesSize(), Equals(0));
@@ -44,7 +47,8 @@ go_bandit([]() {
 			AssertThat(buffer.Capacity(), Equals(6));
 		});
 
-		it("Can shrink", [&]() {
+		it("Can shrink", [&]()
+		{
 			TPageBuffer<Dummy, 2> buffer{GetCurrentArena()};
 			buffer.Reserve(7);
 			AssertThat(buffer.GetPagesSize(), Equals(4));
@@ -54,7 +58,8 @@ go_bandit([]() {
 			AssertThat(buffer.Capacity(), Equals(4));
 		});
 
-		it("Can insert", [&]() {
+		it("Can insert", [&]()
+		{
 			TPageBuffer<Dummy, 2> buffer{GetCurrentArena()};
 			buffer.Reserve(4);
 
@@ -67,7 +72,8 @@ go_bandit([]() {
 			AssertThat(buffer[3].destroyed, Equals(false));
 		});
 
-		it("Can remove", [&]() {
+		it("Can remove", [&]()
+		{
 			TPageBuffer<Dummy, 2> buffer{GetCurrentArena()};
 			buffer.Reserve(4);
 
@@ -83,7 +89,8 @@ go_bandit([]() {
 			// AssertThat(buffer[3].destroyed, Equals(true));
 		});
 
-		it("Points to correct page", [&]() {
+		it("Points to correct page", [&]()
+		{
 			TPageBuffer<Dummy, 2> buffer{GetCurrentArena()};
 			buffer.Reserve(7);
 

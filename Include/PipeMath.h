@@ -169,7 +169,7 @@ namespace p
 	template<FloatingPoint T>
 	static constexpr T Floor(T v)
 	{
-		if constexpr (std::is_constant_evaluated())
+		if (std::is_constant_evaluated())
 		{
 			if (IsNAN(v))
 			{
@@ -241,7 +241,7 @@ namespace p
 	template<FloatingPoint T>
 	static constexpr T Round(T v)
 	{
-		if constexpr(std::is_constant_evaluated())
+		if (std::is_constant_evaluated())
 		{
 			if (IsNAN(v))
 			{
@@ -251,7 +251,7 @@ namespace p
 			{
 				return v;
 			}
-        	return (v >= 0.0) ? i64(v + 0.5) : i64(v - 0.5);
+			return (v >= 0.0) ? i64(v + 0.5) : i64(v - 0.5);
 		}
 		else
 		{
@@ -457,11 +457,11 @@ namespace p
 	template<FloatingPoint Type>
 	static inline constexpr float Mod(Type a, Type b)
 	{
-		if constexpr(IsSame<Type, float>)
+		if constexpr (IsSame<Type, float>)
 		{
 			return fmodf(a, b);
 		}
-		else if constexpr(IsSame<Type, double>)
+		else if constexpr (IsSame<Type, double>)
 		{
 			return fmod(a, b);
 		}
@@ -469,7 +469,7 @@ namespace p
 		{
 			return a - b * Floor(a / b);
 		}
-		}
+	}
 
 	template<SignedIntegral Type>
 	static constexpr Type Mod(Type a, Type b)

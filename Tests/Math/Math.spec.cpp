@@ -14,13 +14,17 @@ using namespace bandit;
 using namespace p;
 
 
-go_bandit([]() {
-	describe("Math.Math", []() {
-		describe("Binary Search", []() {
+go_bandit([]()
+{
+	describe("Math.Math", []()
+	{
+		describe("Binary Search", []()
+		{
 			TArray<i32> bottomUp{23, 34, 50, 100, 120};
 			TArray<i32> topDown{120, 100, 50, 34, 23};
 
-			it("LowerBound", [&]() {
+			it("LowerBound", [&]()
+			{
 				AssertThat(bottomUp.LowerBound(34), Equals(1));
 				AssertThat(bottomUp.LowerBound(100), Equals(3));
 				AssertThat(bottomUp.LowerBound(51), Equals(3));
@@ -31,7 +35,8 @@ go_bandit([]() {
 				AssertThat(topDown.LowerBound(51, TGreater<>()), Equals(2));
 			});
 
-			it("UpperBound", [&]() {
+			it("UpperBound", [&]()
+			{
 				AssertThat(bottomUp.UpperBound(34), Equals(2));
 				AssertThat(bottomUp.UpperBound(100), Equals(4));
 
@@ -39,7 +44,8 @@ go_bandit([]() {
 				AssertThat(topDown.UpperBound(100, TGreater<>()), Equals(2));
 			});
 
-			it("Can find equal", [&]() {
+			it("Can find equal", [&]()
+			{
 				AssertThat(bottomUp.FindSorted(0), Equals(NO_INDEX));
 				AssertThat(bottomUp.FindSorted(34), Equals(1));
 				AssertThat(bottomUp.FindSorted(33), Equals(NO_INDEX));
@@ -48,11 +54,14 @@ go_bandit([]() {
 				AssertThat(topDown.FindSorted(34, TGreater<>()), Equals(3));
 			});
 
-			describe("FindSortedMax", []() {
-				describe("Ordered by a < b", []() {
+			describe("FindSortedMax", []()
+			{
+				describe("Ordered by a < b", []()
+				{
 					TArray<i32> bottomUp{23, 34, 50, 50, 100, 120};
 
-					it("Find first item", [&]() {
+					it("Find first item", [&]()
+					{
 						auto i4 = bottomUp.FindSortedMax(23, false);
 						AssertThat(i4, Equals(NO_INDEX));
 
@@ -63,7 +72,8 @@ go_bandit([]() {
 						AssertThat(i6, Equals(NO_INDEX));
 					});
 
-					it("Find any item", [&]() {
+					it("Find any item", [&]()
+					{
 						auto i1 = bottomUp.FindSortedMax(34, true);
 						AssertThat(i1, Equals(1));
 
@@ -74,7 +84,8 @@ go_bandit([]() {
 						AssertThat(i3, Equals(0));
 					});
 
-					it("Find last item", [&]() {
+					it("Find last item", [&]()
+					{
 						auto i4 = bottomUp.FindSortedMax(120, false);
 						AssertThat(i4, Equals(4));
 
@@ -89,10 +100,12 @@ go_bandit([]() {
 					});
 				});
 
-				describe("Ordered by a > b", []() {
+				describe("Ordered by a > b", []()
+				{
 					TArray<i32> topDown{120, 100, 50, 50, 34, 23};
 
-					it("Find first item", [&]() {
+					it("Find first item", [&]()
+					{
 						auto i4 = topDown.FindSortedMax(120, true);
 						AssertThat(i4, Equals(0));
 
@@ -103,7 +116,8 @@ go_bandit([]() {
 						AssertThat(i6, Equals(0));
 					});
 
-					it("Find any item", [&]() {
+					it("Find any item", [&]()
+					{
 						auto i1 = topDown.FindSortedMax(34, true);
 						AssertThat(i1, Equals(4));
 
@@ -114,7 +128,8 @@ go_bandit([]() {
 						AssertThat(i3, Equals(5));
 					});
 
-					it("Find last item", [&]() {
+					it("Find last item", [&]()
+					{
 						auto i4 = topDown.FindSortedMax(23, false);
 						AssertThat(i4, Equals(NO_INDEX));
 
@@ -126,10 +141,12 @@ go_bandit([]() {
 					});
 				});
 
-				describe("All same values", []() {
+				describe("All same values", []()
+				{
 					TArray<i32> allEqual{10, 10, 10};
 
-					it("Doesnt find smaller", [&]() {
+					it("Doesnt find smaller", [&]()
+					{
 						auto i1 = allEqual.FindSortedMax(9, false);
 						AssertThat(i1, Equals(NO_INDEX));
 
@@ -137,7 +154,8 @@ go_bandit([]() {
 						AssertThat(i2, Equals(NO_INDEX));
 					});
 
-					it("Finds smaller", [&]() {
+					it("Finds smaller", [&]()
+					{
 						auto i1 = allEqual.FindSortedMax(10, true);
 						AssertThat(i1, Equals(0));
 
@@ -146,11 +164,14 @@ go_bandit([]() {
 					});
 				});
 			});
-			describe("FindSortedMin", []() {
-				describe("Ordered by a < b", []() {
+			describe("FindSortedMin", []()
+			{
+				describe("Ordered by a < b", []()
+				{
 					TArray<i32> bottomUp{23, 34, 50, 50, 100, 120};
 
-					it("Find first item", [&]() {
+					it("Find first item", [&]()
+					{
 						auto i1 = bottomUp.FindSortedMin(23, true);
 						AssertThat(i1, Equals(0));
 
@@ -161,7 +182,8 @@ go_bandit([]() {
 						AssertThat(i3, Equals(1));
 					});
 
-					it("Find any item", [&]() {
+					it("Find any item", [&]()
+					{
 						auto i1 = bottomUp.FindSortedMin(33, false);
 						AssertThat(i1, Equals(1));
 
@@ -172,7 +194,8 @@ go_bandit([]() {
 						AssertThat(i3, Equals(2));
 					});
 
-					it("Find last item", [&]() {
+					it("Find last item", [&]()
+					{
 						auto i1 = bottomUp.FindSortedMin(100, false);
 						AssertThat(i1, Equals(5));
 
@@ -187,10 +210,12 @@ go_bandit([]() {
 					});
 				});
 
-				describe("Ordered by a > b", [&]() {
+				describe("Ordered by a > b", [&]()
+				{
 					TArray<i32> topDown{120, 100, 50, 50, 34, 23};
 
-					it("Find first item", [&]() {
+					it("Find first item", [&]()
+					{
 						auto i4 = topDown.FindSortedMin(120, true);
 						AssertThat(i4, Equals(0));
 
@@ -201,7 +226,8 @@ go_bandit([]() {
 						AssertThat(i6, Equals(NO_INDEX));
 					});
 
-					it("Find any item", [&]() {
+					it("Find any item", [&]()
+					{
 						auto i1 = topDown.FindSortedMin(34, true);
 						AssertThat(i1, Equals(4));
 
@@ -212,7 +238,8 @@ go_bandit([]() {
 						AssertThat(i3, Equals(3));
 					});
 
-					it("Find last item", [&]() {
+					it("Find last item", [&]()
+					{
 						auto i4 = topDown.FindSortedMin(23, false);
 						AssertThat(i4, Equals(4));
 
@@ -224,10 +251,12 @@ go_bandit([]() {
 					});
 				});
 
-				describe("All same values", []() {
+				describe("All same values", []()
+				{
 					TArray<i32> allEqual{10, 10, 10};
 
-					it("Doesnt find bigger", [&]() {
+					it("Doesnt find bigger", [&]()
+					{
 						auto i1 = allEqual.FindSortedMin(11, false);
 						AssertThat(i1, Equals(NO_INDEX));
 
@@ -235,7 +264,8 @@ go_bandit([]() {
 						AssertThat(i2, Equals(NO_INDEX));
 					});
 
-					it("Finds bigger", [&]() {
+					it("Finds bigger", [&]()
+					{
 						auto i1 = allEqual.FindSortedMin(10, true);
 						AssertThat(i1, Equals(0));
 
@@ -246,7 +276,8 @@ go_bandit([]() {
 			});
 		});
 
-		it("Can check Infinite", [&]() {
+		it("Can check Infinite", [&]()
+		{
 			AssertThat(IsInf(0.0), Equals(false));
 			AssertThat(IsInf(-0.0), Equals(false));
 			AssertThat(IsInf(1.0), Equals(false));
@@ -262,13 +293,16 @@ go_bandit([]() {
 			AssertThat(IsInf(double(bigNumber)), Equals(false));
 		});
 
-		it("Can check NAN", [&]() {
+		it("Can check NAN", [&]()
+		{
 			AssertThat(IsNAN(0.0), Equals(false));
 			AssertThat(IsNAN(Limits<double>::QuietNaN()), Equals(true));
 		});
 
-		describe("Roundings", []() {
-			it("Can Floor", [&]() {
+		describe("Roundings", []()
+		{
+			it("Can Floor", [&]()
+			{
 				AssertThat(Floor(0.0), Equals(std::floor(0.0)));
 				AssertThat(Floor(-0.0), Equals(std::floor(-0.0)));
 				AssertThat(Floor(4.2), Equals(std::floor(4.2)));
@@ -285,7 +319,8 @@ go_bandit([]() {
 				AssertThat(Floor(dInfinite), Equals(std::floor(dInfinite)));
 				AssertThat(IsNAN(Floor(Limits<double>::QuietNaN())), Equals(true));
 			});
-			it("Can Ceil", [&]() {
+			it("Can Ceil", [&]()
+			{
 				AssertThat(Ceil(0.0), Equals(std::ceil(0.0)));
 				AssertThat(Ceil(-0.0), Equals(std::ceil(-0.0)));
 				AssertThat(Ceil(4.2), Equals(std::ceil(4.2)));
@@ -303,7 +338,8 @@ go_bandit([]() {
 				AssertThat(IsNAN(Ceil(Limits<double>::QuietNaN())), Equals(true));
 			});
 
-			it("Can Round", [&]() {
+			it("Can Round", [&]()
+			{
 				AssertThat(Round(0.0), Equals(std::round(0.0)));
 				AssertThat(Round(-0.0), Equals(std::round(-0.0)));
 				AssertThat(Round(4.2), Equals(std::round(4.2)));

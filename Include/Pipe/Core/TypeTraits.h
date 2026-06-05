@@ -163,12 +163,10 @@ namespace p
 	concept IsEmpty = std::is_empty_v<T>;
 
 	template<typename T, sizet size>
-	concept IsSmaller = sizeof(T) <
-	size;
+	concept IsSmaller = sizeof(T) < size;
 
 	template<typename T, sizet size>
-	concept IsBigger = sizeof(T) >
-	size;
+	concept IsBigger = sizeof(T) > size;
 
 	template<typename T>
 	concept IsEnum = std::is_enum_v<T>;

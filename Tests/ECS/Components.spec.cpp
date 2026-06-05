@@ -60,9 +60,12 @@ struct TestComponent
 u32 TestComponent::destructed = 0;
 
 
-go_bandit([]() {
-	describe("ECS.Components", []() {
-		it("Can add one component", [&]() {
+go_bandit([]()
+{
+	describe("ECS.Components", []()
+	{
+		it("Can add one component", [&]()
+		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
@@ -78,7 +81,8 @@ go_bandit([]() {
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
 		});
 
-		it("Can remove one component", [&]() {
+		it("Can remove one component", [&]()
+		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
@@ -94,7 +98,8 @@ go_bandit([]() {
 			AssertThat(NonEmptyComponent::destructed, Equals(1));
 		});
 
-		it("Can add many components", [&]() {
+		it("Can add many components", [&]()
+		{
 			IdContext ctx;
 			TArray<Id> ids{3};
 			AddId(ctx, ids);
@@ -108,7 +113,8 @@ go_bandit([]() {
 			}
 		});
 
-		it("Can remove many components", [&]() {
+		it("Can remove many components", [&]()
+		{
 			IdContext ctx;
 			TArray<Id> ids{3};
 			AddId(ctx, ids);
@@ -134,7 +140,8 @@ go_bandit([]() {
 			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[2]), Equals(nullptr));
 		});
 
-		it("Components are removed after node is deleted", [&]() {
+		it("Components are removed after node is deleted", [&]()
+		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
@@ -148,7 +155,8 @@ go_bandit([]() {
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
 		});
 
-		it("Components are removed after node is deleted (deferred)", [&]() {
+		it("Components are removed after node is deleted (deferred)", [&]()
+		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
@@ -168,7 +176,8 @@ go_bandit([]() {
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
 		});
 
-		it("Components keep state when added", [&]() {
+		it("Components keep state when added", [&]()
+		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.AddN(id, NonEmptyComponent{2});
@@ -176,7 +185,8 @@ go_bandit([]() {
 			AssertThat(ctx.Get<NonEmptyComponent>(id).a, Equals(2));
 		});
 
-		it("Can copy registry", []() {
+		it("Can copy registry", []()
+		{
 			IdContext ctxa;
 
 			Id id = AddId(ctxa);
@@ -194,7 +204,8 @@ go_bandit([]() {
 			AssertThat(ctxb.Get<NonEmptyComponent>(id2).a, Equals(2));
 		});
 
-		it("Can check components", [&]() {
+		it("Can check components", [&]()
+		{
 			IdContext ctx;
 			Id id = NoId;
 			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
@@ -209,7 +220,8 @@ go_bandit([]() {
 			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
 		});
 
-		it("Can destroy components on reset", [&]() {
+		it("Can destroy components on reset", [&]()
+		{
 			NonEmptyComponent::destructed = 0;
 			TestComponent::destructed     = 0;
 
@@ -233,7 +245,8 @@ go_bandit([]() {
 			AssertThat(TestComponent::destructed, Equals(2));
 		});
 
-		it("Components are removed with the entity", [&]() {
+		it("Components are removed with the entity", [&]()
+		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
@@ -246,7 +259,8 @@ go_bandit([]() {
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
 		});
 
-		it("Components are removed with the entity (deferred)", [&]() {
+		it("Components are removed with the entity (deferred)", [&]()
+		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
@@ -265,7 +279,8 @@ go_bandit([]() {
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
 		});
 
-		it("Can access components on recicled entities", [&]() {
+		it("Can access components on recicled entities", [&]()
+		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
@@ -278,7 +293,8 @@ go_bandit([]() {
 			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
 		});
 
-		it("Can access CRemoved", [&]() {
+		it("Can access CRemoved", [&]()
+		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);

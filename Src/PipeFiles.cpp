@@ -1274,7 +1274,7 @@ namespace p
 		{
 			fileWatcher = MakeOwned<DefaultFileWatcher>(this);
 			if (!fileWatcher.GetUnsafe<BaseFileWatcher>()
-			         ->IsInitialized())    // Fallback to generic file watcher
+			        ->IsInitialized())    // Fallback to generic file watcher
 			{
 				p::Warning("Initialization of OS file watcher failed. Fallback to generic.");
 				fileWatcher = MakeOwned<GenericFileWatcher>(this);

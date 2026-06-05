@@ -9,15 +9,20 @@ using namespace bandit;
 using namespace p;
 
 
-go_bandit([]() {
-	describe("Serialization.Json", []() {
-		describe("Reader", [&]() {
-			it("Can create a reader", [&]() {
+go_bandit([]()
+{
+	describe("Serialization.Json", []()
+	{
+		describe("Reader", [&]()
+		{
+			it("Can create a reader", [&]()
+			{
 				JsonFormatReader reader{"{}"};
 				AssertThat(reader.IsValid(), Is().True());
 			});
 
-			it("Can read from object value", [&]() {
+			it("Can read from object value", [&]()
+			{
 				String data{"{\"name\": \"Miguel\"}"};
 				JsonFormatReader reader{data};
 
@@ -29,7 +34,8 @@ go_bandit([]() {
 				AssertThat(name.data(), Equals("Miguel"));
 			});
 
-			it("Can read from array values", [&]() {
+			it("Can read from array values", [&]()
+			{
 				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
 				JsonFormatReader reader{data};
 
@@ -50,7 +56,8 @@ go_bandit([]() {
 				}
 			});
 
-			it("Can iterate arrays", [&]() {
+			it("Can iterate arrays", [&]()
+			{
 				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
 				JsonFormatReader reader{data};
 
@@ -71,7 +78,8 @@ go_bandit([]() {
 				}
 			});
 
-			it("Can check types", [&]() {
+			it("Can check types", [&]()
+			{
 				String data{"{\"players\": [\"Miguel\", \"Juan\"]}"};
 				JsonFormatReader reader{data};
 
@@ -85,7 +93,8 @@ go_bandit([]() {
 				}
 			});
 
-			it("Can find multiple keys", [&]() {
+			it("Can find multiple keys", [&]()
+			{
 				String data{"{\"one\": \"Miguel\", \"other\": \"Juan\"}"};
 				JsonFormatReader reader{data};
 
@@ -100,7 +109,8 @@ go_bandit([]() {
 				AssertThat(name, Equals("Juan"));
 			});
 
-			it("Can find multiple unordered keys", [&]() {
+			it("Can find multiple unordered keys", [&]()
+			{
 				String data{"{\"one\": \"Miguel\", \"other\": \"Juan\"}"};
 				JsonFormatReader reader{data};
 
@@ -115,8 +125,10 @@ go_bandit([]() {
 				AssertThat(name, Equals("Miguel"));
 			});
 
-			describe("Types", []() {
-				it("Can read bool values", [&]() {
+			describe("Types", []()
+			{
+				it("Can read bool values", [&]()
+				{
 					JsonFormatReader reader{"{\"alive\": true}"};
 					Reader& ct = reader;
 					ct.BeginObject();
@@ -132,7 +144,8 @@ go_bandit([]() {
 					AssertThat(value2, Equals(false));
 				});
 
-				it("Can read i8 values", [&]() {
+				it("Can read i8 values", [&]()
+				{
 					JsonFormatReader reader{"{\"alive\": -3}"};
 					Reader& ct = reader;
 					ct.BeginObject();
@@ -148,7 +161,8 @@ go_bandit([]() {
 					AssertThat(value2, Equals(-1));
 				});
 
-				it("Can read u8 values", [&]() {
+				it("Can read u8 values", [&]()
+				{
 					JsonFormatReader reader{"{\"alive\": 3}"};
 					Reader& ct = reader;
 					ct.BeginObject();
@@ -164,7 +178,8 @@ go_bandit([]() {
 					AssertThat(value2, Equals(1));
 				});
 
-				it("Can read i16 values", [&]() {
+				it("Can read i16 values", [&]()
+				{
 					// Test inbounds and out of bounds values
 					JsonFormatReader reader{Strings::Format(
 					    "{{\"a\":{},\"b\":{},\"c\":{},\"d\":{}}}", Limits<i16>::Max(),
@@ -182,7 +197,8 @@ go_bandit([]() {
 					AssertThat(value, Equals(Limits<i16>::Lowest()));
 				});
 
-				it("Can read u16 values", [&]() {
+				it("Can read u16 values", [&]()
+				{
 					JsonFormatReader reader{Strings::Format("{{\"a\":{},\"b\":{},\"c\":{}}}",
 					    Limits<u16>::Max(), Limits<u16>::Lowest(), -32)};
 					Reader ct = reader;
@@ -196,7 +212,8 @@ go_bandit([]() {
 					AssertThat(value, Equals(0));
 				});
 
-				it("Can read i32 values", [&]() {
+				it("Can read i32 values", [&]()
+				{
 					// Test inbounds and out of bounds values
 					JsonFormatReader reader{Strings::Format(
 					    "{{\"a\":{},\"b\":{},\"c\":{},\"d\":{}}}", Limits<i32>::Max(),
@@ -214,7 +231,8 @@ go_bandit([]() {
 					AssertThat(value, Equals(Limits<i32>::Lowest()));
 				});
 
-				it("Can read u32 values", [&]() {
+				it("Can read u32 values", [&]()
+				{
 					JsonFormatReader reader{Strings::Format("{{\"a\":{},\"b\":{},\"c\":{}}}",
 					    Limits<u32>::Max(), Limits<u32>::Lowest(), -32)};
 					Reader ct = reader;
@@ -228,7 +246,8 @@ go_bandit([]() {
 					AssertThat(value, Equals(0));
 				});
 
-				it("Can read float values", [&]() {
+				it("Can read float values", [&]()
+				{
 					JsonFormatReader reader{"{\"alive\": 0.344}"};
 					Reader& ct = reader;
 					ct.BeginObject();
@@ -244,7 +263,8 @@ go_bandit([]() {
 					AssertThat(value2, Equals(4.f));
 				});
 
-				it("Can read StringView values", [&]() {
+				it("Can read StringView values", [&]()
+				{
 					JsonFormatReader reader{"{\"alive\": \"yes\"}"};
 					Reader& ct = reader;
 					ct.BeginObject();
@@ -255,13 +275,16 @@ go_bandit([]() {
 			});
 		});
 
-		describe("Writer", [&]() {
-			it("Can create a writer", [&]() {
+		describe("Writer", [&]()
+		{
+			it("Can create a writer", [&]()
+			{
 				JsonFormatWriter writer{};
 				AssertThat(writer.IsValid(), Equals(true));
 			});
 
-			it("Can write to object key", [&]() {
+			it("Can write to object key", [&]()
+			{
 				JsonFormatWriter writer{};
 				Writer& ct = writer;
 				ct.BeginObject();
@@ -269,7 +292,8 @@ go_bandit([]() {
 				AssertThat(writer.ToString(false), Equals("{\"name\":\"Miguel\"}"));
 			});
 
-			it("Can write arrays", [&]() {
+			it("Can write arrays", [&]()
+			{
 				JsonFormatWriter writer{};
 
 				Writer& ct = writer;
@@ -288,7 +312,8 @@ go_bandit([]() {
 				AssertThat(writer.ToString(false), Equals("{\"players\":[\"Miguel\",\"Juan\"]}"));
 			});
 
-			it("Can write multiple object keys", [&]() {
+			it("Can write multiple object keys", [&]()
+			{
 				JsonFormatWriter writer{};
 				Writer& ct = writer;
 				ct.BeginObject();
@@ -298,8 +323,10 @@ go_bandit([]() {
 				    writer.ToString(false), Equals("{\"one\":\"Miguel\",\"other\":\"Juan\"}"));
 			});
 
-			describe("Types", []() {
-				it("Can write bool values", [&]() {
+			describe("Types", []()
+			{
+				it("Can write bool values", [&]()
+				{
 					JsonFormatWriter writer{};
 					Writer& ct = writer;
 					ct.BeginObject();
@@ -313,7 +340,8 @@ go_bandit([]() {
 					AssertThat(writer2.ToString(false), Equals("{\"alive\":false}"));
 				});
 
-				it("Can write i8 values", [&]() {
+				it("Can write i8 values", [&]()
+				{
 					JsonFormatWriter writer{};
 					Writer ct = writer;
 					ct.BeginObject();
@@ -321,7 +349,8 @@ go_bandit([]() {
 					AssertThat(writer.ToString(false), Equals("{\"alive\":-3}"));
 				});
 
-				it("Can write u8 values", [&]() {
+				it("Can write u8 values", [&]()
+				{
 					JsonFormatWriter writer{};
 					Writer ct = writer;
 					ct.BeginObject();
@@ -329,7 +358,8 @@ go_bandit([]() {
 					AssertThat(writer.ToString(false), Equals("{\"alive\":3}"));
 				});
 
-				it("Can write i16 values", [&]() {
+				it("Can write i16 values", [&]()
+				{
 					JsonFormatWriter writer{};
 					Writer ct = writer;
 					ct.BeginObject();
@@ -340,7 +370,8 @@ go_bandit([]() {
 					    writer.ToString(false), Equals("{\"a\":-3000,\"b\":32767,\"c\":-32768}"));
 				});
 
-				it("Can write u16 values", [&]() {
+				it("Can write u16 values", [&]()
+				{
 					JsonFormatWriter writer{};
 					Writer ct = writer;
 					ct.BeginObject();
@@ -350,7 +381,8 @@ go_bandit([]() {
 					AssertThat(writer.ToString(false), Equals("{\"a\":3000,\"b\":65535,\"c\":0}"));
 				});
 
-				it("Can write u32 values", [&]() {
+				it("Can write u32 values", [&]()
+				{
 					JsonFormatWriter writer{};
 					Writer ct = writer;
 					ct.BeginObject();
@@ -358,7 +390,8 @@ go_bandit([]() {
 					AssertThat(writer.ToString(false), Equals("{\"alive\":35533}"));
 				});
 
-				it("Can write i32 values", [&]() {
+				it("Can write i32 values", [&]()
+				{
 					JsonFormatWriter writer{};
 					Writer ct = writer;
 					ct.BeginObject();
@@ -373,7 +406,8 @@ go_bandit([]() {
 					AssertThat(writer2.ToString(false), Equals("{\"alive\":-35533}"));
 				});
 
-				it("Can write float values", [&]() {
+				it("Can write float values", [&]()
+				{
 					JsonFormatWriter writer{};
 					Writer ct = writer;
 					ct.BeginObject();
@@ -387,7 +421,8 @@ go_bandit([]() {
 					AssertThat(writer2.ToString(false), Equals("{\"alive\":4.0}"));
 				});
 
-				it("Can write StringView values", [&]() {
+				it("Can write StringView values", [&]()
+				{
 					JsonFormatWriter writer{};
 					Writer ct = writer;
 					ct.BeginObject();

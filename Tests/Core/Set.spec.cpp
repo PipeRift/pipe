@@ -16,9 +16,12 @@ struct TypeOfSize
 };
 
 
-go_bandit([]() {
-	describe("Core.Set", []() {
-		it("Can initialize", [&]() {
+go_bandit([]()
+{
+	describe("Core.Set", []()
+	{
+		it("Can initialize", [&]()
+		{
 			TSet<i32> data1{};
 			TSet<i32> data2(u32(3));
 			TSet<i32> data3{5, 4, 3, 2};
@@ -33,7 +36,8 @@ go_bandit([]() {
 			AssertThat(data3[5], Equals(5));
 		});
 
-		it("Can copy", [&]() {
+		it("Can copy", [&]()
+		{
 			TSet<i32> data1{6, 5};
 			TSet<i32> data2{data1};
 			AssertThat(data1.Size(), Equals(2));
@@ -50,7 +54,8 @@ go_bandit([]() {
 			AssertThat(data4[6], Equals(6));
 		});
 
-		it("Can move", [&]() {
+		it("Can move", [&]()
+		{
 			TSet<i32> data1{4, 3};
 			AssertThat(data1.Size(), Equals(2));
 
@@ -70,7 +75,8 @@ go_bandit([]() {
 			AssertThat(data4[4], Equals(4));
 		});
 
-		it("Can access data", [&]() {
+		it("Can access data", [&]()
+		{
 			TSet<i32> data1;
 			TSet<i32> data2{1, 5};
 

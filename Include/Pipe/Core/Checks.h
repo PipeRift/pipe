@@ -20,7 +20,7 @@ namespace p::details
 }    // namespace p::details
 
 
-#define P_EnsureImpl(capture, always, expression, text)                      \
+#define P_EnsureImpl(capture, always, expression, text) \
 	(P_LIKELY(!!(expression)) || ([capture]() {                              \
 		static bool executed = false;                                        \
 		if (always || !executed)                                             \
@@ -28,7 +28,7 @@ namespace p::details
 			executed = true;                                                 \
 			return true;                                                     \
 		}                                                                    \
-		return false;                                                        \
+		return false;                                                      \
 	}()) && ([capture]() {                                                   \
 		p::details::FailedCheckError(#expression, __FILE__, __LINE__, text); \
 		p::PlatformDebugBreak();                                             \

@@ -12,9 +12,12 @@ struct One
 {};
 
 
-go_bandit([]() {
-	describe("Reflection.TypeId", []() {
-		it("Ids can be valid and invalid", [&]() {
+go_bandit([]()
+{
+	describe("Reflection.TypeId", []()
+	{
+		it("Ids can be valid and invalid", [&]()
+		{
 			static constexpr TypeId id = GetTypeId<u8>();
 			AssertThat(id.IsValid(), Equals(true));
 
@@ -22,7 +25,8 @@ go_bandit([]() {
 			AssertThat(noId.IsValid(), Equals(false));
 		});
 
-		it("Different types don't share an id", [&]() {
+		it("Different types don't share an id", [&]()
+		{
 			static constexpr TypeId ids[]{
 			    GetTypeId<u8>(), GetTypeId<u16>(), GetTypeId<i32>(), GetTypeId<One>()};
 			static constexpr u32 numIds = sizeof(ids) / sizeof(TypeId);

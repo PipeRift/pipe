@@ -351,13 +351,14 @@ namespace p
 			    typeId, {Move(onDrawRow), Move(onDrawChildren)});
 		}
 	}
-	#define P_DECLARE_COMMON_VALUE_TYPEINSPECTION(type, valueCode)        \
-		p::RegisterTypeInspection<type>(                                  \
-		    [](StringView label, void* data, TypeId typeId, bool& open) { \
-			InspectSetKeyAsText(label);                                   \
-			InspectSetValueColumn();                                      \
-			type& value = *static_cast<type*>(data);                      \
-			valueCode                                                     \
+	#define P_DECLARE_COMMON_VALUE_TYPEINSPECTION(type, valueCode)      \
+		p::RegisterTypeInspection<type>(                                \
+		    [](StringView label, void* data, TypeId typeId, bool& open) \
+		{                                                               \
+			InspectSetKeyAsText(label);                                 \
+			InspectSetValueColumn();                                    \
+			type& value = *static_cast<type*>(data);                    \
+			valueCode                                                   \
 		})
 	void RegisterPipeTypeInspections()
 	{
@@ -597,7 +598,7 @@ namespace p
 		                               | ImGuiTreeNodeFlags_SpanAllColumns
 		                               | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0)
 		                               | (defaultOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0);
-		bool bOpen = ImGui::TreeNodeEx(name.data(), flags);
+		bool bOpen                     = ImGui::TreeNodeEx(name.data(), flags);
 		ImGui::Indent();
 		return bOpen;
 	}
@@ -1087,7 +1088,8 @@ namespace p
 				{
 					ids.AddUninitialized(GetDebugCtx().Size());
 					i32 idx = 0;
-					GetDebugCtx().Each([&ids, &idx](Id id) {
+					GetDebugCtx().Each([&ids, &idx](Id id)
+					{
 						ids[idx] = id;
 						++idx;
 					});

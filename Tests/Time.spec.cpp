@@ -9,9 +9,12 @@ using namespace bandit;
 using namespace p;
 
 
-go_bandit([]() {
-	describe("Time.DateTime", []() {
-		it("Can get day of year", [&]() {
+go_bandit([]()
+{
+	describe("Time.DateTime", []()
+	{
+		it("Can get day of year", [&]()
+		{
 			DateTime time1{2024, 1, 1};
 			AssertThat(time1.GetDayOfYear(), Equals(1));
 			DateTime time11{2024, 1, 30};

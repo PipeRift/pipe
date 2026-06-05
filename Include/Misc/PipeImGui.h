@@ -46,7 +46,7 @@ namespace p
 	{
 		return {value.x, value.y, value.z, value.w};
 	}
-};
+};    // namespace p
 
 
 namespace ImGui
