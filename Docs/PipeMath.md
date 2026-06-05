@@ -1,12 +1,15 @@
-# Pipe Math
-Defined in header [<PipeMath.h>](https://github.com/PipeRift/pipe/blob/main/Include/PipeMath.h)
+---
+title: Pipe Math
+---
+**Header:** [<PipeMath.h>](https://github.com/PipeRift/pipe/blob/main/Include/PipeMath.h)
+**Namespace:** `p`
+**Uses:** [`PipePlatform`](./PipePlatform.md)
 
 ## Overview
 
 `PipeMath` provides a collection of constexpr and runtime math utilities in the `p` namespace. Functions are overloaded by type via C++20 concepts (`FloatingPoint<T>`, `SignedIntegral<T>`, `UnsignedIntegral<T>`, `Number<T>`) to dispatch between constexpr compile-time implementations (when `std::is_constant_evaluated()` is true) and standard library fallbacks at runtime.
 
 All functions marked with `P_API` are exported from the Pipe shared library; others are inline or template-only.
-
 ## Constants
 
 | Constant | Type | Value |
@@ -24,7 +27,6 @@ All functions marked with `P_API` are exported from the Pipe shared library; oth
 ## Comparison
 
 ### Max / Min (binary)
-
 ```cpp
 template<typename Type>
 constexpr Type Max(Type a, Type b);   // returns max(a, b)
@@ -37,7 +39,6 @@ constexpr Type Min(Type a, Type b);   // returns min(a, b)
 - **Type constraint:** None — works for any comparable type.
 
 ### Max / Min (variadic)
-
 ```cpp
 template<typename Type, typename... Args>
 constexpr Type Max(Type a, Type b, Args... args);
@@ -49,7 +50,6 @@ constexpr Type Min(Type a, Type b, Args... args);
 - Recursively chains binary `Max`/`Min`. All arguments must be implicitly convertible to `Type`.
 
 ### Clamp
-
 ```cpp
 template<typename Type>
 constexpr Type Clamp(Type a, Type min, Type max);
@@ -62,7 +62,6 @@ Equivalent to `Max(min, Min(a, max))`.
 ## Arithmetic
 
 ### Abs
-
 ```cpp
 template<typename Type>
 constexpr Type Abs(const Type a);
@@ -71,7 +70,6 @@ constexpr Type Abs(const Type a);
 Returns absolute value. Uses `(a >= 0) ? a : -a` — does not call `std::abs`.
 
 ### Sign
-
 ```cpp
 template<typename Type>
 constexpr Type Sign(const Type a);
@@ -87,7 +85,7 @@ constexpr T Pow(T value, u32 power);
 ```
 - Iterative multiplication. `power == 0` returns `1` (or `-1` for negative base with signed types).
 
-> **Warning:** Does not check overflow.
+> [!Warning] Does not check overflow
 
 ### Pow (float & double)
 ```cpp
@@ -98,7 +96,6 @@ constexpr V Pow(V value, P power);
 - **Runtime:** Delegates to `std::pow`.
 
 ### Square
-
 ```cpp
 template<typename T>
 constexpr T Square(T val);
@@ -107,7 +104,6 @@ constexpr T Square(T val);
 Returns `val * val`.
 
 ### Sqrt
-
 ```cpp
 template<typename T>
 T Sqrt(T val);
@@ -117,7 +113,6 @@ Delegates to `std::sqrt`.
 Not `constexpr` (no compile-time specialization).
 
 ### InvSqrt
-
 ```cpp
 float  InvSqrt(float x);
 double InvSqrt(double x);
@@ -130,7 +125,6 @@ Returns `1.f / Sqrt(x)` (or `1. / Sqrt(x)` for double).
 ## Rounding
 
 ### Floor / Ceil (floating point)
-
 ```cpp
 template<FloatingPoint T>
 constexpr T Floor(T v);
@@ -143,7 +137,6 @@ constexpr T Ceil(T v);
 - **Runtime:** Delegates to `std::floor` / `std::ceil`.
 
 ### FloorToI32 / FloorToI64
-
 ```cpp
 constexpr i32 FloorToI32(float f);
 constexpr i64 FloorToI64(double f);
@@ -152,7 +145,6 @@ constexpr i64 FloorToI64(double f);
 Converts float/double to integer via  [Floor](#Floor).
 
 ### CeilToI32 / CeilToI64
-
 ```cpp
 constexpr i32 CeilToI32(float f);
 constexpr i64 CeilToI64(double f);
@@ -161,7 +153,6 @@ constexpr i64 CeilToI64(double f);
 Converts float/double to integer via [Ceil](#Ceil).
 
 ### Round
-
 ```cpp
 constexpr float  Round(float f);
 constexpr double Round(double f);
@@ -171,7 +162,6 @@ constexpr double Round(double f);
 - **Runtime:** Delegates to `std::round`.
 
 ### RoundToI32/RoundToI64
-
 ```cpp
 constexpr i32 RoundToI32(float f);
 constexpr i64 RoundToI64(double f);
@@ -180,7 +170,6 @@ constexpr i64 RoundToI64(double f);
 Converts float/double to integer via [Round](#Round).
 
 ### RoundFromZero
-
 ```cpp
 float  RoundFromZero(float f);
 double RoundFromZero(double d);
@@ -189,7 +178,6 @@ double RoundFromZero(double d);
 Rounds away from zero: `0.1 → 1`, `-0.1 → -1`. Equivalent to `(f > 0) ? Ceil(f) : Floor(f)`.
 
 ### RoundToZero
-
 ```cpp
 float  RoundToZero(float f);
 double RoundToZero(double d);
@@ -198,7 +186,6 @@ double RoundToZero(double d);
 Rounds toward zero: `0.1 → 0`, `-0.1 → 0`. Equivalent to `(f < 0) ? Ceil(f) : Floor(f)`.
 
 ### RoundToNegativeInfinity / RoundToPositiveInfinity
-
 ```cpp
 float  RoundToNegativeInfinity(float f);   // = Floor(f)
 double RoundToNegativeInfinity(double d);  // = Floor(d)
@@ -209,15 +196,12 @@ double RoundToPositiveInfinity(double d);  // = Ceil(d)
 Aliases for `Floor` and `Ceil`.
 
 ### Frac
-
 ```cpp
 float  Frac(float f);
 double Frac(double d);
 ```
 
 Returns the fractional part of a number: `3.25 → 0,25`. Equivalent to `f - Floor(f)`. Result is always in range `[0, 1)`.
-
----
 
 ## Random
 
@@ -229,7 +213,6 @@ i32    Random(i32 min, i32 max);       // [min, max] inclusive
 ```
 
 ## Floating-point Checks
-
 ```cpp
 template<typename T>
 constexpr bool IsPosInf(const T x);   // x == Limits<T>::Infinity()
@@ -262,17 +245,16 @@ float Atan2(float Y, float X);
 ```
 
 ### FastAsin
-
 ```cpp
 float FastAsin(float Value);
 ```
 
 7-degree minimax approximation of arcsine. Clamps input to `[-1, 1]`.
 
-> **Warning:** This is an approximation — not suitable for high-precision applications. For full precision, use `std::asin`.
+> [!Warning] This is an approximation
+> Not suitable for high-precision applications. For full precision, use `std::asin`.
 
 ### Angles
-
 ```cpp
 float ClampAngle(float a);                    // clamp to [0, 2π)
 float NormalizeAngle(float a);                // normalize to [-π, π]
@@ -282,7 +264,6 @@ float ClampAngle(float a, float min, float max); // custom range
 Runtime-only functions (defined in `.cpp`). `NormalizeAngle` maps angles into the principal range.
 
 ## Modulo
-
 ```cpp
 // Floating point: a - b * Floor(a / b)
 template<FloatingPoint Type>
@@ -304,7 +285,6 @@ constexpr Type Mod(Type a, Type b);
 ## Logarithmic & Exponential
 
 ### Log
-
 ```cpp
 float  Log(float k);               // ln(k)
 float  Log(float k, float base);   // log_base(k) = ln(k)/ln(base)
@@ -315,7 +295,6 @@ double Log(T k);            // converts to double, calls std::log
 ```
 
 ### Log2
-
 ```cpp
 float  Log2(float k);    // std::log2f(k)
 double Log2(double k);   // std::log2(k)
@@ -324,7 +303,6 @@ double Log2(T k); // converts to double, calls std::log2
 ```
 
 ### Exp2
-
 ```cpp
 const float  Exp2(const float k);  // std::exp2f(k)
 const double Exp2(const double k); // std::exp2(k)
@@ -335,7 +313,6 @@ const double Exp2(T k);     // converts to double, calls std::exp2
 ## Bit Manipulation
 
 ### IsPowerOfTwo
-
 ```cpp
 template<typename T>
 bool IsPowerOfTwo(T value);
@@ -344,7 +321,6 @@ bool IsPowerOfTwo(T value);
 Returns `(value & (value - 1)) == 0`. Note: `IsPowerOfTwo(0)` returns `true` since `0 & (-1) == 0`. For strict positive power-of-two, add a zero check.
 
 ### CountBits
-
 ```cpp
 constexpr i32 CountBits(u64 value);
 ```
@@ -365,7 +341,6 @@ Population count (Hamming weight) of a 64-bit integer.
 ## Utility
 
 ### NearlyEqual
-
 ```cpp
 bool NearlyEqual(float a, float b, float tolerance = smallNumber);
 ```

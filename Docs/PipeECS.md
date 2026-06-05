@@ -1,9 +1,13 @@
-# Pipe ECS
-Defined in header [<PipeECS.h>](https://github.com/PipeRift/pipe/blob/main/Include/PipeECS.h)
+---
+title: Pipe ECS
+---
+**Header:** [<PipeECS.h>](https://github.com/PipeRift/pipe/blob/main/Include/PipeECS.h)
+**Namespace:** `p`
+**Uses:** [`PipeArrays`](./PipeArrays.md) [`PipePlatform`](./PipePlatform.md) [`PipeReflect`](./PipeReflect.md)
 
 ## Overview
 
-This Pipe module contains a complete [ECS](https://en.wikipedia.org/wiki/Entity_component_system) (Entity Component System) implementation based on component pools.
+`PipeECS` contains a complete [ECS](https://en.wikipedia.org/wiki/Entity_component_system) (Entity Component System) implementation based on component pools.
 There are similarities with other well-known ECS systems like [entt](https://github.com/skypjack/entt) but this implementation has some key differences.
 
 ## Architecture
