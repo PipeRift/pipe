@@ -206,7 +206,7 @@ namespace p
 	template<FloatingPoint T>
 	static constexpr T Ceil(T v)
 	{
-		if constexpr (std::is_constant_evaluated())
+		if (std::is_constant_evaluated())
 		{
 			if (IsNAN(v))
 			{

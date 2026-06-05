@@ -276,9 +276,9 @@ namespace p
 			return TColor{color};
 		}
 
-		static TColor<mode> MakeFromHSV8(u8 hue, u8 saturation, u8 value)
+		static constexpr TColor<mode> MakeFromHSV8(u8 hue, u8 saturation, u8 value)
 		{
-			// want a given hue value of 255 to map to just below 360 degrees
+			// Want a given hue value of 255 to map to just below 360 degrees
 			const TColor<ColorMode::HSV> hsvColor{float(hue) * 360.0f * oneOver255,
 			    float(saturation) * oneOver255, float(value) * oneOver255};
 			return hsvColor.Convert<mode>();
@@ -335,7 +335,10 @@ namespace p
 				P_CheckMsg(false, "operator+(color) is not allowed on HSV");
 				return {};
 			}
-			return {this->r + other.r, this->g + other.g, this->b + other.b, this->a + other.a};
+			else
+			{
+				return {this->r + other.r, this->g + other.g, this->b + other.b, this->a + other.a};
+			}
 		}
 		constexpr TColor& operator+=(const TColor& other)
 		{
@@ -356,7 +359,10 @@ namespace p
 				P_CheckMsg(false, "operator-(color) is not allowed on HSV");
 				return {};
 			}
-			return {this->r - other.r, this->g - other.g, this->b - other.b, this->a - other.a};
+			else
+			{
+				return {this->r - other.r, this->g - other.g, this->b - other.b, this->a - other.a};
+			}
 		}
 		constexpr TColor& operator-=(const TColor& other)
 		{
@@ -377,7 +383,10 @@ namespace p
 				P_CheckMsg(false, "operator*(color) is not allowed on HSV");
 				return {};
 			}
-			return {this->r * other.r, this->g * other.g, this->b * other.b, this->a * other.a};
+			else
+			{
+				return {this->r * other.r, this->g * other.g, this->b * other.b, this->a * other.a};
+			}
 		}
 		constexpr TColor& operator*=(const TColor& other)
 		{
@@ -398,7 +407,10 @@ namespace p
 				P_CheckMsg(false, "operator/(color) is not allowed on HSV");
 				return {};
 			}
-			return {this->r / other.r, this->g / other.g, this->b / other.b, this->a / other.a};
+			else
+			{
+				return {this->r / other.r, this->g / other.g, this->b / other.b, this->a / other.a};
+			}
 		}
 		constexpr TColor& operator/=(const TColor& other)
 		{
@@ -416,8 +428,7 @@ namespace p
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
-				P_CheckMsg(false, "operator*(scalar) is not allowed on HSV");
-				return {};
+				return {this->h, this->s, this->v * scalar, this->a * scalar};
 			}
 			else
 			{
@@ -441,11 +452,12 @@ namespace p
 			}
 			else if constexpr (mode == ColorMode::HSV)
 			{
-				P_CheckMsg(false, "operator/(scalar) is not allowed on HSV");
-				return {};
+				return {this->h, this->s, this->v * invScalar, this->a * invScalar};
 			}
-			return {
-			    this->r * invScalar, this->g * invScalar, this->b * invScalar, this->a * invScalar};
+			else
+			{
+				return {this->r * invScalar, this->g * invScalar, this->b * invScalar, this->a * invScalar};
+			}
 		}
 		constexpr TColor& operator/=(float scalar)
 		{
@@ -459,8 +471,11 @@ namespace p
 			{
 				return DWColor() == other.DWColor();
 			}
-			return this->r == other.r && this->g == other.g && this->b == other.b
-			    && this->a == other.a;
+			else
+			{
+				return this->r == other.r && this->g == other.g && this->b == other.b
+			        && this->a == other.a;
+			}
 		}
 		constexpr bool operator!=(const TColor& other) const
 		{
@@ -468,8 +483,11 @@ namespace p
 			{
 				return DWColor() == other.DWColor();
 			}
-			return this->r != other.r || this->g != other.g || this->b != other.b
-			    || this->a != other.a;
+			else
+			{
+				return this->r != other.r || this->g != other.g || this->b != other.b
+				    || this->a != other.a;
+			}
 		}
 
 		constexpr auto* Data()
