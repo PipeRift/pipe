@@ -521,14 +521,14 @@ namespace p
 			return Data()[i];
 		}
 
-		TColor Clamp(float min = 0.f, float max = 1.f) const requires(mode != ColorMode::RGBA)
+		constexpr TColor Clamp(float min = 0.f, float max = 1.f) const requires(mode != ColorMode::RGBA)
 		{
 			return {p::Clamp(this->r, min, max), p::Clamp(this->g, min, max),
 			    p::Clamp(this->b, min, max), p::Clamp(this->a, min, max)};
 		}
 
 		// Error-tolerant comparison.
-		bool Equals(const TColor& other, float Tolerance = smallNumber) const
+		constexpr bool Equals(const TColor& other, float Tolerance = smallNumber) const
 		    requires(mode != ColorMode::RGBA)
 		{
 			return Abs(this->r - other.r) < Tolerance && Abs(this->g - other.g) < Tolerance
@@ -632,7 +632,7 @@ namespace p
 		constexpr TColor Desaturate(float desaturation) const
 		    requires(mode == ColorMode::Linear || mode == ColorMode::sRGB)
 		{
-			float lum = ComputeLuminance();
+			float lum = GetLuminance();
 			return Lerp(*this, TColor<mode>{lum, lum, lum, this->a}, desaturation);
 		}
 		constexpr TColor Shade(float delta) const;
@@ -646,38 +646,33 @@ namespace p
 			return {this->r, this->g, this->b, p::Clamp(alpha, 0.f, 1.f)};
 		}
 
-		/** Computes the perceptually weighted luminance value of a color. */
-		constexpr float ComputeLuminance() const
-		{
-			return this->r * 0.3f + this->g * 0.59f + this->b * 0.11f;
-		}
-
-		/**
-		 * Returns the maximum value in this color structure
-		 * @return The maximum color channel value
-		 */
-		float GetMax() const
-		{
-			return Max(Max(Max(this->r, this->g), this->b), this->a);
-		}
-
 		/** useful to detect if a light contribution needs to be rendered */
-		bool IsAlmostBlack() const
+		constexpr bool IsAlmostBlack() const
 		{
 			return Square(this->r) < smallNumber && Square(this->g) < smallNumber
 			    && Square(this->b) < smallNumber;
 		}
 
 		/**
-		 * Returns the minimum value in this color structure
-		 * @return The minimum color channel value
+		 * Returns the maximum component in this color
+		 * @return The maximum color component value
 		 */
-		float GetMin() const
+		constexpr float GetMax() const
 		{
-			return Min(Min(Min(this->r, this->g), this->b), this->a);
+			return Max(this->r, this->g, this->b, this->a);
 		}
 
-		float GetLuminance() const
+		/**
+		 * Returns the minimum component in this color
+		 * @return The minimum color component value
+		 */
+		constexpr float GetMin() const
+		{
+			return Min(this->r, this->g, this->b, this->a);
+		}
+
+		/** Computes the perceptually weighted luminance value of a color. */
+		constexpr float GetLuminance() const
 		{
 			return this->r * 0.3f + this->g * 0.59f + this->b * 0.11f;
 		}
