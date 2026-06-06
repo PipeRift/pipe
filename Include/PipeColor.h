@@ -263,18 +263,40 @@ namespace p
 			const TColor<ColorMode::RGBA> color{r, g, b, a};
 			return TColor{color};
 		}
+
+		// Gets the color in a packed u32 format packed in the order ARGB.
+		static constexpr TColor FromPackedARGB(u32 packed)
+		{
+			return FromRGB(u8(packed >> 16), u8(packed >> 8), u8(packed), u8(packed >> 24));
+		}
+
+		// Gets the color in a packed u32 format packed in the order ABGR.
+		static constexpr TColor FromPackedABGR(u32 packed)
+		{
+			return FromRGB(u8(packed), u8(packed >> 8), u8(packed >> 16), u8(packed >> 24));
+		}
+
+		// Gets the color in a packed u32 format packed in the order RGBA.
+		static constexpr TColor FromPackedRGBA(u32 packed)
+		{
+			return FromRGB(u8(packed >> 24), u8(packed >> 16), u8(packed >> 8), u8(packed));
+		}
+
+		// Gets the color in a packed u32 format packed in the order BGRA.
+		static constexpr TColor FromPackedBGRA(u32 packed)
+		{
+			return FromRGB(u8(packed >> 8), u8(packed >> 16), u8(packed >> 24), u8(packed));
+		}
+
 		static constexpr TColor FromHex(u32 value)
 		{
-			const TColor<ColorMode::RGBA> color{u8(value >> 16), u8(value >> 8), u8(value >> 0)};
-			return TColor{color};
+			return FromPackedABGR(value);
 		}
 
 		// Same as FromHex() but taking into account alpha value
 		static constexpr TColor FromHexAlpha(u32 value)
 		{
-			const TColor<ColorMode::RGBA> color{
-			    u8(value >> 24), u8(value >> 16), u8(value >> 8), u8(value >> 0)};
-			return TColor{color};
+			return FromPackedBGRA(value);
 		}
 
 		static constexpr TColor<mode> MakeFromHSV8(u8 hue, u8 saturation, u8 value)
