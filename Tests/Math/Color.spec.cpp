@@ -48,9 +48,69 @@ namespace snowhouse
 
 go_bandit([]()
 {
-	describe("Math.Color", []()
+	describe("Math.Color", [&]()
 	{
-		describe("LinearColor", []()
+		describe("Helpers", [&]()
+		{
+			it("Can make from rgba", [&]()
+			{
+				auto color = Color::FromRGB(128, 206, 215, 35);
+				AssertThat(color.r, Equals(128));
+				AssertThat(color.g, Equals(206));
+				AssertThat(color.b, Equals(215));
+				AssertThat(color.a, Equals(35));
+			});
+			it("Can make from Hex", [&]()
+			{
+				auto color = Color::FromHex(0x80ced7);
+				AssertThat(color.r, Equals(128));
+				AssertThat(color.g, Equals(206));
+				AssertThat(color.b, Equals(215));
+
+				auto colora = Color::FromHexAlpha(0x80ced723);
+				AssertThat(colora.r, Equals(128));
+				AssertThat(colora.g, Equals(206));
+				AssertThat(colora.b, Equals(215));
+				AssertThat(colora.a, Equals(35));
+			});
+
+			it("Can make from packed", [&]()
+			{
+				auto argb = Color::FromPackedARGB(0x2380ced7);
+				AssertThat(argb.r, Equals(128));
+				AssertThat(argb.g, Equals(206));
+				AssertThat(argb.b, Equals(215));
+				AssertThat(argb.a, Equals(35));
+
+				auto abgr = Color::FromPackedABGR(0x23d7ce80);
+				AssertThat(abgr.r, Equals(128));
+				AssertThat(abgr.g, Equals(206));
+				AssertThat(abgr.b, Equals(215));
+				AssertThat(abgr.a, Equals(35));
+
+				auto rgba = Color::FromPackedRGBA(0x80ced723);
+				AssertThat(rgba.r, Equals(128));
+				AssertThat(rgba.g, Equals(206));
+				AssertThat(rgba.b, Equals(215));
+				AssertThat(rgba.a, Equals(35));
+
+				auto bgra = Color::FromPackedBGRA(0xd7ce8023);
+				AssertThat(bgra.r, Equals(128));
+				AssertThat(bgra.g, Equals(206));
+				AssertThat(bgra.b, Equals(215));
+				AssertThat(bgra.a, Equals(35));
+			});
+
+			it("Can get as packed", [&]()
+			{
+				auto color = Color(128, 206, 215, 35);
+				AssertThat(color.ToPackedARGB(), Equals(0x2380ced7));
+				AssertThat(color.ToPackedABGR(), Equals(0x23d7ce80));
+				AssertThat(color.ToPackedRGBA(), Equals(0x80ced723));
+				AssertThat(color.ToPackedBGRA(), Equals(0xd7ce8023));
+			});
+		});
+		describe("LinearColor", [&]()
 		{
 			it("Can Shade", [&]()
 			{
@@ -79,7 +139,7 @@ go_bandit([]()
 				    EqualsWithDelta(0.5f, 0.01f));
 			});
 		});
-		describe("Color", []()
+		describe("Color", [&]()
 		{
 			it("Can Shade", [&]()
 			{

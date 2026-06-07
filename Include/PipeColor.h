@@ -290,13 +290,13 @@ namespace p
 
 		static constexpr TColor FromHex(u32 value)
 		{
-			return FromPackedABGR(value);
+			return FromPackedARGB(value);
 		}
 
 		// Same as FromHex() but taking into account alpha value
 		static constexpr TColor FromHexAlpha(u32 value)
 		{
-			return FromPackedBGRA(value);
+			return FromPackedRGBA(value);
 		}
 
 		static constexpr TColor<mode> MakeFromHSV8(u8 hue, u8 saturation, u8 value)
