@@ -154,6 +154,10 @@ namespace p
 	void DrawIdRegistry(
 	    const char* label = "Id Registry", bool* open = nullptr, ImGuiWindowFlags flags = 0);
 
+	bool IsInspectingId(const DebugECSContext& ecsDbg, Id id);
+	void StartInspectingId(DebugECSContext& ecsDbg, Id id, bool useMainInspector = true);
+	void StopInspectingId(DebugECSContext& ecsDbg, Id id);
+	void DrawInspectIdButton(DebugECSContext& ecsDbg, Id id);
 #pragma endregion ECS
 
 
@@ -737,20 +741,7 @@ namespace p
 			ImGui::PopStyleCompact();
 		}
 
-		void InspectEntity(DebugECSContext& ecsDbg, Id id, bool useMainInspector = true)
-		{
-			if (!useMainInspector || ecsDbg.inspectors.IsEmpty() || ImGui::IsKeyDown(ImGuiMod_Ctrl))
-			{
-				ecsDbg.inspectors[ecsDbg.inspectors.Add()].id = id;
-			}
-			else
-			{
-				ecsDbg.inspectors[0].id           = id;
-				ecsDbg.inspectors[0].pendingFocus = true;
-			}
-		}
-
-		void DrawIdInTable(DrawNodeAccess access, Id id, DebugECSContext& ecsDbg)
+		void DrawIdInTable(DrawNodeAccess access, DebugECSContext& ecsDbg, Id id)
 		{
 			static p::String idText;
 			idText.clear();
@@ -762,47 +753,8 @@ namespace p
 			}
 
 			ImGui::TableNextRow();
-			ImGui::TableSetColumnIndex(0);    // View
-			static p::String inspectLabel;
-			inspectLabel.clear();
-
-			static DebugECSInspector searchInspector;
-			searchInspector.id   = id;
-			const bool inspected = ecsDbg.inspectors.Contains(searchInspector);
-			const char* icon     = inspected ? " × " : "-->";
-			p::Strings::FormatTo(inspectLabel, "{}##{}", icon, id);
-			ImGui::PushTextColor(
-			    inspected ? ImGui::GetTextColor() : ImGui::GetTextColor().Translucency(0.3f));
-			ImGui::PushStyleCompact();
-			if (ImGui::Button(inspectLabel.c_str()))
-			{
-				if (inspected)
-				{
-					for (i32 i = 0; i < ecsDbg.inspectors.Size(); ++i)
-					{
-						auto& inspector = ecsDbg.inspectors[i];
-						if (inspector.id == id)
-						{
-							if (i == 0)
-							{
-								inspector.id = NoId;
-							}
-							else
-							{
-								ecsDbg.inspectors.RemoveAtSwap(i);
-								--i;
-							}
-						}
-					}
-				}
-				else
-				{
-					InspectEntity(ecsDbg, id);
-				}
-			}
-			ImGui::PopStyleCompact();
-			ImGui::PopTextColor();
-
+			ImGui::TableSetColumnIndex(0);    // Inspect
+			DrawInspectIdButton(ecsDbg, id);
 
 			ImGui::TableSetColumnIndex(1);    // Id
 			static TArray<Id> children;
@@ -855,7 +807,7 @@ namespace p
 			{
 				for (Id child : children)
 				{
-					DrawIdInTable(access, child, ecsDbg);
+					DrawIdInTable(access, ecsDbg, child);
 				}
 
 				ImGui::TreePop();
@@ -991,7 +943,7 @@ namespace p
 			if (clone)
 			{
 				auto& ecsDbg = currentContext->ecs;
-				InspectEntity(ecsDbg, inspector.id, false);
+				StartInspectingId(ecsDbg, inspector.id, false);
 			}
 		}
 	}    // namespace details
@@ -1113,7 +1065,7 @@ namespace p
 			    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
 			if (ImGui::BeginTable("entityTable", 3, tableFlags))
 			{
-				ImGui::TableSetupColumn("View",
+				ImGui::TableSetupColumn("Inspect",
 				    ImGuiTableColumnFlags_IndentDisable | ImGuiTableColumnFlags_WidthFixed
 				        | ImGuiTableColumnFlags_NoResize);    // Inspect
 				ImGui::TableSetupColumn(
@@ -1131,7 +1083,7 @@ namespace p
 				{
 					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
 					{
-						details::DrawIdInTable(access, ids[i], ecsDbg);
+						details::DrawIdInTable(access, ecsDbg, ids[i]);
 					}
 				}
 				ImGui::EndTable();
@@ -1166,6 +1118,71 @@ namespace p
 	#ifdef IMGUI_HAS_DOCK
 		refreshingLayout = false;
 	#endif
+	}
+
+	bool IsInspectingId(const DebugECSContext& ecsDbg, Id id)
+	{
+		DebugECSInspector searchInspector;
+		searchInspector.id   = id;
+		return ecsDbg.inspectors.Contains(searchInspector);
+	}
+
+	void StartInspectingId(DebugECSContext& ecsDbg, Id id, bool useMainInspector)
+	{
+		if (!useMainInspector || ecsDbg.inspectors.IsEmpty() || ImGui::IsKeyDown(ImGuiMod_Ctrl))
+		{
+			ecsDbg.inspectors[ecsDbg.inspectors.Add()].id = id;
+		}
+		else
+		{
+			ecsDbg.inspectors[0].id           = id;
+			ecsDbg.inspectors[0].pendingFocus = true;
+		}
+	}
+
+	void StopInspectingId(DebugECSContext& ecsDbg, Id id)
+	{
+		for (i32 i = 0; i < ecsDbg.inspectors.Size(); ++i)
+		{
+			auto& inspector = ecsDbg.inspectors[i];
+			if (inspector.id == id)
+			{
+				if (i == 0)
+				{
+					inspector.id = NoId;
+				}
+				else
+				{
+					ecsDbg.inspectors.RemoveAtSwap(i);
+					--i;
+				}
+			}
+		}
+	}
+
+	void DrawInspectIdButton(DebugECSContext& ecsDbg, Id id)
+	{
+		static p::String inspectLabel;
+		inspectLabel.clear();
+		const bool inspected = IsInspectingId(ecsDbg, id);
+		const char* icon     = inspected ? " × " : "-->";
+		p::Strings::FormatTo(inspectLabel, "{}##{}", icon, id);
+		ImGui::PushTextColor(
+			inspected ? ImGui::GetTextColor() : ImGui::GetTextColor().Translucency(0.3f));
+		ImGui::PushStyleCompact();
+		if (ImGui::Button(inspectLabel.c_str()))
+		{
+			if (inspected)
+			{
+				StopInspectingId(ecsDbg, id);
+			}
+			else
+			{
+				StartInspectingId(ecsDbg, id);
+			}
+		}
+		ImGui::PopStyleCompact();
+		ImGui::PopTextColor();
 	}
 	#pragma endregion ECS
 
