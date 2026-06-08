@@ -290,7 +290,8 @@ namespace p
 
 		static constexpr TColor FromHex(u32 value)
 		{
-			return FromPackedARGB(value);
+			// ARGB with manual alpha as 255
+			return FromRGB(u8(value >> 16), u8(value >> 8), u8(value), 255);
 		}
 
 		// Same as FromHex() but taking into account alpha value
