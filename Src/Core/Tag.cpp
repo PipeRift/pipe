@@ -186,8 +186,9 @@ namespace p
 
 	TagStringTable::TagStringTable() : strings{arena}
 	{
-		// Ensure pipe memory is initialized. This guaranties memory is deinitialized before tags
-		InitializeMemory();
+		// Ensure pipe's main arena is initialized. This guaranties memory is deinitialized before
+		// tags
+		GetHeapArena();
 	}
 
 	TagHeader& TagStringTable::GetOrAddTagString(sizet hash, StringView value)

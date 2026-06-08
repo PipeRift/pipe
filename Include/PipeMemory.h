@@ -300,7 +300,8 @@ namespace p
 	class Arena;
 	class HeapArena;
 
-	void InitializeMemory();
+	P_API void InitializeMemory();
+	P_API void ShutdownMemory();
 
 	// Native allocation functions
 	P_API void* HeapAlloc(sizet size);
@@ -311,7 +312,8 @@ namespace p
 
 	P_API HeapArena& GetHeapArena();
 	P_API Arena& GetCurrentArena();
-	P_API void SetCurrentArena(Arena& arena);
+	P_API void PushCurrentArena(Arena& arena);
+	P_API void PopCurrentArena();
 
 	// Arena allocation functions (Find current arena)
 	P_API void* Alloc(sizet size);

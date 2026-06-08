@@ -23,5 +23,7 @@ namespace p
 	void Shutdown()
 	{
 		ShutdownLog();
+		ShutdownReflect();
+		ShutdownMemory();
 	}
 };    // namespace p

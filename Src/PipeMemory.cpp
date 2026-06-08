@@ -97,10 +97,16 @@ namespace p
 
 #pragma region Allocation
 	static Arena* currentArena = nullptr;
+	static TArray<Arena*> arenaStack;
 
 	void InitializeMemory()
 	{
-		GetHeapArena();
+		PushCurrentArena(GetHeapArena());
+	}
+
+	void ShutdownMemory()
+	{
+		PopCurrentArena();
 	}
 
 	void* HeapAlloc(sizet size)
@@ -141,9 +147,26 @@ namespace p
 		return currentArena ? *currentArena : GetHeapArena();
 	}
 
-	void SetCurrentArena(Arena& arena)
+	void PushCurrentArena(Arena& arena)
 	{
+		if (currentArena)
+		{
+			arenaStack.Add(currentArena);
+		}
 		currentArena = &arena;
+	}
+
+	void PopCurrentArena()
+	{
+		if (!arenaStack.IsEmpty())
+		{
+			currentArena = arenaStack.Last();
+			arenaStack.RemoveLast();
+		}
+		else
+		{
+			currentArena = nullptr;
+		}
 	}
 
 

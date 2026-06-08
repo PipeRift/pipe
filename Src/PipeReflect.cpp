@@ -54,7 +54,7 @@ namespace p
 		static TypeRegistry registry;
 		return registry;
 	}
-	TArray<void (*)()>& GetRefectInitCallbacks()
+	TArray<void (*)()>& GetReflectInitCallbacks()
 	{
 		static TArray<void (*)()> onInitCallbacks{GetHeapArena()};
 		return onInitCallbacks;
@@ -154,7 +154,7 @@ namespace p
 			return false;
 		}
 
-		for (auto callback : GetRefectInitCallbacks())
+		for (auto callback : GetReflectInitCallbacks())
 		{
 			if (callback)
 			{
@@ -165,11 +165,23 @@ namespace p
 		return true;
 	}
 
+	bool ShutdownReflect()
+	{
+		auto& registry = GetRegistry();
+		if (!P_EnsureMsg(registry.initialized, "Reflection is not initialized"))
+		{
+			return false;
+		}
+
+		registry = {};
+		return true;
+	}
+
 	void OnReflectInit(void (*callback)())
 	{
 		if (callback)
 		{
-			GetRefectInitCallbacks().Add(callback);
+			GetReflectInitCallbacks().Add(callback);
 		}
 	}
 

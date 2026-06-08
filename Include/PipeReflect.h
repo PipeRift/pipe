@@ -345,6 +345,7 @@ namespace p
 	}    // namespace details
 
 	P_API bool InitializeReflect();
+	P_API bool ShutdownReflect();
 	P_API void OnReflectInit(void (*callback)());
 
 	P_API TView<TypeId> GetRegisteredTypeIds();
