@@ -173,7 +173,7 @@ namespace p
 			return false;
 		}
 
-		registry = {};
+		registry.initialized = false;
 		return true;
 	}
 

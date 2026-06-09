@@ -58,12 +58,11 @@ namespace p
 		TMap(Arena& arena = GetCurrentArena()) : map{Allocator{arena}} {}
 		TMap(u32 defaultSize, Arena& arena = GetCurrentArena()) : map(defaultSize, Allocator{arena})
 		{}
-		TMap(const TPair<const KeyType, ValueType>& item, Arena& arena = GetCurrentArena())
-		    : TMap(arena)
+		TMap(const TPair<KeyType, ValueType>& item, Arena& arena = GetCurrentArena()) : TMap(arena)
 		{
 			Insert(item);
 		}
-		TMap(std::initializer_list<TPair<const KeyType, ValueType>> initList,
+		TMap(std::initializer_list<const TPair<KeyType, ValueType>> initList,
 		    Arena& arena = GetCurrentArena())
 		    : map{initList.begin(), initList.end(), 0, Allocator{arena}}
 		{}
