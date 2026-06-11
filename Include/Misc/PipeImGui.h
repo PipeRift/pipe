@@ -34,15 +34,19 @@ namespace p
 	{
 		return {value.x, value.y, value.z, value.w};
 	}
-	inline v4 FromIMVector(const ImVec4& value)
+	inline v4 FromIM(const ImVec4& value)
 	{
 		return {value.x, value.y, value.z, value.w};
 	}
-	inline ImVec4 ToIM(const LinearColor& value)
+	inline ImColor ToIM(const LinearColor& value)
 	{
 		return {value.r, value.g, value.b, value.a};
 	}
-	inline LinearColor FromIM(const ImVec4& value)
+	inline ImColor ToIM(const Color& value)
+	{
+		return ToIM(value.Convert<p::ColorMode::Linear>());
+	}
+	inline LinearColor FromIMColor(const ImVec4& value)
 	{
 		return {value.x, value.y, value.z, value.w};
 	}

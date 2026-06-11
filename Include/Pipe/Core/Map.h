@@ -231,7 +231,7 @@ namespace p
 		{
 			Iterator it = FindIt(key);
 			assert(it != end() && "Key not found, can't dereference its value");
-			return it->second;
+			return *const_cast<ValueType*>(&it->second);
 		}
 
 		template<typename K>
