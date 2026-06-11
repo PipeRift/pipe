@@ -84,7 +84,7 @@ namespace p
 		void Emplace(ArgsType&&... Args)
 		{
 			isSet = true;
-			value = Type(Forward<ArgsType>(Args)...);
+			value = Type(Fwd<ArgsType>(Args)...);
 		}
 
 		friend bool operator==(const TOptional& lhs, const TOptional& rhs)

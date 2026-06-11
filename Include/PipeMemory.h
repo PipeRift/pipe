@@ -187,7 +187,7 @@ namespace p
 			const T* const end = values + count;
 			while (values < end)
 			{
-				new (data) T(p::Forward<T>(*values));
+				new (data) T(p::Fwd<T>(*values));
 				if constexpr (destroySourceInPlace)
 				{
 					values->T::~T();
@@ -246,7 +246,7 @@ namespace p
 			const T* const end = source + count;
 			while (source < end)
 			{
-				*dest = p::Forward<T>(*source);
+				*dest = p::Fwd<T>(*source);
 				if constexpr (destroySourceInPlace)
 				{
 					source->T::~T();
@@ -272,7 +272,7 @@ namespace p
 			T* lastSource = source + count;
 			while (lastSource != source)
 			{
-				*--lastDest = p::Forward<T>(*--lastSource);
+				*--lastDest = p::Fwd<T>(*--lastSource);
 			}
 		}
 	}
@@ -600,7 +600,7 @@ namespace p
 		template<typename U, typename... Args>
 		void construct(U* p, Args&&... args)
 		{
-			::new (p) U(p::Forward<Args>(args)...);
+			::new (p) U(p::Fwd<Args>(args)...);
 		}
 		template<typename U>
 		void destroy(U* p) noexcept

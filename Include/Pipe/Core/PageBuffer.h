@@ -57,7 +57,7 @@ namespace p
 		{
 			P_CheckMsg(index < Capacity(), "Out of bounds index");
 			Type* const instance = AssurePage(index) + GetOffset(index);
-			std::construct_at(instance, p::Forward<Args>(args)...);
+			std::construct_at(instance, p::Fwd<Args>(args)...);
 			return instance;
 		}
 

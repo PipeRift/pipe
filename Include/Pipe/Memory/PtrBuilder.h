@@ -17,7 +17,7 @@ namespace p
 		template<typename... Args>
 		static T* New(Arena& arena, Args&&... args)
 		{
-			return new (p::Alloc<T>(arena)) T(p::Forward<Args>(args)...);
+			return new (p::Alloc<T>(arena)) T(p::Fwd<Args>(args)...);
 		}
 		static void Delete(Arena& arena, void* rawPtr)
 		{

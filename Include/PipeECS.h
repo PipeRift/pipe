@@ -739,7 +739,7 @@ namespace p
 			{
 				if constexpr (!p::IsEmpty<T>)
 				{
-					return (Get(id) = T{p::Forward<Args>(args)...});
+					return (Get(id) = T{p::Fwd<Args>(args)...});
 				}
 			}
 			else
@@ -748,7 +748,7 @@ namespace p
 				if constexpr (!p::IsEmpty<T>)
 				{
 					data.Reserve(index + 1u);
-					T* const value = data.Insert(index, p::Forward<Args>(args)...);
+					T* const value = data.Insert(index, p::Fwd<Args>(args)...);
 					return *value;
 				}
 			}
@@ -1282,7 +1282,7 @@ namespace p
 			{
 				Modify<Component>(id, &pool);
 			}
-			return pool.Add(id, p::Forward<Component>(value));
+			return pool.Add(id, p::Fwd<Component>(value));
 		}
 		template<typename Component>
 		decltype(auto) Add(Id id, const Component& value) const requires(IsMutable<Component>)
@@ -1967,7 +1967,7 @@ namespace p
 	template<typename Predicate>
 	void ExcludeIdsIf(TArray<Id>& ids, Predicate predicate, const bool shouldShrink = false)
 	{
-		ids.RemoveIfSwap(Forward(predicate), shouldShrink);
+		ids.RemoveIfSwap(p::Fwd(predicate), shouldShrink);
 	}
 
 	/**
@@ -1981,7 +1981,7 @@ namespace p
 	template<typename Predicate>
 	void ExcludeIdsIfStable(TArray<Id>& ids, Predicate predicate, const bool shouldShrink = false)
 	{
-		ids.RemoveIf(Forward(predicate), shouldShrink);
+		ids.RemoveIf(p::Fwd(predicate), shouldShrink);
 	}
 
 	/**
@@ -2578,7 +2578,7 @@ namespace p
 	inline Static& IdContext::SetStatic(Static&& value)
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
-		ptr         = MakeOwned<Static>(p::Forward<Static>(value));
+		ptr         = MakeOwned<Static>(p::Fwd<Static>(value));
 		return *ptr.GetUnsafe<Static>();
 	}
 
@@ -2609,7 +2609,7 @@ namespace p
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
 		if (bAdded)
 		{
-			ptr = MakeOwned<Static>(p::Forward<Static>(value));
+			ptr = MakeOwned<Static>(p::Fwd<Static>(value));
 		}
 		return *ptr.GetUnsafe<Static>();
 	}

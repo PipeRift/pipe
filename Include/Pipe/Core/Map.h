@@ -116,19 +116,19 @@ namespace p
 		template<typename OtherT = ValueType>
 		TPair<Iterator, bool> InsertOrAssign(KeyType&& key, OtherT&& value)
 		{
-			return map.insert_or_assign(Move(key), Forward<OtherT>(value));
+			return map.insert_or_assign(Move(key), Fwd<OtherT>(value));
 		}
 
 		template<typename OtherT = ValueType>
 		Iterator InsertOrAssign(ConstIterator hint, const KeyType& key, OtherT&& value)
 		{
-			return map.insert_or_assign(hint, key, Forward<OtherT>(value));
+			return map.insert_or_assign(hint, key, Fwd<OtherT>(value));
 		}
 
 		template<typename OtherT = ValueType>
 		Iterator InsertOrAssign(ConstIterator hint, KeyType&& key, OtherT&& value)
 		{
-			return map.insert_or_assign(hint, Move(key), Forward<OtherT>(value));
+			return map.insert_or_assign(hint, Move(key), Fwd<OtherT>(value));
 		}
 
 		void Append(const TMap<KeyType, ValueType>& other)

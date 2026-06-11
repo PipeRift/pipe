@@ -431,14 +431,14 @@ namespace p
 	template<typename Type, typename... Args>
 	static constexpr Type Max(Type a, Type b, Args... args)
 	{
-		return Max(a, Max(b, Forward<Args>(args)...));
+		return Max(a, Max(b, Fwd<Args>(args)...));
 	}
 
 	// Same as Min but with N arguments
 	template<typename Type, typename... Args>
 	static constexpr Type Min(Type a, Type b, Args... args)
 	{
-		return Min(a, Min(b, Forward<Args>(args)...));
+		return Min(a, Min(b, Fwd<Args>(args)...));
 	}
 
 

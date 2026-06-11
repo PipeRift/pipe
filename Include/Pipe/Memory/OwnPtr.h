@@ -305,7 +305,7 @@ namespace p
 		{
 			Arena& arena   = GetCurrentArena();
 			using Builder  = typename T::template PtrBuilder<T>;
-			auto* instance = Builder::New(arena, p::Forward<Args>(args)...);
+			auto* instance = Builder::New(arena, p::Fwd<Args>(args)...);
 			auto ptr       = TOwnPtr<T>(arena, instance, Builder::Delete);
 			return Move(ptr);
 		}
@@ -315,7 +315,7 @@ namespace p
 		{
 			Arena& arena   = GetCurrentArena();
 			using Builder  = TPtrBuilder<T>;
-			auto* instance = Builder::New(arena, p::Forward<Args>(args)...);
+			auto* instance = Builder::New(arena, p::Fwd<Args>(args)...);
 			auto ptr       = TOwnPtr<T>(arena, instance, &Builder::Delete);
 			return Move(ptr);
 		}

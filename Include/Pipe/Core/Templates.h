@@ -37,7 +37,7 @@ namespace p
 		constexpr explicit(!IsConvertible<OtherT1, T1> || !IsConvertible<OtherT2, T2>)
 		    TPair(OtherT1&& inFirst, OtherT2&& inSecond)
 		        requires(IsConstructible<T1, OtherT1> && IsConstructible<T2, OtherT2>)
-		    : first(p::Forward<OtherT1>(inFirst)), second(p::Forward<OtherT2>(inSecond))
+		    : first(p::Fwd<OtherT1>(inFirst)), second(p::Fwd<OtherT2>(inSecond))
 		{}
 
 		TPair(const TPair& other) = default;
@@ -54,7 +54,7 @@ namespace p
 		constexpr explicit(!IsConvertible<OtherT1, T1> && !IsConvertible<OtherT2, T2>)
 		    TPair(TPair<OtherT1, OtherT2>&& other)
 		        requires(IsConstructible<T1, OtherT1> && IsConstructible<T2, OtherT2>)
-		    : first(p::Forward<OtherT1>(other.first)), second(p::Forward<OtherT2>(other.second))
+		    : first(p::Fwd<OtherT1>(other.first)), second(p::Fwd<OtherT2>(other.second))
 		{}
 
 		TPair& operator=(const volatile TPair&) = delete;
@@ -70,8 +70,8 @@ namespace p
 		constexpr TPair& operator=(TPair&& other)
 		    requires(IsMoveAssignable<T1> && IsMoveAssignable<T2>)
 		{
-			first  = p::Forward<T1>(other.first);
-			second = p::Forward<T2>(other.second);
+			first  = p::Fwd<T1>(other.first);
+			second = p::Fwd<T2>(other.second);
 			return *this;
 		}
 
@@ -90,8 +90,8 @@ namespace p
 		    requires(!IsSame<TPair, TPair<OtherT1, OtherT2>> && IsAssignable<T1&, OtherT1>
 		             && IsAssignable<T2&, OtherT2>)
 		{
-			first  = p::Forward<OtherT1>(other.first);
-			second = p::Forward<OtherT2>(other.second);
+			first  = p::Fwd<OtherT1>(other.first);
+			second = p::Fwd<OtherT2>(other.second);
 			return *this;
 		}
 

@@ -820,14 +820,14 @@ namespace p
 		template<u32 OtherInlineCapacity>
 		TArray(TArray<Type, OtherInlineCapacity>&& other)
 		{
-			MoveFrom(p::Forward<TArray<Type, OtherInlineCapacity>>(other));
+			MoveFrom(p::Fwd<TArray<Type, OtherInlineCapacity>>(other));
 		}
 		template<u32 OtherInlineCapacity>
 		TArray<Type, InlineCapacity>& operator=(TArray<Type, OtherInlineCapacity>&& other)
 		{
 			if (this != (void*)&other)
 			{
-				MoveFrom(p::Forward<TArray<Type, OtherInlineCapacity>>(other));
+				MoveFrom(p::Fwd<TArray<Type, OtherInlineCapacity>>(other));
 			}
 			return *this;
 		}
@@ -875,7 +875,7 @@ namespace p
 		{
 			const i32 firstIdx = Super::size;
 			AddUninitialized(1);
-			new (Super::data + firstIdx) Type(p::Forward<Type>(value));
+			new (Super::data + firstIdx) Type(p::Fwd<Type>(value));
 			return firstIdx;
 		}
 		i32 Add(const Type& value)
@@ -892,7 +892,7 @@ namespace p
 		}
 		inline Type& AddRef(Type&& value)
 		{
-			const i32 idx = Add(p::Forward<Type>(value));
+			const i32 idx = Add(p::Fwd<Type>(value));
 			return Super::data[idx];
 		}
 		inline Type& AddRef(const Type& value)
@@ -993,7 +993,7 @@ namespace p
 				}
 				else if (insertSorted)
 				{
-					Insert(index, p::Forward<Type>(value));
+					Insert(index, p::Fwd<Type>(value));
 					if (outAdded)
 					{
 						*outAdded = true;
@@ -1006,7 +1006,7 @@ namespace p
 			{
 				*outAdded = true;
 			}
-			return Add(p::Forward<Type>(value));
+			return Add(p::Fwd<Type>(value));
 		}
 
 		void Append(i32 count)
@@ -1076,7 +1076,7 @@ namespace p
 		template<i32 OtherInlineCapacity>
 		void Assign(TArray<Type, OtherInlineCapacity>&& values) requires(IsMutable<Type>)
 		{
-			MoveFrom(p::Forward<TArray<Type, OtherInlineCapacity>>(values));
+			MoveFrom(p::Fwd<TArray<Type, OtherInlineCapacity>>(values));
 		}
 		void Assign(std ::initializer_list<Type> initList)
 		{
@@ -1091,7 +1091,7 @@ namespace p
 		void Insert(i32 atIndex, Type&& value)
 		{
 			InsertUninitialized(atIndex, 1);
-			new (Super::data + atIndex) Type(p::Forward<Type>(value));
+			new (Super::data + atIndex) Type(p::Fwd<Type>(value));
 		}
 		void Insert(i32 atIndex, const Type& value)
 		{
@@ -1120,7 +1120,7 @@ namespace p
 		}
 		Type& InsertRef(i32 atIndex, Type&& value)
 		{
-			Insert(atIndex, p::Forward<Type>(value));
+			Insert(atIndex, p::Fwd<Type>(value));
 			return Super::data[atIndex];
 		}
 		Type& InsertRef(i32 atIndex, const Type& value)

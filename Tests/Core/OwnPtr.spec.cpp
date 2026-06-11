@@ -15,7 +15,7 @@ struct TestPtrBuilder : p::TPtrBuilder<T>
 	template<typename... Args>
 	static T* New(Arena& arena, Args&&... args)
 	{
-		T* ptr          = new (p::Alloc<T>(arena)) T(Forward<Args>(args)...);
+		T* ptr          = new (p::Alloc<T>(arena)) T(Fwd<Args>(args)...);
 		ptr->bCalledNew = true;
 		return ptr;
 	}

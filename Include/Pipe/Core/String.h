@@ -51,7 +51,7 @@ namespace p
 		inline StringType Format(FormatString<Args...> format, Args... args)
 		{
 			String str;
-			std::format_to(std::back_inserter(str), format, p::Forward<Args>(args)...);
+			std::format_to(std::back_inserter(str), format, p::Fwd<Args>(args)...);
 			return Move(str);
 		}
 
@@ -59,13 +59,13 @@ namespace p
 		template<typename StringType, typename... Args>
 		inline void FormatTo(StringType& buffer, FormatString<Args...> format, Args... args)
 		{
-			std::format_to(std::back_inserter(buffer), format, p::Forward<Args>(args)...);
+			std::format_to(std::back_inserter(buffer), format, p::Fwd<Args>(args)...);
 		}
 
 		template<typename StringType, typename T>
 		inline void ToString(StringType& buffer, T value, FormatString<T> format = "{}")
 		{
-			std::format_to(std::back_inserter(buffer), format, p::Forward<T>(value));
+			std::format_to(std::back_inserter(buffer), format, p::Fwd<T>(value));
 		}
 
 		template<typename StringType, typename T>

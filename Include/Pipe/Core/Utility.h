@@ -18,14 +18,14 @@ namespace p
 
 	// Forward an lvalue as either an lvalue or an rvalue
 	template<typename T>
-	constexpr T&& Forward(RemoveReference<T>& arg)
+	constexpr T&& Fwd(RemoveReference<T>& arg)
 	{
 		return static_cast<T&&>(arg);
 	}
 
 	// Forward an rvalue as an rvalue
 	template<typename T>
-	constexpr T&& Forward(RemoveReference<T>&& arg)
+	constexpr T&& Fwd(RemoveReference<T>&& arg)
 	{
 		static_assert(!std::is_lvalue_reference_v<T>, "Bad Forward call");
 		return static_cast<T&&>(arg);
@@ -36,8 +36,8 @@ namespace p
 	    IsMoveConstructible<T> && IsAssignable<T&, OtherT>)
 	{
 		// assign _New_val to _Val, return previous _Val
-		T oldValue = p::Forward<T>(value);
-		value      = p::Forward<OtherT>(newValue);
+		T oldValue = p::Fwd<T>(value);
+		value      = p::Fwd<OtherT>(newValue);
 		return oldValue;
 	}
 
@@ -108,7 +108,7 @@ namespace p
 		template<typename T>
 		bool operator()(T&& A, T&& B) const
 		{
-			return predicate(p::Forward<T>(B), p::Forward<T>(A));
+			return predicate(p::Fwd<T>(B), p::Fwd<T>(A));
 		}
 	};
 }    // namespace p

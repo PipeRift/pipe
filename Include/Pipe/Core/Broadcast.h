@@ -224,7 +224,7 @@ namespace p
 
 		void operator()(const Params&... params)
 		{
-			Broadcast(Forward<Params>(params)...);
+			Broadcast(Fwd<Params>(params)...);
 		}
 	};
 }    // namespace p

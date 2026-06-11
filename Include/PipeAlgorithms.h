@@ -24,7 +24,7 @@ namespace p
 		template<typename T, typename U>
 		constexpr bool operator()(T&& A, U&& B) const
 		{
-			return Forward<T>(A) > Forward<U>(B);
+			return Fwd<T>(A) > Fwd<U>(B);
 		}
 	};
 
@@ -43,7 +43,7 @@ namespace p
 		template<typename T, typename U>
 		constexpr bool operator()(T&& A, U&& B) const
 		{
-			return Forward<T>(A) >= Forward<U>(B);
+			return Fwd<T>(A) >= Fwd<U>(B);
 		}
 	};
 
@@ -62,7 +62,7 @@ namespace p
 		template<typename T, typename U>
 		constexpr bool operator()(T&& A, U&& B) const
 		{
-			return Forward<T>(A) < Forward<U>(B);
+			return Fwd<T>(A) < Fwd<U>(B);
 		}
 	};
 
@@ -81,7 +81,7 @@ namespace p
 		template<typename T, typename U>
 		constexpr bool operator()(T&& A, U&& B) const
 		{
-			return Forward<T>(A) <= Forward<U>(B);
+			return Fwd<T>(A) <= Fwd<U>(B);
 		}
 	};
 
