@@ -1776,6 +1776,88 @@ namespace p
 		{
 			return IsMutable<Component> && WDependencies::template Contains<Component>();
 		}
+
+
+#pragma region Statics
+		// TODO: Implement properly with dependency checking and caching
+		void* TryGetStatic(TypeId typeId)
+		{
+			return GetContext().TryGetStatic(typeId);
+		}
+		const void* TryGetStatic(TypeId typeId) const
+		{
+			return GetContext().TryGetStatic(typeId);
+		}
+		bool HasStatic(TypeId typeId) const
+		{
+			return GetContext().HasStatic(typeId);
+		}
+		bool RemoveStatic(TypeId typeId)
+		{
+			return GetContext().RemoveStatic(typeId);
+		}
+
+		template<typename Static>
+		Static& SetStatic()
+		{
+			return GetContext().template SetStatic<Static>();
+		}
+		template<typename Static>
+		Static& SetStatic(Static&& value)
+		{
+			return GetContext().template SetStatic<Static>(Move(value));
+		}
+		template<typename Static>
+		Static& SetStatic(const Static& value)
+		{
+			return GetContext().template SetStatic<Static>(value);
+		}
+		template<typename Static>
+		Static& GetOrSetStatic()
+		{
+			return GetContext().template GetOrSetStatic<Static>();
+		}
+		template<typename Static>
+		Static& GetOrSetStatic(Static&& newValue)
+		{
+			return GetContext().template GetOrSetStatic<Static>(Move(newValue));
+		}
+		template<typename Static>
+		Static& GetOrSetStatic(const Static& newValue)
+		{
+			return GetContext().template GetOrSetStatic<Static>(newValue);
+		}
+		template<typename Static>
+		Static& GetStatic()
+		{
+			return GetContext().template GetStatic<Static>();
+		}
+		template<typename Static>
+		const Static& GetStatic() const
+		{
+			return GetContext().template GetStatic<Static>();
+		}
+		template<typename Static>
+		Static* TryGetStatic()
+		{
+			return GetContext().template TryGetStatic<Static>();
+		}
+		template<typename Static>
+		const Static* TryGetStatic() const
+		{
+			return GetContext().template TryGetStatic<Static>();
+		}
+		template<typename Static>
+		bool HasStatic() const
+		{
+			return GetContext().template HasStatic<Static>();
+		}
+		template<typename Static>
+		bool RemoveStatic()
+		{
+			return GetContext().template RemoveStatic<Static>();
+		}
+#pragma endregion Statics
 	};
 
 
