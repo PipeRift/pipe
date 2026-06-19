@@ -63,6 +63,7 @@ namespace p
 		TMap<TypeId, TypeInspection> registeredTypes;
 		TArray<PropStack> propStack;
 		InspectionDebugFlags flags;
+		ImGuiTextFilter* filter = nullptr;
 	};
 
 	bool BeginInspection(
@@ -629,9 +630,14 @@ namespace p
 			{
 				if (viewAll || prop->HasFlag(PF_View))
 				{
-					ImGui::BeginDisabled(!editAll && !prop->HasFlag(PF_Edit));
-					Inspect(prop->name.AsString(), prop->access(data), prop->typeId);
-					ImGui::EndDisabled();
+					StringView name = prop->name.AsString();
+					if (!ins.filter || !ins.filter->IsActive()
+					    || ins.filter->PassFilter(name.data(), name.data() + name.size()))
+					{
+						ImGui::BeginDisabled(!editAll && !prop->HasFlag(PF_Edit));
+						Inspect(name, prop->access(data), prop->typeId);
+						ImGui::EndDisabled();
+					}
 
 					++ins.propStack.Last().index;
 				}
@@ -667,6 +673,53 @@ namespace p
 				String typeName;
 				for (const TypeId typeId : GetRegisteredTypeIds())
 				{
+					typeName.assign(GetTypeName(typeId));
+					if (filter.PassFilter(typeName.data()) && ImGui::Selectable(typeName.data()))
+					{
+						selectedTypeId = typeId;
+						selectedAny    = true;
+						ImGui::CloseCurrentPopup();
+					}
+				}
+				ImGui::EndChild();
+				ImGui::EndPopup();
+			}
+			return selectedAny;
+		}
+
+		bool ChooseAddComponentPopup(const char* label, ImGuiTextFilter& filter, IdContext& ctx,
+		    TypeId& selectedTypeId, Id entity)
+		{
+			bool selectedAny = false;
+			if (ImGui::BeginPopup(label))
+			{
+				if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)
+				    && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))
+				{
+					ImGui::SetKeyboardFocusHere(0);
+				}
+
+				filter.Draw("##Filter", ImGui::GetContentRegionAvail().x);
+				ImGui::Separator();
+				ImGui::Spacing();
+
+				TMap<TypeId, bool> existingTypes;
+				for (const auto& pool : ctx.GetPools())
+				{
+					if (pool.GetPool()->Has(entity))
+					{
+						existingTypes.Insert(pool.GetId(), true);
+					}
+				}
+
+				ImGui::BeginChild("types", {300.f, 400.f});
+				String typeName;
+				for (const TypeId typeId : GetRegisteredTypeIds())
+				{
+					if (existingTypes.Contains(typeId))
+					{
+						continue;
+					}
 					typeName.assign(GetTypeName(typeId));
 					if (filter.PassFilter(typeName.data()) && ImGui::Selectable(typeName.data()))
 					{
@@ -822,10 +875,11 @@ namespace p
 				return;
 			}
 
-			const bool valid   = GetDebugCtx().IsValid(inspector.id);
-			const bool removed = GetDebugCtx().WasRemoved(inspector.id);
-			bool clone         = false;
-			Id nextId          = inspector.id;
+			const bool valid      = GetDebugCtx().IsValid(inspector.id);
+			const bool removed    = GetDebugCtx().WasRemoved(inspector.id);
+			bool clone            = false;
+			Id nextId             = inspector.id;
+			bool wantAddComponent = false;
 
 			String name;
 			Strings::FormatTo(name, "{}: {}{}###inspector{}", label, inspector.id,
@@ -862,18 +916,56 @@ namespace p
 						ImGui::CheckboxFlags("View All Properties", &inspector.flags, IDF_ViewAll);
 						ImGui::EndMenu();
 					}
-					ImGui::DrawFilterWithHint(
-					    inspector.filter, "##filter", "Search components...", -36.f);
 
-					if (ImGui::MenuItem("-->"))
+					if (valid && ImGui::SmallButton("+"))
+					{
+						wantAddComponent = true;
+					}
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Add Component");
+					}
+
+					ImGui::SameLine();
+
+					const float cloneWidth  = ImGui::CalcTextSize("-->").x
+					                        + ImGui::GetStyle().FramePadding.x * 2.f
+					                        + ImGui::GetStyle().ItemSpacing.x;
+					const float filterWidth = ImGui::GetContentRegionAvail().x - cloneWidth
+					                        - ImGui::GetStyle().ItemSpacing.x;
+					ImGui::SetNextItemWidth(Max(filterWidth, 60.f));
+					ImGui::DrawFilterWithHint(inspector.filter, "##filter", "Search...", 0.f);
+
+					ImGui::SameLine();
+					if (ImGui::SmallButton("-->"))
 					{
 						clone = true;
 					}
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Clone inspector");
+					}
+
 					ImGui::EndMenuBar();
+				}
+
+				if (wantAddComponent)
+				{
+					ImGui::OpenPopup("AddComponentPopup");
+				}
+
+				static ImGuiTextFilter addComponentFilter;
+				TypeId selectedType;
+				if (ChooseAddComponentPopup("AddComponentPopup", addComponentFilter, GetDebugCtx(),
+				        selectedType, inspector.id))
+				{
+					GetDebugCtx().AddByTypeId(selectedType, inspector.id);
 				}
 
 				if (valid && BeginInspection("##Inspector", {}, inspector.flags))
 				{
+					currentContext->inspection.filter = &inspector.filter;
+
 					String componentLabel;
 					for (const auto& poolInstance : GetDebugCtx().GetPools())
 					{
@@ -908,6 +1000,8 @@ namespace p
 							ImGui::Unindent();
 						}
 					}
+
+					currentContext->inspection.filter = nullptr;
 					EndInspection();
 				}
 				else
@@ -1123,7 +1217,7 @@ namespace p
 	bool IsInspectingId(const DebugECSContext& ecsDbg, Id id)
 	{
 		DebugECSInspector searchInspector;
-		searchInspector.id   = id;
+		searchInspector.id = id;
 		return ecsDbg.inspectors.Contains(searchInspector);
 	}
 
@@ -1168,7 +1262,7 @@ namespace p
 		const char* icon     = inspected ? " × " : "-->";
 		p::Strings::FormatTo(inspectLabel, "{}##{}", icon, id);
 		ImGui::PushTextColor(
-			inspected ? ImGui::GetTextColor() : ImGui::GetTextColor().Translucency(0.3f));
+		    inspected ? ImGui::GetTextColor() : ImGui::GetTextColor().Translucency(0.3f));
 		ImGui::PushStyleCompact();
 		if (ImGui::Button(inspectLabel.c_str()))
 		{
