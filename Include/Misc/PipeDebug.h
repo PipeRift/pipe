@@ -166,6 +166,7 @@ namespace p
 	struct DebugReflectContext
 	{
 		ImGuiTextFilter filter;
+		bool bFilterWithAny       = true;
 		TypeFlags typeFlagsFilter = TF_Native | TF_Enum | TF_Struct | TF_Object;
 		String typeFlags;
 		String propertyFlags;
@@ -603,9 +604,9 @@ namespace p
 		                               | ImGuiTreeNodeFlags_SpanAllColumns
 		                               | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0)
 		                               | (defaultOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0);
-		bool bOpen                     = ImGui::TreeNodeEx(name.data(), flags);
+		bool open                      = ImGui::TreeNodeEx(name.data(), flags);
 		ImGui::Indent();
-		return bOpen;
+		return open;
 	}
 	void InspectEndCategory()
 	{
@@ -712,22 +713,111 @@ namespace p
 					}
 				}
 
-				ImGui::BeginChild("types", {300.f, 400.f});
-				String typeName;
+				struct TypeEntry
+				{
+					TypeId id;
+					StringView name;
+					Color color  = Color::Black();
+					bool tag     = false;
+					i16 priority = -1;
+				};
+				TArray<TypeEntry> entries;
 				for (const TypeId typeId : GetRegisteredTypeIds())
 				{
 					if (existingTypes.Contains(typeId))
 					{
 						continue;
 					}
-					typeName.assign(GetTypeName(typeId));
-					if (filter.PassFilter(typeName.data()) && ImGui::Selectable(typeName.data()))
+					TypeEntry entry{typeId, GetTypeName(typeId)};
+					if (!filter.PassFilter(
+					        entry.name.data(), entry.name.data() + entry.name.size()))
 					{
-						selectedTypeId = typeId;
+						continue;
+					}
+
+
+					if (p::HasTypeFlags(typeId, p::TF_Native))
+					{
+						entry.color    = Color::FromHex(0x595959);
+						entry.priority = 25;
+					}
+					else if (p::HasTypeFlags(typeId, p::TF_Enum))
+					{
+						entry.color    = Color::FromHex(0x30b282);
+						entry.priority = 20;
+					}
+					else if (p::HasTypeFlags(typeId, p::TF_Struct))
+					{
+						entry.color    = Color::FromHex(0x3087b2);
+						entry.priority = 15;
+						// Empty types have size 1, this means having a 1 byte variable inside will
+						// be considered a tag in debug. We accept this small error for simplicity
+						entry.tag = GetTypeSize(typeId) <= 1;
+					}
+					else if (p::HasTypeFlags(typeId, p::TF_Object))
+					{
+						entry.color    = Color::FromHex(0x3052b2);
+						entry.priority = 10;
+						entry.tag      = GetTypeSize(typeId) <= 1;
+					}
+					else if (p::HasTypeFlags(typeId, p::TF_Container))
+					{
+						entry.color    = Color::FromHex(0xb230ae);
+						entry.priority = 5;
+					}
+					entries.Add(entry);
+				}
+				entries.Sort([](const TypeEntry& a, const TypeEntry& b)
+				{
+					if (a.priority != b.priority)
+					{
+						return a.priority > b.priority;
+					}
+					return a.name < b.name;
+				});
+
+				ImGui::BeginChild("types", {300.f, 400.f});
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 4.0f));
+				bool first = true;
+				for (const auto& entry : entries)
+				{
+					if (entry.color != Color::Black())
+					{
+						ImGui::PushHeaderColor(entry.color);
+					}
+					static p::String typeLabel;
+					typeLabel.clear();
+					p::Strings::FormatTo(typeLabel, "{}###{}", entry.name, entry.id.GetId());
+					if (ImGui::Selectable(typeLabel, true))
+					{
+						selectedTypeId = entry.id;
 						selectedAny    = true;
 						ImGui::CloseCurrentPopup();
 					}
+					if (entry.color != Color::Black())
+					{
+						ImGui::PopHeaderColor();
+					}
+
+					auto postSelectablePos = ImGui::GetCursorPos();
+					if (entry.tag)    // Colored tag right-aligned
+					{
+						ImGui::PushStyleCompact();
+						ImGui::PushButtonColor(Color::FromHex(0xb29e30));
+						const float tagWidth       = ImGui::CalcTextSize("Tag").x;
+						const float widthAvailable = ImGui::GetContentRegionAvail().x
+						                           + details::GetCurrentWindow()->DC.Indent.x;
+						ImGui::SameLine(
+						    widthAvailable - tagWidth - ImGui::GetStyle().ItemSpacing.x);
+						ImGui::SmallButton("Tag");
+						ImGui::PopButtonColor();
+						ImGui::PopStyleCompact();
+					}
+					// Avoid weird padding issues with tag button
+					ImGui::SetCursorPos(postSelectablePos);
+					ImGui::Dummy(ImVec2(0, 1.0f));
 				}
+				ImGui::PopStyleVar();
 				ImGui::EndChild();
 				ImGui::EndPopup();
 			}
@@ -744,7 +834,8 @@ namespace p
 			TArray<TypeId> typesToRemove;
 			for (TypeId typeId : poolTypes)
 			{
-				typeName.assign(GetTypeName(typeId));
+				typeName.clear();
+				p::Strings::FormatTo(typeName, "{}###{}", GetTypeName(typeId), typeId.GetId());
 				if (ImGui::Button(typeName.data()))
 				{
 					typesToRemove.Add(typeId);
@@ -917,16 +1008,17 @@ namespace p
 						ImGui::EndMenu();
 					}
 
-					if (valid && ImGui::SmallButton("+"))
+					if (valid)
 					{
-						wantAddComponent = true;
+						if (ImGui::Button(" + "))
+						{
+							wantAddComponent = true;
+						}
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("Add Component");
+						}
 					}
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Add Component");
-					}
-
-					ImGui::SameLine();
 
 					const float cloneWidth  = ImGui::CalcTextSize("-->").x
 					                        + ImGui::GetStyle().FramePadding.x * 2.f
@@ -967,6 +1059,10 @@ namespace p
 					currentContext->inspection.filter = &inspector.filter;
 
 					String componentLabel;
+
+					static TypeId pendingDeleteType;
+					static bool dontShowDeleteConfirm = false;
+
 					for (const auto& poolInstance : GetDebugCtx().GetPools())
 					{
 						if (!poolInstance.GetPool()->Has(inspector.id))
@@ -984,8 +1080,9 @@ namespace p
 							continue;
 						}
 
-						ImGuiTreeNodeFlags headerFlags =
-						    ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_SpanAllColumns;
+						ImGuiTreeNodeFlags headerFlags = ImGuiTreeNodeFlags_DefaultOpen
+						                               | ImGuiTreeNodeFlags_SpanAllColumns
+						                               | ImGuiTreeNodeFlags_AllowOverlap;
 						void* data = poolInstance.GetPool()->TryGetVoid(inspector.id);
 						if (!data)
 						{
@@ -993,12 +1090,66 @@ namespace p
 						}
 						ImGui::TableNextRow();
 						InspectSetKeyColumn();
-						if (ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags))
+
+						const TypeId typeId = poolInstance.componentId;
+						const bool open =
+						    ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags);
+						if (ImGui::IsItemHovered())
+						{
+							const float buttonWidth =
+							    ImGui::CalcTextSize("x").x + ImGui::GetStyle().FramePadding.x * 2;
+							const auto table       = ImGui::GetCurrentTable();
+							const float rowRight   = table->WorkRect.Max.x;
+							const float widthRight = rowRight - ImGui::GetCursorScreenPos().x;
+							ImGui::SameLine(
+							    widthRight - buttonWidth - ImGui::GetStyle().ItemSpacing.x);
+							ImGui::PushStyleCompact();
+							if (ImGui::SmallButton("x"))
+							{
+								pendingDeleteType = typeId;
+								if (!dontShowDeleteConfirm)
+								{
+									ImGui::OpenPopup("DeleteComponentModal");
+								}
+								else
+								{
+									GetDebugCtx().RemoveByTypeId(pendingDeleteType, inspector.id);
+								}
+							}
+							ImGui::PopStyleCompact();
+						}
+
+						if (open)
 						{
 							ImGui::Indent();
-							InspectProperties(data, poolInstance.componentId);
+							InspectProperties(data, typeId);
 							ImGui::Unindent();
 						}
+					}
+
+					// Delete component confirmation modal
+					if (ImGui::BeginPopupModal(
+					        "DeleteComponentModal", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+					{
+						static String modalTitle;
+						modalTitle.clear();
+						p::Strings::FormatTo(modalTitle, "Remove {}?",
+						    RemoveNamespace(GetTypeName(pendingDeleteType)));
+						ImGui::Text(modalTitle);
+						ImGui::NewLine();
+						if (ImGui::Button("Delete", ImVec2(120, 0)))
+						{
+							GetDebugCtx().RemoveByTypeId(pendingDeleteType, inspector.id);
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::SameLine();
+						if (ImGui::Button("Cancel", ImVec2(120, 0)))
+						{
+							ImGui::CloseCurrentPopup();
+						}
+						ImGui::Separator();
+						ImGui::Checkbox("Don't show this again", &dontShowDeleteConfirm);
+						ImGui::EndPopup();
 					}
 
 					currentContext->inspection.filter = nullptr;
@@ -1311,7 +1462,8 @@ namespace p
 
 		void DrawType(DebugReflectContext& ctx, TypeId type)
 		{
-			if (!HasAnyTypeFlags(type, ctx.typeFlagsFilter))
+			if ((ctx.bFilterWithAny && !HasAnyTypeFlags(type, ctx.typeFlagsFilter))
+			    || (!ctx.bFilterWithAny && !HasTypeFlags(type, ctx.typeFlagsFilter)))
 			{
 				return;
 			}
@@ -1420,6 +1572,16 @@ namespace p
 		{
 			if (ImGui::BeginPopup("Filter"))
 			{
+				if (ImGui::RadioButton("Any", reflectDbg.bFilterWithAny))
+				{
+					reflectDbg.bFilterWithAny = true;
+				}
+				ImGui::SameLine();
+				if (ImGui::RadioButton("All", !reflectDbg.bFilterWithAny))
+				{
+					reflectDbg.bFilterWithAny = false;
+				}
+
 				ImGui::CheckboxFlags(
 				    "Native", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Native));
 				ImGui::CheckboxFlags("Enum", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Enum));
@@ -1429,6 +1591,24 @@ namespace p
 				    "Object", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Object));
 				ImGui::CheckboxFlags(
 				    "Container", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Container));
+
+				ImGui::SeparatorText("ECS");
+				ImGui::CheckboxFlags("Store Last Modified", (ImU64*)&reflectDbg.typeFlagsFilter,
+				    ImU64(TF_ECS_StoreLastModified));
+				ImGui::CheckboxFlags("Modify on Edit", (ImU64*)&reflectDbg.typeFlagsFilter,
+				    ImU64(TF_ECS_ModifyOnEdit));
+				ImGui::CheckboxFlags("Modify on Add", (ImU64*)&reflectDbg.typeFlagsFilter,
+				    ImU64(TF_ECS_ModifyOnAdd));
+				ImGui::CheckboxFlags("Modify on Get", (ImU64*)&reflectDbg.typeFlagsFilter,
+				    ImU64(TF_ECS_ModifyOnGet));
+				ImGui::CheckboxFlags("Modify on Remove", (ImU64*)&reflectDbg.typeFlagsFilter,
+				    ImU64(TF_ECS_ModifyOnRm));
+
+				ImGui::SeparatorText("Other");
+				ImGui::CheckboxFlags(
+				    "Not Serialized", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_NotSerialized));
+				ImGui::CheckboxFlags(
+				    "Abstract", (ImU64*)&reflectDbg.typeFlagsFilter, ImU64(TF_Abstract));
 				ImGui::EndPopup();
 			}
 			if (ImGui::Button("Settings"))

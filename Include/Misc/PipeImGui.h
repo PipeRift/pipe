@@ -192,6 +192,32 @@ namespace ImGui
 		    details::InputTextCallback, &cbUserData);
 	}
 
+	inline bool Selectable(p::StringView label, bool selected = false,
+	    ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0))
+	{
+		// If StringView doesn't end in /0, need to use a temporal
+		if (label.data()[label.size()] != '/0')
+		{
+			static p::String tmpLabel;
+			tmpLabel = label;
+			label    = tmpLabel;
+		}
+		return Selectable(label.data(), selected, flags, size);
+	}
+
+	inline bool Selectable(p::StringView label, bool* p_selected, ImGuiSelectableFlags flags = 0,
+	    const ImVec2& size = ImVec2(0, 0))
+	{
+		// If StringView doesn't end in /0, need to use a temporal
+		if (label.data()[label.size()] != '/0')
+		{
+			static p::String tmpLabel;
+			tmpLabel = label;
+			label    = tmpLabel;
+		}
+		return Selectable(label.data(), p_selected, flags, size);
+	}
+
 	inline bool ColorButton(const char* desc_id, const p::LinearColor& col,
 	    ImGuiColorEditFlags flags = 0, p::v2 size = {})
 	{

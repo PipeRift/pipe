@@ -2710,7 +2710,7 @@ namespace p
 #pragma endregion Definitions
 }    // namespace p
 
-P_NATIVE(p::Id);
+P_NATIVE(p::Id)
 
 template<>
 struct std::formatter<p::Id> : public std::formatter<p::u64>
