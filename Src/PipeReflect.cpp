@@ -154,6 +154,48 @@ namespace p
 			return false;
 		}
 
+		// Pre-reserve to reduce reallocations during type registration
+		constexpr i32 expectedTypeCount = 64;
+		registry.ids.Reserve(expectedTypeCount);
+		registry.parentIds.Reserve(expectedTypeCount);
+		registry.sizes.Reserve(expectedTypeCount);
+		registry.names.Reserve(expectedTypeCount);
+		registry.flags.Reserve(expectedTypeCount);
+		registry.ownProperties.Reserve(expectedTypeCount);
+		registry.allProperties.Reserve(expectedTypeCount);
+		registry.operations.Reserve(expectedTypeCount);
+
+		// Register native types (P_AUTOREGISTER_ENABLED=0 disables TTypeAutoRegister)
+		RegisterTypeId<u8>();
+		RegisterTypeId<i8>();
+		RegisterTypeId<u16>();
+		RegisterTypeId<i16>();
+		RegisterTypeId<u32>();
+		RegisterTypeId<i32>();
+		RegisterTypeId<u64>();
+		RegisterTypeId<i64>();
+		RegisterTypeId<bool>();
+		RegisterTypeId<float>();
+		RegisterTypeId<double>();
+		RegisterTypeId<char>();
+		RegisterTypeId<StringView>();
+		RegisterTypeId<String>();
+		RegisterTypeId<Path>();
+		RegisterTypeId<Tag>();
+		RegisterTypeId<Guid>();
+		RegisterTypeId<v2>();
+		RegisterTypeId<v2_u32>();
+		RegisterTypeId<v2_i32>();
+		RegisterTypeId<v3>();
+		RegisterTypeId<v3_u32>();
+		RegisterTypeId<v3_i32>();
+		RegisterTypeId<Quat>();
+		RegisterTypeId<LinearColor>();
+		RegisterTypeId<sRGBColor>();
+		RegisterTypeId<HSVColor>();
+		RegisterTypeId<Color>();
+		RegisterTypeId<Id>();
+
 		for (auto callback : GetReflectInitCallbacks())
 		{
 			if (callback)
@@ -297,7 +339,7 @@ namespace p
 		auto& registry  = GetRegistry();
 		bool added      = false;
 		const i32 index = registry.ids.AddUniqueSorted(id, {}, &added);
-		if (!added)    // Not already registered?
+		if (!added)    // Already registered
 		{
 			return false;
 		}

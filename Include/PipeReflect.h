@@ -39,24 +39,6 @@ namespace p
 	}
 
 	template<typename T>
-	consteval bool HasMemberBuildType()
-	{
-		return requires() { T::BuildType(); };
-	}
-
-	template<typename T>
-	consteval bool HasExternalBuildType()
-	{
-		return requires(const T v) { BuildType(&v); };
-	}
-
-	template<typename T>
-	consteval bool CanBuildType()
-	{
-		return HasMemberBuildType<T>() || HasExternalBuildType<T>();
-	}
-
-	template<typename T>
 	consteval bool HasStaticFlags()
 	{
 		return requires() { T::staticFlags; };
@@ -416,13 +398,6 @@ namespace p
 	 *     }
 	 */
 
-	// Resolve the right BuildType function to call
-	template<typename T>
-	void BuildType(const T*) requires(HasMemberBuildType<T>())
-	{
-		T::BuildType();
-	}
-
 
 	template<typename T>
 	TypeId RegisterTypeId();    // Forward declaration
@@ -443,10 +418,8 @@ namespace p
 		using PropType = std::remove_pointer_t<T>;
 		if constexpr (IsPointer<T>)
 		{
-			if constexpr (IsPointer<PropType>)
-			{
-				return;    // Nested pointers not supported
-			}
+			static_assert(
+			    !IsPointer<PropType>, "Nested pointers (T**) are not supported in reflection");
 			flags |= PF_Pointer;
 		}
 		AddTypeProperty(TypeProperty{
@@ -510,6 +483,71 @@ namespace p
 	}
 
 
+	// Build array types
+	template<typename T>
+	inline void BuildType(const T*) requires(p::IsArray<T>())
+	{
+		// clang-format off
+		static p::ContainerTypeOps ops{
+			.itemType = p::RegisterTypeId<typename T::ItemType>(),
+			.getData = [](void* data) {
+				return (void*)static_cast<T*>(data)->Data();
+			},
+			.getSize = [](void* data) {
+				return static_cast<T*>(data)->Size();
+			},
+			.getItem = [](void* data, p::i32 index) {
+				return (void*)(static_cast<T*>(data)->Data() + index);
+			},
+			.addItem = [](void* data, void* item) {
+				if (item)
+				{
+					auto& itemRef = *static_cast<typename T::ItemType*>(item);
+					if constexpr (p::IsCopyAssignable<typename T::ItemType>)
+					{
+						static_cast<T*>(data)->Add(itemRef);
+					}
+					else
+					{
+						static_cast<T*>(data)->Add(p::Move(itemRef));
+					}
+				}
+				else
+				{
+					static_cast<T*>(data)->Add();
+				}
+			},
+			.removeItem = [](void* data, p::i32 index) {
+				static_cast<T*>(data)->RemoveAt(index);
+			},
+			.clear = [](void* data) {
+				static_cast<T*>(data)->Clear();
+			}
+		};
+		// clang-format on
+		p::AddTypeFlags(p::TF_Container);
+		p::SetTypeOps(&ops);
+	};
+
+
+	template<typename T>
+	consteval bool HasMemberBuildType()
+	{
+		return requires() { T::BuildType(); };
+	}
+
+	template<typename T>
+	consteval bool HasExternalBuildType()
+	{
+		return requires(const T v) { BuildType(&v); };
+	}
+
+	template<typename T>
+	consteval bool CanBuildType()
+	{
+		return HasMemberBuildType<T>() || HasExternalBuildType<T>();
+	}
+
 	template<typename Type>
 	TypeId RegisterTypeId()
 	{    // Static to only register once
@@ -552,6 +590,10 @@ namespace p
 				AssignEnumTypeOps<T>(enumOps);
 				SetTypeOps(&enumOps);
 			}
+			else
+			{
+				AddTypeFlags(TF_Native);
+			}
 
 			if constexpr (CanBuildType<T>())
 			{
@@ -559,7 +601,7 @@ namespace p
 				{
 					T::BuildType();
 				}
-				else if constexpr (HasExternalBuildType<T>())
+				else
 				{
 					BuildType((const T*)nullptr);
 				}
@@ -626,15 +668,7 @@ namespace p
 		static inline TTypeAutoRegister<type> instance; \
 	};
 
-#define P_NATIVE(type)                     \
-	namespace p                            \
-	{                                      \
-		inline void BuildType(const type*) \
-		{                                  \
-			p::AddTypeFlags(p::TF_Native); \
-		};                                 \
-	}                                      \
-	P_AUTOREGISTER_TYPE(type)
+#define P_NATIVE(type) P_AUTOREGISTER_TYPE(type)
 
 #define P_NATIVE_NAMED(type, name)                                                  \
 	template<>                                                                      \
@@ -782,77 +816,29 @@ P_NATIVE_NAMED(p::u32, "u32")
 P_NATIVE_NAMED(p::i32, "i32")
 P_NATIVE_NAMED(p::u64, "u64")
 P_NATIVE_NAMED(p::i64, "i64")
+P_NATIVE(bool)
 P_NATIVE(float)
 P_NATIVE(double)
 P_NATIVE(char)
 P_NATIVE_NAMED(char*, "StringLiteral")
 P_NATIVE_NAMED(p::StringView, "StringView")
 P_NATIVE_NAMED(p::String, "String")
-P_NATIVE_NAMED(p::Path, "Path");
+P_NATIVE_NAMED(p::Path, "Path")
 P_NATIVE(p::Tag)
 P_NATIVE(p::Guid)
 
-P_NATIVE_NAMED(p::v2, "v2");
-P_NATIVE_NAMED(p::v2_u32, "v2_u32");
-P_NATIVE_NAMED(p::v2_i32, "v2_i32");
-P_NATIVE_NAMED(p::v3, "v3");
-P_NATIVE_NAMED(p::v3_u32, "v3_u32");
-P_NATIVE_NAMED(p::v3_i32, "v3_i32");
-P_NATIVE(p::Quat);
+P_NATIVE_NAMED(p::v2, "v2")
+P_NATIVE_NAMED(p::v2_u32, "v2_u32")
+P_NATIVE_NAMED(p::v2_i32, "v2_i32")
+P_NATIVE_NAMED(p::v3, "v3")
+P_NATIVE_NAMED(p::v3_u32, "v3_u32")
+P_NATIVE_NAMED(p::v3_i32, "v3_i32")
+P_NATIVE(p::Quat)
 
 P_NATIVE_NAMED(p::LinearColor, "LinearColor")
 P_NATIVE_NAMED(p::sRGBColor, "sRGBColor")
 P_NATIVE_NAMED(p::HSVColor, "HSVColor")
 P_NATIVE_NAMED(p::Color, "Color")
-
-// Build array types
-namespace p
-{
-	template<typename T>
-	inline void BuildType(const T*) requires(p::IsArray<T>())
-	{
-		// clang-format off
-		static p::ContainerTypeOps ops{
-			.itemType = p::RegisterTypeId<typename T::ItemType>(),
-			.getData = [](void* data) {
-				return (void*)static_cast<T*>(data)->Data();
-			},
-			.getSize = [](void* data) {
-				return static_cast<T*>(data)->Size();
-			},
-			.getItem = [](void* data, p::i32 index) {
-				return (void*)(static_cast<T*>(data)->Data() + index);
-			},
-			.addItem = [](void* data, void* item) {
-				if (item)
-				{
-					auto& itemRef = *static_cast<typename T::ItemType*>(item);
-					if constexpr (p::IsCopyAssignable<typename T::ItemType>)
-					{
-						static_cast<T*>(data)->Add(itemRef);
-					}
-					else
-					{
-						static_cast<T*>(data)->Add(p::Move(itemRef));
-					}
-				}
-				else
-				{
-					static_cast<T*>(data)->Add();
-				}
-			},
-			.removeItem = [](void* data, p::i32 index) {
-				static_cast<T*>(data)->RemoveAt(index);
-			},
-			.clear = [](void* data) {
-				static_cast<T*>(data)->Clear();
-			}
-		};
-		// clang-format on
-		p::AddTypeFlags(p::TF_Container);
-		p::SetTypeOps(&ops);
-	};
-}    // namespace p
 #pragma endregion PipeTypesSupport
 
 

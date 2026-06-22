@@ -1029,7 +1029,7 @@ namespace p
 					ImGui::DrawFilterWithHint(inspector.filter, "##filter", "Search...", 0.f);
 
 					ImGui::SameLine();
-					if (ImGui::SmallButton("-->"))
+					if (ImGui::Button("-->"))
 					{
 						clone = true;
 					}
@@ -1092,7 +1092,7 @@ namespace p
 						InspectSetKeyColumn();
 
 						const TypeId typeId = poolInstance.componentId;
-						const bool open =
+						const bool openComponent =
 						    ImGui::CollapsingHeader(componentLabel.c_str(), headerFlags);
 						if (ImGui::IsItemHovered())
 						{
@@ -1119,7 +1119,7 @@ namespace p
 							ImGui::PopStyleCompact();
 						}
 
-						if (open)
+						if (openComponent)
 						{
 							ImGui::Indent();
 							InspectProperties(data, typeId);
