@@ -130,21 +130,35 @@ namespace p
 		TArray<TypeId> includeTypes;
 		TArray<TypeId> excludeTypes;
 		TArray<TypeId> previewTypes;
+		bool drawAsList = true;    // Draw as list or tree
 
+		TSet<Id> openIds;
 		ImGuiTextFilter filter;
 		ImGuiTextFilter typeChooserFilter;
 
 		TArray<DebugECSInspector> inspectors{};
 
+		// Multi-selection
+		TArray<Id> selectedIds;
+		Id lastSelectedId = NoId;
+		Id hoveredId      = NoId;
+		TArray<Id, 1> contextMenuIds;
+
 		// Updated on tick
+		TArray<Id> ids;    // Ids being displayed in the id list
 		TArray<const IPool*> includePools;
 		TArray<const IPool*> excludePools;
 		TArray<const IPool*> previewPools;
+		TMap<Id, i32> idToDisplayIndex;
 
 		// Layout
 		bool resetLayout    = true;
 		ImGuiID leftDockId  = 0;
 		ImGuiID rightDockId = 0;
+
+		// Context menu extensibility
+		using ContextMenuCallback = TFunction<void(TView<const Id> ids)>;
+		TArray<ContextMenuCallback> contextMenuCallbacks;
 	};
 
 	namespace details
@@ -159,6 +173,7 @@ namespace p
 	void StartInspectingId(DebugECSContext& ecsDbg, Id id, bool useMainInspector = true);
 	void StopInspectingId(DebugECSContext& ecsDbg, Id id);
 	void DrawInspectIdButton(DebugECSContext& ecsDbg, Id id);
+	void AddIdContextMenuCallback(DebugECSContext::ContextMenuCallback callback);
 #pragma endregion ECS
 
 
@@ -652,7 +667,7 @@ namespace p
 	#pragma region ECS
 	i32 DebugECSInspector::uniqueIdCounter = 0;
 
-	using DrawNodeAccess = TIdScopeRef<CParent, CChild>;
+	using DrawIdAccess = TIdScopeRef<CParent, CChild>;
 	namespace details
 	{
 		bool ChooseTypePopup(const char* label, ImGuiTextFilter& filter, TypeId& selectedTypeId)
@@ -885,51 +900,145 @@ namespace p
 			ImGui::PopStyleCompact();
 		}
 
-		void DrawIdInTable(DrawNodeAccess access, DebugECSContext& ecsDbg, Id id)
+		void DrawIdContextMenu(DebugECSContext& ecsDbg)
+		{
+			if (ImGui::BeginPopup("IdContextMenu"))
+			{
+				if (ImGui::MenuItem("Delete"))
+				{
+					RmId(GetDebugCtx(), ecsDbg.contextMenuIds);
+					ecsDbg.selectedIds.Clear();
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::MenuItem("Inspect"))
+				{
+					// Inspect a max of 10 entities to not clog the ui
+					for (i32 i = 0; i < ecsDbg.contextMenuIds.Size() && i < 10; ++i)
+					{
+						StartInspectingId(ecsDbg, ecsDbg.contextMenuIds[i]);
+					}
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::MenuItem("Duplicate"))
+				{
+					TArray<Id> dups(ecsDbg.contextMenuIds.Size());
+					AddId(GetDebugCtx(), dups);    // Assign new ids
+					for (i32 i = 0; i < ecsDbg.contextMenuIds.Size(); ++i)
+					{
+						const Id target = ecsDbg.contextMenuIds[i];
+						const Id clone  = dups[i];
+
+						// TODO: Copy components
+					}
+					ecsDbg.selectedIds = Move(dups);
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::Separator();
+
+				for (auto& cb : ecsDbg.contextMenuCallbacks)
+				{
+					cb(ecsDbg.contextMenuIds);
+				}
+
+				ImGui::EndPopup();
+			}
+		}
+
+		bool DrawIdInTable(DrawIdAccess access, DebugECSContext& ecsDbg, Id id, bool hasChildren)
 		{
 			static p::String idText;
 			idText.clear();
 			ToString(id, idText);
-
-			if (!ecsDbg.filter.PassFilter(idText.c_str(), idText.c_str() + idText.size()))
-			{
-				return;
-			}
 
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);    // Inspect
 			DrawInspectIdButton(ecsDbg, id);
 
 			ImGui::TableSetColumnIndex(1);    // Id
-			static TArray<Id> children;
-			children.Clear(false);
-			if (const CParent* parent = access.TryGet<const CParent>(id))
+			ImGuiTreeNodeFlags flags =
+			    ImGuiTreeNodeFlags_SpanAllColumns | ImGuiTreeNodeFlags_OpenOnArrow
+			    | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_NavLeftJumpsToParent
+			    | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+			const bool isSelected = ecsDbg.selectedIds.Contains(id);
+			if (isSelected)
 			{
-				children.Reserve(parent->children.Size());
-				for (Id childId : parent->children)
+				flags |= ImGuiTreeNodeFlags_Selected;
+			}
+			if (!hasChildren)
+			{
+				flags |= ImGuiTreeNodeFlags_Leaf;
+			}
+			ImGui::SetNextItemStorageID((ImGuiID)id.value);
+			bool open = ImGui::TreeNodeEx(idText.c_str(), flags);
+			if (!hasChildren)
+			{
+				open = false;
+			}
+
+			// Selection
+			if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsItemToggledOpen())
+			{
+				if (ImGui::GetIO().KeyCtrl)
 				{
-					if (access.IsValid(childId))
+					if (isSelected)
 					{
-						children.Add(childId);
+						ecsDbg.selectedIds.Remove(id);
+					}
+					else
+					{
+						ecsDbg.selectedIds.Add(id);
+						ecsDbg.lastSelectedId = id;
 					}
 				}
-			}
-			const bool hasChildren = !children.IsEmpty();
+				else if (ImGui::GetIO().KeyShift && ecsDbg.lastSelectedId != NoId)
+				{
+					if (ecsDbg.idToDisplayIndex.Contains(ecsDbg.lastSelectedId)
+					    && ecsDbg.idToDisplayIndex.Contains(id))
+					{
+						i32 lastIdx = ecsDbg.idToDisplayIndex[ecsDbg.lastSelectedId];
+						i32 currIdx = ecsDbg.idToDisplayIndex[id];
+						if (lastIdx > currIdx)
+						{
+							Swap(lastIdx, currIdx);
+						}
 
-			bool open = false;
-			static p::Tag font{"WorkSans"};
-			if (hasChildren)
-			{
-				open = ImGui::TreeNodeEx(idText.c_str(), ImGuiTreeNodeFlags_SpanAllColumns);
+						ecsDbg.selectedIds.Clear(false);
+						ecsDbg.lastSelectedId = NoId;
+						for (auto& pair : ecsDbg.idToDisplayIndex)
+						{
+							if (pair.second >= lastIdx && pair.second <= currIdx)
+							{
+								ecsDbg.selectedIds.Add(pair.first);
+								ecsDbg.lastSelectedId = pair.first;
+							}
+						}
+					}
+				}
+				else
+				{
+					ecsDbg.selectedIds.Clear(false);
+					ecsDbg.selectedIds.Add(id);
+					ecsDbg.lastSelectedId = id;
+				}
 			}
-			else
+			// Context Menu
+			if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 			{
-				ImGui::SameLine(0, 18.f);
-				ImGui::Text(idText);
+				if (ecsDbg.selectedIds.Contains(id))
+				{
+					ecsDbg.contextMenuIds = ecsDbg.selectedIds;
+				}
+				else
+				{
+					ecsDbg.selectedIds.Clear(false);
+					ecsDbg.contextMenuIds.Assign(1, id);
+				}
+				ImGui::OpenPopup("IdContextMenu");
 			}
+
 
 			ImGui::TableSetColumnIndex(2);    // Previews
-			ImGui::PushStyleCompact();
 			ImGui::PushStyleCompact();
 			static String poolName;
 			ImGui::PushButtonColor(previewColor);
@@ -944,17 +1053,162 @@ namespace p
 			}
 			ImGui::PopButtonColor();
 			ImGui::PopStyleCompact();
-			ImGui::PopStyleCompact();
+			return open;
+		}
 
-
-			if (hasChildren && open)
+		Id DrawClippedIdAndAdvanceToNext(
+		    ImGuiListClipper& clipper, DrawIdAccess& access, DebugECSContext& ecsDbg, Id id)
+		{
+			const CParent* parent = access.TryGet<const CParent>(id);
+			Id firstChildren      = NoId;
+			if (parent)
 			{
-				for (Id child : children)
+				for (Id childId : parent->children)
 				{
-					DrawIdInTable(access, ecsDbg, child);
+					if (access.IsValid(childId))
+					{
+						firstChildren = childId;
+						break;
+					}
+				}
+			}
+
+			bool open = false;
+			if (clipper.UserIndex >= clipper.DisplayStart && clipper.UserIndex < clipper.DisplayEnd)
+			{
+				open = details::DrawIdInTable(access, ecsDbg, id, firstChildren != NoId);
+			}
+			else
+			{
+				open = firstChildren != NoId && ImGui::TreeNodeGetOpen((ImGuiID)id.value);
+			}
+
+			if (open)
+			{
+				ImGui::TreePush(reinterpret_cast<void*>(i64(id.value)));
+			}
+			ecsDbg.idToDisplayIndex[id] = clipper.UserIndex;
+			++clipper.UserIndex;
+
+			if (open)
+			{
+				return firstChildren;
+			}
+
+			// Find next sibling, or walk back to parent's sibling
+			Id current          = id;
+			bool firstIteration = true;
+			while (true)
+			{
+				const CChild* child = access.TryGet<const CChild>(current);
+				if (!child || !access.IsValid(child->parent))
+				{
+					const CParent* rootParent = access.TryGet<const CParent>(current);
+					if (rootParent && ImGui::TreeNodeGetOpen((ImGuiID)current.value))
+					{
+						ImGui::TreePop();
+					}
+					return NoId;
 				}
 
+				Id parentId      = child->parent;
+				const CParent* p = access.TryGet<const CParent>(parentId);
+				if (!p)
+				{
+					return NoId;
+				}
+
+				i32 childIdx = -1;
+				for (i32 i = 0; i < p->children.Size(); ++i)
+				{
+					if (p->children[i] == current)
+					{
+						childIdx = i;
+						break;
+					}
+				}
+				for (i32 i = childIdx + 1; i < p->children.Size(); ++i)
+				{
+					if (access.IsValid(p->children[i]))
+					{
+						return p->children[i];
+					}
+				}
+				current = parentId;
 				ImGui::TreePop();
+			}
+		}
+
+		void DrawIdTableAsList(DrawIdAccess access, DebugECSContext& ecsDbg, TView<const Id> ids)
+		{
+			static const ImGuiTableFlags tableFlags =
+			    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
+			    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
+			if (ImGui::BeginTable("entityTable", 3, tableFlags))
+			{
+				ImGui::TableSetupColumn("Inspect",
+				    ImGuiTableColumnFlags_IndentDisable | ImGuiTableColumnFlags_WidthFixed
+				        | ImGuiTableColumnFlags_NoResize);    // Inspect
+				ImGui::TableSetupColumn(
+				    "Id", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_IndentEnable);
+				ImGui::TableSetupColumn("Previews");
+
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableHeadersRow();
+
+				ecsDbg.idToDisplayIndex.Clear();
+				ImGuiListClipper clipper;
+				clipper.Begin(ids.Size());
+				while (clipper.Step())
+				{
+					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i)
+					{
+						details::DrawIdInTable(access, ecsDbg, ids[i], false);
+					}
+				}
+				ImGui::EndTable();
+			}
+		}
+
+		void DrawIdTableAsTree(DrawIdAccess access, DebugECSContext& ecsDbg, TView<const Id> ids)
+		{
+			static const ImGuiTableFlags tableFlags =
+			    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
+			    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
+			if (ImGui::BeginTable("entityTable", 3, tableFlags))
+			{
+				ImGui::TableSetupColumn("Inspect",
+				    ImGuiTableColumnFlags_IndentDisable | ImGuiTableColumnFlags_WidthFixed
+				        | ImGuiTableColumnFlags_NoResize);    // Inspect
+				ImGui::TableSetupColumn(
+				    "Id", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_IndentEnable);
+				ImGui::TableSetupColumn("Previews");
+
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableHeadersRow();
+
+				TArray<Id> rootIds;
+				GetIdParentRoots(access, ids, rootIds);
+				Id id = rootIds[0];    // TODO
+
+				ecsDbg.idToDisplayIndex.Clear();
+				ImGuiListClipper clipper;
+				clipper.Begin(GetDebugCtx().Size());
+				while (clipper.Step())
+				{
+					while (clipper.UserIndex < clipper.DisplayEnd && id != NoId)
+					{
+						id = details::DrawClippedIdAndAdvanceToNext(clipper, access, ecsDbg, id);
+					}
+				}
+				// Count remaining for accurate scrollbar
+				while (id != NoId)
+				{
+					id = details::DrawClippedIdAndAdvanceToNext(clipper, access, ecsDbg, id);
+				}
+				clipper.SeekCursorForItem(clipper.UserIndex);
+
+				ImGui::EndTable();
 			}
 		}
 
@@ -1218,6 +1472,16 @@ namespace p
 				{
 					if (ImGui::BeginMenu("Settings"))
 					{
+						ImGui::SeparatorText("View");
+						if (ImGui::MenuItem("List", nullptr, ecsDbg.drawAsList))
+						{
+							ecsDbg.drawAsList = true;
+						}
+						if (ImGui::MenuItem("Tree", nullptr, !ecsDbg.drawAsList))
+						{
+							ecsDbg.drawAsList = false;
+						}
+						ImGui::SeparatorText("Layout");
 						if (ImGui::MenuItem("Reset Layout"))
 						{
 							ecsDbg.resetLayout = true;
@@ -1270,69 +1534,64 @@ namespace p
 			ImGui::Separator();
 			ImGui::Dummy({0.f, 0.f});
 
-			{    // Cache pools
-				ecsDbg.includePools.Clear(false);
-				ecsDbg.excludePools.Clear(false);
-				ecsDbg.previewPools.Clear(false);
-				GetDebugCtx().GetPools(ecsDbg.includeTypes, ecsDbg.includePools);
-				GetDebugCtx().GetPools(ecsDbg.excludeTypes, ecsDbg.excludePools);
-				GetDebugCtx().GetPools(ecsDbg.previewTypes, ecsDbg.previewPools);
-			}
+			{        // Filtering
+				{    // Cache pools
+					ecsDbg.includePools.Clear(false);
+					ecsDbg.excludePools.Clear(false);
+					ecsDbg.previewPools.Clear(false);
+					GetDebugCtx().GetPools(ecsDbg.includeTypes, ecsDbg.includePools);
+					GetDebugCtx().GetPools(ecsDbg.excludeTypes, ecsDbg.excludePools);
+					GetDebugCtx().GetPools(ecsDbg.previewTypes, ecsDbg.previewPools);
+				}
 
-			TArray<Id> ids;
-			{    // Filtering
+				ecsDbg.ids.Clear(false);
 				if (ecsDbg.includeTypes.IsEmpty())
 				{
-					ids.AddUninitialized(GetDebugCtx().Size());
+					ecsDbg.ids.Assign(GetDebugCtx().Size());
 					i32 idx = 0;
-					GetDebugCtx().Each([&ids, &idx](Id id)
+					GetDebugCtx().Each([&ecsDbg, &idx](Id id)
 					{
-						ids[idx] = id;
+						ecsDbg.ids[idx] = id;
 						++idx;
 					});
 				}
 				else
 				{
-					FindAllIdsWith(ecsDbg.includePools, ids);
+					FindAllIdsWith(ecsDbg.includePools, ecsDbg.ids);
 				}
 
 				for (const IPool* pool : ecsDbg.excludePools)
 				{
-					ExcludeIdsWithStable(pool, ids, false);
+					ExcludeIdsWithStable(pool, ecsDbg.ids, false);
 				}
-			}
 
-
-			ImGui::Text("%i entities", ids.Size());
-
-			static const ImGuiTableFlags tableFlags =
-			    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
-			    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
-			if (ImGui::BeginTable("entityTable", 3, tableFlags))
-			{
-				ImGui::TableSetupColumn("Inspect",
-				    ImGuiTableColumnFlags_IndentDisable | ImGuiTableColumnFlags_WidthFixed
-				        | ImGuiTableColumnFlags_NoResize);    // Inspect
-				ImGui::TableSetupColumn(
-				    "Id", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_IndentEnable);
-				ImGui::TableSetupColumn("Previews");
-
-				ImGui::TableSetupScrollFreeze(0, 1);
-				ImGui::TableHeadersRow();
-
-				DrawNodeAccess access{GetDebugCtx()};
-
-				ImGuiListClipper clipper;
-				clipper.Begin(ids.Size());
-				while (clipper.Step())
+				if (ecsDbg.filter.IsActive())
 				{
-					for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; i++)
+					ExcludeIdsIfStable(ecsDbg.ids, [&ecsDbg](const Id id)
 					{
-						details::DrawIdInTable(access, ecsDbg, ids[i]);
-					}
+						static p::String idText;
+						idText.clear();
+						ToString(id, idText);
+						return !ecsDbg.filter.PassFilter(
+						    idText.c_str(), idText.c_str() + idText.size());
+					});
 				}
-				ImGui::EndTable();
+
+				ecsDbg.ids.Shrink();
+				// Ids are always sorted
 			}
+
+			DrawIdAccess access{GetDebugCtx()};
+			if (ecsDbg.drawAsList)
+			{
+				details::DrawIdTableAsList(access, ecsDbg, ecsDbg.ids);
+			}
+			else
+			{
+				details::DrawIdTableAsTree(access, ecsDbg, ecsDbg.ids);
+			}
+
+			details::DrawIdContextMenu(ecsDbg);
 		}
 		ImGui::End();
 
@@ -1428,6 +1687,14 @@ namespace p
 		}
 		ImGui::PopStyleCompact();
 		ImGui::PopTextColor();
+	}
+
+	void AddIdContextMenuCallback(DebugECSContext::ContextMenuCallback callback)
+	{
+		if (EnsureInsideDebug)
+		{
+			currentContext->ecs.contextMenuCallbacks.Add(Move(callback));
+		}
 	}
 	#pragma endregion ECS
 
