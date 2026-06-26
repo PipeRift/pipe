@@ -4,8 +4,8 @@
 
 #include "Pipe/Export.h"
 
+#include <cstddef>
 #include <cstdint>
-#include <cuchar>
 
 // Platform Break includes
 #ifdef _MSC_VER
