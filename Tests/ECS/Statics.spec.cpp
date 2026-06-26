@@ -30,66 +30,66 @@ go_bandit([]()
 	{
 		it("Can set an static", [&]()
 		{
-			IdContext ast;
-			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
-			auto& var = ast.SetStatic<StaticType>({4});
+			IdContext ctx;
+			AssertThat(ctx.HasStatic<StaticType>(), Equals(false));
+			auto& var = ctx.SetStatic<StaticType>({4});
 			AssertThat(var.i, Equals(4));
-			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
-			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(false));
+			AssertThat(ctx.HasStatic<StaticType>(), Equals(true));
+			AssertThat(ctx.HasStatic<StaticTypeTwo>(), Equals(false));
 		});
 		it("Can set two statics", [&]()
 		{
-			IdContext ast;
-			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
-			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(false));
-			auto& var1 = ast.SetStatic<StaticType>({4});
-			auto& var2 = ast.SetStatic<StaticTypeTwo>({2});
+			IdContext ctx;
+			AssertThat(ctx.HasStatic<StaticType>(), Equals(false));
+			AssertThat(ctx.HasStatic<StaticTypeTwo>(), Equals(false));
+			auto& var1 = ctx.SetStatic<StaticType>({4});
+			auto& var2 = ctx.SetStatic<StaticTypeTwo>({2});
 			AssertThat(var1.i, Equals(4));
 			AssertThat(var2.i, Equals(2));
-			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
-			AssertThat(ast.HasStatic<StaticTypeTwo>(), Equals(true));
+			AssertThat(ctx.HasStatic<StaticType>(), Equals(true));
+			AssertThat(ctx.HasStatic<StaticTypeTwo>(), Equals(true));
 		});
 		it("Can replace an static", [&]()
 		{
-			IdContext ast;
-			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
-			ast.SetStatic<StaticType>({4});
-			ast.SetStatic<StaticType>({2});
-			AssertThat(ast.GetStatic<StaticType>().i, Equals(2));
-			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
+			IdContext ctx;
+			AssertThat(ctx.HasStatic<StaticType>(), Equals(false));
+			ctx.SetStatic<StaticType>({4});
+			ctx.SetStatic<StaticType>({2});
+			AssertThat(ctx.GetStatic<StaticType>().i, Equals(2));
+			AssertThat(ctx.HasStatic<StaticType>(), Equals(true));
 		});
 		it("Can get or set an static", [&]()
 		{
-			IdContext ast;
+			IdContext ctx;
 			// Can set
-			AssertThat(ast.GetOrSetStatic<StaticType>({4}).i, Equals(4));
+			AssertThat(ctx.GetOrSetStatic<StaticType>({4}).i, Equals(4));
 			// Can get
-			AssertThat(ast.GetOrSetStatic<StaticType>({10}).i, Equals(4));
+			AssertThat(ctx.GetOrSetStatic<StaticType>({10}).i, Equals(4));
 		});
 		it("Can remove an static", [&]()
 		{
-			IdContext ast;
-			ast.SetStatic<StaticType>();
-			AssertThat(ast.HasStatic<StaticType>(), Equals(true));
-			AssertThat(ast.RemoveStatic<StaticType>(), Is().True());
-			AssertThat(ast.HasStatic<StaticType>(), Equals(false));
+			IdContext ctx;
+			ctx.SetStatic<StaticType>();
+			AssertThat(ctx.HasStatic<StaticType>(), Equals(true));
+			AssertThat(ctx.RemoveStatic<StaticType>(), Is().True());
+			AssertThat(ctx.HasStatic<StaticType>(), Equals(false));
 
-			AssertThat(ast.RemoveStatic<StaticType>(), Is().False());
+			AssertThat(ctx.RemoveStatic<StaticType>(), Is().False());
 		});
 
 		it("Can get statics", [&]()
 		{
-			IdContext ast;
-			ast.SetStatic<StaticType>({4});
-			ast.SetStatic<StaticTypeTwo>({2});
-			AssertThat(ast.GetStatic<StaticType>().i, Equals(4));
-			AssertThat(ast.GetStatic<StaticTypeTwo>().i, Equals(2));
+			IdContext ctx;
+			ctx.SetStatic<StaticType>({4});
+			ctx.SetStatic<StaticTypeTwo>({2});
+			AssertThat(ctx.GetStatic<StaticType>().i, Equals(4));
+			AssertThat(ctx.GetStatic<StaticTypeTwo>().i, Equals(2));
 
-			ast.SetStatic<StaticTypeThree>({14});
-			AssertThat(ast.GetStatic<StaticTypeThree>().i, Equals(14));
+			ctx.SetStatic<StaticTypeThree>({14});
+			AssertThat(ctx.GetStatic<StaticTypeThree>().i, Equals(14));
 
-			ast.RemoveStatic<StaticTypeThree>();
-			AssertThat(ast.TryGetStatic<StaticTypeThree>(), Is().Null());
+			ctx.RemoveStatic<StaticTypeThree>();
+			AssertThat(ctx.TryGetStatic<StaticTypeThree>(), Is().Null());
 		});
 	});
 });
