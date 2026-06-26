@@ -3,7 +3,7 @@ title: Pipe ECS
 ---
 **Header:** [<PipeECS.h>](https://github.com/PipeRift/pipe/blob/main/Include/PipeECS.h)
 **Namespace:** `p`
-**Uses:** [`PipeArrays`](./PipeArrays.md) [`PipePlatform`](./PipePlatform.md) [`PipeReflect`](./PipeReflect.md)
+**Uses:** [`PipeContainers`](../Include/PipeContainers.h) [`PipePlatform`](./PipePlatform.md) [`PipeReflect`](./PipeReflect.md)
 
 ## Overview
 
