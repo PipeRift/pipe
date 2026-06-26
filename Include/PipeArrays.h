@@ -758,7 +758,7 @@ namespace p
 		i32 capacity = 0;
 		Arena* arena = &p::GetCurrentArena();
 		mutable TTypeAsBytesArray<Type, InlineCapacity>
-		    inlineBuffer;    // Not used if InlineCapacity is 0
+		    inlineBuffer;    // Unused with 0 InlineCapacity
 
 
 #pragma region Constructors
@@ -1069,7 +1069,7 @@ namespace p
 			Super::size = count;
 			CopyConstructItems(Super::data, count, values);
 		}
-		void Assign(const IArray<Type>& values)
+		void Assign(const IArray<const Type>& values)
 		{
 			CopyFrom(values);
 		}
