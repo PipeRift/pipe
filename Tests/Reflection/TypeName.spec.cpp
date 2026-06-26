@@ -5,7 +5,7 @@
 #include <Pipe/Core/Map.h>
 #include <Pipe/Core/String.h>
 #include <Pipe/Core/Tag.h>
-#include <PipeArrays.h>
+#include <PipeContainers.h>
 #include <PipeReflect.h>
 
 

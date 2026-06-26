@@ -7,7 +7,7 @@
 #include "Pipe/Core/TypeFlags.h"
 #include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
-#include "PipeArrays.h"
+#include "PipeContainers.h"
 #include "PipeColor.h"
 #include "PipePlatform.h"
 #include "PipeSerializeFwd.h"

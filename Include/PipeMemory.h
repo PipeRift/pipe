@@ -6,7 +6,7 @@
 #include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
-#include "PipeArraysFwd.h"
+#include "PipeContainersFwd.h"
 
 
 namespace p

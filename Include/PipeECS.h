@@ -6,7 +6,7 @@
 #include "Pipe/Core/Templates.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/UniquePtr.h"
-#include "PipeArrays.h"
+#include "PipeContainers.h"
 #include "PipePlatform.h"
 #include "PipeReflect.h"
 

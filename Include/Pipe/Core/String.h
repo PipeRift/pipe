@@ -7,7 +7,7 @@
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Extern/utf8/unchecked.h"
-#include "PipeArrays.h"
+#include "PipeContainers.h"
 #include "PipeMemory.h"
 #include "PipePlatform.h"
 #include "PipeSerializeFwd.h"

@@ -2,7 +2,7 @@
 
 #include <bandit/assertion_frameworks/snowhouse/exceptions.h>
 #include <bandit/bandit.h>
-#include <PipeArrays.h>
+#include <PipeContainers.h>
 
 
 using namespace snowhouse;

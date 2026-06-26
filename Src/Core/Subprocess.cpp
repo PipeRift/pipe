@@ -5,7 +5,7 @@
 #include "Pipe/Core/Optional.h"
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
-#include "PipeArrays.h"
+#include "PipeContainers.h"
 #include "PipePlatform.h"
 
 #include <stdio.h>

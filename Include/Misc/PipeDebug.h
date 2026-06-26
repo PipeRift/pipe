@@ -20,7 +20,7 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeDebug requires v1.9
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Map.h"
 #include "Pipe/Core/Set.h"
-#include "PipeArrays.h"
+#include "PipeContainers.h"
 #include "PipeECS.h"
 
 

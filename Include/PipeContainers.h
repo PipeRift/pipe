@@ -7,7 +7,7 @@
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Utility.h"
 #include "PipeAlgorithms.h"
-#include "PipeArraysFwd.h"
+#include "PipeContainersFwd.h"
 #include "PipeMath.h"
 #include "PipeMemory.h"
 #include "PipePlatform.h"

@@ -3,7 +3,7 @@
 #include <bandit/bandit.h>
 #include <Pipe/Core/Limits.h>
 #include <PipeAlgorithms.h>
-#include <PipeArrays.h>
+#include <PipeContainers.h>
 #include <PipePlatform.h>
 
 #include <cmath>

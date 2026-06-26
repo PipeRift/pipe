@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/StringView.h"
-#include "PipeArrays.h"
+#include "PipeContainers.h"
 #include "PipePlatform.h"
 
 #include <cstdlib>

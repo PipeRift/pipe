@@ -5,7 +5,7 @@
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Optional.h"
 #include "Pipe/Export.h"
-#include "PipeArrays.h"
+#include "PipeContainers.h"
 
 // Including PipePlatform.h would be overkill just for this
 #ifndef P_PLATFORM_WINDOWS
