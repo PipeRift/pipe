@@ -1203,6 +1203,7 @@ namespace p
 
 	void AttachId(TIdScopeRef<Writes<CChild, CParent>> access, Id parent, TView<const Id> children)
 	{
+		// Assign parent to children
 		children.Each([&access, parent](Id childId)
 		{
 			if (auto* cChild = access.TryGet<CChild>(childId))
@@ -1227,6 +1228,7 @@ namespace p
 	void AttachIdAfter(
 	    TIdScopeRef<Writes<CChild, CParent>> access, Id parent, TView<Id> childrenIds, Id prevChild)
 	{
+		// Assign parent to children
 		childrenIds.Each([&access, parent](Id child)
 		{
 			if (auto* cChild = access.TryGet<CChild>(child))
@@ -1246,7 +1248,7 @@ namespace p
 
 		auto& childrenList  = access.GetOrAdd<CParent>(parent).children;
 		const i32 prevIndex = childrenList.FindIndex(prevChild);
-		childrenList.Insert(prevIndex, childrenIds);
+		childrenList.Insert(prevIndex + 1, childrenIds);
 	}
 
 	void TransferIdChildren(
@@ -1380,8 +1382,9 @@ namespace p
 		TArray<Id> currentLinked{};
 		TArray<Id> pendingInspection;
 		pendingInspection.Append(parentIds);
-		while (pendingInspection.Size() > 0 && --depth >= 0)
+		while (pendingInspection.Size() > 0 && depth > 0)
 		{
+			--depth;
 			GetIdChildren(access, pendingInspection, currentLinked);
 			outChildrenIds.Append(currentLinked);
 			pendingInspection = Move(currentLinked);
@@ -1415,7 +1418,7 @@ namespace p
 	{
 		outParents.Clear(false);
 
-		TArray<Id> currentIds{childrenIds.begin(), childrenIds.end()};
+		TArray<Id> currentIds{childrenIds};
 		TArray<Id> parentIds;
 
 		while (currentIds.Size() > 0)
@@ -1469,16 +1472,16 @@ namespace p
 	}
 
 
-	bool FixParentIdLinks(TIdScopeRef<Writes<CChild>, CParent> access, TView<Id> parents)
+	bool FixParentIdLinks(TIdScopeRef<Writes<CChild>, CParent> scope, TView<Id> parents)
 	{
 		bool fixed = false;
 		for (Id parentId : parents)
 		{
-			if (const auto* parent = access.TryGet<const CParent>(parentId))
+			if (const auto* parent = scope.TryGet<const CParent>(parentId))
 			{
 				for (Id childId : parent->children)
 				{
-					if (auto* child = access.TryGet<CChild>(childId))
+					if (auto* child = scope.TryGet<CChild>(childId))
 					{
 						if (child->parent != parentId)
 						{
@@ -1488,7 +1491,7 @@ namespace p
 					}
 					else
 					{
-						access.Add<CChild>(childId, {parentId});
+						scope.Add<CChild>(childId, {parentId});
 						fixed = true;
 					}
 				}
@@ -1497,15 +1500,15 @@ namespace p
 		return fixed;
 	}
 
-	bool ValidateParentIdLinks(TIdScopeRef<CChild, CParent> access, TView<Id> parents)
+	bool ValidateParentIdLinks(TIdScopeRef<CChild, CParent> scope, TView<Id> parents)
 	{
 		for (Id parentId : parents)
 		{
-			if (const auto* parent = access.TryGet<const CParent>(parentId))
+			if (const auto* parent = scope.TryGet<const CParent>(parentId))
 			{
 				for (Id childId : parent->children)
 				{
-					const auto* child = access.TryGet<const CChild>(childId);
+					const auto* child = scope.TryGet<const CChild>(childId);
 					if (!child || child->parent != parentId)
 					{
 						return false;
@@ -1516,7 +1519,66 @@ namespace p
 		return true;
 	}
 
-	void GetRootIds(TIdScopeRef<CChild, CParent> access, TArray<Id>& outRoots)
+	void GetIdParentRoots(TIdScopeRef<CChild> scope, TView<const Id> childrenIds,
+	    TArray<Id>& outRoots, bool considerChildren)
+	{
+		outRoots.Clear(false);
+
+		if (childrenIds.Size() == 0)
+		{
+			return;
+		}
+
+		TArray<Id> currentIds;
+		if (considerChildren)
+		{
+			currentIds.Assign(childrenIds);
+		}
+		else
+		{
+			// GetIdParent with duplicates
+			for (Id childId : childrenIds)
+			{
+				const auto* child = scope.TryGet<const CChild>(childId);
+				if (child && !IsNone(child->parent))
+				{
+					currentIds.Add(child->parent);
+				}
+			}
+		}
+
+		while (currentIds.Size() > 0)
+		{
+			currentIds.Sort();
+
+			Id lastId = NoId;
+			for (i32 i = 0; i < currentIds.Size(); ++i)
+			{
+				Id& currentId = currentIds[i];
+				// Avoid checking the same ids on the same step since
+				// they are sorted
+				if (currentId == lastId)
+				{
+					continue;
+				}
+				lastId = currentId;
+
+				const auto* child = scope.TryGet<const CChild>(currentId);
+				if (!child || IsNone(child->parent))    // Current is Root
+				{
+					outRoots.AddUniqueSorted(currentId);
+					currentIds.RemoveAtSwap(i, false);
+					--i;
+				}
+				else    // Current is not root
+				{
+					currentId = child->parent;
+				}
+			}
+		}
+	}
+
+	void GetIdRoots(TIdScopeRef<CChild, CParent> access, TArray<Id>& outRoots)
 	{
 		outRoots = FindAllIdsWith<CParent>(access);
 		ExcludeIdsWith<CChild>(access, outRoots);

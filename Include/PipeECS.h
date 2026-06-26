@@ -2063,7 +2063,7 @@ namespace p
 	template<typename Predicate>
 	void ExcludeIdsIfStable(TArray<Id>& ids, Predicate predicate, const bool shouldShrink = false)
 	{
-		ids.RemoveIf(p::Fwd(predicate), shouldShrink);
+		ids.RemoveIf(Move(predicate), shouldShrink);
 	}
 
 	/**
@@ -2469,7 +2469,19 @@ namespace p
 	 */
 	P_API bool ValidateParentIdLinks(TIdScopeRef<CChild, CParent> scope, TView<Id> parents);
 
-	P_API void GetRootIds(TIdScopeRef<CChild, CParent> scope, TArray<Id>& outRoots);
+	/**
+	 * Get all root parent ids from the provided children ids
+	 * @childrenIds: whose parents will be looked for
+	 * @outRoots: array to store the root ids
+	 */
+	P_API void GetIdParentRoots(TIdScopeRef<CChild> scope, TView<const Id> childrenIds,
+	    TArray<Id>& outRoots, bool considerChildren = true);
+
+	/**
+	 * Get all ids that have no parent
+	 * @outRoots: array to store the root ids
+	 */
+	P_API void GetIdRoots(TIdScopeRef<CChild, CParent> scope, TArray<Id>& outRoots);
 #pragma endregion Hierarchy
 
 
