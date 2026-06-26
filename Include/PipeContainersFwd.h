@@ -26,4 +26,12 @@ namespace p
 
 	template<typename Type>
 	struct TView;
+
+	template<typename Type>
+	struct TArrayIterator;
+
+	template<typename Type>
+	struct TReverseArrayIterator;
+
+	class BitArray;
 };    // namespace p

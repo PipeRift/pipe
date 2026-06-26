@@ -7,15 +7,11 @@
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Memory/UniquePtr.h"
 #include "PipeContainers.h"
+#include "PipeECSFwd.h"
 #include "PipePlatform.h"
 #include "PipeReflect.h"
 
 #include <shared_mutex>
-
-
-#ifndef P_ID_IS_64BIT
-	#define P_ID_IS_64BIT 0
-#endif
 
 
 namespace p

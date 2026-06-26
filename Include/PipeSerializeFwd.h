@@ -12,8 +12,14 @@ namespace p
 	struct Reader;
 	struct Writer;
 
-	struct IFormatWriter;
 	struct IFormatReader;
+	struct IFormatWriter;
 
 	struct ReadWriter;
+
+	struct JsonFormatReader;
+	struct JsonFormatWriter;
+
+	struct BinaryFormatReader;
+	struct BinaryFormatWriter;
 }    // namespace p
