@@ -191,6 +191,8 @@ namespace p
 		TF_ECS_ModifyOnRm = 1 << 10,
 		// -> In ECS, should this type be marked modified automatically on add, get or remove?
 		TF_ECS_ModifyOnEdit = TF_ECS_ModifyOnAdd | TF_ECS_ModifyOnGet | TF_ECS_ModifyOnRm,
+		// -> In ECS, syntax sugar for flags TF_ECS_StoreLastModified and TF_ECS_ModifyOnEdit
+		TF_ECS_ModifyAndStoreOnEdit = TF_ECS_StoreLastModified | TF_ECS_ModifyOnEdit,
 
 		// Any other flags up to 64 bytes are available to the user
 	};
