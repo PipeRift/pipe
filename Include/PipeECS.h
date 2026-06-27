@@ -1776,11 +1776,7 @@ namespace p
 
 #pragma region Statics
 		// TODO: Implement properly with dependency checking and caching
-		void* TryGetStatic(TypeId typeId)
-		{
-			return GetContext().TryGetStatic(typeId);
-		}
-		const void* TryGetStatic(TypeId typeId) const
+		void* TryGetStatic(TypeId typeId) const
 		{
 			return GetContext().TryGetStatic(typeId);
 		}
@@ -1788,58 +1784,48 @@ namespace p
 		{
 			return GetContext().HasStatic(typeId);
 		}
-		bool RemoveStatic(TypeId typeId)
+		bool RemoveStatic(TypeId typeId) const
 		{
 			return GetContext().RemoveStatic(typeId);
 		}
 
 		template<typename Static>
-		Static& SetStatic()
+		Static& SetStatic() const
 		{
 			return GetContext().template SetStatic<Static>();
 		}
 		template<typename Static>
-		Static& SetStatic(Static&& value)
+		Static& SetStatic(Static&& value) const
 		{
 			return GetContext().template SetStatic<Static>(Move(value));
 		}
 		template<typename Static>
-		Static& SetStatic(const Static& value)
+		Static& SetStatic(const Static& value) const
 		{
 			return GetContext().template SetStatic<Static>(value);
 		}
 		template<typename Static>
-		Static& GetOrSetStatic()
+		Static& GetOrSetStatic() const
 		{
 			return GetContext().template GetOrSetStatic<Static>();
 		}
 		template<typename Static>
-		Static& GetOrSetStatic(Static&& newValue)
+		Static& GetOrSetStatic(Static&& newValue) const
 		{
 			return GetContext().template GetOrSetStatic<Static>(Move(newValue));
 		}
 		template<typename Static>
-		Static& GetOrSetStatic(const Static& newValue)
+		Static& GetOrSetStatic(const Static& newValue) const
 		{
 			return GetContext().template GetOrSetStatic<Static>(newValue);
 		}
 		template<typename Static>
-		Static& GetStatic()
+		Static& GetStatic() const
 		{
 			return GetContext().template GetStatic<Static>();
 		}
 		template<typename Static>
-		const Static& GetStatic() const
-		{
-			return GetContext().template GetStatic<Static>();
-		}
-		template<typename Static>
-		Static* TryGetStatic()
-		{
-			return GetContext().template TryGetStatic<Static>();
-		}
-		template<typename Static>
-		const Static* TryGetStatic() const
+		Static* TryGetStatic() const
 		{
 			return GetContext().template TryGetStatic<Static>();
 		}
