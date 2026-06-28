@@ -23,7 +23,7 @@ jobs:
           - ubuntu-24.04
           - macos-15
         compiler:
-          - clang-19
+          - clang-21
           - gcc-15
           - msvc
         exclude:
