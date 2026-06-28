@@ -77,7 +77,7 @@ go_bandit([]()
 			Tag tagKiwi{"Kiwi"};
 			Tag tagKiwi2{"Kiwi"};
 			AssertThat(p::GetHash(tagKiwi), Equals(p::GetHash(tagKiwi2)));
-			AssertThat(p::GetHash(tagKiwi), Equals(p::GetHash("Kiwi")));
+			AssertThat(tagKiwi.GetStringHash(), Equals(p::GetHash("Kiwi")));
 		});
 
 		it("Can copy tag", [&]()

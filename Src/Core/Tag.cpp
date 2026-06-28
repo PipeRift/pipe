@@ -14,6 +14,7 @@ namespace p
 	{
 		u32 activeTags;
 		u32 size;
+		sizet hash;
 
 		TagHeader(const TagHeader&) = delete;
 		const char* Data() const
@@ -45,7 +46,7 @@ namespace p
 	public:
 		TagStringTable();
 		TagHeader& GetOrAddTagString(sizet hash, StringView value);
-		void FreeTagString(sizet hash, TagHeader& str);
+		void FreeTagString(TagHeader& str);
 	};
 
 
@@ -59,14 +60,14 @@ namespace p
 	{
 		if (!value.empty())
 		{
-			hash              = p::GetHash(value);
+			const sizet hash  = p::GetHash(value);
 			TagHeader& header = table.GetOrAddTagString(hash, value);
 			++header.activeTags;
 			str = header.Data();
 		}
 	}
 
-	Tag::Tag(const Tag& other) : hash(other.hash), str(other.str)
+	Tag::Tag(const Tag& other) : str(other.str)
 	{
 		if (str)
 		{
@@ -76,10 +77,8 @@ namespace p
 
 	Tag::Tag(Tag&& other) noexcept
 	{
-		hash       = other.hash;
-		str        = other.str;
-		other.hash = 0;
-		other.str  = nullptr;
+		str       = other.str;
+		other.str = nullptr;
 	}
 	Tag& Tag::operator=(const Tag& other)
 	{
@@ -89,8 +88,7 @@ namespace p
 		}
 
 		InternalReset();
-		hash = other.hash;
-		str  = other.str;
+		str = other.str;
 		if (str)
 		{
 			++GetTagHeader(str)->activeTags;
@@ -105,10 +103,8 @@ namespace p
 		}
 
 		InternalReset();
-		hash       = other.hash;
-		str        = other.str;
-		other.hash = 0;
-		other.str  = nullptr;
+		str       = other.str;
+		other.str = nullptr;
 		return *this;
 	}
 	Tag::~Tag()
@@ -131,6 +127,11 @@ namespace p
 			return StringView{str, sizet(GetTagHeader(str)->size)};
 		}
 		return {};
+	}
+
+	sizet Tag::GetStringHash() const
+	{
+		return str ? GetTagHeader(str)->hash : 0;
 	}
 
 	constexpr sizet GetAllocSize(sizet dataSize)
@@ -169,7 +170,7 @@ namespace p
 			--header->activeTags;
 			if (table.automaticFlush && header->activeTags <= 0) [[unlikely]]
 			{
-				table.FreeTagString(hash, *header);
+				table.FreeTagString(*header);
 			}
 		}
 	}
@@ -216,6 +217,7 @@ namespace p
 		auto* header = static_cast<TagHeader*>(arena.Alloc(GetAllocSize(size), alignof(TagHeader)));
 		header->activeTags = 0;
 		header->size       = size;
+		header->hash       = hash;
 		// Copy string data
 		auto* const data = const_cast<char*>(header->Data());
 		p::CopyMem(data, (void*)value.data(), sizeof(char) * size);
@@ -226,10 +228,10 @@ namespace p
 		return *header;
 	}
 
-	void TagStringTable::FreeTagString(sizet hash, TagHeader& str)
+	void TagStringTable::FreeTagString(TagHeader& str)
 	{
 		std::unique_lock lock{stringsListMutex};
-		strings.RemoveSorted(hash, {}, false);
+		strings.RemoveSorted(str.hash, {}, false);
 		arena.Free(&str, GetAllocSize(str.size));
 	}
 

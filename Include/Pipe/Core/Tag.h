@@ -19,7 +19,6 @@ namespace p
 	struct P_API Tag
 	{
 	private:
-		sizet hash      = 0;
 		const char* str = nullptr;
 
 
@@ -46,18 +45,31 @@ namespace p
 
 		bool operator==(const Tag& other) const
 		{
-			return hash == other.hash;
+			// internal unique string -> same pointer)
+			return str == other.str;
 		}
 
 		bool operator<(const Tag& other) const
 		{
-			return hash < other.hash;
+			return str < other.str;
 		}
 
+		/**
+		 * Runtime hash of the tag (unstable hash)
+		 * Performance: Instant, no dereference\
+		 * @see GetStringHash()
+		 */
 		sizet GetHash() const
 		{
-			return hash;
+			return reinterpret_cast<sizet>(str);
 		}
+
+		/**
+		 * Hash of the tag's string content (stable hash)
+		 * Performance: Fast, but slower than GetHash() (Requires one dereference)
+		 * @see GetHash()
+		 */
+		sizet GetStringHash() const;
 
 		static const Tag None()
 		{
