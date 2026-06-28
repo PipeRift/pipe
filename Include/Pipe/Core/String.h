@@ -6,7 +6,14 @@
 #include "Pipe/Core/STDFormat.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcharacter-conversion"
+#endif
 #include "Pipe/Extern/utf8/unchecked.h"
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 #include "PipeContainers.h"
 #include "PipeMemory.h"
 #include "PipePlatform.h"
