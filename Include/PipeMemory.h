@@ -475,8 +475,8 @@ namespace p
 		}
 
 	public:
-		Arena() = default;
-		virtual ~Arena() {}
+		Arena();
+		virtual ~Arena();
 		Arena(const Arena&)            = delete;
 		Arena& operator=(const Arena&) = delete;
 
@@ -538,6 +538,15 @@ namespace p
 			return p::GetTypeId<ChildArena>();
 		}
 	};
+
+	struct P_API RegisteredArenaPtr
+	{
+		Arena* arena = nullptr;
+		TypeId typeId;
+	};
+
+	// Global arena registry - thread-safe, used by debugger
+	P_API TView<const RegisteredArenaPtr> GetAllArenas();
 #pragma endregion Arena
 
 #pragma region STL Allocator

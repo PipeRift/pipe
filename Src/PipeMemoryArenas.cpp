@@ -116,8 +116,8 @@ namespace p
 	{
 		LinearBlock* const lastBlock = freeBlock;
 
-		// Allocate aligning by blockSize
-		void* ptr = parentArena.Alloc(blockSize + sizeof(LinearBlock), GetBlockSize());
+		// Allocate blockSize bytes aligned to blockSize
+		void* ptr = parentArena.Alloc(blockSize, GetBlockSize());
 
 		void* blockPtr       = (u8*)ptr + GetAlignmentPadding(ptr, GetBlockSize());
 		freeBlock            = new (blockPtr) LinearBlock();

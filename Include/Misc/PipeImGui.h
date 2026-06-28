@@ -126,6 +126,13 @@ namespace ImGui
 		TextUnformatted(text.data(), text.data() + text.size());
 	}
 
+	inline void TextDisabled(p::StringView text)
+	{
+		PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+		Text(text);
+		PopStyleColor();
+	}
+
 	inline void TextColoredUnformatted(
 	    const p::LinearColor& color, const char* text, const char* textEnd = nullptr)
 	{
@@ -143,6 +150,17 @@ namespace ImGui
 	inline void TextColored(const p::LinearColor& color, p::StringView text)
 	{
 		TextColoredUnformatted(color, text.data(), text.data() + text.size());
+	}
+
+	inline bool TextLink(p::StringView label)
+	{
+		if (label.data()[label.size()] != '\0')
+		{
+			static p::String tmpLabel;
+			tmpLabel = label;
+			label    = tmpLabel;
+		}
+		return TextLink(label.data());
 	}
 
 
@@ -195,8 +213,8 @@ namespace ImGui
 	inline bool Selectable(p::StringView label, bool selected = false,
 	    ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0))
 	{
-		// If StringView doesn't end in /0, need to use a temporal
-		if (label.data()[label.size()] != '/0')
+		// If StringView doesn't end in \0, need to use a temporal
+		if (label.data()[label.size()] != '\0')
 		{
 			static p::String tmpLabel;
 			tmpLabel = label;
@@ -208,8 +226,8 @@ namespace ImGui
 	inline bool Selectable(p::StringView label, bool* p_selected, ImGuiSelectableFlags flags = 0,
 	    const ImVec2& size = ImVec2(0, 0))
 	{
-		// If StringView doesn't end in /0, need to use a temporal
-		if (label.data()[label.size()] != '/0')
+		// If StringView doesn't end in \0, need to use a temporal
+		if (label.data()[label.size()] != '\0')
 		{
 			static p::String tmpLabel;
 			tmpLabel = label;

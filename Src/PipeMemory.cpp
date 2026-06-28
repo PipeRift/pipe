@@ -5,6 +5,11 @@
 #include "PipeMemoryArenas.h"
 
 #include <cstring>
+#include <shared_mutex>
+
+#if P_PLATFORM_WINDOWS
+	#include <malloc.h>    // _aligned_malloc, _aligned_free, _aligned_realloc
+#endif
 
 namespace p
 {
@@ -111,28 +116,38 @@ namespace p
 
 	void* HeapAlloc(sizet size)
 	{
+#if P_PLATFORM_WINDOWS
+		return _aligned_malloc(size, alignof(std::max_align_t));
+#else
 		return malloc(size);
+#endif
 	}
 
 	void* HeapAlloc(sizet size, sizet align)
 	{
 #if P_PLATFORM_WINDOWS
-		// TODO: Windows needs _aligned_free in order to use _aligned_alloc()
-		void* const ptr = malloc(size);
+		return _aligned_malloc(size, align);
 #else
-		void* const ptr = aligned_alloc(align, size);
+		return aligned_alloc(align, size);
 #endif
-		return ptr;
 	}
 
 	void* HeapRealloc(void* ptr, sizet size)
 	{
+#if P_PLATFORM_WINDOWS
+		return _aligned_realloc(ptr, size, alignof(std::max_align_t));
+#else
 		return realloc(ptr, size);
+#endif
 	}
 
 	void HeapFree(void* ptr)
 	{
+#if P_PLATFORM_WINDOWS
+		_aligned_free(ptr);
+#else
 		free(ptr);
+#endif
 	}
 
 
@@ -213,6 +228,12 @@ namespace p
 
 
 #pragma region Arena
+	// Dont use TArray to prevent initialization loop
+	static std::vector<RegisteredArenaPtr> arenas;
+	static std::vector<RegisteredArenaPtr> arenasSnapshot;
+	static std::shared_mutex arenasMutex;
+
+
 	ArenaBlock::ArenaBlock(ArenaBlock&& other) noexcept
 	{
 		data = Exchange(other.data, nullptr);
@@ -226,6 +247,28 @@ namespace p
 	}
 
 
+	Arena::Arena()
+	{
+		// Register arena
+		std::unique_lock lock(arenasMutex);
+		RegisteredArenaPtr entry;
+		entry.arena  = this;
+		entry.typeId = GetTypeId();
+		arenas.push_back(entry);
+	}
+	Arena::~Arena()
+	{
+		std::unique_lock lock(arenasMutex);
+		for (auto it = arenas.begin(); it != arenas.end(); ++it)
+		{
+			if (it->arena == this)
+			{
+				arenas.erase(it);
+				break;
+			}
+		}
+	}
+
 	ChildArena::ChildArena(Arena* inParent) : parent{inParent}
 	{
 		if (!parent)
@@ -237,5 +280,14 @@ namespace p
 			}
 		}
 	}
+
+
+	TView<const RegisteredArenaPtr> GetAllArenas()
+	{
+		std::shared_lock lock(arenasMutex);
+		arenasSnapshot = arenas;
+		return {arenasSnapshot.data(), static_cast<i32>(arenasSnapshot.size())};
+	}
+
 #pragma endregion Arena
 }    // namespace p

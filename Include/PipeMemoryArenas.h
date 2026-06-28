@@ -116,7 +116,10 @@ namespace p
 		}
 		void GetBlocks(TArray<ArenaBlock>& outBlocks) const override
 		{
-			outBlocks.Add(block);
+			if (block.IsAllocated())
+			{
+				outBlocks.Add(block);
+			}
 		}
 
 		const MemoryStats* GetStats() const override
@@ -157,7 +160,7 @@ namespace p
 
 			constexpr u8* End(sizet blockSize) const
 			{
-				return (u8*)unaligned + blockSize + sizeof(LinearBlock);
+				return (u8*)this + blockSize;
 			}
 		};
 
@@ -185,12 +188,12 @@ namespace p
 
 			static constexpr sizet GetAllocatedBlockSize()
 			{
-				return blockSize + sizeof(LinearBlock);
+				return blockSize;
 			}
 
 			void* GetBlockEnd(LinearBlock* block) const
 			{
-				return (u8*)block->unaligned + GetAllocatedBlockSize();
+				return (u8*)block + blockSize;
 			}
 		};
 
