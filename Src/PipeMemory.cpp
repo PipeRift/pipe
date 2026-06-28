@@ -6,10 +6,12 @@
 
 #include <cstring>
 #include <shared_mutex>
+#include <vector>
 
 #if P_PLATFORM_WINDOWS
 	#include <malloc.h>    // _aligned_malloc, _aligned_free, _aligned_realloc
 #endif
+
 
 namespace p
 {
@@ -228,10 +230,17 @@ namespace p
 
 
 #pragma region Arena
-	// Dont use TArray to prevent initialization loop
-	static std::vector<RegisteredArenaPtr> arenas;
-	static std::vector<RegisteredArenaPtr> arenasSnapshot;
-	static std::shared_mutex arenasMutex;
+	struct ArenaRegistry
+	{
+		std::vector<Arena*> arenas;
+		std::shared_mutex arenasMutex;
+	};
+
+	ArenaRegistry& GetArenaRegistry()
+	{
+		static ArenaRegistry registry;
+		return registry;
+	}
 
 
 	ArenaBlock::ArenaBlock(ArenaBlock&& other) noexcept
@@ -250,23 +259,66 @@ namespace p
 	Arena::Arena()
 	{
 		// Register arena
-		std::unique_lock lock(arenasMutex);
-		RegisteredArenaPtr entry;
-		entry.arena  = this;
-		entry.typeId = GetTypeId();
-		arenas.push_back(entry);
+		auto& registry = GetArenaRegistry();
+		std::unique_lock lock(registry.arenasMutex);
+		registry.arenas.push_back(this);
 	}
 	Arena::~Arena()
 	{
-		std::unique_lock lock(arenasMutex);
-		for (auto it = arenas.begin(); it != arenas.end(); ++it)
+		auto& registry = GetArenaRegistry();
+		std::unique_lock lock(registry.arenasMutex);
+		for (auto it = registry.arenas.begin(); it != registry.arenas.end(); ++it)
 		{
-			if (it->arena == this)
+			if (*it == this)
 			{
-				arenas.erase(it);
+				registry.arenas.erase(it);
 				break;
 			}
 		}
+	}
+
+	Arena::Arena(Arena&& other) noexcept
+	    : doAlloc{other.doAlloc}
+	    , doAllocAligned{other.doAllocAligned}
+	    , doRealloc{other.doRealloc}
+	    , doFree{other.doFree}
+	{
+		auto& registry = GetArenaRegistry();
+		std::unique_lock lock(registry.arenasMutex);
+		for (auto* arena : registry.arenas)
+		{
+			if (arena == &other)
+			{
+				arena = this;
+				break;
+			}
+		}
+	}
+
+	Arena& Arena::operator=(Arena&& other) noexcept
+	{
+		if (this != &other)
+		{
+			doAlloc        = other.doAlloc;
+			doAllocAligned = other.doAllocAligned;
+			doRealloc      = other.doRealloc;
+			doFree         = other.doFree;
+
+			// Refresh typeId on this's existing entry in case of slicing
+			// from a derived source. Do NOT touch other's entry: ~Arena()
+			auto& registry = GetArenaRegistry();
+			// will remove it when the source is destroyed.
+			std::unique_lock lock(registry.arenasMutex);
+			for (auto* arena : registry.arenas)
+			{
+				if (arena == &other)
+				{
+					arena = this;
+					break;
+				}
+			}
+		}
+		return *this;
 	}
 
 	ChildArena::ChildArena(Arena* inParent) : parent{inParent}
@@ -282,11 +334,15 @@ namespace p
 	}
 
 
-	TView<const RegisteredArenaPtr> GetAllArenas()
+	void GetAllArenas(TArray<const Arena*>& arenas)
 	{
-		std::shared_lock lock(arenasMutex);
-		arenasSnapshot = arenas;
-		return {arenasSnapshot.data(), static_cast<i32>(arenasSnapshot.size())};
+		auto& registry = GetArenaRegistry();
+		std::shared_lock lock(registry.arenasMutex);
+		arenas.ReserveMore(registry.arenas.size());
+		for (const auto* arena : registry.arenas)
+		{
+			arenas.Add(arena);
+		}
 	}
 
 #pragma endregion Arena

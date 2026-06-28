@@ -480,8 +480,8 @@ namespace p
 		Arena(const Arena&)            = delete;
 		Arena& operator=(const Arena&) = delete;
 
-		Arena(Arena&&)            = default;
-		Arena& operator=(Arena&&) = default;
+		Arena(Arena&& other) noexcept;
+		Arena& operator=(Arena&& other) noexcept;
 
 
 		void* Alloc(sizet size)
@@ -539,14 +539,8 @@ namespace p
 		}
 	};
 
-	struct P_API RegisteredArenaPtr
-	{
-		Arena* arena = nullptr;
-		TypeId typeId;
-	};
-
-	// Global arena registry - thread-safe, used by debugger
-	P_API TView<const RegisteredArenaPtr> GetAllArenas();
+	// Fills outArenas with pointers to all live registered arenas. Thread-safe.
+	P_API void GetAllArenas(TArray<const Arena*>& outArenas);
 #pragma endregion Arena
 
 #pragma region STL Allocator

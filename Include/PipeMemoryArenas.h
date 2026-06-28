@@ -4,6 +4,7 @@
 
 #include "Pipe/Memory/MemoryStats.h"
 #include "PipeMemory.h"
+#include "PipeReflect.h"
 
 
 namespace p
@@ -13,8 +14,11 @@ namespace p
 	 * It serves the single purpose of documenting an Arena's interface.
 	 * Not intended to be used.
 	 */
-	class P_API DummyArena : public Arena
+	struct P_API DummyArena : public Arena
 	{
+		using Super = Arena;
+		P_STRUCT(DummyArena)
+
 	public:
 		DummyArena()
 		{
@@ -45,8 +49,11 @@ namespace p
 #pragma endregion Dummy Arena
 
 #pragma region Heap Arena
-	class P_API HeapArena : public Arena
+	struct P_API HeapArena : public Arena
 	{
+		using Super = Arena;
+		P_STRUCT(HeapArena)
+
 	private:
 		MemoryStats stats;
 
@@ -78,8 +85,11 @@ namespace p
 	 * Individual allocations can't be freed. It can
 	 * be resized, but never smaller than its used size.
 	 */
-	class P_API MonoLinearArena : public ChildArena
+	struct P_API MonoLinearArena : public ChildArena
 	{
+		using Super = ChildArena;
+		P_STRUCT(MonoLinearArena)
+
 	private:
 		MemoryStats stats;
 
@@ -137,8 +147,11 @@ namespace p
 	// TMonoLinearArena works like a MonoLinearArena but providing a block on the stack as the block
 	// to use
 	template<sizet blockSize = Memory::MB>
-	class P_API TMonoLinearArena : public MonoLinearArena
+	struct P_API TMonoLinearArena : public MonoLinearArena
 	{
+		using Super = MonoLinearArena;
+		P_STRUCT(TMonoLinearArena)
+
 		u8 buffer[blockSize];
 
 
@@ -195,6 +208,14 @@ namespace p
 			{
 				return (u8*)block + blockSize;
 			}
+
+			void GetBlocks(TArray<ArenaBlock>& outBlocks) const
+			{
+				for (LinearBlock* b = freeBlock; b != nullptr; b = b->last)
+				{
+					outBlocks.Add(ArenaBlock{b, blockSize});
+				}
+			}
 		};
 
 		struct P_API LinearSmallPool : public LinearBasePool<1 * Memory::MB>
@@ -225,6 +246,9 @@ namespace p
 	 */
 	struct P_API MultiLinearArena : public ChildArena
 	{
+		using Super = ChildArena;
+		P_STRUCT(MultiLinearArena)
+
 	protected:
 		Details::LinearSmallPool smallPool;
 		Details::LinearMediumPool mediumPool;
@@ -252,6 +276,13 @@ namespace p
 
 		void Grow(sizet size, sizet align = 0);
 
+		void GetBlocks(TArray<ArenaBlock>& outBlocks) const override
+		{
+			smallPool.GetBlocks(outBlocks);
+			mediumPool.GetBlocks(outBlocks);
+			bigPool.GetBlocks(outBlocks);
+		}
+
 	protected:
 		TypeId ProvideTypeId() const override
 		{
@@ -261,8 +292,11 @@ namespace p
 #pragma endregion Multi Linear
 
 #pragma region Best Fit Arena
-	class P_API BestFitArena : public ChildArena
+	struct P_API BestFitArena : public ChildArena
 	{
+		using Super = ChildArena;
+		P_STRUCT(BestFitArena)
+
 	public:
 		struct Slot
 		{
@@ -342,6 +376,14 @@ namespace p
 			return freeSlots;
 		}
 
+		void GetBlocks(TArray<ArenaBlock>& outBlocks) const override
+		{
+			if (block.IsAllocated())
+			{
+				outBlocks.Add(block);
+			}
+		}
+
 	private:
 		i32 FindSmallestSlot(sizet neededSize);
 		void ReduceSlot(
@@ -357,8 +399,11 @@ namespace p
 #pragma endregion Best Fit Arena
 
 #pragma region Big Best Fit Arena
-	class P_API BigBestFitArena : public ChildArena
+	struct P_API BigBestFitArena : public ChildArena
 	{
+		using Super = ChildArena;
+		P_STRUCT(BigBestFitArena)
+
 	public:
 		struct AllocationHeader
 		{
@@ -424,6 +469,14 @@ namespace p
 		const TArray<Slot>& GetFreeSlots() const
 		{
 			return freeSlots;
+		}
+
+		void GetBlocks(TArray<ArenaBlock>& outBlocks) const override
+		{
+			if (block.IsAllocated())
+			{
+				outBlocks.Add(block);
+			}
 		}
 
 		void* GetAllocationStart(void* ptr) const
