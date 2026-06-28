@@ -19,10 +19,10 @@ namespace p
 	using WStringView = TStringView<WideChar>;
 
 
-	enum class FindDirection : u8
+	enum class FindDir : u8
 	{
-		Front,
-		Back
+		Front,    // Search from the front of the string
+		Back      // Search from the back of the string
 	};
 
 	/**
@@ -32,22 +32,26 @@ namespace p
 	namespace Strings
 	{
 		// BEGIN Any Char API
+
+		/**
+		 * @param negate to search until char is not found
+		 */
 		template<typename CharType>
 		constexpr sizet Find(const TStringView<CharType> str, const CharType c,
-		    FindDirection direction = FindDirection::Front)
+		    FindDir direction = FindDir::Front, bool negate = false)
 		{
-			if (direction == FindDirection::Front)
+			if (direction == FindDir::Front)
 			{
-				return str.find(c);
+				return negate ? str.find_first_not_of(c) : str.find_first_of(c);
 			}
-			return str.rfind(c);
+			return negate ? str.find_last_not_of(c) : str.find_last_of(c);
 		}
 
 		template<typename CharType>
 		constexpr sizet Find(const TStringView<CharType> str, const TStringView<CharType> subStr,
-		    FindDirection direction = FindDirection::Front)
+		    FindDir direction = FindDir::Front)
 		{
-			if (direction == FindDirection::Front)
+			if (direction == FindDir::Front)
 			{
 				return str.find(subStr);
 			}
@@ -55,15 +59,15 @@ namespace p
 		}
 
 		template<typename CharType>
-		constexpr bool Contains(const TStringView<CharType> str, const CharType c,
-		    FindDirection direction = FindDirection::Front)
+		constexpr bool Contains(
+		    const TStringView<CharType> str, const CharType c, FindDir direction = FindDir::Front)
 		{
 			return Find(str, c, direction) != TStringView<CharType>::npos;
 		}
 
 		template<typename CharType>
 		constexpr bool Contains(const TStringView<CharType> str, const TStringView<CharType> subStr,
-		    FindDirection direction = FindDirection::Front)
+		    FindDir direction = FindDir::Front)
 		{
 			return Find(str, subStr, direction) != TStringView<CharType>::npos;
 		}
@@ -190,26 +194,26 @@ namespace p
 		// BEGIN char API
 		// Specializations to avoid requiring <char> on function calls
 
-		P_API constexpr sizet Find(
-		    const StringView str, const char c, FindDirection direction = FindDirection::Front)
+		P_API constexpr sizet Find(const StringView str, const char c,
+		    FindDir direction = FindDir::Front, bool negate = false)
 		{
-			return Find<char>(str, c, direction);
+			return Find<char>(str, c, direction, negate);
 		}
 
-		P_API constexpr sizet Find(const StringView str, const StringView subStr,
-		    FindDirection direction = FindDirection::Front)
+		P_API constexpr sizet Find(
+		    const StringView str, const StringView subStr, FindDir direction = FindDir::Front)
 		{
 			return Find<char>(str, subStr, direction);
 		}
 
 		P_API constexpr bool Contains(
-		    const StringView str, const char c, FindDirection direction = FindDirection::Front)
+		    const StringView str, const char c, FindDir direction = FindDir::Front)
 		{
 			return Contains<char>(str, c, direction);
 		}
 
-		P_API constexpr bool Contains(const StringView str, const StringView subStr,
-		    FindDirection direction = FindDirection::Front)
+		P_API constexpr bool Contains(
+		    const StringView str, const StringView subStr, FindDir direction = FindDir::Front)
 		{
 			return Contains<char>(str, subStr, direction);
 		}

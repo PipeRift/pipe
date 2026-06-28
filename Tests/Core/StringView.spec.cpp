@@ -92,16 +92,21 @@ go_bandit([]()
 				StringView v{"Kiwiwi"};
 
 				// Find Chars
-				AssertThat(Strings::Find(v, 'K', FindDirection::Front), Equals(0));
-				AssertThat(Strings::Find(v, 'K', FindDirection::Back), Equals(0));
-				AssertThat(Strings::Find(v, 'i', FindDirection::Front), Equals(1));
-				AssertThat(Strings::Find(v, 'i', FindDirection::Back), Equals(5));
+				AssertThat(Strings::Find(v, 'K', FindDir::Front), Equals(0));
+				AssertThat(Strings::Find(v, 'K', FindDir::Back), Equals(0));
+				AssertThat(Strings::Find(v, 'i', FindDir::Front), Equals(1));
+				AssertThat(Strings::Find(v, 'i', FindDir::Back), Equals(5));
+				// Find last chars
+				AssertThat(Strings::Find(v, 'w', FindDir::Front, true), Equals(0));    // 'K'
+				AssertThat(Strings::Find(v, 'w', FindDir::Back, true), Equals(5));     // 'i'
+				AssertThat(Strings::Find(v, 'K', FindDir::Front, true), Equals(1));    // 'i'
+				AssertThat(Strings::Find(v, 'i', FindDir::Back, true), Equals(4));     // 'w'
 
 				// Find Sub-strings
-				AssertThat(Strings::Find(v, "Ki", FindDirection::Front), Equals(0));
-				AssertThat(Strings::Find(v, "Ki", FindDirection::Back), Equals(0));
-				AssertThat(Strings::Find(v, "wi", FindDirection::Front), Equals(2));
-				AssertThat(Strings::Find(v, "wi", FindDirection::Back), Equals(4));
+				AssertThat(Strings::Find(v, "Ki", FindDir::Front), Equals(0));
+				AssertThat(Strings::Find(v, "Ki", FindDir::Back), Equals(0));
+				AssertThat(Strings::Find(v, "wi", FindDir::Front), Equals(2));
+				AssertThat(Strings::Find(v, "wi", FindDir::Back), Equals(4));
 			});
 		});
 	});

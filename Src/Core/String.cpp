@@ -140,17 +140,10 @@ namespace p::Strings
 		const u32 scale        = u32(FloorToI64(scaleD));
 		const double finalSize = double(size) / Pow(1024, scale);
 
-		String sizeStr       = Format("{:.1f}", finalSize);
-		u32 numTrailingZeros = 0;
-		for (u32 i = u32(sizeStr.size()) - 1; i >= 0; --i)
-		{
-			if (sizeStr[i] == '0')
-			{
-				++numTrailingZeros;
-			}
-			break;
-		}
-		RemoveFromEnd(sizeStr, numTrailingZeros);
+		String sizeStr = Format("{:.1f}", finalSize);
+		// Remove trailing zeros
+		RemoveFromEnd(sizeStr, sizeStr.size() - Find(sizeStr, '0', FindDir::Back, true) - 1);
+		RemoveFromEnd(sizeStr, sizeStr.size() - Find(sizeStr, '.', FindDir::Back, true) - 1);
 
 		return Format("{}{}", sizeStr, sizes[scale]);
 	}
