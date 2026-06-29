@@ -8,7 +8,7 @@ namespace p
 #pragma region Heap Arena
 	HeapArena::HeapArena()
 	{
-		stats.name = "Heap Arena";
+		stats.name = "Heap";
 		Interface<HeapArena>();
 	}
 

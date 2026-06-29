@@ -38,7 +38,7 @@ namespace p
 
 	struct P_API MemoryStats
 	{
-		const char* name = "Arena";
+		const char* name = nullptr;
 
 		sizet used      = 0;
 		sizet available = 0;

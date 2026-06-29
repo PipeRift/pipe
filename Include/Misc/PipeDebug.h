@@ -264,7 +264,6 @@ namespace p
 		struct ArenaSnapshot
 		{
 			const Arena* arena = nullptr;
-			TypeId typeId;
 			// Minimum allocated address
 			const u8* begin = nullptr;
 			// Maximum allocated address (exclusive)
@@ -273,6 +272,9 @@ namespace p
 			sizet used     = 0;
 			TArray<ArenaBlock> blocks;
 			TArray<sizet> blockSizes;
+			Tag name;
+			TypeId typeId;
+			Tag typeName;
 		};
 		TArray<ArenaSnapshot> snapshots;
 	};
@@ -2185,40 +2187,36 @@ namespace p
 				continue;
 			}
 
-			DebugMemoryContext::ArenaSnapshot info;
-			info.arena  = arena;
-			info.typeId = arena->GetTypeId();
+			DebugMemoryContext::ArenaSnapshot snapshot;
+			snapshot.arena    = arena;
+			snapshot.typeId   = arena->GetTypeId();
+			snapshot.typeName = GetTypeName(snapshot.typeId);
 
 			// Get blocks
-			arena->GetBlocks(info.blocks);
-			for (const auto& block : info.blocks)
+			arena->GetBlocks(snapshot.blocks);
+			for (const auto& block : snapshot.blocks)
 			{
-				if (!info.begin || block.data < info.begin)
+				if (!snapshot.begin || block.data < snapshot.begin)
 				{
-					info.begin = (u8*)block.data;
+					snapshot.begin = (u8*)block.data;
 				}
 				const u8* blockEnd = (u8*)block.data + block.size;
-				if (!info.end || blockEnd > info.end)
+				if (!snapshot.end || blockEnd > snapshot.end)
 				{
-					info.end = blockEnd;
+					snapshot.end = blockEnd;
 				}
-				info.capacity += block.size;
+				snapshot.capacity += block.size;
 			}
 
 			// Get stats if available
 			const auto* stats = arena->GetStats();
 			if (stats)
 			{
-				// Read summary counters under a brief shared lock.
-				// We do NOT copy the allocations/freedAllocations TArrays here —
-				// their copy-assignment would allocate from the current arena, which
-				// (when the arena being debugged IS the current arena) recurses into
-				// stats.Add() and deadlocks on the same mutex.
-				std::shared_lock<std::shared_mutex> statsLock(stats->mutex);
-				info.used = stats->used;
+				snapshot.name = Tag(stats->name);
+				snapshot.used = stats->used;
 			}
 
-			memoryDbg.snapshots.Add(info);
+			memoryDbg.snapshots.Add(snapshot);
 		}
 
 		// Sort by block address for consistent rendering
@@ -3001,31 +2999,44 @@ namespace p
 				if (colRect.Contains(ImGui::GetIO().MousePos))
 				{
 					ImGui::BeginTooltip();
-					String type{GetTypeName(info.typeId)};
-					ImGui::Text("Arena: %s", type.c_str());
-					ImGui::Text("Block: 0x%llX", reinterpret_cast<sizet>(info.begin));
-					const String sizeStr = Strings::ParseMemorySize(info.capacity);
-					ImGui::Text("Size: %s (%zuB)", sizeStr.data(), info.capacity);
+					ImGui::SeparatorText("Arena");
+					ImGui::Text("Name: %s (%s)", info.name.Data(), info.typeName.Data());
+					ImGui::Text("Range: 0x%llX - 0x%llX", reinterpret_cast<sizet>(info.begin),
+					    reinterpret_cast<sizet>(info.begin) + info.capacity);
+					static String sizeStr;
+					if (info.capacity > 0)
+					{
+						sizeStr = Strings::ParseMemorySize(info.capacity);
+						ImGui::Text("Capacity: %s (%zuB)", sizeStr.data(), info.capacity);
+					}
 					if (info.used > 0)
 					{
+						sizeStr         = Strings::ParseMemorySize(info.used);
+						const float cof = (info.capacity > 0) ? info.used / info.capacity : 0;
 						ImGui::Text(
-						    "Used: %zu (%.1f%%)", info.used, 100.0f * info.used / info.capacity);
+						    "Used: %s (%.1f%%  %zuB)", sizeStr.c_str(), 100.0f * cof, info.used);
 					}
 					ImGui::EndTooltip();
 				}
 
 				// Column header (vertical, drawn LAST so rects/markers don't cover it)
-				static String arenaTypeName;
-				arenaTypeName = GetTypeName(info.typeId);
-				if (!arenaTypeName.empty())
+				const char* name = info.name.Data();
+				bool nameIsType  = false;
+				if (!name)
 				{
-					const float nameExtent = ImGui::CalcTextSize(arenaTypeName.c_str()).x;
+					name       = info.typeName.Data();
+					nameIsType = true;
+				}
+				if (name)
+				{
+					p::Color color{220, 220, 220};
+					const float nameExtent = ImGui::CalcTextSize(name).x;
 					const float fontHeight = ImGui::GetTextLineHeight();
 					// Center horizontally: strip extends right by ~fontHeight from pos.x
 					const float stripX = colX + (colW - fontHeight) * 0.5f;
 					details::AddTextVertical(drawList,
 					    ImVec2(stripX, addressY0 + 4.0f + nameExtent),
-					    p::Color{220, 220, 220}.DWColor(), arenaTypeName.c_str());
+					    (nameIsType ? color : color.Tint(0.5f)).DWColor(), name);
 				}
 			}
 
@@ -3110,10 +3121,13 @@ namespace p
 						const sizet offset = hoverAddr - reinterpret_cast<sizet>(hit->begin);
 						ImGui::Text("Offset: 0x%llX (%zuB)",
 						    static_cast<unsigned long long>(offset), static_cast<size_t>(offset));
-						if (hit->used > 0 || hit->capacity > 0)
+						if (hit->used > 0)
 						{
-							ImGui::Text("Used: %zu (%.1f%%)", hit->used,
-							    100.0f * hit->used / hit->capacity);
+							static String sizeStr;
+							sizeStr         = Strings::ParseMemorySize(hit->used);
+							const float cof = (hit->capacity > 0) ? hit->used / hit->capacity : 0;
+							ImGui::Text("Used: %s (%.1f%%  %zuB)", sizeStr.c_str(), 100.0f * cof,
+							    hit->used);
 						}
 					}
 					ImGui::EndTooltip();
@@ -3446,26 +3460,22 @@ namespace p
 				{
 					detailsLabel = GetTypeName(selectedArena->typeId);
 					ImGui::Text("Type: %s", detailsLabel.c_str());
-					ImGui::Text("Block: 0x%llX - 0x%llX",
-					    static_cast<unsigned long long>(
-					        reinterpret_cast<sizet>(selectedArena->begin)),
-					    static_cast<unsigned long long>(
-					        reinterpret_cast<sizet>(selectedArena->begin)
-					        + selectedArena->capacity));
+					ImGui::Text("Range: 0x%llX - 0x%llX",
+					    reinterpret_cast<sizet>(selectedArena->begin),
+					    reinterpret_cast<sizet>(selectedArena->begin) + selectedArena->capacity);
+					ImGui::SeparatorText("Usage");
+					if (selectedArena->capacity > 0)
 					{
-						const String sizeStr = Strings::ParseMemorySize(selectedArena->capacity);
-						ImGui::Text("Size: %s (%zuB)", sizeStr.data(), selectedArena->capacity);
+						sizeStr = Strings::ParseMemorySize(selectedArena->capacity);
+						ImGui::Text("Capacity: %s (%zuB)", sizeStr.data(), selectedArena->capacity);
 					}
-					if (selectedArena->used > 0 || selectedArena->capacity > 0)
+					if (selectedArena->used > 0)
 					{
-						ImGui::SeparatorText("Usage");
-						const sizet free = selectedArena->capacity - selectedArena->used;
-						const float usedPct =
-						    100.0f * selectedArena->used / selectedArena->capacity;
-						sizeStr = Strings::ParseMemorySize(selectedArena->used);
-						ImGui::Text("Used: %s (%.1f%%)", sizeStr.data(), usedPct);
-						sizeStr = Strings::ParseMemorySize(free);
-						ImGui::Text("Free: %s (%.1f%%)", sizeStr.data(), 100.0f - usedPct);
+						const float usedPct = (selectedArena->capacity > 0)
+						                        ? selectedArena->used / selectedArena->capacity
+						                        : 0;
+						sizeStr             = Strings::ParseMemorySize(selectedArena->used);
+						ImGui::Text("Used: %s (%.1f%%)", sizeStr.c_str(), 100.f * usedPct);
 						ImGui::ProgressBar(usedPct / 100.0f);
 					}
 					detailsLabel.clear();
