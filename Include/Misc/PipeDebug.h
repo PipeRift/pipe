@@ -2325,8 +2325,8 @@ namespace p
 			{
 				const double targetStart = static_cast<double>(memoryDbg.viewStart);
 				const double targetRange = memoryDbg.viewRange;
-				const double dt           = ImGui::GetIO().DeltaTime;
-				const double alpha        = 1.0 - std::exp(-25.0 * dt);
+				const double dt          = ImGui::GetIO().DeltaTime;
+				const double alpha       = 1.0 - std::exp(-25.0 * dt);
 
 				if (memoryDbg.smoothViewRange < 0.0)
 				{
@@ -2860,7 +2860,7 @@ namespace p
 				{
 					ImGui::BeginTooltip();
 					ImGui::Text("Arena: %s", arenaTypeName.data());
-					ImGui::Text("Block: 0x%p", info.blockBegin);
+					ImGui::Text("Block: 0x%llX", info.blockBegin);
 					const String sizeStr = Strings::ParseMemorySize(info.blockSize);
 					ImGui::Text("Size: %s (%zuB)", sizeStr.data(), info.blockSize);
 					if (info.usedSize > 0 || info.freeSize > 0)
@@ -3033,8 +3033,9 @@ namespace p
 				{
 					if (ImGui::GetIO().KeyAlt)
 					{
-						// Alt+wheel: pan horizontally (one notch ≈ 5% of visible range)
-						// Wheel up/right → view advances to higher addresses.
+						// Alt+wheel: pan horizontally (one notch ≈ 5% of visible range,
+						// smaller intervals for fine control). Wheel up/right →
+						// view advances to higher addresses.
 						const double addrDelta = static_cast<double>(wheel) * viewRange * 0.05;
 						memoryDbg.viewStart    = static_cast<uintptr_t>(viewStart + addrDelta);
 					}
@@ -3092,16 +3093,17 @@ namespace p
 			// Drag to pan — middle mouse button only.
 			// Left-drag is reserved for area selection.
 			// Drag right → view moves to LOWER addresses (grab/inverted model:
-			// the content follows the mouse, like dragging a map).
+			// the content follows the mouse, like dragging a map). Snap the
+			// smooth position directly so the drag feels instant (no lerp lag).
 			if (graphRect.Contains(ImGui::GetIO().MousePos) && ImGui::IsMouseDragging(2))
 			{
-				// Cancel any in-progress zoom coupling so pan works normally.
 				memoryDbg.isZooming = false;
 				const float dx      = ImGui::GetIO().MouseDelta.x;
 				if (dx != 0.0f)
 				{
-					const double addrDelta = -static_cast<double>(dx) / graphW * viewRange;
-					memoryDbg.viewStart    = static_cast<uintptr_t>(viewStart + addrDelta);
+					const double addrDelta    = -static_cast<double>(dx) / graphW * viewRange;
+					memoryDbg.viewStart       = static_cast<uintptr_t>(viewStart + addrDelta);
+					memoryDbg.smoothViewStart = static_cast<double>(memoryDbg.viewStart);
 				}
 			}
 		}
@@ -3117,7 +3119,7 @@ namespace p
 			ImGui::Separator();
 
 			ImGui::Text("Type: %s", GetTypeName(selectedInfo->typeId).data());
-			ImGui::Text("Block: 0x%p - 0x%p", selectedInfo->blockBegin,
+			ImGui::Text("Block: 0x%llX - 0x%llX", selectedInfo->blockBegin,
 			    static_cast<u8*>(selectedInfo->blockBegin) + selectedInfo->blockSize);
 			{
 				const String sizeStr = Strings::ParseMemorySize(selectedInfo->blockSize);
@@ -3141,8 +3143,10 @@ namespace p
 			for (int b = 0; b < selectedInfo->blocks.Size(); ++b)
 			{
 				char blockLabel[128];
-				snprintf(blockLabel, sizeof(blockLabel), "Block %d: 0x%p (%zuB)", b,
-				    selectedInfo->blocks[b], selectedInfo->blockSizes[b]);
+				static String sizeStr;
+				sizeStr = Strings::ParseMemorySize(selectedInfo->blockSizes[b]);
+				snprintf(blockLabel, sizeof(blockLabel), "Block %d: 0x%llX | %s (%zuB)", b,
+				    selectedInfo->blocks[b], sizeStr.data(), selectedInfo->blockSizes[b]);
 				ImGui::BulletText("%s", blockLabel);
 			}
 
