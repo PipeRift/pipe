@@ -206,6 +206,12 @@ namespace p
 		i32 selectedArena = -1;
 		bool showHex      = true;
 		bool showAscii    = true;
+		i32 bytesPerLine  = 1;
+
+		bool showDetails  = true;
+		bool resetLayout  = true;
+		ImGuiID graphDockId    = 0;
+		ImGuiID detailsDockId  = 0;
 
 		// Absolute view state (stable across reallocations of the timeline).
 		// viewStart: target left-edge address (set by user input, clamped to data).
@@ -2034,6 +2040,126 @@ namespace p
 			draw->PathLineTo(ImVec2(x, y1));
 			draw->PathStroke(color, 0, 1.0f);
 		}
+
+		// Draw `text` vertically. Uses only public ImGui APIs
+		// (ImGui::GetFont, ImFont::GetFontBaked, ImFontBaked::FindGlyph, and
+		// ImDrawList::PrimReserve/PrimQuadUV/PrimUnreserve) so the file
+		// compiles without imgui_internal.h.
+
+		// Bottom-to-top: pos is the screen position of the BOTTOM-LEFT corner
+		// of the first glyph. The text rises upward from there. Each glyph's
+		// top face points RIGHT (tilt head right to read).
+		static void AddTextVertical(ImDrawList* draw, ImVec2 pos, ImU32 col, const char* text_begin,
+		    const char* text_end = nullptr)
+		{
+			if (!text_end)
+			{
+				text_end = text_begin + strlen(text_begin);
+			}
+			if (text_begin == text_end || draw == nullptr)
+			{
+				return;
+			}
+			ImFont* imguiFont   = ImGui::GetFont();
+			float imguiFontSize = ImGui::GetFontSize();
+			if (imguiFont == nullptr)
+			{
+				return;
+			}
+			ImFontBaked* font = imguiFont->GetFontBaked(imguiFontSize);
+			if (font == nullptr)
+			{
+				return;
+			}
+			const float scale = imguiFontSize / font->Size;
+			v2 cursor         = v2{RoundToZero(pos.x), RoundToZero(pos.y)};
+			const char* s     = text_begin;
+			int chars_exp     = (int)(text_end - s);
+			int chars_rnd     = 0;
+			const int vtx_count_max = chars_exp * 4;
+			const int idx_count_max = chars_exp * 6;
+			draw->PrimReserve(idx_count_max, vtx_count_max);
+			while (s < text_end)
+			{
+				const unsigned int c = (unsigned int)*s;
+				s += 1;
+				const ImFontGlyph* glyph = font->FindGlyph((ImWchar)c);
+				if (glyph == nullptr)
+				{
+					continue;
+				}
+				// Bottom-to-top rotation: glyph X axis maps to screen Y
+				// (negated), glyph Y axis maps to screen X.
+				const v2 p0 = cursor + v2{glyph->Y0, -glyph->X0} * scale;
+				const v2 p1 = cursor + v2{glyph->Y0, -glyph->X1} * scale;
+				const v2 p2 = cursor + v2{glyph->Y1, -glyph->X1} * scale;
+				const v2 p3 = cursor + v2{glyph->Y1, -glyph->X0} * scale;
+				draw->PrimQuadUV(ToIM(p0), ToIM(p1), ToIM(p2), ToIM(p3),
+				    ToIM(v2{glyph->U0, glyph->V0}), ToIM(v2{glyph->U1, glyph->V0}),
+				    ToIM(v2{glyph->U1, glyph->V1}), ToIM(v2{glyph->U0, glyph->V1}), col);
+				cursor.y -= glyph->AdvanceX * scale;
+				chars_rnd++;
+			}
+			int chars_skp = chars_exp - chars_rnd;
+			draw->PrimUnreserve(chars_skp * 6, chars_skp * 4);
+		}
+
+		// Top-to-bottom: pos is the TOP-LEFT corner of the first glyph. Text
+		// descends downward. Each glyph's top face points RIGHT.
+		static void AddTextVerticalTopDown(ImDrawList* draw, ImVec2 pos, ImU32 col,
+		    const char* text_begin, const char* text_end = nullptr)
+		{
+			if (!text_end)
+			{
+				text_end = text_begin + strlen(text_begin);
+			}
+			if (text_begin == text_end || draw == nullptr)
+			{
+				return;
+			}
+			ImFont* imguiFont   = ImGui::GetFont();
+			float imguiFontSize = ImGui::GetFontSize();
+			if (imguiFont == nullptr)
+			{
+				return;
+			}
+			ImFontBaked* font = imguiFont->GetFontBaked(imguiFontSize);
+			if (font == nullptr)
+			{
+				return;
+			}
+			const float scale = imguiFontSize / font->Size;
+			v2 cursor         = v2{RoundToZero(pos.x), RoundToZero(pos.y)};
+			const char* s     = text_begin;
+			int chars_exp     = (int)(text_end - s);
+			int chars_rnd     = 0;
+			const int vtx_count_max = chars_exp * 4;
+			const int idx_count_max = chars_exp * 6;
+			draw->PrimReserve(idx_count_max, vtx_count_max);
+			while (s < text_end)
+			{
+				const unsigned int c = (unsigned int)*s;
+				s += 1;
+				const ImFontGlyph* glyph = font->FindGlyph((ImWchar)c);
+				if (glyph == nullptr)
+				{
+					continue;
+				}
+				// Top-to-bottom rotation: glyph X axis maps to screen Y,
+				// glyph Y axis maps to screen X (negated).
+				const v2 p0 = cursor + v2{-glyph->Y0, glyph->X0} * scale;
+				const v2 p1 = cursor + v2{-glyph->Y0, glyph->X1} * scale;
+				const v2 p2 = cursor + v2{-glyph->Y1, glyph->X1} * scale;
+				const v2 p3 = cursor + v2{-glyph->Y1, glyph->X0} * scale;
+				draw->PrimQuadUV(ToIM(p0), ToIM(p1), ToIM(p2), ToIM(p3),
+				    ToIM(v2{glyph->U0, glyph->V0}), ToIM(v2{glyph->U1, glyph->V0}),
+				    ToIM(v2{glyph->U1, glyph->V1}), ToIM(v2{glyph->U0, glyph->V1}), col);
+				cursor.y += glyph->AdvanceX * scale;
+				chars_rnd++;
+			}
+			int chars_skp = chars_exp - chars_rnd;
+			draw->PrimUnreserve(chars_skp * 6, chars_skp * 4);
+		}
 	}    // namespace details
 
 	void DrawMemory(const char* label, bool* open, ImGuiWindowFlags flags)
@@ -2111,62 +2237,52 @@ namespace p
 			ImGui::End();
 			return;
 		}
-		// Menu bar
+
+		// Menu bar — selection inputs, focus button, arena count, help, settings.
 		if (ImGui::BeginMenuBar())
 		{
-			ImGui::MenuItem("Hex", nullptr, &memoryDbg.showHex);
-			ImGui::MenuItem("ASCII", nullptr, &memoryDbg.showAscii);
-			// Selection range display (replaces the old "Go to" input).
-			// Two read-only text fields (no visible label — ## prefix hides it)
-			// showing the start and end of the current selection, followed by a
-			// "Focus selection" button. Single click on the graph = single byte
-			// (start == end); drag = range.
+			// Selection range (read-only inputs)
+			char startBuf[32] = "";
+			char endBuf[32]   = "";
+			if (memoryDbg.selectionValid)
 			{
-				char startBuf[32];
-				char endBuf[32];
-				startBuf[0] = '\0';
-				endBuf[0]   = '\0';
-				if (memoryDbg.selectionValid)
+				snprintf(startBuf, sizeof(startBuf), "0x%llX",
+				    static_cast<unsigned long long>(memoryDbg.selectionStart));
+				snprintf(endBuf, sizeof(endBuf), "0x%llX",
+				    static_cast<unsigned long long>(memoryDbg.selectionEnd));
+			}
+			ImGui::SetNextItemWidth(110.0f);
+			ImGui::InputText("##selStart", startBuf, sizeof(startBuf),
+			    ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(110.0f);
+			ImGui::InputText("##selEnd", endBuf, sizeof(endBuf),
+			    ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
+			ImGui::SameLine();
+			if (ImGui::Button("Focus selection"))
+			{
+				if (memoryDbg.selectionValid
+				    && memoryDbg.selectionEnd >= memoryDbg.selectionStart)
 				{
-					snprintf(startBuf, sizeof(startBuf), "0x%llX",
-					    static_cast<unsigned long long>(memoryDbg.selectionStart));
-					snprintf(endBuf, sizeof(endBuf), "0x%llX",
-					    static_cast<unsigned long long>(memoryDbg.selectionEnd));
-				}
-				ImGui::SetNextItemWidth(110.0f);
-				ImGui::InputText("##selStart", startBuf, sizeof(startBuf),
-				    ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
-				ImGui::SameLine();
-				ImGui::SetNextItemWidth(110.0f);
-				ImGui::InputText("##selEnd", endBuf, sizeof(endBuf),
-				    ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
-				ImGui::SameLine();
-				if (ImGui::Button("Focus selection"))
-				{
-					if (memoryDbg.selectionValid
-					    && memoryDbg.selectionEnd >= memoryDbg.selectionStart)
+					const uintptr_t s = memoryDbg.selectionStart;
+					const uintptr_t e = memoryDbg.selectionEnd;
+					const double size = static_cast<double>(e - s);
+					if (size <= 0.0)
 					{
-						const uintptr_t s = memoryDbg.selectionStart;
-						const uintptr_t e = memoryDbg.selectionEnd;
-						const double size = static_cast<double>(e - s);
-						if (size <= 0.0)
-						{
-							memoryDbg.viewRange = 64.0;
-							memoryDbg.viewStart = (s > 32) ? (s - 32) : 0;
-						}
-						else
-						{
-							memoryDbg.viewRange = size;
-							memoryDbg.viewStart = s;
-						}
-						memoryDbg.smoothViewStart = static_cast<double>(memoryDbg.viewStart);
-						memoryDbg.smoothViewRange = memoryDbg.viewRange;
-						memoryDbg.forceZoom       = true;
+						memoryDbg.viewRange = 64.0;
+						memoryDbg.viewStart = (s > 32) ? (s - 32) : 0;
 					}
+					else
+					{
+						memoryDbg.viewRange = size;
+						memoryDbg.viewStart = s;
+					}
+					memoryDbg.smoothViewStart = static_cast<double>(memoryDbg.viewStart);
+					memoryDbg.smoothViewRange = memoryDbg.viewRange;
+					memoryDbg.forceZoom       = true;
 				}
 			}
 			ImGui::SameLine();
-
 			ImGui::TextDisabled("Arenas: %d", static_cast<int>(memoryDbg.arenaInfos.Size()));
 			ImGui::TextDisabled("(?)");
 			if (ImGui::IsItemHovered())
@@ -2175,56 +2291,144 @@ namespace p
 				    "Middle mouse drag to pan\n"
 				    "Alt + Mouse wheel to pan\n"
 				    "Mouse wheel to zoom\n"
-				    "Click a row to select\n"
+				    "Click a column to select\n"
 				    "Double-click a block to focus it");
+			}
+
+			// Right-align Settings submenu
+			const char* settingsLabel = "Settings";
+			const float settingsW =
+			    ImGui::CalcTextSize(settingsLabel).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+			ImGui::SetCursorPosX(
+			    ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - settingsW);
+			if (ImGui::BeginMenu(settingsLabel))
+			{
+				ImGui::MenuItem("Hex", nullptr, &memoryDbg.showHex);
+				ImGui::MenuItem("ASCII", nullptr, &memoryDbg.showAscii);
+				ImGui::Separator();
+				ImGui::MenuItem("Details", nullptr, &memoryDbg.showDetails);
+				ImGui::Separator();
+				// Bytes/line combo: powers of 2 up to 32
+				{
+					const int   allowed[] = {1, 2, 4, 8, 16, 32};
+					const char* labels[]  = {"1", "2", "4", "8", "16", "32"};
+					int         current   = 0;
+					for (int i = 0; i < 6; ++i)
+					{
+						if (allowed[i] == memoryDbg.bytesPerLine)
+						{
+							current = i;
+							break;
+						}
+					}
+					ImGui::SetNextItemWidth(80.0f);
+					if (ImGui::Combo("Bytes/line", &current, labels, 6))
+					{
+						memoryDbg.bytesPerLine = allowed[current];
+					}
+				}
+				ImGui::Separator();
+				if (ImGui::MenuItem("Reset layout"))
+				{
+					memoryDbg.resetLayout = true;
+				}
+				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
 		}
 
-		// Calculate layout
-		const float detailsWidth = memoryDbg.selectedArena >= 0 ? 300.0f : 0.0f;
-		const float graphWidth   = ImGui::GetContentRegionAvail().x - detailsWidth;
-		const float graphHeight  = ImGui::GetContentRegionAvail().y;
-
-		// Horizontal: two distinct bands (HEX then ASCII) stacked below the ruler.
-		// Horizontal layout: two distinct bands (HEX then ASCII) stacked below
-		// the ruler. A 2px gap is added between adjacent bands so they are
-		// clearly delimited.
-		const float hexBandH   = memoryDbg.showHex ? 20.0f : 0.0f;
-		const float asciiBandH = memoryDbg.showAscii ? 20.0f : 0.0f;
-
-		const float bandGap       = (hexBandH > 0 && asciiBandH > 0) ? 2.0f : 0.0f;
-		const float hexLineHeight = hexBandH + bandGap + asciiBandH;
-
-		// Open the graph child — full interactable area (ruler + hex/ASCII + rows).
-		// Hex/ASCII and timeline are drawn inside this child so zoom/pan/select
-		// work everywhere within it.
-		ImGui::BeginChild("##graph", ImVec2(graphWidth, graphHeight), false);
+		// DockSpace — splits 0.5 (right) for Details, the rest for the View graph.
+		const ImGuiID dockspaceId = ImGui::GetID("MemoryDebuggerDockspace");
+		if (memoryDbg.resetLayout || ImGui::DockBuilderGetNode(dockspaceId) == nullptr)
 		{
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
-			ImVec2 canvasPos     = ImGui::GetCursorScreenPos();
+			memoryDbg.resetLayout = false;
+			ImGui::DockBuilderRemoveNode(dockspaceId);
+			ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_KeepAliveOnly);
+			ImGui::DockBuilderSplitNode(dockspaceId, ImGuiDir_Right, 0.5f,
+			    &memoryDbg.detailsDockId, &memoryDbg.graphDockId);
+			ImGui::DockBuilderGetNode(memoryDbg.graphDockId)->LocalFlags |=
+			    ImGuiDockNodeFlags_AutoHideTabBar;
+			// Re-dock windows (SetNextWindowDockID FirstUseEver is one-shot)
+			ImGui::DockBuilderDockWindow("View", memoryDbg.graphDockId);
+			if (memoryDbg.showDetails)
+			{
+				ImGui::DockBuilderDockWindow("Details", memoryDbg.detailsDockId);
+			}
+			ImGui::DockBuilderFinish(dockspaceId);
+		}
+		ImGui::DockSpace(dockspaceId, ImVec2{0.0f, 0.0f});
 
-			// Capture input over the whole graph so the parent window never
-			// starts a window-drag from a click here. canvasPos is captured
+		// Compute desired graph width so the View window first-use size fits the
+		// strips + all arena columns without horizontal scrolling.
+		{
+			const int   bytesPerLine  = (memoryDbg.bytesPerLine > 0) ? memoryDbg.bytesPerLine : 1;
+			const float charPx        = ImGui::CalcTextSize("0").x;
+			const float stripPad      = 4.0f;
+			const float hexStripW     = memoryDbg.showHex ? (charPx * 2.0f * bytesPerLine + stripPad * 2.0f) : 0.0f;
+			const float stringStripW  = memoryDbg.showAscii ? (charPx * 1.0f * bytesPerLine + stripPad * 2.0f) : 0.0f;
+			const float leftGap       = 4.0f;
+			const float colGap        = 4.0f;
+			constexpr float colW      = 32.0f;
+			const float timelineStripW = 32.0f;
+			const int   arenaCount    = memoryDbg.arenaInfos.Size();
+			const float desiredGraphW = timelineStripW + leftGap + hexStripW
+			    + (hexStripW > 0 ? leftGap : 0.0f) + stringStripW
+			    + (stringStripW > 0 ? leftGap : 0.0f)
+			    + (colW + colGap) * arenaCount + colGap + 32.0f;
+			ImGui::SetNextWindowSize(ImVec2(desiredGraphW, 400.0f), ImGuiCond_FirstUseEver);
+		}
+		if (ImGui::Begin("View", nullptr))
+		{
+			ImDrawList* drawList  = ImGui::GetWindowDrawList();
+			ImVec2      canvasPos = ImGui::GetCursorScreenPos();
+			ImVec2      canvasSize = ImGui::GetContentRegionAvail();
+			// Capture input over the whole View so the parent never starts a
+			// window-drag from a click inside the graph. canvasPos is captured
 			// BEFORE the button (the button advances the cursor).
-			ImGui::InvisibleButton("##graph_input", ImVec2(graphWidth, graphHeight));
+			ImGui::InvisibleButton("##graph_input", canvasSize);
 			ImGui::SetCursorPos(ImVec2(0.0f, 0.0f));
-			ImVec2 canvasSize = ImGui::GetContentRegionAvail();
 
-			// Graph area spans the full child width (hex/ASCII bands are
-			// stacked below the ruler, not beside it).
-			const float graphX0 = canvasPos.x;
-			const float graphW  = canvasSize.x;
+			// Full interactable area of the View (declared early for hit-tests)
+			const ImRect graphRect(canvasPos, canvasPos + canvasSize);
 
-			// Find address range across all blocks
+			// ----- Layout vars -----
+			const float timelineStripW = 32.0f;
+			const int   bytesPerLine  = (memoryDbg.bytesPerLine > 0) ? memoryDbg.bytesPerLine : 1;
+			const float charPx        = ImGui::CalcTextSize("0").x;
+			const float stripPad      = 4.0f;
+			const float hexStripW     = memoryDbg.showHex ? (charPx * 2.0f * bytesPerLine + stripPad * 2.0f) : 0.0f;
+			const float stringStripW  = memoryDbg.showAscii ? (charPx * 1.0f * bytesPerLine + stripPad * 2.0f) : 0.0f;
+			const float leftGap       = 4.0f;
+			const float colGap        = 4.0f;
+			constexpr float colMaxW   = 32.0f;
+			const float colAreaX0     = canvasPos.x + timelineStripW + leftGap + hexStripW
+			    + (hexStripW > 0 ? leftGap : 0.0f) + stringStripW
+			    + (stringStripW > 0 ? leftGap : 0.0f);
+			const float colAreaW      = (canvasPos.x + canvasSize.x) - colAreaX0;
+			const int   arenaCount    = memoryDbg.arenaInfos.Size();
+			const float colW          = (arenaCount > 0 && colAreaW > 0.0f)
+			                              ? p::Min((colAreaW - colGap * (arenaCount + 1)) / (float)arenaCount, colMaxW)
+			                              : 0.0f;
+			const float addressY0     = canvasPos.y;
+			const float addressY1     = canvasPos.y + canvasSize.y;
+			const float addressH      = (addressY1 > addressY0) ? (addressY1 - addressY0) : 1.0f;
+			const float hexX0         = canvasPos.x + timelineStripW + leftGap;
+			const float stringX0      = hexX0 + hexStripW + (hexStripW > 0 ? leftGap : 0.0f);
+			const float colX0         = stringX0 + stringStripW + (stringStripW > 0 ? leftGap : 0.0f);
+			const float colTotalW     = colW + colGap;
+			const float graphX0       = canvasPos.x;
+			const float graphW        = canvasSize.x;
+			const float rulerW        = timelineStripW;
+
+			// ----- Address range -----
 			uintptr_t addrMin = 0, addrMax = 0;
 			bool hasAddr = false;
 			for (const auto& info : memoryDbg.arenaInfos)
 			{
 				for (int b = 0; b < info.blocks.Size(); ++b)
 				{
-					uintptr_t addr = reinterpret_cast<uintptr_t>(info.blocks[b]);
-					uintptr_t end  = addr + info.blockSizes[b];
+					const uintptr_t addr = reinterpret_cast<uintptr_t>(info.blocks[b]);
+					const uintptr_t end  = addr + info.blockSizes[b];
 					if (!hasAddr)
 					{
 						addrMin = addr;
@@ -2244,169 +2448,98 @@ namespace p
 					}
 				}
 			}
-
 			if (!hasAddr)
 			{
 				addrMin = 0;
 				addrMax = 1;
 			}
-
 			double range = static_cast<double>(addrMax - addrMin);
 			if (range <= 0)
 			{
 				range = 1.0;
 			}
-
-			// Initialize the absolute view on the first frame, or fit it to the
-			// current data range when it is uninitialized. After that, the view
-			// is anchored to absolute addresses and does NOT move when the
-			// global address range changes (e.g. new allocations extending it).
 			if (memoryDbg.viewRange <= 0.0)
 			{
 				memoryDbg.viewRange = range;
 				memoryDbg.viewStart = addrMin;
 			}
-
 			double viewStart = static_cast<double>(memoryDbg.viewStart);
 			double viewRange = memoryDbg.viewRange;
 			double viewEnd   = viewStart + viewRange;
 
-			// Block click detection: set during the block-draw loop when
-			// IsMouseClicked(0) lands on a block rect. Consumed by the
-			// selection handler to snap the selection to the block range.
-			uintptr_t clickedBlockStart = 0;
-			uintptr_t clickedBlockEnd   = 0;
-			bool clickedBlock           = false;
-
-			// Major timeline tick x-positions, collected during the ruler
-			// pass and drawn as darker grid lines through the graph area
-			// AFTER the row loop (so block fills don't cover them).
-			TArray<float> majorTickXs;
-
-			// Pan is fully unclamped — the view can be anywhere.
-			// Zoom-out is still capped to the content size so the user cannot
-			// zoom out into terabytes of empty space.
-			if (viewRange > range)
+			// ----- Smooth pan / zoom -----
+			if (memoryDbg.smoothViewRange < 0.0)
 			{
-				viewRange = range;
+				memoryDbg.smoothViewRange = viewRange;
+				memoryDbg.smoothViewStart = viewStart;
 			}
-			// Enforce a minimum view range (24px/byte readability cap), unless
-			// the user explicitly focused a selection (allow full zoom in).
-			if (!memoryDbg.forceZoom)
+			if (memoryDbg.forceZoom)
 			{
-				viewRange = p::Max(viewRange, p::Max(1.0, graphW / 24.0));
+				memoryDbg.smoothViewStart = viewStart;
+				memoryDbg.smoothViewRange = viewRange;
+				memoryDbg.forceZoom        = false;
 			}
-			memoryDbg.forceZoom = false;
-
-			memoryDbg.viewStart = (uintptr_t)viewStart;
-			memoryDbg.viewRange = viewRange;
-
-			// Cache graph width for the "Go to" 128px offset
-			memoryDbg.lastGraphW = graphW;
-
-			// Apply a pending "Go to" navigation: place the address ~128px
-			// from the left edge of the graph so it isn't flush against it.
-			// Snap the smooth view (no lerp) for instant navigation.
-			if (memoryDbg.pendingGoto != 0)
+			const double targetStart = static_cast<double>(memoryDbg.viewStart);
+			const double targetRange = memoryDbg.viewRange;
+			const double dt          = ImGui::GetIO().DeltaTime;
+			const double alpha       = 1.0 - std::exp(-25.0 * dt);
+			if (memoryDbg.isZooming)
 			{
-				const float w  = (memoryDbg.lastGraphW > 0.0f) ? memoryDbg.lastGraphW : 1500.0f;
-				const double t = 128.0 / static_cast<double>(w);
-				const double newViewStart =
-				    static_cast<double>(memoryDbg.pendingGoto) - t * viewRange;
-				memoryDbg.viewStart       = (uintptr_t)newViewStart;
-				memoryDbg.smoothViewStart = newViewStart;
-				memoryDbg.pendingGoto     = 0;
-			}
-
-			// Smooth pan + zoom: lerp the rendered viewStart and viewRange toward
-			// the targets. Frame-rate independent exponential lerp (rate=25 ≈ fast).
-			// During a zoom the start is coupled to the range via the anchor so
-			// the address under the cursor doesn't drift while the range lerps.
-			{
-				const double targetStart = static_cast<double>(memoryDbg.viewStart);
-				const double targetRange = memoryDbg.viewRange;
-				const double dt          = ImGui::GetIO().DeltaTime;
-				const double alpha       = 1.0 - std::exp(-25.0 * dt);
-
-				if (memoryDbg.smoothViewRange < 0.0)
+				// Couple start to range so anchor stays fixed during zoom lerp
+				memoryDbg.smoothViewRange =
+				    p::Lerp(memoryDbg.smoothViewRange, targetRange, alpha);
+				memoryDbg.smoothViewStart =
+				    static_cast<double>(memoryDbg.zoomAnchorAddr)
+				    - static_cast<double>(memoryDbg.zoomAnchorRelX) * memoryDbg.smoothViewRange;
+				if (p::Abs(memoryDbg.smoothViewRange - targetRange) < 0.5)
 				{
-					memoryDbg.smoothViewRange = targetRange;
-				}
-				else
-				{
-					memoryDbg.smoothViewRange =
-					    p::Lerp(memoryDbg.smoothViewRange, targetRange, alpha);
-				}
-				if (memoryDbg.isZooming)
-				{
-					// Keep the anchor address fixed under the cursor while the
-					// range smoothly lerps to its target.
-					memoryDbg.smoothViewStart =
-					    static_cast<double>(memoryDbg.zoomAnchorAddr)
-					    - static_cast<double>(memoryDbg.zoomAnchorRelX) * memoryDbg.smoothViewRange;
-					if (p::Abs(memoryDbg.smoothViewRange - targetRange) < 0.5)
-					{
-						memoryDbg.isZooming = false;
-					}
-				}
-				else if (memoryDbg.smoothViewStart < 0.0)
-				{
-					memoryDbg.smoothViewStart = targetStart;
-				}
-				else
-				{
-					memoryDbg.smoothViewStart =
-					    p::Lerp(memoryDbg.smoothViewStart, targetStart, alpha);
+					memoryDbg.isZooming = false;
 				}
 			}
-
-			// Use the smooth values for rendering (AddrToX, ruler, clamps)
+			else
+			{
+				memoryDbg.smoothViewRange = p::Lerp(memoryDbg.smoothViewRange, targetRange, alpha);
+				memoryDbg.smoothViewStart = p::Lerp(memoryDbg.smoothViewStart, targetStart, alpha);
+			}
+			// Use smooth values for rendering
 			viewStart = memoryDbg.smoothViewStart;
 			viewRange = memoryDbg.smoothViewRange;
 			viewEnd   = viewStart + viewRange;
 
-			// Width (in pixels) of each hidden range when compressed to a zigzag.
-			constexpr float COMPRESSED_W = 20.0f;
-
-			// Total bytes of hidden ranges whose END is at or before `a`.
-			// Hidden ranges split the visible range into segments; each hidden
-			// range is collapsed to COMPRESSED_W pixels in the mapping below.
+			// ----- Hidden range helpers -----
 			auto HiddenBytesBefore = [&](uintptr_t a) -> double
 			{
-				double total = 0.0;
+				double hidden = 0.0;
 				for (const auto& h : memoryDbg.hiddenRanges)
 				{
 					if (h.end <= a)
 					{
-						total += static_cast<double>(h.end - h.start);
+						hidden += static_cast<double>(h.end - h.start);
 					}
-				}
-				return total;
-			};
-			// Number of hidden ranges fully inside the view (contribute COMPRESSED_W each)
-			const double hiddenBytesTotal =
-			    HiddenBytesBefore(static_cast<uintptr_t>(viewStart + viewRange));
-			const int hiddenCountInView = [&]() -> int
-			{
-				int n = 0;
-				for (const auto& h : memoryDbg.hiddenRanges)
-				{
-					if (h.end > static_cast<uintptr_t>(viewStart)
-					    && h.start < static_cast<uintptr_t>(viewStart + viewRange))
+					else if (h.start < a)
 					{
-						++n;
+						hidden += static_cast<double>(a - h.start);
+					}
+					else
+					{
+						break;
 					}
 				}
-				return n;
-			}();
-			const double effectiveViewRange =
-			    viewRange - hiddenBytesTotal + hiddenCountInView * COMPRESSED_W;
-			const double safeEffectiveViewRange =
-			    effectiveViewRange > 1.0 ? effectiveViewRange : 1.0;
+				return hidden;
+			};
+			double hiddenAtEnd = 0.0;
+			for (const auto& h : memoryDbg.hiddenRanges)
+			{
+				hiddenAtEnd += static_cast<double>(h.end - h.start);
+			}
+			double safeEffectiveViewRange = viewRange - hiddenAtEnd;
+			if (safeEffectiveViewRange <= 0.0)
+			{
+				safeEffectiveViewRange = 1.0;
+			}
 
-			// Compressed address → X. Addresses inside a hidden range are
-			// clamped to the range's end (so they map to the zigzag boundary).
-			auto AddrToX = [&](uintptr_t a) -> float
+			// ----- Mapping helpers (address <-> vertical pixel) -----
+			auto AddrToY = [&](uintptr_t a) -> float
 			{
 				uintptr_t aa = a;
 				if (aa < static_cast<uintptr_t>(viewStart))
@@ -2427,234 +2560,124 @@ namespace p
 					}
 				}
 				const double visibleOffset = static_cast<double>(aa - viewStart) - hidden;
-				return graphX0
-				     + static_cast<float>(visibleOffset / safeEffectiveViewRange * graphW);
+				return addressY0
+				     + static_cast<float>(visibleOffset / safeEffectiveViewRange * addressH);
 			};
-
-			// Inverse: screen X → true address (uncompressed, for input).
-			auto ScreenXToAddr = [&](float x) -> uintptr_t
+			auto ScreenYToAddr = [&](float y) -> uintptr_t
 			{
-				const double t = (static_cast<double>(x) - graphX0) / graphW;
+				const double t = (static_cast<double>(y) - addressY0) / addressH;
 				return static_cast<uintptr_t>(viewStart + t * viewRange);
 			};
-
-			constexpr float rulerH       = 24.0f;
-			constexpr float rowH         = 20.0f;
-			constexpr float allocHeaderH = 14.0f;
-
-			// Ruler bar (at top of graph area) — uses popup/submenu background color
+			auto ColX = [&](int colIndex) -> float
 			{
-				drawList->AddRectFilled(ImVec2(graphX0, canvasPos.y),
-				    ImVec2(graphX0 + graphW, canvasPos.y + rulerH),
+				return colX0 + colIndex * colTotalW;
+			};
+
+			// ----- Backgrounds -----
+			drawList->AddRectFilled(canvasPos, canvasPos + canvasSize,
+			    ImGui::GetColorU32(ImGuiCol_MenuBarBg));
+			if (hexStripW > 0.0f)
+			{
+				drawList->AddRectFilled(ImVec2(hexX0, canvasPos.y),
+				    ImVec2(hexX0 + hexStripW, canvasPos.y + canvasSize.y),
+				    p::Color{20, 20, 26}.ToPackedABGR());
+			}
+			if (stringStripW > 0.0f)
+			{
+				drawList->AddRectFilled(ImVec2(stringX0, canvasPos.y),
+				    ImVec2(stringX0 + stringStripW, canvasPos.y + canvasSize.y),
+				    p::Color{20, 20, 26}.ToPackedABGR());
+			}
+
+			// ----- Ruler (inverted: ticks on right, labels on left, bottom-to-top) -----
+			TArray<float> majorTickYs;
+			{
+				drawList->AddRectFilled(ImVec2(canvasPos.x, canvasPos.y),
+				    ImVec2(canvasPos.x + rulerW, canvasPos.y + canvasSize.y),
 				    ImGui::GetColorU32(ImGuiCol_PopupBg));
-
-				double pixelsPerByte = graphW / viewRange;
-
-				// Snap a minimum byte count up to the nearest valid scale:
-				// {16, 64, 256, 1024, 4096, 16384, 65536, ...}
-				// = 2^4, 2^6, 2^8, 2^10, 2^12, ... (multiples of 4 starting at 16)
+				const double pixelsPerByte = addressH / viewRange;
 				auto SnapToScale = [](double minBytes) -> double
 				{
 					if (minBytes <= 16.0)
 					{
 						return 16.0;
 					}
-					double e = std::ceil(std::log2(minBytes));
-					e += std::fmod(e, 2.0);    // round up to even
-					return std::pow(2.0, e);
+					const double e = std::ceil(std::log2(minBytes));
+					double       snapped = std::pow(2.0, e);
+					if (snapped < 64.0)
+					{
+						snapped = 64.0;
+					}
+					return snapped;
 				};
+				const double majorStep = SnapToScale(100.0 / pixelsPerByte);
 
-				// First snap: target ~100px between major ticks
-				double majorStep = SnapToScale(100.0 / pixelsPerByte);
-
-				// Re-snap if the first tick's label would clip the next tick
-				{
-					double firstTick = std::ceil(viewStart / majorStep) * majorStep;
-					if (firstTick < viewStart)
-					{
-						firstTick += majorStep;
-					}
-					char sample[32];
-					const int textLen = snprintf(sample, sizeof(sample), "0x%llX",
-					    static_cast<unsigned long long>(static_cast<uintptr_t>(firstTick)));
-					if (textLen > 0)
-					{
-						const float textWidth = static_cast<float>(textLen) * 7.0f + 20.0f;
-						if (textWidth > static_cast<float>(majorStep * pixelsPerByte))
-						{
-							majorStep = SnapToScale(static_cast<double>(textWidth) / pixelsPerByte);
-						}
-					}
-				}
-
-				double qtrStep = majorStep / 4.0;
-
-				// Current scale label (top-left)
+				// Head label (scale)
 				{
 					const String scaleStr = Strings::ParseMemorySize(static_cast<sizet>(majorStep));
-					drawList->AddText(ImVec2(canvasPos.x + 4.0f, canvasPos.y + 2.0f),
-					    p::Color{180, 180, 180}.ToPackedABGR(), scaleStr.data());
+					drawList->AddText(ImVec2(canvasPos.x + 4.0f, canvasPos.y + canvasSize.y - 18.0f),
+					    p::Color{220, 220, 220}.ToPackedABGR(), scaleStr.data());
 				}
 
-				// Start at first multiple of majorStep within view
+				// Iterate from bottom to top (so we can use AddTextVertical)
 				double tickAddr = std::ceil(viewStart / majorStep) * majorStep;
-
-				// Draw the partial first section: quarter/half ticks between
-				// viewStart and the first major tick (the main loop only draws
-				// q=1,2,3 relative to each major tick, so the range before
-				// the first major tick would otherwise be empty).
-				if (tickAddr > viewStart)
-				{
-					const double prevMajor = tickAddr - majorStep;
-					double ta              = std::ceil(viewStart / qtrStep) * qtrStep;
-					if (ta < prevMajor + qtrStep)
-					{
-						ta = prevMajor + qtrStep;
-					}
-					for (; ta < tickAddr && ta <= viewEnd; ta += qtrStep)
-					{
-						const int q    = static_cast<int>((ta - prevMajor) / qtrStep + 0.5);
-						const float tx = AddrToX(static_cast<uintptr_t>(ta));
-						if (q == 2)
-						{
-							drawList->AddLine(ImVec2(tx, canvasPos.y + rulerH - 10),
-							    ImVec2(tx, canvasPos.y + rulerH),
-							    p::Color{150, 150, 150, 200}.ToPackedABGR(), 1.2f);
-						}
-						else
-						{
-							drawList->AddLine(ImVec2(tx, canvasPos.y + rulerH - 6),
-							    ImVec2(tx, canvasPos.y + rulerH),
-							    p::Color{120, 120, 120, 150}.ToPackedABGR(), 1.0f);
-						}
-					}
-				}
-
 				for (; tickAddr <= viewEnd; tickAddr += majorStep)
 				{
-					// Quarter ticks (4 subdivisions per major: 0, 1/4, 1/2, 3/4)
-					for (int q = 0; q < 4; ++q)
+					const float ty = AddrToY(static_cast<uintptr_t>(tickAddr));
+					if (ty < addressY0 - 1.0f || ty > addressY1 + 1.0f)
 					{
-						double ta = tickAddr + static_cast<double>(q) * qtrStep;
-						if (ta < viewStart || ta > viewEnd)
-						{
-							continue;
-						}
-						float tx = AddrToX(static_cast<uintptr_t>(ta));
-
-						if (q == 0)
-						{
-							// Major — bright tick in the timeline with the
-							// address label.
-							drawList->AddLine(ImVec2(tx, canvasPos.y + rulerH - 14),
-							    ImVec2(tx, canvasPos.y + rulerH),
-							    p::Color{220, 220, 220}.ToPackedABGR(), 1.5f);
-
-							// Address label split into two colors: gray for the "0x" prefix
-							// and leading digits, white for the trailing digits that
-							// match the current scale (the part that changes each tick).
-							char buf[32];
-							snprintf(buf, sizeof(buf), "0x%llX",
-							    static_cast<unsigned long long>(static_cast<uintptr_t>(ta)));
-
-							// Number of hex digits in the scale step
-							int scaleDigits = 1;
-							{
-								u64 ss = static_cast<u64>(majorStep);
-								while (ss >= 16)
-								{
-									ss /= 16;
-									++scaleDigits;
-								}
-								const int totalHex = (int)strlen(buf) - 2;
-								const int leading  = totalHex - scaleDigits;
-								if (leading > 0)
-								{
-									char grayPart[32];
-									const int grayLen = 2 + leading;
-									memcpy(grayPart, buf, grayLen);
-									grayPart[grayLen] = '\0';
-									drawList->AddText(ImVec2(tx + 3.0f, canvasPos.y + rulerH - 14),
-									    p::Color{140, 140, 140}.ToPackedABGR(), grayPart);
-									const float grayW = ImGui::CalcTextSize(grayPart).x;
-									drawList->AddText(
-									    ImVec2(tx + 3.0f + grayW, canvasPos.y + rulerH - 14),
-									    p::Color{230, 230, 230}.ToPackedABGR(), buf + grayLen);
-								}
-								else
-								{
-									drawList->AddText(ImVec2(tx + 3.0f, canvasPos.y + rulerH - 14),
-									    p::Color{230, 230, 230}.ToPackedABGR(), buf);
-								}
-							}
-
-							// Remember this major tick so we can draw a darker grid
-							// line through the graph area AFTER the rows (on top of
-							// block fills so it isn't covered).
-							majorTickXs.Add(tx);
-						}
-						else if (q == 2)
-						{
-							// Half — medium gray bar
-							drawList->AddLine(ImVec2(tx, canvasPos.y + rulerH - 10),
-							    ImVec2(tx, canvasPos.y + rulerH),
-							    p::Color{150, 150, 150, 200}.ToPackedABGR(), 1.2f);
-						}
-						else
-						{
-							// Quarter — dimmer, shorter gray bar
-							drawList->AddLine(ImVec2(tx, canvasPos.y + rulerH - 6),
-							    ImVec2(tx, canvasPos.y + rulerH),
-							    p::Color{120, 120, 120, 150}.ToPackedABGR(), 1.0f);
-						}
+						continue;
 					}
+					// Major tick on the right edge of the ruler, extending left
+					drawList->AddLine(ImVec2(canvasPos.x + rulerW, ty),
+					    ImVec2(canvasPos.x + rulerW - 10.0f, ty),
+					    p::Color{220, 220, 220}.ToPackedABGR(), 1.5f);
+					// Address label, vertical (bottom-to-top), at the left of the ruler
+					char buf[32];
+					snprintf(buf, sizeof(buf), "0x%llX",
+					    static_cast<unsigned long long>(static_cast<uintptr_t>(tickAddr)));
+					const float textWidth = ImGui::CalcTextSize(buf).x;
+					details::AddTextVertical(drawList,
+					    ImVec2(canvasPos.x + 2.0f, ty + textWidth),
+					    p::Color{220, 220, 220}.ToPackedABGR(), buf);
+					majorTickYs.Add(ty);
 				}
 			}
 
-			// Content area background — matches the menu bar color so the arenas,
-			// hex and string regions all sit on a uniform panel beneath the timeline.
+			// ----- HEX and String strips (with global row alignment) -----
+			if (hexStripW > 0.0f || stringStripW > 0.0f)
 			{
-				const ImU32 panelBg = ImGui::GetColorU32(ImGuiCol_MenuBarBg);
-				drawList->AddRectFilled(ImVec2(canvasPos.x, canvasPos.y + rulerH),
-				    ImVec2(canvasPos.x + canvasSize.x, canvasPos.y + canvasSize.y), panelBg);
-			}
-
-			// Hex/ASCII drawn inside the graph child so it shares the interactable area.
-			// Each band/column is a distinct, delimited region. Map each visible byte
-			// to its screen position using the zoomed view range so single bytes
-			// get a readable amount of space when zoomed in.
-			if (hexBandH > 0 || asciiBandH > 0)
-			{
-				const float hexY0   = canvasPos.y + rulerH + 2.0f;
-				const float asciiY0 = hexY0 + hexBandH + bandGap;
-
-				// Section headers on the left
-				if (hexBandH > 0)
+				// Strip headers (horizontal, centered) drawn at the top of the canvas
+				if (hexStripW > 0.0f)
 				{
-					drawList->AddText(ImVec2(graphX0 + 4.0f, hexY0 + 3.0f),
-					    p::Color{180, 180, 180}.ToPackedABGR(), "HEX");
+					const char* hexLabel   = "HEX";
+					const ImVec2 hexSize   = ImGui::CalcTextSize(hexLabel);
+					drawList->AddText(
+					    ImVec2(hexX0 + (hexStripW - hexSize.x) * 0.5f, addressY0 + 4.0f),
+					    p::Color{180, 180, 180}.ToPackedABGR(), hexLabel);
 				}
-				if (asciiBandH > 0)
+				if (stringStripW > 0.0f)
 				{
-					drawList->AddText(ImVec2(graphX0 + 4.0f, asciiY0 + 3.0f),
-					    p::Color{180, 180, 180}.ToPackedABGR(), "String");
+					const char* strLabel   = "ASCII";
+					const ImVec2 strSize   = ImGui::CalcTextSize(strLabel);
+					drawList->AddText(
+					    ImVec2(stringX0 + (stringStripW - strSize.x) * 0.5f, addressY0 + 4.0f),
+					    p::Color{180, 180, 180}.ToPackedABGR(), strLabel);
 				}
-
-				if (selectedInfo || !memoryDbg.arenaInfos.IsEmpty())
+				if (!memoryDbg.arenaInfos.IsEmpty())
 				{
-					const auto& info = selectedInfo ? *selectedInfo : memoryDbg.arenaInfos[0];
-					if (info.blockBegin && info.blockSize > 0)
+					const uintptr_t viewLo        = static_cast<uintptr_t>(viewStart);
+					const uintptr_t viewHi        = static_cast<uintptr_t>(viewStart + viewRange);
+					const float     pixelsPerByte = static_cast<float>(addressH / viewRange);
+					if (pixelsPerByte * static_cast<float>(bytesPerLine) >= 13.0f)
 					{
-						// Compute the visible address range and render only bytes
-						// inside it. Iterate ALL blocks of the arena so later
-						// (higher-address) blocks also render when in view, and
-						// each block reads from its own data pointer (non-contiguous).
-						const uintptr_t viewLo    = (uintptr_t)viewStart;
-						const uintptr_t viewHi    = (uintptr_t)(viewStart + viewRange);
-						const float pixelsPerByte = static_cast<float>(graphW / viewRange);
-
-						if (pixelsPerByte >= 6.0f)
+						for (int a = 0; a < memoryDbg.arenaInfos.Size(); ++a)
 						{
+							const auto& info = memoryDbg.arenaInfos[a];
+							if (!info.blockBegin || info.blockSize == 0)
+							{
+								continue;
+							}
 							for (int b = 0; b < info.blocks.Size(); ++b)
 							{
 								const uintptr_t bs = reinterpret_cast<uintptr_t>(info.blocks[b]);
@@ -2663,41 +2686,51 @@ namespace p
 								{
 									continue;
 								}
-
 								const uintptr_t firstByte = (bs > viewLo) ? bs : viewLo;
 								const uintptr_t lastByte  = (be < viewHi) ? be : viewHi;
 								if (lastByte <= firstByte)
 								{
 									continue;
 								}
-
-								const u8* data = static_cast<const u8*>(info.blocks[b]);
-
-								for (uintptr_t a = firstByte; a < lastByte; ++a)
+								const u8* data     = static_cast<const u8*>(info.blocks[b]);
+								const uintptr_t bpl = static_cast<uintptr_t>(bytesPerLine);
+								// Global row grid anchored at viewLo
+								const uintptr_t gridOff = (firstByte - viewLo) % bpl;
+								for (uintptr_t a2 = firstByte - gridOff; a2 < lastByte; a2 += bpl)
 								{
-									// Use the compressed AddrToX so hidden ranges
-									// are reflected and bytes align with the blocks.
-									const float x = AddrToX(a);
-									const u8 byte = data[a - bs];
-
-									if (hexBandH > 0)
+									if (a2 + bpl <= bs)
 									{
-										char hex[3];
-										snprintf(hex, sizeof(hex), "%02X", byte);
-										const ImU32 hexCol =
-										    (byte == 0)
-										        ? p::Color{90, 90, 90, 255}.ToPackedABGR()
-										        : p::Color{220, 220, 220, 255}.ToPackedABGR();
-										drawList->AddText(ImVec2(x, hexY0), hexCol, hex);
+										continue;
 									}
-									if (asciiBandH > 0)
+									const uintptr_t rowBegin = (a2 < bs) ? bs : a2;
+									const uintptr_t rowEnd   = (a2 + bpl < lastByte) ? (a2 + bpl) : lastByte;
+									const float     y        = AddrToY(a2);
+									for (uintptr_t b2 = rowBegin; b2 < rowEnd; ++b2)
 									{
-										const bool printable = (byte >= 32 && byte < 127);
-										const char c = printable ? static_cast<char>(byte) : '.';
-										const ImU32 asciiCol =
-										    printable ? p::Color{220, 220, 220, 255}.ToPackedABGR()
-										              : p::Color{90, 90, 90, 255}.ToPackedABGR();
-										drawList->AddText(ImVec2(x, asciiY0), asciiCol, &c, &c + 1);
+										const u8         byte        = data[b2 - bs];
+										const uintptr_t lineByteIdx = b2 - a2;
+										if (hexStripW > 0.0f)
+										{
+											char hex[3];
+											snprintf(hex, sizeof(hex), "%02X", byte);
+											const ImU32 hexCol = (byte == 0)
+											    ? p::Color{90, 90, 90, 255}.ToPackedABGR()
+											    : p::Color{220, 220, 220, 255}.ToPackedABGR();
+											const float xOff = static_cast<float>(lineByteIdx) * (charPx * 2.0f);
+											drawList->AddText(ImVec2(hexX0 + stripPad + xOff, y),
+											    hexCol, hex);
+										}
+										if (stringStripW > 0.0f)
+										{
+											const bool printable = (byte >= 32 && byte < 127);
+											const char c = printable ? static_cast<char>(byte) : '.';
+											const ImU32 asciiCol = printable
+											    ? p::Color{220, 220, 220, 255}.ToPackedABGR()
+											    : p::Color{90, 90, 90, 255}.ToPackedABGR();
+											const float xOff = static_cast<float>(lineByteIdx) * charPx;
+											drawList->AddText(ImVec2(stringX0 + stripPad + xOff, y),
+											    asciiCol, &c, &c + 1);
+										}
 									}
 								}
 							}
@@ -2705,94 +2738,64 @@ namespace p
 					}
 				}
 			}
-			// Arena rows
-			float rowsY0 = canvasPos.y + rulerH + hexLineHeight + 6.0f + allocHeaderH;
 
-			// "Alloc" header above the arena rows
-			drawList->AddText(ImVec2(graphX0 + 4.0f, rowsY0 - allocHeaderH + 2.0f),
-			    p::Color{180, 180, 180}.ToPackedABGR(), "Alloc");
-
-			float yPos = 0.0f;
+			// ----- Arena columns loop (blocks, markers, click, tooltip) -----
 			for (int i = 0; i < memoryDbg.arenaInfos.Size(); ++i)
 			{
-				const auto& info = memoryDbg.arenaInfos[i];
+				const auto&     info      = memoryDbg.arenaInfos[i];
+				const p::Color   baseFill  = details::GetArenaColor(info.typeId);
+				const bool       isSelected = (i == memoryDbg.selectedArena);
+				const p::Color   fill      = isSelected ? (baseFill * 0.65f) : baseFill;
+				const p::Color   outline   = isSelected ? p::Color::Orange() : p::Color{0, 0, 0, 80};
+				const ImU32      fillU32   = fill.ToPackedABGR();
+				const ImU32      outlineU32 = outline.ToPackedABGR();
+				const float      colX      = ColX(i);
+				const float      colRight  = colX + colW;
 
-				const p::Color baseFill = details::GetArenaColor(info.typeId);
-				const bool isSelected   = (i == memoryDbg.selectedArena);
-				// Selected rows keep their arena color, slightly darkened, with
-				// an orange outline so they stand out without losing identity.
-				const p::Color fill    = isSelected ? (baseFill * 0.65f) : baseFill;
-				const p::Color outline = isSelected ? p::Color::Orange() : p::Color{0, 0, 0, 80};
-
-				const ImU32 fillU32    = fill.ToPackedABGR();
-				const ImU32 outlineU32 = outline.ToPackedABGR();
-
-				float rowY = rowsY0 + yPos;
-
-				// Blocks at address positions
+				// Block draw + double-click focus
 				if (info.blockBegin && info.blockSize > 0)
 				{
 					for (int b = 0; b < info.blocks.Size(); ++b)
 					{
-						const float x0Raw = AddrToX(reinterpret_cast<uintptr_t>(info.blocks[b]));
-						const float x1Raw = AddrToX(
+						const float y0Raw = AddrToY(reinterpret_cast<uintptr_t>(info.blocks[b]));
+						const float y1Raw = AddrToY(
 						    reinterpret_cast<uintptr_t>(info.blocks[b]) + info.blockSizes[b]);
-
-						// Skip blocks entirely outside the visible graph area
-						if (x1Raw < graphX0 || x0Raw > graphX0 + graphW)
+						if (y1Raw < addressY0 || y0Raw > addressY1)
 						{
 							continue;
 						}
-
-						float x0 = x0Raw;
-						float x1 = x1Raw;
-						// Enforce a minimum visible width of 2px so tiny blocks
-						// (small block size or far-zoomed-out) stay perceivable.
-						// The rect is centered on the block's address midpoint.
-						if (x1 - x0 < 2.0f)
+						float y0 = y0Raw;
+						float y1 = y1Raw;
+						if (y1 - y0 < 2.0f)
 						{
-							const float mid = (x0 + x1) * 0.5f;
-							x0              = mid - 1.0f;
-							x1              = mid + 1.0f;
+							const float mid = (y0 + y1) * 0.5f;
+							y0              = mid - 1.0f;
+							y1              = mid + 1.0f;
 						}
-						// Clamp to graph area
-						x0 = (x0 > graphX0) ? x0 : graphX0;
-						x1 = (x1 < graphX0 + graphW) ? x1 : (graphX0 + graphW);
-
-						drawList->AddRectFilled(ImVec2(x0, rowY), ImVec2(x1, rowY + rowH), fillU32);
-						drawList->AddRect(ImVec2(x0, rowY), ImVec2(x1, rowY + rowH), outlineU32);
-
-						// Double-click to focus: set the view to fit and center this block
+						y0 = (y0 > addressY0) ? y0 : addressY0;
+						y1 = (y1 < addressY1) ? y1 : addressY1;
+						drawList->AddRectFilled(ImVec2(colX, y0), ImVec2(colRight, y1), fillU32);
+						drawList->AddRect(ImVec2(colX, y0), ImVec2(colRight, y1), outlineU32);
+						// Double-click a block to focus it
 						if (ImGui::IsMouseDoubleClicked(0))
 						{
-							const ImRect blockRect(ImVec2(x0, rowY), ImVec2(x1, rowY + rowH));
+							const ImRect blockRect(ImVec2(colX, y0), ImVec2(colRight, y1));
 							if (blockRect.Contains(ImGui::GetIO().MousePos))
 							{
-								const uintptr_t blkStart =
-								    reinterpret_cast<uintptr_t>(info.blocks[b]);
-								const double blkSize = static_cast<double>(info.blockSizes[b]);
+								const uintptr_t blkStart = reinterpret_cast<uintptr_t>(info.blocks[b]);
+								const double    blkSize  = static_cast<double>(info.blockSizes[b]);
 								if (blkSize > 0.0)
 								{
-									// Cap the view range: min so each byte ≤ 24px,
-									// max so it does not exceed the content size.
-									const double minViewRange =
-									    (graphW / 24.0 > 1.0) ? (graphW / 24.0) : 1.0;
+									const double minViewRange = p::Max(1.0,
+									    addressH / (24.0 * static_cast<double>(bytesPerLine > 0 ? bytesPerLine : 1)));
 									double newViewRange = blkSize;
-									if (newViewRange < minViewRange)
-									{
-										newViewRange = minViewRange;
-									}
-									if (newViewRange > range)
-									{
-										newViewRange = range;
-									}
-									// Center the block in the visible range
-									const double center =
-									    static_cast<double>(blkStart) + blkSize * 0.5;
+									newViewRange = p::Max(newViewRange, minViewRange);
+									newViewRange = p::Min(newViewRange, range);
+									const double center      = static_cast<double>(blkStart) + blkSize * 0.5;
 									const double newViewStart = center - newViewRange * 0.5;
-									memoryDbg.viewStart = static_cast<uintptr_t>(newViewStart);
-									memoryDbg.viewRange = newViewRange;
-									memoryDbg.smoothViewStart = newViewStart;    // snap on focus
+									memoryDbg.viewStart       = static_cast<uintptr_t>(newViewStart);
+									memoryDbg.viewRange       = newViewRange;
+									memoryDbg.smoothViewStart = newViewStart;
 									memoryDbg.smoothViewRange = newViewRange;
 								}
 							}
@@ -2800,67 +2803,63 @@ namespace p
 					}
 				}
 
-				// Per-allocation markers (debug invalid/unfreed allocations).
-				// Live = green, freed-but-tracked = red/orange. Drawn as a thin
-				// colored line at the top of the row at the allocation's address.
-				// We read stats->allocations directly under a shared_lock — no copy
-				// into a TArray (which would recurse into Alloc and deadlock).
+				// Allocation markers (live = green, freed = red)
 				{
-					const uintptr_t arenaStart = reinterpret_cast<uintptr_t>(info.blockBegin);
-					const uintptr_t arenaEnd = info.blockBegin ? (arenaStart + info.blockSize) : 0;
-					const float tickH        = 3.0f;
-
-					auto DrawTick = [&](uintptr_t addr, ImU32 color)
-					{
-						if (addr < arenaStart || addr >= arenaEnd)
-						{
-							return;
-						}
-						float tx = AddrToX(addr);
-						if (tx < graphX0 || tx > graphX0 + graphW)
-						{
-							return;
-						}
-						drawList->AddRectFilled(
-						    ImVec2(tx - 0.5f, rowY), ImVec2(tx + 0.5f, rowY + tickH), color);
-					};
-
-					const MemoryStats* rowStats = info.arena ? info.arena->GetStats() : nullptr;
+					const uintptr_t    arenaStart = reinterpret_cast<uintptr_t>(info.blockBegin);
+					const uintptr_t    arenaEnd   = info.blockBegin ? (arenaStart + info.blockSize) : 0;
+					const MemoryStats* rowStats   = info.arena ? info.arena->GetStats() : nullptr;
 					if (rowStats)
 					{
 						std::shared_lock<std::shared_mutex> statsLock(rowStats->mutex);
 						for (const auto& a : rowStats->allocations)
 						{
-							DrawTick(reinterpret_cast<uintptr_t>(a.ptr),
+							const uintptr_t addr = reinterpret_cast<uintptr_t>(a.ptr);
+							if (addr < arenaStart || addr >= arenaEnd)
+							{
+								continue;
+							}
+							const float ty = AddrToY(addr);
+							if (ty < addressY0 || ty > addressY1)
+							{
+								continue;
+							}
+							drawList->AddRectFilled(ImVec2(colX, ty - 0.5f),
+							    ImVec2(colRight, ty + 0.5f),
 							    p::Color::Emerald().ToPackedABGR());
 						}
 						for (const auto& a : rowStats->freedAllocations)
 						{
-							DrawTick(reinterpret_cast<uintptr_t>(a.ptr),
+							const uintptr_t addr = reinterpret_cast<uintptr_t>(a.ptr);
+							if (addr < arenaStart || addr >= arenaEnd)
+							{
+								continue;
+							}
+							const float ty = AddrToY(addr);
+							if (ty < addressY0 || ty > addressY1)
+							{
+								continue;
+							}
+							drawList->AddRectFilled(ImVec2(colX, ty - 0.5f),
+							    ImVec2(colRight, ty + 0.5f),
 							    p::Color{230, 90, 60, 220}.ToPackedABGR());
 						}
 					}
 				}
 
-				// Arena label
-				static String arenaTypeName;
-				arenaTypeName = GetTypeName(info.typeId);
-				drawList->AddText(ImVec2(graphX0 + 4.0f, rowY + 2.0f),
-				    p::Color{220, 220, 220}.ToPackedABGR(), arenaTypeName.c_str());
-
-				// Selection click
-				ImRect rowRect(ImVec2(graphX0, rowY), ImVec2(graphX0 + graphW, rowY + rowH));
-				if (rowRect.Contains(ImGui::GetIO().MousePos) && ImGui::IsMouseClicked(0))
+				// Column click selects arena
+				const ImRect colRect(ImVec2(colX, addressY0), ImVec2(colRight, addressY1));
+				if (colRect.Contains(ImGui::GetIO().MousePos) && ImGui::IsMouseClicked(0))
 				{
 					memoryDbg.selectedArena = i;
 				}
 
-				// Tooltip on hover
-				if (rowRect.Contains(ImGui::GetIO().MousePos))
+				// Column tooltip
+				if (colRect.Contains(ImGui::GetIO().MousePos))
 				{
 					ImGui::BeginTooltip();
-					ImGui::Text("Arena: %s", arenaTypeName.data());
-					ImGui::Text("Block: 0x%llX", info.blockBegin);
+					ImGui::Text("Arena: %s", GetTypeName(info.typeId).data());
+					ImGui::Text("Block: 0x%llX",
+					    static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(info.blockBegin)));
 					const String sizeStr = Strings::ParseMemorySize(info.blockSize);
 					ImGui::Text("Size: %s (%zuB)", sizeStr.data(), info.blockSize);
 					if (info.usedSize > 0 || info.freeSize > 0)
@@ -2871,79 +2870,186 @@ namespace p
 					ImGui::EndTooltip();
 				}
 
-				yPos += rowH + 2.0f;
+				// Column header (vertical, drawn LAST so rects/markers don't cover it)
+				static String arenaTypeName;
+				arenaTypeName = GetTypeName(info.typeId);
+				if (!arenaTypeName.empty())
+				{
+					const float nameExtent = ImGui::CalcTextSize(arenaTypeName.c_str()).x;
+					const float fontHeight = ImGui::GetTextLineHeight();
+					// Center horizontally: strip extends right by ~fontHeight from pos.x
+					const float stripX = colX + (colW - fontHeight) * 0.5f;
+					details::AddTextVertical(drawList,
+					    ImVec2(stripX, addressY0 + 4.0f + nameExtent),
+					    p::Color{220, 220, 220}.ToPackedABGR(), arenaTypeName.c_str());
+				}
 			}
 
-			// Full interactable area of the graph child (for hit-testing inputs)
-			const ImRect graphRect(canvasPos, canvasPos + canvasSize);
-
-			// Hidden ranges: draw a vertical zigzag for each, spanning the content
-			// area. Click a zigzag to expand (remove) that hidden range.
+			// ----- Grid lines through column area (from majorTickYs) -----
+			if (!majorTickYs.IsEmpty())
 			{
-				const float zigY0    = canvasPos.y + rulerH;
-				const float zigY1    = rowsY0;
-				const ImU32 zigColor = p::Color::Silver().ToPackedABGR();
-				for (int hi = 0; hi < memoryDbg.hiddenRanges.Size(); ++hi)
+				const float gridX0 = colX0;
+				const float gridX1 = canvasPos.x + canvasSize.x;
+				const ImU32 gridCol = p::Color{255, 255, 255, 20}.ToPackedABGR();
+				for (int t = 0; t < majorTickYs.Size(); ++t)
 				{
-					const auto& h = memoryDbg.hiddenRanges[hi];
-					if (h.end <= static_cast<uintptr_t>(viewStart)
-					    || h.start >= static_cast<uintptr_t>(viewStart + viewRange))
+					drawList->AddLine(ImVec2(gridX0, majorTickYs[t]),
+					    ImVec2(gridX1, majorTickYs[t]), gridCol, 1.0f);
+				}
+			}
+
+			// ----- Hidden range zigzags (V-shape) + click to remove -----
+			if (!memoryDbg.hiddenRanges.IsEmpty())
+			{
+				const float zigX0  = colX0;
+				const float zigX1  = canvasPos.x + canvasSize.x;
+				const ImU32 zigCol = p::Color{200, 120, 80, 220}.ToPackedABGR();
+				for (int h = 0; h < memoryDbg.hiddenRanges.Size(); ++h)
+				{
+					const auto& hr    = memoryDbg.hiddenRanges[h];
+					float       yStart = AddrToY(hr.start);
+					float       yEnd   = AddrToY(hr.end);
+					if (yEnd < addressY0 || yStart > addressY1)
 					{
 						continue;
 					}
-					const float x = AddrToX(h.end);
-					details::DrawZigzagVertical(drawList, x, zigY0, zigY1, 3.0f, zigColor);
-
-					// Click to expand. Detect a click within a small x margin
-					// around the zigzag line, anywhere in the content area.
-					if (ImGui::IsMouseClicked(0) && !ImGui::IsMouseDragging(0))
+					yStart = (yStart > addressY0) ? yStart : addressY0;
+					yEnd   = (yEnd < addressY1) ? yEnd : addressY1;
+					const float midY = (yStart + yEnd) * 0.5f;
+					drawList->AddLine(ImVec2(zigX0, yStart), ImVec2(zigX1, midY), zigCol, 1.0f);
+					drawList->AddLine(ImVec2(zigX0, midY), ImVec2(zigX1, yEnd), zigCol, 1.0f);
+					// Click ±6px to remove
+					if (ImGui::IsMouseClicked(0))
 					{
-						const float mx = ImGui::GetIO().MousePos.x;
-						if (mx >= x - 6.0f && mx <= x + 6.0f && ImGui::GetIO().MousePos.y >= zigY0
-						    && ImGui::GetIO().MousePos.y <= zigY1)
+						const ImVec2 mp = ImGui::GetIO().MousePos;
+						if (mp.x >= zigX0 - 6.0f && mp.x <= zigX1 + 6.0f
+						    && mp.y >= yStart - 6.0f && mp.y <= yEnd + 6.0f)
 						{
-							memoryDbg.hiddenRanges.RemoveAt(hi);
-							--hi;
+							memoryDbg.hiddenRanges.RemoveAt(h);
+							--h;
 						}
 					}
 				}
 			}
 
-			// Horizontal area selection: left-mouse drag in the graph creates a
-			// range selection. Right-click on the selection opens a context menu.
+			// ----- Graph-wide tooltip (address always, block info if hit) -----
+			{
+				const ImVec2 mp = ImGui::GetIO().MousePos;
+				if (graphRect.Contains(mp))
+				{
+					const uintptr_t hoverAddr = ScreenYToAddr(mp.y);
+					const DebugMemoryContext::ArenaBlockInfo* hit = nullptr;
+					for (int i = 0; i < memoryDbg.arenaInfos.Size() && !hit; ++i)
+					{
+						const auto& info = memoryDbg.arenaInfos[i];
+						if (!info.blockBegin || info.blockSize == 0)
+						{
+							continue;
+						}
+						const float cx = ColX(i);
+						if (mp.x < cx || mp.x >= cx + colW)
+						{
+							continue;
+						}
+						const uintptr_t aStart = reinterpret_cast<uintptr_t>(info.blockBegin);
+						const uintptr_t aEnd   = aStart + info.blockSize;
+						if (hoverAddr >= aStart && hoverAddr < aEnd)
+						{
+							hit = &info;
+						}
+					}
+					ImGui::BeginTooltip();
+					ImGui::Text("Address: 0x%llX",
+					    static_cast<unsigned long long>(hoverAddr));
+					if (hit)
+					{
+						ImGui::Text("Arena: %s", GetTypeName(hit->typeId).data());
+						const uintptr_t offset = hoverAddr - reinterpret_cast<uintptr_t>(hit->blockBegin);
+						ImGui::Text("Offset: 0x%llX (%zuB)",
+						    static_cast<unsigned long long>(offset), static_cast<size_t>(offset));
+						if (hit->usedSize > 0 || hit->freeSize > 0)
+						{
+							ImGui::Text("Used: %zu (%.1f%%)", hit->usedSize,
+							    100.0f * hit->usedSize / hit->blockSize);
+						}
+					}
+					ImGui::EndTooltip();
+				}
+			}
+
+			// ----- Selection (left-click any column, block-click sets block range, drag) -----
 			{
 				const ImVec2 mousePos = ImGui::GetIO().MousePos;
-				const bool inGraph    = graphRect.Contains(mousePos);
-
-				// Start a selection on left-mouse-down
+				const bool   inGraph  = graphRect.Contains(mousePos);
+				// Start selection on left-click
 				if (ImGui::IsMouseClicked(0) && inGraph && !memoryDbg.isSelecting)
 				{
-					memoryDbg.isSelecting    = true;
-					memoryDbg.selectAnchor   = ScreenXToAddr(mousePos.x);
-					memoryDbg.selectionStart = memoryDbg.selectAnchor;
-					memoryDbg.selectionEnd   = memoryDbg.selectAnchor;
-					memoryDbg.selectionValid = true;
+					bool        blockHit = false;
+					uintptr_t   blkLo    = 0;
+					uintptr_t   blkHi    = 0;
+					for (int c = 0; c < memoryDbg.arenaInfos.Size() && !blockHit; ++c)
+					{
+						const auto& info = memoryDbg.arenaInfos[c];
+						if (!info.blockBegin || info.blockSize == 0)
+						{
+							continue;
+						}
+						const float cx = ColX(c);
+						if (mousePos.x < cx || mousePos.x >= cx + colW)
+						{
+							continue;
+						}
+						for (int b = 0; b < info.blocks.Size(); ++b)
+						{
+							const uintptr_t bStart = reinterpret_cast<uintptr_t>(info.blocks[b]);
+							const uintptr_t bEnd   = bStart + info.blockSizes[b];
+							if (bEnd <= bStart)
+							{
+								continue;
+							}
+							const float y0 = AddrToY(bStart);
+							const float y1 = AddrToY(bEnd);
+							if (mousePos.y >= y0 && mousePos.y <= y1)
+							{
+								blockHit = true;
+								blkLo    = bStart;
+								blkHi    = bEnd;
+								break;
+							}
+						}
+					}
+					if (blockHit)
+					{
+						memoryDbg.isSelecting    = false;
+						memoryDbg.selectAnchor   = blkLo;
+						memoryDbg.selectionStart = blkLo;
+						memoryDbg.selectionEnd   = blkHi;
+						memoryDbg.selectionValid = true;
+					}
+					else
+					{
+						memoryDbg.isSelecting    = true;
+						memoryDbg.selectAnchor   = ScreenYToAddr(mousePos.y);
+						memoryDbg.selectionStart = memoryDbg.selectAnchor;
+						memoryDbg.selectionEnd   = memoryDbg.selectAnchor;
+						memoryDbg.selectionValid = true;
+					}
 				}
-				// Update selection while dragging
 				if (memoryDbg.isSelecting && ImGui::IsMouseDragging(0))
 				{
-					const uintptr_t a        = memoryDbg.selectAnchor;
-					const uintptr_t b        = ScreenXToAddr(mousePos.x);
+					const uintptr_t a = memoryDbg.selectAnchor;
+					const uintptr_t b = ScreenYToAddr(mousePos.y);
 					memoryDbg.selectionStart = (a < b) ? a : b;
 					memoryDbg.selectionEnd   = (a < b) ? b : a;
 				}
-				// Finalize on mouse-up
 				if (memoryDbg.isSelecting && ImGui::IsMouseReleased(0))
 				{
 					memoryDbg.isSelecting = false;
-					// Alt+Left release: focus the selection immediately
-					if (memoryDbg.selectionValid
-					    && memoryDbg.selectionEnd > memoryDbg.selectionStart
-					    && ImGui::GetIO().KeyAlt)
+					if (memoryDbg.selectionValid && memoryDbg.selectionEnd > memoryDbg.selectionStart)
 					{
-						const uintptr_t s = memoryDbg.selectionStart;
-						const uintptr_t e = memoryDbg.selectionEnd;
-						const double size = static_cast<double>(e - s);
+						const uintptr_t s    = memoryDbg.selectionStart;
+						const uintptr_t e    = memoryDbg.selectionEnd;
+						const double    size = static_cast<double>(e - s);
 						if (size > 0.0)
 						{
 							memoryDbg.viewRange       = size;
@@ -2953,214 +3059,278 @@ namespace p
 						}
 					}
 				}
-
-				// Draw the selection rectangle
-				if (memoryDbg.selectionValid && memoryDbg.selectionEnd > memoryDbg.selectionStart)
+				// Draw selection
+				if (memoryDbg.selectionValid)
 				{
-					const float sx0 = AddrToX(memoryDbg.selectionStart);
-					const float sx1 = AddrToX(memoryDbg.selectionEnd);
-					drawList->AddRectFilled(ImVec2(sx0, canvasPos.y + rulerH),
-					    ImVec2(sx1, canvasPos.y + canvasSize.y),
-					    p::Color{255, 200, 80, 50}.ToPackedABGR());
-					drawList->AddRect(ImVec2(sx0, canvasPos.y + rulerH),
-					    ImVec2(sx1, canvasPos.y + canvasSize.y),
-					    p::Color{255, 200, 80, 220}.ToPackedABGR());
+					int selCol = -1;
+					for (int c = 0; c < memoryDbg.arenaInfos.Size(); ++c)
+					{
+						const float cx = ColX(c);
+						if (mousePos.x >= cx && mousePos.x < cx + colW)
+						{
+							selCol = c;
+							break;
+						}
+					}
+					if (selCol < 0 && arenaCount > 0)
+					{
+						selCol = 0;
+					}
+					if (selCol >= 0)
+					{
+						const float cx  = ColX(selCol);
+						const float sy0 = AddrToY(memoryDbg.selectionStart);
+						const float sy1 = AddrToY(memoryDbg.selectionEnd);
+						const bool  isRange = memoryDbg.selectionEnd > memoryDbg.selectionStart;
+						if (isRange)
+						{
+							drawList->AddRectFilled(ImVec2(cx, addressY0),
+							    ImVec2(cx + colW, addressY1),
+							    p::Color{255, 200, 80, 50}.ToPackedABGR());
+							drawList->AddRect(ImVec2(cx, addressY0),
+							    ImVec2(cx + colW, addressY1),
+							    p::Color{255, 200, 80, 220}.ToPackedABGR());
+							drawList->AddRectFilled(ImVec2(cx, sy0),
+							    ImVec2(cx + colW, sy1),
+							    p::Color{255, 200, 80, 90}.ToPackedABGR());
+						}
+						else
+						{
+							drawList->AddLine(ImVec2(cx, sy0), ImVec2(cx + colW, sy0),
+							    p::Color{255, 200, 80, 220}.ToPackedABGR(), 1.5f);
+							drawList->AddRectFilled(ImVec2(cx, sy0 - 1.0f),
+							    ImVec2(cx + colW, sy0 + 2.0f),
+							    p::Color{255, 200, 80, 60}.ToPackedABGR());
+						}
+					}
 				}
-
-				// Right-click within the selection opens the context menu
-				// (skip when over a block — blocks may get their own interactions)
-				if (ImGui::IsMouseClicked(1) && inGraph && memoryDbg.selectionValid
-				    && memoryDbg.selectionEnd > memoryDbg.selectionStart)
+				// Right-click context menu
+				if (ImGui::IsMouseClicked(1) && inGraph && memoryDbg.selectionValid)
 				{
-					const float sx0 = AddrToX(memoryDbg.selectionStart);
-					const float sx1 = AddrToX(memoryDbg.selectionEnd);
-					if (mousePos.x >= sx0 && mousePos.x <= sx1)
+					int selCol = -1;
+					for (int c = 0; c < memoryDbg.arenaInfos.Size(); ++c)
+					{
+						const float cx = ColX(c);
+						if (mousePos.x >= cx && mousePos.x < cx + colW)
+						{
+							selCol = c;
+							break;
+						}
+					}
+					if (selCol >= 0)
 					{
 						ImGui::OpenPopup("MemorySelectionMenu");
 					}
 				}
-
 				if (ImGui::BeginPopup("MemorySelectionMenu"))
 				{
+					if (memoryDbg.selectionValid)
+					{
+						ImGui::Text("0x%llX - 0x%llX",
+						    static_cast<unsigned long long>(memoryDbg.selectionStart),
+						    static_cast<unsigned long long>(memoryDbg.selectionEnd));
+						ImGui::Separator();
+					}
 					if (ImGui::MenuItem("Focus selection"))
 					{
-						const uintptr_t s = memoryDbg.selectionStart;
-						const uintptr_t e = memoryDbg.selectionEnd;
-						const double size = static_cast<double>(e - s);
-						if (size > 0.0)
+						if (memoryDbg.selectionValid
+						    && memoryDbg.selectionEnd >= memoryDbg.selectionStart)
 						{
-							memoryDbg.viewRange       = size;
-							memoryDbg.viewStart       = s;
-							memoryDbg.smoothViewStart = static_cast<double>(s);
+							const uintptr_t s    = memoryDbg.selectionStart;
+							const uintptr_t e    = memoryDbg.selectionEnd;
+							const double    size = static_cast<double>(e - s);
+							if (size <= 0.0)
+							{
+								memoryDbg.viewRange = 64.0;
+								memoryDbg.viewStart = (s > 32) ? (s - 32) : 0;
+							}
+							else
+							{
+								memoryDbg.viewRange = size;
+								memoryDbg.viewStart = s;
+							}
+							memoryDbg.smoothViewStart = static_cast<double>(memoryDbg.viewStart);
+							memoryDbg.smoothViewRange = memoryDbg.viewRange;
 							memoryDbg.forceZoom       = true;
 						}
 					}
-					if (ImGui::MenuItem("Hide (compress to zigzag)"))
+					if (ImGui::MenuItem("Hide range"))
 					{
-						memoryDbg.hiddenRanges.Add(
-						    {memoryDbg.selectionStart, memoryDbg.selectionEnd});
-						// Sort by start for the compressed mapping
-						memoryDbg.hiddenRanges.Sort([](const DebugMemoryContext::HiddenRange& a,
-						                                const DebugMemoryContext::HiddenRange& b)
+						if (memoryDbg.selectionValid && memoryDbg.selectionEnd > memoryDbg.selectionStart)
 						{
-							return a.start < b.start;
-						});
+							DebugMemoryContext::HiddenRange hr;
+							hr.start = memoryDbg.selectionStart;
+							hr.end   = memoryDbg.selectionEnd;
+							memoryDbg.hiddenRanges.Add(hr);
+							std::sort(memoryDbg.hiddenRanges.begin(), memoryDbg.hiddenRanges.end(),
+							    [](const DebugMemoryContext::HiddenRange& a,
+							       const DebugMemoryContext::HiddenRange& b)
+							{
+								return a.start < b.start;
+							});
+						}
+					}
+					if (ImGui::MenuItem("Clear selection"))
+					{
 						memoryDbg.selectionValid = false;
 					}
 					ImGui::EndPopup();
 				}
 			}
 
-			// Draw the major-tick grid lines through the graph area ON TOP of
-			// the rows (darker than the bright timeline tick, but still visible).
+			// ----- Wheel: zoom (with anchor) + Alt-pan (inverted) -----
 			{
-				const ImU32 gridCol = p::Color{120, 120, 120}.ToPackedABGR();
-				for (int t = 0; t < majorTickXs.Size(); ++t)
+				const ImRect wGraphRect(canvasPos, canvasPos + canvasSize);
+				const double wAddressY0   = addressY0;
+				const double wAddressH    = addressH;
+				const double wViewStart   = memoryDbg.smoothViewStart;
+				const double wViewRange   = memoryDbg.smoothViewRange;
+				const int    wBytesPerLine = (memoryDbg.bytesPerLine > 0) ? memoryDbg.bytesPerLine : 1;
+				if (wGraphRect.Contains(ImGui::GetIO().MousePos))
 				{
-					drawList->AddLine(ImVec2(majorTickXs[t], canvasPos.y + rulerH),
-					    ImVec2(majorTickXs[t], canvasPos.y + canvasSize.y), gridCol, 1.0f);
-				}
-			}
-
-			// Zoom / pan over the full child window (ruler, hex/ascii, rows, empty)
-			// (graphRect is defined before the selection/hidden-ranges block below)
-
-			// Mouse wheel: Alt+wheel pans horizontally, wheel alone zooms
-			if (graphRect.Contains(ImGui::GetIO().MousePos))
-			{
-				float wheel = ImGui::GetIO().MouseWheel;
-				if (wheel != 0.0f)
-				{
-					if (ImGui::GetIO().KeyAlt)
+					const float wheel = ImGui::GetIO().MouseWheel;
+					if (wheel != 0.0f)
 					{
-						// Alt+wheel: pan horizontally (one notch ≈ 5% of visible range,
-						// smaller intervals for fine control). Wheel up/right →
-						// view advances to higher addresses.
-						const double addrDelta = static_cast<double>(wheel) * viewRange * 0.05;
-						memoryDbg.viewStart    = static_cast<uintptr_t>(viewStart + addrDelta);
-					}
-					else
-					{
-						float mx = ImGui::GetIO().MousePos.x;
-						double addrAtCursor;
-						if (mx <= graphX0)
+						if (ImGui::GetIO().KeyAlt)
 						{
-							// Cursor in hex column or before graph area — anchor at view start
-							addrAtCursor = viewStart;
+							// Inverted pan: wheel up → higher addresses
+							const double addrDelta = -static_cast<double>(wheel) * wViewRange * 0.05;
+							memoryDbg.viewStart    = static_cast<uintptr_t>(wViewStart + addrDelta);
 						}
 						else
 						{
-							double relX  = static_cast<double>(mx - graphX0) / graphW;
-							addrAtCursor = viewStart + relX * viewRange;
+							const float my = ImGui::GetIO().MousePos.y;
+							double       addrAtCursor;
+							if (my <= wAddressY0)
+							{
+								addrAtCursor = wViewStart;
+							}
+							else if (my >= wAddressY0 + wAddressH)
+							{
+								addrAtCursor = wViewStart + wViewRange;
+							}
+							else
+							{
+								addrAtCursor = wViewStart
+								    + ((static_cast<double>(my) - wAddressY0) / wAddressH) * wViewRange;
+							}
+							const double minViewRange = p::Max(1.0,
+							    wAddressH / (24.0 * static_cast<double>(wBytesPerLine)));
+							double newViewRange = (wheel > 0) ? (wViewRange / 1.15) : (wViewRange * 1.15);
+							if (newViewRange < minViewRange)
+							{
+								newViewRange = minViewRange;
+							}
+							if (newViewRange > range)
+							{
+								newViewRange = range;
+							}
+							const double zoomEpsilon = 0.5;
+							const bool   atMinZoom   = (newViewRange <= minViewRange + zoomEpsilon);
+							const bool   atMaxZoom   = (newViewRange >= range - zoomEpsilon);
+							if (atMinZoom || atMaxZoom)
+							{
+								memoryDbg.viewRange       = atMinZoom ? minViewRange : range;
+								memoryDbg.isZooming       = false;
+								memoryDbg.smoothViewRange = memoryDbg.viewRange;
+								memoryDbg.smoothViewStart = static_cast<double>(memoryDbg.viewStart);
+							}
+							else
+							{
+								// Zoom coupling: anchor stays at cursor
+								const double relX         = (wAddressH > 0.0)
+								    ? ((static_cast<double>(my) - wAddressY0) / wAddressH)
+								    : 0.0;
+								const double newStart     = addrAtCursor - relX * newViewRange;
+								memoryDbg.viewStart       = static_cast<uintptr_t>(newStart);
+								memoryDbg.viewRange       = newViewRange;
+								memoryDbg.smoothViewStart = newStart;
+								memoryDbg.smoothViewRange = newViewRange;
+								memoryDbg.zoomAnchorAddr  = static_cast<uintptr_t>(addrAtCursor);
+								memoryDbg.zoomAnchorRelX  = static_cast<float>(relX);
+								memoryDbg.isZooming       = true;
+							}
 						}
-
-						// Zoom in/out: shrink/grow the visible byte range.
-						// Cap zoom-in so each byte is at most 24px wide.
-						// Cap zoom-out to the content size so the view never
-						// escapes the memory range into terabytes of empty space.
-						const double minViewRange = (graphW / 24.0 > 1.0) ? (graphW / 24.0) : 1.0;
-						double newViewRange = (wheel > 0) ? (viewRange / 1.15) : (viewRange * 1.15);
-						if (newViewRange < minViewRange)
-						{
-							newViewRange = minViewRange;
-						}
-						if (newViewRange > range)
-						{
-							newViewRange = range;
-						}
-
-						// Anchor the address under the cursor. Store the anchor and
-						// its relative x; the top-of-frame couples smoothViewStart
-						// to smoothViewRange so the anchor stays fixed while the
-						// range lerps (no left/right flicker).
-						double relX = 0.0;
-						if (mx > graphX0)
-						{
-							relX = static_cast<double>(mx - graphX0) / graphW;
-						}
-						const uintptr_t anchorAddr = (uintptr_t)(viewStart + relX * viewRange);
-						const double newViewStart  = (double)anchorAddr - relX * newViewRange;
-
-						memoryDbg.viewStart      = static_cast<uintptr_t>(newViewStart);
-						memoryDbg.viewRange      = newViewRange;
-						memoryDbg.isZooming      = true;
-						memoryDbg.zoomAnchorAddr = anchorAddr;
-						memoryDbg.zoomAnchorRelX = static_cast<float>(relX);
 					}
 				}
 			}
 
-			// Drag to pan — middle mouse button only.
-			// Left-drag is reserved for area selection.
-			// Drag right → view moves to LOWER addresses (grab/inverted model:
-			// the content follows the mouse, like dragging a map). Snap the
-			// smooth position directly so the drag feels instant (no lerp lag).
-			if (graphRect.Contains(ImGui::GetIO().MousePos) && ImGui::IsMouseDragging(2))
+			// ----- Middle-mouse pan (inverted/grab model) -----
 			{
-				memoryDbg.isZooming = false;
-				const float dx      = ImGui::GetIO().MouseDelta.x;
-				if (dx != 0.0f)
+				const ImRect dGraphRect(canvasPos, canvasPos + canvasSize);
+				if (dGraphRect.Contains(ImGui::GetIO().MousePos) && ImGui::IsMouseDragging(2))
 				{
-					const double addrDelta    = -static_cast<double>(dx) / graphW * viewRange;
-					memoryDbg.viewStart       = static_cast<uintptr_t>(viewStart + addrDelta);
-					memoryDbg.smoothViewStart = static_cast<double>(memoryDbg.viewStart);
+					memoryDbg.isZooming = false;
+					const float dy      = ImGui::GetIO().MouseDelta.y;
+					if (dy != 0.0f)
+					{
+						const double addrDelta    = -static_cast<double>(dy) / addressH * memoryDbg.smoothViewRange;
+						memoryDbg.viewStart       = static_cast<uintptr_t>(memoryDbg.smoothViewStart + addrDelta);
+						memoryDbg.smoothViewStart = static_cast<double>(memoryDbg.viewStart);
+					}
 				}
 			}
 		}
-		ImGui::EndChild();
+		ImGui::End();    // View
 
-		// Details panel (dockable window)
-		if (selectedInfo)
+		// Details window (docked to the right of the View)
+		if (memoryDbg.showDetails)
 		{
-			ImGui::SameLine();
-			ImGui::BeginChild("##details", ImVec2(detailsWidth, graphHeight), true);
-
-			ImGui::Text("Arena Details");
-			ImGui::Separator();
-
-			ImGui::Text("Type: %s", GetTypeName(selectedInfo->typeId).data());
-			ImGui::Text("Block: 0x%llX - 0x%llX", selectedInfo->blockBegin,
-			    static_cast<u8*>(selectedInfo->blockBegin) + selectedInfo->blockSize);
+			if (memoryDbg.detailsDockId != 0)
 			{
-				const String sizeStr = Strings::ParseMemorySize(selectedInfo->blockSize);
-				ImGui::Text("Size: %s (%zuB)", sizeStr.data(), selectedInfo->blockSize);
+				ImGui::SetNextWindowDockID(memoryDbg.detailsDockId, ImGuiCond_FirstUseEver);
 			}
-
-			if (selectedInfo->usedSize > 0 || selectedInfo->freeSize > 0)
+			if (ImGui::Begin("Details"))
 			{
-				float usedPct = 100.0f * selectedInfo->usedSize / selectedInfo->blockSize;
-				ImGui::Text("Used: %zu (%.1f%%)", selectedInfo->usedSize, usedPct);
-				ImGui::Text("Free: %zu (%.1f%%)", selectedInfo->freeSize, 100.0f - usedPct);
-
-				// Progress bar
-				ImGui::ProgressBar(usedPct / 100.0f);
+				if (selectedInfo)
+				{
+					ImGui::Text("Arena Details");
+					ImGui::Separator();
+					ImGui::Text("Type: %s", GetTypeName(selectedInfo->typeId).data());
+					ImGui::Text("Block: 0x%llX - 0x%llX",
+					    static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(selectedInfo->blockBegin)),
+					    static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(selectedInfo->blockBegin)
+					        + selectedInfo->blockSize));
+					{
+						const String sizeStr = Strings::ParseMemorySize(selectedInfo->blockSize);
+						ImGui::Text("Size: %s (%zuB)", sizeStr.data(), selectedInfo->blockSize);
+					}
+					if (selectedInfo->usedSize > 0 || selectedInfo->freeSize > 0)
+					{
+						const float usedPct = 100.0f * selectedInfo->usedSize / selectedInfo->blockSize;
+						ImGui::Text("Used: %zu (%.1f%%)", selectedInfo->usedSize, usedPct);
+						ImGui::Text("Free: %zu (%.1f%%)", selectedInfo->freeSize, 100.0f - usedPct);
+						ImGui::ProgressBar(usedPct / 100.0f);
+					}
+					ImGui::Separator();
+					ImGui::Text("Blocks: %d", static_cast<int>(selectedInfo->blocks.Size()));
+					for (int b = 0; b < selectedInfo->blocks.Size(); ++b)
+					{
+						char blockLabel[128];
+						static String sizeStr;
+						sizeStr = Strings::ParseMemorySize(selectedInfo->blockSizes[b]);
+						snprintf(blockLabel, sizeof(blockLabel),
+						    "Block %d: 0x%llX | %s (%zuB)", b,
+						    static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(selectedInfo->blocks[b])),
+						    sizeStr.data(), selectedInfo->blockSizes[b]);
+						ImGui::BulletText("%s", blockLabel);
+					}
+					ImGui::Separator();
+					if (ImGui::Button("Deselect"))
+					{
+						memoryDbg.selectedArena = -1;
+					}
+				}
+				else
+				{
+					ImGui::TextDisabled("No arena selected.");
+					ImGui::TextDisabled("Click a column or a block in the graph.");
+				}
+				ImGui::End();
 			}
-
-			ImGui::Separator();
-			ImGui::Text("Blocks: %d", static_cast<int>(selectedInfo->blocks.Size()));
-
-			// List blocks
-			for (int b = 0; b < selectedInfo->blocks.Size(); ++b)
-			{
-				char blockLabel[128];
-				static String sizeStr;
-				sizeStr = Strings::ParseMemorySize(selectedInfo->blockSizes[b]);
-				snprintf(blockLabel, sizeof(blockLabel), "Block %d: 0x%llX | %s (%zuB)", b,
-				    selectedInfo->blocks[b], sizeStr.data(), selectedInfo->blockSizes[b]);
-				ImGui::BulletText("%s", blockLabel);
-			}
-
-			// Close button
-			ImGui::Separator();
-			if (ImGui::Button("Deselect"))
-			{
-				memoryDbg.selectedArena = -1;
-			}
-
-			ImGui::EndChild();
 		}
 
-		ImGui::End();
+		ImGui::End();    // Parent window (closes the ImGuiWindowFlags_MenuBar window)
 	}
 	#pragma endregion Memory
 
