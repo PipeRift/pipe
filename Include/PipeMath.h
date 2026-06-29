@@ -262,7 +262,7 @@ namespace p
 	{
 		return i32(Round(v));
 	}
-	P_API constexpr i32 RoundToI32(double v)
+	P_API constexpr i64 RoundToI64(double v)
 	{
 		return i64(Round(v));
 	}
