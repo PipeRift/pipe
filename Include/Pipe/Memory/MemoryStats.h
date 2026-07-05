@@ -77,7 +77,7 @@ namespace p
 
 	struct P_API MemoryStats
 	{
-		const char* name = nullptr;
+		mutable const char* name = nullptr;
 
 		// When true, leaks are checked when the arena is destroyed.
 		// Mutable so it can be flipped through a const GetStats() pointer.
@@ -120,8 +120,8 @@ namespace p
 			// consumer advances to next chunk (relaxed) as it drains.
 			std::atomic<Chunk*> head{nullptr};
 			// Producer's current chunk. Consumer does not access.
-			Chunk* tail           = nullptr;
-			MemoryStats* owner    = nullptr;
+			Chunk* tail            = nullptr;
+			MemoryStats* owner     = nullptr;
 			ThreadContext* nextCtx = nullptr;
 		};
 

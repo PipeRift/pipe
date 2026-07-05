@@ -187,6 +187,7 @@ namespace p
 
 	TagStringTable::TagStringTable() : strings{arena}
 	{
+		arena.GetStats()->name = "Pipe Tags";
 		// Ensure pipe's main arena is initialized. This guaranties memory is deinitialized before
 		// tags
 		GetHeapArena();
