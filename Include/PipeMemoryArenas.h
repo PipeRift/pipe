@@ -69,7 +69,6 @@ namespace p
 		{
 			return &stats;
 		}
-
 	protected:
 		TypeId ProvideTypeId() const override
 		{
@@ -136,7 +135,6 @@ namespace p
 		{
 			return &stats;
 		}
-
 	protected:
 		TypeId ProvideTypeId() const override
 		{
@@ -290,7 +288,6 @@ namespace p
 		{
 			return &stats;
 		}
-
 	protected:
 		TypeId ProvideTypeId() const override
 		{
@@ -399,7 +396,6 @@ namespace p
 		{
 			return &stats;
 		}
-
 	private:
 		i32 FindSmallestSlot(sizet neededSize);
 		void ReduceSlot(
@@ -511,7 +507,6 @@ namespace p
 		{
 			return &stats;
 		}
-
 	private:
 		AllocationHeader* GetHeader(void* ptr) const
 		{

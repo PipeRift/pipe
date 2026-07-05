@@ -23,6 +23,7 @@ go_bandit([]()
 		it("Reserves a block on construction", [&]()
 		{
 			BestFitArena arena{1024};
+			arena.GetStats()->detectLeaks = false;
 			AssertThat(arena.GetFreeSize(), Equals(1024));
 			AssertThat(*arena.GetBlock(), Is().Not().Null());
 			AssertThat(arena.GetBlock().size, Is().EqualTo(1024));
@@ -31,6 +32,7 @@ go_bandit([]()
 		it("Can allocate", [&]()
 		{
 			BestFitArena arena{1024};
+			arena.GetStats()->detectLeaks = false;
 
 			void* p = arena.Alloc(4);
 			new (p) TypeOfSize<4>();
@@ -41,6 +43,7 @@ go_bandit([]()
 		it("Allocates at correct addresses", [&]()
 		{
 			BestFitArena arena{1024};
+			arena.GetStats()->detectLeaks = false;
 
 			const auto* blockPtr = static_cast<const u8*>(*arena.GetBlock());
 
@@ -56,6 +59,7 @@ go_bandit([]()
 		it("Detects there is not enough space", [&]()
 		{
 			BestFitArena arena{32};
+			arena.GetStats()->detectLeaks = false;
 
 			// 16 bytes
 			void* p = arena.Alloc(20);
@@ -77,6 +81,7 @@ go_bandit([]()
 		it("Allocates with alignment", [&]()
 		{
 			BestFitArena arena{1024};
+			arena.GetStats()->detectLeaks = false;
 
 			void* b = arena.Alloc(1);
 			new (b) TypeOfSize<1>();
@@ -100,6 +105,7 @@ go_bandit([]()
 		it("Can free", [&]()
 		{
 			BestFitArena arena{64};
+			arena.GetStats()->detectLeaks = false;
 
 			void* p = arena.Alloc(32);
 			new (p) TypeOfSize<32>();
@@ -113,6 +119,7 @@ go_bandit([]()
 		it("Can free multiple", [&]()
 		{
 			BestFitArena arena{64};
+			arena.GetStats()->detectLeaks = false;
 
 			void* p = arena.Alloc(16);
 			new (p) TypeOfSize<16>();
@@ -134,6 +141,7 @@ go_bandit([]()
 		it("Can free in between allocations", [&]()
 		{
 			BestFitArena arena{64};
+			arena.GetStats()->detectLeaks = false;
 
 			void* p = arena.Alloc(32);
 			new (p) TypeOfSize<32>();
@@ -163,6 +171,7 @@ go_bandit([]()
 		it("Can merge previous and next slots on free", [&]()
 		{
 			BestFitArena arena{64};
+			arena.GetStats()->detectLeaks = false;
 
 			void* p = arena.Alloc(9);
 			new (p) TypeOfSize<9>();
@@ -201,6 +210,7 @@ go_bandit([]()
 		it("Can merge previous slot on free", [&]()
 		{
 			BestFitArena arena{48};
+			arena.GetStats()->detectLeaks = false;
 
 			void* p = arena.Alloc(39);
 			new (p) TypeOfSize<39>();
@@ -228,6 +238,7 @@ go_bandit([]()
 		it("Can merge next slot on free", [&]()
 		{
 			BestFitArena arena{48};
+			arena.GetStats()->detectLeaks = false;
 
 			void* p = arena.Alloc(24);
 			new (p) TypeOfSize<24>();
@@ -255,6 +266,7 @@ go_bandit([]()
 		it("Ensures a big alignment leaves a gap", [&]()
 		{
 			BestFitArena arena{128};
+			arena.GetStats()->detectLeaks = false;
 
 			// We ensure first allocation aligns the block (just for the test)
 			void* p = arena.Alloc(8);

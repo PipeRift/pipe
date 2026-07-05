@@ -18,6 +18,7 @@ go_bandit([]()
 			MonoLinearArena arena{1024};
 
 			AssertThat(arena.GetAvailableMemory(), Is().EqualTo(1024));
+			arena.GetStats()->CollectStats();
 			AssertThat(arena.GetStats()->used, Is().EqualTo(0));
 		});
 
@@ -56,6 +57,7 @@ go_bandit([]()
 			MonoLinearArena arena{1024};
 			void* p = arena.Alloc(sizeof(float));
 			AssertThat(p, Is().Not().Null());
+			arena.GetStats()->CollectStats();
 			AssertThat(arena.GetStats()->used, Is().EqualTo(4));
 			AssertThat(arena.GetAvailableMemory(), Is().EqualTo(1024));
 			arena.Free(p, sizeof(float));
@@ -86,6 +88,7 @@ go_bandit([]()
 			arena.Release();
 			void* p = arena.Alloc(sizeof(float));
 			AssertThat(p, Is().Not().Null());
+			arena.GetStats()->CollectStats();
 			AssertThat(arena.GetStats()->used, Is().EqualTo(4));
 			// Buffer size will be as small as the type (4 bytes)
 			AssertThat(arena.GetAvailableMemory(), Is().EqualTo(1024));
@@ -97,8 +100,10 @@ go_bandit([]()
 		{
 			MonoLinearArena arena{1024};
 			void* p = arena.Alloc(256);
+			arena.GetStats()->CollectStats();
 			AssertThat(arena.GetStats()->used, Is().EqualTo(256));
 			arena.Free(p, 256);
+			arena.GetStats()->CollectStats();
 			AssertThat(arena.GetStats()->used, Is().EqualTo(0));
 		});
 

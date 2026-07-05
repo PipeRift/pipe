@@ -264,6 +264,8 @@ namespace p
 			sizet freeSize   = 0;
 			TArray<void*> blocks;
 			TArray<sizet> blockSizes;
+
+			TArray<MemoryStatsEvent> events;
 		};
 		TArray<ArenaBlockInfo> arenaInfos;
 	};
@@ -2079,14 +2081,11 @@ namespace p
 			const auto* stats = arena->GetStats();
 			if (stats)
 			{
-				// Read summary counters under a brief shared lock.
-				// We do NOT copy the allocations/freedAllocations TArrays here —
-				// their copy-assignment would allocate from the current arena, which
-				// (when the arena being debugged IS the current arena) recurses into
-				// stats.Add() and deadlocks on the same mutex.
-				std::shared_lock<std::shared_mutex> statsLock(stats->mutex);
+				stats->CollectStats();
 				info.usedSize = stats->used;
 				info.freeSize = info.blockSize > info.usedSize ? info.blockSize - info.usedSize : 0;
+				// events already contains adds + frees in chronological order.
+				info.events = stats->events;
 			}
 
 			memoryDbg.arenaInfos.Add(info);
@@ -2325,8 +2324,8 @@ namespace p
 			{
 				const double targetStart = static_cast<double>(memoryDbg.viewStart);
 				const double targetRange = memoryDbg.viewRange;
-				const double dt           = ImGui::GetIO().DeltaTime;
-				const double alpha        = 1.0 - std::exp(-25.0 * dt);
+				const double dt          = ImGui::GetIO().DeltaTime;
+				const double alpha       = 1.0 - std::exp(-25.0 * dt);
 
 				if (memoryDbg.smoothViewRange < 0.0)
 				{
@@ -2803,8 +2802,9 @@ namespace p
 				// Per-allocation markers (debug invalid/unfreed allocations).
 				// Live = green, freed-but-tracked = red/orange. Drawn as a thin
 				// colored line at the top of the row at the allocation's address.
-				// We read stats->allocations directly under a shared_lock — no copy
-				// into a TArray (which would recurse into Alloc and deadlock).
+				// Markers are read from per-info snapshots (refreshed by
+				// TakeSnapshot in the data-collection pass) so the draw path holds
+				// no lock and can safely run on the main thread.
 				{
 					const uintptr_t arenaStart = reinterpret_cast<uintptr_t>(info.blockBegin);
 					const uintptr_t arenaEnd = info.blockBegin ? (arenaStart + info.blockSize) : 0;
@@ -2825,20 +2825,11 @@ namespace p
 						    ImVec2(tx - 0.5f, rowY), ImVec2(tx + 0.5f, rowY + tickH), color);
 					};
 
-					const MemoryStats* rowStats = info.arena ? info.arena->GetStats() : nullptr;
-					if (rowStats)
+					for (const auto& ev : info.events)
 					{
-						std::shared_lock<std::shared_mutex> statsLock(rowStats->mutex);
-						for (const auto& a : rowStats->allocations)
-						{
-							DrawTick(reinterpret_cast<uintptr_t>(a.ptr),
-							    p::Color::Emerald().ToPackedABGR());
-						}
-						for (const auto& a : rowStats->freedAllocations)
-						{
-							DrawTick(reinterpret_cast<uintptr_t>(a.ptr),
-							    p::Color{230, 90, 60, 220}.ToPackedABGR());
-						}
+						const u32 color = ev.IsFree() ? p::Color{230, 90, 60, 220}.ToPackedABGR()
+						                                : p::Color::Emerald().ToPackedABGR();
+						DrawTick(reinterpret_cast<uintptr_t>(ev.GetPtr()), color);
 					}
 				}
 
