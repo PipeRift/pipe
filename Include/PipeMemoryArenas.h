@@ -69,7 +69,6 @@ namespace p
 		{
 			return &stats;
 		}
-
 	protected:
 		TypeId ProvideTypeId() const override
 		{
@@ -136,7 +135,6 @@ namespace p
 		{
 			return &stats;
 		}
-
 	protected:
 		TypeId ProvideTypeId() const override
 		{
@@ -249,6 +247,9 @@ namespace p
 		using Super = ChildArena;
 		P_STRUCT(MultiLinearArena)
 
+	private:
+		MemoryStats stats;
+
 	protected:
 		Details::LinearSmallPool smallPool;
 		Details::LinearMediumPool mediumPool;
@@ -283,6 +284,10 @@ namespace p
 			bigPool.GetBlocks(outBlocks);
 		}
 
+		const MemoryStats* GetStats() const override
+		{
+			return &stats;
+		}
 	protected:
 		TypeId ProvideTypeId() const override
 		{
@@ -296,6 +301,9 @@ namespace p
 	{
 		using Super = ChildArena;
 		P_STRUCT(BestFitArena)
+
+	private:
+		MemoryStats stats;
 
 	public:
 		struct Slot
@@ -384,6 +392,10 @@ namespace p
 			}
 		}
 
+		const MemoryStats* GetStats() const override
+		{
+			return &stats;
+		}
 	private:
 		i32 FindSmallestSlot(sizet neededSize);
 		void ReduceSlot(
@@ -403,6 +415,9 @@ namespace p
 	{
 		using Super = ChildArena;
 		P_STRUCT(BigBestFitArena)
+
+	private:
+		MemoryStats stats;
 
 	public:
 		struct AllocationHeader
@@ -488,6 +503,10 @@ namespace p
 			return GetHeader(ptr)->end;
 		}
 
+		const MemoryStats* GetStats() const override
+		{
+			return &stats;
+		}
 	private:
 		AllocationHeader* GetHeader(void* ptr) const
 		{

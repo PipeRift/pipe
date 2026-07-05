@@ -205,6 +205,7 @@ namespace p
 
 	MultiLinearArena::MultiLinearArena(Arena& parentArena) : ChildArena(&parentArena)
 	{
+		stats.name = "Multi Linear Arena";
 		Interface<MultiLinearArena>();
 	}
 
@@ -216,26 +217,30 @@ namespace p
 
 	void* MultiLinearArena::Alloc(sizet size, sizet align)
 	{
+		void* ptr;
 		if (size < smallPool.maxSize)
 		{
-			return smallPool.Alloc(GetParentArena(), size, align);
+			ptr = smallPool.Alloc(GetParentArena(), size, align);
 		}
 		else if (size < mediumPool.maxSize)
 		{
-			return mediumPool.Alloc(GetParentArena(), size, align);
+			ptr = mediumPool.Alloc(GetParentArena(), size, align);
 		}
 		else if (size < bigPool.maxSize)
 		{
-			return bigPool.Alloc(GetParentArena(), size, align);
+			ptr = bigPool.Alloc(GetParentArena(), size, align);
 		}
 		else
 		{
-			return GetParentArena().Alloc(size, align);
+			ptr = GetParentArena().Alloc(size, align);
 		}
+		stats.Add(ptr, size);
+		return ptr;
 	}
 
 	void MultiLinearArena::Free(void* ptr, sizet size)
 	{
+		stats.Remove(ptr, size);
 		if (size < smallPool.maxSize)
 		{
 			smallPool.Free(GetParentArena(), ptr, size);
@@ -256,6 +261,7 @@ namespace p
 
 	void MultiLinearArena::Release()
 	{
+		stats.Release();
 		smallPool.Release(GetParentArena());
 		mediumPool.Release(GetParentArena());
 		bigPool.Release(GetParentArena());
@@ -307,6 +313,7 @@ namespace p
 
 	BestFitArena::BestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
+		stats.name = "Best Fit Arena";
 		Interface<BestFitArena>();
 
 		P_Check(initialSize > 0);
@@ -341,6 +348,7 @@ namespace p
 
 		ReduceSlot(slotIndex, slot, start, end);
 		freeSize -= size;
+		stats.Add(start, size);
 		return start;
 	}
 
@@ -360,11 +368,13 @@ namespace p
 
 		ReduceSlot(slotIndex, slot, start, end);
 		freeSize -= size;
+		stats.Add(start, size);
 		return start;
 	}
 
 	void BestFitArena::Free(void* ptr, sizet size)
 	{
+		stats.Remove(ptr, size);
 		if (ptr)
 		{
 			u8* const allocationStart = static_cast<u8*>(ptr);
@@ -501,6 +511,7 @@ namespace p
 
 	BigBestFitArena::BigBestFitArena(Arena* parent, const sizet initialSize) : ChildArena(parent)
 	{
+		stats.name = "Big Best Fit Arena";
 		Interface<BigBestFitArena>();
 
 		P_Check(initialSize > 0);
@@ -550,7 +561,10 @@ namespace p
 
 		ReduceSlot(
 		    slotIndex, slot, ToOffset(header, block.data), ToOffset(header->end, block.data));
-		freeSize -= static_cast<u8*>(header->end) - reinterpret_cast<u8*>(header);
+		const sizet realSize =
+		    static_cast<u8*>(header->end) - reinterpret_cast<u8*>(header);
+		freeSize -= realSize;
+		stats.Add(header, realSize);
 		return ptr;
 	}
 
@@ -561,8 +575,10 @@ namespace p
 			auto* const header        = GetHeader(ptr);
 			u8* const allocationStart = reinterpret_cast<u8*>(header);
 			u8* const allocationEnd   = header->end;
+			const sizet realSize      = allocationEnd - allocationStart;
 
-			freeSize += allocationEnd - allocationStart;
+			stats.Remove(header, realSize);
+			freeSize += realSize;
 			AbsorbFreeSpace(
 			    ToOffset(allocationStart, block.data), ToOffset(allocationEnd, block.data));
 		}

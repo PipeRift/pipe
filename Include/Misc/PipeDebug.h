@@ -275,6 +275,7 @@ namespace p
 			Tag name;
 			TypeId typeId;
 			Tag typeName;
+			TArray<MemoryStatsEvent> events;
 		};
 		TArray<ArenaSnapshot> snapshots;
 	};
@@ -2212,8 +2213,10 @@ namespace p
 			const auto* stats = arena->GetStats();
 			if (stats)
 			{
+				stats->CollectStats();
 				snapshot.name = Tag(stats->name);
 				snapshot.used = stats->used;
+				// snapshot.events = stats->events;
 			}
 
 			memoryDbg.snapshots.Add(snapshot);
@@ -2674,12 +2677,12 @@ namespace p
 					{
 						for (i32 a = 0; a < memoryDbg.snapshots.Size(); ++a)
 						{
-							const auto& info = memoryDbg.snapshots[a];
-							if (!info.begin || info.capacity == 0)
+							const auto& snapshot = memoryDbg.snapshots[a];
+							if (!snapshot.begin || snapshot.capacity == 0)
 							{
 								continue;
 							}
-							for (const auto& block : info.blocks)
+							for (const auto& block : snapshot.blocks)
 							{
 								const sizet bs = reinterpret_cast<sizet>(block.data);
 								const sizet be = bs + block.size;
@@ -2876,8 +2879,8 @@ namespace p
 			// ----- Arena columns loop (blocks, markers, click, tooltip) -----
 			for (i32 i = 0; i < memoryDbg.snapshots.Size(); ++i)
 			{
-				const auto& info        = memoryDbg.snapshots[i];
-				const p::Color baseFill = details::GetArenaColor(info.typeId);
+				const auto& snapshot    = memoryDbg.snapshots[i];
+				const p::Color baseFill = details::GetArenaColor(snapshot.typeId);
 				const bool isSelected   = (i == memoryDbg.selectionArenaIdx);
 				const p::Color fill     = isSelected ? (baseFill * 0.65f) : baseFill;
 				const p::Color outline  = isSelected ? p::Color::Orange() : p::Color{0, 0, 0, 80};
@@ -2896,9 +2899,9 @@ namespace p
 				}
 
 				// Block draw + double-click focus
-				if (info.begin && info.capacity > 0)
+				if (snapshot.begin && snapshot.capacity > 0)
 				{
-					for (const auto& block : info.blocks)
+					for (const auto& block : snapshot.blocks)
 					{
 						const sizet blockStart = reinterpret_cast<sizet>(block.data);
 						const float y0Raw      = AddrToY(blockStart);
@@ -2946,43 +2949,43 @@ namespace p
 					}
 				}
 
-				// Allocation markers (live = green, freed = red)
 				{
-					const sizet arenaStart      = reinterpret_cast<sizet>(info.begin);
-					const sizet arenaEnd        = info.begin ? (arenaStart + info.capacity) : 0;
-					const MemoryStats* rowStats = info.arena ? info.arena->GetStats() : nullptr;
-					if (rowStats)
+					TSet<u8*> freedAllocs;
+
+					for (auto& ev : snapshot.events)
 					{
-						std::shared_lock<std::shared_mutex> statsLock(rowStats->mutex);
-						for (const auto& a : rowStats->allocations)
+						if (ev.IsFree())
 						{
-							const sizet addr = reinterpret_cast<sizet>(a.ptr);
-							if (addr < arenaStart || addr >= arenaEnd)
-							{
-								continue;
-							}
-							const float ty = AddrToY(addr);
-							if (ty < addressY0 || ty > addressY1)
-							{
-								continue;
-							}
-							drawList->AddRectFilled(ImVec2(colX, ty - 0.5f),
-							    ImVec2(colRight, ty + 0.5f), p::Color::Emerald().DWColor());
+							// const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
+							// const float ty   = AddrToY(addr);
+							// const float ty2  = AddrToY(addr + ev.GetSize());
+							// if (ty < addressY0 || ty2 > addressY1)
+							//{
+							//	continue;
+							// }
+
+							// drawList->AddRectFilled(ImVec2(colX, ty - 0.5f),
+							//     ImVec2(colRight, ty2 + 0.5f), p::Color::Red().DWColor());
+
+							freedAllocs.Insert(ev.GetPtr());
 						}
-						for (const auto& a : rowStats->freedAllocations)
+					}
+
+					for (auto& ev : snapshot.events)
+					{
+						if (!ev.IsFree()
+						    && !freedAllocs.Contains(ev.GetPtr()))    // Alive allocations
 						{
-							const sizet addr = reinterpret_cast<sizet>(a.ptr);
-							if (addr < arenaStart || addr >= arenaEnd)
+							const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
+							const float ty   = AddrToY(addr);
+							const float ty2  = AddrToY(addr + ev.GetSize());
+							if (ty < addressY0 || ty2 > addressY1)
 							{
 								continue;
 							}
-							const float ty = AddrToY(addr);
-							if (ty < addressY0 || ty > addressY1)
-							{
-								continue;
-							}
-							drawList->AddRectFilled(ImVec2(colX, ty - 0.5f),
-							    ImVec2(colRight, ty + 0.5f), p::Color{230, 90, 60, 220}.DWColor());
+
+							// drawList->AddRectFilled(ImVec2(colX, ty - 0.5f),
+							//     ImVec2(colRight, ty2 + 0.5f), p::Color::Green().DWColor());
 						}
 					}
 				}
@@ -3000,31 +3003,32 @@ namespace p
 				{
 					ImGui::BeginTooltip();
 					ImGui::SeparatorText("Arena");
-					ImGui::Text("Name: %s (%s)", info.name.Data(), info.typeName.Data());
-					ImGui::Text("Range: 0x%llX - 0x%llX", reinterpret_cast<sizet>(info.begin),
-					    reinterpret_cast<sizet>(info.begin) + info.capacity);
+					ImGui::Text("Name: %s (%s)", snapshot.name.Data(), snapshot.typeName.Data());
+					ImGui::Text("Range: 0x%llX - 0x%llX", reinterpret_cast<sizet>(snapshot.begin),
+					    reinterpret_cast<sizet>(snapshot.begin) + snapshot.capacity);
 					static String sizeStr;
-					if (info.capacity > 0)
+					if (snapshot.capacity > 0)
 					{
-						sizeStr = Strings::ParseMemorySize(info.capacity);
-						ImGui::Text("Capacity: %s (%zuB)", sizeStr.data(), info.capacity);
+						sizeStr = Strings::ParseMemorySize(snapshot.capacity);
+						ImGui::Text("Capacity: %s (%zuB)", sizeStr.data(), snapshot.capacity);
 					}
-					if (info.used > 0)
+					if (snapshot.used > 0)
 					{
-						sizeStr         = Strings::ParseMemorySize(info.used);
-						const float cof = (info.capacity > 0) ? info.used / info.capacity : 0;
-						ImGui::Text(
-						    "Used: %s (%.1f%%  %zuB)", sizeStr.c_str(), 100.0f * cof, info.used);
+						sizeStr = Strings::ParseMemorySize(snapshot.used);
+						const float cof =
+						    (snapshot.capacity > 0) ? snapshot.used / snapshot.capacity : 0;
+						ImGui::Text("Used: %s (%.1f%%  %zuB)", sizeStr.c_str(), 100.0f * cof,
+						    snapshot.used);
 					}
 					ImGui::EndTooltip();
 				}
 
 				// Column header (vertical, drawn LAST so rects/markers don't cover it)
-				const char* name = info.name.Data();
+				const char* name = snapshot.name.Data();
 				bool nameIsType  = false;
 				if (!name)
 				{
-					name       = info.typeName.Data();
+					name       = snapshot.typeName.Data();
 					nameIsType = true;
 				}
 				if (name)
@@ -3096,8 +3100,8 @@ namespace p
 					const DebugMemoryContext::ArenaSnapshot* hit = nullptr;
 					for (i32 i = 0; i < memoryDbg.snapshots.Size() && !hit; ++i)
 					{
-						const auto& info = memoryDbg.snapshots[i];
-						if (!info.begin || info.capacity == 0)
+						const auto& snapshot = memoryDbg.snapshots[i];
+						if (!snapshot.begin || snapshot.capacity == 0)
 						{
 							continue;
 						}
@@ -3106,11 +3110,11 @@ namespace p
 						{
 							continue;
 						}
-						const sizet aStart = reinterpret_cast<sizet>(info.begin);
-						const sizet aEnd   = aStart + info.capacity;
+						const sizet aStart = reinterpret_cast<sizet>(snapshot.begin);
+						const sizet aEnd   = aStart + snapshot.capacity;
 						if (hoverAddr >= aStart && hoverAddr < aEnd)
 						{
-							hit = &info;
+							hit = &snapshot;
 						}
 					}
 					ImGui::BeginTooltip();
@@ -3145,8 +3149,8 @@ namespace p
 					i32 blockIdx = NO_INDEX;
 					for (i32 i = 0; i < memoryDbg.snapshots.Size(); ++i)
 					{
-						const auto& info = memoryDbg.snapshots[i];
-						if (!info.begin || info.capacity == 0)
+						const auto& snapshot = memoryDbg.snapshots[i];
+						if (!snapshot.begin || snapshot.capacity == 0)
 						{
 							continue;
 						}
@@ -3155,9 +3159,9 @@ namespace p
 						{
 							continue;
 						}
-						for (i32 e = 0; e < info.blocks.Size(); ++e)
+						for (i32 e = 0; e < snapshot.blocks.Size(); ++e)
 						{
-							const auto& block  = info.blocks[e];
+							const auto& block  = snapshot.blocks[e];
 							const sizet bStart = reinterpret_cast<sizet>(block.data);
 							const sizet bEnd   = bStart + block.size;
 							if (bEnd <= bStart)

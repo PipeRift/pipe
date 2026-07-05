@@ -20,8 +20,8 @@ go_bandit([]()
 		{
 			AssertThat(p::RunProcess({""}).IsSet(), Equals(false));
 
-#if defined(_MSC_VER)    // Test with different commands
-			AssertThat(p::RunProcess({"whoami"}).IsSet(), Equals(true));
+#if defined(_MSC_VER)    // Test with a silent command (no stdout)
+			AssertThat(p::RunProcess({"cmd", "/c", "exit", "0"}).IsSet(), Equals(true));
 #endif
 		});
 	});
