@@ -154,6 +154,8 @@ namespace p
 			return false;
 		}
 
+		registry.arena.GetStats()->name = "Pipe Type Registry";
+
 		// Pre-reserve to reduce reallocations during type registration
 		constexpr i32 expectedTypeCount = 64;
 		registry.ids.Reserve(expectedTypeCount);
@@ -369,7 +371,7 @@ namespace p
 
 		{    // Cache inherited properties
 			auto& allProperties = reg.allProperties[currentEdit.index];
-			allProperties.Clear(false);
+			allProperties.Clear(Shrink::No);
 
 			// Assign properties from parent
 			const i32 parentIdx = details::GetTypeIndex(reg, reg.parentIds[currentEdit.index]);

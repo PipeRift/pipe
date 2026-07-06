@@ -5,6 +5,7 @@
 
 #include <bandit/bandit.h>
 #include <Pipe.h>
+#include <PipeMemoryArenas.h>
 
 
 // namespace backward
@@ -16,6 +17,9 @@
 int main(int argc, char* argv[])
 {
 	p::Initialize();
+	// Suppress leak messages from the global HeapArena (used internally by
+	// many subsystems; not all of them free every allocation during tests).
+	p::GetHeapArena().GetStats()->detectLeaks = false;
 	int result = bandit::run(argc, argv);
 	p::Shutdown();
 	return result;

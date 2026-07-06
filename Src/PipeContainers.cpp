@@ -120,13 +120,13 @@ namespace p
 		}
 	}
 
-	void BitArray::Resize(i32 newSize, const bool shouldShrink)
+	void BitArray::Resize(i32 newSize, Shrink shouldShrink)
 	{
 		size = newSize;
 		bits.Resize(((newSize - 1) >> 5) + 1, shouldShrink);
 	}
 
-	void BitArray::Resize(i32 newSize, bool value, const bool shouldShrink)
+	void BitArray::Resize(i32 newSize, bool value, Shrink shouldShrink)
 	{
 		size = newSize;
 		bits.Resize(((newSize - 1) >> 5) + 1, value ? 0xffffffff : 0x00000000, shouldShrink);
