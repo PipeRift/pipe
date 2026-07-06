@@ -69,7 +69,9 @@ namespace p
 		}
 	}    // namespace
 
-	MemoryStats::MemoryStats() : events{GetStatsArena()} {}
+	MemoryStats::MemoryStats()
+	    : events{GetStatsArena()}, live{GetStatsArena()}, frees{GetStatsArena()}
+	{}
 
 	MemoryStats::~MemoryStats()
 	{
@@ -230,45 +232,102 @@ namespace p
 				chunk = next;
 			}
 		}
+
+
+		// Fast (ptr,size) key: XOR ptr with mixed size to produce a
+		// single u64. Cheaper to hash than the full 16-byte event.
+		auto EventKey = [](const MemoryStatsEvent& ev) -> u64
+		{
+			return reinterpret_cast<u64>(ev.GetPtr())
+			     ^ (static_cast<u64>(ev.GetSize()) * 0x9E3779B97F4A7C15ULL);
+		};
+
+		// Reverse scan: build live bitmask + set of unmatched free keys.
+		live.Resize(events.Size());
+		live.SetAllFalse();
+		TSet<u64> freeKeys{GetStatsArena()};
+		for (i32 i = events.Size() - 1; i >= 0; --i)
+		{
+			const auto& ev = events[i];
+			if (ev.IsFree())
+			{
+				freeKeys.Insert(EventKey(ev));
+			}
+			else
+			{
+				auto it = freeKeys.FindIt(EventKey(ev));
+				if (it != freeKeys.end())
+				{
+					freeKeys.RemoveIt(it);
+				}
+				else
+				{
+					live.SetTrue(i);
+				}
+			}
+		}
+
+		// In-place compaction + bitmask rebuild (single pass).
+		// Drops matched alloc/free pairs, keeps leaks + stray frees.
+		frees.Resize(events.Size());
+		frees.SetAllFalse();
+		i32 writeIdx = 0;
+		for (i32 i = 0; i < events.Size(); ++i)
+		{
+			const MemoryStatsEvent& ev = events[i];
+			const bool keep =
+			    ev.IsFree() ? freeKeys.Contains(EventKey(ev)) : live.IsSet(i);
+			if (keep)
+			{
+				const bool isFree = ev.IsFree();
+				if (writeIdx != i)
+				{
+					events[writeIdx] = ev;
+				}
+				if (isFree)
+				{
+					frees.SetTrue(writeIdx);
+					live.SetFalse(writeIdx);
+				}
+				else
+				{
+					live.SetTrue(writeIdx);
+				}
+				++writeIdx;
+			}
+		}
+		events.Resize(writeIdx);
+		frees.Resize(writeIdx);
+		live.Resize(writeIdx);
 	}
 
 	void MemoryStats::CheckLeaks() const
 	{
-		TSet<MemoryStatsEvent> live{GetStatsArena()};
-		for (const auto& ev : events)
-		{
-			if (ev.IsFree())
-			{
-				live.Remove(ev);
-			}
-			else
-			{
-				live.Insert(ev);
-			}
-		}
-
-		if (live.IsEmpty())
+		const i32 numLeaks = live.CountSetBits();
+		if (numLeaks <= 0)
 		{
 			return;
 		}
 
 		String errorMsg;
-		Strings::FormatTo(errorMsg, "{}: {} allocs were not freed!", name, live.Size());
+		Strings::FormatTo(errorMsg, "{}: {} allocs were not freed!", name, numLeaks);
 
-		const i32 shown = Min(64, live.Size());
-		i32 i           = 0;
-		for (const auto& ev : live)
+		const i32 shown = Min(64, numLeaks);
+		i32 i           = -1;
+		i32 printed     = 0;
+		while (printed < shown)
 		{
-			if (i >= shown)
+			i = live.GetNextSet(i);
+			if (i == NO_INDEX)
 			{
 				break;
 			}
-			PrintAllocationError("", &ev);
-			++i;
+			PrintAllocationError("", &events[i]);
+			++printed;
 		}
-		if (live.Size() > shown)
+		if (numLeaks > shown)
 		{
-			Strings::FormatTo(errorMsg, "\n...\n{} more not shown.", live.Size() - shown);
+			Strings::FormatTo(errorMsg, "\n...\n{} more not shown.", numLeaks - shown);
 		}
 		std::puts(errorMsg.data());
 	}

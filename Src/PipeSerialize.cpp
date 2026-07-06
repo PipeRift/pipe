@@ -375,7 +375,7 @@ namespace p
 		{
 			current = parent;
 		}
-		scopeStack.RemoveAt(scopeStack.Size() - 1, false);
+		scopeStack.RemoveAt(scopeStack.Size() - 1, Shrink::No);
 	}
 
 	void JsonFormatReader::BeginObject()
@@ -802,7 +802,7 @@ namespace p
 			}
 		}
 		current = scope.parent;
-		scopeStack.RemoveAt(scopeStack.Size() - 1, false);
+		scopeStack.RemoveAt(scopeStack.Size() - 1, Shrink::No);
 	}
 
 	bool JsonFormatWriter::EnterNext(StringView name)

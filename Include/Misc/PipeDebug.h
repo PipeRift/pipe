@@ -275,9 +275,9 @@ namespace p
 			Tag name;
 			TypeId typeId;
 			Tag typeName;
-			TArray<MemoryStatsEvent> events;
-			BitArray live;
-			BitArray frees;
+			const TArray<MemoryStatsEvent>* events = nullptr;
+			const BitArray* live                   = nullptr;
+			const BitArray* frees                  = nullptr;
 		};
 		TArray<ArenaSnapshot> snapshots;
 	};
@@ -2216,9 +2216,11 @@ namespace p
 			if (stats)
 			{
 				stats->CollectStats();
-				snapshot.name = Tag(stats->name);
-				snapshot.used = stats->used;
-				// snapshot.events = stats->events;
+				snapshot.name   = Tag(stats->name);
+				snapshot.used   = stats->used;
+				snapshot.events = &stats->events;
+				snapshot.live   = &stats->live;
+				snapshot.frees  = &stats->frees;
 			}
 
 			memoryDbg.snapshots.Add(snapshot);
@@ -2492,29 +2494,15 @@ namespace p
 			viewEnd   = viewStart + viewRange;
 
 			// ----- Hidden range helpers -----
-			auto HiddenBytesBefore = [&](sizet a) -> double
-			{
-				double hidden = 0.0;
-				for (const auto& h : memoryDbg.hiddenRanges)
-				{
-					if (h.end <= a)
-					{
-						hidden += static_cast<double>(h.end - h.start);
-					}
-					else if (h.start < a)
-					{
-						hidden += static_cast<double>(a - h.start);
-					}
-					else
-					{
-						break;
-					}
-				}
-				return hidden;
-			};
+			TArray<sizet> hRangeStarts;
+			TArray<sizet> hRangeEnds;
+			TArray<double> hCumHidden;
 			double hiddenAtEnd = 0.0;
 			for (const auto& h : memoryDbg.hiddenRanges)
 			{
+				hRangeStarts.Add(h.start);
+				hRangeEnds.Add(h.end);
+				hCumHidden.Add(hiddenAtEnd);
 				hiddenAtEnd += static_cast<double>(h.end - h.start);
 			}
 			double safeEffectiveViewRange = viewRange - hiddenAtEnd;
@@ -2526,23 +2514,36 @@ namespace p
 			// ----- Mapping helpers (address <-> vertical pixel) -----
 			auto AddrToY = [&](sizet a) -> float
 			{
-				sizet aa = a;
-				if (aa < static_cast<sizet>(viewStart))
+				sizet aa               = a;
+				const sizet viewStartS = static_cast<sizet>(viewStart);
+				const sizet viewEndS   = static_cast<sizet>(viewStart + viewRange);
+				if (aa < viewStartS)
 				{
-					aa = static_cast<sizet>(viewStart);
+					aa = viewStartS;
 				}
-				if (aa > static_cast<sizet>(viewStart + viewRange))
+				if (aa > viewEndS)
 				{
-					aa = static_cast<sizet>(viewStart + viewRange);
+					aa = viewEndS;
 				}
-				double hidden = HiddenBytesBefore(aa);
-				for (const auto& h : memoryDbg.hiddenRanges)
+				sizet lo = 0, hi = hRangeEnds.Size();
+				while (lo < hi)
 				{
-					if (aa >= h.start && aa < h.end)
+					const sizet mid = lo + (hi - lo) / 2;
+					if (hRangeEnds[mid] > aa)
 					{
-						hidden += static_cast<double>(aa - h.start);
-						aa = h.end;
+						hi = mid;
 					}
+					else
+					{
+						lo = mid + 1;
+					}
+				}
+				double hidden = (lo < hCumHidden.Size()) ? hCumHidden[lo] : hiddenAtEnd;
+				while (lo < hRangeStarts.Size() && hRangeStarts[lo] <= aa)
+				{
+					hidden += static_cast<double>(aa - hRangeStarts[lo]);
+					aa = hRangeEnds[lo];
+					++lo;
 				}
 				const double visibleOffset = static_cast<double>(aa - viewStart) - hidden;
 				return addressY0
@@ -2881,23 +2882,23 @@ namespace p
 			// ----- Arena columns loop (blocks, markers, click, tooltip) -----
 			for (i32 i = 0; i < memoryDbg.snapshots.Size(); ++i)
 			{
-				const auto& snapshot    = memoryDbg.snapshots[i];
-				const p::Color baseFill = details::GetArenaColor(snapshot.typeId);
-				const bool isSelected   = (i == memoryDbg.selectionArenaIdx);
-				const p::Color fill     = isSelected ? (baseFill * 0.65f) : baseFill;
-				const p::Color outline  = isSelected ? p::Color::Orange() : p::Color{0, 0, 0, 80};
-				const ImU32 fillU32     = fill.DWColor();
-				const ImU32 outlineU32  = outline.DWColor();
-				const float colX        = ArenaColumnX(i);
-				const float colRight    = colX + colW;
+				const auto& snapshot          = memoryDbg.snapshots[i];
+				const bool isSelected         = (i == memoryDbg.selectionArenaIdx);
+				const p::Color arenaColor     = details::GetArenaColor(snapshot.typeId);
+				const p::Color arenaBg        = arenaColor.Translucency(30);
+				const p::Color blockFillColor = isSelected ? arenaColor.Shade(0.65f) : arenaColor;
+				const p::Color blockLineColor =
+				    isSelected ? p::Color::Orange() : blockFillColor.Shade(0.5f);
+				const p::Color allocLiveColor = arenaColor.Tint(0.1f);
+				const float colX              = ArenaColumnX(i);
+				const float colRight          = colX + colW;
 
 				// Column background (subtle arena tint so each column is
 				// visually distinct from the window bg, similar to the
 				// alternating row backgrounds in the ImGui Tree view demo).
 				{
-					const p::Color colBg{baseFill.r, baseFill.g, baseFill.b, 30};
 					drawList->AddRectFilled(
-					    ImVec2(colX, addressY0), ImVec2(colRight, addressY1), colBg.DWColor());
+					    ImVec2(colX, addressY0), ImVec2(colRight, addressY1), arenaBg.DWColor());
 				}
 
 				// Block draw + double-click focus
@@ -2922,8 +2923,10 @@ namespace p
 						}
 						y0 = (y0 > addressY0) ? y0 : addressY0;
 						y1 = (y1 < addressY1) ? y1 : addressY1;
-						drawList->AddRectFilled(ImVec2(colX, y0), ImVec2(colRight, y1), fillU32);
-						drawList->AddRect(ImVec2(colX, y0), ImVec2(colRight, y1), outlineU32);
+						drawList->AddRectFilled(
+						    ImVec2(colX, y0), ImVec2(colRight, y1), blockFillColor.DWColor());
+						drawList->AddRect(
+						    ImVec2(colX, y0), ImVec2(colRight, y1), blockLineColor.DWColor());
 						// Double-click a block to focus it
 						if (ImGui::IsMouseDoubleClicked(0))
 						{
@@ -2952,42 +2955,31 @@ namespace p
 				}
 
 				{
-					TSet<u8*> freedAllocs;
-
-					for (auto& ev : snapshot.events)
+					// Walk live allocs
+					if (snapshot.live && snapshot.events)
 					{
-						if (ev.IsFree())
+						const float padding    = colW * 0.25f;
+						const sizet viewStartS = static_cast<sizet>(viewStart);
+						const sizet viewEndS   = static_cast<sizet>(viewStart + viewRange);
+						i32 lastI              = NO_INDEX;
+						for (i32 i = snapshot.live->GetNextSet(NO_INDEX); i > lastI;
+						    lastI = i, i = snapshot.live->GetNextSet(i))
 						{
-							// const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
-							// const float ty   = AddrToY(addr);
-							// const float ty2  = AddrToY(addr + ev.GetSize());
-							// if (ty < addressY0 || ty2 > addressY1)
-							//{
-							//	continue;
-							// }
-
-							// drawList->AddRectFilled(ImVec2(colX, ty - 0.5f),
-							//     ImVec2(colRight, ty2 + 0.5f), p::Color::Red().DWColor());
-
-							freedAllocs.Insert(ev.GetPtr());
-						}
-					}
-
-					for (auto& ev : snapshot.events)
-					{
-						if (!ev.IsFree()
-						    && !freedAllocs.Contains(ev.GetPtr()))    // Alive allocations
-						{
+							const auto& ev   = (*snapshot.events)[i];
 							const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
-							const float ty   = AddrToY(addr);
-							const float ty2  = AddrToY(addr + ev.GetSize());
-							if (ty < addressY0 || ty2 > addressY1)
+							const sizet size = ev.GetSize();
+							if (addr + size <= viewStartS || addr >= viewEndS)
 							{
 								continue;
 							}
-
-							// drawList->AddRectFilled(ImVec2(colX, ty - 0.5f),
-							//     ImVec2(colRight, ty2 + 0.5f), p::Color::Green().DWColor());
+							const float ty  = AddrToY(addr);
+							const float ty2 = AddrToY(addr + size);
+							if (ty >= addressY0 && ty2 <= addressY1)
+							{
+								drawList->AddRectFilled(ImVec2(colX + padding, ty - 0.5f),
+								    ImVec2(colRight - padding, ty2 + 0.5f),
+								    allocLiveColor.DWColor());
+							}
 						}
 					}
 				}
@@ -3509,8 +3501,8 @@ namespace p
 					ImGui::TextDisabled("No arena selected.");
 					ImGui::TextDisabled("Click a column or a block in the graph.");
 				}
-				ImGui::End();
 			}
+			ImGui::End();
 		}
 
 		ImGui::End();    // Parent window (closes the ImGuiWindowFlags_MenuBar window)

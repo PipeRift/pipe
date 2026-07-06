@@ -415,7 +415,7 @@ namespace p
 			}
 			else
 			{
-				freeSlots.RemoveAtUnsafe(slotIndex, false);
+				freeSlots.RemoveAtUnsafe(slotIndex, Shrink::No);
 			}
 			return;
 		}
@@ -615,7 +615,7 @@ namespace p
 			}
 			else
 			{
-				freeSlots.RemoveAtUnsafe(slotIndex, false);
+				freeSlots.RemoveAtUnsafe(slotIndex, Shrink::No);
 			}
 			return;
 		}

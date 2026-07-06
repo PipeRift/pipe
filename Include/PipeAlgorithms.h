@@ -312,7 +312,11 @@ namespace p
 				return last - Index(moveDown);
 			}
 
-			auto i     = LowerBound(data, first, size, min, TGreater<>());
+			const Index i = LowerBound(data, first, size, min, TGreater<>());
+			if (i == NO_INDEX)
+			{
+				return NO_INDEX;
+			}
 			const T& v = data[i];
 			if (v > min || (v == min && included))
 			{
@@ -362,7 +366,7 @@ namespace p
 			const Index rightChildIndex = leftChildIndex + 1;
 
 			Index minChildIndex = leftChildIndex;
-			if (rightChildIndex < index)
+			if (rightChildIndex < count)
 			{
 				minChildIndex = predicate(heap[leftChildIndex], heap[rightChildIndex])
 				                  ? leftChildIndex
@@ -383,7 +387,7 @@ namespace p
 	{
 		while (nodeIndex > rootIndex)
 		{
-			i32 parentIndex = HeapGetParentIndex(nodeIndex);
+			const Index parentIndex = HeapGetParentIndex(nodeIndex);
 			if (!predicate(heap[nodeIndex], heap[parentIndex]))
 			{
 				break;
@@ -439,7 +443,7 @@ namespace p
 		}
 
 		Stack recursionStack[32] = {
-		    {first, first + size - 1, u32(Log(float(size)) * 2.f)}
+		    {first, first + size - 1, Min(u32(Log(float(size)) * 2.f), 31u)}
         };
 		Stack current, inner;
 

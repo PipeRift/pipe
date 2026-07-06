@@ -63,14 +63,14 @@ namespace p
 
 		friend bool operator==(const MemoryStatsEvent& a, const MemoryStatsEvent& b) noexcept
 		{
-			return a.ptr == b.ptr;
+			return a.ptr == b.ptr && a.GetSize() == b.GetSize();
 		}
 	};
 #pragma pack(pop)
 
 	inline sizet GetHash(const MemoryStatsEvent& ev) noexcept
 	{
-		return GetHash(ev.GetPtr());
+		return HashCombine(GetHash(ev.GetPtr()), ev.GetSize());
 	}
 	static_assert(sizeof(MemoryStatsEvent) == 16);
 
@@ -84,6 +84,16 @@ namespace p
 		mutable bool detectLeaks = true;
 
 		mutable TArray<MemoryStatsEvent> events;
+
+		// Bit i set when events[i] is an allocation that, by the last
+		// CollectStats, had not been matched by a corresponding free.
+		mutable BitArray live;
+
+		// Bit i set when events[i] is a free event. Cached so consumers
+		// can classify events via a bit-test instead of MemoryStatsEvent.
+		mutable BitArray frees;
+
+
 		mutable sizet used           = 0;
 		mutable sizet totalAllocated = 0;
 

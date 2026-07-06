@@ -1458,7 +1458,7 @@ namespace p
 				if (callback(parentId))
 				{
 					outParentIds.Add(parentId);
-					parentIds.RemoveAtSwap(i, false);
+					parentIds.RemoveAtSwap(i, Shrink::No);
 				}
 				else
 				{
@@ -1566,7 +1566,7 @@ namespace p
 				if (!child || IsNone(child->parent))    // Current is Root
 				{
 					outRoots.AddUniqueSorted(currentId);
-					currentIds.RemoveAtSwap(i, false);
+					currentIds.RemoveAtSwap(i, Shrink::No);
 					--i;
 				}
 				else    // Current is not root
