@@ -276,6 +276,8 @@ namespace p
 			TypeId typeId;
 			Tag typeName;
 			TArray<MemoryStatsEvent> events;
+			BitArray live;
+			BitArray frees;
 		};
 		TArray<ArenaSnapshot> snapshots;
 	};
@@ -1087,7 +1089,7 @@ namespace p
 							Swap(lastIdx, currIdx);
 						}
 
-						ecsDbg.selectedIds.Clear(false);
+						ecsDbg.selectedIds.Clear(Shrink::No);
 						ecsDbg.lastSelectedId = NoId;
 						for (auto& pair : ecsDbg.idToDisplayIndex)
 						{
@@ -1101,7 +1103,7 @@ namespace p
 				}
 				else
 				{
-					ecsDbg.selectedIds.Clear(false);
+					ecsDbg.selectedIds.Clear(Shrink::No);
 					ecsDbg.selectedIds.Add(id);
 					ecsDbg.lastSelectedId = id;
 				}
@@ -1115,7 +1117,7 @@ namespace p
 				}
 				else
 				{
-					ecsDbg.selectedIds.Clear(false);
+					ecsDbg.selectedIds.Clear(Shrink::No);
 					ecsDbg.contextMenuIds.Assign(1, id);
 				}
 				ImGui::OpenPopup("IdContextMenu");
@@ -1620,15 +1622,15 @@ namespace p
 
 			{        // Filtering
 				{    // Cache pools
-					ecsDbg.includePools.Clear(false);
-					ecsDbg.excludePools.Clear(false);
-					ecsDbg.previewPools.Clear(false);
+					ecsDbg.includePools.Clear(Shrink::No);
+					ecsDbg.excludePools.Clear(Shrink::No);
+					ecsDbg.previewPools.Clear(Shrink::No);
 					GetDebugCtx().GetPools(ecsDbg.includeTypes, ecsDbg.includePools);
 					GetDebugCtx().GetPools(ecsDbg.excludeTypes, ecsDbg.excludePools);
 					GetDebugCtx().GetPools(ecsDbg.previewTypes, ecsDbg.previewPools);
 				}
 
-				ecsDbg.ids.Clear(false);
+				ecsDbg.ids.Clear(Shrink::No);
 				if (ecsDbg.includeTypes.IsEmpty())
 				{
 					ecsDbg.ids.Assign(GetDebugCtx().Size());
@@ -1646,7 +1648,7 @@ namespace p
 
 				for (const IPool* pool : ecsDbg.excludePools)
 				{
-					ExcludeIdsWithStable(pool, ecsDbg.ids, false);
+					ExcludeIdsWithStable(pool, ecsDbg.ids, Shrink::No);
 				}
 
 				if (ecsDbg.filter.IsActive())

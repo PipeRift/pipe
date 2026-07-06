@@ -813,7 +813,7 @@ namespace p
 	}
 
 
-	void ExcludeIdsWith(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIdsWith(const IPool* pool, TArray<Id>& ids, Shrink shouldShrink)
 	{
 		for (i32 i = ids.Size() - 1; i >= 0; --i)
 		{
@@ -822,13 +822,13 @@ namespace p
 				ids.RemoveAtSwapUnsafe(i);
 			}
 		}
-		if (shouldShrink)
+		if (shouldShrink == Shrink::Yes)
 		{
 			ids.Shrink();
 		}
 	}
 
-	void ExcludeIdsWithStable(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIdsWithStable(const IPool* pool, TArray<Id>& ids, Shrink shouldShrink)
 	{
 		ids.RemoveIf([pool](Id id)
 		{
@@ -836,7 +836,7 @@ namespace p
 		}, shouldShrink);
 	}
 
-	void ExcludeIdsWithout(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIdsWithout(const IPool* pool, TArray<Id>& ids, Shrink shouldShrink)
 	{
 		for (i32 i = ids.Size() - 1; i >= 0; --i)
 		{
@@ -845,13 +845,13 @@ namespace p
 				ids.RemoveAtSwapUnsafe(i);
 			}
 		}
-		if (shouldShrink)
+		if (shouldShrink == Shrink::Yes)
 		{
 			ids.Shrink();
 		}
 	}
 
-	void ExcludeIdsWithoutStable(const IPool* pool, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIdsWithoutStable(const IPool* pool, TArray<Id>& ids, Shrink shouldShrink)
 	{
 		ids.RemoveIf([pool](Id id)
 		{
@@ -859,8 +859,7 @@ namespace p
 		}, shouldShrink);
 	}
 
-	void ExcludeIdsWithoutAny(
-	    TView<const IPool* const> pools, TArray<Id>& ids, const bool shouldShrink)
+	void ExcludeIdsWithoutAny(TView<const IPool* const> pools, TArray<Id>& ids, Shrink shouldShrink)
 	{
 		BitArray hasCounts(ids.Size());
 		for (auto* pool : pools)
@@ -884,7 +883,7 @@ namespace p
 	}
 
 	void ExcludeIdsWithoutAnyStable(
-	    TView<const IPool* const> pools, TArray<Id>& ids, const bool shouldShrink)
+	    TView<const IPool* const> pools, TArray<Id>& ids, Shrink shouldShrink)
 	{
 		BitArray hasCounts(ids.Size());
 		for (auto* pool : pools)
@@ -931,7 +930,7 @@ namespace p
 		{
 			if (i != smallestIdx)
 			{
-				ExcludeIdsWithout(pools[i], results, false);
+				ExcludeIdsWithout(pools[i], results, Shrink::No);
 			}
 		}
 	}
@@ -957,7 +956,7 @@ namespace p
 	}
 
 	void ExtractIdsWith(
-	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, Shrink shouldShrink)
 	{
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		for (i32 i = source.Size() - 1; i >= 0; --i)
@@ -969,14 +968,14 @@ namespace p
 				results.Add(id);
 			}
 		}
-		if (shouldShrink)
+		if (shouldShrink == Shrink::Yes)
 		{
 			source.Shrink();
 		}
 	}
 
 	void ExtractIdsWithStable(
-	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, Shrink shouldShrink)
 	{
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		source.RemoveIf([pool, &results](Id id)
@@ -991,7 +990,7 @@ namespace p
 	}
 
 	void ExtractIdsWithout(
-	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, Shrink shouldShrink)
 	{
 		results.ReserveMore(source.Size());
 		for (i32 i = source.Size() - 1; i >= 0; --i)
@@ -1003,14 +1002,14 @@ namespace p
 				results.Add(id);
 			}
 		}
-		if (shouldShrink)
+		if (shouldShrink == Shrink::Yes)
 		{
 			source.Shrink();
 		}
 	}
 
 	void ExtractIdsWithoutStable(
-	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, const bool shouldShrink)
+	    const IPool* pool, TArray<Id>& source, TArray<Id>& results, Shrink shouldShrink)
 	{
 		results.ReserveMore(Min(i32(pool->Size()), source.Size()));
 		source.RemoveIf([pool, &results](Id id)
@@ -1026,7 +1025,7 @@ namespace p
 
 	void FindAllIdsWith(TView<const IPool* const> pools, TArray<Id>& ids)
 	{
-		ids.Clear(false);
+		ids.Clear(Shrink::No);
 		if (pools.IsEmpty())
 		{
 			return;
@@ -1057,14 +1056,14 @@ namespace p
 			if (i != smallestIdx)
 			{
 				const IPool* pool = pools[i];
-				ExcludeIdsWithout(pool, ids, false);
+				ExcludeIdsWithout(pool, ids, Shrink::No);
 			}
 		}
 	}
 
 	void FindAllIdsWithAny(TView<const IPool* const> pools, TArray<Id>& ids)
 	{
-		ids.Clear(false);
+		ids.Clear(Shrink::No);
 		if (pools.IsEmpty())
 		{
 			return;
@@ -1081,7 +1080,7 @@ namespace p
 
 	void FindAllIdsWithAnyUnique(TView<const IPool* const> pools, TArray<Id>& ids)
 	{
-		ids.Clear(false);
+		ids.Clear(Shrink::No);
 		if (pools.IsEmpty())
 		{
 			return;
@@ -1403,7 +1402,7 @@ namespace p
 	void GetIdParent(
 	    TIdScopeRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents)
 	{
-		outParents.Clear(false);
+		outParents.Clear(Shrink::No);
 		for (Id childId : childrenIds)
 		{
 			const auto* child = access.TryGet<const CChild>(childId);
@@ -1416,7 +1415,7 @@ namespace p
 	void GetAllIdParents(
 	    TIdScopeRef<CChild> access, TView<const Id> childrenIds, TArray<Id>& outParents)
 	{
-		outParents.Clear(false);
+		outParents.Clear(Shrink::No);
 
 		TArray<Id> currentIds{childrenIds};
 		TArray<Id> parentIds;
@@ -1426,7 +1425,7 @@ namespace p
 			GetIdParent(access, currentIds, parentIds);
 			outParents.Append(parentIds);
 			Swap(currentIds, parentIds);
-			parentIds.Clear(false);
+			parentIds.Clear(Shrink::No);
 		}
 	}
 
@@ -1445,7 +1444,7 @@ namespace p
 	void FindIdParents(TIdScopeRef<CChild> access, TView<const Id> childrenIds,
 	    TArray<Id>& outParentIds, const TFunction<bool(Id)>& callback)
 	{
-		outParentIds.Clear(false);
+		outParentIds.Clear(Shrink::No);
 
 		TArray<Id> currentIds{childrenIds};
 		TArray<Id> parentIds;
@@ -1467,7 +1466,7 @@ namespace p
 				}
 			}
 			Swap(currentIds, parentIds);
-			parentIds.Clear(false);
+			parentIds.Clear(Shrink::No);
 		}
 	}
 
@@ -1522,7 +1521,7 @@ namespace p
 	void GetIdParentRoots(TIdScopeRef<CChild> scope, TView<const Id> childrenIds,
 	    TArray<Id>& outRoots, bool considerChildren)
 	{
-		outRoots.Clear(false);
+		outRoots.Clear(Shrink::No);
 
 		if (childrenIds.Size() == 0)
 		{

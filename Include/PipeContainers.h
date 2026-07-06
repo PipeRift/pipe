@@ -18,6 +18,13 @@
 
 namespace p
 {
+	enum class Shrink
+	{
+		No  = 0,
+		Yes = 1
+	};
+
+
 	////////////////////////////////
 	// RANGES
 	//
@@ -857,7 +864,7 @@ namespace p
 		}
 		~TArray()
 		{
-			Clear(true);
+			Clear(Shrink::Yes);
 		}
 #pragma endregion Constructors
 
@@ -1050,21 +1057,21 @@ namespace p
 
 		void Assign(i32 count)
 		{
-			Clear(false);
+			Clear(Shrink::No);
 			Reserve(count);
 			Super::size = count;
 			ConstructItems(Super::data, count);
 		}
 		void Assign(i32 count, const Type& value)
 		{
-			Clear(false);
+			Clear(Shrink::No);
 			Reserve(count);
 			Super::size = count;
 			ConstructItems(Super::data, count, value);
 		}
 		void Assign(const Type* values, i32 count)
 		{
-			Clear(false);
+			Clear(Shrink::No);
 			Reserve(count);
 			Super::size = count;
 			CopyConstructItems(Super::data, count, values);
@@ -1141,7 +1148,7 @@ namespace p
 		 * Delete the first item that matches another item
 		 * @return number of deleted items
 		 */
-		i32 Remove(const Type& item, bool shouldShrink = true)
+		i32 Remove(const Type& item, Shrink shouldShrink = Shrink::Yes)
 		{
 			return RemoveAt(Super::FindIndex(item), shouldShrink);
 		}
@@ -1151,7 +1158,7 @@ namespace p
 		 * Doesn't preserve order.
 		 * @return number of deleted items
 		 */
-		i32 RemoveSwap(const Type& item, bool shouldShrink = true)
+		i32 RemoveSwap(const Type& item, Shrink shouldShrink = Shrink::Yes)
 		{
 			return RemoveAtSwap(Super::FindIndex(item), shouldShrink);
 		}
@@ -1161,20 +1168,20 @@ namespace p
 		 * NOTE: Make sure you need this behavior instead of RemoveAll().
 		 * @return number of deleted items
 		 */
-		i32 Remove(const IArray<const Type>& items, bool shouldShrink = true)
+		i32 Remove(const IArray<const Type>& items, Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastSize = Super::size;
 			for (const auto& item : items)
 			{
-				RemoveAt(Super::FindIndex(item), false);
+				RemoveAt(Super::FindIndex(item), Shrink::No);
 			}
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
 			return lastSize - Super::size;
 		}
-		i32 Remove(const IArray<Mut<Type>>& items, bool shouldShrink = true)
+		i32 Remove(const IArray<Mut<Type>>& items, Shrink shouldShrink = Shrink::Yes)
 		{
 			return Remove(reinterpret_cast<const IArray<const Type>&>(items), shouldShrink);
 		}
@@ -1185,20 +1192,20 @@ namespace p
 		 * NOTE: Make sure you need this behavior instead of RemoveAll().
 		 * @return number of deleted items
 		 */
-		i32 RemoveSwap(const IArray<const Type>& items, bool shouldShrink = true)
+		i32 RemoveSwap(const IArray<const Type>& items, Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastSize = Super::size;
 			for (const auto& item : items)
 			{
-				RemoveAtSwap(Super::FindIndex(item), false);
+				RemoveAtSwap(Super::FindIndex(item), Shrink::No);
 			}
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
 			return lastSize - Super::size;
 		}
-		i32 RemoveSwap(const IArray<Mut<Type>>& items, bool shouldShrink = true)
+		i32 RemoveSwap(const IArray<Mut<Type>>& items, Shrink shouldShrink = Shrink::Yes)
 		{
 			return RemoveSwap(reinterpret_cast<const IArray<const Type>&>(items), shouldShrink);
 		}
@@ -1207,18 +1214,18 @@ namespace p
 		 * Delete all items that match another item
 		 * @return number of deleted items
 		 */
-		i32 RemoveAll(const Type& item, bool shouldShrink = true)
+		i32 RemoveAll(const Type& item, Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastSize = Super::size;
 			for (i32 i = 0; i < Super::size; ++i)
 			{
 				if (item == Super::data[i])
 				{
-					RemoveAtUnsafe(i, false);
+					RemoveAtUnsafe(i, Shrink::No);
 					--i;    // Repeat same index
 				}
 			}
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
@@ -1230,18 +1237,18 @@ namespace p
 		 * Doesn't preserve order.
 		 * @return number of deleted items
 		 */
-		i32 RemoveAllSwap(const Type& item, bool shouldShrink = true)
+		i32 RemoveAllSwap(const Type& item, Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastSize = Super::size;
 			for (i32 i = 0; i < Super::size; ++i)
 			{
 				if (item == Super::data[i])
 				{
-					RemoveAtSwapUnsafe(i, false);
+					RemoveAtSwapUnsafe(i, Shrink::No);
 					--i;    // Repeat same index
 				}
 			}
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
@@ -1252,24 +1259,24 @@ namespace p
 		 * Delete all items that match another list of items.
 		 * @return number of deleted items
 		 */
-		i32 RemoveAll(const IArray<const Type>& items, bool shouldShrink = true)
+		i32 RemoveAll(const IArray<const Type>& items, Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastSize = Super::size;
 			for (i32 i = 0; i < Super::size; ++i)
 			{
 				if (items.Contains(Super::data[i]))
 				{
-					RemoveAtUnsafe(i, false);
+					RemoveAtUnsafe(i, Shrink::No);
 					--i;    // Repeat same index
 				}
 			}
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
 			return lastSize - Super::size;
 		}
-		i32 RemoveAll(const IArray<Mut<Type>>& items, bool shouldShrink = true)
+		i32 RemoveAll(const IArray<Mut<Type>>& items, Shrink shouldShrink = Shrink::Yes)
 		{
 			return RemoveAll(reinterpret_cast<const IArray<const Type>&>(items), shouldShrink);
 		}
@@ -1279,24 +1286,24 @@ namespace p
 		 * Doesn't preserve order.
 		 * @return number of deleted items
 		 */
-		i32 RemoveAllSwap(const IArray<const Type>& items, bool shouldShrink = true)
+		i32 RemoveAllSwap(const IArray<const Type>& items, Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastSize = Super::size;
 			for (i32 i = 0; i < Super::size; ++i)
 			{
 				if (items.Contains(Super::data[i]))
 				{
-					RemoveAtSwapUnsafe(i, false);
+					RemoveAtSwapUnsafe(i, Shrink::No);
 					--i;    // Repeat same index
 				}
 			}
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
 			return lastSize - Super::size;
 		}
-		i32 RemoveAllSwap(const IArray<Mut<Type>>& items, bool shouldShrink = true)
+		i32 RemoveAllSwap(const IArray<Mut<Type>>& items, Shrink shouldShrink = Shrink::Yes)
 		{
 			return RemoveAllSwap(reinterpret_cast<const IArray<const Type>&>(items), shouldShrink);
 		}
@@ -1305,7 +1312,7 @@ namespace p
 		// Removes an item assuming the array is sorted
 		template<typename OtherType, typename SortPredicate = TLess<>>
 		bool RemoveSorted(const OtherType& value, SortPredicate sortPredicate = {},
-		    const bool shouldShrink = true)
+		    const Shrink shouldShrink = Shrink::Yes)
 		{
 			return RemoveAt(Super::FindSorted(value, sortPredicate));
 		}
@@ -1314,7 +1321,7 @@ namespace p
 		 * Delete item at index
 		 * @return true if removed
 		 */
-		bool RemoveAt(i32 index, const bool shouldShrink = true)
+		bool RemoveAt(i32 index, const Shrink shouldShrink = Shrink::Yes)
 		{
 			if (Super::IsValidIndex(index))
 			{
@@ -1328,7 +1335,7 @@ namespace p
 		 * Delete N items at index
 		 * @return true if removed
 		 */
-		bool RemoveAt(i32 index, i32 count, const bool shouldShrink = true)
+		bool RemoveAt(i32 index, i32 count, const Shrink shouldShrink = Shrink::Yes)
 		{
 			if (Super::IsValidIndexRange(index, count))
 			{
@@ -1343,7 +1350,7 @@ namespace p
 		 * Faster than RemoveAt since it doesnt push all remaining elements 1 position forward.
 		 * @return true if removed
 		 */
-		bool RemoveAtSwap(i32 index, const bool shouldShrink = true)
+		bool RemoveAtSwap(i32 index, const Shrink shouldShrink = Shrink::Yes)
 		{
 			if (Super::IsValidIndex(index))
 			{
@@ -1358,7 +1365,7 @@ namespace p
 		 * Faster than RemoveAt since it doesnt push all remaining elements N positions forward.
 		 * @return true if removed
 		 */
-		bool RemoveAtSwap(i32 index, i32 count, const bool shouldShrink = true)
+		bool RemoveAtSwap(i32 index, i32 count, const Shrink shouldShrink = Shrink::Yes)
 		{
 			if (Super::IsValidIndexRange(index, count))
 			{
@@ -1373,7 +1380,7 @@ namespace p
 		 * Unsafe version. Doesn't make sure index is valid.
 		 * @return true if removed
 		 */
-		void RemoveAtUnsafe(i32 index, const bool shouldShrink = true)
+		void RemoveAtUnsafe(i32 index, const Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastIndex   = index + 1;
 			const i32 countToPull = Super::size - lastIndex;
@@ -1382,7 +1389,7 @@ namespace p
 			--Super::size;
 
 			/// @OPTIMIZE: Shrinking can be combined to avoid moving trailing elements twice
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
@@ -1393,7 +1400,7 @@ namespace p
 		 * Unsafe version. Doesn't make sure index is valid.
 		 * @return true if removed
 		 */
-		void RemoveAtUnsafe(i32 index, i32 count, const bool shouldShrink = true)
+		void RemoveAtUnsafe(i32 index, i32 count, const Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastIndex   = index + count;
 			const i32 countToPull = Super::size - lastIndex;
@@ -1402,7 +1409,7 @@ namespace p
 			Super::size -= count;
 
 			/// @OPTIMIZE: Shrinking can be combined to avoid moving trailing elements twice
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
@@ -1414,7 +1421,7 @@ namespace p
 		 * Unsafe version. Doesn't make sure index is valid!
 		 * @return true if removed
 		 */
-		void RemoveAtSwapUnsafe(i32 index, const bool shouldShrink = true)
+		void RemoveAtSwapUnsafe(i32 index, const Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastIndex = Super::size - 1;
 			Super::SwapUnsafe(index, lastIndex);
@@ -1427,7 +1434,7 @@ namespace p
 		 * Unsafe version. Doesn't make sure index is valid!
 		 * @return true if removed
 		 */
-		void RemoveAtSwapUnsafe(i32 index, i32 count, const bool shouldShrink = true)
+		void RemoveAtSwapUnsafe(i32 index, i32 count, const Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastIndex   = Super::size - count;
 			const i32 countToSwap = Min(count, lastIndex - index);
@@ -1440,7 +1447,8 @@ namespace p
 		 * Delete all items that match a delegate
 		 * @return number of deleted items
 		 */
-		i32 RemoveIf(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
+		i32 RemoveIf(
+		    TFunction<bool(const Type&)>&& callback, const Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastSize = Super::size;
 			// We remove from the back so that there are less elements to move when removing an
@@ -1449,11 +1457,11 @@ namespace p
 			{
 				if (callback(Super::data[i]))
 				{
-					RemoveAtUnsafe(i, false);
+					RemoveAtUnsafe(i, Shrink::No);
 				}
 			}
 
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
@@ -1464,7 +1472,8 @@ namespace p
 		 * Delete all items that match a delegate
 		 * @return number of deleted items
 		 */
-		i32 RemoveIfSwap(TFunction<bool(const Type&)>&& callback, const bool shouldShrink = true)
+		i32 RemoveIfSwap(
+		    TFunction<bool(const Type&)>&& callback, const Shrink shouldShrink = Shrink::Yes)
 		{
 			const i32 lastSize = Super::size;
 			for (i32 i = lastSize - 1; i >= 0; --i)
@@ -1485,7 +1494,7 @@ namespace p
 				RemoveLast();
 			}
 
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
@@ -1496,7 +1505,7 @@ namespace p
 		 * Remove N last elements from the array
 		 * @param count
 		 */
-		void RemoveLast(i32 count = 1, const bool shouldShrink = true)
+		void RemoveLast(i32 count = 1, const Shrink shouldShrink = Shrink::Yes)
 		{
 			if (count <= Super::size)
 			{
@@ -1507,11 +1516,11 @@ namespace p
 		/** Remove all elements from the array and optionally free memory
 		 * @param shouldShrink true will free used memory
 		 */
-		void Clear(bool shouldShrink = true)
+		void Clear(Shrink shouldShrink = Shrink::Yes)
 		{
 			DestroyItems(Super::data, Super::size);
 			Super::size = 0;
-			if (shouldShrink)
+			if (shouldShrink == Shrink::Yes)
 			{
 				Shrink();
 			}
@@ -1534,7 +1543,7 @@ namespace p
 			Reserve(Super::size + extraCapacity);
 		}
 
-		void Resize(i32 newSize, const bool shouldShrink = true)
+		void Resize(i32 newSize, const Shrink shouldShrink = Shrink::Yes)
 		{
 			if (newSize < Super::size)    // Trim
 			{
@@ -1547,7 +1556,7 @@ namespace p
 			// If size doens't change, do nothing
 		}
 
-		void Resize(i32 newSize, const Type& value, const bool shouldShrink = true)
+		void Resize(i32 newSize, const Type& value, const Shrink shouldShrink = Shrink::Yes)
 		{
 			if (newSize < Super::size)    // Trim
 			{
@@ -1909,9 +1918,9 @@ namespace p
 		// Fill with a 32-bit pattern
 		void FillBitArray(u32 pattern);
 
-		void Resize(i32 newSize, const bool shouldShrink = true);
+		void Resize(i32 newSize, const Shrink shouldShrink = Shrink::Yes);
 
-		void Resize(i32 newSize, bool value, const bool shouldShrink = true);
+		void Resize(i32 newSize, bool value, const Shrink shouldShrink = Shrink::Yes);
 
 		void Clear();
 
@@ -2092,7 +2101,7 @@ namespace p
 	template<typename Type, u32 InlineCapacity>
 	void TArray<Type, InlineCapacity>::CopyFrom(const IArray<const Type>& other)
 	{
-		Clear(false);
+		Clear(Shrink::No);
 		Reserve(other.Size());
 		Super::size = other.Size();
 		CopyConstructItems<Type>(Super::data, Super::size, other.Data());
@@ -2104,7 +2113,7 @@ namespace p
 	{
 		if (other.UsesInlineBuffer())    // We can't move from an inline buffer, so we move items
 		{
-			Clear(false);
+			Clear(Shrink::No);
 			Super::size = other.size;
 
 			Type* oldData         = Super::data;
@@ -2118,7 +2127,7 @@ namespace p
 		}
 		else
 		{
-			Clear(true);
+			Clear(Shrink::Yes);
 			Super::data = other.data;
 			Super::size = other.size;
 			capacity    = other.capacity;

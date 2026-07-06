@@ -371,7 +371,7 @@ namespace p
 
 		{    // Cache inherited properties
 			auto& allProperties = reg.allProperties[currentEdit.index];
-			allProperties.Clear(false);
+			allProperties.Clear(Shrink::No);
 
 			// Assign properties from parent
 			const i32 parentIdx = details::GetTypeIndex(reg, reg.parentIds[currentEdit.index]);

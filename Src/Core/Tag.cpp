@@ -232,7 +232,7 @@ namespace p
 	void TagStringTable::FreeTagString(TagHeader& str)
 	{
 		std::unique_lock lock{stringsListMutex};
-		strings.RemoveSorted(str.hash, {}, false);
+		strings.RemoveSorted(str.hash, {}, Shrink::No);
 		arena.Free(&str, GetAllocSize(str.size));
 	}
 
