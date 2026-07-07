@@ -2029,7 +2029,7 @@ namespace p
 				down = !down;
 			}
 			draw->PathLineTo(p1);
-			draw->PathStroke(color, 0, 1.5f);
+			draw->PathStroke(color, 1.5f, 0);
 		}
 
 		// Draw a vertical zigzag from (x, y0) to (x, y1), alternating x
@@ -2046,7 +2046,7 @@ namespace p
 				right = !right;
 			}
 			draw->PathLineTo(ImVec2(x, y1));
-			draw->PathStroke(color, 0, 1.0f);
+			draw->PathStroke(color, 1.0f, 0);
 		}
 
 		// Draw `text` vertically. Uses only public ImGui APIs
@@ -2254,8 +2254,10 @@ namespace p
 			char endBuf[32]   = "";
 			if (memoryDbg.hasSelection)
 			{
-				snprintf(startBuf, sizeof(startBuf), "0x%llX", memoryDbg.selectionStart);
-				snprintf(endBuf, sizeof(endBuf), "0x%llX", memoryDbg.selectionEnd);
+				snprintf(startBuf, sizeof(startBuf), "0x%llX",
+				    static_cast<unsigned long long>(memoryDbg.selectionStart));
+				snprintf(endBuf, sizeof(endBuf), "0x%llX",
+				    static_cast<unsigned long long>(memoryDbg.selectionEnd));
 			}
 			ImGui::SetNextItemWidth(110.0f);
 			ImGui::InputText("##selStart", startBuf, sizeof(startBuf),
@@ -2675,8 +2677,7 @@ namespace p
 				{
 					const sizet viewLo        = static_cast<sizet>(viewStart);
 					const sizet viewHi        = static_cast<sizet>(viewStart + viewRange);
-					const float pixelsPerByte = static_cast<float>(addressH / viewRange);
-					if (pixelsPerByte * static_cast<float>(bytesPerLine) >= 13.0f)
+					if (pixelsPerByte * bytesPerLine >= 13)
 					{
 						for (i32 a = 0; a < memoryDbg.snapshots.Size(); ++a)
 						{
@@ -2962,10 +2963,10 @@ namespace p
 						const sizet viewStartS = static_cast<sizet>(viewStart);
 						const sizet viewEndS   = static_cast<sizet>(viewStart + viewRange);
 						i32 lastI              = NO_INDEX;
-						for (i32 i = snapshot.live->GetNextSet(NO_INDEX); i > lastI;
-						    lastI = i, i = snapshot.live->GetNextSet(i))
+						for (i32 j = snapshot.live->GetNextSet(NO_INDEX); j > lastI;
+						    lastI = j, j = snapshot.live->GetNextSet(j))
 						{
-							const auto& ev   = (*snapshot.events)[i];
+							const auto& ev   = (*snapshot.events)[j];
 							const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
 							const sizet size = ev.GetSize();
 							if (addr + size <= viewStartS || addr >= viewEndS)
@@ -3485,7 +3486,8 @@ namespace p
 						char blockLabel[128];
 						sizeStr = Strings::ParseMemorySize(block.size);
 						snprintf(blockLabel, sizeof(blockLabel), "Block %i: 0x%llX | %s (%zuB)", i,
-						    reinterpret_cast<sizet>(block.data), sizeStr.data(), block.size);
+						    static_cast<unsigned long long>(reinterpret_cast<sizet>(block.data)),
+						    sizeStr.data(), block.size);
 						ImGui::BulletText("%s", blockLabel);
 					}
 					ImGui::Separator();

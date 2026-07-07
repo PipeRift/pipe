@@ -33,5 +33,5 @@ namespace p
 	template<typename Type>
 	struct TReverseArrayIterator;
 
-	class BitArray;
+	struct BitArray;
 };    // namespace p

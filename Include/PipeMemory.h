@@ -297,8 +297,8 @@ namespace p
 #pragma endregion Memory Ops
 
 #pragma region Allocation
-	class Arena;
-	class HeapArena;
+	struct Arena;
+	struct HeapArena;
 
 	P_API void InitializeMemory();
 	P_API void ShutdownMemory();
@@ -393,7 +393,7 @@ namespace p
 
 
 	/** Arena defines the API used on all other arena types */
-	class P_API Arena : public Castable
+	struct P_API Arena : public Castable
 	{
 	public:
 		using AllocSignature        = void*(Arena*, sizet size);

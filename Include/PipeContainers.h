@@ -230,7 +230,7 @@ namespace p
 	};
 
 	template<typename Type>
-	class TReverseArrayIterator : public TArrayIterator<Type>
+	struct TReverseArrayIterator : public TArrayIterator<Type>
 	{
 	public:
 		using Super = TArrayIterator<Type>;
@@ -1858,7 +1858,7 @@ namespace p
 	};
 
 
-	class P_API BitArray
+	struct P_API BitArray
 	{
 	private:
 		/** The number of bits in this bit array */
