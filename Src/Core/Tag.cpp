@@ -150,7 +150,7 @@ namespace p
 			if (str->activeTags == 0)
 			{
 				table.arena.Free(str, GetAllocSize(str->size));
-				table.strings.RemoveAt(i, false);
+				table.strings.RemoveAt(i, p::Shrink::No);
 			}
 		}
 		table.strings.Shrink();
