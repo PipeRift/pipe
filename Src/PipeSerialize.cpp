@@ -8,7 +8,11 @@
 #include "Pipe/Core/String.h"
 #include "Pipe/Core/Tag.h"
 #include "Pipe/Extern/yyjson.h"
+#include "Pipe/Extern/ryml.hpp"
+#include "Pipe/Extern/fast_float.h"
 #include "PipeMath.h"
+
+#include <charconv>
 
 
 static void* yyjson_malloc(void* ctx, p::sizet size)
@@ -958,6 +962,1178 @@ namespace p
 		return asString;
 	}
 #pragma endregion JsonFormat
+
+#pragma region YamlFormat
+	struct YamlFormatReader::Impl
+	{
+		c4::yml::Tree tree;
+		size_t current = c4::yml::NONE;
+		struct Scope
+		{
+			u32 id    = 0;
+			u32 size  = 0;
+			size_t parent = c4::yml::NONE;
+		};
+		TArray<Scope> stack;
+	};
+
+	struct YamlFormatWriter::Impl
+	{
+		c4::yml::Tree tree;
+		size_t current = c4::yml::NONE;
+		struct Scope
+		{
+			size_t parent = c4::yml::NONE;
+			String key;
+		};
+		TArray<Scope> stack;
+	};
+
+	static c4::csubstr ToCSubstr(StringView sv)
+	{
+		return c4::csubstr(sv.data(), sv.size());
+	}
+
+	static StringView ToStringView(c4::csubstr cs)
+	{
+		return StringView{cs.str, cs.len};
+	}
+
+	static size_t YamlFindLogicalRoot(c4::yml::Tree& tree)
+	{
+		if (tree.empty())
+		{
+			return c4::yml::NONE;
+		}
+		const size_t root = tree.root_id();
+		if (tree.is_stream(root))
+		{
+			if (tree.num_children(root) == 0)
+			{
+				return c4::yml::NONE;
+			}
+			const size_t doc = tree.doc(0);
+			if (tree.is_doc(doc))
+			{
+				if (tree.has_children(doc))
+				{
+					const size_t first = tree.first_child(doc);
+					if (first != c4::yml::NONE)
+					{
+						return first;
+					}
+				}
+				return doc;
+			}
+			return doc;
+		}
+		return root;
+	}
+
+	static bool YamlIsTrue(c4::csubstr s)
+	{
+		if (s.len == 4)
+		{
+			return (s.str[0] == 't' || s.str[0] == 'T')
+			    && (s.str[1] == 'r' || s.str[1] == 'R')
+			    && (s.str[2] == 'u' || s.str[2] == 'U')
+			    && (s.str[3] == 'e' || s.str[3] == 'E');
+		}
+		if (s.len == 1 && s.str[0] == '1')
+		{
+			return true;
+		}
+		return false;
+	}
+
+	static bool YamlIsFalse(c4::csubstr s)
+	{
+		if (s.len == 5)
+		{
+			return (s.str[0] == 'f' || s.str[0] == 'F')
+			    && (s.str[1] == 'a' || s.str[1] == 'A')
+			    && (s.str[2] == 'l' || s.str[2] == 'L')
+			    && (s.str[3] == 's' || s.str[3] == 'S')
+			    && (s.str[4] == 'e' || s.str[4] == 'E');
+		}
+		if (s.len == 1 && s.str[0] == '0')
+		{
+			return true;
+		}
+		return false;
+	}
+
+	// Reader
+	static constexpr StringView emptyYAML{"{}\n"};
+
+	YamlFormatReader::YamlFormatReader(StringView data)
+	    : impl{new Impl()}, errorMessage{}
+	{
+		if (data.empty())
+		{
+			data = emptyYAML;
+		}
+		try
+		{
+			impl->tree = c4::yml::parse_in_arena(ToCSubstr(data));
+			const size_t logicalRoot = YamlFindLogicalRoot(impl->tree);
+			if (logicalRoot == c4::yml::NONE)
+			{
+				error = {ReadErrorCode::EmptyContent, "Empty YAML content", 0};
+				errorMessage = error.msg ? error.msg : "";
+				impl->current = c4::yml::NONE;
+				impl->stack.Add({});
+			}
+			else
+			{
+				impl->current = logicalRoot;
+				impl->stack.Add({});
+				error = {ReadErrorCode::InvalidParameter, nullptr, 0};
+				error.msg = nullptr;
+			}
+		}
+		catch (const std::exception& e)
+		{
+			errorMessage = e.what();
+			error = {ReadErrorCode::UnexpectedContent, errorMessage.c_str(), 0};
+			impl->tree.clear();
+			impl->current = c4::yml::NONE;
+			if (impl->stack.IsEmpty())
+			{
+				impl->stack.Add({});
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Unknown YAML parse error";
+			error = {ReadErrorCode::UnexpectedContent, errorMessage.c_str(), 0};
+			impl->tree.clear();
+			impl->current = c4::yml::NONE;
+			if (impl->stack.IsEmpty())
+			{
+				impl->stack.Add({});
+			}
+		}
+	}
+
+	YamlFormatReader::YamlFormatReader(String& data)
+	    : impl{new Impl()}, errorMessage{}
+	{
+		if (data.empty())
+		{
+			data.append(emptyYAML.data(), emptyYAML.size());
+		}
+		// Use arena parse even for mutable to avoid mutating caller's buffer
+		StringView view{data.data(), data.size()};
+		try
+		{
+			impl->tree = c4::yml::parse_in_arena(ToCSubstr(view));
+			const size_t logicalRoot = YamlFindLogicalRoot(impl->tree);
+			if (logicalRoot == c4::yml::NONE)
+			{
+				error = {ReadErrorCode::EmptyContent, "Empty YAML content", 0};
+				errorMessage = error.msg ? error.msg : "";
+				impl->current = c4::yml::NONE;
+				impl->stack.Add({});
+			}
+			else
+			{
+				impl->current = logicalRoot;
+				impl->stack.Add({});
+				error = {ReadErrorCode::InvalidParameter, nullptr, 0};
+				error.msg = nullptr;
+			}
+		}
+		catch (const std::exception& e)
+		{
+			errorMessage = e.what();
+			error = {ReadErrorCode::UnexpectedContent, errorMessage.c_str(), 0};
+			impl->tree.clear();
+			impl->current = c4::yml::NONE;
+			if (impl->stack.IsEmpty())
+			{
+				impl->stack.Add({});
+			}
+		}
+		catch (...)
+		{
+			errorMessage = "Unknown YAML parse error";
+			error = {ReadErrorCode::UnexpectedContent, errorMessage.c_str(), 0};
+			impl->tree.clear();
+			impl->current = c4::yml::NONE;
+			if (impl->stack.IsEmpty())
+			{
+				impl->stack.Add({});
+			}
+		}
+	}
+
+	YamlFormatReader::~YamlFormatReader()
+	{
+		if (impl)
+		{
+			if (impl->stack.Size() > 0)
+			{
+				// Pop all to check for leaks
+				while (impl->stack.Size() > 1)
+				{
+					impl->stack.RemoveAt(impl->stack.Size() - 1, Shrink::No);
+				}
+				// Leave root scope
+				if (impl->stack.Size() == 1)
+				{
+					impl->stack.RemoveAt(0, Shrink::No);
+				}
+			}
+			P_EnsureMsg(impl->stack.Size() == 0,
+			    "Forgot to Leave() some scope? One or more scopes have not been closed.");
+			delete impl;
+		}
+	}
+
+	void YamlFormatReader::BeginObject()
+	{
+		if (!impl || impl->current == c4::yml::NONE) [[unlikely]]
+		{
+			return;
+		}
+		auto& scope = impl->stack.Last();
+		if (scope.size != 0) [[unlikely]]
+		{
+			Error("Have BeginObject() or BeginArray() been called already in this scope?");
+			return;
+		}
+		const size_t node = impl->current;
+		// If current is not a map, treat as error but still set size 0
+		if (!impl->tree.is_map(node))
+		{
+			scope.id     = 0;
+			scope.size   = 0;
+			scope.parent = node;
+			impl->current = c4::yml::NONE;
+			return;
+		}
+		scope.id     = 0;
+		scope.size   = static_cast<u32>(impl->tree.num_children(node));
+		scope.parent = node;
+		impl->current = c4::yml::NONE;
+	}
+
+	void YamlFormatReader::BeginArray(u32& size)
+	{
+		if (!impl || impl->current == c4::yml::NONE) [[unlikely]]
+		{
+			size = 0;
+			return;
+		}
+		const size_t node = impl->current;
+		const bool isArray = impl->tree.is_seq(node);
+		auto& scope = impl->stack.Last();
+		if (scope.size != 0) [[unlikely]]
+		{
+			Error("Have BeginObject() or BeginArray() been called already in this scope?");
+			size = 0;
+			return;
+		}
+		scope.id     = 0;
+		scope.size   = static_cast<u32>(impl->tree.num_children(node));
+		scope.parent = node;
+		impl->current = c4::yml::NONE;
+		if (!isArray)
+		{
+			size = 0;
+		}
+		else
+		{
+			size = scope.size;
+		}
+	}
+
+	bool YamlFormatReader::EnterNext(StringView name)
+	{
+		if (!impl || impl->stack.IsEmpty()) [[unlikely]]
+		{
+			return false;
+		}
+		auto& scope = impl->stack.Last();
+		if (scope.parent == c4::yml::NONE || !impl->tree.is_map(scope.parent)) [[unlikely]]
+		{
+			P_EnsureMsg(false,
+			    "Current scope is not an object or has not been initialized with BeginObject()");
+			return false;
+		}
+		const c4::csubstr key = ToCSubstr(name);
+		const size_t child = impl->tree.find_child(scope.parent, key);
+		if (child == c4::yml::NONE)
+		{
+			return false;
+		}
+		++scope.id;
+		if (scope.id >= scope.size)
+		{
+			scope.id = 0;
+		}
+		impl->stack.Add({});
+		impl->current = child;
+		return true;
+	}
+
+	bool YamlFormatReader::EnterNext()
+	{
+		if (!impl || impl->stack.IsEmpty()) [[unlikely]]
+		{
+			return false;
+		}
+		auto& scope = impl->stack.Last();
+		if (scope.parent == c4::yml::NONE || !impl->tree.is_seq(scope.parent)) [[unlikely]]
+		{
+			P_EnsureMsg(false,
+			    "Current scope is not an array or has not been initialized with BeginArray()");
+			return false;
+		}
+		if (scope.id >= scope.size)
+		{
+			Error("Tried enter more child scopes than available (Index: {}, Max: {})", scope.id,
+			    scope.size);
+			return false;
+		}
+		size_t child = c4::yml::NONE;
+		if (scope.id == 0)
+		{
+			child = impl->tree.first_child(scope.parent);
+		}
+		else
+		{
+			child = impl->tree.child(scope.parent, scope.id);
+		}
+		if (child == c4::yml::NONE)
+		{
+			return false;
+		}
+		++scope.id;
+		impl->stack.Add({});
+		impl->current = child;
+		return true;
+	}
+
+	void YamlFormatReader::Leave()
+	{
+		if (!impl || !P_EnsureMsg(impl->stack.Size() >= 1,
+		           "Closed an extra scope! When surrounding EnterScope in if(), make sure to call "
+		           "leave scope inside the brackets."))
+		{
+			return;
+		}
+		const size_t parent = impl->stack.Last().parent;
+		impl->stack.RemoveAt(impl->stack.Size() - 1, Shrink::No);
+		if (parent != c4::yml::NONE)
+		{
+			impl->current = parent;
+		}
+		else
+		{
+			// Leaf scope had no parent, after popping we are inside previous container
+			// Mark as none to indicate inside container but not at a specific child
+			impl->current = c4::yml::NONE;
+			// If stack not empty and its parent is a container, keep current as NONE
+			// This matches BeginObject's expectation of NONE inside container
+		}
+	}
+
+	static c4::csubstr YamlGetVal(const c4::yml::Tree& tree, size_t id)
+	{
+		if (id == c4::yml::NONE)
+		{
+			return {};
+		}
+		if (tree.has_val(id))
+		{
+			return tree.val(id);
+		}
+		return {};
+	}
+
+	void YamlFormatReader::Read(bool& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = false;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = false;
+			return;
+		}
+		if (YamlIsTrue(s))
+		{
+			val = true;
+		}
+		else if (YamlIsFalse(s))
+		{
+			val = false;
+		}
+		else
+		{
+			// Try numeric 1/0
+			val = false;
+			if (s.len == 1 && s.str[0] == '1')
+			{
+				val = true;
+			}
+		}
+	}
+
+	template<typename T>
+	static bool YamlParseInt(c4::csubstr s, T& out)
+	{
+		if (s.empty())
+		{
+			return false;
+		}
+		// Trim whitespace not needed; ryml already trims
+		std::string_view sv(s.str, s.len);
+		auto res = std::from_chars(sv.data(), sv.data() + sv.size(), out);
+		return res.ec == std::errc{};
+	}
+
+	template<typename T>
+	static bool YamlParseUInt(c4::csubstr s, T& out)
+	{
+		if (s.empty())
+		{
+			return false;
+		}
+		// Handle negative sign for unsigned: return false
+		if (s.str[0] == '-')
+		{
+			return false;
+		}
+		std::string_view sv(s.str, s.len);
+		auto res = std::from_chars(sv.data(), sv.data() + sv.size(), out);
+		return res.ec == std::errc{};
+	}
+
+	void YamlFormatReader::Read(i8& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = 0;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = 0;
+			return;
+		}
+		// Try as double first then clamp? Keep simple: try i64 then clamp
+		i64 tmp = 0;
+		if (YamlParseInt(s, tmp))
+		{
+			val = i8(Clamp<i64>(tmp, Limits<i8>::Lowest(), Limits<i8>::Max()));
+			return;
+		}
+		double d = 0;
+		auto res = fast_float::from_chars(s.str, s.str + s.len, d);
+		if (res.ec == std::errc{})
+		{
+			val = i8(d);
+			return;
+		}
+		val = 0;
+	}
+
+	void YamlFormatReader::Read(u8& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = 0;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = 0;
+			return;
+		}
+		u64 tmp = 0;
+		if (YamlParseUInt(s, tmp))
+		{
+			val = u8(Min<u64>(tmp, Limits<u8>::Max()));
+			return;
+		}
+		i64 itmp = 0;
+		if (YamlParseInt(s, itmp))
+		{
+			val = u8(Clamp<i64>(itmp, 0, Limits<u8>::Max()));
+			return;
+		}
+		double d = 0;
+		auto res = fast_float::from_chars(s.str, s.str + s.len, d);
+		if (res.ec == std::errc{})
+		{
+			val = u8(d);
+			return;
+		}
+		val = 0;
+	}
+
+	void YamlFormatReader::Read(i16& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = 0;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = 0;
+			return;
+		}
+		i64 tmp = 0;
+		if (YamlParseInt(s, tmp))
+		{
+			val = i16(Clamp<i64>(tmp, Limits<i16>::Lowest(), Limits<i16>::Max()));
+			return;
+		}
+		double d = 0;
+		auto res = fast_float::from_chars(s.str, s.str + s.len, d);
+		if (res.ec == std::errc{})
+		{
+			val = i16(d);
+			return;
+		}
+		val = 0;
+	}
+
+	void YamlFormatReader::Read(u16& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = 0;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = 0;
+			return;
+		}
+		u64 tmp = 0;
+		if (YamlParseUInt(s, tmp))
+		{
+			val = u16(Min<u64>(tmp, Limits<u16>::Max()));
+			return;
+		}
+		i64 itmp = 0;
+		if (YamlParseInt(s, itmp))
+		{
+			val = u16(Clamp<i64>(itmp, 0, Limits<u16>::Max()));
+			return;
+		}
+		double d = 0;
+		auto res = fast_float::from_chars(s.str, s.str + s.len, d);
+		if (res.ec == std::errc{})
+		{
+			val = u16(d);
+			return;
+		}
+		val = 0;
+	}
+
+	void YamlFormatReader::Read(i32& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = 0;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = 0;
+			return;
+		}
+		i64 tmp = 0;
+		if (YamlParseInt(s, tmp))
+		{
+			val = i32(Clamp<i64>(tmp, Limits<i32>::Lowest(), Limits<i32>::Max()));
+			return;
+		}
+		double d = 0;
+		auto res = fast_float::from_chars(s.str, s.str + s.len, d);
+		if (res.ec == std::errc{})
+		{
+			val = i32(d);
+			return;
+		}
+		val = 0;
+	}
+
+	void YamlFormatReader::Read(u32& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = 0;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = 0;
+			return;
+		}
+		u64 tmp = 0;
+		if (YamlParseUInt(s, tmp))
+		{
+			val = u32(Min<u64>(tmp, Limits<u32>::Max()));
+			return;
+		}
+		i64 itmp = 0;
+		if (YamlParseInt(s, itmp))
+		{
+			val = u32(Clamp<i64>(itmp, 0, Limits<u32>::Max()));
+			return;
+		}
+		double d = 0;
+		auto res = fast_float::from_chars(s.str, s.str + s.len, d);
+		if (res.ec == std::errc{})
+		{
+			val = u32(d);
+			return;
+		}
+		val = 0;
+	}
+
+	void YamlFormatReader::Read(i64& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = 0;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = 0;
+			return;
+		}
+		i64 tmp = 0;
+		if (YamlParseInt(s, tmp))
+		{
+			val = tmp;
+			return;
+		}
+		u64 utmp = 0;
+		if (YamlParseUInt(s, utmp))
+		{
+			val = i64(Min<u64>(utmp, Limits<i64>::Max()));
+			return;
+		}
+		double d = 0;
+		auto res = fast_float::from_chars(s.str, s.str + s.len, d);
+		if (res.ec == std::errc{})
+		{
+			val = i64(d);
+			return;
+		}
+		val = 0;
+	}
+
+	void YamlFormatReader::Read(u64& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = 0;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = 0;
+			return;
+		}
+		u64 tmp = 0;
+		if (YamlParseUInt(s, tmp))
+		{
+			val = tmp;
+			return;
+		}
+		i64 itmp = 0;
+		if (YamlParseInt(s, itmp))
+		{
+			val = u64(Max<i64>(itmp, 0));
+			return;
+		}
+		double d = 0;
+		auto res = fast_float::from_chars(s.str, s.str + s.len, d);
+		if (res.ec == std::errc{})
+		{
+			val = u64(d);
+			return;
+		}
+		val = 0;
+	}
+
+	void YamlFormatReader::Read(float& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = 0.f;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = 0.f;
+			return;
+		}
+		double d = 0;
+		auto res = fast_float::from_chars(s.str, s.str + s.len, d);
+		if (res.ec == std::errc{})
+		{
+			val = float(d);
+			return;
+		}
+		// fallback try int
+		i64 tmp = 0;
+		if (YamlParseInt(s, tmp))
+		{
+			val = float(tmp);
+			return;
+		}
+		val = 0.f;
+	}
+
+	void YamlFormatReader::Read(double& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = 0;
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.empty())
+		{
+			val = 0;
+			return;
+		}
+		double d = 0;
+		auto res = fast_float::from_chars(s.str, s.str + s.len, d);
+		if (res.ec == std::errc{})
+		{
+			val = d;
+			return;
+		}
+		i64 tmp = 0;
+		if (YamlParseInt(s, tmp))
+		{
+			val = double(tmp);
+			return;
+		}
+		val = 0;
+	}
+
+	void YamlFormatReader::Read(StringView& val)
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			val = {};
+			return;
+		}
+		const c4::csubstr s = YamlGetVal(impl->tree, impl->current);
+		if (s.len == 0)
+		{
+			val = {};
+			return;
+		}
+		val = StringView{s.str, s.len};
+	}
+
+	bool YamlFormatReader::IsObject() const
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			return false;
+		}
+		return impl->tree.is_map(impl->current);
+	}
+
+	bool YamlFormatReader::IsArray() const
+	{
+		if (!impl || impl->current == c4::yml::NONE)
+		{
+			return false;
+		}
+		return impl->tree.is_seq(impl->current);
+	}
+
+	bool YamlFormatReader::IsValid() const
+	{
+		return impl && impl->current != c4::yml::NONE && !impl->tree.empty();
+	}
+
+	// Writer
+
+	YamlFormatWriter::YamlFormatWriter() : impl{new Impl()}, cachedString{}, open{true}
+	{
+		impl->stack.Add({});
+		// current stays NONE until first BeginObject/BeginArray
+	}
+
+	YamlFormatWriter::~YamlFormatWriter()
+	{
+		Close();
+		delete impl;
+	}
+
+	void YamlFormatWriter::BeginObject()
+	{
+		if (!impl) [[unlikely]]
+		{
+			return;
+		}
+		if (impl->current != c4::yml::NONE) [[unlikely]]
+		{
+			if (impl->tree.is_map(impl->current))
+			{
+				return;
+			}
+			P_CheckMsg(false,
+			    "Scope is already initialized but it is not an object. Is BeginObject() being "
+			    "mixed with BeginArray() in the same scope?");
+			return;
+		}
+		// current == NONE, need to create map
+		if (impl->stack.IsEmpty())
+		{
+			return;
+		}
+		auto& scope = impl->stack.Last();
+		const size_t parent = scope.parent;
+		if (parent == c4::yml::NONE)
+		{
+			// Top-level
+			c4::yml::NodeRef root = impl->tree.rootref();
+			if (impl->tree.empty())
+			{
+				// Tree empty, rootref may still be valid after set_map
+				root.set_map();
+			}
+			else if (!root.is_map())
+			{
+				// If root is stream/doc, we need to handle. For empty tree we already handled.
+				// For parsed tree case not applicable. For writer, tree is new, so root may be SEQ or empty.
+				// Force to map if not map
+				if (root.is_seq())
+				{
+					P_CheckMsg(false, "Root is already an array, cannot set to object");
+					return;
+				}
+				root.set_map();
+			}
+			impl->current = root.id();
+		}
+		else
+		{
+			// Create child map under parent
+			const size_t child = impl->tree.append_child(parent);
+			if (impl->tree.is_map(parent))
+			{
+				const c4::csubstr key = impl->tree.copy_to_arena(ToCSubstr(scope.key));
+				impl->tree.set_key(child, key);
+			}
+			impl->tree.set_map(child);
+			impl->current = child;
+		}
+	}
+
+	void YamlFormatWriter::BeginArray(u32 /*size*/)
+	{
+		if (!impl) [[unlikely]]
+		{
+			return;
+		}
+		if (impl->current != c4::yml::NONE) [[unlikely]]
+		{
+			if (impl->tree.is_seq(impl->current))
+			{
+				return;
+			}
+			P_CheckMsg(false,
+			    "Scope is already initialized but it is not an array. Is BeginArray() being "
+			    "mixed with BeginObject() in the same scope?");
+			return;
+		}
+		if (impl->stack.IsEmpty())
+		{
+			return;
+		}
+		auto& scope = impl->stack.Last();
+		const size_t parent = scope.parent;
+		if (parent == c4::yml::NONE)
+		{
+			c4::yml::NodeRef root = impl->tree.rootref();
+			if (impl->tree.empty())
+			{
+				root.set_seq();
+			}
+			else if (!root.is_seq())
+			{
+				if (root.is_map())
+				{
+					P_CheckMsg(false, "Root is already an object, cannot set to array");
+					return;
+				}
+				root.set_seq();
+			}
+			impl->current = root.id();
+		}
+		else
+		{
+			const size_t child = impl->tree.append_child(parent);
+			if (impl->tree.is_map(parent))
+			{
+				const c4::csubstr key = impl->tree.copy_to_arena(ToCSubstr(scope.key));
+				impl->tree.set_key(child, key);
+			}
+			impl->tree.set_seq(child);
+			impl->current = child;
+		}
+	}
+
+	bool YamlFormatWriter::EnterNext(StringView name)
+	{
+		if (!impl) [[unlikely]]
+		{
+			return false;
+		}
+		if (impl->current == c4::yml::NONE || !impl->tree.is_map(impl->current)) [[unlikely]]
+		{
+			P_EnsureMsg(false,
+			    "Current scope is not an object or has not been initialized with BeginObject()");
+			return false;
+		}
+		typename Impl::Scope s;
+		s.parent = impl->current;
+		s.key    = String(name.data(), name.size());
+		impl->stack.Add(Move(s));
+		impl->current = c4::yml::NONE;
+		return true;
+	}
+
+	bool YamlFormatWriter::EnterNext()
+	{
+		if (!impl) [[unlikely]]
+		{
+			return false;
+		}
+		if (impl->current == c4::yml::NONE || !impl->tree.is_seq(impl->current)) [[unlikely]]
+		{
+			P_EnsureMsg(false,
+			    "Current scope is not an array or has not been initialized with BeginArray()");
+			return false;
+		}
+		typename Impl::Scope s;
+		s.parent = impl->current;
+		impl->stack.Add(Move(s));
+		impl->current = c4::yml::NONE;
+		return true;
+	}
+
+	void YamlFormatWriter::Leave()
+	{
+		if (!impl || impl->stack.IsEmpty()) [[unlikely]]
+		{
+			return;
+		}
+		const size_t parent = impl->stack.Last().parent;
+		impl->stack.RemoveAt(impl->stack.Size() - 1, Shrink::No);
+		// After leaving a child, current should be the parent container
+		if (parent != c4::yml::NONE)
+		{
+			impl->current = parent;
+		}
+		else
+		{
+			// Leaving top-level child? Keep as is
+			if (impl->stack.IsEmpty())
+			{
+				impl->current = c4::yml::NONE;
+			}
+		}
+	}
+
+	template<typename T>
+	static void YamlWriterCreateScalar(YamlFormatWriter::Impl* impl, T val)
+	{
+		if (!impl || impl->stack.IsEmpty())
+		{
+			return;
+		}
+		auto& scope = impl->stack.Last();
+		const size_t parent = scope.parent;
+		if (parent == c4::yml::NONE)
+		{
+			// Top-level scalar (no parent map/seq)
+			c4::yml::NodeRef root = impl->tree.rootref();
+			if (impl->tree.empty())
+			{
+				// Create root as val
+				root.set_val(c4::csubstr{});
+			}
+			root << val;
+			impl->current = root.id();
+			return;
+		}
+		const size_t child = impl->tree.append_child(parent);
+		if (impl->tree.is_map(parent))
+		{
+			const c4::csubstr key = impl->tree.copy_to_arena(ToCSubstr(scope.key));
+			impl->tree.set_key(child, key);
+		}
+		c4::yml::NodeRef ref(impl->tree.tree_ptr(), child);
+		// ryml NodeRef constructor takes Tree* and id; but our Impl tree is value, so we need pointer
+		// We'll use Tree* directly via &impl->tree
+		c4::yml::NodeRef node(&impl->tree, child);
+		node << val;
+		impl->current = child;
+	}
+
+	// Explicit specialization for StringView to ensure arena copy and proper style
+	static void YamlWriterCreateString(YamlFormatWriter::Impl* impl, StringView val)
+	{
+		if (!impl || impl->stack.IsEmpty())
+		{
+			return;
+		}
+		auto& scope = impl->stack.Last();
+		const size_t parent = scope.parent;
+		const c4::csubstr src(val.data(), val.size());
+		if (parent == c4::yml::NONE)
+		{
+			c4::yml::NodeRef root = impl->tree.rootref();
+			if (impl->tree.empty())
+			{
+				root.set_val(c4::csubstr{});
+			}
+			const c4::csubstr copy = impl->tree.copy_to_arena(src);
+			root.set_val(copy);
+			impl->current = root.id();
+			return;
+		}
+		const size_t child = impl->tree.append_child(parent);
+		if (impl->tree.is_map(parent))
+		{
+			const c4::csubstr key = impl->tree.copy_to_arena(ToCSubstr(scope.key));
+			impl->tree.set_key(child, key);
+		}
+		const c4::csubstr copy = impl->tree.copy_to_arena(src);
+		impl->tree.set_val(child, copy);
+		impl->current = child;
+	}
+
+	void YamlFormatWriter::Write(bool val)
+	{
+		YamlWriterCreateScalar(impl, val);
+	}
+	void YamlFormatWriter::Write(i8 val)
+	{
+		YamlWriterCreateScalar(impl, int(val));
+	}
+	void YamlFormatWriter::Write(u8 val)
+	{
+		YamlWriterCreateScalar(impl, unsigned(val));
+	}
+	void YamlFormatWriter::Write(i16 val)
+	{
+		YamlWriterCreateScalar(impl, int(val));
+	}
+	void YamlFormatWriter::Write(u16 val)
+	{
+		YamlWriterCreateScalar(impl, unsigned(val));
+	}
+	void YamlFormatWriter::Write(i32 val)
+	{
+		YamlWriterCreateScalar(impl, val);
+	}
+	void YamlFormatWriter::Write(u32 val)
+	{
+		YamlWriterCreateScalar(impl, val);
+	}
+	void YamlFormatWriter::Write(i64 val)
+	{
+		YamlWriterCreateScalar(impl, val);
+	}
+	void YamlFormatWriter::Write(u64 val)
+	{
+		YamlWriterCreateScalar(impl, val);
+	}
+	void YamlFormatWriter::Write(float val)
+	{
+		YamlWriterCreateScalar(impl, val);
+	}
+	void YamlFormatWriter::Write(double val)
+	{
+		YamlWriterCreateScalar(impl, val);
+	}
+	void YamlFormatWriter::Write(StringView val)
+	{
+		YamlWriterCreateString(impl, val);
+	}
+
+	void YamlFormatWriter::Close()
+	{
+		if (open)
+		{
+			open = false;
+			// Pop any remaining scopes? In Json, Close pops root scope and checks
+			if (impl && impl->stack.Size() > 0)
+			{
+				// The top-level scope's parent is NONE, its current is root
+				// We should pop it to ensure correctness, but keep current as root
+				if (impl->stack.Size() == 1 && impl->current != c4::yml::NONE)
+				{
+					// Top-level scope: just clear stack but keep current
+					impl->stack.RemoveAt(0, Shrink::No);
+				}
+				else
+				{
+					while (impl->stack.Size() > 0)
+					{
+						impl->stack.RemoveAt(impl->stack.Size() - 1, Shrink::No);
+					}
+				}
+			}
+			P_EnsureMsg(!impl || impl->stack.Size() == 0,
+			    "Forgot to Leave() some scope? One or more scopes have not been closed.");
+		}
+	}
+
+	StringView YamlFormatWriter::ToString(bool /*pretty*/, bool ensureClosed)
+	{
+		if (ensureClosed)
+		{
+			Close();
+		}
+		if (!impl)
+		{
+			return {};
+		}
+		cachedString.clear();
+		if (impl->tree.empty())
+		{
+			return {};
+		}
+		// For consistency with JSON pretty flag, we ignore pretty for YAML (always emit nicely)
+		// Use emitrs_yaml to std::string (p::String is std::string)
+		c4::yml::emitrs_yaml(impl->tree, &cachedString);
+		return StringView{cachedString.data(), cachedString.size()};
+	}
+#pragma endregion YamlFormat
 
 
 #pragma region BinaryFormat

@@ -20,6 +20,9 @@ namespace p
 	struct JsonFormatReader;
 	struct JsonFormatWriter;
 
+	struct YamlFormatReader;
+	struct YamlFormatWriter;
+
 	struct BinaryFormatReader;
 	struct BinaryFormatWriter;
 }    // namespace p

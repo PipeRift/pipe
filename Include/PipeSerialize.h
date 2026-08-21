@@ -786,6 +786,120 @@ namespace p
 	};
 #pragma endregion JsonFormat
 
+#pragma region YamlFormat
+struct YamlFormatReader : public IFormatReader
+{
+	enum class ReadErrorCode : u32
+	{
+		InvalidParameter    = 1,
+		MemoryAllocation    = 2,
+		EmptyContent        = 3,
+		UnexpectedContent   = 4,
+		UnexpectedEnd       = 5,
+		UnexpectedCharacter = 6,
+		YamlStructure       = 7,
+		InvalidComment      = 8,
+		InvalidNumber       = 9,
+		InvalidString       = 10,
+		ErrorLiteral        = 11,
+		FileOpen            = 12,
+		FileRead            = 13
+	};
+
+	struct ReadError
+	{
+		ReadErrorCode code;
+		const char* msg;
+		sizet pos;
+	};
+
+private:
+	struct Impl;
+	Impl* impl = nullptr;
+	String errorMessage;
+	ReadError error{ReadErrorCode::EmptyContent, nullptr, 0};
+
+public:
+	P_API explicit YamlFormatReader(StringView data);
+	P_API explicit YamlFormatReader(String& data);
+	P_API ~YamlFormatReader();
+
+	P_API void BeginObject() override;
+	P_API void BeginArray(u32& size) override;
+
+	P_API bool EnterNext(StringView name) override;
+	P_API bool EnterNext() override;
+	P_API void Leave() override;
+
+	P_API void Read(bool& val) override;
+	P_API void Read(i8& val) override;
+	P_API void Read(u8& val) override;
+	P_API void Read(i16& val) override;
+	P_API void Read(u16& val) override;
+	P_API void Read(i32& val) override;
+	P_API void Read(u32& val) override;
+	P_API void Read(i64& val) override;
+	P_API void Read(u64& val) override;
+	P_API void Read(float& val) override;
+	P_API void Read(double& val) override;
+	P_API void Read(StringView& val) override;
+
+	P_API bool IsObject() const override;
+	P_API bool IsArray() const override;
+	P_API bool IsValid() const override;
+	P_API const ReadError& GetError() const
+	{
+		return error;
+	}
+};
+
+struct YamlFormatWriter : public IFormatWriter
+{
+private:
+	struct Impl;
+	Impl* impl = nullptr;
+	String cachedString;
+	bool open = true;
+
+public:
+	P_API YamlFormatWriter();
+	P_API ~YamlFormatWriter();
+
+	P_API bool EnterNext(StringView name) override;
+	P_API bool EnterNext() override;
+	P_API void Leave() override;
+
+	P_API void BeginObject() override;
+	P_API void BeginArray(u32 size) override;
+
+	P_API void Write(bool val) override;
+	P_API void Write(i8 val) override;
+	P_API void Write(u8 val) override;
+	P_API void Write(i16 val) override;
+	P_API void Write(u16 val) override;
+	P_API void Write(i32 val) override;
+	P_API void Write(u32 val) override;
+	P_API void Write(i64 val) override;
+	P_API void Write(u64 val) override;
+	P_API void Write(float val) override;
+	P_API void Write(double val) override;
+	P_API void Write(StringView val) override;
+
+	P_API bool IsValid() const override
+	{
+		return impl != nullptr;
+	}
+
+	P_API void Close();
+
+	P_API StringView ToString(bool pretty = true, bool ensureClosed = true);
+
+private:
+	void PushScope(StringView key);
+	void PopScope();
+};
+#pragma endregion YamlFormat
+
 #pragma region BinaryFormat
 	struct BinaryFormatReader : public IFormatReader
 	{
