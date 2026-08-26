@@ -5,6 +5,7 @@
 #include "PipeMemoryArenas.h"
 
 #include <cstring>
+#include <mutex>
 #include <shared_mutex>
 #include <vector>
 
