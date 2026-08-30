@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Pipe/Core/String.h"
+#include "PipeStrings.h"
 #include "PipeAlgorithms.h"
 #include "PipeSerializeFwd.h"
 

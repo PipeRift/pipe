@@ -39,15 +39,15 @@ namespace p
 			{
 				switch (*format)
 				{
-					case 'd': Strings::FormatTo(result, "{}", Abs(GetDays())); break;
-					case 'D': Strings::FormatTo(result, "{:08i}", Abs(GetDays())); break;
-					case 'h': Strings::FormatTo(result, "{:02i}", Abs(GetHours())); break;
-					case 'm': Strings::FormatTo(result, "{:02i}", Abs(GetMinutes())); break;
-					case 's': Strings::FormatTo(result, "{:02i}", Abs(GetSeconds())); break;
-					case 'f': Strings::FormatTo(result, "{:03i}", Abs(GetFractionMilli())); break;
-					case 'u': Strings::FormatTo(result, "{:06i}", Abs(GetFractionMicro())); break;
-					case 't': Strings::FormatTo(result, "{:07i}", Abs(GetFractionTicks())); break;
-					case 'n': Strings::FormatTo(result, "{:09i}", Abs(GetFractionNano())); break;
+					case 'd': FormatTo(result, "{}", Abs(GetDays())); break;
+					case 'D': FormatTo(result, "{:08i}", Abs(GetDays())); break;
+					case 'h': FormatTo(result, "{:02i}", Abs(GetHours())); break;
+					case 'm': FormatTo(result, "{:02i}", Abs(GetMinutes())); break;
+					case 's': FormatTo(result, "{:02i}", Abs(GetSeconds())); break;
+					case 'f': FormatTo(result, "{:03i}", Abs(GetFractionMilli())); break;
+					case 'u': FormatTo(result, "{:06i}", Abs(GetFractionMicro())); break;
+					case 't': FormatTo(result, "{:07i}", Abs(GetFractionTicks())); break;
+					case 'n': FormatTo(result, "{:09i}", Abs(GetFractionNano())); break;
 					default: result += *format;
 				}
 			}
@@ -296,7 +296,7 @@ namespace p
 			case MonthOfYear::December: MonthStr = "Dec"; break;
 		}
 
-		return Strings::Format("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT", DayStr, GetDay(),
+		return Format("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT", DayStr, GetDay(),
 		    MonthStr, GetYear(), GetHour(), GetMinute(), GetSecond());
 	}
 
@@ -314,7 +314,7 @@ namespace p
 
 	String DateTime::ToString(const char* format) const
 	{
-		// return Strings::Format(format, *value);
+		// return Format(format, *value);
 		String result;
 		ToString(format, result);
 		return result;
@@ -332,16 +332,16 @@ namespace p
 					{
 						case 'a': result += IsMorning() ? "am" : "pm"; break;
 						case 'A': result += IsMorning() ? "AM" : "PM"; break;
-						case 'd': Strings::FormatTo(result, "{:02}", GetDay()); break;
-						case 'D': Strings::FormatTo(result, "{:03}", GetDayOfYear()); break;
-						case 'm': Strings::FormatTo(result, "{:02}", GetMonth()); break;
-						case 'y': Strings::FormatTo(result, "{:02}", GetYear() % 100); break;
-						case 'Y': Strings::FormatTo(result, "{:04}", GetYear()); break;
-						case 'h': Strings::FormatTo(result, "{:02}", GetHour12()); break;
-						case 'H': Strings::FormatTo(result, "{:02}", GetHour()); break;
-						case 'M': Strings::FormatTo(result, "{:02}", GetMinute()); break;
-						case 'S': Strings::FormatTo(result, "{:02}", GetSecond()); break;
-						case 's': Strings::FormatTo(result, "{:03}", GetMillisecond()); break;
+						case 'd': FormatTo(result, "{:02}", GetDay()); break;
+						case 'D': FormatTo(result, "{:03}", GetDayOfYear()); break;
+						case 'm': FormatTo(result, "{:02}", GetMonth()); break;
+						case 'y': FormatTo(result, "{:02}", GetYear() % 100); break;
+						case 'Y': FormatTo(result, "{:04}", GetYear()); break;
+						case 'h': FormatTo(result, "{:02}", GetHour12()); break;
+						case 'H': FormatTo(result, "{:02}", GetHour()); break;
+						case 'M': FormatTo(result, "{:02}", GetMinute()); break;
+						case 'S': FormatTo(result, "{:02}", GetSecond()); break;
+						case 's': FormatTo(result, "{:03}", GetMillisecond()); break;
 						default: result += *format;
 					}
 				}

@@ -3,7 +3,7 @@
 #include <bandit/bandit.h>
 #include <Pipe/Core/Guid.h>
 #include <Pipe/Core/Map.h>
-#include <Pipe/Core/String.h>
+#include <PipeStrings.h>
 #include <Pipe/Core/Tag.h>
 #include <PipeContainers.h>
 #include <PipeReflect.h>

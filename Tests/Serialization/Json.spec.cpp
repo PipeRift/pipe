@@ -181,9 +181,9 @@ go_bandit([]()
 				it("Can read i16 values", [&]()
 				{
 					// Test inbounds and out of bounds values
-					JsonFormatReader reader{Strings::Format(
-					    "{{\"a\":{},\"b\":{},\"c\":{},\"d\":{}}}", Limits<i16>::Max(),
-					    Limits<i16>::Lowest(), Limits<i32>::Max(), Limits<i32>::Lowest())};
+					JsonFormatReader reader{
+					    Format("{{\"a\":{},\"b\":{},\"c\":{},\"d\":{}}}", Limits<i16>::Max(),
+					        Limits<i16>::Lowest(), Limits<i32>::Max(), Limits<i32>::Lowest())};
 					Reader ct = reader;
 					ct.BeginObject();
 					i16 value = 0;
@@ -199,7 +199,7 @@ go_bandit([]()
 
 				it("Can read u16 values", [&]()
 				{
-					JsonFormatReader reader{Strings::Format("{{\"a\":{},\"b\":{},\"c\":{}}}",
+					JsonFormatReader reader{Format("{{\"a\":{},\"b\":{},\"c\":{}}}",
 					    Limits<u16>::Max(), Limits<u16>::Lowest(), -32)};
 					Reader ct = reader;
 					ct.BeginObject();
@@ -215,9 +215,9 @@ go_bandit([]()
 				it("Can read i32 values", [&]()
 				{
 					// Test inbounds and out of bounds values
-					JsonFormatReader reader{Strings::Format(
-					    "{{\"a\":{},\"b\":{},\"c\":{},\"d\":{}}}", Limits<i32>::Max(),
-					    Limits<i32>::Lowest(), Limits<i64>::Max(), Limits<i64>::Lowest())};
+					JsonFormatReader reader{
+					    Format("{{\"a\":{},\"b\":{},\"c\":{},\"d\":{}}}", Limits<i32>::Max(),
+					        Limits<i32>::Lowest(), Limits<i64>::Max(), Limits<i64>::Lowest())};
 					Reader ct = reader;
 					ct.BeginObject();
 					i32 value = 0;
@@ -233,7 +233,7 @@ go_bandit([]()
 
 				it("Can read u32 values", [&]()
 				{
-					JsonFormatReader reader{Strings::Format("{{\"a\":{},\"b\":{},\"c\":{}}}",
+					JsonFormatReader reader{Format("{{\"a\":{},\"b\":{},\"c\":{}}}",
 					    Limits<u32>::Max(), Limits<u32>::Lowest(), -32)};
 					Reader ct = reader;
 					ct.BeginObject();

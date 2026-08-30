@@ -2,9 +2,9 @@
 
 #include "Pipe/Memory/MemoryStats.h"
 
-#include "Pipe/Core/Set.h"
-#include "Pipe/Core/String.h"
+#include "Pipe/Core/Map.h"
 #include "PipeMath.h"
+#include "PipeStrings.h"
 
 
 namespace p
@@ -59,10 +59,10 @@ namespace p
 		void PrintAllocationError(StringView error, const MemoryStatsEvent* allocation)
 		{
 			String msg;
-			Strings::FormatTo(msg, error);
+			FormatTo(msg, error);
 			if (allocation)
 			{
-				Strings::FormatTo(msg, " ({} {})", static_cast<void*>(allocation->GetPtr()),
+				FormatTo(msg, " ({} {})", static_cast<void*>(allocation->GetPtr()),
 				    Strings::ParseMemorySize(allocation->GetSize()));
 			}
 			std::puts(msg.data());
@@ -70,7 +70,11 @@ namespace p
 	}    // namespace
 
 	MemoryStats::MemoryStats()
-	    : events{GetStatsArena()}, live{GetStatsArena()}, frees{GetStatsArena()}
+	    : events{GetStatsArena()}
+	    , live{GetStatsArena()}
+	    , frees{GetStatsArena()}
+	    , liveIdx{GetStatsArena()}
+	    , prevLiveIdx{GetStatsArena()}
 	{}
 
 	MemoryStats::~MemoryStats()
@@ -186,9 +190,14 @@ namespace p
 	{
 		// Drain all thread buffers and reset state.
 		CollectStats();
-		used           = 0;
-		totalAllocated = 0;
+		used            = 0;
+		totalAllocated  = 0;
+		collectedEvents = 0;
 		events.Clear();
+		live.Clear();
+		frees.Clear();
+		liveIdx.Clear();
+		prevLiveIdx.Clear();
 	}
 
 	void MemoryStats::CollectStats() const
@@ -234,6 +243,17 @@ namespace p
 		}
 
 
+		// --- Incremental classification of drained events ---
+		// live[i]: events[i] is an alloc never matched by a free.
+		// frees[i]: events[i] is a free event.
+		// Events are append-only, so bits computed in previous calls remain
+		// valid; only classify events drained since the last call. A free
+		// matches the most recent unmatched alloc with the same key (LIFO),
+		// mirroring a full reverse scan.
+		live.Resize(events.Size());
+		frees.Resize(events.Size());
+		prevLiveIdx.Resize(events.Size());
+
 		// Fast (ptr,size) key: XOR ptr with mixed size to produce a
 		// single u64. Cheaper to hash than the full 16-byte event.
 		auto EventKey = [](const MemoryStatsEvent& ev) -> u64
@@ -242,63 +262,49 @@ namespace p
 			     ^ (static_cast<u64>(ev.GetSize()) * 0x9E3779B97F4A7C15ULL);
 		};
 
-		// Reverse scan: build live bitmask + set of unmatched free keys.
-		live.Resize(events.Size());
-		live.SetAllFalse();
-		TSet<u64> freeKeys{GetStatsArena()};
-		for (i32 i = events.Size() - 1; i >= 0; --i)
+		for (i32 i = collectedEvents; i < events.Size(); ++i)
 		{
 			const auto& ev = events[i];
+			const u64 key  = EventKey(ev);
+			auto it        = liveIdx.FindIt(key);
 			if (ev.IsFree())
 			{
-				freeKeys.Insert(EventKey(ev));
+				frees.SetTrue(i);
+				if (it != liveIdx.end())
+				{
+					// Unmark the newest unmatched alloc and pop it off the
+					// chain, promoting its predecessor as chain head.
+					const i32 node = it->second;
+					live.SetFalse(node);
+					const i32 prev = prevLiveIdx[node];
+					if (prev == NO_INDEX)
+					{
+						liveIdx.RemoveIt(it);
+					}
+					else
+					{
+						*const_cast<i32*>(&it->second) = prev;
+					}
+				}
+				// Else a stray free: recorded, nothing to unmark.
 			}
 			else
 			{
-				auto it = freeKeys.FindIt(EventKey(ev));
-				if (it != freeKeys.end())
+				// Push this alloc as the newest node of the key's chain.
+				if (it != liveIdx.end())
 				{
-					freeKeys.RemoveIt(it);
+					prevLiveIdx[i] = it->second;
+					*const_cast<i32*>(&it->second) = i;
 				}
 				else
 				{
-					live.SetTrue(i);
+					prevLiveIdx[i] = NO_INDEX;
+					liveIdx.Insert(key, i);
 				}
+				live.SetTrue(i);
 			}
 		}
-
-		// In-place compaction + bitmask rebuild (single pass).
-		// Drops matched alloc/free pairs, keeps leaks + stray frees.
-		frees.Resize(events.Size());
-		frees.SetAllFalse();
-		i32 writeIdx = 0;
-		for (i32 i = 0; i < events.Size(); ++i)
-		{
-			const MemoryStatsEvent& ev = events[i];
-			const bool keep =
-			    ev.IsFree() ? freeKeys.Contains(EventKey(ev)) : live.IsSet(i);
-			if (keep)
-			{
-				const bool isFree = ev.IsFree();
-				if (writeIdx != i)
-				{
-					events[writeIdx] = ev;
-				}
-				if (isFree)
-				{
-					frees.SetTrue(writeIdx);
-					live.SetFalse(writeIdx);
-				}
-				else
-				{
-					live.SetTrue(writeIdx);
-				}
-				++writeIdx;
-			}
-		}
-		events.Resize(writeIdx);
-		frees.Resize(writeIdx);
-		live.Resize(writeIdx);
+		collectedEvents = events.Size();
 	}
 
 	void MemoryStats::CheckLeaks() const
@@ -310,7 +316,7 @@ namespace p
 		}
 
 		String errorMsg;
-		Strings::FormatTo(errorMsg, "{}: {} allocs were not freed!", name, numLeaks);
+		FormatTo(errorMsg, "{}: {} allocs were not freed!", name ? name : "MemoryStats", numLeaks);
 
 		const i32 shown = Min(64, numLeaks);
 		i32 i           = -1;
@@ -327,7 +333,7 @@ namespace p
 		}
 		if (numLeaks > shown)
 		{
-			Strings::FormatTo(errorMsg, "\n...\n{} more not shown.", numLeaks - shown);
+			FormatTo(errorMsg, "\n...\n{} more not shown.", numLeaks - shown);
 		}
 		std::puts(errorMsg.data());
 	}

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/Checks.h"
-#include "Pipe/Core/String.h"
+#include "PipeStrings.h"
 #include "PipePlatform.h"
 
 #include <chrono>

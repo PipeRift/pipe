@@ -16,13 +16,7 @@ namespace p
 	BitArray::BitArray(const bool* data, i32 newSize)
 	    : size{newSize}, bits(CalculateDataSize(newSize))
 	{
-		for (i32 i = 0; i < newSize; ++i)
-		{
-			if (data[i])
-			{
-				SetTrue(i);
-			}
-		}
+		SetFromBools(data, newSize);
 	}
 
 	BitArray::BitArray(Arena& arena, i32 newSize)
@@ -38,13 +32,7 @@ namespace p
 	BitArray::BitArray(Arena& arena, const bool* data, i32 newSize)
 	    : size{newSize}, bits(arena, CalculateDataSize(newSize))
 	{
-		for (i32 i = 0; i < newSize; ++i)
-		{
-			if (data[i])
-			{
-				SetTrue(i);
-			}
-		}
+		SetFromBools(data, newSize);
 	}
 
 	BitArray::BitArray(BitArray&& other) noexcept
@@ -186,24 +174,24 @@ namespace p
 		return NO_INDEX;
 	}
 
-	i32 BitArray::CountSetBits(i32 fromIndex, i32 toIndex) const
+	i32 BitArray::CountSetBits() const
 	{
-		if (toIndex == NO_INDEX)
-		{
-			toIndex = size;
-		}
-
-		P_Check(fromIndex >= 0);
-		P_Check(toIndex >= fromIndex && toIndex <= size);
-
 		i32 numSetBits = 0;
-		// To data indices
-		fromIndex = fromIndex >> 5;
-		toIndex   = toIndex >> 5;
-		for (i32 i = fromIndex; i < toIndex; ++i)
+		for (i32 i = 0; i < bits.Size(); ++i)
 		{
 			numSetBits += CountBits(bits[i]);
 		}
 		return numSetBits;
+	}
+
+	void BitArray::SetFromBools(const bool* data, i32 count)
+	{
+		for (i32 i = 0; i < count; ++i)
+		{
+			if (data[i])
+			{
+				SetTrue(i);
+			}
+		}
 	}
 }    // namespace p

@@ -25,7 +25,7 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeDebug requires v1.9
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Map.h"
 #include "Pipe/Core/Set.h"
-#include "Pipe/Core/String.h"
+#include "PipeStrings.h"
 #include "Pipe/Memory/MemoryStats.h"
 #include "PipeColor.h"
 #include "PipeContainers.h"
@@ -666,7 +666,7 @@ namespace p
 				for (i32 i = 0; i < size; ++i)
 				{
 					tmpLabel.clear();
-					Strings::FormatTo(tmpLabel, "Index {}", i);
+					FormatTo(tmpLabel, "Index {}", i);
 					Inspect(tmpLabel, ops->GetItem(data, i), ops->itemType);
 
 					++ins.propStack.Last().index;
@@ -888,7 +888,7 @@ namespace p
 					}
 					static p::String typeLabel;
 					typeLabel.clear();
-					p::Strings::FormatTo(typeLabel, "{}###{}", entry.name, entry.id.GetId());
+					FormatTo(typeLabel, "{}###{}", entry.name, entry.id.GetId());
 					if (ImGui::Selectable(typeLabel, true))
 					{
 						selectedTypeId = entry.id;
@@ -936,7 +936,7 @@ namespace p
 			for (TypeId typeId : poolTypes)
 			{
 				typeName.clear();
-				p::Strings::FormatTo(typeName, "{}###{}", GetTypeName(typeId), typeId.GetId());
+				FormatTo(typeName, "{}###{}", GetTypeName(typeId), typeId.GetId());
 				if (ImGui::Button(typeName.data()))
 				{
 					typesToRemove.Add(typeId);
@@ -1313,7 +1313,7 @@ namespace p
 			bool wantAddComponent = false;
 
 			String name;
-			Strings::FormatTo(name, "{}: {}{}###inspector{}", label, inspector.id,
+			FormatTo(name, "{}: {}{}###inspector{}", label, inspector.id,
 			    removed ? " (removed)" : "", inspector.uniqueId);
 
 			if (inspector.pendingFocus)
@@ -1412,7 +1412,7 @@ namespace p
 
 						componentLabel.clear();
 
-						Strings::FormatTo(componentLabel, "{}",
+						FormatTo(componentLabel, "{}",
 						    RemoveNamespace(GetTypeName(poolInstance.componentId)));
 
 						if (!inspector.filter.PassFilter(componentLabel.c_str()))
@@ -1473,7 +1473,7 @@ namespace p
 					{
 						static String modalTitle;
 						modalTitle.clear();
-						p::Strings::FormatTo(modalTitle, "Remove {}?",
+						FormatTo(modalTitle, "Remove {}?",
 						    RemoveNamespace(GetTypeName(pendingDeleteType)));
 						ImGui::Text(modalTitle);
 						ImGui::NewLine();
@@ -1756,7 +1756,7 @@ namespace p
 		inspectLabel.clear();
 		const bool inspected = IsInspectingId(ecsDbg, id);
 		const char* icon     = inspected ? " × " : "-->";
-		p::Strings::FormatTo(inspectLabel, "{}##{}", icon, id);
+		FormatTo(inspectLabel, "{}##{}", icon, id);
 		ImGui::PushTextColor(
 		    inspected ? ImGui::GetTextColor() : ImGui::GetTextColor().Translucency(0.3f));
 		ImGui::PushStyleCompact();
@@ -1792,7 +1792,7 @@ namespace p
 		{
 			static String idText;
 			idText.clear();
-			Strings::FormatTo(idText, "{}", type);
+			FormatTo(idText, "{}", type);
 
 			StringView name = property.name.AsString();
 			if (!ctx.filter.PassFilter(name.data(), name.data() + name.size()))
@@ -1825,7 +1825,7 @@ namespace p
 
 			static String idText;
 			idText.clear();
-			Strings::FormatTo(idText, "{}", type);
+			FormatTo(idText, "{}", type);
 
 			bool passedFilter  = true;
 			StringView rawName = GetTypeName(type);
@@ -3478,7 +3478,7 @@ namespace p
 						ImGui::ProgressBar(usedPct / 100.0f);
 					}
 					detailsLabel.clear();
-					Strings::FormatTo(detailsLabel, "{} blocks", selectedArena->blocks.Size());
+					FormatTo(detailsLabel, "{} blocks", selectedArena->blocks.Size());
 					ImGui::SeparatorText(detailsLabel.data());
 					for (i32 i = 0; i < selectedArena->blocks.Size(); ++i)
 					{

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/FixedString.h"
-#include "Pipe/Core/String.h"
+#include "PipeStrings.h"
 #include "PipeMath.h"
 #include "PipeVectors.h"
 
@@ -712,9 +712,9 @@ namespace p
 		{
 			if constexpr (mode == ColorMode::HSV)
 			{
-				return Strings::Format("(h={},s={},v={},a={})", this->h, this->s, this->v, this->a);
+				return Format("(h={},s={},v={},a={})", this->h, this->s, this->v, this->a);
 			}
-			return Strings::Format("(r={},g={},b={},a={})", this->r, this->g, this->b, this->a);
+			return Format("(r={},g={},b={},a={})", this->r, this->g, this->b, this->a);
 		}
 
 		/**
@@ -727,10 +727,10 @@ namespace p
 		{
 			if (includeAlpha)
 			{
-				return Strings::Format(
+				return Format(
 				    "{:02X}{:02X}{:02X}{:02X}", this->r, this->g, this->b, this->a);
 			}
-			return Strings::Format("{:02X}{:02X}{:02X}", this->r, this->g, this->b);
+			return Format("{:02X}{:02X}{:02X}", this->r, this->g, this->b);
 		}
 
 		// Common colors

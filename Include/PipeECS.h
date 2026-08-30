@@ -153,11 +153,11 @@ namespace p
 		}
 		else if (auto version = id.GetVersion(); version > 0)
 		{
-			Strings::FormatTo(str, "{}:{}", id.GetIndex(), version);
+			FormatTo(str, "{}:{}", id.GetIndex(), version);
 		}
 		else
 		{
-			Strings::FormatTo(str, "{}", id.GetIndex());
+			FormatTo(str, "{}", id.GetIndex());
 		}
 	}
 
@@ -2511,7 +2511,7 @@ namespace p
 				{
 					const Id id = ids[i];
 					key.clear();
-					Strings::FormatTo(key, "{}", i);
+					FormatTo(key, "{}", i);
 
 					if (EnterNext(key))
 					{
@@ -2581,7 +2581,7 @@ namespace p
 				for (auto id : typeIds)
 				{
 					key.clear();
-					Strings::FormatTo(key, "{}", id.first);
+					FormatTo(key, "{}", id.first);
 
 					if constexpr (std::is_empty_v<T>)
 					{

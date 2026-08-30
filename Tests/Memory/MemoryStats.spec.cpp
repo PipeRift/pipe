@@ -213,6 +213,113 @@ go_bandit([]()
 				AssertThat(AllocCount(s), Is().EqualTo(1));
 			});
 
+			it("CheckLeaks with null name does not crash", [&]()
+			{
+				{
+					// detectLeaks defaults to true and name defaults to null.
+					MemoryStats s;
+					s.Add((void*)0x1000, 64);
+					s.CollectStats();
+					// Destructor runs CheckLeaks with leaks and a null name.
+				}
+			});
+
+			it("live and frees bitsets match events", [&]()
+			{
+				MemoryStats s;
+				s.detectLeaks = false;
+				// allocs: 2 live, 1 matched. frees: 2 (one matches, one stray).
+				s.Add((void*)0x1000, 64);
+				s.Add((void*)0x2000, 32);
+				s.Add((void*)0x3000, 16);
+				s.Remove((void*)0x3000, 16);
+				s.Remove((void*)0xDEAD, 16);
+				s.CollectStats();
+
+				AssertThat(s.events.Size(), Is().EqualTo(5));
+				AssertThat(s.frees.CountSetBits(), Is().EqualTo(2));
+				AssertThat(s.frees.IsSet(3), Is().EqualTo(true));
+				AssertThat(s.frees.IsSet(4), Is().EqualTo(true));
+				AssertThat(s.live.CountSetBits(), Is().EqualTo(2));
+				AssertThat(s.live.IsSet(0), Is().EqualTo(true));
+				AssertThat(s.live.IsSet(1), Is().EqualTo(true));
+				AssertThat(s.live.IsSet(2), Is().EqualTo(false));
+				AssertThat(s.live.IsSet(3), Is().EqualTo(false));
+				AssertThat(s.live.IsSet(4), Is().EqualTo(false));
+
+				// Re-collecting must rebuild bitsets identically.
+				s.CollectStats();
+				AssertThat(s.live.CountSetBits(), Is().EqualTo(2));
+				AssertThat(s.frees.CountSetBits(), Is().EqualTo(2));
+			});
+
+			it("Alternating instances on one thread", [&]()
+			{
+				// Exercises thread context reuse when the owner switches.
+				MemoryStats a;
+				MemoryStats b;
+				a.detectLeaks = false;
+				b.detectLeaks = false;
+
+				a.Add((void*)0x1000, 64);
+				b.Add((void*)0x2000, 32);
+				a.Add((void*)0x3000, 16);
+				b.Remove((void*)0x2000, 32);
+
+				a.CollectStats();
+				b.CollectStats();
+
+				AssertThat(a.used, Is().EqualTo(64 + 16));
+				AssertThat(AllocCount(a), Is().EqualTo(2));
+				AssertThat(FreeCount(a), Is().EqualTo(0));
+				AssertThat(b.used, Is().EqualTo(0));
+				AssertThat(AllocCount(b), Is().EqualTo(1));
+				AssertThat(FreeCount(b), Is().EqualTo(1));
+			});
+
+			it("Add after Release works", [&]()
+			{
+				MemoryStats s;
+				s.detectLeaks = false;
+				s.Add((void*)0x1000, 64);
+				s.Release();
+				AssertThat(AllocCount(s), Is().EqualTo(0));
+
+				s.Add((void*)0x2000, 32);
+				s.CollectStats();
+				AssertThat(s.used, Is().EqualTo(32));
+				AssertThat(s.totalAllocated, Is().EqualTo(32));
+				AssertThat(AllocCount(s), Is().EqualTo(1));
+				AssertThat(s.live.CountSetBits(), Is().EqualTo(1));
+			});
+
+			it("Frees across collects unmark live allocs (LIFO, duplicate keys)", [&]()
+			{
+				MemoryStats s;
+				s.detectLeaks = false;
+
+				// Collect 1: two allocs sharing a key (same ptr and size).
+				s.Add((void*)0x1000, 64);
+				s.Add((void*)0x1000, 64);
+				s.CollectStats();
+				AssertThat(s.live.CountSetBits(), Is().EqualTo(2));
+				AssertThat(s.live.IsSet(0), Is().EqualTo(true));
+				AssertThat(s.live.IsSet(1), Is().EqualTo(true));
+
+				// Collect 2: one free must unmark the latest alloc (LIFO).
+				s.Remove((void*)0x1000, 64);
+				s.CollectStats();
+				AssertThat(s.live.CountSetBits(), Is().EqualTo(1));
+				AssertThat(s.live.IsSet(0), Is().EqualTo(true));
+				AssertThat(s.live.IsSet(1), Is().EqualTo(false));
+
+				// Collect 3: second free pops the olderLive spill entry.
+				s.Remove((void*)0x1000, 64);
+				s.CollectStats();
+				AssertThat(s.live.CountSetBits(), Is().EqualTo(0));
+				AssertThat(s.frees.CountSetBits(), Is().EqualTo(2));
+			});
+
 			it("Ignores null ptr in Remove", [&]()
 			{
 				MemoryStats s;
@@ -323,19 +430,22 @@ go_bandit([]()
 				}
 				s.CollectStats();
 				AssertThat(AllocCount(s), Is().EqualTo(N));
+				AssertThat(s.live.CountSetBits(), Is().EqualTo(N));
 				for (sizet i = 0; i < N / 2; ++i)
 				{
 					s.Remove(&buf[i * 8], 8);
 				}
 				s.CollectStats();
 				AssertThat(AllocCount(s), Is().EqualTo(N));
+				AssertThat(s.live.CountSetBits(), Is().EqualTo(N / 2));
+				AssertThat(s.frees.CountSetBits(), Is().EqualTo(N / 2));
 			});
 		});
 
 
-		describe("SPSC stress", [&]()
+		describe("Multithreading", [&]()
 		{
-			it("Producer and consumer work concurrently", [&]()
+			it("One thread adds, another collects", [&]()
 			{
 				MemoryStats s;
 				const sizet N = 1000;
@@ -375,12 +485,8 @@ go_bandit([]()
 				// Suppress leak warnings at destruction (test buffers are stack).
 				s.Release();
 			});
-		});
 
-
-		describe("MPMC stress", [&]()
-		{
-			it("Many producers push, one consumer collects", [&]()
+			it("Many threads add, then collects", [&]()
 			{
 				MemoryStats s;
 				const sizet N_PER_THREAD = 1000;
@@ -439,7 +545,7 @@ go_bandit([]()
 				s.Release();
 			});
 
-			it("Producers push and free, one consumer collects", [&]()
+			it("Many threads add and remove, then collects", [&]()
 			{
 				MemoryStats s;
 				const sizet N_PER_THREAD = 1000;

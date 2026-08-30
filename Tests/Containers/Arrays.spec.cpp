@@ -29,6 +29,20 @@ struct MoveType
 	}
 };
 
+struct CopyType
+{
+	i32 value = 0;
+
+	CopyType() = default;
+	CopyType(i32 value) : value(value) {}
+	CopyType(const CopyType& other) : value{other.value} {}
+	CopyType& operator=(const CopyType& other)
+	{
+		value = other.value;
+		return *this;
+	}
+};
+
 
 go_bandit([]()
 {
@@ -566,6 +580,70 @@ go_bandit([]()
 				AssertThat(data[7], Equals(9));
 			});
 
+			it("Can insert many values inline", [&]()
+			{
+				TArray<i32, 24> data{1, 2};
+				data.Insert(1, 3, 9);    // More values than trailing elements
+				AssertThat(data.Size(), Equals(5));
+				AssertThat(data[0], Equals(1));
+				AssertThat(data[1], Equals(9));
+				AssertThat(data[2], Equals(9));
+				AssertThat(data[3], Equals(9));
+				AssertThat(data[4], Equals(2));
+
+				data.Insert(0, 2, 7);    // Fewer values than trailing elements
+				AssertThat(data.Size(), Equals(7));
+				AssertThat(data[0], Equals(7));
+				AssertThat(data[1], Equals(7));
+				AssertThat(data[2], Equals(1));
+				AssertThat(data[3], Equals(9));
+				AssertThat(data[4], Equals(9));
+				AssertThat(data[5], Equals(9));
+				AssertThat(data[6], Equals(2));
+
+				data.Insert(5, 3, 4);    // One more value than trailing elements
+				AssertThat(data.Size(), Equals(10));
+				AssertThat(data[5], Equals(4));
+				AssertThat(data[6], Equals(4));
+				AssertThat(data[7], Equals(4));
+				AssertThat(data[8], Equals(9));
+				AssertThat(data[9], Equals(2));
+
+				data.Insert(3, 8, 6);    // One more value than trailing elements
+				AssertThat(data.Size(), Equals(18));
+				AssertThat(data[3], Equals(6));
+				AssertThat(data[10], Equals(6));
+				AssertThat(data[11], Equals(9));
+				AssertThat(data[17], Equals(2));
+			});
+
+			it("Can insert buffer inline", [&]()
+			{
+				TArray<i32, 8> data{1, 2, 3};
+				i32 src[]{4, 5, 6, 7};
+				data.Insert(1, src, 4);    // More values than trailing elements
+				AssertThat(data.Size(), Equals(7));
+				AssertThat(data[0], Equals(1));
+				AssertThat(data[1], Equals(4));
+				AssertThat(data[4], Equals(7));
+				AssertThat(data[5], Equals(2));
+				AssertThat(data[6], Equals(3));
+			});
+
+			it("Can insert many non trivial values inline", [&]()
+			{
+				TArray<CopyType, 8> data;
+				data.Add(CopyType{1});
+				data.Add(CopyType{2});
+				data.Insert(1, 3, CopyType{9});    // More values than trailing elements
+				AssertThat(data.Size(), Equals(5));
+				AssertThat(data[0].value, Equals(1));
+				AssertThat(data[1].value, Equals(9));
+				AssertThat(data[2].value, Equals(9));
+				AssertThat(data[3].value, Equals(9));
+				AssertThat(data[4].value, Equals(2));
+			});
+
 			it("Can insert moved value", [&]()
 			{
 				TArray<MoveType, 0> data;
@@ -806,6 +884,43 @@ go_bandit([]()
 			AssertThat(data.Size(), Equals(7));
 		});
 
+		it("Can slice", [&]()
+		{
+			TArray<i32> data{1, 2, 3, 4, 5};
+
+			auto mid = data.Slice(1, 2);    // Elements 1 to 3
+			AssertThat(mid.Size(), Equals(2));
+			AssertThat(mid[0], Equals(2));
+			AssertThat(mid[1], Equals(3));
+
+			auto tail = data.Slice(3, 100);    // Clamped to available elements
+			AssertThat(tail.Size(), Equals(2));
+			AssertThat(tail[0], Equals(4));
+			AssertThat(tail[1], Equals(5));
+
+			auto none = data.Slice(2, 0);    // Zero length
+			AssertThat(none.IsEmpty(), Is().True());
+
+			auto end = data.Slice(5, 2);    // Offset clamped to size
+			AssertThat(end.IsEmpty(), Is().True());
+		});
+
+		it("Can slice views", [&]()
+		{
+			TArray<i32> data{1, 2, 3, 4, 5};
+			TView<const i32> view = data;
+
+			auto mid = view.Slice(2, 2);    // Elements 2 to 4
+			AssertThat(mid.Size(), Equals(2));
+			AssertThat(mid[0], Equals(3));
+			AssertThat(mid[1], Equals(4));
+
+			auto head = view.Slice(0, 3);
+			AssertThat(head.Size(), Equals(3));
+			AssertThat(head[0], Equals(1));
+			AssertThat(head[2], Equals(3));
+		});
+
 		describe("Iterate", []()
 		{
 			it("Can iterate empty", [&]()
@@ -948,6 +1063,77 @@ go_bandit([]()
 				AssertThat(target[3], Equals(true));
 				AssertThat(source.Data(), Equals(nullptr));
 				AssertThat(target.Data(), Equals(sourceData));
+			});
+
+			it("Can bitwise operate", [&]()
+			{
+				BitArray a{true, true, false, false};
+				BitArray b{true, false, true, false};
+
+				const BitArray anded  = a & b;
+				const BitArray ored   = a | b;
+				const BitArray xored  = a ^ b;
+				const BitArray negged = ~a;
+
+				// a & b: only bit 0 is set in both
+				AssertThat(anded.IsSet(0), Is().True());
+				AssertThat(anded.IsSet(1), Is().False());
+				AssertThat(anded.IsSet(2), Is().False());
+				AssertThat(anded.IsSet(3), Is().False());
+
+				// a | b: all bits set
+				AssertThat(ored.IsSet(0), Is().True());
+				AssertThat(ored.IsSet(1), Is().True());
+				AssertThat(ored.IsSet(2), Is().True());
+				AssertThat(ored.IsSet(3), Is().False());
+
+				// a ^ b: bits 1 and 2 differ
+				AssertThat(xored.IsSet(0), Is().False());
+				AssertThat(xored.IsSet(1), Is().True());
+				AssertThat(xored.IsSet(2), Is().True());
+				AssertThat(xored.IsSet(3), Is().False());
+
+				// ~a: all bits flipped
+				AssertThat(negged.IsSet(0), Is().False());
+				AssertThat(negged.IsSet(1), Is().False());
+				AssertThat(negged.IsSet(2), Is().True());
+				AssertThat(negged.IsSet(3), Is().True());
+
+				// Compound operations
+				BitArray compound = a;
+				compound &= b;
+				AssertThat(compound.IsSet(0), Is().True());
+				AssertThat(compound.IsSet(1), Is().False());
+				compound |= b;
+				AssertThat(compound.IsSet(2), Is().True());
+				compound ^= b;
+				AssertThat(compound.IsSet(0), Is().False());
+				AssertThat(compound.IsSet(2), Is().False());
+			});
+
+			it("Can bitwise operate with different sizes", [&]()
+			{
+				BitArray small{false};
+				BitArray big{true, true, true};
+
+				const BitArray anded = big & small;
+				AssertThat(anded.Size(), Equals(1));
+				AssertThat(anded.IsSet(0), Is().False());
+
+				const BitArray ored = big | small;
+				AssertThat(ored.Size(), Equals(1));    // Sized to the smallest operand
+				AssertThat(ored.IsSet(0), Is().True());
+
+				// Only whole words are operated on. Bits past the smallest word count
+				// keep their value. Bits within a cleared word are cleared with it.
+				BitArray large{false};
+				large.Resize(40, true);
+				large &= small;    // small has a single (zeroed) word
+				AssertThat(large.Size(), Equals(40));
+				AssertThat(large.IsSet(0), Is().False());
+				AssertThat(large.IsSet(31), Is().False());    // Same word as bit 0
+				AssertThat(large.IsSet(32), Is().True());     // Next word, unaffected
+				AssertThat(large.IsSet(39), Is().True());
 			});
 		});
 	});

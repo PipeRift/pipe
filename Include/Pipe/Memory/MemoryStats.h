@@ -4,6 +4,7 @@
 
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Hash.h"
+#include "Pipe/Core/Map.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "PipeContainers.h"
@@ -93,9 +94,22 @@ namespace p
 		// can classify events via a bit-test instead of MemoryStatsEvent.
 		mutable BitArray frees;
 
-
 		mutable sizet used           = 0;
 		mutable sizet totalAllocated = 0;
+
+	private:
+		// --- Incremental CollectStats state (consumer thread only) ---
+		// Events are append-only, so classification of old events never
+		// changes. Only events past collectedEvents are classified per call.
+		mutable i32 collectedEvents = 0;
+		// Head of the unmatched-alloc chain per event key. Chains are
+		// intrusively linked through prevLiveIdx, newest first.
+		mutable TMap<u64, i32> liveIdx;
+		// For each alloc event index, the previous unmatched alloc index
+		// sharing the same key (NO_INDEX if none). Consumed on free.
+		mutable TArray<i32> prevLiveIdx;
+
+	public:
 
 		MemoryStats();
 		~MemoryStats();

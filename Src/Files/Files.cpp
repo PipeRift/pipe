@@ -100,7 +100,7 @@ namespace p
 		// Clean string and reserve it
 		result = {};
 
-		std::ifstream file(String{path});
+		std::ifstream file(String{path}.c_str());
 		file.seekg(0, std::ios::end);
 		const sizet size = sizet(file.tellg());
 		if (size > 0)
@@ -120,7 +120,7 @@ namespace p
 			return false;
 		}
 
-		std::basic_ofstream<char> file(String{path});
+		std::basic_ofstream<char> file(String{path}.c_str());
 		file.write(data.data(), data.size());
 		file.close();
 		return true;

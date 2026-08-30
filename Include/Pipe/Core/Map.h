@@ -108,13 +108,13 @@ namespace p
 		}
 
 		template<typename OtherT = ValueType>
-		TPair<Iterator, bool> InsertOrAssign(const KeyType& key, OtherT&& value)
+		std::pair<Iterator, bool> InsertOrAssign(const KeyType& key, OtherT&& value)
 		{
 			return map.insert_or_assign(key, std::forward<OtherT>(value));
 		}
 
 		template<typename OtherT = ValueType>
-		TPair<Iterator, bool> InsertOrAssign(KeyType&& key, OtherT&& value)
+		std::pair<Iterator, bool> InsertOrAssign(KeyType&& key, OtherT&& value)
 		{
 			return map.insert_or_assign(Move(key), Fwd<OtherT>(value));
 		}
