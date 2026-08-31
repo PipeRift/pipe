@@ -277,7 +277,6 @@ namespace p
 			Tag typeName;
 			const TArray<MemoryStatsEvent>* events = nullptr;
 			const BitArray* live                   = nullptr;
-			const BitArray* frees                  = nullptr;
 		};
 		TArray<ArenaSnapshot> snapshots;
 	};
@@ -2220,7 +2219,6 @@ namespace p
 				snapshot.used   = stats->used;
 				snapshot.events = &stats->events;
 				snapshot.live   = &stats->live;
-				snapshot.frees  = &stats->frees;
 			}
 
 			memoryDbg.snapshots.Add(snapshot);

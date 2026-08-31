@@ -224,7 +224,7 @@ go_bandit([]()
 				}
 			});
 
-			it("live and frees bitsets match events", [&]()
+			it("live bitset and free flags match events", [&]()
 			{
 				MemoryStats s;
 				s.detectLeaks = false;
@@ -237,9 +237,9 @@ go_bandit([]()
 				s.CollectStats();
 
 				AssertThat(s.events.Size(), Is().EqualTo(5));
-				AssertThat(s.frees.CountSetBits(), Is().EqualTo(2));
-				AssertThat(s.frees.IsSet(3), Is().EqualTo(true));
-				AssertThat(s.frees.IsSet(4), Is().EqualTo(true));
+				AssertThat(FreeCount(s), Is().EqualTo(2));
+				AssertThat(s.events[3].IsFree(), Is().EqualTo(true));
+				AssertThat(s.events[4].IsFree(), Is().EqualTo(true));
 				AssertThat(s.live.CountSetBits(), Is().EqualTo(2));
 				AssertThat(s.live.IsSet(0), Is().EqualTo(true));
 				AssertThat(s.live.IsSet(1), Is().EqualTo(true));
@@ -247,10 +247,10 @@ go_bandit([]()
 				AssertThat(s.live.IsSet(3), Is().EqualTo(false));
 				AssertThat(s.live.IsSet(4), Is().EqualTo(false));
 
-				// Re-collecting must rebuild bitsets identically.
+				// Re-collecting must rebuild the bitset identically.
 				s.CollectStats();
 				AssertThat(s.live.CountSetBits(), Is().EqualTo(2));
-				AssertThat(s.frees.CountSetBits(), Is().EqualTo(2));
+				AssertThat(FreeCount(s), Is().EqualTo(2));
 			});
 
 			it("Alternating instances on one thread", [&]()
@@ -317,7 +317,7 @@ go_bandit([]()
 				s.Remove((void*)0x1000, 64);
 				s.CollectStats();
 				AssertThat(s.live.CountSetBits(), Is().EqualTo(0));
-				AssertThat(s.frees.CountSetBits(), Is().EqualTo(2));
+				AssertThat(FreeCount(s), Is().EqualTo(2));
 			});
 
 			it("Ignores null ptr in Remove", [&]()
@@ -438,7 +438,7 @@ go_bandit([]()
 				s.CollectStats();
 				AssertThat(AllocCount(s), Is().EqualTo(N));
 				AssertThat(s.live.CountSetBits(), Is().EqualTo(N / 2));
-				AssertThat(s.frees.CountSetBits(), Is().EqualTo(N / 2));
+				AssertThat(FreeCount(s), Is().EqualTo(N / 2));
 			});
 		});
 

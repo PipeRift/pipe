@@ -4,7 +4,6 @@
 
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Hash.h"
-#include "Pipe/Core/Map.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "PipeContainers.h"
@@ -35,10 +34,10 @@ namespace p
 
 	public:
 		MemoryStatsEvent() = default;
-		MemoryStatsEvent(u8* ptr, sizet size) : ptr{ptr}, size{size} {}
+		MemoryStatsEvent(void* ptr, sizet size) : ptr{static_cast<u8*>(ptr)}, size{size} {}
 		// Construct with size and flag (for the free ring).
-		MemoryStatsEvent(u8* ptr, sizet size, MemoryStatsEventFlags flags)
-		    : ptr{ptr}, size{size | *flags}
+		MemoryStatsEvent(void* ptr, sizet size, MemoryStatsEventFlags flags)
+		    : ptr{static_cast<u8*>(ptr)}, size{size | *flags}
 		{}
 
 		u8* GetPtr() const
@@ -90,21 +89,45 @@ namespace p
 		// CollectStats, had not been matched by a corresponding free.
 		mutable BitArray live;
 
-		// Bit i set when events[i] is a free event. Cached so consumers
-		// can classify events via a bit-test instead of MemoryStatsEvent.
-		mutable BitArray frees;
-
 		mutable sizet used           = 0;
 		mutable sizet totalAllocated = 0;
 
 	private:
+		// Open-addressed linear-probe map from event hash to the newest
+		// unmatched alloc event index for that hash. Keys are pre-mixed
+		// hashes (from GetHash), indexed directly without re-hashing.
+		// No per-insert allocation; grows at 75% load.
+		class LiveIndex
+		{
+			static constexpr i32 Empty     = -1;
+			static constexpr i32 Tombstone = -2;
+
+			Arena* arena = nullptr;
+			TArray<u64> keys;
+			// Parallel to keys: the node index, or Empty/Tombstone.
+			TArray<i32> nodes;
+			u64 mask      = 0;
+			i32 count     = 0;
+			i32 tombCount = 0;
+
+			void Grow();
+
+		public:
+			explicit LiveIndex(Arena& inArena) : arena{&inArena}, keys{inArena}, nodes{inArena} {}
+
+			i32* Find(u64 hash);
+			i32* FindOrInsert(u64 hash, i32 node);
+			void EraseAt(i32* node);
+			void Clear();
+		};
+
 		// --- Incremental CollectStats state (consumer thread only) ---
 		// Events are append-only, so classification of old events never
 		// changes. Only events past collectedEvents are classified per call.
 		mutable i32 collectedEvents = 0;
-		// Head of the unmatched-alloc chain per event key. Chains are
+		// Newest unmatched alloc index per event key. Chains are
 		// intrusively linked through prevLiveIdx, newest first.
-		mutable TMap<u64, i32> liveIdx;
+		mutable LiveIndex liveIdx;
 		// For each alloc event index, the previous unmatched alloc index
 		// sharing the same key (NO_INDEX if none). Consumed on free.
 		mutable TArray<i32> prevLiveIdx;
@@ -114,8 +137,20 @@ namespace p
 		MemoryStats();
 		~MemoryStats();
 
-		void Add(void* ptr, sizet size);
-		void Remove(void* ptr, sizet size);
+		// Tracks an allocation. Never blocks; writes one 16B event.
+		inline void Add(void* ptr, sizet size)
+		{
+			PushEvent(MemoryStatsEvent{ptr, size});
+		}
+
+		// Tracks a free. Ignored for null pointers.
+		inline void Remove(void* ptr, sizet size)
+		{
+			if (ptr)
+			{
+				PushEvent(MemoryStatsEvent{ptr, size, MemoryStatsEventFlags::IsFree});
+			}
+		}
 
 		// Empty memory stats. No diagnostics.
 		void Release();
@@ -133,7 +168,7 @@ namespace p
 			// from head. The chain is append-only.
 			struct Chunk
 			{
-				static constexpr u32 capacity = 4096;
+				static constexpr u32 capacity = 1024;
 				std::atomic<Chunk*> next{nullptr};
 				MemoryStatsEvent slots[capacity];
 				std::atomic<u32> writeIdx{0};
@@ -144,7 +179,10 @@ namespace p
 			// consumer advances to next chunk (relaxed) as it drains.
 			std::atomic<Chunk*> head{nullptr};
 			// Producer's current chunk. Consumer does not access.
-			Chunk* tail            = nullptr;
+			Chunk* tail = nullptr;
+			// Drained chunk returned by the consumer for producer reuse.
+			std::atomic<Chunk*> spare{nullptr};
+
 			MemoryStats* owner     = nullptr;
 			ThreadContext* nextCtx = nullptr;
 		};
@@ -153,7 +191,7 @@ namespace p
 
 		ThreadContext* GetOrCreateContext();
 
-		void PushEvent(void* ptr, sizet size, bool isFree);
+		void PushEvent(const MemoryStatsEvent& ev);
 	};
 
 	P_API Arena& GetStatsArena();

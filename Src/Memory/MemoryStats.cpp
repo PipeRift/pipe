@@ -51,6 +51,132 @@ namespace p
 
 
 	// ---------------------------------------------------------------------------
+	// MemoryStats::LiveIndex
+	// ---------------------------------------------------------------------------
+
+	void MemoryStats::LiveIndex::Grow()
+	{
+		TArray<u64> oldKeys  = Move(keys);
+		TArray<i32> oldNodes = Move(nodes);
+		const i32 newCap     = oldKeys.IsEmpty() ? 64 : oldKeys.Size() * 2;
+
+		keys  = TArray<u64>{*arena};
+		nodes = TArray<i32>{*arena};
+		keys.AddUninitialized(newCap);
+		nodes.AddUninitialized(newCap);
+		for (i32 i = 0; i < newCap; ++i)
+		{
+			keys[i]  = 0;
+			nodes[i] = Empty;
+		}
+		mask      = u64(newCap - 1);
+		count     = 0;
+		tombCount = 0;
+
+		for (i32 i = 0; i < oldKeys.Size(); ++i)
+		{
+			if (oldNodes[i] >= 0)
+			{
+				// Insert without grow or duplicates
+				const u64 hash = oldKeys[i];
+				u64 idx        = hash & mask;
+				while (nodes[idx] != Empty)
+				{
+					idx = (idx + 1) & mask;
+				}
+				keys[idx]  = hash;
+				nodes[idx] = oldNodes[i];
+				++count;
+			}
+		}
+	}
+
+	i32* MemoryStats::LiveIndex::Find(u64 hash)
+	{
+		if (count + tombCount <= 0)
+		{
+			return nullptr;
+		}
+		u64 idx = hash & mask;
+		while (true)
+		{
+			const i32 node = nodes[idx];
+			if (node == Empty)
+			{
+				return nullptr;
+			}
+			if (node != Tombstone && keys[idx] == hash)
+			{
+				return &nodes[idx];
+			}
+			idx = (idx + 1) & mask;
+		}
+	}
+
+	i32* MemoryStats::LiveIndex::FindOrInsert(u64 hash, i32 node)
+	{
+		// Grow up front when the table is empty or this insert would exceed
+		// load. A probe on an empty table would read out of bounds, and
+		// growing after a probe would invalidate its result. The rare cost
+		// is growing on a find-hit when load is already at the limit.
+		if ((count + tombCount + 1) * 4 > i64(keys.Size()) * 3)
+		{
+			Grow();
+		}
+
+		constexpr u64 noTomb = ~u64{0};
+		u64 tombstone        = noTomb;
+		u64 idx              = hash & mask;
+		while (true)
+		{
+			const i32 n = nodes[idx];
+			if (n == Empty)
+			{
+				break;
+			}
+			if (n == Tombstone)
+			{
+				if (tombstone == noTomb)
+				{
+					tombstone = idx;
+				}
+			}
+			else if (keys[idx] == hash)
+			{
+				return &nodes[idx];
+			}
+			idx = (idx + 1) & mask;
+		}
+
+		if (tombstone != noTomb)
+		{
+			idx = tombstone;
+			--tombCount;
+		}
+		keys[idx]  = hash;
+		nodes[idx] = node;
+		++count;
+		return &nodes[idx];
+	}
+
+	void MemoryStats::LiveIndex::EraseAt(i32* node)
+	{
+		*node = Tombstone;
+		--count;
+		++tombCount;
+	}
+
+	void MemoryStats::LiveIndex::Clear()
+	{
+		keys.Clear();
+		nodes.Clear();
+		mask      = 0;
+		count     = 0;
+		tombCount = 0;
+	}
+
+
+	// ---------------------------------------------------------------------------
 	// MemoryStats
 	// ---------------------------------------------------------------------------
 
@@ -72,7 +198,6 @@ namespace p
 	MemoryStats::MemoryStats()
 	    : events{GetStatsArena()}
 	    , live{GetStatsArena()}
-	    , frees{GetStatsArena()}
 	    , liveIdx{GetStatsArena()}
 	    , prevLiveIdx{GetStatsArena()}
 	{}
@@ -91,15 +216,23 @@ namespace p
 		ThreadContext* c = contexts.exchange(nullptr, std::memory_order_acq_rel);
 		while (c)
 		{
-			ThreadContext* next = c->nextCtx;
-			if (ThreadContext::Chunk* chunk = c->head.load(std::memory_order_relaxed))
+			ThreadContext* nextCtx      = c->nextCtx;
+			ThreadContext::Chunk* chunk = c->head.load(std::memory_order_relaxed);
+			while (chunk)
 			{
+				ThreadContext::Chunk* next = chunk->next.load(std::memory_order_relaxed);
 				chunk->~Chunk();
 				p::Free<ThreadContext::Chunk>(GetStatsArena(), chunk, 1);
+				chunk = next;
+			}
+			if (ThreadContext::Chunk* spare = c->spare.load(std::memory_order_relaxed))
+			{
+				spare->~Chunk();
+				p::Free<ThreadContext::Chunk>(GetStatsArena(), spare, 1);
 			}
 			c->~ThreadContext();
 			p::Free<ThreadContext>(GetStatsArena(), c, 1);
-			c = next;
+			c = nextCtx;
 		}
 	}
 
@@ -125,65 +258,46 @@ namespace p
 		return ctx;
 	}
 
-	void MemoryStats::PushEvent(void* ptr, sizet size, bool isFree)
+	void MemoryStats::PushEvent(const MemoryStatsEvent& ev)
 	{
-		auto* ctx               = GetOrCreateContext();
-		ThreadContext::Chunk* c = ctx->tail;
-		if (!c || c->writeIdx.load(std::memory_order_relaxed) >= ThreadContext::Chunk::capacity)
+		ThreadContext* ctx = GetOrCreateContext();
+		if (ThreadContext::Chunk* chunk = ctx->tail)
 		{
-			// Allocate a new chunk. Initialize it with the event already
-			// written so the consumer sees a complete slot on first read.
-			ThreadContext::Chunk* newC = p::Alloc<ThreadContext::Chunk>(GetStatsArena(), 1);
-			new (newC) ThreadContext::Chunk{};
-			if (isFree)
+			const u32 idx = chunk->writeIdx.load(std::memory_order_relaxed);
+			if (idx < ThreadContext::Chunk::capacity)
 			{
-				newC->slots[0] = {static_cast<u8*>(ptr), size, MemoryStatsEventFlags::IsFree};
+				chunk->slots[idx] = ev;
+				// Release the write so the consumer sees the slot data
+				// before the new writeIdx.
+				chunk->writeIdx.store(idx + 1, std::memory_order_release);
+				return;
 			}
-			else
-			{
-				newC->slots[0] = {static_cast<u8*>(ptr), size};
-			}
-			newC->writeIdx.store(1, std::memory_order_release);
-			if (c)
-			{
-				// Publish new chunk via the old chunk's next. Consumer
-				// discovers it after we've fully initialized newC.
-				c->next.store(newC, std::memory_order_release);
-			}
-			else
-			{
-				// First chunk: publish via head.
-				ctx->head.store(newC, std::memory_order_release);
-			}
-			ctx->tail = newC;
-			return;
 		}
-		const u32 idx = c->writeIdx.load(std::memory_order_relaxed);
-		if (isFree)
+
+		// Cold path: no chunk yet or current chunk is full. Allocate a new
+		// chunk, reusing the spare if the consumer left one. The event is
+		// written into slot 0 before publishing so the consumer sees a
+		// complete slot on first read.
+		ThreadContext::Chunk* newC = ctx->spare.exchange(nullptr, std::memory_order_acquire);
+		if (!newC)
 		{
-			c->slots[idx] = {static_cast<u8*>(ptr), size, MemoryStatsEventFlags::IsFree};
+			newC = p::Alloc<ThreadContext::Chunk>(GetStatsArena(), 1);
+		}
+		new (newC) ThreadContext::Chunk{};
+		newC->slots[0] = ev;
+		newC->writeIdx.store(1, std::memory_order_release);
+		if (ThreadContext::Chunk* const oldTail = ctx->tail)
+		{
+			// Publish new chunk via the old chunk's next. Consumer
+			// discovers it after we've fully initialized newC.
+			oldTail->next.store(newC, std::memory_order_release);
 		}
 		else
 		{
-			c->slots[idx] = {static_cast<u8*>(ptr), size};
+			// First chunk: publish via head.
+			ctx->head.store(newC, std::memory_order_release);
 		}
-		// Release the write so the consumer sees the slot data before the
-		// new writeIdx.
-		c->writeIdx.store(idx + 1, std::memory_order_release);
-	}
-
-	void MemoryStats::Add(void* ptr, sizet size)
-	{
-		PushEvent(ptr, size, false);
-	}
-
-	void MemoryStats::Remove(void* ptr, sizet size)
-	{
-		if (!ptr)
-		{
-			return;
-		}
-		PushEvent(ptr, size, true);
+		ctx->tail = newC;
 	}
 
 	void MemoryStats::Release()
@@ -195,7 +309,6 @@ namespace p
 		collectedEvents = 0;
 		events.Clear();
 		live.Clear();
-		frees.Clear();
 		liveIdx.Clear();
 		prevLiveIdx.Clear();
 	}
@@ -203,8 +316,8 @@ namespace p
 	void MemoryStats::CollectStats() const
 	{
 		// Walk all thread contexts and drain their chunk chains. For each
-		// chunk, process all available events, then free the chunk if the
-		// producer has already linked a successor.
+		// chunk, process all available events, then recycle or free the
+		// chunk if the producer has already linked a successor.
 		ThreadContext* c = contexts.load(std::memory_order_acquire);
 		for (; c != nullptr; c = c->nextCtx)
 		{
@@ -214,7 +327,7 @@ namespace p
 				const u32 writeIdx = chunk->writeIdx.load(std::memory_order_acquire);
 				while (chunk->readIdx < writeIdx)
 				{
-					const MemoryStatsEvent& ev = chunk->slots[chunk->readIdx];
+					const auto& ev = chunk->slots[chunk->readIdx];
 					if (ev.IsFree())
 					{
 						used -= ev.GetSize();
@@ -234,10 +347,17 @@ namespace p
 					// Producer hasn't allocated a successor yet. Stop.
 					break;
 				}
-				// Producer has moved on. Safe to free this chunk.
+				// Producer has moved on. Safe to recycle or free this chunk.
 				c->head.store(next, std::memory_order_relaxed);
 				chunk->~Chunk();
-				p::Free<ThreadContext::Chunk>(GetStatsArena(), chunk, 1);
+				if (!c->spare.load(std::memory_order_relaxed))
+				{
+					c->spare.store(chunk, std::memory_order_relaxed);
+				}
+				else
+				{
+					p::Free<ThreadContext::Chunk>(GetStatsArena(), chunk, 1);
+				}
 				chunk = next;
 			}
 		}
@@ -245,61 +365,49 @@ namespace p
 
 		// --- Incremental classification of drained events ---
 		// live[i]: events[i] is an alloc never matched by a free.
-		// frees[i]: events[i] is a free event.
 		// Events are append-only, so bits computed in previous calls remain
 		// valid; only classify events drained since the last call. A free
 		// matches the most recent unmatched alloc with the same key (LIFO),
-		// mirroring a full reverse scan.
+		// mirroring a full reverse scan. Free events are classified by
+		// their flag in the event itself.
 		live.Resize(events.Size());
-		frees.Resize(events.Size());
 		prevLiveIdx.Resize(events.Size());
-
-		// Fast (ptr,size) key: XOR ptr with mixed size to produce a
-		// single u64. Cheaper to hash than the full 16-byte event.
-		auto EventKey = [](const MemoryStatsEvent& ev) -> u64
-		{
-			return reinterpret_cast<u64>(ev.GetPtr())
-			     ^ (static_cast<u64>(ev.GetSize()) * 0x9E3779B97F4A7C15ULL);
-		};
 
 		for (i32 i = collectedEvents; i < events.Size(); ++i)
 		{
-			const auto& ev = events[i];
-			const u64 key  = EventKey(ev);
-			auto it        = liveIdx.FindIt(key);
+			const MemoryStatsEvent& ev = events[i];
+			const u64 hash             = GetHash(ev);
 			if (ev.IsFree())
 			{
-				frees.SetTrue(i);
-				if (it != liveIdx.end())
+				if (i32* nodePtr = liveIdx.Find(hash))
 				{
 					// Unmark the newest unmatched alloc and pop it off the
 					// chain, promoting its predecessor as chain head.
-					const i32 node = it->second;
+					const i32 node = *nodePtr;
 					live.SetFalse(node);
 					const i32 prev = prevLiveIdx[node];
 					if (prev == NO_INDEX)
 					{
-						liveIdx.RemoveIt(it);
+						liveIdx.EraseAt(nodePtr);
 					}
 					else
 					{
-						*const_cast<i32*>(&it->second) = prev;
+						*nodePtr = prev;
 					}
 				}
 				// Else a stray free: recorded, nothing to unmark.
 			}
 			else
 			{
-				// Push this alloc as the newest node of the key's chain.
-				if (it != liveIdx.end())
+				i32* headPtr = liveIdx.FindOrInsert(hash, i);
+				if (*headPtr != i)
 				{
-					prevLiveIdx[i] = it->second;
-					*const_cast<i32*>(&it->second) = i;
+					prevLiveIdx[i] = *headPtr;
+					*headPtr       = i;
 				}
 				else
 				{
 					prevLiveIdx[i] = NO_INDEX;
-					liveIdx.Insert(key, i);
 				}
 				live.SetTrue(i);
 			}
