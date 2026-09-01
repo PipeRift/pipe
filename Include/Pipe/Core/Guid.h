@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "PipeStrings.h"
 #include "PipeAlgorithms.h"
 #include "PipeSerializeFwd.h"
+#include "PipeStrings.h"
 
 
 namespace p

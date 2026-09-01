@@ -1355,8 +1355,8 @@ namespace tsl
 			}
 
 			sparse_hash(const sparse_hash& other)
-			    : Allocator(
-			        std::allocator_traits<Allocator>::select_on_container_copy_construction(other))
+			    : Allocator(std::allocator_traits<Allocator>::select_on_container_copy_construction(
+			          other))
 			    , Hash(other)
 			    , KeyEqual(other)
 			    , GrowthPolicy(other)
@@ -1376,11 +1376,11 @@ namespace tsl
 			}
 
 			sparse_hash(sparse_hash&& other) noexcept(
-			    std::is_nothrow_move_constructible<Allocator>::value&&
-			        std::is_nothrow_move_constructible<Hash>::value&&
-			            std::is_nothrow_move_constructible<KeyEqual>::value&&
-			                std::is_nothrow_move_constructible<GrowthPolicy>::value&&
-			                    std::is_nothrow_move_constructible<sparse_buckets_container>::value)
+			    std::is_nothrow_move_constructible<Allocator>::value
+			    && std::is_nothrow_move_constructible<Hash>::value
+			    && std::is_nothrow_move_constructible<KeyEqual>::value
+			    && std::is_nothrow_move_constructible<GrowthPolicy>::value
+			    && std::is_nothrow_move_constructible<sparse_buckets_container>::value)
 			    : Allocator(std::move(other))
 			    , Hash(std::move(other))
 			    , KeyEqual(std::move(other))

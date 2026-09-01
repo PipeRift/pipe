@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "PipeStrings.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Files/Paths.h"
 #include "Pipe/Files/STDFileSystem.h"
 #include "PipeContainers.h"
+#include "PipeStrings.h"
 
 
 namespace p

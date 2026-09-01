@@ -3,8 +3,8 @@
 #include "Pipe/Core/Checks.h"
 
 #include "Pipe/Core/Log.h"
-#include "PipeStrings.h"
 #include "Pipe/Core/StringView.h"
+#include "PipeStrings.h"
 
 
 namespace p::details
@@ -14,8 +14,8 @@ namespace p::details
 		p::String text{inText};
 		if (text.empty())
 		{
-			FormatTo(text, "Failed check \"{}\" at {}:{}", p::StringView{expr},
-			    p::StringView{file}, line);
+			FormatTo(text, "Failed check \"{}\" at {}:{}", p::StringView{expr}, p::StringView{file},
+			    line);
 		}
 		else
 		{

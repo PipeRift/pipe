@@ -277,12 +277,12 @@ go_bandit([]()
 				AssertThat(FreeCount(b), Is().EqualTo(1));
 			});
 
-			it("Add after Release works", [&]()
+			it("Add after Reset works", [&]()
 			{
 				MemoryStats s;
 				s.detectLeaks = false;
 				s.Add((void*)0x1000, 64);
-				s.Release();
+				s.Reset();
 				AssertThat(AllocCount(s), Is().EqualTo(0));
 
 				s.Add((void*)0x2000, 32);
@@ -340,7 +340,7 @@ go_bandit([]()
 				AssertThat(AllocCount(s), Is().EqualTo(1));
 			});
 
-			it("Release resets state", [&]()
+			it("Reset resets state", [&]()
 			{
 				MemoryStats s;
 				s.Add((void*)0x1000, 64);
@@ -348,7 +348,7 @@ go_bandit([]()
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo(96));
 
-				s.Release();
+				s.Reset();
 				AssertThat(s.used, Is().EqualTo(0));
 				AssertThat(s.totalAllocated, Is().EqualTo(0));
 				AssertThat(AllocCount(s), Is().EqualTo(0));
@@ -483,7 +483,7 @@ go_bandit([]()
 				AssertThat(s.used, Is().EqualTo(N * 8));
 
 				// Suppress leak warnings at destruction (test buffers are stack).
-				s.Release();
+				s.Reset();
 			});
 
 			it("Many threads add, then collects", [&]()
@@ -542,7 +542,7 @@ go_bandit([]()
 				AssertThat(s.totalAllocated, Is().EqualTo(N * 8));
 
 				// Suppress leak warnings at destruction (test buffers are stack).
-				s.Release();
+				s.Reset();
 			});
 
 			it("Many threads add and remove, then collects", [&]()
@@ -606,7 +606,7 @@ go_bandit([]()
 				AssertThat(s.totalAllocated, Is().EqualTo((N / 2) * 8));
 
 				// Suppress leak warnings at destruction (test buffers are stack).
-				s.Release();
+				s.Reset();
 			});
 		});
 
@@ -673,7 +673,7 @@ go_bandit([]()
 				AssertThat(s.used, Is().EqualTo(s.totalAllocated));
 
 				// Suppress leak warnings at destruction (test buffers are stack).
-				s.Release();
+				s.Reset();
 			});
 		});
 	});

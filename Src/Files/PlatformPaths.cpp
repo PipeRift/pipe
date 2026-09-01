@@ -4,9 +4,9 @@
 
 #include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/Log.h"
-#include "PipeStrings.h"
 #include "Pipe/Files/Files.h"
 #include "Pipe/Files/Paths.h"
+#include "PipeStrings.h"
 
 
 #if P_PLATFORM_WINDOWS

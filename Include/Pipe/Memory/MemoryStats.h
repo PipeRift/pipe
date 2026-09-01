@@ -4,14 +4,13 @@
 
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Hash.h"
+#include "Pipe/Core/SpinLock.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #include "PipeContainers.h"
 #include "PipeMath.h"
 #include "PipeMemory.h"
 #include "PipePlatform.h"
-
-#include <atomic>
 
 
 namespace p
@@ -122,9 +121,6 @@ namespace p
 		};
 
 		// --- Incremental CollectStats state (consumer thread only) ---
-		// Events are append-only, so classification of old events never
-		// changes. Only events past collectedEvents are classified per call.
-		mutable i32 collectedEvents = 0;
 		// Newest unmatched alloc index per event key. Chains are
 		// intrusively linked through prevLiveIdx, newest first.
 		mutable LiveIndex liveIdx;
@@ -137,7 +133,7 @@ namespace p
 		MemoryStats();
 		~MemoryStats();
 
-		// Tracks an allocation. Never blocks; writes one 16B event.
+		// Tracks an allocation. Writes one 16B event.
 		inline void Add(void* ptr, sizet size)
 		{
 			PushEvent(MemoryStatsEvent{ptr, size});
@@ -153,7 +149,7 @@ namespace p
 		}
 
 		// Empty memory stats. No diagnostics.
-		void Release();
+		void Reset();
 
 		// Update stats so that latest stats and events are reflected
 		void CollectStats() const;
@@ -162,34 +158,24 @@ namespace p
 		void CheckLeaks() const;
 
 	private:
-		struct ThreadContext
+		// Fixed-size event block. Chunks form a single shared queue guarded
+		// by `lock`: all producers append through `tail`, the collector
+		// drains from `head` and recycles chunks via `spare`.
+		struct EventChunk
 		{
-			// Linked list of chunks. Producer writes to tail; consumer reads
-			// from head. The chain is append-only.
-			struct Chunk
-			{
-				static constexpr u32 capacity = 1024;
-				std::atomic<Chunk*> next{nullptr};
-				MemoryStatsEvent slots[capacity];
-				std::atomic<u32> writeIdx{0};
-				u32 readIdx = 0;    // consumer-only
-			};
+			static constexpr u32 capacity = 1024;
 
-			// First chunk with unread events. Producer sets once (release);
-			// consumer advances to next chunk (relaxed) as it drains.
-			std::atomic<Chunk*> head{nullptr};
-			// Producer's current chunk. Consumer does not access.
-			Chunk* tail = nullptr;
-			// Drained chunk returned by the consumer for producer reuse.
-			std::atomic<Chunk*> spare{nullptr};
-
-			MemoryStats* owner     = nullptr;
-			ThreadContext* nextCtx = nullptr;
+			EventChunk* next = nullptr;
+			u32 size    = 0;
+			MemoryStatsEvent slots[capacity];
 		};
 
-		mutable std::atomic<ThreadContext*> contexts{nullptr};
-
-		ThreadContext* GetOrCreateContext();
+		// Queue head/tail and a single recycled chunk. All access is
+		// guarded by `lock` (producers on append, collector on drain).
+		mutable SpinLock lock;
+		mutable EventChunk* firstChunk = nullptr;
+		mutable EventChunk* lastChunk  = nullptr;
+		mutable EventChunk* spareChunk = nullptr;
 
 		void PushEvent(const MemoryStatsEvent& ev);
 	};
