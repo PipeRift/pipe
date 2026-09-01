@@ -126,27 +126,29 @@ namespace p
 		bits.Clear();
 	}
 
-	i32 BitArray::GetNextSet(i32 index) const
+	i32 BitArray::GetNextSet(i32 index, bool loops) const
 	{
-		i32 i;
-		for (i = index + 1; i < size; ++i)
+		for (i32 i = index + 1; i < size; ++i)
 		{
 			if (IsSet(i))
 			{
 				return i;
 			}
 		}
-		for (i = 0; i < index - 1; ++i)
+		if (loops)
 		{
-			if (IsSet(i))
+			for (i32 i = 0; i < index - 1; ++i)
 			{
-				return i;
+				if (IsSet(i))
+				{
+					return i;
+				}
 			}
 		}
 		return NO_INDEX;
 	}
 
-	i32 BitArray::GetPreviousSet(i32 index) const
+	i32 BitArray::GetPreviousSet(i32 index, bool loops) const
 	{
 		i32 i;
 		if (index != 0)
@@ -164,11 +166,14 @@ namespace p
 			}
 		}
 
-		for (i = size - 1; i > index; --i)
+		if (loops)
 		{
-			if (IsSet(i))
+			for (i = size - 1; i > index; --i)
 			{
-				return i;
+				if (IsSet(i))
+				{
+					return i;
+				}
 			}
 		}
 		return NO_INDEX;

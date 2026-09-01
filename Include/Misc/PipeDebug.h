@@ -2219,6 +2219,28 @@ namespace p
 				snapshot.used   = stats->used;
 				snapshot.events = &stats->events;
 				snapshot.live   = &stats->live;
+
+				// Union live allocation addresses into the arena range so
+				// arenas without blocks (e.g. HeapArena) still report the
+				// memory they actually use.
+				if (snapshot.live && snapshot.events)
+				{
+					i32 i = -1;
+					while ((i = snapshot.live->GetNextSet(i)) != NO_INDEX)
+					{
+						const auto& ev       = (*snapshot.events)[i];
+						const u8* allocBegin = ev.GetPtr();
+						if (!snapshot.begin || allocBegin < snapshot.begin)
+						{
+							snapshot.begin = allocBegin;
+						}
+						const u8* allocEnd = allocBegin + ev.GetSize();
+						if (!snapshot.end || allocEnd > snapshot.end)
+						{
+							snapshot.end = allocEnd;
+						}
+					}
+				}
 			}
 
 			memoryDbg.snapshots.Add(snapshot);
@@ -2879,6 +2901,8 @@ namespace p
 	#pragma endregion Draw
 
 			// ----- Arena columns loop (blocks, markers, click, tooltip) -----
+			const ImVec2 mousePos = ImGui::GetIO().MousePos;
+			const bool inGraph    = graphRect.Contains(mousePos);
 			for (i32 i = 0; i < memoryDbg.snapshots.Size(); ++i)
 			{
 				const auto& snapshot          = memoryDbg.snapshots[i];
@@ -2957,22 +2981,32 @@ namespace p
 					// Walk live allocs
 					if (snapshot.live && snapshot.events)
 					{
+						// Filter visible allocations
 						const float padding    = colW * 0.25f;
 						const sizet viewStartS = static_cast<sizet>(viewStart);
 						const sizet viewEndS   = static_cast<sizet>(viewStart + viewRange);
-						i32 lastI              = NO_INDEX;
-						for (i32 j = snapshot.live->GetNextSet(NO_INDEX); j > lastI;
-						    lastI = j, j = snapshot.live->GetNextSet(j))
+						TArray<i32> liveInRange;
+						for (i32 j = snapshot.live->GetNextSet(NO_INDEX); j != NO_INDEX;
+						    j = snapshot.live->GetNextSet(j))
 						{
 							const auto& ev   = (*snapshot.events)[j];
 							const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
 							const sizet size = ev.GetSize();
-							if (addr + size <= viewStartS || addr >= viewEndS)
+							if (addr >= viewEndS || addr + size <= viewStartS)
 							{
 								continue;
 							}
-							const float ty  = AddrToY(addr);
-							const float ty2 = AddrToY(addr + size);
+							liveInRange.Add(j);
+						}
+
+						// Draw allocations
+						for (i32 i : liveInRange)
+						{
+							const auto& ev   = (*snapshot.events)[i];
+							const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
+							const sizet size = ev.GetSize();
+							const float ty   = AddrToY(addr);
+							const float ty2  = AddrToY(addr + size);
 							if (ty >= addressY0 && ty2 <= addressY1)
 							{
 								drawList->AddRectFilled(ImVec2(colX + padding, ty - 0.5f),
@@ -2983,12 +3017,54 @@ namespace p
 					}
 				}
 
-				// Column click selects arena
+				// Column click selects the arena (even without blocks), or the
+				// specific block when clicking inside one.
 				const ImRect colRect(ImVec2(colX, addressY0), ImVec2(colRight, addressY1));
-				if (colRect.Contains(ImGui::GetIO().MousePos) && ImGui::IsMouseClicked(0))
+				if (inGraph && colRect.Contains(mousePos) && ImGui::IsMouseClicked(0)
+				    && !memoryDbg.isSelecting)
 				{
-					memoryDbg.hasSelection      = true;
-					memoryDbg.selectionArenaIdx = i;
+					i32 blockIdx = NO_INDEX;
+					if (snapshot.begin && snapshot.capacity > 0)
+					{
+						for (i32 e = 0; e < snapshot.blocks.Size() && blockIdx == NO_INDEX; ++e)
+						{
+							const auto& block  = snapshot.blocks[e];
+							const sizet bStart = reinterpret_cast<sizet>(block.data);
+							const sizet bEnd   = bStart + block.size;
+							if (bEnd <= bStart)
+							{
+								continue;
+							}
+							const float y0 = AddrToY(bStart);
+							const float y1 = AddrToY(bEnd);
+							if (mousePos.y >= y0 && mousePos.y <= y1)
+							{
+								blockIdx = e;
+							}
+						}
+					}
+
+					if (blockIdx != NO_INDEX)
+					{
+						const auto& block           = snapshot.blocks[blockIdx];
+						memoryDbg.isSelecting       = false;
+						memoryDbg.hasSelection      = true;
+						memoryDbg.selectionStart    = sizet(block.data);
+						memoryDbg.selectionEnd      = memoryDbg.selectionStart + block.size;
+						memoryDbg.selectionArenaIdx = i;
+						memoryDbg.selectionBlockIdx = blockIdx;
+					}
+					else    // Empty part of the column: select the arena itself
+					{
+						memoryDbg.isSelecting       = false;
+						memoryDbg.hasSelection      = true;
+						memoryDbg.selectionArenaIdx = i;
+						memoryDbg.selectionBlockIdx = NO_INDEX;
+						// Select the arena's full memory range (min/max over
+						// all its allocations and blocks).
+						memoryDbg.selectionStart = reinterpret_cast<sizet>(snapshot.begin);
+						memoryDbg.selectionEnd   = reinterpret_cast<sizet>(snapshot.end);
+					}
 				}
 
 				// Column tooltip
@@ -3132,62 +3208,22 @@ namespace p
 			}
 
 			// ----- Selection (left-click any column, block-click sets block range, drag)
-			const ImVec2 mousePos = ImGui::GetIO().MousePos;
-			const bool inGraph    = graphRect.Contains(mousePos);
 			{    // Selection Logic
-				// Start selection on left-click
+				// Start selection on left-click. Clicks inside an arena column
+				// are handled above (arena/block selection), so only start a
+				// drag-range when clicking outside all columns (ruler/hex/ascii).
 				if (ImGui::IsMouseClicked(0) && inGraph && !memoryDbg.isSelecting)
 				{
-					i32 arenaIdx = NO_INDEX;
-					i32 blockIdx = NO_INDEX;
-					for (i32 i = 0; i < memoryDbg.snapshots.Size(); ++i)
+					bool overColumn = false;
+					for (i32 i = 0; i < memoryDbg.snapshots.Size() && !overColumn; ++i)
 					{
-						const auto& snapshot = memoryDbg.snapshots[i];
-						if (!snapshot.begin || snapshot.capacity == 0)
-						{
-							continue;
-						}
 						const float cx = ArenaColumnX(i);
-						if (mousePos.x < cx || mousePos.x >= cx + colW)
+						if (mousePos.x >= cx && mousePos.x < cx + colW)
 						{
-							continue;
-						}
-						for (i32 e = 0; e < snapshot.blocks.Size(); ++e)
-						{
-							const auto& block  = snapshot.blocks[e];
-							const sizet bStart = reinterpret_cast<sizet>(block.data);
-							const sizet bEnd   = bStart + block.size;
-							if (bEnd <= bStart)
-							{
-								continue;
-							}
-							const float y0 = AddrToY(bStart);
-							const float y1 = AddrToY(bEnd);
-							if (mousePos.y >= y0 && mousePos.y <= y1)
-							{
-								arenaIdx = i;
-								blockIdx = e;
-								break;
-							}
-						}
-
-						if (blockIdx != NO_INDEX)
-						{
-							break;
+							overColumn = true;
 						}
 					}
-
-					if (blockIdx != NO_INDEX)
-					{
-						memoryDbg.isSelecting    = false;
-						const auto& block        = memoryDbg.snapshots[arenaIdx].blocks[blockIdx];
-						memoryDbg.hasSelection   = true;
-						memoryDbg.selectionStart = sizet(block.data);
-						memoryDbg.selectionEnd   = memoryDbg.selectionStart + block.size;
-						memoryDbg.selectionArenaIdx = arenaIdx;
-						memoryDbg.selectionBlockIdx = blockIdx;
-					}
-					else
+					if (!overColumn)
 					{
 						memoryDbg.isSelecting         = true;
 						memoryDbg.selectionFirstAddr  = ScreenYToAddr(mousePos.y);
@@ -3455,6 +3491,9 @@ namespace p
 				static String sizeStr;
 				if (selectedArena)
 				{
+					detailsLabel = selectedArena->name.AsString();
+					ImGui::Text("%s", detailsLabel.c_str());
+
 					detailsLabel = GetTypeName(selectedArena->typeId);
 					ImGui::Text("Type: %s", detailsLabel.c_str());
 					ImGui::Text("Range: 0x%llX - 0x%llX",

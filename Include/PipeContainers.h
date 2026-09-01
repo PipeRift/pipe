@@ -1883,11 +1883,11 @@ namespace p
 
 		void Clear();
 
-		// Returns index of next set bit in array (wraps around)
-		i32 GetNextSet(i32 index) const;
+		// Returns index of next set bit in array (wraps around only if loops)
+		i32 GetNextSet(i32 index, bool loops = false) const;
 
-		// @return index of previous set bit in array (wraps around)
-		i32 GetPreviousSet(i32 index) const;
+		// @return index of previous set bit in array (wraps around only if loops)
+		i32 GetPreviousSet(i32 index, bool loops = false) const;
 
 		/** @return number of set bits in the whole array. */
 		i32 CountSetBits() const;
