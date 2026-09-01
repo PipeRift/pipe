@@ -122,11 +122,11 @@ namespace p
 
 		// --- Incremental CollectStats state (consumer thread only) ---
 		// Newest unmatched alloc index per event key. Chains are
-		// intrusively linked through prevLiveIdx, newest first.
+		// intrusively linked through liveAllocIdx, newest first.
 		mutable LiveIndex liveIdx;
 		// For each alloc event index, the previous unmatched alloc index
 		// sharing the same key (NO_INDEX if none). Consumed on free.
-		mutable TArray<i32> prevLiveIdx;
+		mutable TArray<i32> liveAllocIdx;
 
 	public:
 
@@ -166,7 +166,7 @@ namespace p
 			static constexpr u32 capacity = 1024;
 
 			EventChunk* next = nullptr;
-			u32 size    = 0;
+			u32 size         = 0;
 			MemoryStatsEvent slots[capacity];
 		};
 

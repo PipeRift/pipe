@@ -199,7 +199,7 @@ namespace p
 	    : events{GetStatsArena()}
 	    , live{GetStatsArena()}
 	    , liveIdx{GetStatsArena()}
-	    , prevLiveIdx{GetStatsArena()}
+	    , liveAllocIdx{GetStatsArena()}
 	{}
 
 	MemoryStats::~MemoryStats()
@@ -275,7 +275,7 @@ namespace p
 		events.Clear();
 		live.Clear();
 		liveIdx.Clear();
-		prevLiveIdx.Clear();
+		liveAllocIdx.Clear();
 	}
 
 	void MemoryStats::CollectStats() const
@@ -312,7 +312,7 @@ namespace p
 
 		// --- Incremental classification of drained events + counters ---
 		live.Resize(events.Size());
-		prevLiveIdx.Resize(events.Size());
+		liveAllocIdx.Resize(events.Size());
 
 		for (i32 i = lastEventsSize; i < events.Size(); ++i)
 		{
@@ -326,7 +326,7 @@ namespace p
 					// chain, promoting its predecessor as chain firstChunk.
 					const i32 node = *nodePtr;
 					live.SetFalse(node);
-					const i32 prev = prevLiveIdx[node];
+					const i32 prev = liveAllocIdx[node];
 					if (prev == NO_INDEX)
 					{
 						liveIdx.EraseAt(nodePtr);
@@ -343,12 +343,12 @@ namespace p
 				i32* idxPtr = liveIdx.FindOrInsert(hash, i);
 				if (*idxPtr != i)
 				{
-					prevLiveIdx[i] = *idxPtr;
-					*idxPtr        = i;
+					liveAllocIdx[i] = *idxPtr;
+					*idxPtr         = i;
 				}
 				else
 				{
-					prevLiveIdx[i] = NO_INDEX;
+					liveAllocIdx[i] = NO_INDEX;
 				}
 				live.SetTrue(i);
 			}
