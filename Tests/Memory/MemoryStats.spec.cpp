@@ -15,11 +15,12 @@ using namespace p;
 
 static i32 LiveCount(const MemoryStats& s)
 {
-	return s.live.Size();
+	return s.liveAllocations.Size();
 }
-static MemoryStatsEvent LiveAt(const MemoryStats& s, i32 i)
+static const MemoryStatsEvent* LiveFind(const MemoryStats& s, void* ptr)
 {
-	return s.live[i];
+	// Lookup is keyed by pointer only; size is irrelevant for matching.
+	return s.liveAllocations.Find(MemoryStatsEvent{ptr, 0});
 }
 
 
@@ -47,9 +48,9 @@ go_bandit([]()
 				AssertThat(s.used, Is().EqualTo(64));
 				AssertThat(s.totalAllocated, Is().EqualTo(64));
 				AssertThat(LiveCount(s), Is().EqualTo(1));
-				AssertThat(LiveAt(s, 0).GetPtr(), Is().EqualTo((u8*)0x1000));
-				AssertThat(LiveAt(s, 0).GetSize(), Is().EqualTo(64));
-				AssertThat(LiveAt(s, 0).IsFree(), Is().EqualTo(false));
+				AssertThat(LiveFind(s, (void*)0x1000) != nullptr, Is().True());
+				AssertThat(LiveFind(s, (void*)0x1000)->GetSize(), Is().EqualTo(64));
+				AssertThat(LiveFind(s, (void*)0x1000)->IsFree(), Is().EqualTo(false));
 			});
 
 			it("Tracks add plus free", [&]()
@@ -123,17 +124,21 @@ go_bandit([]()
 				AssertThat(LiveCount(s), Is().EqualTo(0));
 			});
 
-			it("Records duplicate allocs", [&]()
+			it("Records duplicate allocs as UnfreedRealloc", [&]()
 			{
 				MemoryStats s;
 				s.detectLeaks = false;
 				s.Add((void*)0x1000, 64);
 				s.Add((void*)0x1000, 128);
 				s.CollectStats();
-				// Same ptr, different size: distinct keys, both survive.
-				AssertThat(LiveCount(s), Is().EqualTo(2));
-				AssertThat(LiveAt(s, 0).GetSize(), Is().EqualTo(64));
-				AssertThat(LiveAt(s, 1).GetSize(), Is().EqualTo(128));
+				// Same ptr twice: the second alloc is an error and the
+				// live set is left untouched.
+				AssertThat(LiveCount(s), Is().EqualTo(1));
+				AssertThat(LiveFind(s, (void*)0x1000)->GetSize(), Is().EqualTo(64));
+				AssertThat(s.errors.Size(), Is().EqualTo(1));
+				AssertThat(s.errors[0].kind == MemoryStatsErrorType::UnfreedRealloc, Is().True());
+				AssertThat(s.errors[0].event.GetSize(), Is().EqualTo(128));
+				AssertThat(s.used, Is().EqualTo(64));
 			});
 
 			it("CheckLeaks always runs when called directly", [&]()
@@ -182,10 +187,8 @@ go_bandit([]()
 				s.CollectStats();
 
 				AssertThat(LiveCount(s), Is().EqualTo(2));
-				AssertThat(LiveAt(s, 0).GetPtr(), Is().EqualTo((u8*)0x1000));
-				AssertThat(LiveAt(s, 0).GetSize(), Is().EqualTo(64));
-				AssertThat(LiveAt(s, 1).GetPtr(), Is().EqualTo((u8*)0x2000));
-				AssertThat(LiveAt(s, 1).GetSize(), Is().EqualTo(32));
+				AssertThat(LiveFind(s, (void*)0x1000)->GetSize(), Is().EqualTo(64));
+				AssertThat(LiveFind(s, (void*)0x2000)->GetSize(), Is().EqualTo(32));
 
 				// Re-collecting must preserve the live list identically.
 				s.CollectStats();
@@ -230,27 +233,60 @@ go_bandit([]()
 				AssertThat(LiveCount(s), Is().EqualTo(1));
 			});
 
-			it("Frees across collects unmark live allocs (LIFO, duplicate keys)", [&]()
+			it("Duplicate allocs record UnfreedRealloc and live stays usable", [&]()
 			{
 				MemoryStats s;
 				s.detectLeaks = false;
 
-				// Collect 1: two allocs sharing a key (same ptr and size).
+				// Collect 1: two allocs sharing the same ptr. The second is
+				// an UnfreedRealloc error; the live set keeps only the first.
 				s.Add((void*)0x1000, 64);
 				s.Add((void*)0x1000, 64);
-				s.CollectStats();
-				AssertThat(LiveCount(s), Is().EqualTo(2));
-
-				// Collect 2: one free must unmark the latest alloc (LIFO).
-				s.Remove((void*)0x1000, 64);
 				s.CollectStats();
 				AssertThat(LiveCount(s), Is().EqualTo(1));
-				AssertThat(LiveAt(s, 0).GetPtr(), Is().EqualTo((u8*)0x1000));
+				AssertThat(s.errors.Size(), Is().EqualTo(1));
+				AssertThat(s.errors[0].kind == MemoryStatsErrorType::UnfreedRealloc, Is().True());
+				AssertThat(s.used, Is().EqualTo(64));
 
-				// Collect 3: second free pops the remaining alloc.
+				// Collect 2: freeing the original alloc still works.
 				s.Remove((void*)0x1000, 64);
 				s.CollectStats();
 				AssertThat(LiveCount(s), Is().EqualTo(0));
+				AssertThat(s.used, Is().EqualTo(0));
+			});
+
+			it("Free with wrong size records SizeMismatch", [&]()
+			{
+				MemoryStats s;
+				s.detectLeaks = false;
+				s.Add((void*)0x1000, 64);
+				s.Remove((void*)0x1000, 32);    // size mismatch
+				s.CollectStats();
+				AssertThat(LiveCount(s), Is().EqualTo(1));
+				AssertThat(s.errors.Size(), Is().EqualTo(1));
+				AssertThat(s.errors[0].kind == MemoryStatsErrorType::SizeMismatch, Is().True());
+				AssertThat(s.errors[0].event.GetSize(), Is().EqualTo(32));
+				AssertThat(s.used, Is().EqualTo(64));
+
+				// Correcting the size frees the alloc normally.
+				s.Remove((void*)0x1000, 64);
+				s.CollectStats();
+				AssertThat(LiveCount(s), Is().EqualTo(0));
+				AssertThat(s.used, Is().EqualTo(0));
+			});
+
+			it("Free of unknown ptr records UnknownFree", [&]()
+			{
+				MemoryStats s;
+				s.detectLeaks = false;
+				s.Add((void*)0x1000, 64);
+				s.Remove((void*)0xDEAD, 64);
+				s.CollectStats();
+				AssertThat(LiveCount(s), Is().EqualTo(1));
+				AssertThat(s.errors.Size(), Is().EqualTo(1));
+				AssertThat(s.errors[0].kind == MemoryStatsErrorType::UnknownFree, Is().True());
+				AssertThat(s.errors[0].event.GetPtr(), Is().EqualTo((u8*)0xDEAD));
+				AssertThat(s.used, Is().EqualTo(64));
 			});
 
 			it("Ignores null ptr in Remove", [&]()

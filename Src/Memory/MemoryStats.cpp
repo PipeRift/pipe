@@ -51,132 +51,6 @@ namespace p
 
 
 	// ---------------------------------------------------------------------------
-	// MemoryStats::LiveIndex
-	// ---------------------------------------------------------------------------
-
-	void MemoryStats::LiveIndex::Grow()
-	{
-		TArray<u64> oldKeys  = Move(keys);
-		TArray<i32> oldNodes = Move(nodes);
-		const i32 newCap     = oldKeys.IsEmpty() ? 64 : oldKeys.Size() * 2;
-
-		keys  = TArray<u64>{*arena};
-		nodes = TArray<i32>{*arena};
-		keys.AddUninitialized(newCap);
-		nodes.AddUninitialized(newCap);
-		for (i32 i = 0; i < newCap; ++i)
-		{
-			keys[i]  = 0;
-			nodes[i] = Empty;
-		}
-		mask      = u64(newCap - 1);
-		count     = 0;
-		tombCount = 0;
-
-		for (i32 i = 0; i < oldKeys.Size(); ++i)
-		{
-			if (oldNodes[i] >= 0)
-			{
-				// Insert without grow or duplicates
-				const u64 hash = oldKeys[i];
-				u64 idx        = hash & mask;
-				while (nodes[idx] != Empty)
-				{
-					idx = (idx + 1) & mask;
-				}
-				keys[idx]  = hash;
-				nodes[idx] = oldNodes[i];
-				++count;
-			}
-		}
-	}
-
-	i32* MemoryStats::LiveIndex::Find(u64 hash)
-	{
-		if (count + tombCount <= 0)
-		{
-			return nullptr;
-		}
-		u64 idx = hash & mask;
-		while (true)
-		{
-			const i32 node = nodes[idx];
-			if (node == Empty)
-			{
-				return nullptr;
-			}
-			if (node != Tombstone && keys[idx] == hash)
-			{
-				return &nodes[idx];
-			}
-			idx = (idx + 1) & mask;
-		}
-	}
-
-	i32* MemoryStats::LiveIndex::FindOrInsert(u64 hash, i32 node)
-	{
-		// Grow up front when the table is empty or this insert would exceed
-		// load. A probe on an empty table would read out of bounds, and
-		// growing after a probe would invalidate its result. The rare cost
-		// is growing on a find-hit when load is already at the limit.
-		if ((count + tombCount + 1) * 4 > i64(keys.Size()) * 3)
-		{
-			Grow();
-		}
-
-		constexpr u64 noTomb = ~u64{0};
-		u64 tombstone        = noTomb;
-		u64 idx              = hash & mask;
-		while (true)
-		{
-			const i32 n = nodes[idx];
-			if (n == Empty)
-			{
-				break;
-			}
-			if (n == Tombstone)
-			{
-				if (tombstone == noTomb)
-				{
-					tombstone = idx;
-				}
-			}
-			else if (keys[idx] == hash)
-			{
-				return &nodes[idx];
-			}
-			idx = (idx + 1) & mask;
-		}
-
-		if (tombstone != noTomb)
-		{
-			idx = tombstone;
-			--tombCount;
-		}
-		keys[idx]  = hash;
-		nodes[idx] = node;
-		++count;
-		return &nodes[idx];
-	}
-
-	void MemoryStats::LiveIndex::EraseAt(i32* node)
-	{
-		*node = Tombstone;
-		--count;
-		++tombCount;
-	}
-
-	void MemoryStats::LiveIndex::Clear()
-	{
-		keys.Clear();
-		nodes.Clear();
-		mask      = 0;
-		count     = 0;
-		tombCount = 0;
-	}
-
-
-	// ---------------------------------------------------------------------------
 	// MemoryStats
 	// ---------------------------------------------------------------------------
 
@@ -196,7 +70,10 @@ namespace p
 	}    // namespace
 
 	MemoryStats::MemoryStats()
-	    : live{GetStatsArena()}, liveIdx{GetStatsArena()}, pending{GetStatsArena()}
+	    : liveAllocations{GetStatsArena()}
+	    , errors{GetStatsArena()}
+	    , pending{GetStatsArena()}
+	    , pendingErrors{GetStatsArena()}
 	{}
 
 	MemoryStats::~MemoryStats()
@@ -269,8 +146,8 @@ namespace p
 		CollectStats();
 		used           = 0;
 		totalAllocated = 0;
-		live.Clear();
-		liveIdx.Clear();
+		liveAllocations.Clear();
+		errors.Clear();
 	}
 
 	void MemoryStats::CollectStats() const
@@ -278,69 +155,93 @@ namespace p
 		// Phase 1: drain the shared event queue into a scratch buffer,
 		// keeping the lock hold time to just the memcpy.
 		pending.Clear();
-		{
+		EventChunk* chunk;
+		{    // Guard detaches the chunk list; producers can no longer reach it.
 			ScopedLock guard(lock);
-
-			EventChunk* chunk = firstChunk;
-			while (chunk)
+			chunk      = firstChunk;
+			firstChunk = nullptr;
+			lastChunk  = nullptr;
+			if (chunk && !spareChunk)    // Spare chunk still needs lock and draining
 			{
 				pending.Append(chunk->slots, chunk->size);
+				spareChunk = chunk;
+				chunk      = chunk->next;
+				spareChunk->~EventChunk();
+			}
+		}
 
-				EventChunk* const next = chunk->next;
+		// Drain safely events from all detached chunks
+		while (chunk)
+		{
+			pending.Append(chunk->slots, chunk->size);
 
-				chunk->~EventChunk();
-				if (!spareChunk)
+			EventChunk* const next = chunk->next;
+			chunk->~EventChunk();
+			p::Free<EventChunk>(GetStatsArena(), chunk, 1);
+			chunk = next;
+		}
+		pendingErrors.Resize(pending.Size(), MemoryStatsErrorType::None);
+
+		// Iterate events to track live allocations and errors
+		for (i32 i = 0; i < pending.Size(); ++i)
+		{
+			const MemoryStatsEvent& ev = pending[i];
+			if (ev.IsFree())
+			{
+				if (MemoryStatsEvent* liveEv = liveAllocations.Find(ev))
 				{
-					spareChunk = chunk;
+					if (liveEv->GetSize() != ev.GetSize())
+					{
+						pendingErrors[i] = MemoryStatsErrorType::SizeMismatch;
+					}
+					else
+					{
+						liveAllocations.Remove(ev);
+					}
 				}
 				else
 				{
-					p::Free<EventChunk>(GetStatsArena(), chunk, 1);
+					pendingErrors[i] = MemoryStatsErrorType::UnknownFree;
 				}
-				chunk = next;
-			}
-			firstChunk = nullptr;
-			lastChunk  = nullptr;
-		}
-
-		// Phase 2: classify drained events outside the lock. Alloc events
-		// become entries in `live`; matched frees swap-remove them.
-		// Nothing else is retained, so memory stays O(live).
-		for (const MemoryStatsEvent& ev : pending)
-		{
-			const u64 hash   = GetHash(ev);
-			const sizet size = ev.GetSize();
-			if (ev.IsFree())
-			{
-				if (i32* nodePtr = liveIdx.Find(hash))
-				{
-					// Swap-remove the matched alloc from the live list,
-					// then point its map slot at the moved-in element.
-					const i32 p       = *nodePtr;
-					const i32 lastIdx = live.Size() - 1;
-					if (lastIdx != p)
-					{
-						live[p] = live[lastIdx];
-						if (i32* movedSlot = liveIdx.Find(GetHash(live[p])))
-						{
-							if (*movedSlot == lastIdx)
-							{
-								*movedSlot = p;
-							}
-						}
-					}
-					live.RemoveLast(1, Shrink::No);
-					liveIdx.EraseAt(nodePtr);
-					used -= size;
-				}
-				// Else a stray free: no matching live alloc, ignore.
 			}
 			else
 			{
-				live.Add(ev);
-				const i32 idx   = live.Size() - 1;
-				i32* const slot = liveIdx.FindOrInsert(hash, idx);
-				*slot           = idx;
+				if (liveAllocations.Contains(ev))
+				{
+					pendingErrors[i] = MemoryStatsErrorType::UnfreedRealloc;
+				}
+				else
+				{
+					liveAllocations.Insert(ev);
+				}
+			}
+		}
+
+		// Record errors and remove events so that stats are calculated correctly.\
+		// (Order of events is no longer needed)
+		for (i32 i = 0; i < pendingErrors.Size(); ++i)
+		{
+			if (pendingErrors[i] != MemoryStatsErrorType::None)
+			{
+				errors.Add({pending[i], pendingErrors[i]});
+
+				pending.RemoveAtSwapUnsafe(i);
+				pendingErrors.RemoveAtSwapUnsafe(i);
+				--i;
+			}
+		}
+
+		// Record stats
+		for (i32 i = 0; i < pending.Size(); ++i)
+		{
+			const MemoryStatsEvent& ev = pending[i];
+			const sizet size           = ev.GetSize();
+			if (ev.IsFree())
+			{
+				used -= size;
+			}
+			else
+			{
 				used += size;
 				totalAllocated += size;
 			}
@@ -349,7 +250,7 @@ namespace p
 
 	void MemoryStats::CheckLeaks() const
 	{
-		const i32 numLeaks = live.Size();
+		const i32 numLeaks = liveAllocations.Size();
 		if (numLeaks <= 0)
 		{
 			return;
@@ -360,7 +261,7 @@ namespace p
 
 		const i32 shown = Min(64, numLeaks);
 		i32 printed     = 0;
-		for (const auto& ev : live)
+		for (const auto& ev : liveAllocations)
 		{
 			if (printed >= shown)
 			{

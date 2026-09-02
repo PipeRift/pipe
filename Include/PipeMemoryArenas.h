@@ -69,6 +69,7 @@ namespace p
 		{
 			return &stats;
 		}
+
 	protected:
 		TypeId ProvideTypeId() const override
 		{
@@ -135,6 +136,7 @@ namespace p
 		{
 			return &stats;
 		}
+
 	protected:
 		TypeId ProvideTypeId() const override
 		{
@@ -216,22 +218,22 @@ namespace p
 			}
 		};
 
-		struct P_API LinearSmallPool : public LinearBasePool<1 * Memory::MB>
+		struct P_API LinearSmallPool : public LinearBasePool<512 * Memory::KB>
 		{
 			static constexpr sizet minSize = 0;
-			static constexpr sizet maxSize = 8 * Memory::KB;
+			static constexpr sizet maxSize = 4 * Memory::KB;
 		};
 
 		struct P_API LinearMediumPool : public LinearBasePool<4 * Memory::MB>
 		{
 			static constexpr sizet minSize = LinearSmallPool::maxSize;
-			static constexpr sizet maxSize = 512 * Memory::KB;
+			static constexpr sizet maxSize = 32 * Memory::KB;
 		};
 
-		struct P_API LinearBigPool : public LinearBasePool<16 * Memory::MB>
+		struct P_API LinearBigPool : public LinearBasePool<32 * Memory::MB>
 		{
 			static constexpr sizet minSize = LinearMediumPool::maxSize;
-			static constexpr sizet maxSize = 4 * Memory::MB;
+			static constexpr sizet maxSize = 256 * Memory::KB;
 			// Block size is the size of the allocation
 		};
 	}    // namespace Details
@@ -288,6 +290,7 @@ namespace p
 		{
 			return &stats;
 		}
+
 	protected:
 		TypeId ProvideTypeId() const override
 		{
@@ -396,6 +399,7 @@ namespace p
 		{
 			return &stats;
 		}
+
 	private:
 		i32 FindSmallestSlot(sizet neededSize);
 		void ReduceSlot(
@@ -507,6 +511,7 @@ namespace p
 		{
 			return &stats;
 		}
+
 	private:
 		AllocationHeader* GetHeader(void* ptr) const
 		{

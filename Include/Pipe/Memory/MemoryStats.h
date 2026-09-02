@@ -4,6 +4,7 @@
 
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Hash.h"
+#include "Pipe/Core/Set.h"
 #include "Pipe/Core/SpinLock.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
@@ -62,16 +63,31 @@ namespace p
 
 		friend bool operator==(const MemoryStatsEvent& a, const MemoryStatsEvent& b) noexcept
 		{
-			return a.ptr == b.ptr && a.GetSize() == b.GetSize();
+			return a.ptr == b.ptr;
 		}
 	};
 #pragma pack(pop)
 
 	inline sizet GetHash(const MemoryStatsEvent& ev) noexcept
 	{
-		return HashCombine(GetHash(ev.GetPtr()), ev.GetSize());
+		return GetHash(ev.GetPtr());
 	}
 	static_assert(sizeof(MemoryStatsEvent) == 16);
+
+
+	enum class MemoryStatsErrorType : u8
+	{
+		None,
+		UnknownFree,
+		SizeMismatch,      // free(ptr, X) but live has same ptr with size != X
+		UnfreedRealloc,    // alloc(ptr, X) but live already has same ptr
+	};
+
+	struct P_API MemoryStatsError
+	{
+		MemoryStatsEvent event;
+		MemoryStatsErrorType kind;
+	};
 
 
 	struct P_API MemoryStats
@@ -82,46 +98,20 @@ namespace p
 		// Mutable so it can be flipped through a const GetStats() pointer.
 		mutable bool detectLeaks = true;
 
-		mutable TArray<MemoryStatsEvent> live;
+		// Live allocs keyed by pointer. At most one entry per pointer;
+		// duplicate allocs are reported as UnfreedRealloc errors.
+		mutable TSet<MemoryStatsEvent> liveAllocations;
+		mutable TArray<MemoryStatsError> errors;
 
 		mutable sizet used           = 0;
 		mutable sizet totalAllocated = 0;
 
 	private:
-		// Open-addressed linear-probe map from event hash to the index of
-		// the newest unmatched alloc in `live` for that hash.
-		// Keys are pre-mixed hashes (from GetHash), indexed directly without
-		// re-hashing. No per-insert allocation; grows at 75% load.
-		class LiveIndex
-		{
-			static constexpr i32 Empty     = -1;
-			static constexpr i32 Tombstone = -2;
-
-			Arena* arena = nullptr;
-			TArray<u64> keys;
-			// Parallel to keys: the live index, or Empty/Tombstone.
-			TArray<i32> nodes;
-			u64 mask      = 0;
-			i32 count     = 0;
-			i32 tombCount = 0;
-
-			void Grow();
-
-		public:
-			explicit LiveIndex(Arena& inArena) : arena{&inArena}, keys{inArena}, nodes{inArena} {}
-
-			i32* Find(u64 hash);
-			i32* FindOrInsert(u64 hash, i32 node);
-			void EraseAt(i32* node);
-			void Clear();
-		};
-
 		// --- Incremental CollectStats state (consumer thread only) ---
-		// Index of the newest unmatched alloc per event key.
-		mutable LiveIndex liveIdx;
 		// Classifier scratch: drained events awaiting classification.
 		// CollectStats is not reentrant; owned by the consuming thread.
 		mutable TArray<MemoryStatsEvent> pending;
+		mutable TArray<MemoryStatsErrorType> pendingErrors;
 
 	public:
 

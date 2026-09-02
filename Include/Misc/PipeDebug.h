@@ -287,8 +287,8 @@ namespace p
 			// (ownedLiveAllocs). When live, live points to the live
 			// stats data and is only valid during the current live rebuild.
 			bool captured = false;
-			TArray<MemoryStatsEvent> ownedLiveAllocs;
-			const TArray<MemoryStatsEvent>* live = nullptr;
+			TSet<MemoryStatsEvent> ownedLiveAllocs;
+			const TSet<MemoryStatsEvent>* live = nullptr;
 			// Index of the parent arena snapshot (the Arena a ChildArena allocates from).
 			i32 parentArenaIdx = NO_INDEX;
 		};
@@ -2554,16 +2554,29 @@ namespace p
 				// Vertical line.
 				tlDraw->AddLine(ImVec2(snapX, plotY0), ImVec2(snapX, plotY1),
 				    IM_COL32(255, 255, 255, 80), 1.0f);
-				// Dots + tooltip content: for EACH visible arena, take its
-				// nearest sample to the snapped time and show its value.
-				String tooltip;
+				// Dots + tooltip: for EACH visible arena, take its nearest
+				// sample to the snapped time, draw a dot on the plot, and
+				// queue a colored tooltip row (legend order).
+				struct TipRow
+				{
+					p::Color col;
+					sizet used;
+					sizet capacity;
+				};
+				TipRow rows[32];
+				i32 rowCount = 0;
 				for (const auto& va : visible)
 				{
+					if (rowCount >= 32)
+					{
+						break;
+					}
 					const p::Color ac  = details::GetArenaColor(va.arena->GetTypeId());
 					const ImU32 dotCol = ac.DWColor();
-					sizet arenaUsed    = 0;
-					bool found         = false;
-					double arenaDist   = 1e30;
+					sizet arenaUsed     = 0;
+					sizet arenaCapacity = 0;
+					bool found          = false;
+					double arenaDist    = 1e30;
 					for (const auto& t : memoryDbg.timelines)
 					{
 						if (t.arena != va.arena)
@@ -2579,9 +2592,10 @@ namespace p
 							const double d = p::Abs(t.samples[s].time - bestTime);
 							if (d < arenaDist)
 							{
-								arenaDist = d;
-								arenaUsed = t.samples[s].used;
-								found     = true;
+								arenaDist     = d;
+								arenaUsed     = t.samples[s].used;
+								arenaCapacity = t.samples[s].capacity;
+								found         = true;
 							}
 						}
 						break;
@@ -2592,73 +2606,42 @@ namespace p
 					}
 					const float dotY = YFor(arenaUsed);
 					tlDraw->AddCircleFilled(ImVec2(snapX, dotY), 3.5f, dotCol);
-					const char* nm = nullptr;
-					for (const auto& snap : memoryDbg.liveSnapshot.snapshots)
-					{
-						if (snap.arena == va.arena)
-						{
-							nm = snap.name.Data();
-							break;
-						}
-					}
-					if (!nm || nm[0] == '\0')
-					{
-						nm = "Arena";
-					}
-					static String tmpSize;
-					tmpSize.clear();
-					Strings::ParseMemorySizeTo(tmpSize, arenaUsed);
-					if (tooltip.size() > 0)
-					{
-						tooltip += "\n";
-					}
-					p::FormatTo(tooltip, "{}: {}", nm, tmpSize.c_str());
+					rows[rowCount++] = TipRow{ac, arenaUsed, arenaCapacity};
 				}
-				if (tooltip.size() > 0)
+				if (rowCount > 0)
 				{
 					ImGui::BeginTooltip();
-					// Parse lines and draw colored.
-					const char* p = tooltip.c_str();
-					while (*p)
+					static String usedStr;
+					static String capStr;
+					static String line;
+					const float h  = ImGui::GetTextLineHeight();
+					const float sq = h * 0.7f;
+					const float pad = (h - sq) * 0.5f;
+					for (i32 r = 0; r < rowCount; ++r)
 					{
-						const char* nl   = strchr(p, '\n');
-						const size_t len = nl ? static_cast<size_t>(nl - p) : strlen(p);
-						// Extract arena name (before ":").
-						const char* colon = reinterpret_cast<const char*>(memchr(p, ':', len));
-						if (colon)
+						const TipRow& row = rows[r];
+						usedStr.clear();
+						Strings::ParseMemorySizeTo(usedStr, row.used);
+						const ImVec4 col{row.col.r / 255.0f, row.col.g / 255.0f,
+						    row.col.b / 255.0f, 1.0f};
+						const ImVec2 p = ImGui::GetCursorScreenPos();
+						ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y + pad),
+						    ImVec2(p.x + sq, p.y + pad + sq), row.col.DWColor());
+						ImGui::SetCursorScreenPos(ImVec2(p.x + sq + 4.0f, p.y));
+						if (row.capacity > 0)
 						{
-							const size_t nameLen = static_cast<size_t>(colon - p);
-							// Find arena color.
-							p::Color ac{200, 200, 200};
-							for (const auto& va2 : visible)
-							{
-								const char* nm2 = nullptr;
-								for (const auto& snap : memoryDbg.liveSnapshot.snapshots)
-								{
-									if (snap.arena == va2.arena)
-									{
-										nm2 = snap.name.Data();
-										break;
-									}
-								}
-								if (nm2 && strlen(nm2) == nameLen && memcmp(nm2, p, nameLen) == 0)
-								{
-									ac = details::GetArenaColor(va2.arena->GetTypeId());
-									break;
-								}
-							}
-							ImGui::TextColored(
-							    ImVec4{ac.r / 255.0f, ac.g / 255.0f, ac.b / 255.0f, 1.0f}, "%.*s",
-							    static_cast<int>(len), p);
+							capStr.clear();
+							Strings::ParseMemorySizeTo(capStr, row.capacity);
+							line.clear();
+							p::FormatTo(line, "{}/{:.0f}%/{}", usedStr.c_str(),
+							    100.0 * static_cast<double>(row.used)
+							        / static_cast<double>(row.capacity),
+							    capStr.c_str());
+							ImGui::TextColored(col, "%s", line.c_str());
 						}
 						else
 						{
-							ImGui::TextUnformatted(p, p + len);
-						}
-						p += len;
-						if (*p == '\n')
-						{
-							++p;
+							ImGui::TextColored(col, "%s", usedStr.c_str());
 						}
 					}
 					ImGui::EndTooltip();
@@ -2857,7 +2840,7 @@ namespace p
 					stats->CollectStats();
 					snapshot.name = Tag(stats->name);
 					snapshot.used = stats->used;
-					snapshot.live = &stats->live;
+					snapshot.live = &stats->liveAllocations;
 
 					// Union live allocation addresses into the arena range so
 					// arenas without blocks (e.g. HeapArena) still report the
@@ -3871,23 +3854,22 @@ namespace p
 						const float padding    = colW * 0.25f;
 						const sizet viewStartS = static_cast<sizet>(viewStart);
 						const sizet viewEndS   = static_cast<sizet>(viewStart + viewRange);
-						TArray<i32> liveInRange;
-						for (i32 j = 0; j < live->Size(); ++j)
+						TArray<const MemoryStatsEvent*> liveInRange;
+						for (const auto& ev : *live)
 						{
-							const auto& ev   = (*live)[j];
 							const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
 							const sizet size = ev.GetSize();
 							if (addr >= viewEndS || addr + size <= viewStartS)
 							{
 								continue;
 							}
-							liveInRange.Add(j);
+							liveInRange.Add(&ev);
 						}
 
 						// Draw allocations
-						for (i32 id : liveInRange)
+						for (const auto* evPtr : liveInRange)
 						{
-							const auto& ev   = (*live)[id];
+							const auto& ev   = *evPtr;
 							const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
 							const sizet size = ev.GetSize();
 							const float ty   = AddrToY(addr);
@@ -4484,7 +4466,7 @@ namespace p
 			// Deep-copy live allocs so the capture owns its data.
 			dst.ownedLiveAllocs = src.captured
 			                        ? src.ownedLiveAllocs
-			                        : (src.live ? *src.live : TArray<MemoryStatsEvent>{});
+			                        : (src.live ? *src.live : TSet<MemoryStatsEvent>{});
 			dst.captured        = true;
 			dst.live            = nullptr;
 
