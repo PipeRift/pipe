@@ -82,20 +82,16 @@ namespace p
 		// Mutable so it can be flipped through a const GetStats() pointer.
 		mutable bool detectLeaks = true;
 
-		mutable TArray<MemoryStatsEvent> events;
-
-		// Bit i set when events[i] is an allocation that, by the last
-		// CollectStats, had not been matched by a corresponding free.
-		mutable BitArray live;
+		mutable TArray<MemoryStatsEvent> live;
 
 		mutable sizet used           = 0;
 		mutable sizet totalAllocated = 0;
 
 	private:
-		// Open-addressed linear-probe map from event hash to the newest
-		// unmatched alloc event index for that hash. Keys are pre-mixed
-		// hashes (from GetHash), indexed directly without re-hashing.
-		// No per-insert allocation; grows at 75% load.
+		// Open-addressed linear-probe map from event hash to the index of
+		// the newest unmatched alloc in `live` for that hash.
+		// Keys are pre-mixed hashes (from GetHash), indexed directly without
+		// re-hashing. No per-insert allocation; grows at 75% load.
 		class LiveIndex
 		{
 			static constexpr i32 Empty     = -1;
@@ -103,7 +99,7 @@ namespace p
 
 			Arena* arena = nullptr;
 			TArray<u64> keys;
-			// Parallel to keys: the node index, or Empty/Tombstone.
+			// Parallel to keys: the live index, or Empty/Tombstone.
 			TArray<i32> nodes;
 			u64 mask      = 0;
 			i32 count     = 0;
@@ -121,12 +117,11 @@ namespace p
 		};
 
 		// --- Incremental CollectStats state (consumer thread only) ---
-		// Newest unmatched alloc index per event key. Chains are
-		// intrusively linked through liveAllocIdx, newest first.
+		// Index of the newest unmatched alloc per event key.
 		mutable LiveIndex liveIdx;
-		// For each alloc event index, the previous unmatched alloc index
-		// sharing the same key (NO_INDEX if none). Consumed on free.
-		mutable TArray<i32> liveAllocIdx;
+		// Classifier scratch: drained events awaiting classification.
+		// CollectStats is not reentrant; owned by the consuming thread.
+		mutable TArray<MemoryStatsEvent> pending;
 
 	public:
 

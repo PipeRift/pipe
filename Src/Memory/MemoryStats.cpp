@@ -196,10 +196,7 @@ namespace p
 	}    // namespace
 
 	MemoryStats::MemoryStats()
-	    : events{GetStatsArena()}
-	    , live{GetStatsArena()}
-	    , liveIdx{GetStatsArena()}
-	    , liveAllocIdx{GetStatsArena()}
+	    : live{GetStatsArena()}, liveIdx{GetStatsArena()}, pending{GetStatsArena()}
 	{}
 
 	MemoryStats::~MemoryStats()
@@ -272,26 +269,22 @@ namespace p
 		CollectStats();
 		used           = 0;
 		totalAllocated = 0;
-		events.Clear();
 		live.Clear();
 		liveIdx.Clear();
-		liveAllocIdx.Clear();
 	}
 
 	void MemoryStats::CollectStats() const
 	{
-		const i32 lastEventsSize = events.Size();
-
-		{    // Drain the shared event queue
+		// Phase 1: drain the shared event queue into a scratch buffer,
+		// keeping the lock hold time to just the memcpy.
+		pending.Clear();
+		{
 			ScopedLock guard(lock);
 
 			EventChunk* chunk = firstChunk;
 			while (chunk)
 			{
-				for (u32 i = 0; i < chunk->size; ++i)
-				{
-					events.Add(chunk->slots[i]);
-				}
+				pending.Append(chunk->slots, chunk->size);
 
 				EventChunk* const next = chunk->next;
 
@@ -310,61 +303,44 @@ namespace p
 			lastChunk  = nullptr;
 		}
 
-		// --- Incremental classification of drained events + counters ---
-		live.Resize(events.Size());
-		liveAllocIdx.Resize(events.Size());
-
-		for (i32 i = lastEventsSize; i < events.Size(); ++i)
+		// Phase 2: classify drained events outside the lock. Alloc events
+		// become entries in `live`; matched frees swap-remove them.
+		// Nothing else is retained, so memory stays O(live).
+		for (const MemoryStatsEvent& ev : pending)
 		{
-			const MemoryStatsEvent& ev = events[i];
-			const u64 hash             = GetHash(ev);
+			const u64 hash   = GetHash(ev);
+			const sizet size = ev.GetSize();
 			if (ev.IsFree())
 			{
 				if (i32* nodePtr = liveIdx.Find(hash))
 				{
-					// Unmark the newest unmatched alloc and pop it off the
-					// chain, promoting its predecessor as chain firstChunk.
-					const i32 node = *nodePtr;
-					live.SetFalse(node);
-					const i32 prev = liveAllocIdx[node];
-					if (prev == NO_INDEX)
+					// Swap-remove the matched alloc from the live list,
+					// then point its map slot at the moved-in element.
+					const i32 p       = *nodePtr;
+					const i32 lastIdx = live.Size() - 1;
+					if (lastIdx != p)
 					{
-						liveIdx.EraseAt(nodePtr);
+						live[p] = live[lastIdx];
+						if (i32* movedSlot = liveIdx.Find(GetHash(live[p])))
+						{
+							if (*movedSlot == lastIdx)
+							{
+								*movedSlot = p;
+							}
+						}
 					}
-					else
-					{
-						*nodePtr = prev;
-					}
+					live.RemoveLast(1, Shrink::No);
+					liveIdx.EraseAt(nodePtr);
+					used -= size;
 				}
-				// Else a stray free: recorded, nothing to unmark.
+				// Else a stray free: no matching live alloc, ignore.
 			}
 			else
 			{
-				i32* idxPtr = liveIdx.FindOrInsert(hash, i);
-				if (*idxPtr != i)
-				{
-					liveAllocIdx[i] = *idxPtr;
-					*idxPtr         = i;
-				}
-				else
-				{
-					liveAllocIdx[i] = NO_INDEX;
-				}
-				live.SetTrue(i);
-			}
-		}
-
-		// Update stats
-		for (i32 i = lastEventsSize; i < events.Size(); ++i)
-		{
-			const MemoryStatsEvent& ev = events[i];
-			const sizet size           = ev.GetSize();
-			if (ev.IsFree())
-			{
-				used -= size;
-			}
-			else
-			{
+				live.Add(ev);
+				const i32 idx   = live.Size() - 1;
+				i32* const slot = liveIdx.FindOrInsert(hash, idx);
+				*slot           = idx;
 				used += size;
 				totalAllocated += size;
 			}
@@ -373,7 +349,7 @@ namespace p
 
 	void MemoryStats::CheckLeaks() const
 	{
-		const i32 numLeaks = live.CountSetBits();
+		const i32 numLeaks = live.Size();
 		if (numLeaks <= 0)
 		{
 			return;
@@ -383,16 +359,14 @@ namespace p
 		FormatTo(errorMsg, "{}: {} allocs were not freed!", name ? name : "MemoryStats", numLeaks);
 
 		const i32 shown = Min(64, numLeaks);
-		i32 i           = -1;
 		i32 printed     = 0;
-		while (printed < shown)
+		for (const auto& ev : live)
 		{
-			i = live.GetNextSet(i);
-			if (i == NO_INDEX)
+			if (printed >= shown)
 			{
 				break;
 			}
-			PrintAllocationError("", &events[i]);
+			PrintAllocationError("", &ev);
 			++printed;
 		}
 		if (numLeaks > shown)

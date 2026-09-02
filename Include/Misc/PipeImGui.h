@@ -126,6 +126,13 @@ namespace ImGui
 		TextUnformatted(text.data(), text.data() + text.size());
 	}
 
+	inline ImVec2 CalcTextSize(
+	    p::StringView text, bool hide_text_after_double_hash = false, float wrap_width = 0.0f)
+	{
+		return CalcTextSize(
+		    text.data(), text.data() + text.size(), hide_text_after_double_hash, wrap_width);
+	}
+
 	inline void TextDisabled(p::StringView text)
 	{
 		PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
@@ -161,6 +168,46 @@ namespace ImGui
 			label    = tmpLabel;
 		}
 		return TextLink(label.data());
+	}
+
+	// Text-only button: The text/icon glyph is the only visible content, no background.
+	inline bool TextButton(const char* text, const char* id = nullptr)
+	{
+		const ImVec2 padding   = GetStyle().FramePadding;
+		const ImVec2 text_size = CalcTextSize(text);
+		const ImVec2 size(text_size.x + padding.x * 2.0f, text_size.y + padding.y * 2.0f);
+
+		PushID(id ? id : text);
+		const bool clicked = InvisibleButton("textbtn", size);
+
+		const bool disabled = (GetItemFlags() & ImGuiItemFlags_Disabled) != 0;
+		const bool hovered  = IsItemHovered();
+		const bool active   = IsItemActive();
+
+		// Base text color, dimmed automatically via the disabled text color.
+		const ImVec4& baseStyle =
+		    GetStyle().Colors[disabled ? ImGuiCol_TextDisabled : ImGuiCol_Text];
+		const p::LinearColor base{baseStyle.x, baseStyle.y, baseStyle.z, baseStyle.w};
+
+		// Per-channel tint of the button background from idle to state.
+		const ImVec4& btnStyle = GetStyle().Colors[ImGuiCol_Button];
+		const p::LinearColor btn{btnStyle.x, btnStyle.y, btnStyle.z, btnStyle.w};
+
+		p::LinearColor col = base;
+		if (!disabled)
+		{
+			const ImVec4& stateStyle = active  ? GetStyle().Colors[ImGuiCol_ButtonActive]
+			                         : hovered ? GetStyle().Colors[ImGuiCol_ButtonHovered]
+			                                   : btnStyle;
+			const p::LinearColor state{stateStyle.x, stateStyle.y, stateStyle.z, stateStyle.w};
+			col = base + (state - btn);
+		}
+
+		PushStyleColor(ImGuiCol_Text, col);
+		RenderText(GetItemRectMin() + padding, text);
+		PopStyleColor();
+		PopID();
+		return clicked;
 	}
 
 

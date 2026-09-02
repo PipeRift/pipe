@@ -36,6 +36,7 @@ namespace p
 {
 	///////////////////////////////////////////////////////////
 	// Definition
+	struct DebugContext;
 
 #pragma region Inspection
 	struct TypeInspection
@@ -171,9 +172,16 @@ namespace p
 
 	namespace details
 	{
+		// Capture transport icons (raw UTF-8, FontAwesome5 solid)
+		// Avoids including IconsFontAwesome5.h in Pipe headers.
+		constexpr const char* ICON_CI_CAPTURE_BACK   = "\xef\x81\x88";    // fa-step-backward
+		constexpr const char* ICON_CI_CAPTURE_FWD    = "\xef\x81\x91";    // fa-step-forward
+		constexpr const char* ICON_CI_CAPTURE_RECORD = "\xef\x84\x91";    // fa-circle
+		constexpr const char* ICON_CI_CAPTURE_TRASH  = "\xef\x87\xb8";    // fa-trash
+
 		void DrawEntityInspector(StringView label, DebugECSInspector& inspector,
 		    bool* open = nullptr, ImGuiWindowFlags flags = 0);
-	}
+	}    // namespace details
 	void DrawIdRegistry(
 	    const char* label = "Id Registry", bool* open = nullptr, ImGuiWindowFlags flags = 0);
 
@@ -203,9 +211,9 @@ namespace p
 #pragma region Memory
 	struct DebugMemoryContext
 	{
-		bool showHex     = true;
-		bool showAscii   = true;
-		i32 bytesPerLine = 4;
+		bool showHEX     = true;
+		bool showASCII   = true;
+		i32 bytesPerLine = 8;
 
 		bool showDetails      = true;
 		bool resetLayout      = true;
@@ -275,13 +283,74 @@ namespace p
 			Tag name;
 			TypeId typeId;
 			Tag typeName;
-			const TArray<MemoryStatsEvent>* events = nullptr;
-			const BitArray* live                   = nullptr;
+			// When captured, live allocs are owned by this snapshot
+			// (ownedLiveAllocs). When live, live points to the live
+			// stats data and is only valid during the current live rebuild.
+			bool captured = false;
+			TArray<MemoryStatsEvent> ownedLiveAllocs;
+			const TArray<MemoryStatsEvent>* live = nullptr;
+			// Index of the parent arena snapshot (the Arena a ChildArena allocates from).
+			i32 parentArenaIdx = NO_INDEX;
 		};
-		TArray<ArenaSnapshot> snapshots;
+
+		// A single view of all arenas: either the live state or a captured
+		// frame at a point in time. Owns its snapshots (captured frames own a
+		// deep copy of each arena's data).
+		struct MemorySnapshot
+		{
+			TArray<ArenaSnapshot> snapshots;
+		};
+
+		// The live snapshot, rebuilt every frame while in live mode.
+		MemorySnapshot liveSnapshot;
+		// Points to the snapshot currently being displayed: liveSnapshot when
+		// live, or one of `captures` when viewing a capture. Never copies.
+		const MemorySnapshot* curSnapshot = nullptr;
+
+		// Capture timeline
+		TArray<MemorySnapshot> captures;
+		i32 captureIndex = NO_INDEX;
+
+		// Per-frame recorded stats, keyed by stable Arena pointer. Used by the
+		// timeline graph. Recorded only while the debugger is open.
+		struct TimelineSample
+		{
+			double time    = 0.0;
+			sizet used     = 0;
+			sizet capacity = 0;
+		};
+		struct ArenaTimeline
+		{
+			const Arena* arena = nullptr;
+			TArray<TimelineSample> samples;
+		};
+		// Ring-buffer of recent per-frame samples, one entry per arena.
+		TArray<ArenaTimeline> timelines;
+		// Clock for the timeline, accumulated from ImGui::GetIO().DeltaTime.
+		double timelineCurrentTime = 0.0;
+		// How many seconds of history the timeline retains (configurable).
+		float timelineBufferSeconds = 15.0f;
+		// Fixed pixel height of the timeline panel.
+		float timelineHeight = 100.0f;
+
+		bool IsLive() const
+		{
+			return captureIndex < 0;
+		}
+
+		bool HasCaptures() const
+		{
+			return !captures.IsEmpty();
+		}
 	};
 
+
 	void DrawMemory(const char* label = "Memory", bool* open = nullptr, ImGuiWindowFlags flags = 0);
+
+	// Capture the current state of all memory arenas. The capture is
+	// appended to the capture timeline and becomes the current view.
+	void CaptureMemory(DebugContext& ctx);
+
 #pragma endregion Memory
 
 	struct DebugContext
@@ -412,6 +481,7 @@ namespace p
 	constexpr LinearColor includeColor   = LinearColor::FromHex(0x40A832);
 	constexpr LinearColor excludeColor   = LinearColor::FromHex(0xA83632);
 	constexpr LinearColor previewColor   = LinearColor::FromHex(0x3265A8);
+	constexpr Color selectionColor{255, 200, 80};
 
 
 	// For internal use only
@@ -2056,14 +2126,9 @@ namespace p
 		// Bottom-to-top: pos is the screen position of the BOTTOM-LEFT corner
 		// of the first glyph. The text rises upward from there. Each glyph's
 		// top face points RIGHT (tilt head right to read).
-		static void AddTextVertical(ImDrawList* draw, ImVec2 pos, ImU32 col, const char* text_begin,
-		    const char* text_end = nullptr)
+		static void AddTextVertical(ImDrawList* draw, ImVec2 pos, ImU32 col, const StringView text)
 		{
-			if (!text_end)
-			{
-				text_end = text_begin + strlen(text_begin);
-			}
-			if (text_begin == text_end || draw == nullptr)
+			if (text.empty() || draw == nullptr)
 			{
 				return;
 			}
@@ -2080,7 +2145,8 @@ namespace p
 			}
 			const float scale       = imguiFontSize / font->Size;
 			v2 cursor               = v2{RoundToZero(pos.x), RoundToZero(pos.y)};
-			const char* s           = text_begin;
+			const char* s           = text.data();
+			const char* text_end    = text.data() + text.size();
 			i32 chars_exp           = (i32)(text_end - s);
 			i32 chars_rnd           = 0;
 			const i32 vtx_count_max = chars_exp * 4;
@@ -2169,6 +2235,571 @@ namespace p
 		}
 	}    // namespace details
 
+	// Records one timeline sample per arena from the last live snapshot and
+	// prunes samples older than the configured buffer window. Called once per
+	// frame while the debugger window is open, in both live and capture modes.
+	static void RecordMemoryTimeline(DebugMemoryContext& memoryDbg)
+	{
+		memoryDbg.timelineCurrentTime += ImGui::GetIO().DeltaTime;
+		const double now = memoryDbg.timelineCurrentTime;
+
+		for (const auto& snapshot : memoryDbg.liveSnapshot.snapshots)
+		{
+			if (!snapshot.arena)
+			{
+				continue;
+			}
+			// Find or create the arena's timeline.
+			DebugMemoryContext::ArenaTimeline* timeline = nullptr;
+			for (auto& t : memoryDbg.timelines)
+			{
+				if (t.arena == snapshot.arena)
+				{
+					timeline = &t;
+					break;
+				}
+			}
+			if (!timeline)
+			{
+				DebugMemoryContext::ArenaTimeline nt;
+				nt.arena = snapshot.arena;
+				nt.samples.Add(
+				    DebugMemoryContext::TimelineSample{now, snapshot.used, snapshot.capacity});
+				memoryDbg.timelines.Add(Move(nt));
+				continue;
+			}
+
+			timeline->samples.Add(
+			    DebugMemoryContext::TimelineSample{now, snapshot.used, snapshot.capacity});
+
+			// Prune samples older than the buffer window, keeping at least one.
+			const double window = static_cast<double>(memoryDbg.timelineBufferSeconds);
+			while (timeline->samples.Size() > 1 && now - timeline->samples[0].time > window)
+			{
+				timeline->samples.RemoveAt(0, 1, Shrink::No);
+			}
+		}
+	}
+
+
+	static void DrawMemoryTimeline(DebugMemoryContext& memoryDbg)
+	{
+		ImDrawList* tlDraw = ImGui::GetWindowDrawList();
+		const ImVec2 tlPos = ImGui::GetCursorScreenPos();
+		const float tlW    = ImGui::GetContentRegionAvail().x;
+		const float tlH    = memoryDbg.timelineHeight;
+		const ImRect tlRect(tlPos, ImVec2(tlPos.x + tlW, tlPos.y + tlH));
+		const bool tlHovered = tlRect.Contains(ImGui::GetIO().MousePos);
+
+		// Background
+		tlDraw->AddRectFilled(tlRect.Min, tlRect.Max, ImGui::GetColorU32(ImGuiCol_WindowBg));
+		ImGui::Dummy(ImVec2(tlW, tlH + 2.0f));    // reserve vertical space
+
+		// Gather the arenas currently shown: heap always, plus selections.
+		// Newest-time = right edge. Determine visible time window.
+		double newestTime = memoryDbg.timelineCurrentTime;
+		double oldestTime = newestTime - static_cast<double>(memoryDbg.timelineBufferSeconds);
+		if (oldestTime < 0.0)
+		{
+			oldestTime = 0.0;
+		}
+		const double span = (newestTime - oldestTime) > 0.0 ? (newestTime - oldestTime) : 1.0;
+
+		struct VisibleArena
+		{
+			const Arena* arena;
+			bool isHeap;
+		};
+		TArray<VisibleArena> visible;
+		// Global selection: one selected arena shared by the memory graph
+		// and the timeline.
+		if (memoryDbg.selectionArenaIdx != NO_INDEX && memoryDbg.curSnapshot
+		    && memoryDbg.selectionArenaIdx >= 0
+		    && memoryDbg.selectionArenaIdx < memoryDbg.curSnapshot->snapshots.Size())
+		{
+			const auto& snap = memoryDbg.curSnapshot->snapshots[memoryDbg.selectionArenaIdx];
+			if (snap.arena)
+			{
+				visible.Add(VisibleArena{snap.arena, false});
+			}
+		}
+		// Heap arena always shown (found in liveSnapshot) unless it's already
+		// present as the selected arena.
+		for (const auto& snap : memoryDbg.liveSnapshot.snapshots)
+		{
+			if (snap.arena && snap.typeId == GetTypeId<HeapArena>())
+			{
+				bool alreadyShown = false;
+				for (const auto& v : visible)
+				{
+					if (v.arena == snap.arena)
+					{
+						alreadyShown = true;
+						break;
+					}
+				}
+				if (!alreadyShown)
+				{
+					visible.Add(VisibleArena{snap.arena, true});
+				}
+				break;
+			}
+		}
+
+		// Sort arena labels by their current used size (largest first).
+		visible.Sort([&](const VisibleArena& a, const VisibleArena& b)
+		{
+			const auto latestUsed = [&](const Arena* arena) -> sizet
+			{
+				for (const auto& t : memoryDbg.timelines)
+				{
+					if (t.arena == arena && !t.samples.IsEmpty())
+					{
+						return t.samples.Last().used;
+					}
+				}
+				return 0;
+			};
+			return latestUsed(a.arena) > latestUsed(b.arena);
+		});
+
+		// Compute Y scale: max used/capacity across visible arenas in window.
+		sizet yMax = 1;
+		for (const auto& va : visible)
+		{
+			for (const auto& t : memoryDbg.timelines)
+			{
+				if (t.arena != va.arena)
+				{
+					continue;
+				}
+				for (const auto& s : t.samples)
+				{
+					if (s.time < oldestTime)
+					{
+						continue;
+					}
+					if (!va.isHeap && s.capacity > yMax)
+					{
+						yMax = s.capacity;
+					}
+					if (s.used > yMax)
+					{
+						yMax = s.used;
+					}
+				}
+			}
+		}
+
+		// Plot area fills the whole timeline rect (no padding/border).
+		const float plotX0 = tlRect.Min.x;
+		const float plotX1 = tlRect.Max.x;
+		const float plotY0 = tlRect.Min.y;
+		const float plotY1 = tlRect.Max.y;
+		const float plotW  = (plotX1 - plotX0) > 0.0f ? (plotX1 - plotX0) : 1.0f;
+		const float plotH  = (plotY1 - plotY0) > 0.0f ? (plotY1 - plotY0) : 1.0f;
+
+		const auto XFor = [&](double t) -> float
+		{
+			const double rel = (t - oldestTime) / span;
+			return plotX0 + static_cast<float>(rel) * plotW;
+		};
+		// Round the top of the log scale up to a power of two, with 10%
+		// headroom above the real maximum (e.g. max 1MB -> top 2MB).
+		i32 maxLog            = static_cast<i32>(p::Log2(static_cast<double>(yMax)));
+		const sizet scaledMax = static_cast<sizet>(static_cast<double>(yMax) * 1.1);
+		if (scaledMax > (sizet{1} << maxLog))
+		{
+			maxLog += 1;
+		}
+		const sizet roundMax = sizet{1} << maxLog;
+
+		const auto YFor = [&](sizet v) -> float
+		{
+			// Semi-log Y axis: blend a linear and a log mapping so the
+			// scale is less aggressively exponential. Values run from 1
+			// (bottom) to roundMax (top, ~90% height).
+			const double maxD    = static_cast<double>(roundMax);
+			const double linRel  = (v <= 1) ? 0.0 : (static_cast<double>(v) - 1.0) / (maxD - 1.0);
+			const double lMax    = p::Log2(maxD);
+			const double logRel  = (v <= 1) ? 0.0 : p::Log2(static_cast<double>(v)) / lMax;
+			const double blended = p::Lerp(linRel, logRel, 0.5);
+			const double rel     = p::Min(blended, 1.0) * 0.9;
+			return plotY1 - static_cast<float>(rel) * plotH;
+		};
+
+		// Draw plot area background.
+		tlDraw->AddRectFilled(
+		    ImVec2(plotX0, plotY0), ImVec2(plotX1, plotY1), IM_COL32(20, 20, 20, 255));
+		const ImU32 gridCol = p::Color{255, 255, 255, 18}.DWColor();
+
+		// Scale guides: one per power-of-two value tier, drawn from the
+		// top down. Only tiers kept that are at least a minimum pixel gap
+		// apart, so guides span the whole height — including reaching
+		// small sizes near the bottom of the (semi-log) axis.
+		const float labelH = ImGui::GetTextLineHeight();
+		String sizeLabel;
+		const float minGap = 16.0f;
+		float lastY        = -FLT_MAX;
+		for (i32 log2v = maxLog; log2v >= 1; log2v -= 2)
+		{
+			const sizet v  = sizet{1} << log2v;
+			const float ty = YFor(v);
+			if (ty > plotY1 - labelH)
+			{
+				continue;    // below the bottom of the graph
+			}
+			if (lastY != -FLT_MAX && ty - lastY < minGap)
+			{
+				continue;    // too close to the previous guide
+			}
+			lastY = ty;
+			tlDraw->AddLine(ImVec2(plotX0, ty), ImVec2(plotX1, ty), gridCol);
+			sizeLabel.clear();
+			Strings::ParseMemorySizeTo(sizeLabel, v);
+			tlDraw->AddText(ImVec2(plotX0 + 8.0f, ty - labelH), p::Color{150, 150, 150}.DWColor(),
+			    sizeLabel.c_str());
+		}
+
+		// Draw one used line and one capacity line per visible arena.
+		for (const auto& va : visible)
+		{
+			DebugMemoryContext::ArenaTimeline* timeline = nullptr;
+			for (auto& t : memoryDbg.timelines)
+			{
+				if (t.arena == va.arena)
+				{
+					timeline = &t;
+					break;
+				}
+			}
+			if (!timeline || timeline->samples.IsEmpty())
+			{
+				continue;
+			}
+
+			const p::Color arenaColor = details::GetArenaColor(va.arena->GetTypeId());
+
+			// Capacity line (darker) — never for heap, only if capacity > 0.
+			if (!va.isHeap && va.arena->GetAvailableMemory() > 0)
+			{
+				const p::Color capColor = arenaColor.Shade(0.4f);
+				for (i32 i = 1; i < timeline->samples.Size(); ++i)
+				{
+					const auto& a = timeline->samples[i - 1];
+					const auto& b = timeline->samples[i];
+					if (b.time < oldestTime)
+					{
+						continue;
+					}
+					if (a.capacity > 0 && b.capacity > 0)
+					{
+						tlDraw->AddLine(ImVec2(XFor(a.time), YFor(a.capacity)),
+						    ImVec2(XFor(b.time), YFor(b.capacity)), capColor.DWColor(), 1.5f);
+					}
+				}
+			}
+
+			// Used line (arena color).
+			const ImU32 usedCol = arenaColor.DWColor();
+			for (i32 i = 1; i < timeline->samples.Size(); ++i)
+			{
+				const auto& a = timeline->samples[i - 1];
+				const auto& b = timeline->samples[i];
+				if (b.time < oldestTime)
+				{
+					continue;
+				}
+				tlDraw->AddLine(ImVec2(XFor(a.time), YFor(a.used)),
+				    ImVec2(XFor(b.time), YFor(b.used)), usedCol, 1.5f);
+			}
+		}
+
+		// Hover vertical line + dots + tooltip. Snaps to the nearest
+		// sample point across all visible timelines.
+		if (tlHovered)
+		{
+			const float mx  = ImGui::GetIO().MousePos.x;
+			const double mt = oldestTime + static_cast<double>(mx - plotX0) / plotW * span;
+			// Find the nearest sample time across all visible arenas.
+			double bestTime = mt;
+			double bestDist = 1e30;
+			for (const auto& va : visible)
+			{
+				for (const auto& t : memoryDbg.timelines)
+				{
+					if (t.arena != va.arena)
+					{
+						continue;
+					}
+					for (i32 s = 0; s < t.samples.Size(); ++s)
+					{
+						if (t.samples[s].time < oldestTime)
+						{
+							continue;
+						}
+						const double d = p::Abs(t.samples[s].time - mt);
+						if (d < bestDist)
+						{
+							bestDist = d;
+							bestTime = t.samples[s].time;
+						}
+					}
+					break;
+				}
+			}
+			if (bestDist < 1e30)
+			{
+				const float snapX = XFor(bestTime);
+				// Vertical line.
+				tlDraw->AddLine(ImVec2(snapX, plotY0), ImVec2(snapX, plotY1),
+				    IM_COL32(255, 255, 255, 80), 1.0f);
+				// Dots + tooltip content: for EACH visible arena, take its
+				// nearest sample to the snapped time and show its value.
+				String tooltip;
+				for (const auto& va : visible)
+				{
+					const p::Color ac  = details::GetArenaColor(va.arena->GetTypeId());
+					const ImU32 dotCol = ac.DWColor();
+					sizet arenaUsed    = 0;
+					bool found         = false;
+					double arenaDist   = 1e30;
+					for (const auto& t : memoryDbg.timelines)
+					{
+						if (t.arena != va.arena)
+						{
+							continue;
+						}
+						for (i32 s = 0; s < t.samples.Size(); ++s)
+						{
+							if (t.samples[s].time < oldestTime)
+							{
+								continue;
+							}
+							const double d = p::Abs(t.samples[s].time - bestTime);
+							if (d < arenaDist)
+							{
+								arenaDist = d;
+								arenaUsed = t.samples[s].used;
+								found     = true;
+							}
+						}
+						break;
+					}
+					if (!found)
+					{
+						continue;
+					}
+					const float dotY = YFor(arenaUsed);
+					tlDraw->AddCircleFilled(ImVec2(snapX, dotY), 3.5f, dotCol);
+					const char* nm = nullptr;
+					for (const auto& snap : memoryDbg.liveSnapshot.snapshots)
+					{
+						if (snap.arena == va.arena)
+						{
+							nm = snap.name.Data();
+							break;
+						}
+					}
+					if (!nm || nm[0] == '\0')
+					{
+						nm = "Arena";
+					}
+					static String tmpSize;
+					tmpSize.clear();
+					Strings::ParseMemorySizeTo(tmpSize, arenaUsed);
+					if (tooltip.size() > 0)
+					{
+						tooltip += "\n";
+					}
+					p::FormatTo(tooltip, "{}: {}", nm, tmpSize.c_str());
+				}
+				if (tooltip.size() > 0)
+				{
+					ImGui::BeginTooltip();
+					// Parse lines and draw colored.
+					const char* p = tooltip.c_str();
+					while (*p)
+					{
+						const char* nl   = strchr(p, '\n');
+						const size_t len = nl ? static_cast<size_t>(nl - p) : strlen(p);
+						// Extract arena name (before ":").
+						const char* colon = reinterpret_cast<const char*>(memchr(p, ':', len));
+						if (colon)
+						{
+							const size_t nameLen = static_cast<size_t>(colon - p);
+							// Find arena color.
+							p::Color ac{200, 200, 200};
+							for (const auto& va2 : visible)
+							{
+								const char* nm2 = nullptr;
+								for (const auto& snap : memoryDbg.liveSnapshot.snapshots)
+								{
+									if (snap.arena == va2.arena)
+									{
+										nm2 = snap.name.Data();
+										break;
+									}
+								}
+								if (nm2 && strlen(nm2) == nameLen && memcmp(nm2, p, nameLen) == 0)
+								{
+									ac = details::GetArenaColor(va2.arena->GetTypeId());
+									break;
+								}
+							}
+							ImGui::TextColored(
+							    ImVec4{ac.r / 255.0f, ac.g / 255.0f, ac.b / 255.0f, 1.0f}, "%.*s",
+							    static_cast<int>(len), p);
+						}
+						else
+						{
+							ImGui::TextUnformatted(p, p + len);
+						}
+						p += len;
+						if (*p == '\n')
+						{
+							++p;
+						}
+					}
+					ImGui::EndTooltip();
+				}
+			}
+		}
+
+		// Right-side legend: right-aligned block per arena.
+		//   Arena []
+		//  5MB/20%   <- used/capacity% only when the arena has capacity
+		//   Other Arena []
+		//          15KB
+		// The color square sits after the name; all lines right-align to
+		// the same right edge. Clicking a legend entry deselects (heap exempt).
+		float ly                = plotY0 + 8.0f;
+		const float legendX     = plotX1 - 8.0f;
+		const float legendLineH = ImGui::GetTextLineHeight();
+		const float sqSize      = 8.0f;
+		String legendUsed;
+		for (const auto& va : visible)
+		{
+			const p::Color lc = details::GetArenaColor(va.arena->GetTypeId());
+
+			const char* name                      = nullptr;
+			sizet used                            = 0;
+			sizet capacity                        = 0;
+			DebugMemoryContext::ArenaTimeline* tl = nullptr;
+			for (auto& t : memoryDbg.timelines)
+			{
+				if (t.arena == va.arena)
+				{
+					tl = &t;
+					break;
+				}
+			}
+			if (tl && !tl->samples.IsEmpty())
+			{
+				used     = tl->samples.Last().used;
+				capacity = tl->samples.Last().capacity;
+			}
+			for (const auto& snap : memoryDbg.liveSnapshot.snapshots)
+			{
+				if (snap.arena == va.arena)
+				{
+					name = snap.name.Data();
+					break;
+				}
+			}
+			const char* dispName = (name && name[0]) ? name : "Arena";
+			// Whether this legend entry is the globally selected arena.
+			const bool isSel =
+			    (va.arena && memoryDbg.selectionArenaIdx != NO_INDEX && memoryDbg.curSnapshot
+			        && memoryDbg.selectionArenaIdx >= 0
+			        && memoryDbg.selectionArenaIdx < memoryDbg.curSnapshot->snapshots.Size()
+			        && memoryDbg.curSnapshot->snapshots[memoryDbg.selectionArenaIdx].arena
+			               == va.arena);
+			// Value line (used, plus % when capacity exists).
+			String valueLine;
+			bool hasValue = (used > 0 || capacity > 0);
+			if (hasValue)
+			{
+				legendUsed.clear();
+				Strings::ParseMemorySizeTo(legendUsed, used);
+				valueLine = legendUsed;
+				if (capacity > 0)
+				{
+					p::FormatTo(valueLine, "/{:.0f}%",
+					    100.0 * static_cast<double>(used) / static_cast<double>(capacity));
+				}
+			}
+
+			const float nameW = ImGui::CalcTextSize(dispName).x;
+			const float lineH = legendLineH;
+			// Square sits at the far right, vertically centered on the name
+			// line; name ends just left of it (with a small gap).
+			const float sqX0   = legendX - sqSize;
+			const float nameX0 = sqX0 - nameW - 6.0f;
+			const float sqY0   = ly + (lineH - sqSize) * 0.5f;
+			tlDraw->AddText(ImVec2(nameX0, ly), lc.DWColor(), dispName);
+			tlDraw->AddRectFilled(ImVec2(sqX0, sqY0), ImVec2(legendX, sqY0 + sqSize), lc.DWColor());
+			ly += legendLineH;
+
+			if (hasValue)
+			{
+				const float valW = ImGui::CalcTextSize(valueLine).x;
+				tlDraw->AddText(ImVec2(legendX - valW, ly), lc.DWColor(), valueLine.c_str());
+				ly += legendLineH;
+			}
+
+			// Click legend entry to select/deselect globally (heap exempt).
+			if (!va.isHeap && tlHovered && ImGui::IsMouseClicked(0))
+			{
+				const ImVec2 mpos = ImGui::GetIO().MousePos;
+				if (mpos.x >= nameX0 && mpos.x <= legendX && mpos.y >= ly
+				    && mpos.y <= ly + legendLineH)
+				{
+					i32 snapIdx = NO_INDEX;
+					if (memoryDbg.curSnapshot)
+					{
+						for (i32 s = 0; s < memoryDbg.curSnapshot->snapshots.Size(); ++s)
+						{
+							if (memoryDbg.curSnapshot->snapshots[s].arena == va.arena)
+							{
+								snapIdx = s;
+								break;
+							}
+						}
+					}
+					if (snapIdx != NO_INDEX)
+					{
+						if (isSel)
+						{
+							memoryDbg.hasSelection      = false;
+							memoryDbg.selectionArenaIdx = NO_INDEX;
+							memoryDbg.selectionBlockIdx = NO_INDEX;
+						}
+						else
+						{
+							const auto& snap            = memoryDbg.curSnapshot->snapshots[snapIdx];
+							memoryDbg.hasSelection      = true;
+							memoryDbg.selectionArenaIdx = snapIdx;
+							memoryDbg.selectionBlockIdx = NO_INDEX;
+							memoryDbg.selectionStart    = reinterpret_cast<sizet>(snap.begin);
+							memoryDbg.selectionEnd      = reinterpret_cast<sizet>(snap.end);
+						}
+					}
+				}
+			}
+		}
+
+		// Tooltip on hover.
+		if (tlHovered)
+		{
+			String tipBuf;
+			p::FormatTo(tipBuf, "Timeline: last {:.0f}s", memoryDbg.timelineBufferSeconds);
+			ImGui::SetTooltip("%s", tipBuf.c_str());
+		}
+
+		ImGui::Separator();
+	}
+
 	void DrawMemory(const char* label, bool* open, ImGuiWindowFlags flags)
 	{
 		if (!EnsureInsideDebug)
@@ -2178,87 +2809,164 @@ namespace p
 
 		auto& memoryDbg = currentContext->memory;
 
-		// Rebuild arena info cache
-		memoryDbg.snapshots.Clear();
-		TArray<const Arena*> arenas;
-		GetAllArenas(arenas);
-		for (const auto* arena : arenas)
+		// Rebuild arena info cache. curSnapshot points at either the live
+		// snapshot (rebuilt every frame) or a captured frame (never copied).
+		if (!memoryDbg.IsLive())
 		{
-			if (!arena)
+			// Viewing a captured frame — point at it directly.
+			memoryDbg.curSnapshot = &memoryDbg.captures[memoryDbg.captureIndex];
+		}
+		else
+		{
+			// Live mode — rebuild from current arena state.
+			memoryDbg.liveSnapshot.snapshots.Clear();
+			memoryDbg.curSnapshot = &memoryDbg.liveSnapshot;
+			TArray<const Arena*> arenas;
+			GetAllArenas(arenas);
+			for (const auto* arena : arenas)
 			{
-				continue;
-			}
-
-			DebugMemoryContext::ArenaSnapshot snapshot;
-			snapshot.arena    = arena;
-			snapshot.typeId   = arena->GetTypeId();
-			snapshot.typeName = GetTypeName(snapshot.typeId);
-
-			// Get blocks
-			arena->GetBlocks(snapshot.blocks);
-			for (const auto& block : snapshot.blocks)
-			{
-				if (!snapshot.begin || block.data < snapshot.begin)
+				if (!arena || !arena->GetStats())
 				{
-					snapshot.begin = (u8*)block.data;
+					continue;
 				}
-				const u8* blockEnd = (u8*)block.data + block.size;
-				if (!snapshot.end || blockEnd > snapshot.end)
-				{
-					snapshot.end = blockEnd;
-				}
-				snapshot.capacity += block.size;
-			}
 
-			// Get stats if available
-			const auto* stats = arena->GetStats();
-			if (stats)
-			{
-				stats->CollectStats();
-				snapshot.name   = Tag(stats->name);
-				snapshot.used   = stats->used;
-				snapshot.events = &stats->events;
-				snapshot.live   = &stats->live;
+				DebugMemoryContext::ArenaSnapshot snapshot;
+				snapshot.arena    = arena;
+				snapshot.typeId   = arena->GetTypeId();
+				snapshot.typeName = GetTypeName(snapshot.typeId);
 
-				// Union live allocation addresses into the arena range so
-				// arenas without blocks (e.g. HeapArena) still report the
-				// memory they actually use.
-				if (snapshot.live && snapshot.events)
+				// Get blocks
+				arena->GetBlocks(snapshot.blocks);
+				for (const auto& block : snapshot.blocks)
 				{
-					i32 i = -1;
-					while ((i = snapshot.live->GetNextSet(i)) != NO_INDEX)
+					if (!snapshot.begin || block.data < snapshot.begin)
 					{
-						const auto& ev       = (*snapshot.events)[i];
-						const u8* allocBegin = ev.GetPtr();
-						if (!snapshot.begin || allocBegin < snapshot.begin)
+						snapshot.begin = (u8*)block.data;
+					}
+					const u8* blockEnd = (u8*)block.data + block.size;
+					if (!snapshot.end || blockEnd > snapshot.end)
+					{
+						snapshot.end = blockEnd;
+					}
+					snapshot.capacity += block.size;
+				}
+
+				// Get stats if available
+				if (const auto* stats = arena->GetStats())
+				{
+					stats->CollectStats();
+					snapshot.name = Tag(stats->name);
+					snapshot.used = stats->used;
+					snapshot.live = &stats->live;
+
+					// Union live allocation addresses into the arena range so
+					// arenas without blocks (e.g. HeapArena) still report the
+					// memory they actually use.
+					if (snapshot.live)
+					{
+						for (const auto& ev : *snapshot.live)
 						{
-							snapshot.begin = allocBegin;
+							const u8* allocBegin = ev.GetPtr();
+							if (!snapshot.begin || allocBegin < snapshot.begin)
+							{
+								snapshot.begin = allocBegin;
+							}
+							const u8* allocEnd = allocBegin + ev.GetSize();
+							if (!snapshot.end || allocEnd > snapshot.end)
+							{
+								snapshot.end = allocEnd;
+							}
 						}
-						const u8* allocEnd = allocBegin + ev.GetSize();
-						if (!snapshot.end || allocEnd > snapshot.end)
+					}
+				}
+
+				memoryDbg.liveSnapshot.snapshots.Add(snapshot);
+			}
+
+			// Second pass: find each arena's parent. ChildArena subclasses
+			// know the arena they allocate from; we match that parent by
+			// arena pointer so the result holds for captured data too.
+			// Indices refer to the current order and are remapped if the
+			// snapshots get sorted below.
+			{
+				auto& gatheredSnaps         = memoryDbg.liveSnapshot.snapshots;
+				const TypeId childArenaType = p::GetTypeId<ChildArena>();
+				for (i32 i = 0; i < gatheredSnaps.Size(); ++i)
+				{
+					const Arena* arena = gatheredSnaps[i].arena;
+					if (!arena || !p::IsTypeParentOf(childArenaType, arena->GetTypeId()))
+					{
+						continue;
+					}
+					const Arena& parentArena =
+					    static_cast<const ChildArena*>(arena)->GetParentArena();
+					for (i32 j = 0; j < gatheredSnaps.Size(); ++j)
+					{
+						if (gatheredSnaps[j].arena == &parentArena)
 						{
-							snapshot.end = allocEnd;
+							gatheredSnaps[i].parentArenaIdx = j;
+							break;
 						}
 					}
 				}
 			}
-
-			memoryDbg.snapshots.Add(snapshot);
 		}
 
-		// Sort by block address for consistent rendering
-		std::sort(memoryDbg.snapshots.begin(), memoryDbg.snapshots.end(),
-		    [](const auto& a, const auto& b)
+		const auto& snapshots = memoryDbg.curSnapshot->snapshots;
+
+		// Sort by block address for consistent rendering. Sort through an
+		// index permutation so stored parentArenaIdx values are remapped to
+		// the new positions (live arenas and captured frames alike).
 		{
-			return a.begin < b.begin;
-		});
+			auto& sortSnaps = const_cast<TArray<DebugMemoryContext::ArenaSnapshot>&>(
+			    memoryDbg.curSnapshot->snapshots);
+			const i32 sn = sortSnaps.Size();
+			TArray<i32> order;
+			order.Reserve(sn);
+			for (i32 i = 0; i < sn; ++i)
+			{
+				order.Add(i);
+			}
+			std::sort(order.begin(), order.end(), [&sortSnaps](i32 a, i32 b)
+			{
+				return sortSnaps[a].begin < sortSnaps[b].begin;
+			});
+			TArray<DebugMemoryContext::ArenaSnapshot> sorted;
+			sorted.Reserve(sn);
+			for (i32 i = 0; i < sn; ++i)
+			{
+				sorted.Add(p::Move(sortSnaps[order[i]]));
+			}
+			for (i32 i = 0; i < sn; ++i)
+			{
+				const i32 oldIdx = sorted[i].parentArenaIdx;
+				if (oldIdx == NO_INDEX)
+				{
+					continue;
+				}
+				i32 newIdx = NO_INDEX;
+				for (i32 k = 0; k < sn; ++k)
+				{
+					if (order[k] == oldIdx)
+					{
+						newIdx = k;
+						break;
+					}
+				}
+				sorted[i].parentArenaIdx = newIdx;
+			}
+			sortSnaps = p::Move(sorted);
+		}
 
 		// Determine selected arena
-		DebugMemoryContext::ArenaSnapshot* selectedArena = nullptr;
-		if (memoryDbg.snapshots.IsValidIndex(memoryDbg.selectionArenaIdx))
+		const DebugMemoryContext::ArenaSnapshot* selectedArena = nullptr;
+		if (memoryDbg.curSnapshot->snapshots.IsValidIndex(memoryDbg.selectionArenaIdx))
 		{
-			selectedArena = &memoryDbg.snapshots[memoryDbg.selectionArenaIdx];
+			selectedArena = &memoryDbg.curSnapshot->snapshots[memoryDbg.selectionArenaIdx];
 		}
+
+		// Timeline recording (only runs while this window is open).
+		RecordMemoryTimeline(memoryDbg);
 
 		if (!ImGui::Begin(label, open, flags | ImGuiWindowFlags_MenuBar))
 		{
@@ -2270,21 +2978,21 @@ namespace p
 		if (ImGui::BeginMenuBar())
 		{
 			// Selection range (read-only inputs)
-			char startBuf[32] = "";
-			char endBuf[32]   = "";
+			String startBuf;
+			String endBuf;
 			if (memoryDbg.hasSelection)
 			{
-				snprintf(startBuf, sizeof(startBuf), "0x%llX",
-				    static_cast<unsigned long long>(memoryDbg.selectionStart));
-				snprintf(endBuf, sizeof(endBuf), "0x%llX",
-				    static_cast<unsigned long long>(memoryDbg.selectionEnd));
+				p::FormatTo(
+				    startBuf, "0x{:X}", static_cast<unsigned long long>(memoryDbg.selectionStart));
+				p::FormatTo(
+				    endBuf, "0x{:X}", static_cast<unsigned long long>(memoryDbg.selectionEnd));
 			}
 			ImGui::SetNextItemWidth(110.0f);
-			ImGui::InputText("##selStart", startBuf, sizeof(startBuf),
+			ImGui::InputText("##selStart", startBuf,
 			    ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(110.0f);
-			ImGui::InputText("##selEnd", endBuf, sizeof(endBuf),
+			ImGui::InputText("##selEnd", endBuf,
 			    ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
 			ImGui::SameLine();
 			if (ImGui::Button("Focus selection"))
@@ -2310,7 +3018,91 @@ namespace p
 				}
 			}
 			ImGui::SameLine();
-			ImGui::TextDisabled("Arenas: %d", i32(memoryDbg.snapshots.Size()));
+			ImGui::TextDisabled("Arenas: %d", i32(snapshots.Size()));
+
+			// ----- Capture transport buttons -----
+			ImGui::SameLine();
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+			ImGui::SameLine();
+
+			// Back
+			const bool canGoBack = memoryDbg.IsLive() ? !memoryDbg.captures.IsEmpty()
+			                                          : (memoryDbg.captureIndex - 1) >= 0;
+			ImGui::BeginDisabled(!canGoBack);
+			if (ImGui::TextButton(details::ICON_CI_CAPTURE_BACK, "Previous Capture") && canGoBack)
+			{
+				if (memoryDbg.IsLive())
+				{
+					memoryDbg.captureIndex = memoryDbg.captures.Size() - 1;
+				}
+				else
+				{
+					memoryDbg.captureIndex = memoryDbg.captureIndex - 1;
+				}
+			}
+			ImGui::EndDisabled();
+
+			if (memoryDbg.IsLive())
+			{
+				ImGui::TextDisabled("live");
+			}
+			else
+			{
+				ImGui::TextDisabled("%i/%i", memoryDbg.captureIndex + 1, memoryDbg.captures.Size());
+			}
+
+			// Forward
+			const bool canGoForward =
+			    !memoryDbg.IsLive() && (memoryDbg.captureIndex + 1) <= memoryDbg.captures.Size();
+			ImGui::BeginDisabled(!canGoForward);
+			if (ImGui::TextButton(details::ICON_CI_CAPTURE_FWD, "Next Capture"))
+			{
+				const i32 newIndex = memoryDbg.captureIndex + 1;
+				if (memoryDbg.captures.IsValidIndex(newIndex))
+				{
+					memoryDbg.captureIndex = newIndex;
+				}
+				else
+				{
+					memoryDbg.captureIndex = NO_INDEX;    // Return to live
+				}
+			}
+			ImGui::EndDisabled();
+
+			ImGui::SameLine();
+
+			// Capture (record)
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.86f, 0.16f, 0.16f, 1.0f));
+			if (ImGui::TextButton(details::ICON_CI_CAPTURE_RECORD, "Capture"))
+			{
+				CaptureMemory(*currentContext);
+				memoryDbg.captureIndex = i32(memoryDbg.captures.Size()) - 1;
+			}
+			ImGui::PopStyleColor();
+
+			ImGui::SameLine();
+
+			// Erase
+			const bool canErase = !memoryDbg.IsLive();
+			ImGui::BeginDisabled(!canErase);
+			if (ImGui::TextButton(details::ICON_CI_CAPTURE_TRASH, "Erase Capture") && canErase)
+			{
+				memoryDbg.captures.RemoveAt(memoryDbg.captureIndex);
+				if (memoryDbg.captures.IsEmpty())
+				{
+					memoryDbg.captureIndex = -1;    // Back to live
+				}
+				else if (memoryDbg.captureIndex >= i32(memoryDbg.captures.Size()))
+				{
+					memoryDbg.captureIndex = i32(memoryDbg.captures.Size()) - 1;
+				}
+			}
+			ImGui::EndDisabled();
+
+			ImGui::SameLine();
+			ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
+			ImGui::SameLine();
+
 			ImGui::TextDisabled("(?)");
 			if (ImGui::IsItemHovered())
 			{
@@ -2331,8 +3123,6 @@ namespace p
 			if (ImGui::BeginMenu(settingsLabel))
 			{
 				ImGui::SeparatorText("Graph");
-				ImGui::MenuItem("Hex", nullptr, &memoryDbg.showHex);
-				ImGui::MenuItem("ASCII", nullptr, &memoryDbg.showAscii);
 				// Bytes/line combo: powers of 2 up to 32
 				const i32 allowed[]  = {1, 2, 4, 8, 16, 32};
 				const char* labels[] = {"1", "2", "4", "8", "16", "32"};
@@ -2352,8 +3142,18 @@ namespace p
 				{
 					memoryDbg.bytesPerLine = allowed[current];
 				}
+				ImGui::SeparatorText("Timeline");
+				ImGui::SetNextItemWidth(120.0f);
+				ImGui::InputFloat(
+				    "Buffer (s)", &memoryDbg.timelineBufferSeconds, 1.0f, 5.0f, "%.1f");
+				if (memoryDbg.timelineBufferSeconds < 0.0f)
+				{
+					memoryDbg.timelineBufferSeconds = 0.0f;
+				}
 				ImGui::SeparatorText("View");
 				ImGui::MenuItem("Details", nullptr, &memoryDbg.showDetails);
+				ImGui::MenuItem("HEX", nullptr, &memoryDbg.showHEX);
+				ImGui::MenuItem("ASCII", nullptr, &memoryDbg.showASCII);
 				ImGui::SeparatorText("Layout");
 				if (ImGui::MenuItem("Reset"))
 				{
@@ -2363,6 +3163,10 @@ namespace p
 			}
 			ImGui::EndMenuBar();
 		}
+
+		// ----- Memory timeline graph -----
+		DrawMemoryTimeline(memoryDbg);
+
 
 		// DockSpace — splits 0.5 (right) for Details, the rest for the View graph.
 		const ImGuiID dockspaceId = ImGui::GetID("MemoryDebuggerDockspace");
@@ -2374,6 +3178,8 @@ namespace p
 			ImGui::DockBuilderSplitNode(dockspaceId, ImGuiDir_Right, 0.5f, &memoryDbg.detailsDockId,
 			    &memoryDbg.graphDockId);
 			ImGui::DockBuilderGetNode(memoryDbg.graphDockId)->LocalFlags |=
+			    ImGuiDockNodeFlags_AutoHideTabBar;
+			ImGui::DockBuilderGetNode(memoryDbg.detailsDockId)->LocalFlags |=
 			    ImGuiDockNodeFlags_AutoHideTabBar;
 			// Re-dock windows (SetNextWindowDockID FirstUseEver is one-shot)
 			ImGui::DockBuilderDockWindow("View", memoryDbg.graphDockId);
@@ -2393,18 +3199,21 @@ namespace p
 		const float colGap        = 4.0f;
 		constexpr float colMaxW   = 32.0f;
 		const float rulerStripW   = 32.0f;
-		const float hexStripW =
-		    memoryDbg.showHex ? (charTextSize.x * 2.0f * bytesPerLine + stripPad * 2.0f) : 0.0f;
-		const float stringStripW =
-		    memoryDbg.showAscii ? (charTextSize.x * 1.0f * bytesPerLine + stripPad * 2.0f) : 0.0f;
+		// Full (configured) strip widths, used only to pre-size the first-use window.
+		// The actual rendered strip widths are gated on value visibility in the layout
+		// block below.
+		const float hexStripWFull =
+		    memoryDbg.showHEX ? (charTextSize.x * 2.0f * bytesPerLine + stripPad * 2.0f) : 0.0f;
+		const float stringStripWFull =
+		    memoryDbg.showASCII ? (charTextSize.x * 1.0f * bytesPerLine + stripPad * 2.0f) : 0.0f;
 
 		// Compute desired graph width so the View window first-use size fits the
 		// strips + all arena columns without horizontal scrolling.
 		{
-			const i32 arenaCount      = memoryDbg.snapshots.Size();
-			const float desiredGraphW = rulerStripW + leftGap + hexStripW
-			                          + (hexStripW > 0 ? leftGap : 0.0f) + stringStripW
-			                          + (stringStripW > 0 ? leftGap : 0.0f)
+			const i32 arenaCount      = snapshots.Size();
+			const float desiredGraphW = rulerStripW + leftGap + hexStripWFull
+			                          + (hexStripWFull > 0 ? leftGap : 0.0f) + stringStripWFull
+			                          + (stringStripWFull > 0 ? leftGap : 0.0f)
 			                          + (colMaxW + colGap) * arenaCount + colGap + 32.0f;
 			ImGui::SetNextWindowSize(ImVec2(desiredGraphW, 400.0f), ImGuiCond_FirstUseEver);
 		}
@@ -2422,32 +3231,9 @@ namespace p
 			ImGui::InvisibleButton("##graph_input", canvasSize);
 			ImGui::SetCursorPos(ImVec2(0.0f, 0.0f));
 
-			// Full interactable area of the View (declared early for hit-tests)
-
-			// ----- Layout vars -----
-			const float colAreaX0 = canvasPos.x + rulerStripW + leftGap + hexStripW
-			                      + (hexStripW > 0 ? leftGap : 0.0f) + stringStripW
-			                      + (stringStripW > 0 ? leftGap : 0.0f);
-			const float colAreaW  = (canvasPos.x + canvasSize.x) - colAreaX0;
-			const i32 arenaCount  = memoryDbg.snapshots.Size();
-			const float colW =
-			    (arenaCount > 0 && colAreaW > 0.0f)
-			        ? p::Min((colAreaW - colGap * (arenaCount + 1)) / (float)arenaCount, colMaxW)
-			        : 0.0f;
-			const float addressY0 = canvasPos.y;
-			const float addressY1 = canvasPos.y + canvasSize.y;
-			const float addressH  = (addressY1 > addressY0) ? (addressY1 - addressY0) : 1.0f;
-			const float hexX0     = canvasPos.x + rulerStripW + leftGap;
-			const float stringX0  = hexX0 + hexStripW + (hexStripW > 0 ? leftGap : 0.0f);
-			const float colX0     = stringX0 + stringStripW + (stringStripW > 0 ? leftGap : 0.0f);
-			const float colTotalW = colW + colGap;
-			const float graphX0   = canvasPos.x;
-			const float graphW    = canvasSize.x;
-			const float rulerW    = rulerStripW;
-
 			// ----- Address range -----
 			sizet addrMin = 0, addrMax = 0;
-			for (const auto& snapshot : memoryDbg.snapshots)
+			for (const auto& snapshot : snapshots)
 			{
 				if (!addrMin || sizet(snapshot.begin) < addrMin)
 				{
@@ -2533,6 +3319,34 @@ namespace p
 				safeEffectiveViewRange = 1.0;
 			}
 
+			// ----- Layout vars -----
+			const float addressY0      = canvasPos.y;
+			const float addressY1      = canvasPos.y + canvasSize.y;
+			const float addressH       = (addressY1 > addressY0) ? (addressY1 - addressY0) : 1.0f;
+			const double pixelsPerByte = addressH / viewRange;
+			const bool valuesVisible   = (pixelsPerByte * bytesPerLine >= 13);
+			// Only show the HEX/ASCII strips while zoomed in enough to read values.
+			const float hexStripW    = (memoryDbg.showHEX && valuesVisible)
+			                             ? (charTextSize.x * 2.0f * bytesPerLine + stripPad * 2.0f)
+			                             : 0.0f;
+			const float stringStripW = (memoryDbg.showASCII && valuesVisible)
+			                             ? (charTextSize.x * 1.0f * bytesPerLine + stripPad * 2.0f)
+			                             : 0.0f;
+			// Order left->right: ruler | arena columns | HEX | ASCII
+			const float colX0    = canvasPos.x + rulerStripW + leftGap;
+			const float stringX0 = (canvasPos.x + canvasSize.x) - stringStripW;
+			const float hexX0    = stringX0 - (stringStripW > 0.0f ? leftGap : 0.0f) - hexStripW;
+			const i32 arenaCount = snapshots.Size();
+			const float colAreaW = hexX0 - colX0 - (hexStripW > 0.0f ? leftGap : 0.0f);
+			const float colW =
+			    (arenaCount > 0 && colAreaW > 0.0f)
+			        ? p::Min((colAreaW - colGap * (arenaCount + 1)) / (float)arenaCount, colMaxW)
+			        : 0.0f;
+			const float colTotalW = colW + colGap;
+			const float graphX0   = canvasPos.x;
+			const float graphW    = canvasSize.x;
+			const float rulerW    = rulerStripW;
+
 			// ----- Mapping helpers (address <-> vertical pixel) -----
 			auto AddrToY = [&](sizet a) -> float
 			{
@@ -2598,10 +3412,9 @@ namespace p
 
 	#pragma region Compute
 			// ----- Compute -----
-			const double pixelsPerByte = addressH / viewRange;
-			const double majorStep     = SnapToScale(100.0 / pixelsPerByte);
-			const double halfStep      = majorStep * 0.5;
-			const double quarterStep   = majorStep * 0.25;
+			const double majorStep   = SnapToScale(100.0 / pixelsPerByte);
+			const double halfStep    = majorStep * 0.5;
+			const double quarterStep = majorStep * 0.25;
 			TArray<float> majorTickYs;
 			TArray<sizet> majorTickAddrs;
 
@@ -2620,24 +3433,25 @@ namespace p
 
 			// Find the common prefix of the PRINTED hex strings across all
 			// visible major ticks (not the normalized 64-bit form)
-			char firstLabel[32] = "";
+			String firstLabel;
 			if (majorTickAddrs.Size() > 0)
 			{
-				snprintf(firstLabel, sizeof(firstLabel), "0x%llX",
-				    static_cast<unsigned long long>(majorTickAddrs[0]));
+				p::FormatTo(
+				    firstLabel, "0x{:X}", static_cast<unsigned long long>(majorTickAddrs[0]));
 			}
 			size_t commonHexChars = 0;
 			if (majorTickAddrs.Size() >= 2)
 			{
-				const size_t firstLen = strlen(firstLabel);
+				String ib;
+				const size_t firstLen = firstLabel.size();
 				for (size_t c = 2; c < firstLen; ++c)    // skip "0x"
 				{
 					bool allMatch = true;
 					for (i32 i = 1; i < majorTickAddrs.Size(); ++i)
 					{
-						char ib[32];
-						snprintf(ib, sizeof(ib), "0x%llX",
-						    static_cast<unsigned long long>(majorTickAddrs[i]));
+						ib.clear();
+						p::FormatTo(
+						    ib, "0x{:X}", static_cast<unsigned long long>(majorTickAddrs[i]));
 						if (ib[c] != firstLabel[c])
 						{
 							allMatch = false;
@@ -2688,20 +3502,46 @@ namespace p
 				    ImVec2(stringX0 + stringStripW, canvasPos.y + canvasSize.y), borderLgtCol,
 				    1.0f);
 			}
+
+			// Horizontal line guides: data row boundaries, drawn behind everything.
+			// Only when zoomed in far enough to show data values, and only across the
+			// visible address range.
+			if (pixelsPerByte * bytesPerLine >= 13 && (hexStripW > 0.0f || stringStripW > 0.0f))
+			{
+				const sizet bpl     = static_cast<sizet>(bytesPerLine);
+				const sizet gvLo    = static_cast<sizet>(viewStart);
+				const sizet gvHi    = static_cast<sizet>(viewStart + viewRange);
+				const sizet row0    = (gvLo / bpl) * bpl;
+				const float guideX0 = canvasPos.x;
+				const float guideX1 = canvasPos.x + canvasSize.x;
+				for (sizet a2 = row0 + bpl; a2 < gvHi; a2 += bpl)
+				{
+					const float y = AddrToY(a2);
+					if (y < addressY0 - 1.0f || y > addressY1 + 1.0f)
+					{
+						continue;
+					}
+					drawList->AddLine(ImVec2(guideX0, y), ImVec2(guideX1, y), borderLgtCol, 1.0f);
+				}
+			}
 	#pragma endregion DrawBgs
 
 	#pragma region DrawValues
 			{    // ---- Values ----
 				// HEX and String values
-				if ((hexStripW > 0.0f || stringStripW > 0.0f) && !memoryDbg.snapshots.IsEmpty())
+				if ((hexStripW > 0.0f || stringStripW > 0.0f) && !snapshots.IsEmpty())
 				{
 					const sizet viewLo = static_cast<sizet>(viewStart);
 					const sizet viewHi = static_cast<sizet>(viewStart + viewRange);
 					if (pixelsPerByte * bytesPerLine >= 13)
 					{
-						for (i32 a = 0; a < memoryDbg.snapshots.Size(); ++a)
+						// Vertical centering offset: shift each value down so it sits in
+						// the middle of its line (precomputed once per frame).
+						const float rowH        = static_cast<float>(pixelsPerByte * bytesPerLine);
+						const float valueOffset = (rowH - charTextSize.y) * 0.5f;
+						for (i32 a = 0; a < snapshots.Size(); ++a)
 						{
-							const auto& snapshot = memoryDbg.snapshots[a];
+							const auto& snapshot = snapshots[a];
 							if (!snapshot.begin || snapshot.capacity == 0)
 							{
 								continue;
@@ -2722,9 +3562,12 @@ namespace p
 								}
 								const u8* data  = static_cast<const u8*>(block.data);
 								const sizet bpl = static_cast<sizet>(bytesPerLine);
-								// Global row grid anchored at viewLo
-								const sizet gridOff = (firstByte - viewLo) % bpl;
-								for (sizet a2 = firstByte - gridOff; a2 < lastByte; a2 += bpl)
+								// Row grid anchored to absolute memory so each line holds a
+								// contiguous bytesPerLine chunk starting at a bpl-aligned
+								// address (stable across pan/zoom).
+								const sizet gridOff = (firstByte / bpl) * bpl;
+								String hexLabel;
+								for (sizet a2 = gridOff; a2 < lastByte; a2 += bpl)
 								{
 									if (a2 + bpl <= bs)
 									{
@@ -2740,8 +3583,8 @@ namespace p
 										const sizet lineByteIdx = b2 - a2;
 										if (hexStripW > 0.0f)
 										{
-											char hex[3];
-											snprintf(hex, sizeof(hex), "%02X", byte);
+											hexLabel.clear();
+											p::FormatTo(hexLabel, "{:02X}", static_cast<int>(byte));
 											const ImU32 hexCol =
 											    (byte == 0)
 											        ? p::Color{90, 90, 90, 255}.DWColor()
@@ -2749,7 +3592,8 @@ namespace p
 											const float xOff = static_cast<float>(lineByteIdx)
 											                 * (charTextSize.x * 2.0f);
 											drawList->AddText(
-											    ImVec2(hexX0 + stripPad + xOff, y), hexCol, hex);
+											    ImVec2(hexX0 + stripPad + xOff, y + valueOffset),
+											    hexCol, hexLabel.c_str());
 										}
 										if (stringStripW > 0.0f)
 										{
@@ -2761,7 +3605,8 @@ namespace p
 											              : p::Color{90, 90, 90, 255}.DWColor();
 											const float xOff =
 											    static_cast<float>(lineByteIdx) * charTextSize.x;
-											drawList->AddText(ImVec2(stringX0 + stripPad + xOff, y),
+											drawList->AddText(
+											    ImVec2(stringX0 + stripPad + xOff, y + valueOffset),
 											    asciiCol, &c, &c + 1);
 										}
 									}
@@ -2811,6 +3656,7 @@ namespace p
 				}
 
 				// Major ticks + labels (gray common prefix, white changing suffix)
+				String majorTickLabel;
 				for (i32 t = 0; t < majorTickAddrs.Size(); ++t)
 				{
 					const sizet addr = majorTickAddrs[t];
@@ -2819,30 +3665,26 @@ namespace p
 					    ImVec2(canvasPos.x + rulerW - 10.0f, ty), p::Color{220, 220, 220}.DWColor(),
 					    1.5f);
 
-					char fullBuf[32];
-					snprintf(
-					    fullBuf, sizeof(fullBuf), "0x%llX", static_cast<unsigned long long>(addr));
-					const float fullWidth = ImGui::CalcTextSize(fullBuf).x;
+					majorTickLabel.clear();
+					p::FormatTo(majorTickLabel, "0x{:X}", static_cast<unsigned long long>(addr));
+					const float fullWidth = ImGui::CalcTextSize(majorTickLabel).x;
 
 					// Split label into common (gray) and changing (white).
-					const size_t fullLen = strlen(fullBuf);
+					const size_t fullLen = majorTickLabel.size();
 					const size_t splitAt = p::Min(commonStrLen, fullLen);
-					char commonBuf[32]   = {};
-					char changingBuf[32] = {};
-					if (splitAt > 0)
+					StringView commonBuf = majorTickLabel.substr(0, splitAt);
+					StringView changingBuf =
+					    (splitAt < fullLen) ? majorTickLabel.substr(splitAt) : String{};
+					if (splitAt == fullLen)
 					{
-						memcpy(commonBuf, fullBuf, splitAt);
-					}
-					if (splitAt < fullLen)
-					{
-						memcpy(changingBuf, fullBuf + splitAt, fullLen - splitAt + 1);
+						changingBuf = {};
 					}
 
 					// Bottom-to-top text: the FIRST char sits at the BOTTOM.
 					// Common prefix at the bottom (read first), changing
 					// suffix on top. Total vertical extent = fullWidth.
 					const float baseY = ty + fullWidth;
-					if (commonBuf[0] != '\0')
+					if (!commonBuf.empty())
 					{
 						const float commonW = ImGui::CalcTextSize(commonBuf).x;
 						details::AddTextVertical(drawList, ImVec2(canvasPos.x + 2.0f, baseY),
@@ -2854,7 +3696,7 @@ namespace p
 					else
 					{
 						details::AddTextVertical(drawList, ImVec2(canvasPos.x + 2.0f, baseY),
-						    p::Color{230, 230, 230, 255}.DWColor(), fullBuf);
+						    p::Color{230, 230, 230, 255}.DWColor(), majorTickLabel);
 					}
 				}
 			}
@@ -2866,11 +3708,13 @@ namespace p
 				// Label background
 				const ImU32 bgCol = ImGui::GetColorU32(ImGuiCol_TableHeaderBg, 0.9f);
 				drawList->AddRectFilled(canvasPos,
-				    ImVec2(colX0, canvasPos.y + charTextSize.y + (padding.y * 2.f)), bgCol);
+				    ImVec2(canvasPos.x + canvasSize.x,
+				        canvasPos.y + charTextSize.y + (padding.y * 2.f)),
+				    bgCol);
 
 				// Ruler label (scale)
 				const String scaleStr  = Strings::ParseMemorySize(static_cast<sizet>(majorStep));
-				const ImVec2 rulerSize = ImGui::CalcTextSize(scaleStr.c_str());
+				const ImVec2 rulerSize = ImGui::CalcTextSize(scaleStr);
 				drawList->AddText(
 				    ImVec2(canvasPos.x + (rulerW - rulerSize.x) * 0.5f, canvasPos.y + padding.y),
 				    p::Color{220, 220, 220}.DWColor(), scaleStr.data());
@@ -2903,13 +3747,15 @@ namespace p
 			// ----- Arena columns loop (blocks, markers, click, tooltip) -----
 			const ImVec2 mousePos = ImGui::GetIO().MousePos;
 			const bool inGraph    = graphRect.Contains(mousePos);
-			for (i32 i = 0; i < memoryDbg.snapshots.Size(); ++i)
+			for (i32 i = 0; i < snapshots.Size(); ++i)
 			{
-				const auto& snapshot          = memoryDbg.snapshots[i];
+				const auto& snapshot          = snapshots[i];
 				const bool isSelected         = (i == memoryDbg.selectionArenaIdx);
 				const p::Color arenaColor     = details::GetArenaColor(snapshot.typeId);
 				const p::Color arenaBg        = arenaColor.Translucency(30);
-				const p::Color blockFillColor = isSelected ? arenaColor.Shade(0.65f) : arenaColor;
+				const p::Color blockFillColor = isSelected
+				                                  ? arenaColor.Shade(0.65f).Translucency(200)
+				                                  : arenaColor.Translucency(140);
 				const p::Color blockLineColor =
 				    isSelected ? p::Color::Orange() : blockFillColor.Shade(0.5f);
 				const p::Color allocLiveColor = arenaColor.Tint(0.1f);
@@ -2922,6 +3768,45 @@ namespace p
 				{
 					drawList->AddRectFilled(
 					    ImVec2(colX, addressY0), ImVec2(colRight, addressY1), arenaBg.DWColor());
+				}
+
+				// Link strips: translucent fills from each block toward
+				// its parent arena's alloc edge. Drawn before blocks so
+				// they render underneath.
+				if (snapshot.parentArenaIdx != NO_INDEX && snapshot.begin && snapshot.capacity > 0)
+				{
+					const i32 pi           = snapshot.parentArenaIdx;
+					const bool left        = (pi < i);
+					const float parentPad  = colW * 0.25f;
+					const auto& parentSnap = snapshots[pi];
+					const ImU32 stripCol   = blockFillColor.Translucency(25).DWColor();
+					for (const auto& block : snapshot.blocks)
+					{
+						const sizet blockStart = reinterpret_cast<sizet>(block.data);
+						const float y0Raw      = AddrToY(blockStart);
+						const float y1Raw      = AddrToY(blockStart + block.size);
+						if (y1Raw < addressY0 || y0Raw > addressY1)
+						{
+							continue;
+						}
+						float y0 = y0Raw;
+						float y1 = y1Raw;
+						if (y1 - y0 < 2.0f)
+						{
+							const float mid = (y0 + y1) * 0.5f;
+							y0              = mid - 1.0f;
+							y1              = mid + 1.0f;
+						}
+						y0 = (y0 > addressY0) ? y0 : addressY0;
+						y1 = (y1 < addressY1) ? y1 : addressY1;
+
+						const float parentEdge = left ? ArenaColumnX(pi) + colW - parentPad
+						                              : ArenaColumnX(pi) + parentPad;
+						const float childEdge  = left ? colX : colRight;
+						const float fillX0     = left ? parentEdge : childEdge;
+						const float fillX1     = left ? childEdge : parentEdge;
+						drawList->AddRectFilled(ImVec2(fillX0, y0), ImVec2(fillX1, y1), stripCol);
+					}
 				}
 
 				// Block draw + double-click focus
@@ -2950,7 +3835,6 @@ namespace p
 						    ImVec2(colX, y0), ImVec2(colRight, y1), blockFillColor.DWColor());
 						drawList->AddRect(
 						    ImVec2(colX, y0), ImVec2(colRight, y1), blockLineColor.DWColor());
-						// Double-click a block to focus it
 						if (ImGui::IsMouseDoubleClicked(0))
 						{
 							const ImRect blockRect(ImVec2(colX, y0), ImVec2(colRight, y1));
@@ -2959,9 +3843,9 @@ namespace p
 								const double blkSize = static_cast<double>(block.size);
 								if (blkSize > 0.0)
 								{
-									const double minViewRange = p::Max(1.0,
-									    addressH
-									        / (24.0 * double(bytesPerLine > 0 ? bytesPerLine : 1)));
+									const double minViewRange = p::Max(
+									    1.0, addressH * double(bytesPerLine > 0 ? bytesPerLine : 1)
+									             / (static_cast<double>(charTextSize.y)));
 									double newViewRange(block.size);
 									newViewRange        = p::Max(newViewRange, minViewRange);
 									newViewRange        = p::Min(newViewRange, range);
@@ -2979,17 +3863,18 @@ namespace p
 
 				{
 					// Walk live allocs
-					if (snapshot.live && snapshot.events)
+					const auto* live =
+					    snapshot.captured ? &snapshot.ownedLiveAllocs : snapshot.live;
+					if (live)
 					{
 						// Filter visible allocations
 						const float padding    = colW * 0.25f;
 						const sizet viewStartS = static_cast<sizet>(viewStart);
 						const sizet viewEndS   = static_cast<sizet>(viewStart + viewRange);
 						TArray<i32> liveInRange;
-						for (i32 j = snapshot.live->GetNextSet(NO_INDEX); j != NO_INDEX;
-						    j = snapshot.live->GetNextSet(j))
+						for (i32 j = 0; j < live->Size(); ++j)
 						{
-							const auto& ev   = (*snapshot.events)[j];
+							const auto& ev   = (*live)[j];
 							const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
 							const sizet size = ev.GetSize();
 							if (addr >= viewEndS || addr + size <= viewStartS)
@@ -3000,17 +3885,20 @@ namespace p
 						}
 
 						// Draw allocations
-						for (i32 i : liveInRange)
+						for (i32 id : liveInRange)
 						{
-							const auto& ev   = (*snapshot.events)[i];
+							const auto& ev   = (*live)[id];
 							const sizet addr = reinterpret_cast<sizet>(ev.GetPtr());
 							const sizet size = ev.GetSize();
 							const float ty   = AddrToY(addr);
 							const float ty2  = AddrToY(addr + size);
-							if (ty >= addressY0 && ty2 <= addressY1)
+							// Clamp to visible range so full-span allocations draw.
+							const float dy0 = (ty > addressY0) ? ty : addressY0;
+							const float dy1 = (ty2 < addressY1) ? ty2 : addressY1;
+							if (dy1 > dy0)
 							{
-								drawList->AddRectFilled(ImVec2(colX + padding, ty - 0.5f),
-								    ImVec2(colRight - padding, ty2 + 0.5f),
+								drawList->AddRectFilled(ImVec2(colX + padding, dy0 - 0.5f),
+								    ImVec2(colRight - padding, dy1 + 0.5f),
 								    allocLiveColor.DWColor());
 							}
 						}
@@ -3067,42 +3955,58 @@ namespace p
 					}
 				}
 
-				// Column tooltip
+				// Column tooltip (lazy-built: only rebuilt when the hovered arena changes)
+				// Cached outside the loop so it survives across frames.
 				if (colRect.Contains(ImGui::GetIO().MousePos))
 				{
-					ImGui::BeginTooltip();
-					ImGui::SeparatorText("Arena");
-					ImGui::Text("Name: %s (%s)", snapshot.name.Data(), snapshot.typeName.Data());
-					ImGui::Text("Range: 0x%llX - 0x%llX", reinterpret_cast<sizet>(snapshot.begin),
-					    reinterpret_cast<sizet>(snapshot.begin) + snapshot.capacity);
-					static String sizeStr;
-					if (snapshot.capacity > 0)
+					static i32 cachedTipArena = -1;
+					static String colTipBuf;
+					if (cachedTipArena != i)
 					{
-						sizeStr = Strings::ParseMemorySize(snapshot.capacity);
-						ImGui::Text("Capacity: %s (%zuB)", sizeStr.data(), snapshot.capacity);
+						cachedTipArena = i;
+						colTipBuf.clear();
+						p::FormatTo(colTipBuf, "{} ({})\n",
+						    snapshot.name.Data() ? snapshot.name.Data() : "(unnamed)",
+						    snapshot.typeName.Data() ? snapshot.typeName.Data() : "");
+						p::FormatTo(colTipBuf, "Range: 0x{:X} - 0x{:X}\n",
+						    static_cast<unsigned long long>(
+						        reinterpret_cast<sizet>(snapshot.begin)),
+						    static_cast<unsigned long long>(
+						        reinterpret_cast<sizet>(snapshot.begin) + snapshot.capacity));
+						static String memStr1;
+						memStr1.clear();
+						Strings::ParseMemorySizeTo(memStr1, snapshot.capacity);
+						p::FormatTo(colTipBuf, "Capacity: {} ({}B)\n", memStr1.c_str(),
+						    static_cast<size_t>(snapshot.capacity));
+						if (snapshot.used > 0)
+						{
+							static String memStr2;
+							memStr2.clear();
+							Strings::ParseMemorySizeTo(memStr2, snapshot.used);
+							const float cof =
+							    (snapshot.capacity > 0) ? snapshot.used / snapshot.capacity : 0;
+							p::FormatTo(colTipBuf, "Used: {} ({:.1f}%  {}B)\n", memStr2.c_str(),
+							    100.0f * cof, static_cast<size_t>(snapshot.used));
+						}
 					}
-					if (snapshot.used > 0)
-					{
-						sizeStr = Strings::ParseMemorySize(snapshot.used);
-						const float cof =
-						    (snapshot.capacity > 0) ? snapshot.used / snapshot.capacity : 0;
-						ImGui::Text("Used: %s (%.1f%%  %zuB)", sizeStr.c_str(), 100.0f * cof,
-						    snapshot.used);
-					}
-					ImGui::EndTooltip();
+					ImGui::SetTooltip("%s", colTipBuf.c_str());
 				}
 
 				// Column header (vertical, drawn LAST so rects/markers don't cover it)
-				const char* name = snapshot.name.Data();
-				bool nameIsType  = false;
-				if (!name)
+				StringView name = snapshot.name.AsString();
+				bool nameIsType = false;
+				if (name.empty())
 				{
-					name       = snapshot.typeName.Data();
+					name       = snapshot.typeName.AsString();
 					nameIsType = true;
 				}
-				if (name)
+				if (!name.empty())
 				{
 					p::Color color{220, 220, 220};
+					if (isSelected)
+					{
+						color = selectionColor;
+					}
 					const float nameExtent = ImGui::CalcTextSize(name).x;
 					const float fontHeight = ImGui::GetTextLineHeight();
 					// Center horizontally: strip extends right by ~fontHeight from pos.x
@@ -3160,50 +4064,59 @@ namespace p
 				}
 			}
 
-			// ----- Graph-wide tooltip (address always, block info if hit) -----
+			// ----- Graph-wide tooltip (address always, arena info if hit). Lazy-built:
+			// only rebuilt when the hovered address changes. -----
 			{
 				const ImVec2 mp = ImGui::GetIO().MousePos;
 				if (graphRect.Contains(mp))
 				{
-					const sizet hoverAddr                        = ScreenYToAddr(mp.y);
-					const DebugMemoryContext::ArenaSnapshot* hit = nullptr;
-					for (i32 i = 0; i < memoryDbg.snapshots.Size() && !hit; ++i)
+					static sizet cachedHoverAddr = static_cast<sizet>(-1);
+					static i32 cachedHoverX      = -1;
+					static String gTipBuf;
+					const sizet hoverAddr = ScreenYToAddr(mp.y);
+					const i32 hoverX      = static_cast<i32>(mp.x);
+					if (hoverAddr != cachedHoverAddr || hoverX != cachedHoverX)
 					{
-						const auto& snapshot = memoryDbg.snapshots[i];
-						if (!snapshot.begin || snapshot.capacity == 0)
+						cachedHoverAddr = hoverAddr;
+						cachedHoverX    = hoverX;
+						// Identify the arena by column (x), not by forcing the
+						// hover address inside the summed block span (which has gaps).
+						const DebugMemoryContext::ArenaSnapshot* hit = nullptr;
+						for (i32 i = 0; i < snapshots.Size(); ++i)
 						{
-							continue;
+							const float cx = ArenaColumnX(i);
+							if (mp.x < cx || mp.x >= cx + colW)
+							{
+								continue;
+							}
+							hit = &snapshots[i];
+							break;
 						}
-						const float cx = ArenaColumnX(i);
-						if (mp.x < cx || mp.x >= cx + colW)
+						gTipBuf.clear();
+						p::FormatTo(
+						    gTipBuf, "Address: 0x{:X}", static_cast<unsigned long long>(hoverAddr));
+						if (hit)
 						{
-							continue;
-						}
-						const sizet aStart = reinterpret_cast<sizet>(snapshot.begin);
-						const sizet aEnd   = aStart + snapshot.capacity;
-						if (hoverAddr >= aStart && hoverAddr < aEnd)
-						{
-							hit = &snapshot;
+							const StringView typeName = GetTypeName(hit->typeId);
+							p::FormatTo(
+							    gTipBuf, "\nArena: {}", typeName.data() ? typeName.data() : "?");
+							const sizet offset = hoverAddr - reinterpret_cast<sizet>(hit->begin);
+							p::FormatTo(gTipBuf, "\nOffset: 0x{:X} ({}B)",
+							    static_cast<unsigned long long>(offset),
+							    static_cast<size_t>(offset));
+							if (hit->used > 0)
+							{
+								static String usedStr;
+								usedStr.clear();
+								Strings::ParseMemorySizeTo(usedStr, hit->used);
+								const float cof =
+								    (hit->capacity > 0) ? hit->used / hit->capacity : 0;
+								p::FormatTo(gTipBuf, "\nUsed: {} ({:.1f}%  {}B)", usedStr.c_str(),
+								    100.0f * cof, static_cast<size_t>(hit->used));
+							}
 						}
 					}
-					ImGui::BeginTooltip();
-					ImGui::Text("Address: 0x%llX", static_cast<unsigned long long>(hoverAddr));
-					if (hit)
-					{
-						ImGui::Text("Arena: %s", GetTypeName(hit->typeId).data());
-						const sizet offset = hoverAddr - reinterpret_cast<sizet>(hit->begin);
-						ImGui::Text("Offset: 0x%llX (%zuB)",
-						    static_cast<unsigned long long>(offset), static_cast<size_t>(offset));
-						if (hit->used > 0)
-						{
-							static String sizeStr;
-							sizeStr         = Strings::ParseMemorySize(hit->used);
-							const float cof = (hit->capacity > 0) ? hit->used / hit->capacity : 0;
-							ImGui::Text("Used: %s (%.1f%%  %zuB)", sizeStr.c_str(), 100.0f * cof,
-							    hit->used);
-						}
-					}
-					ImGui::EndTooltip();
+					ImGui::SetTooltip("%s", gTipBuf.c_str());
 				}
 			}
 
@@ -3215,7 +4128,7 @@ namespace p
 				if (ImGui::IsMouseClicked(0) && inGraph && !memoryDbg.isSelecting)
 				{
 					bool overColumn = false;
-					for (i32 i = 0; i < memoryDbg.snapshots.Size() && !overColumn; ++i)
+					for (i32 i = 0; i < snapshots.Size() && !overColumn; ++i)
 					{
 						const float cx = ArenaColumnX(i);
 						if (mousePos.x >= cx && mousePos.x < cx + colW)
@@ -3251,19 +4164,18 @@ namespace p
 			}
 
 			// Draw selection
-			constexpr Color selectionCol(255, 200, 80);
 			if (memoryDbg.isSelecting)
 			{
 				const float sy0 = AddrToY(memoryDbg.selectionFirstAddr);
 				const float sy1 = AddrToY(memoryDbg.selectionSecondAddr);
 				// Selection box
 				drawList->AddLine(ImVec2(canvasPos.x, sy0), ImVec2(canvasPos.x + canvasSize.x, sy0),
-				    selectionCol.Translucency(220).DWColor());
+				    selectionColor.Translucency(220).DWColor());
 				drawList->AddLine(ImVec2(canvasPos.x, sy1), ImVec2(canvasPos.x + canvasSize.x, sy1),
-				    selectionCol.Translucency(220).DWColor());
+				    selectionColor.Translucency(220).DWColor());
 				drawList->AddRectFilled(ImVec2(canvasPos.x + rulerW, sy0),
 				    ImVec2(canvasPos.x + canvasSize.x, sy1),
-				    selectionCol.Translucency(90).DWColor());
+				    selectionColor.Translucency(30).DWColor());
 			}
 			if (memoryDbg.hasSelection)
 			{
@@ -3272,18 +4184,18 @@ namespace p
 					const float sy0 = AddrToY(memoryDbg.selectionStart);
 					const float sy1 = AddrToY(memoryDbg.selectionEnd);
 					drawList->AddLine(ImVec2(canvasPos.x, sy0),
-					    ImVec2(canvasPos.x + canvasSize.x, sy0), selectionCol.DWColor());
+					    ImVec2(canvasPos.x + canvasSize.x, sy0), selectionColor.DWColor());
 					drawList->AddLine(ImVec2(canvasPos.x, sy1),
-					    ImVec2(canvasPos.x + canvasSize.x, sy1), selectionCol.DWColor());
+					    ImVec2(canvasPos.x + canvasSize.x, sy1), selectionColor.DWColor());
 					drawList->AddRectFilled(ImVec2(canvasPos.x + rulerW, sy0),
 					    ImVec2(canvasPos.x + canvasSize.x, sy1),
-					    selectionCol.Translucency(45).DWColor());
+					    selectionColor.Translucency(15).DWColor());
 					if (memoryDbg.selectionArenaIdx != NO_INDEX
 					    && memoryDbg.selectionBlockIdx != NO_INDEX)    // Block selection box
 					{
 						const float cx = ArenaColumnX(memoryDbg.selectionArenaIdx);
 						drawList->AddRectFilled(ImVec2(cx, sy0), ImVec2(cx + colW, sy1),
-						    selectionCol.Translucency(90).DWColor());
+						    selectionColor.Translucency(90).DWColor());
 					}
 				}
 				else
@@ -3294,10 +4206,10 @@ namespace p
 					// clicked, regardless of which strip it was in.
 					drawList->AddLine(ImVec2(canvasPos.x, sy0),
 					    ImVec2(canvasPos.x + canvasSize.x, sy0),
-					    p::Color{255, 200, 80, 240}.DWColor(), 2.0f);
+					    selectionColor.Translucency(240).DWColor(), 2.0f);
 					drawList->AddRectFilled(ImVec2(canvasPos.x, sy0 - 1.5f),
 					    ImVec2(canvasPos.x + canvasSize.x, sy0 + 2.5f),
-					    p::Color{255, 200, 80, 70}.DWColor());
+					    selectionColor.Translucency(70).DWColor());
 				}
 			}
 
@@ -3305,7 +4217,7 @@ namespace p
 			if (inGraph && memoryDbg.hasSelection && ImGui::IsMouseClicked(1))
 			{
 				i32 selectedColumn = -1;
-				for (i32 c = 0; c < memoryDbg.snapshots.Size(); ++c)
+				for (i32 c = 0; c < snapshots.Size(); ++c)
 				{
 					const float cx = ArenaColumnX(c);
 					if (mousePos.x >= cx && mousePos.x < cx + colW)
@@ -3407,52 +4319,42 @@ namespace p
 								             + ((static_cast<double>(my) - wAddressY0) / wAddressH)
 								                   * wViewRange;
 							}
-							const double minViewRange = p::Max(
-							    1.0, wAddressH / (24.0 * static_cast<double>(wBytesPerLine)));
+							// Max zoom: each data line (bytesPerLine bytes) must not span
+							// more than 1.5 text line heights.
+							const float lineH = charTextSize.y * 1.5f;
+							const double minViewRange =
+							    p::Max(1.0, wAddressH * static_cast<double>(wBytesPerLine)
+							                    / static_cast<double>(lineH));
 							double newViewRange =
 							    (wheel > 0) ? (wViewRange / 1.15) : (wViewRange * 1.15);
-							if (newViewRange < minViewRange)
-							{
-								newViewRange = minViewRange;
-							}
-							if (newViewRange > range)
-							{
-								newViewRange = range;
-							}
-							const double zoomEpsilon = 0.5;
-							const bool atMinZoom     = (newViewRange <= minViewRange + zoomEpsilon);
-							const bool atMaxZoom     = (newViewRange >= range - zoomEpsilon);
-							if (atMinZoom || atMaxZoom)
-							{
-								memoryDbg.viewRange       = atMinZoom ? minViewRange : range;
-								memoryDbg.isZooming       = false;
-								memoryDbg.smoothViewRange = memoryDbg.viewRange;
-								memoryDbg.smoothViewStart =
-								    static_cast<double>(memoryDbg.viewStart);
-							}
-							else
-							{
-								// Zoom coupling: anchor stays at cursor
-								const double relX =
-								    (wAddressH > 0.0)
-								        ? ((static_cast<double>(my) - wAddressY0) / wAddressH)
-								        : 0.0;
-								const double newStart     = addrAtCursor - relX * newViewRange;
-								memoryDbg.viewStart       = static_cast<sizet>(newStart);
-								memoryDbg.viewRange       = newViewRange;
-								memoryDbg.smoothViewStart = newStart;
-								memoryDbg.smoothViewRange = newViewRange;
-								memoryDbg.zoomAnchorAddr  = static_cast<sizet>(addrAtCursor);
-								memoryDbg.zoomAnchorRelX  = static_cast<float>(relX);
-								memoryDbg.isZooming       = true;
-							}
+							newViewRange = p::Max(newViewRange, minViewRange);
+							newViewRange = p::Min(newViewRange, range);
+							// Zoom coupling: anchor stays at cursor
+							const double relX =
+							    (wAddressH > 0.0)
+							        ? ((static_cast<double>(my) - wAddressY0) / wAddressH)
+							        : 0.0;
+							const double newStart     = addrAtCursor - relX * newViewRange;
+							memoryDbg.viewStart       = static_cast<sizet>(newStart);
+							memoryDbg.viewRange       = newViewRange;
+							memoryDbg.smoothViewStart = newStart;
+							memoryDbg.smoothViewRange = newViewRange;
+							memoryDbg.zoomAnchorAddr  = static_cast<sizet>(addrAtCursor);
+							memoryDbg.zoomAnchorRelX  = static_cast<float>(relX);
+							memoryDbg.isZooming       = true;
 						}
 						else    // Pan
 						{
 							// Pan: wheel up → higher addresses
 							const double addrDelta =
 							    -static_cast<double>(wheel) * wViewRange * 0.15;
-							memoryDbg.viewStart = static_cast<sizet>(wViewStart + addrDelta);
+							// Snap the pan target to line (bytesPerLine) boundaries so the
+							// view settles on whole data lines; the smooth value lerps to it.
+							const sizet pBpl = static_cast<sizet>(
+							    memoryDbg.bytesPerLine > 0 ? memoryDbg.bytesPerLine : 1);
+							const sizet lineAligned =
+							    (static_cast<sizet>(wViewStart + addrDelta) / pBpl) * pBpl;
+							memoryDbg.viewStart = lineAligned;
 						}
 					}
 				}
@@ -3469,9 +4371,14 @@ namespace p
 					{
 						const double addrDelta =
 						    -static_cast<double>(dy) / addressH * memoryDbg.smoothViewRange;
-						memoryDbg.viewStart =
-						    static_cast<sizet>(memoryDbg.smoothViewStart + addrDelta);
-						memoryDbg.smoothViewStart = static_cast<double>(memoryDbg.viewStart);
+						// Snap the pan target to line (bytesPerLine) boundaries so the
+						// view settles on whole data lines; the smooth value lerps to it.
+						const sizet pBpl = static_cast<sizet>(
+						    memoryDbg.bytesPerLine > 0 ? memoryDbg.bytesPerLine : 1);
+						const sizet lineAligned =
+						    (static_cast<sizet>(memoryDbg.smoothViewStart + addrDelta) / pBpl)
+						    * pBpl;
+						memoryDbg.viewStart = lineAligned;
 					}
 				}
 			}
@@ -3492,7 +4399,9 @@ namespace p
 				if (selectedArena)
 				{
 					detailsLabel = selectedArena->name.AsString();
-					ImGui::Text("%s", detailsLabel.c_str());
+					ImGui::TextColored(ImVec4{selectionColor.r / 255.0f, selectionColor.g / 255.0f,
+					                       selectionColor.b / 255.0f, selectionColor.a / 255.0f},
+					    "%s", detailsLabel.c_str());
 
 					detailsLabel = GetTypeName(selectedArena->typeId);
 					ImGui::Text("Type: %s", detailsLabel.c_str());
@@ -3502,7 +4411,8 @@ namespace p
 					ImGui::SeparatorText("Usage");
 					if (selectedArena->capacity > 0)
 					{
-						sizeStr = Strings::ParseMemorySize(selectedArena->capacity);
+						sizeStr.clear();
+						Strings::ParseMemorySizeTo(sizeStr, selectedArena->capacity);
 						ImGui::Text("Capacity: %s (%zuB)", sizeStr.data(), selectedArena->capacity);
 					}
 					if (selectedArena->used > 0)
@@ -3510,7 +4420,8 @@ namespace p
 						const float usedPct = (selectedArena->capacity > 0)
 						                        ? selectedArena->used / selectedArena->capacity
 						                        : 0;
-						sizeStr             = Strings::ParseMemorySize(selectedArena->used);
+						sizeStr.clear();
+						Strings::ParseMemorySizeTo(sizeStr, selectedArena->used);
 						ImGui::Text("Used: %s (%.1f%%)", sizeStr.c_str(), 100.f * usedPct);
 						ImGui::ProgressBar(usedPct / 100.0f);
 					}
@@ -3520,12 +4431,13 @@ namespace p
 					for (i32 i = 0; i < selectedArena->blocks.Size(); ++i)
 					{
 						const auto& block = selectedArena->blocks[i];
-						char blockLabel[128];
-						sizeStr = Strings::ParseMemorySize(block.size);
-						snprintf(blockLabel, sizeof(blockLabel), "Block %i: 0x%llX | %s (%zuB)", i,
+						String blockLabel;
+						sizeStr.clear();
+						Strings::ParseMemorySizeTo(sizeStr, block.size);
+						p::FormatTo(blockLabel, "Block {}: 0x{:X} | {} ({}B)", i,
 						    static_cast<unsigned long long>(reinterpret_cast<sizet>(block.data)),
 						    sizeStr.data(), block.size);
-						ImGui::BulletText("%s", blockLabel);
+						ImGui::BulletText("%s", blockLabel.c_str());
 					}
 					ImGui::Separator();
 					if (ImGui::Button("Deselect"))
@@ -3546,6 +4458,41 @@ namespace p
 
 		ImGui::End();    // Parent window (closes the ImGuiWindowFlags_MenuBar window)
 	}
+
+	void CaptureMemory(DebugContext& ctx)
+	{
+		auto& memoryDbg             = ctx.memory;
+		const auto& currentSnapshot = memoryDbg.curSnapshot ? memoryDbg.curSnapshot->snapshots
+		                                                    : memoryDbg.liveSnapshot.snapshots;
+		DebugMemoryContext::MemorySnapshot frame;
+		frame.snapshots.Reserve(static_cast<sizet>(currentSnapshot.Size()));
+		for (const auto& src : currentSnapshot)
+		{
+			DebugMemoryContext::ArenaSnapshot dst;
+			dst.arena          = src.arena;
+			dst.begin          = src.begin;
+			dst.end            = src.end;
+			dst.capacity       = src.capacity;
+			dst.used           = src.used;
+			dst.blocks         = src.blocks;
+			dst.blockSizes     = src.blockSizes;
+			dst.name           = src.name;
+			dst.typeId         = src.typeId;
+			dst.typeName       = src.typeName;
+			dst.parentArenaIdx = src.parentArenaIdx;
+
+			// Deep-copy live allocs so the capture owns its data.
+			dst.ownedLiveAllocs = src.captured
+			                        ? src.ownedLiveAllocs
+			                        : (src.live ? *src.live : TArray<MemoryStatsEvent>{});
+			dst.captured        = true;
+			dst.live            = nullptr;
+
+			frame.snapshots.Add(p::Move(dst));
+		}
+		memoryDbg.captures.Add(p::Move(frame));
+	}
+
 	#pragma endregion Memory
 
 	bool BeginDebug(DebugContext& context)

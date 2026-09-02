@@ -1358,9 +1358,10 @@ namespace p
 		P_API bool Split(const String& str, String& a, String& b, const char* delim);
 
 		P_API bool IsNumeric(const String& str);
-		P_API bool IsNumeric(const char* Str);
+		P_API bool IsNumeric(const char* str);
 
-		P_API String ParseMemorySize(sizet size);
+		P_API String ParseMemorySize(sizet size, bool asBits = false);
+		P_API void ParseMemorySizeTo(String& str, sizet size, bool asBits = false);
 
 		template<typename ToStringType, typename FromChar>
 		inline void ConvertTo(TStringView<FromChar> source, ToStringType& dest)
