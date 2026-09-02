@@ -204,7 +204,8 @@ namespace ImGui
 		}
 
 		PushStyleColor(ImGuiCol_Text, col);
-		RenderText(GetItemRectMin() + padding, text);
+		const ImVec2 rectMin = GetItemRectMin();
+		RenderText({rectMin.x + padding.x, rectMin.y + padding.y}, text);
 		PopStyleColor();
 		PopID();
 		return clicked;

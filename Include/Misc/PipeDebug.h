@@ -3775,10 +3775,10 @@ namespace p
 				// they render underneath.
 				if (snapshot.parentArenaIdx != NO_INDEX && snapshot.begin && snapshot.capacity > 0)
 				{
-					const i32 pi           = snapshot.parentArenaIdx;
-					const bool left        = (pi < i);
+					const i32 parentIdx    = snapshot.parentArenaIdx;
+					const bool left        = (parentIdx < i);
 					const float parentPad  = colW * 0.25f;
-					const auto& parentSnap = snapshots[pi];
+					const auto& parentSnap = snapshots[parentIdx];
 					const ImU32 stripCol   = blockFillColor.Translucency(25).DWColor();
 					for (const auto& block : snapshot.blocks)
 					{

@@ -1,6 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#if defined(P_OVERRIDE_NEWDELETE)
+#ifndef P_OVERRIDE_NEWDELETE
+	#define P_OVERRIDE_NEWDELETE 1
+#endif
+#if P_OVERRIDE_NEWDELETE
 	#include "PipeNewDelete.h"
 // New/Delete must be first include
 #endif
