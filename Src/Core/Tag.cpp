@@ -1,11 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Pipe/Core/Tag.h"
+#include "Pipe/Core/SpinLock.h"
 
 #include "PipeMemoryArenas.h"
-
-#include <mutex>
-#include <shared_mutex>
 
 
 namespace p
@@ -53,7 +51,7 @@ namespace p
 	static TagStringTable table{};
 
 	// Makes sure the hashes & keys lists are thread-safe
-	std::shared_mutex stringsListMutex;
+	SharedSpinLock stringsListMutex;
 
 
 	Tag::Tag(StringView value)
@@ -142,7 +140,7 @@ namespace p
 
 	i32 Tag::FlushInactiveTags()
 	{
-		std::unique_lock lock{stringsListMutex};
+		ExclusiveScopedLock lock{stringsListMutex};
 		const i32 initialSize = table.strings.Size();
 		for (i32 i = initialSize - 1; i >= 0; --i)
 		{
@@ -197,7 +195,7 @@ namespace p
 	{
 		i32 index;
 		{
-			std::shared_lock lock{stringsListMutex};
+			SharedScopedLock lock{stringsListMutex};
 			index = strings.LowerBound(hash);
 			if (index != NO_INDEX)
 			{
@@ -221,7 +219,7 @@ namespace p
 		header->hash       = hash;
 		// Copy string data
 		auto* const data = const_cast<char*>(header->Data());
-		p::CopyMem(data, (void*)value.data(), sizeof(char) * size);
+		p::CopyMem(data, value.data(), sizeof(char) * size);
 		data[header->size] = '\0';
 
 		std::unique_lock lock{stringsListMutex};
@@ -231,7 +229,7 @@ namespace p
 
 	void TagStringTable::FreeTagString(TagHeader& str)
 	{
-		std::unique_lock lock{stringsListMutex};
+		ExclusiveScopedLock lock{stringsListMutex};
 		strings.RemoveSorted(str.hash, {}, Shrink::No);
 		arena.Free(&str, GetAllocSize(str.size));
 	}
