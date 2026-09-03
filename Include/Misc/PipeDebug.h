@@ -3783,8 +3783,8 @@ namespace p
 						y0 = (y0 > addressY0) ? y0 : addressY0;
 						y1 = (y1 < addressY1) ? y1 : addressY1;
 
-						const float parentEdge = left ? ArenaColumnX(pi) + colW - parentPad
-						                              : ArenaColumnX(pi) + parentPad;
+						const float parentEdge = left ? ArenaColumnX(parentIdx) + colW - parentPad
+						                              : ArenaColumnX(parentIdx) + parentPad;
 						const float childEdge  = left ? colX : colRight;
 						const float fillX0     = left ? parentEdge : childEdge;
 						const float fillX1     = left ? childEdge : parentEdge;
