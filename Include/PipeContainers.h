@@ -810,7 +810,7 @@ namespace p
 			Assign(first, std::distance(first, last));
 		}
 
-		constexpr TArray(Arena& arena) : arena{&arena} {}
+		explicit constexpr TArray(Arena& arena) : arena{&arena} {}
 		constexpr TArray(Arena& arena, i32 initialSize) : arena{&arena}
 		{
 			Assign(initialSize);
