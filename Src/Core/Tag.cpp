@@ -1,8 +1,8 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
 #include "Pipe/Core/Tag.h"
-#include "Pipe/Core/SpinLock.h"
 
+#include "Pipe/Core/SpinLock.h"
 #include "PipeMemoryArenas.h"
 
 
@@ -222,7 +222,7 @@ namespace p
 		p::CopyMem(data, value.data(), sizeof(char) * size);
 		data[header->size] = '\0';
 
-		std::unique_lock lock{stringsListMutex};
+		ExclusiveScopedLock lock{stringsListMutex};
 		strings.Insert(index, {hash, header});
 		return *header;
 	}
