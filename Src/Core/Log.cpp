@@ -17,21 +17,21 @@ namespace p
 			String text;
 			auto now = DateTime::Now();
 			now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-			Strings::FormatTo(text, "[Info] {}\n", msg);
+			FormatTo(text, "[Info] {}\n", msg);
 			std::cout << text;
 		},
 		.warningCallback = [](StringView msg) {
 			String text;
 			auto now = DateTime::Now();
 			now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-			Strings::FormatTo(text, "[Warning] {}\n", msg);
+			FormatTo(text, "[Warning] {}\n", msg);
 			std::cout << text;
 		},
 		.errorCallback = [](StringView msg) {
 			String text;
 			auto now = DateTime::Now();
 			now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-			Strings::FormatTo(text, "[Error] {}\n", msg);
+			FormatTo(text, "[Error] {}\n", msg);
 			std::cout << text;
 		}
 	};

@@ -21,16 +21,16 @@
 namespace p
 {
 #pragma region FileDialogs
-	std::vector<String> ParseFilters(const TArray<DialogFileFilter>& filters)
+	std::vector<std::string> ParseFilters(const TArray<DialogFileFilter>& filters)
 	{
-		std::vector<String> rawFilters;
+		std::vector<std::string> rawFilters;
 		rawFilters.reserve(sizet(filters.Size()) * 2);
 		for (const DialogFileFilter& filter : filters)
 		{
 			rawFilters.emplace_back(filter.first);
 			rawFilters.emplace_back(filter.second);
 		}
-		return p::Move(rawFilters);
+		return rawFilters;
 	}
 
 	String SelectFileDialog(StringView title, StringView defaultPath,
@@ -41,9 +41,10 @@ namespace p
 		{
 			options = options | pfd::opt::force_path;
 		}
-		pfd::open_file dialog(String{title}, String{defaultPath}, ParseFilters(filters), options);
+		pfd::open_file dialog(
+		    std::string{title}, std::string{defaultPath}, ParseFilters(filters), options);
 
-		std::vector<String> files = dialog.result();
+		const std::vector<std::string> files = dialog.result();
 		if (files.size() > 0)
 		{
 			return String{files[0]};
@@ -59,9 +60,10 @@ namespace p
 		{
 			options = options | pfd::opt::force_path;
 		}
-		pfd::open_file dialog(String{title}, String{defaultPath}, ParseFilters(filters), options);
+		pfd::open_file dialog(
+		    std::string{title}, std::string{defaultPath}, ParseFilters(filters), options);
 
-		std::vector<String> files = dialog.result();
+		const std::vector<std::string> files = dialog.result();
 		outFiles.Resize(i32(files.size()));
 		for (u32 i = 0; i < files.size(); ++i)
 		{
@@ -76,7 +78,7 @@ namespace p
 		{
 			options = options | pfd::opt::force_path;
 		}
-		pfd::select_folder dialog{String{title}, String{defaultPath}, options};
+		pfd::select_folder dialog{std::string{title}, std::string{defaultPath}, options};
 		return String{dialog.result()};
 	}
 
@@ -88,7 +90,8 @@ namespace p
 		{
 			options = options | pfd::opt::force_path;
 		}
-		pfd::save_file dialog{String{title}, String{defaultPath}, ParseFilters(filters), options};
+		pfd::save_file dialog{
+		    std::string{title}, std::string{defaultPath}, ParseFilters(filters), options};
 		String path{dialog.result()};
 		p::ReplaceExtension(path, "rf");
 		return path;
@@ -136,16 +139,16 @@ namespace p
 		switch (error)
 		{
 			case FWE_FileNotFound:
-				lastFileWatcherError = Strings::Format("File not found ({})", log);
+				lastFileWatcherError = Format("File not found ({})", log);
 				break;
 			case FWE_FileRepeated:
-				lastFileWatcherError = Strings::Format("File repeated in watches ({})", log);
+				lastFileWatcherError = Format("File repeated in watches ({})", log);
 				break;
 			case FWE_FileOutOfScope:
-				lastFileWatcherError = Strings::Format("Symlink file out of scope ({})", log);
+				lastFileWatcherError = Format("Symlink file out of scope ({})", log);
 				break;
 			case FWE_FileRemote:
-				lastFileWatcherError = Strings::Format(
+				lastFileWatcherError = Format(
 				    "File is located in a remote file system, use a generic watcher ({})", log);
 				break;
 			case FWE_Unspecified:
@@ -349,8 +352,8 @@ namespace p
 	void DirectorySnapshot::InitFiles()
 	{
 		files.Clear();
-		for (auto& it :
-		    DirectoryIterator(path, std::filesystem::directory_options::follow_directory_symlink))
+		for (auto& it : DirectoryIterator(
+		         ToSTDPath(path), std::filesystem::directory_options::follow_directory_symlink))
 		{
 			files.Insert(Tag{ToString(it.path().filename())}, it.status());
 		}
@@ -393,8 +396,8 @@ namespace p
 		}
 
 		FileStatusMap currentFiles;
-		for (auto& it :
-		    DirectoryIterator(path, std::filesystem::directory_options::follow_directory_symlink))
+		for (auto& it : DirectoryIterator(
+		         ToSTDPath(path), std::filesystem::directory_options::follow_directory_symlink))
 		{
 			currentFiles.Insert(Tag{ToString(it.path().filename())}, it.status());
 		}

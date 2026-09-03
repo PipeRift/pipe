@@ -120,7 +120,7 @@ namespace p
 	void* HeapAlloc(sizet size)
 	{
 #if P_PLATFORM_WINDOWS
-		return _aligned_malloc(size, alignof(std::max_align_t));
+		return _aligned_malloc(size, __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #else
 		return malloc(size);
 #endif
@@ -138,7 +138,7 @@ namespace p
 	void* HeapRealloc(void* ptr, sizet size)
 	{
 #if P_PLATFORM_WINDOWS
-		return _aligned_realloc(ptr, size, alignof(std::max_align_t));
+		return _aligned_realloc(ptr, size, __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #else
 		return realloc(ptr, size);
 #endif

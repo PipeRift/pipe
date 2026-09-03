@@ -1,7 +1,7 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
-#include "Pipe/Core/String.h"
+#include "PipeStrings.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Templates.h"
 #include "Pipe/Core/TypeFlags.h"

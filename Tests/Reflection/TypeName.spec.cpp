@@ -3,10 +3,10 @@
 #include <bandit/bandit.h>
 #include <Pipe/Core/Guid.h>
 #include <Pipe/Core/Map.h>
-#include <Pipe/Core/String.h>
 #include <Pipe/Core/Tag.h>
 #include <PipeContainers.h>
 #include <PipeReflect.h>
+#include <PipeStrings.h>
 
 
 using namespace snowhouse;

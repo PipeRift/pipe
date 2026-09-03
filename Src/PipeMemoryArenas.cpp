@@ -98,7 +98,7 @@ namespace p
 
 	void MonoLinearArena::Release(bool keepIfSelfAllocated)
 	{
-		stats.Release();
+		stats.Reset();
 		insert = block.data;
 		count  = 0;
 		if (selfAllocated && !keepIfSelfAllocated)
@@ -261,7 +261,7 @@ namespace p
 
 	void MultiLinearArena::Release()
 	{
-		stats.Release();
+		stats.Reset();
 		smallPool.Release(GetParentArena());
 		mediumPool.Release(GetParentArena());
 		bigPool.Release(GetParentArena());

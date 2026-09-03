@@ -5,7 +5,7 @@
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Guid.h"
 #include "Pipe/Core/Log.h"
-#include "Pipe/Core/String.h"
+#include "PipeStrings.h"
 #include "Pipe/Core/Tag.h"
 #include "Pipe/Extern/yyjson.h"
 #include "PipeMath.h"

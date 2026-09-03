@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Pipe/Core/String.h"
+#include "PipeStrings.h"
 
 #include <mutex>
 
@@ -28,7 +28,7 @@ namespace p
 	{
 		if (!format.empty())
 		{
-			Info(Strings::Format(format, std::forward<Args>(args)...));
+			Info(Format(format, std::forward<Args>(args)...));
 		}
 	}
 
@@ -37,7 +37,7 @@ namespace p
 	{
 		if (!format.empty())
 		{
-			Warning(Strings::Format(format, std::forward<Args>(args)...));
+			Warning(Format(format, std::forward<Args>(args)...));
 		}
 	}
 
@@ -46,7 +46,7 @@ namespace p
 	{
 		if (!format.empty())
 		{
-			Error(Strings::Format(format, std::forward<Args>(args)...));
+			Error(Format(format, std::forward<Args>(args)...));
 		}
 	}
 };    // namespace p

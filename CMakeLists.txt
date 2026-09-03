@@ -23,6 +23,7 @@ endif()
 option(PIPE_BUILD_SHARED "Build shared libraries" ON)
 option(PIPE_BUILD_TESTS "Build Pipe tests" ${PIPE_IS_PROJECT})
 option(PIPE_ENABLE_ALLOCATION_STACKS "Should allocation call stacks be tracked?" OFF)
+option(PIPE_OVERRIDE_NEWDELETE "Should pipe's compilation unit override new/delete" ON)
 option(PIPE_BUILD_WARNINGS "Enable compiler warnings" OFF)
 option(PIPE_ENABLE_CLANG_TOOLS "Enable clang-tidy and clang-format" ${PIPE_IS_PROJECT})
 
@@ -67,6 +68,10 @@ target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)
     target_compile_definitions(Pipe PUBLIC P_ENABLE_ALLOCATION_STACKS=0)
+endif()
+
+if(PIPE_OVERRIDE_NEWDELETE)
+    target_compile_definitions(Pipe PUBLIC P_OVERRIDE_NEWDELETE=1)
 endif()
 
 pipe_target_enable_CPP20(Pipe)

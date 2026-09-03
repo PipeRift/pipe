@@ -13,61 +13,14 @@ using namespace bandit;
 using namespace p;
 
 
-static i32 AllocCount(const MemoryStats& s)
+static i32 LiveCount(const MemoryStats& s)
 {
-	i32 n = 0;
-	for (const auto& ev : s.events)
-	{
-		if (!ev.IsFree())
-		{
-			++n;
-		}
-	}
-	return n;
+	return s.liveAllocations.Size();
 }
-static i32 FreeCount(const MemoryStats& s)
+static const MemoryStatsEvent* LiveFind(const MemoryStats& s, void* ptr)
 {
-	i32 n = 0;
-	for (const auto& ev : s.events)
-	{
-		if (ev.IsFree())
-		{
-			++n;
-		}
-	}
-	return n;
-}
-static MemoryStatsEvent LiveAt(const MemoryStats& s, i32 i)
-{
-	for (const auto& ev : s.events)
-	{
-		if (ev.IsFree())
-		{
-			continue;
-		}
-		if (i == 0)
-		{
-			return ev;
-		}
-		--i;
-	}
-	return MemoryStatsEvent{};
-}
-static MemoryStatsEvent FreeAt(const MemoryStats& s, i32 i)
-{
-	for (const auto& ev : s.events)
-	{
-		if (!ev.IsFree())
-		{
-			continue;
-		}
-		if (i == 0)
-		{
-			return ev;
-		}
-		--i;
-	}
-	return MemoryStatsEvent{};
+	// Lookup is keyed by pointer only; size is irrelevant for matching.
+	return s.liveAllocations.Find(MemoryStatsEvent{ptr, 0});
 }
 
 
@@ -83,8 +36,7 @@ go_bandit([]()
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo(0));
 				AssertThat(s.totalAllocated, Is().EqualTo(0));
-				AssertThat(AllocCount(s), Is().EqualTo(0));
-				AssertThat(FreeCount(s), Is().EqualTo(0));
+				AssertThat(LiveCount(s), Is().EqualTo(0));
 			});
 
 			it("Tracks a single add", [&]()
@@ -95,10 +47,10 @@ go_bandit([]()
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo(64));
 				AssertThat(s.totalAllocated, Is().EqualTo(64));
-				AssertThat(AllocCount(s), Is().EqualTo(1));
-				AssertThat(LiveAt(s, 0).GetPtr(), Is().EqualTo((u8*)0x1000));
-				AssertThat(LiveAt(s, 0).GetSize(), Is().EqualTo(64));
-				AssertThat(LiveAt(s, 0).IsFree(), Is().EqualTo(false));
+				AssertThat(LiveCount(s), Is().EqualTo(1));
+				AssertThat(LiveFind(s, (void*)0x1000) != nullptr, Is().True());
+				AssertThat(LiveFind(s, (void*)0x1000)->GetSize(), Is().EqualTo(64));
+				AssertThat(LiveFind(s, (void*)0x1000)->IsFree(), Is().EqualTo(false));
 			});
 
 			it("Tracks add plus free", [&]()
@@ -109,11 +61,9 @@ go_bandit([]()
 				s.Remove((void*)0x1000, 64);
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo(0));
-				AssertThat(s.totalAllocated, Is().EqualTo(0));
-				AssertThat(AllocCount(s), Is().EqualTo(1));
-				AssertThat(FreeCount(s), Is().EqualTo(1));
-				AssertThat(FreeAt(s, 0).GetPtr(), Is().EqualTo((u8*)0x1000));
-				AssertThat(FreeAt(s, 0).IsFree(), Is().EqualTo(true));
+				AssertThat(LiveCount(s), Is().EqualTo(0));
+				// totalAllocated is cumulative alloc bytes ever.
+				AssertThat(s.totalAllocated, Is().EqualTo(64));
 			});
 
 			it("Tracks multiple adds", [&]()
@@ -126,7 +76,7 @@ go_bandit([]()
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo(16 + 32 + 64));
 				AssertThat(s.totalAllocated, Is().EqualTo(16 + 32 + 64));
-				AssertThat(AllocCount(s), Is().EqualTo(3));
+				AssertThat(LiveCount(s), Is().EqualTo(3));
 			});
 
 			it("Tracks many adds and frees", [&]()
@@ -147,12 +97,11 @@ go_bandit([]()
 				s.CollectStats();
 
 				AssertThat(s.used, Is().EqualTo((N / 2) * 16));
-				AssertThat(s.totalAllocated, Is().EqualTo((N / 2) * 16));
-				AssertThat(AllocCount(s), Is().EqualTo(N));
-				AssertThat(FreeCount(s), Is().EqualTo(N / 2));
+				AssertThat(s.totalAllocated, Is().EqualTo(N * 16));
+				AssertThat(LiveCount(s), Is().EqualTo(N / 2));
 			});
 
-			it("Records double-free", [&]()
+			it("Ignores double-free", [&]()
 			{
 				MemoryStats s;
 				s.detectLeaks = false;
@@ -160,35 +109,36 @@ go_bandit([]()
 				s.Remove((void*)0x1000, 64);
 				s.Remove((void*)0x1000, 64);
 				s.CollectStats();
-				// Every free is recorded chronologically, so used underflows.
-				AssertThat(s.used, Is().EqualTo((sizet)-64));
-				AssertThat(AllocCount(s), Is().EqualTo(1));
-				AssertThat(FreeCount(s), Is().EqualTo(2));
+				// The second free matches no live alloc and is ignored.
+				AssertThat(s.used, Is().EqualTo(0));
+				AssertThat(LiveCount(s), Is().EqualTo(0));
 			});
 
-			it("Records free of unknown ptr", [&]()
+			it("Ignores free of unknown ptr", [&]()
 			{
 				MemoryStats s;
 				s.detectLeaks = false;
 				s.Remove((void*)0xDEAD, 64);
 				s.CollectStats();
-				// Free of unknown ptr is still recorded, so used underflows.
-				AssertThat(s.used, Is().EqualTo((sizet)-64));
-				AssertThat(AllocCount(s), Is().EqualTo(0));
-				AssertThat(FreeCount(s), Is().EqualTo(1));
+				AssertThat(s.used, Is().EqualTo(0));
+				AssertThat(LiveCount(s), Is().EqualTo(0));
 			});
 
-			it("Records duplicate allocs", [&]()
+			it("Records duplicate allocs as UnfreedRealloc", [&]()
 			{
 				MemoryStats s;
 				s.detectLeaks = false;
 				s.Add((void*)0x1000, 64);
 				s.Add((void*)0x1000, 128);
 				s.CollectStats();
-				// Every alloc is recorded chronologically, both survive.
-				AssertThat(AllocCount(s), Is().EqualTo(2));
-				AssertThat(LiveAt(s, 0).GetSize(), Is().EqualTo(64));
-				AssertThat(LiveAt(s, 1).GetSize(), Is().EqualTo(128));
+				// Same ptr twice: the second alloc is an error and the
+				// live set is left untouched.
+				AssertThat(LiveCount(s), Is().EqualTo(1));
+				AssertThat(LiveFind(s, (void*)0x1000)->GetSize(), Is().EqualTo(64));
+				AssertThat(s.errors.Size(), Is().EqualTo(1));
+				AssertThat(s.errors[0].kind == MemoryStatsErrorType::UnfreedRealloc, Is().True());
+				AssertThat(s.errors[0].event.GetSize(), Is().EqualTo(128));
+				AssertThat(s.used, Is().EqualTo(64));
 			});
 
 			it("CheckLeaks always runs when called directly", [&]()
@@ -198,7 +148,7 @@ go_bandit([]()
 				s.Add((void*)0x1000, 64);
 				s.CollectStats();
 				s.CheckLeaks();
-				AssertThat(AllocCount(s), Is().EqualTo(1));
+				AssertThat(LiveCount(s), Is().EqualTo(1));
 				AssertThat(s.used, Is().EqualTo(64));
 			});
 
@@ -210,7 +160,133 @@ go_bandit([]()
 				s.Remove((void*)0x1000, 64);
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo(0));
-				AssertThat(AllocCount(s), Is().EqualTo(1));
+				AssertThat(LiveCount(s), Is().EqualTo(0));
+			});
+
+			it("CheckLeaks with null name does not crash", [&]()
+			{
+				{
+					// detectLeaks defaults to true and name defaults to null.
+					MemoryStats s;
+					s.Add((void*)0x1000, 64);
+					s.CollectStats();
+					// Destructor runs CheckLeaks with leaks and a null name.
+				}
+			});
+
+			it("live list only keeps unmatched allocs", [&]()
+			{
+				MemoryStats s;
+				s.detectLeaks = false;
+				// allocs: 2 live, 1 matched. frees: 2 (one matches, one stray).
+				s.Add((void*)0x1000, 64);
+				s.Add((void*)0x2000, 32);
+				s.Add((void*)0x3000, 16);
+				s.Remove((void*)0x3000, 16);
+				s.Remove((void*)0xDEAD, 16);
+				s.CollectStats();
+
+				AssertThat(LiveCount(s), Is().EqualTo(2));
+				AssertThat(LiveFind(s, (void*)0x1000)->GetSize(), Is().EqualTo(64));
+				AssertThat(LiveFind(s, (void*)0x2000)->GetSize(), Is().EqualTo(32));
+
+				// Re-collecting must preserve the live list identically.
+				s.CollectStats();
+				AssertThat(LiveCount(s), Is().EqualTo(2));
+				AssertThat(s.used, Is().EqualTo(64 + 32));
+			});
+
+			it("Alternating instances on one thread", [&]()
+			{
+				// Exercises thread context reuse when the owner switches.
+				MemoryStats a;
+				MemoryStats b;
+				a.detectLeaks = false;
+				b.detectLeaks = false;
+
+				a.Add((void*)0x1000, 64);
+				b.Add((void*)0x2000, 32);
+				a.Add((void*)0x3000, 16);
+				b.Remove((void*)0x2000, 32);
+
+				a.CollectStats();
+				b.CollectStats();
+
+				AssertThat(a.used, Is().EqualTo(64 + 16));
+				AssertThat(LiveCount(a), Is().EqualTo(2));
+				AssertThat(b.used, Is().EqualTo(0));
+				AssertThat(LiveCount(b), Is().EqualTo(0));
+			});
+
+			it("Add after Reset works", [&]()
+			{
+				MemoryStats s;
+				s.detectLeaks = false;
+				s.Add((void*)0x1000, 64);
+				s.Reset();
+				AssertThat(LiveCount(s), Is().EqualTo(0));
+
+				s.Add((void*)0x2000, 32);
+				s.CollectStats();
+				AssertThat(s.used, Is().EqualTo(32));
+				AssertThat(s.totalAllocated, Is().EqualTo(32));
+				AssertThat(LiveCount(s), Is().EqualTo(1));
+			});
+
+			it("Duplicate allocs record UnfreedRealloc and live stays usable", [&]()
+			{
+				MemoryStats s;
+				s.detectLeaks = false;
+
+				// Collect 1: two allocs sharing the same ptr. The second is
+				// an UnfreedRealloc error; the live set keeps only the first.
+				s.Add((void*)0x1000, 64);
+				s.Add((void*)0x1000, 64);
+				s.CollectStats();
+				AssertThat(LiveCount(s), Is().EqualTo(1));
+				AssertThat(s.errors.Size(), Is().EqualTo(1));
+				AssertThat(s.errors[0].kind == MemoryStatsErrorType::UnfreedRealloc, Is().True());
+				AssertThat(s.used, Is().EqualTo(64));
+
+				// Collect 2: freeing the original alloc still works.
+				s.Remove((void*)0x1000, 64);
+				s.CollectStats();
+				AssertThat(LiveCount(s), Is().EqualTo(0));
+				AssertThat(s.used, Is().EqualTo(0));
+			});
+
+			it("Free with wrong size records SizeMismatch", [&]()
+			{
+				MemoryStats s;
+				s.detectLeaks = false;
+				s.Add((void*)0x1000, 64);
+				s.Remove((void*)0x1000, 32);    // size mismatch
+				s.CollectStats();
+				AssertThat(LiveCount(s), Is().EqualTo(1));
+				AssertThat(s.errors.Size(), Is().EqualTo(1));
+				AssertThat(s.errors[0].kind == MemoryStatsErrorType::SizeMismatch, Is().True());
+				AssertThat(s.errors[0].event.GetSize(), Is().EqualTo(32));
+				AssertThat(s.used, Is().EqualTo(64));
+
+				// Correcting the size frees the alloc normally.
+				s.Remove((void*)0x1000, 64);
+				s.CollectStats();
+				AssertThat(LiveCount(s), Is().EqualTo(0));
+				AssertThat(s.used, Is().EqualTo(0));
+			});
+
+			it("Free of unknown ptr records UnknownFree", [&]()
+			{
+				MemoryStats s;
+				s.detectLeaks = false;
+				s.Add((void*)0x1000, 64);
+				s.Remove((void*)0xDEAD, 64);
+				s.CollectStats();
+				AssertThat(LiveCount(s), Is().EqualTo(1));
+				AssertThat(s.errors.Size(), Is().EqualTo(1));
+				AssertThat(s.errors[0].kind == MemoryStatsErrorType::UnknownFree, Is().True());
+				AssertThat(s.errors[0].event.GetPtr(), Is().EqualTo((u8*)0xDEAD));
+				AssertThat(s.used, Is().EqualTo(64));
 			});
 
 			it("Ignores null ptr in Remove", [&]()
@@ -230,10 +306,10 @@ go_bandit([]()
 				// Add has no null check (unlike Remove), so the event is
 				// recorded and processed. Add's size is still tracked.
 				AssertThat(s.used, Is().EqualTo(64));
-				AssertThat(AllocCount(s), Is().EqualTo(1));
+				AssertThat(LiveCount(s), Is().EqualTo(1));
 			});
 
-			it("Release resets state", [&]()
+			it("Reset resets state", [&]()
 			{
 				MemoryStats s;
 				s.Add((void*)0x1000, 64);
@@ -241,11 +317,10 @@ go_bandit([]()
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo(96));
 
-				s.Release();
+				s.Reset();
 				AssertThat(s.used, Is().EqualTo(0));
 				AssertThat(s.totalAllocated, Is().EqualTo(0));
-				AssertThat(AllocCount(s), Is().EqualTo(0));
-				AssertThat(FreeCount(s), Is().EqualTo(0));
+				AssertThat(LiveCount(s), Is().EqualTo(0));
 			});
 
 			it("CollectStats is additive", [&]()
@@ -257,7 +332,7 @@ go_bandit([]()
 				s.Add((void*)0x2000, 32);
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo(96));
-				AssertThat(AllocCount(s), Is().EqualTo(2));
+				AssertThat(LiveCount(s), Is().EqualTo(2));
 			});
 
 			it("Re-collecting preserves state", [&]()
@@ -268,7 +343,7 @@ go_bandit([]()
 				s.CollectStats();
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo(64));
-				AssertThat(AllocCount(s), Is().EqualTo(1));
+				AssertThat(LiveCount(s), Is().EqualTo(1));
 			});
 		});
 
@@ -288,7 +363,7 @@ go_bandit([]()
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo(N * 8));
 				AssertThat(s.totalAllocated, Is().EqualTo(N * 8));
-				AssertThat(AllocCount(s), Is().EqualTo(N));
+				AssertThat(LiveCount(s), Is().EqualTo(N));
 			});
 
 			it("Handles add/free across chunks", [&]()
@@ -307,8 +382,8 @@ go_bandit([]()
 				}
 				s.CollectStats();
 				AssertThat(s.used, Is().EqualTo((N / 2) * 8));
-				AssertThat(AllocCount(s), Is().EqualTo(N));
-				AssertThat(FreeCount(s), Is().EqualTo(N / 2));
+				AssertThat(s.totalAllocated, Is().EqualTo(N * 8));
+				AssertThat(LiveCount(s), Is().EqualTo(N / 2));
 			});
 
 			it("Frees chunks between CollectStats calls", [&]()
@@ -322,20 +397,21 @@ go_bandit([]()
 					s.Add(&buf[i * 8], 8);
 				}
 				s.CollectStats();
-				AssertThat(AllocCount(s), Is().EqualTo(N));
+				AssertThat(LiveCount(s), Is().EqualTo(N));
 				for (sizet i = 0; i < N / 2; ++i)
 				{
 					s.Remove(&buf[i * 8], 8);
 				}
 				s.CollectStats();
-				AssertThat(AllocCount(s), Is().EqualTo(N));
+				AssertThat(LiveCount(s), Is().EqualTo(N / 2));
+				AssertThat(s.used, Is().EqualTo((N / 2) * 8));
 			});
 		});
 
 
-		describe("SPSC stress", [&]()
+		describe("Multithreading", [&]()
 		{
-			it("Producer and consumer work concurrently", [&]()
+			it("One thread adds, another collects", [&]()
 			{
 				MemoryStats s;
 				const sizet N = 1000;
@@ -358,7 +434,7 @@ go_bandit([]()
 				{
 					while (!start.load(std::memory_order_acquire))
 					{}
-					while (!producerDone.load(std::memory_order_acquire) || AllocCount(s) < N)
+					while (!producerDone.load(std::memory_order_acquire) || LiveCount(s) < N)
 					{
 						s.CollectStats();
 						std::this_thread::yield();
@@ -369,18 +445,14 @@ go_bandit([]()
 				producer.join();
 				consumer.join();
 
-				AssertThat(AllocCount(s), Is().EqualTo(N));
+				AssertThat(LiveCount(s), Is().EqualTo(N));
 				AssertThat(s.used, Is().EqualTo(N * 8));
 
 				// Suppress leak warnings at destruction (test buffers are stack).
-				s.Release();
+				s.Reset();
 			});
-		});
 
-
-		describe("MPMC stress", [&]()
-		{
-			it("Many producers push, one consumer collects", [&]()
+			it("Many threads add, then collects", [&]()
 			{
 				MemoryStats s;
 				const sizet N_PER_THREAD = 1000;
@@ -431,15 +503,15 @@ go_bandit([]()
 				}
 				consumer.join();
 
-				AssertThat(AllocCount(s), Is().EqualTo(N));
+				AssertThat(LiveCount(s), Is().EqualTo(N));
 				AssertThat(s.used, Is().EqualTo(N * 8));
 				AssertThat(s.totalAllocated, Is().EqualTo(N * 8));
 
 				// Suppress leak warnings at destruction (test buffers are stack).
-				s.Release();
+				s.Reset();
 			});
 
-			it("Producers push and free, one consumer collects", [&]()
+			it("Many threads add and remove, then collects", [&]()
 			{
 				MemoryStats s;
 				const sizet N_PER_THREAD = 1000;
@@ -495,12 +567,12 @@ go_bandit([]()
 				}
 				consumer.join();
 
-				AssertThat(AllocCount(s), Is().EqualTo(N));
+				AssertThat(LiveCount(s), Is().EqualTo(N / 2));
 				AssertThat(s.used, Is().EqualTo((N / 2) * 8));
-				AssertThat(s.totalAllocated, Is().EqualTo((N / 2) * 8));
+				AssertThat(s.totalAllocated, Is().EqualTo(N * 8));
 
 				// Suppress leak warnings at destruction (test buffers are stack).
-				s.Release();
+				s.Reset();
 			});
 		});
 
@@ -562,12 +634,11 @@ go_bandit([]()
 				}
 				consumer.join();
 
-				// s.used reflects net adds/frees chronologically.
-				AssertThat(s.used, Is().EqualTo((AllocCount(s) - FreeCount(s)) * 8));
-				AssertThat(s.used, Is().EqualTo(s.totalAllocated));
+				// s.used reflects the net remaining live set.
+				AssertThat(s.used, Is().EqualTo(LiveCount(s) * 8));
 
 				// Suppress leak warnings at destruction (test buffers are stack).
-				s.Release();
+				s.Reset();
 			});
 		});
 	});
