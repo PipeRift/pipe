@@ -278,15 +278,21 @@ go_bandit([]()
 			AssertThat(p2, Is().Not().Null());
 			AssertThat(arena.GetFreeSize(), Equals(112));
 
-			AssertThat(arena.GetFreeSlots().Size(), Equals(2));
+			// Alignment is absolute, so the gap between p and p2 is zero
+			// when the block base lands on a matching 64B boundary.
+			const bool hasGap = p2 > (u8*)p + 8;
+			AssertThat(arena.GetFreeSlots().Size(), Equals(hasGap ? 2 : 1));
 
 			// Slot contains the rest if the block
 			AssertThat(arena.GetFreeSlots()[0].start, Equals((u8*)p2 + 8));
 			AssertThat(arena.GetFreeSlots()[0].End(), Equals(arena.GetBlock().End()));
 
 			// Slot contains the alignment gap
-			AssertThat(arena.GetFreeSlots()[1].start, Equals((u8*)p + 8));
-			AssertThat(arena.GetFreeSlots()[1].End(), Equals(p2));
+			if (hasGap)
+			{
+				AssertThat(arena.GetFreeSlots()[1].start, Equals((u8*)p + 8));
+				AssertThat(arena.GetFreeSlots()[1].End(), Equals(p2));
+			}
 		});
 	});
 });
