@@ -852,15 +852,15 @@ Note: `ToBeTrue/ToBeFalse` require `value` convertible to bool (works for bool a
 Finally the entry macro/function:
 
 ```cpp
-	// Returns a matcher bound to file/line for reporting.
+	// Returns a matcher bound to the caller's source location for reporting.
 	template<typename T>
-	ExpectValue<T> Expect(const T& value, const char* file = __FILE__, sizet line = __LINE__)
+	ExpectValue<T> Expect(const T& value, const std::source_location loc = std::source_location::current())
 	{
-		return ExpectValue<T>(value, file, line);
+		return ExpectValue<T>(value, loc);
 	}
 ```
 
-Note: capturing `__FILE__`/`__LINE__` at the `Expect(...)` call gives the caller's location. This is a plain template returning a matcher; no macro needed. This matches the fluent `Expect(value).ToEqual(4)` usage.
+Note: uses `std::source_location::current()` (C++20) as a default argument — it resolves to the **call site** (the user's `Expect(value)` expression), not the function definition. A default-arg `__LINE__`/`__FILE__` is WRONG on MSVC (it expands at the `Expect` definition in the header), so use `std::source_location`. This keeps the fluent macro-free `Expect(value).ToEqual(4)` usage and reports the correct failing line.
 
 - [ ] **Step 2: Implement `details::Fail` in the `.cpp`**
 
