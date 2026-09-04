@@ -1,12 +1,10 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/PlatformPaths.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
@@ -30,25 +28,25 @@ struct Foo
 inline bool Foo::called = false;
 
 
-go_bandit([]()
+void RegisterCoreFunctionTests()
 {
-	describe("Core.Function", []()
+	Spec("Core.Function", []()
 	{
-		it("Can create empty", [&]()
+		It("Can create empty", []()
 		{
 			TFunction<void()> func{};
-			AssertThat(func.IsBound(), Equals(false));
-			AssertThat(bool(func), Equals(false));
+			Expect(func.IsBound()).ToEqual(false);
+			Expect(bool(func)).ToEqual(false);
 		});
 
-		it("Can create from function", [&]()
+		It("Can create from function", []()
 		{
 			TFunction<void()> func{Foo::StaticFunc};
 
-			AssertThat(func.IsBound(), Equals(true));
+			Expect(func.IsBound()).ToEqual(true);
 		});
 
-		it("Can compare functions", [&]()
+		It("Can compare functions", []()
 		{
 			TFunction<void()> func1{Foo::StaticFunc};
 			TFunction<void()> func2{Foo::StaticFunc};
@@ -58,27 +56,27 @@ go_bandit([]()
 
 			TFunction<void()> func5{Foo::OtherStaticFunc};
 
-			AssertThat(func1 == func2, Equals(true));
-			AssertThat(func1 == func3, Equals(true));
-			AssertThat(func1 == func4, Equals(false));
-			// AssertThat(func1 == func5, Equals(false));
+			Expect(func1 == func2).ToEqual(true);
+			Expect(func1 == func3).ToEqual(true);
+			Expect(func1 == func4).ToEqual(false);
+			// Expect(func1 == func5).ToEqual(false);
 		});
 
-		it("Can call static functions", [&]()
+		It("Can call static functions", []()
 		{
 			TFunction<void()> func1{Foo::StaticFunc};
 			TFunction<void()> func2{&Foo::StaticFunc};
 
 			Foo::called = false;
 			func1();
-			AssertThat(Foo::called, Equals(true));
+			Expect(Foo::called).ToEqual(true);
 
 			Foo::called = false;
 			func2();
-			AssertThat(Foo::called, Equals(true));
+			Expect(Foo::called).ToEqual(true);
 		});
 
-		it("Can call lambda functions", [&]()
+		It("Can call lambda functions", []()
 		{
 			static bool called;
 			called = false;
@@ -88,7 +86,7 @@ go_bandit([]()
 				called = true;
 			};
 			func();
-			AssertThat(called, Equals(true));
+			Expect(called).ToEqual(true);
 		});
 	});
-});
+}

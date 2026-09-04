@@ -1,109 +1,107 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <Pipe/Core/Tag.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
-go_bandit([]()
+void RegisterCoreTagTests()
 {
-	describe("Core.Tag", []()
+	Spec("Core.Tag", []()
 	{
-		it("Can copy empty", [&]()
+		It("Can copy empty", []()
 		{
 			Tag tag{};
 			Tag tag2{"Ahh"};
-			AssertThat(p::GetHash(tag), Equals(0));
-			AssertThat(tag.IsNone(), Equals(true));
-			AssertThat(p::GetHash(tag2), !Equals(0));
-			AssertThat(tag2.IsNone(), Equals(false));
+			Expect(p::GetHash(tag)).ToEqual(0);
+			Expect(tag.IsNone()).ToEqual(true);
+			Expect(p::GetHash(tag2)).ToNotEqual(0);
+			Expect(tag2.IsNone()).ToEqual(false);
 			tag2 = tag;
-			AssertThat(p::GetHash(tag2), Equals(0));
-			AssertThat(tag2.IsNone(), Equals(true));
+			Expect(p::GetHash(tag2)).ToEqual(0);
+			Expect(tag2.IsNone()).ToEqual(true);
 		});
-		it("Can assign from literal", [&]()
+		It("Can assign from literal", []()
 		{
 			Tag tag{"Kiwi"};
-			AssertThat(tag.AsString(), Equals("Kiwi"));
+			Expect(tag.AsString()).ToEqual("Kiwi");
 		});
 
-		it("Can assign from string", [&]()
+		It("Can assign from string", []()
 		{
 			String str{"Kiwi"};
 			Tag tag{str};
-			AssertThat(tag.AsString(), Equals("Kiwi"));
+			Expect(tag.AsString()).ToEqual("Kiwi");
 		});
 
-		it("Can retrieve string data", [&]()
+		It("Can retrieve string data", []()
 		{
 			Tag tag{"Kiwi"};
-			AssertThat(tag.AsString(), Equals("Kiwi"));
+			Expect(tag.AsString()).ToEqual("Kiwi");
 		});
 
-		it("Can compare tags", [&]()
+		It("Can compare tags", []()
 		{
 			Tag tagKiwi{"Kiwi"};
 			Tag tagKiwi2{"Kiwi"};
 			Tag tagApple{"Apple"};
-			AssertThat(tagKiwi, Equals(tagKiwi2));
-			AssertThat(tagKiwi, !Equals(tagApple));
+			Expect(tagKiwi).ToEqual(tagKiwi2);
+			Expect(tagKiwi).ToNotEqual(tagApple);
 		});
 
-		it("Different instances share string allocation", [&]()
+		It("Different instances share string allocation", []()
 		{
 			Tag tagKiwi{"Kiwi"};
 			Tag tagKiwi2{"Kiwi"};
 			Tag tagApple{"Apple"};
-			AssertThat(tagKiwi.AsString().data(), Equals(tagKiwi2.AsString().data()));
-			AssertThat(tagKiwi.AsString().data(), !Equals(tagApple.AsString().data()));
+			Expect(tagKiwi.AsString().data()).ToEqual(tagKiwi2.AsString().data());
+			Expect(tagKiwi.AsString().data()).ToNotEqual(tagApple.AsString().data());
 		});
 
-		it("Can check invalid/none", [&]()
+		It("Can check invalid/none", []()
 		{
 			Tag tagValid{"Kiwi"};
 			Tag tagInvalid{};
-			AssertThat(tagValid.IsNone(), Equals(false));
-			AssertThat(tagValid, !Equals(Tag::None()));
-			AssertThat(tagInvalid.IsNone(), Equals(true));
-			AssertThat(tagInvalid, Equals(Tag::None()));
+			Expect(tagValid.IsNone()).ToEqual(false);
+			Expect(tagValid).ToNotEqual(Tag::None());
+			Expect(tagInvalid.IsNone()).ToEqual(true);
+			Expect(tagInvalid).ToEqual(Tag::None());
 		});
 
-		it("Contains correct hashes", [&]()
+		It("Contains correct hashes", []()
 		{
 			Tag tagKiwi{"Kiwi"};
 			Tag tagKiwi2{"Kiwi"};
-			AssertThat(p::GetHash(tagKiwi), Equals(p::GetHash(tagKiwi2)));
-			AssertThat(tagKiwi.GetStringHash(), Equals(p::GetHash("Kiwi")));
+			Expect(p::GetHash(tagKiwi)).ToEqual(p::GetHash(tagKiwi2));
+			Expect(tagKiwi.GetStringHash()).ToEqual(p::GetHash("Kiwi"));
 		});
 
-		it("Can copy tag", [&]()
+		It("Can copy tag", []()
 		{
 			Tag tagKiwi{"Kiwi"};
 			Tag tagApple{"Apple"};
 			Tag tagCopy = tagKiwi;
-			AssertThat(tagCopy.AsString(), Equals("Kiwi"));
-			AssertThat(tagCopy, Equals(tagKiwi));
-			AssertThat(tagCopy, !Equals(tagApple));
+			Expect(tagCopy.AsString()).ToEqual("Kiwi");
+			Expect(tagCopy).ToEqual(tagKiwi);
+			Expect(tagCopy).ToNotEqual(tagApple);
 			tagCopy = tagApple;
-			AssertThat(tagCopy.AsString(), Equals("Apple"));
-			AssertThat(tagCopy, !Equals(tagKiwi));
-			AssertThat(tagCopy, Equals(tagApple));
+			Expect(tagCopy.AsString()).ToEqual("Apple");
+			Expect(tagCopy).ToNotEqual(tagKiwi);
+			Expect(tagCopy).ToEqual(tagApple);
 		});
 
-		it("Can move tag", [&]()
+		It("Can move tag", []()
 		{
 			Tag tagKiwi{"Kiwi"};
 			Tag tagApple{"Apple"};
 			Tag tagMove = Move(tagKiwi);
-			AssertThat(tagKiwi, Equals(Tag::None()));
-			AssertThat(tagMove.AsString(), Equals("Kiwi"));
+			Expect(tagKiwi).ToEqual(Tag::None());
+			Expect(tagMove.AsString()).ToEqual("Kiwi");
 			tagMove = Move(tagApple);
-			AssertThat(tagApple, Equals(Tag::None()));
-			AssertThat(tagMove.AsString(), Equals("Apple"));
+			Expect(tagApple).ToEqual(Tag::None());
+			Expect(tagMove.AsString()).ToEqual("Apple");
 		});
 	});
-});
+}

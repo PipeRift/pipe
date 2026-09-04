@@ -1,178 +1,162 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <PipeECS.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 using namespace std::chrono_literals;
 
-namespace snowhouse
-{
-	template<>
-	struct Stringizer<Id>
-	{
-		static std::string ToString(Id id)
-		{
-			std::stringstream stream;
-			stream << "Id(" << id.value << ")";
-			return stream.str();
-		}
-	};
-}    // namespace snowhouse
 
-
-go_bandit([]()
+void RegisterECSIdRegistryTests()
 {
-	describe("ECS.IdRegistry", []()
+	Spec("ECS.IdRegistry", []()
 	{
-		it("Can create one id", [&]()
+		It("Can create one id", []()
 		{
 			IdRegistry ids;
-			AssertThat(ids.Size(), Equals(0));
+			Expect(ids.Size()).ToEqual(0);
 			Id id = ids.Create();
-			AssertThat(id, !Equals(NoId));
-			AssertThat(ids.IsValid(id), Is().True());
-			AssertThat(ids.Size(), Equals(1));
+			Expect(id).ToNotEqual(NoId);
+			Expect(ids.IsValid(id)).ToBeTrue();
+			Expect(ids.Size()).ToEqual(1);
 		});
 
-		it("Can remove one id", [&]()
+		It("Can remove one id", []()
 		{
 			IdRegistry ids;
 			Id id = ids.Create();
-			AssertThat(ids.Size(), Equals(1));
-			AssertThat(ids.RemoveInstant(id), Is().True());
-			AssertThat(ids.IsValid(id), Is().False());
-			AssertThat(ids.Size(), Equals(0));
+			Expect(ids.Size()).ToEqual(1);
+			Expect(ids.RemoveInstant(id)).ToBeTrue();
+			Expect(ids.IsValid(id)).ToBeFalse();
+			Expect(ids.Size()).ToEqual(0);
 		});
 
-		it("Can create two and remove first", [&]()
+		It("Can create two and remove first", []()
 		{
 			IdRegistry ids;
 			Id id1 = ids.Create();
 			ids.Create();
-			AssertThat(ids.RemoveInstant(id1), Is().True());
-			AssertThat(ids.IsValid(id1), Is().False());
-			AssertThat(ids.Size(), Equals(1));
+			Expect(ids.RemoveInstant(id1)).ToBeTrue();
+			Expect(ids.IsValid(id1)).ToBeFalse();
+			Expect(ids.Size()).ToEqual(1);
 		});
 
-		it("Can create two and remove last", [&]()
+		It("Can create two and remove last", []()
 		{
 			IdRegistry ids;
 			ids.Create();
 			Id id2 = ids.Create();
-			AssertThat(ids.RemoveInstant(id2), Is().True());
-			AssertThat(ids.IsValid(id2), Is().False());
-			AssertThat(ids.Size(), Equals(1));
+			Expect(ids.RemoveInstant(id2)).ToBeTrue();
+			Expect(ids.IsValid(id2)).ToBeFalse();
+			Expect(ids.Size()).ToEqual(1);
 		});
 
-		it("Can remove one id (deferred)", [&]()
+		It("Can remove one id (deferred)", []()
 		{
 			IdRegistry ids;
 			Id id = ids.Create();
-			AssertThat(ids.Size(), Equals(1));
-			AssertThat(ids.Remove(id), Is().True());
-			AssertThat(ids.IsValid(id), Is().False());
-			AssertThat(ids.Size(), Equals(0));
+			Expect(ids.Size()).ToEqual(1);
+			Expect(ids.Remove(id)).ToBeTrue();
+			Expect(ids.IsValid(id)).ToBeFalse();
+			Expect(ids.Size()).ToEqual(0);
 		});
 
-		it("Can create two and remove first (deferred)", [&]()
+		It("Can create two and remove first (deferred)", []()
 		{
 			IdRegistry ids;
 			Id id1 = ids.Create();
 			ids.Create();
-			AssertThat(ids.Remove(id1), Is().True());
-			AssertThat(ids.IsValid(id1), Is().False());
-			AssertThat(ids.Size(), Equals(1));
+			Expect(ids.Remove(id1)).ToBeTrue();
+			Expect(ids.IsValid(id1)).ToBeFalse();
+			Expect(ids.Size()).ToEqual(1);
 		});
 
-		it("Can create two and remove last (deferred)", [&]()
+		It("Can create two and remove last (deferred)", []()
 		{
 			IdRegistry ids;
 			ids.Create();
 			Id id2 = ids.Create();
-			AssertThat(ids.Remove(id2), Is().True());
-			AssertThat(ids.IsValid(id2), Is().False());
-			AssertThat(ids.Size(), Equals(1));
+			Expect(ids.Remove(id2)).ToBeTrue();
+			Expect(ids.IsValid(id2)).ToBeFalse();
+			Expect(ids.Size()).ToEqual(1);
 		});
 
-		it("Removed id index gets reused", [&]()
+		It("Removed id index gets reused", []()
 		{
 			IdRegistry ids;
 			ids.Create();
 			Id id = ids.Create();
 			ids.Create();
-			AssertThat(ids.RemoveInstant(id), Is().True());
+			Expect(ids.RemoveInstant(id)).ToBeTrue();
 			Id id2 = ids.Create();
-			AssertThat(id2.GetIndex(), Equals(id.GetIndex()));
+			Expect(id2.GetIndex()).ToEqual(id.GetIndex());
 			Id id3 = ids.Create();
-			AssertThat(id3.GetIndex(), !Equals(id.GetIndex()));
+			Expect(id3.GetIndex()).ToNotEqual(id.GetIndex());
 		});
 
-		it("Deferred removed id index doesn't get reused until flushed", [&]()
+		It("Deferred removed id index doesn't get reused until flushed", []()
 		{
 			IdRegistry ids;
 			ids.Create();
 			Id id = ids.Create();
 			ids.Create();
-			AssertThat(ids.Remove(id), Is().True());
+			Expect(ids.Remove(id)).ToBeTrue();
 			Id id2 = ids.Create();
-			AssertThat(id2.GetIndex(), !Equals(id.GetIndex()));
+			Expect(id2.GetIndex()).ToNotEqual(id.GetIndex());
 			ids.FlushDeferredRemovals();
 			Id id3 = ids.Create();
-			AssertThat(id3.GetIndex(), Equals(id.GetIndex()));
+			Expect(id3.GetIndex()).ToEqual(id.GetIndex());
 			Id id4 = ids.Create();
-			AssertThat(id4.GetIndex(), !Equals(id.GetIndex()));
+			Expect(id4.GetIndex()).ToNotEqual(id.GetIndex());
 		});
 
-		it("Can create many ids", [&]()
+		It("Can create many ids", []()
 		{
 			IdRegistry ids;
-			AssertThat(ids.Size(), Equals(0));
+			Expect(ids.Size()).ToEqual(0);
 
 			TArray<Id> list(3);
 			ids.Create(list);
 
-			AssertThat(ids.Size(), Equals(3));
+			Expect(ids.Size()).ToEqual(3);
 			for (i32 i = 0; i < list.Size(); ++i)
 			{
-				AssertThat(list[i].GetIndex(), Equals(i));
-				AssertThat(ids.IsValid(list[i]), Is().True());
+				Expect(list[i].GetIndex()).ToEqual(i);
+				Expect(ids.IsValid(list[i])).ToBeTrue();
 			}
 		});
 
-		it("Can remove many ids", [&]()
+		It("Can remove many ids", []()
 		{
 			IdRegistry ids;
 			TArray<Id> list(3);
 			ids.Create(list);
-			AssertThat(ids.Size(), Equals(3));
+			Expect(ids.Size()).ToEqual(3);
 
-			AssertThat(ids.RemoveInstant(list), Is().True());
-			AssertThat(ids.Size(), Equals(0));
+			Expect(ids.RemoveInstant(list)).ToBeTrue();
+			Expect(ids.Size()).ToEqual(0);
 
 			for (i32 i = 0; i < list.Size(); ++i)
 			{
-				AssertThat(ids.IsValid(list[i]), Is().False());
+				Expect(ids.IsValid(list[i])).ToBeFalse();
 			}
 		});
 
-		it("Can remove many ids (deferred)", [&]()
+		It("Can remove many ids (deferred)", []()
 		{
 			IdRegistry ids;
 			TArray<Id> list(3);
 			ids.Create(list);
-			AssertThat(ids.Size(), Equals(3));
+			Expect(ids.Size()).ToEqual(3);
 
-			AssertThat(ids.Remove(list), Is().True());
-			AssertThat(ids.Size(), Equals(0));
+			Expect(ids.Remove(list)).ToBeTrue();
+			Expect(ids.Size()).ToEqual(0);
 
 			for (i32 i = 0; i < list.Size(); ++i)
 			{
-				AssertThat(ids.IsValid(list[i]), Is().False());
+				Expect(ids.IsValid(list[i])).ToBeFalse();
 			}
 		});
 	});
-});
+}

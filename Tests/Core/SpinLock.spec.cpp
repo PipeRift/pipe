@@ -1,6 +1,6 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <Pipe/Core/SpinLock.h>
 
 #include <atomic>
@@ -8,27 +8,25 @@
 #include <vector>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
-go_bandit([]()
+void RegisterCoreSpinLockTests()
 {
-	describe("Core.SpinLock", []()
+	Spec("Core.SpinLock", []()
 	{
-		describe("SpinLock", [&]()
+		Describe("SpinLock", []()
 		{
-			it("Acquires and releases exclusively", [&]()
+			It("Acquires and releases exclusively", []()
 			{
 				SpinLock lock;
 				ScopedLock guard(lock);
 
-				AssertThat(lock.Locked(), Is().True());
-				AssertThat(lock.TryLock(), Is().False());
+				Expect(lock.Locked()).ToBeTrue();
+				Expect(lock.TryLock()).ToBeFalse();
 			});
 
-			it("Allows serialized writers to increment a counter", [&]()
+			It("Allows serialized writers to increment a counter", []()
 			{
 				SpinLock lock;
 				i32 counter = 0;
@@ -58,37 +56,37 @@ go_bandit([]()
 					thread.join();
 				}
 
-				AssertThat(counter, Is().EqualTo(kThreads * kPerThread));
+				Expect(counter).ToEqual(kThreads * kPerThread);
 			});
 		});
 
-		describe("SharedSpinLock", [&]()
+		Describe("SharedSpinLock", []()
 		{
-			it("Exclusive lock excludes a second exclusive lock", [&]()
+			It("Exclusive lock excludes a second exclusive lock", []()
 			{
 				SharedSpinLock lock;
 				ExclusiveScopedLock writer(lock);
 
-				AssertThat(lock.TryLockExclusive(), Is().False());
+				Expect(lock.TryLockExclusive()).ToBeFalse();
 			});
 
-			it("Exclusive lock excludes shared locks", [&]()
+			It("Exclusive lock excludes shared locks", []()
 			{
 				SharedSpinLock lock;
 				ExclusiveScopedLock writer(lock);
 
-				AssertThat(lock.TryLockShared(), Is().False());
+				Expect(lock.TryLockShared()).ToBeFalse();
 			});
 
-			it("Shared lock excludes an exclusive lock", [&]()
+			It("Shared lock excludes an exclusive lock", []()
 			{
 				SharedSpinLock lock;
 				SharedScopedLock reader(lock);
 
-				AssertThat(lock.TryLockExclusive(), Is().False());
+				Expect(lock.TryLockExclusive()).ToBeFalse();
 			});
 
-			it("Allows multiple overlapping shared locks", [&]()
+			It("Allows multiple overlapping shared locks", []()
 			{
 				SharedSpinLock lock;
 
@@ -97,21 +95,21 @@ go_bandit([]()
 				SharedScopedLock r3(lock);
 
 				// Readers coexist: shared still acquirable.
-				AssertThat(lock.TryLockShared(), Is().True());
+				Expect(lock.TryLockShared()).ToBeTrue();
 				lock.UnlockShared();
 
-				AssertThat(lock.TryLockExclusive(), Is().False());
+				Expect(lock.TryLockExclusive()).ToBeFalse();
 			});
 
-			it("Writers exclude each other", [&]()
+			It("Writers exclude each other", []()
 			{
 				SharedSpinLock lock;
 
 				ExclusiveScopedLock w1(lock);
-				AssertThat(lock.TryLockExclusive(), Is().False());
+				Expect(lock.TryLockExclusive()).ToBeFalse();
 			});
 
-			it("Writes under exclusive lock are mutually excluded", [&]()
+			It("Writes under exclusive lock are mutually excluded", []()
 			{
 				SharedSpinLock lock;
 				i32 counter = 0;
@@ -141,10 +139,10 @@ go_bandit([]()
 					thread.join();
 				}
 
-				AssertThat(counter, Is().EqualTo(kThreads * kPerThread));
+				Expect(counter).ToEqual(kThreads * kPerThread);
 			});
 
-			it("Shared readers run concurrently without tearing shared state", [&]()
+			It("Shared readers run concurrently without tearing shared state", []()
 			{
 				SharedSpinLock lock;
 				i32 value = 0;
@@ -180,8 +178,8 @@ go_bandit([]()
 					thread.join();
 				}
 
-				AssertThat(reads.load(), Is().EqualTo(kThreads * kIterations));
+				Expect(reads.load()).ToEqual(kThreads * kIterations);
 			});
 		});
 	});
-});
+}

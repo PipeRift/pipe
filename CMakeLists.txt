@@ -85,14 +85,14 @@ pipe_target_disable_rtti(Pipe PRIVATE)
 ################################################################################
 #   PipeTests (test framework library, not part of the runtime Pipe library)
 
-add_library(PipeTestsLib STATIC Src/Tests/PipeTests.cpp)
-add_library(Pipe::TestsLib ALIAS PipeTestsLib)
-pipe_target_define_platform(PipeTestsLib)
-target_include_directories(PipeTestsLib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>)
-pipe_target_enable_CPP20(PipeTestsLib)
-pipe_target_disable_rtti(PipeTestsLib PRIVATE)
-pipe_target_shared_output_directory(PipeTestsLib)
-target_link_libraries(PipeTestsLib PUBLIC Pipe)
+add_library(PipeTests STATIC Src/Tests/PipeTests.cpp)
+add_library(Pipe::Tests ALIAS PipeTests)
+pipe_target_define_platform(PipeTests)
+target_include_directories(PipeTests PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>)
+pipe_target_enable_CPP20(PipeTests)
+pipe_target_disable_rtti(PipeTests PRIVATE)
+pipe_target_shared_output_directory(PipeTests)
+target_link_libraries(PipeTests PUBLIC Pipe)
 
 
 ################################################################################

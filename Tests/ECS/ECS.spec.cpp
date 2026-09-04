@@ -1,11 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <PipeECS.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
@@ -17,11 +15,11 @@ struct ECSTypeB
 {};
 
 
-go_bandit([]()
+void RegisterECSECSsmTests()
 {
-	describe("ECS", []()
+	Spec("ECS", []()
 	{
-		it("Can copy context", [&]()
+		It("Can copy context", []()
 		{
 			static IdContext* ctxPtr = nullptr;
 
@@ -32,17 +30,17 @@ go_bandit([]()
 			origin.Add<ECSTypeA>(id);
 
 			IdContext target{origin};
-			AssertThat(origin.IsValid(id), Equals(true));
-			AssertThat(origin.Has<ECSTypeA>(id), Equals(true));
-			AssertThat(target.IsValid(id), Equals(true));
-			AssertThat(target.Has<ECSTypeA>(id), Equals(true));
+			Expect(origin.IsValid(id)).ToEqual(true);
+			Expect(origin.Has<ECSTypeA>(id)).ToEqual(true);
+			Expect(target.IsValid(id)).ToEqual(true);
+			Expect(target.Has<ECSTypeA>(id)).ToEqual(true);
 
 			ctxPtr = &target;
 			target.Add<ECSTypeB>(id);
-			AssertThat(target.Has<ECSTypeB>(id), Equals(true));
+			Expect(target.Has<ECSTypeB>(id)).ToEqual(true);
 		});
 
-		it("Can move context", [&]()
+		It("Can move context", []()
 		{
 			static IdContext* ctxPtr = nullptr;
 
@@ -51,24 +49,24 @@ go_bandit([]()
 
 			ctxPtr = &origin;
 			origin.Add<ECSTypeA>(id);
-			AssertThat(origin.Has<ECSTypeA>(id), Equals(true));
+			Expect(origin.Has<ECSTypeA>(id)).ToEqual(true);
 
 			IdContext target{Move(origin)};
-			AssertThat(origin.IsValid(id), Equals(false));
+			Expect(origin.IsValid(id)).ToEqual(false);
 
-			AssertThat(target.IsValid(id), Equals(true));
-			AssertThat(target.Has<ECSTypeA>(id), Equals(true));
+			Expect(target.IsValid(id)).ToEqual(true);
+			Expect(target.Has<ECSTypeA>(id)).ToEqual(true);
 
 			ctxPtr = &target;
 			target.Add<ECSTypeB>(id);
-			AssertThat(target.Has<ECSTypeB>(id), Equals(true));
+			Expect(target.Has<ECSTypeB>(id)).ToEqual(true);
 		});
 
-		it("Can assure pool", [&]()
+		It("Can assure pool", []()
 		{
 			IdContext origin;
 			TPool<ECSTypeA>& pool = origin.AssurePool<ECSTypeA>();
-			AssertThat(pool.Size(), Equals(0));
+			Expect(pool.Size()).ToEqual(0);
 		});
 	});
-});
+}

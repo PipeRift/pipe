@@ -3,26 +3,24 @@
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Subprocess.h"
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <Pipe/Files/PlatformPaths.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
-go_bandit([]()
+void RegisterCorePlatformProcessTests()
 {
-	describe("Core.Subprocess", []()
+	Spec("Core.Subprocess", []()
 	{
-		it("Can run process", [&]()
+		It("Can run process", []()
 		{
-			AssertThat(p::RunProcess({""}).IsSet(), Equals(false));
+			Expect(p::RunProcess({""}).IsSet()).ToEqual(false);
 
-#if defined(_MSC_VER)    // Test with a silent command (no stdout)
-			AssertThat(p::RunProcess({"cmd", "/c", "exit", "0"}).IsSet(), Equals(true));
-#endif
+	#if defined(_MSC_VER)    // Test with a silent command (no stdout)
+			Expect(p::RunProcess({"cmd", "/c", "exit", "0"}).IsSet()).ToEqual(true);
+	#endif
 		});
 	});
-});
+}

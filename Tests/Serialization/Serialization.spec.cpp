@@ -1,11 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <PipeSerialize.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
@@ -91,13 +89,13 @@ struct p::TFlags<SerTypeD> : public p::DefaultTFlags
 };
 
 
-go_bandit([]()
+void RegisterSerializationSerializationTests()
 {
-	describe("Serialization", []()
+	Spec("Serialization", []()
 	{
-		describe("Serializers in global scope", [&]()
+		Describe("Serializers in global scope", []()
 		{
-			it("Can use custom Read()", [&]()
+			It("Can use custom Read()", []()
 			{
 				SerTypeA val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
@@ -105,10 +103,10 @@ go_bandit([]()
 				Reader& ct = reader;
 				ct.BeginObject();
 				ct.Next("type", val);
-				AssertThat(val.value, Equals(true));
+				Expect(val.value).ToEqual(true);
 			});
 
-			it("Can use custom Write()", [&]()
+			It("Can use custom Write()", []()
 			{
 				SerTypeA val{};
 				val.value = true;
@@ -117,10 +115,10 @@ go_bandit([]()
 				Writer ct = writer;
 				ct.BeginObject();
 				ct.Next("type", val);
-				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
+				Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
 			});
 
-			it("Can use Serialize() instead of Read()", [&]()
+			It("Can use Serialize() instead of Read()", []()
 			{
 				SerTypeB val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
@@ -128,10 +126,10 @@ go_bandit([]()
 				Reader& ct = reader;
 				ct.BeginObject();
 				ct.Next("type", val);
-				AssertThat(val.value, Equals(true));
+				Expect(val.value).ToEqual(true);
 			});
 
-			it("Can use Serialize() instead of Write()", [&]()
+			It("Can use Serialize() instead of Write()", []()
 			{
 				SerTypeB val{};
 				val.value = true;
@@ -140,13 +138,13 @@ go_bandit([]()
 				Writer ct = writer;
 				ct.BeginObject();
 				ct.Next("type", val);
-				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
+				Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
 			});
 		});
 
-		describe("Serializers as members", [&]()
+		Describe("Serializers as members", []()
 		{
-			it("Can use custom Read()", [&]()
+			It("Can use custom Read()", []()
 			{
 				SerTypeC val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
@@ -154,10 +152,10 @@ go_bandit([]()
 				Reader& ct = reader;
 				ct.BeginObject();
 				ct.Next("type", val);
-				AssertThat(val.value, Equals(true));
+				Expect(val.value).ToEqual(true);
 			});
 
-			it("Can use custom Write()", [&]()
+			It("Can use custom Write()", []()
 			{
 				SerTypeC val{};
 				val.value = true;
@@ -166,10 +164,10 @@ go_bandit([]()
 				Writer ct = writer;
 				ct.BeginObject();
 				ct.Next("type", val);
-				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
+				Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
 			});
 
-			it("Can use Serialize() instead of Read()", [&]()
+			It("Can use Serialize() instead of Read()", []()
 			{
 				SerTypeD val{};
 				JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
@@ -177,10 +175,10 @@ go_bandit([]()
 				Reader& ct = reader;
 				ct.BeginObject();
 				ct.Next("type", val);
-				AssertThat(val.value, Equals(true));
+				Expect(val.value).ToEqual(true);
 			});
 
-			it("Can use Serialize() instead of Write()", [&]()
+			It("Can use Serialize() instead of Write()", []()
 			{
 				SerTypeD val{};
 				val.value = true;
@@ -189,8 +187,8 @@ go_bandit([]()
 				Writer ct = writer;
 				ct.BeginObject();
 				ct.Next("type", val);
-				AssertThat(writer.ToString(false), Equals("{\"type\":{\"value\":true}}"));
+				Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
 			});
 		});
 	});
-});
+}

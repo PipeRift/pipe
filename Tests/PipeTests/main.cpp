@@ -1,6 +1,6 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-// NOTE: PipeNewDelete is deliberately not included here. PipeTestsLib provides the
+// NOTE: PipeNewDelete is deliberately not included here. PipeTests provides the
 // replacement operator new/delete (P_OVERRIDE_NEWDELETE) in its own translation unit;
 // including it here too would cause duplicate-definition linker errors.
 

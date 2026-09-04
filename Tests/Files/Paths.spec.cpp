@@ -1,217 +1,213 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <Pipe/Files/Paths.h>
 #include <Pipe/Files/PlatformPaths.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
+using namespace p;
 
 
-go_bandit([]()
+void RegisterFilesPathsTests()
 {
-	describe("Files.Paths", []()
+	Spec("Files.Paths", []()
 	{
-		it("Can get root name and path", [&]()
+		It("Can get root name and path", []()
 		{
-#if P_PLATFORM_WINDOWS
-			AssertThat(p::GetRootPathName("F:\\SomeFolder\\AnotherFolder"), Equals("F:"));
-			AssertThat(p::GetRootPath("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\"));
-#elif P_PLATFORM_LINUX
-			AssertThat(p::GetRootPathName("/var/SomeFolder/AnotherFolder"), Equals(""));
-			AssertThat(p::GetRootPath("/var/SomeFolder/AnotherFolder"), Equals("/"));
-#endif
-			AssertThat(p::GetRootPathName("/AnotherFolder"), Equals(""));
-			AssertThat(p::GetRootPath("/AnotherFolder"), Equals("/"));
+	#if P_PLATFORM_WINDOWS
+			Expect(p::GetRootPathName("F:\\SomeFolder\\AnotherFolder")).ToEqual("F:");
+			Expect(p::GetRootPath("F:\\SomeFolder\\AnotherFolder")).ToEqual("F:\\");
+	#elif P_PLATFORM_LINUX
+			Expect(p::GetRootPathName("/var/SomeFolder/AnotherFolder")).ToEqual("");
+			Expect(p::GetRootPath("/var/SomeFolder/AnotherFolder")).ToEqual("/");
+	#endif
+			Expect(p::GetRootPathName("/AnotherFolder")).ToEqual("");
+			Expect(p::GetRootPath("/AnotherFolder")).ToEqual("/");
 		});
 
-		it("Can get relative path", [&]()
+		It("Can get relative path", []()
 		{
-#if P_PLATFORM_WINDOWS
-			AssertThat(p::GetRelativePath("F:\\SomeFolder\\AnotherFolder"),
-			    Equals("SomeFolder\\AnotherFolder"));
-#endif
-			AssertThat(p::GetRelativePath("/var/SomeFolder/AnotherFolder"),
-			    Equals("var/SomeFolder/AnotherFolder"));
-			AssertThat(p::GetRelativePath("/SomeFolder/AnotherFolder"),
-			    Equals("SomeFolder/AnotherFolder"));
+	#if P_PLATFORM_WINDOWS
+			Expect(p::GetRelativePath("F:\\SomeFolder\\AnotherFolder")).ToEqual("SomeFolder\\AnotherFolder");
+	#endif
+			Expect(p::GetRelativePath("/var/SomeFolder/AnotherFolder")).ToEqual("var/SomeFolder/AnotherFolder");
+			Expect(p::GetRelativePath("/SomeFolder/AnotherFolder")).ToEqual("SomeFolder/AnotherFolder");
 		});
 
-		it("Can check absolute path", [&]()
+		It("Can check absolute path", []()
 		{
-			AssertThat(p::IsAbsolutePath("//host"), Equals(true));
-#if P_PLATFORM_WINDOWS
-			AssertThat(p::IsAbsolutePath("F:\\SomeFolder\\AnotherFolder"), Equals(true));
-#elif P_PLATFORM_LINUX
-			AssertThat(p::IsAbsolutePath("/var/SomeFolder/AnotherFolder"), Equals(true));
-#endif
-			AssertThat(p::IsAbsolutePath("Executable.exe"), Equals(false));
-			AssertThat(p::IsAbsolutePath("SomeFolder/AnotherFolder"), Equals(false));
+			Expect(p::IsAbsolutePath("//host")).ToEqual(true);
+	#if P_PLATFORM_WINDOWS
+			Expect(p::IsAbsolutePath("F:\\SomeFolder\\AnotherFolder")).ToEqual(true);
+	#elif P_PLATFORM_LINUX
+			Expect(p::IsAbsolutePath("/var/SomeFolder/AnotherFolder")).ToEqual(true);
+	#endif
+			Expect(p::IsAbsolutePath("Executable.exe")).ToEqual(false);
+			Expect(p::IsAbsolutePath("SomeFolder/AnotherFolder")).ToEqual(false);
 		});
 
-		it("Can check relative path", [&]()
+		It("Can check relative path", []()
 		{
-#if P_PLATFORM_WINDOWS
-			AssertThat(p::IsRelativePath("F:\\SomeFolder\\AnotherFolder"), Equals(false));
-#elif P_PLATFORM_LINUX
-			AssertThat(p::IsRelativePath("/var/SomeFolder/AnotherFolder"), Equals(false));
-#endif
-			AssertThat(p::IsRelativePath("Executable.exe"), Equals(true));
-			AssertThat(p::IsRelativePath("SomeFolder/AnotherFolder"), Equals(true));
+	#if P_PLATFORM_WINDOWS
+			Expect(p::IsRelativePath("F:\\SomeFolder\\AnotherFolder")).ToEqual(false);
+	#elif P_PLATFORM_LINUX
+			Expect(p::IsRelativePath("/var/SomeFolder/AnotherFolder")).ToEqual(false);
+	#endif
+			Expect(p::IsRelativePath("Executable.exe")).ToEqual(true);
+			Expect(p::IsRelativePath("SomeFolder/AnotherFolder")).ToEqual(true);
 		});
 
-		it("Can get parent path", [&]()
+		It("Can get parent path", []()
 		{
-#if P_PLATFORM_WINDOWS
-			AssertThat(p::GetParentPath("F:\\SomeFolder\\AnotherFolder"), Equals("F:\\SomeFolder"));
-#endif
-			AssertThat(p::GetParentPath("/var/SomeFolder"), Equals("/var"));
-			AssertThat(p::GetParentPath("/SomeFolder/AnotherFolder"), Equals("/SomeFolder"));
-			AssertThat(p::GetParentPath("/SomeFolder/SomeFile.txt"), Equals("/SomeFolder"));
+	#if P_PLATFORM_WINDOWS
+			Expect(p::GetParentPath("F:\\SomeFolder\\AnotherFolder")).ToEqual("F:\\SomeFolder");
+	#endif
+			Expect(p::GetParentPath("/var/SomeFolder")).ToEqual("/var");
+			Expect(p::GetParentPath("/SomeFolder/AnotherFolder")).ToEqual("/SomeFolder");
+			Expect(p::GetParentPath("/SomeFolder/SomeFile.txt")).ToEqual("/SomeFolder");
 		});
 
-		it("Executable path is not empty", [&]()
+		It("Executable path is not empty", []()
 		{
-			AssertThat(p::PlatformPaths::GetExecutablePath(), !Equals(""));
+			Expect(p::PlatformPaths::GetExecutablePath()).ToNotEqual("");
 		});
 
-		it("Can get extension", [&]()
+		It("Can get extension", []()
 		{
-#if P_PLATFORM_WINDOWS
-			AssertThat(p::GetExtension("F:\\SomeFolder\\AnotherFolder.lib"), Equals(".lib"));
-			AssertThat(p::GetExtension("F:\\AnotherFolder.lib"), Equals(".lib"));
-			AssertThat(p::GetExtension("F:\\AnotherFolder."), Equals("."));
-			AssertThat(p::GetExtension("F:\\AnotherFolder"), Equals(""));
-			AssertThat(p::GetExtension("F:\\"), Equals(""));
-#elif P_PLATFORM_LINUX
-			AssertThat(p::GetExtension("/var/SomeFolder/AnotherFolder.lib"), Equals(".lib"));
-			AssertThat(p::GetExtension("/var/AnotherFolder.lib"), Equals(".lib"));
-			AssertThat(p::GetExtension("/var/AnotherFolder."), Equals("."));
-			AssertThat(p::GetExtension("/var/AnotherFolder"), Equals(""));
-			AssertThat(p::GetExtension("/var/"), Equals(""));
-#endif
-			AssertThat(p::GetExtension("AnotherFolder.lib"), Equals(".lib"));
-			AssertThat(p::GetExtension("AnotherFolder"), Equals(""));
+	#if P_PLATFORM_WINDOWS
+			Expect(p::GetExtension("F:\\SomeFolder\\AnotherFolder.lib")).ToEqual(".lib");
+			Expect(p::GetExtension("F:\\AnotherFolder.lib")).ToEqual(".lib");
+			Expect(p::GetExtension("F:\\AnotherFolder.")).ToEqual(".");
+			Expect(p::GetExtension("F:\\AnotherFolder")).ToEqual("");
+			Expect(p::GetExtension("F:\\")).ToEqual("");
+	#elif P_PLATFORM_LINUX
+			Expect(p::GetExtension("/var/SomeFolder/AnotherFolder.lib")).ToEqual(".lib");
+			Expect(p::GetExtension("/var/AnotherFolder.lib")).ToEqual(".lib");
+			Expect(p::GetExtension("/var/AnotherFolder.")).ToEqual(".");
+			Expect(p::GetExtension("/var/AnotherFolder")).ToEqual("");
+			Expect(p::GetExtension("/var/")).ToEqual("");
+	#endif
+			Expect(p::GetExtension("AnotherFolder.lib")).ToEqual(".lib");
+			Expect(p::GetExtension("AnotherFolder")).ToEqual("");
 		});
 
-		it("Can check extension", [&]()
+		It("Can check extension", []()
 		{
-#if P_PLATFORM_WINDOWS
-			AssertThat(p::HasExtension("F:\\SomeFolder\\AnotherFolder.lib"), Equals(true));
-			AssertThat(p::HasExtension("F:\\AnotherFolder.lib"), Equals(true));
-			AssertThat(p::HasExtension("F:\\AnotherFolder."), Equals(true));
-			AssertThat(p::HasExtension("F:\\AnotherFolder"), Equals(false));
-			AssertThat(p::HasExtension("F:\\"), Equals(false));
-#elif P_PLATFORM_LINUX
-			AssertThat(p::HasExtension("/var/SomeFolder/AnotherFolder.lib"), Equals(true));
-			AssertThat(p::HasExtension("/var/AnotherFolder.lib"), Equals(true));
-			AssertThat(p::HasExtension("/var/AnotherFolder."), Equals(true));
-			AssertThat(p::HasExtension("/var/AnotherFolder"), Equals(false));
-			AssertThat(p::HasExtension("/var/"), Equals(false));
-#endif
-			AssertThat(p::HasExtension("AnotherFolder.lib"), Equals(true));
-			AssertThat(p::HasExtension("AnotherFolder"), Equals(false));
+	#if P_PLATFORM_WINDOWS
+			Expect(p::HasExtension("F:\\SomeFolder\\AnotherFolder.lib")).ToEqual(true);
+			Expect(p::HasExtension("F:\\AnotherFolder.lib")).ToEqual(true);
+			Expect(p::HasExtension("F:\\AnotherFolder.")).ToEqual(true);
+			Expect(p::HasExtension("F:\\AnotherFolder")).ToEqual(false);
+			Expect(p::HasExtension("F:\\")).ToEqual(false);
+	#elif P_PLATFORM_LINUX
+			Expect(p::HasExtension("/var/SomeFolder/AnotherFolder.lib")).ToEqual(true);
+			Expect(p::HasExtension("/var/AnotherFolder.lib")).ToEqual(true);
+			Expect(p::HasExtension("/var/AnotherFolder.")).ToEqual(true);
+			Expect(p::HasExtension("/var/AnotherFolder")).ToEqual(false);
+			Expect(p::HasExtension("/var/")).ToEqual(false);
+	#endif
+			Expect(p::HasExtension("AnotherFolder.lib")).ToEqual(true);
+			Expect(p::HasExtension("AnotherFolder")).ToEqual(false);
 		});
 
-		it("Can replace extension", [&]()
+		It("Can replace extension", []()
 		{
 			p::String path;
-#if P_PLATFORM_WINDOWS
+	#if P_PLATFORM_WINDOWS
 			path = "F:\\SomeFolder\\AnotherFolder.lib";
 			p::ReplaceExtension(path, "txt");
-			AssertThat(path, Equals(p::String{"F:\\SomeFolder\\AnotherFolder.txt"}));
-#elif P_PLATFORM_LINUX
+			Expect(path).ToEqual("F:\\SomeFolder\\AnotherFolder.txt");
+	#elif P_PLATFORM_LINUX
 			path = "/var/SomeFolder/AnotherFolder.lib";
 			p::ReplaceExtension(path, "txt");
-			AssertThat(path, Equals(p::String{"/var/SomeFolder/AnotherFolder.txt"}));
-#endif
+			Expect(path).ToEqual("/var/SomeFolder/AnotherFolder.txt");
+	#endif
 			path = "AnotherFolder.lib";
 			p::ReplaceExtension(path, "txt");
-			AssertThat(path, Equals(p::String{"AnotherFolder.txt"}));
+			Expect(path).ToEqual("AnotherFolder.txt");
 			path = "AnotherFolder.";
 			p::ReplaceExtension(path, ".txt");
-			AssertThat(path, Equals(p::String{"AnotherFolder.txt"}));
+			Expect(path).ToEqual("AnotherFolder.txt");
 			path = "AnotherFolder.lib";
 			p::ReplaceExtension(path, ".txt");
-			AssertThat(path, Equals(p::String{"AnotherFolder.txt"}));
+			Expect(path).ToEqual("AnotherFolder.txt");
 			path = "AnotherFolder";
 			p::ReplaceExtension(path, "txt");
-			AssertThat(path, Equals(p::String{"AnotherFolder.txt"}));
+			Expect(path).ToEqual("AnotherFolder.txt");
 		});
 
-		it("Can get stem", [&]()
+		It("Can get stem", []()
 		{
-#if P_PLATFORM_WINDOWS
-			AssertThat(p::GetStem("F:\\SomeFolder\\AnotherFolder.lib"), Equals("AnotherFolder"));
-			AssertThat(p::GetStem("F:\\AnotherFolder.lib"), Equals("AnotherFolder"));
-			AssertThat(p::GetStem("F:\\AnotherFolder."), Equals("AnotherFolder"));
-			AssertThat(p::GetStem("F:\\AnotherFolder"), Equals("AnotherFolder"));
-			AssertThat(p::GetStem("F:\\"), Equals(""));
-#elif P_PLATFORM_LINUX
-			AssertThat(p::GetStem("/var/SomeFolder/AnotherFolder.lib"), Equals("AnotherFolder"));
-			AssertThat(p::GetStem("/var/AnotherFolder.lib"), Equals("AnotherFolder"));
-			AssertThat(p::GetStem("/var/AnotherFolder."), Equals("AnotherFolder"));
-			AssertThat(p::GetStem("/var/AnotherFolder"), Equals("AnotherFolder"));
-			AssertThat(p::GetStem("/var/"), Equals(""));
-#endif
-			AssertThat(p::GetStem("AnotherFolder.lib"), Equals("AnotherFolder"));
-			AssertThat(p::GetStem("AnotherFolder"), Equals("AnotherFolder"));
-			AssertThat(p::GetStem(""), Equals(""));
+	#if P_PLATFORM_WINDOWS
+			Expect(p::GetStem("F:\\SomeFolder\\AnotherFolder.lib")).ToEqual("AnotherFolder");
+			Expect(p::GetStem("F:\\AnotherFolder.lib")).ToEqual("AnotherFolder");
+			Expect(p::GetStem("F:\\AnotherFolder.")).ToEqual("AnotherFolder");
+			Expect(p::GetStem("F:\\AnotherFolder")).ToEqual("AnotherFolder");
+			Expect(p::GetStem("F:\\")).ToEqual("");
+	#elif P_PLATFORM_LINUX
+			Expect(p::GetStem("/var/SomeFolder/AnotherFolder.lib")).ToEqual("AnotherFolder");
+			Expect(p::GetStem("/var/AnotherFolder.lib")).ToEqual("AnotherFolder");
+			Expect(p::GetStem("/var/AnotherFolder.")).ToEqual("AnotherFolder");
+			Expect(p::GetStem("/var/AnotherFolder")).ToEqual("AnotherFolder");
+			Expect(p::GetStem("/var/")).ToEqual("");
+	#endif
+			Expect(p::GetStem("AnotherFolder.lib")).ToEqual("AnotherFolder");
+			Expect(p::GetStem("AnotherFolder")).ToEqual("AnotherFolder");
+			Expect(p::GetStem("")).ToEqual("");
 		});
 
-		it("Can check stem", [&]()
+		It("Can check stem", []()
 		{
-#if P_PLATFORM_WINDOWS
-			AssertThat(p::HasStem("F:\\SomeFolder\\AnotherFolder.lib"), Equals(true));
-			AssertThat(p::HasStem("F:\\AnotherFolder.lib"), Equals(true));
-			AssertThat(p::HasStem("F:\\AnotherFolder."), Equals(true));
-			AssertThat(p::HasStem("F:\\AnotherFolder"), Equals(true));
-			AssertThat(p::HasStem("F:\\"), Equals(false));
-#elif P_PLATFORM_LINUX
-			AssertThat(p::HasStem("/var/SomeFolder/AnotherFolder.lib"), Equals(true));
-			AssertThat(p::HasStem("/var/AnotherFolder.lib"), Equals(true));
-			AssertThat(p::HasStem("/var/AnotherFolder."), Equals(true));
-			AssertThat(p::HasStem("/var/AnotherFolder"), Equals(true));
-			AssertThat(p::HasStem("/var/"), Equals(false));
-#endif
-			AssertThat(p::HasStem("AnotherFolder.lib"), Equals(true));
-			AssertThat(p::HasStem("AnotherFolder"), Equals(true));
-			AssertThat(p::HasStem(""), Equals(false));
+	#if P_PLATFORM_WINDOWS
+			Expect(p::HasStem("F:\\SomeFolder\\AnotherFolder.lib")).ToEqual(true);
+			Expect(p::HasStem("F:\\AnotherFolder.lib")).ToEqual(true);
+			Expect(p::HasStem("F:\\AnotherFolder.")).ToEqual(true);
+			Expect(p::HasStem("F:\\AnotherFolder")).ToEqual(true);
+			Expect(p::HasStem("F:\\")).ToEqual(false);
+	#elif P_PLATFORM_LINUX
+			Expect(p::HasStem("/var/SomeFolder/AnotherFolder.lib")).ToEqual(true);
+			Expect(p::HasStem("/var/AnotherFolder.lib")).ToEqual(true);
+			Expect(p::HasStem("/var/AnotherFolder.")).ToEqual(true);
+			Expect(p::HasStem("/var/AnotherFolder")).ToEqual(true);
+			Expect(p::HasStem("/var/")).ToEqual(false);
+	#endif
+			Expect(p::HasStem("AnotherFolder.lib")).ToEqual(true);
+			Expect(p::HasStem("AnotherFolder")).ToEqual(true);
+			Expect(p::HasStem("")).ToEqual(false);
 		});
 
 
-		it("Can append to path", [&]()
+		It("Can append to path", []()
 		{
-			AssertThat(p::JoinPaths("", ""), Equals(p::StringView{""}));
-			AssertThat(p::JoinPaths("", "/"), Equals(p::StringView{"/"}));
-			AssertThat(p::JoinPaths("", "bar"), Equals(p::StringView{"bar"}));
-			AssertThat(p::JoinPaths("", "/bar"), Equals(p::StringView{"/bar"}));
+			Expect(p::JoinPaths("", "")).ToEqual("");
+			Expect(p::JoinPaths("", "/")).ToEqual("/");
+			Expect(p::JoinPaths("", "bar")).ToEqual("bar");
+			Expect(p::JoinPaths("", "/bar")).ToEqual("/bar");
 
-			AssertThat(p::JoinPaths("/", ""), Equals(p::StringView{"/"}));
-			AssertThat(p::JoinPaths("/", "/"), Equals(p::StringView{"/"}));
-			AssertThat(p::JoinPaths("/", "bar"), Equals(p::StringView{"/bar"}));
-			AssertThat(p::JoinPaths("/", "/bar"), Equals(p::StringView{"/bar"}));
-			AssertThat(p::JoinPaths("foo", "/"), Equals(p::StringView{"/"}));
+			Expect(p::JoinPaths("/", "")).ToEqual("/");
+			Expect(p::JoinPaths("/", "/")).ToEqual("/");
+			Expect(p::JoinPaths("/", "bar")).ToEqual("/bar");
+			Expect(p::JoinPaths("/", "/bar")).ToEqual("/bar");
+			Expect(p::JoinPaths("foo", "/")).ToEqual("/");
 
-			AssertThat(p::JoinPaths("foo", "/bar"), Equals(p::StringView{"/bar"}));
-			AssertThat(p::JoinPaths("foo/", ""), Equals(p::StringView{"foo/"}));
-			AssertThat(p::JoinPaths("foo/", "/"), Equals(p::StringView{"/"}));
-			AssertThat(p::JoinPaths("foo/", "bar"), Equals(p::StringView{"foo/bar"}));
+			Expect(p::JoinPaths("foo", "/bar")).ToEqual("/bar");
+			Expect(p::JoinPaths("foo/", "")).ToEqual("foo/");
+			Expect(p::JoinPaths("foo/", "/")).ToEqual("/");
+			Expect(p::JoinPaths("foo/", "bar")).ToEqual("foo/bar");
 
-#if P_PLATFORM_WINDOWS
-			AssertThat(p::JoinPaths("foo", ""), Equals(p::StringView{"foo\\"}));
-			AssertThat(p::JoinPaths("foo", "bar"), Equals(p::StringView{"foo\\bar"}));
-			AssertThat(p::JoinPaths("foo\\", "\\bar"), Equals(p::StringView{"\\bar"}));
-			AssertThat(p::JoinPaths("c:", "bar"), Equals(p::StringView{"c:bar"}));
-			AssertThat(p::JoinPaths("\\\\host", "foo"), Equals(p::String{"\\\\host\\foo"}));
-			AssertThat(p::JoinPaths("\\\\host/", "foo"), Equals(p::String{"\\\\host/foo"}));
-#else
-			AssertThat(p::JoinPaths("foo", ""), Equals(p::StringView{"foo/"}));
-			AssertThat(p::JoinPaths("foo", "bar"), Equals(p::StringView{"foo/bar"}));
-			AssertThat(p::JoinPaths("//host", "foo"), Equals(p::StringView{"//host/foo"}));
-			AssertThat(p::JoinPaths("//host/", "foo"), Equals(p::StringView{"//host/foo"}));
-#endif
+	#if P_PLATFORM_WINDOWS
+			Expect(p::JoinPaths("foo", "")).ToEqual("foo\\");
+			Expect(p::JoinPaths("foo", "bar")).ToEqual("foo\\bar");
+			Expect(p::JoinPaths("foo\\", "\\bar")).ToEqual("\\bar");
+			Expect(p::JoinPaths("c:", "bar")).ToEqual("c:bar");
+			Expect(p::JoinPaths("\\\\host", "foo")).ToEqual("\\\\host\\foo");
+			Expect(p::JoinPaths("\\\\host/", "foo")).ToEqual("\\\\host/foo");
+	#else
+			Expect(p::JoinPaths("foo", "")).ToEqual("foo/");
+			Expect(p::JoinPaths("foo", "bar")).ToEqual("foo/bar");
+			Expect(p::JoinPaths("//host", "foo")).ToEqual("//host/foo");
+			Expect(p::JoinPaths("//host/", "foo")).ToEqual("//host/foo");
+	#endif
 		});
 	});
-});
+}

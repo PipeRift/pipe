@@ -2,40 +2,66 @@
 
 #pragma once
 
+#include "Pipe/Core/Function.h"
 #include "Pipe/Core/StringView.h"
 #include "PipeStrings.h"
 
 #include <functional>
+#include <format>
+#include <memory>
 #include <source_location>
+#include <string>
+#include <type_traits>
+#include <utility>
 
 
 namespace p
 {
 	/**
 	 * Test framework for Pipe and Rift.
-	 * Imgui-style global context: registration functions act on a current group.
-	 * Spec opens a first-level group; Describe/It/BeforeEach/AfterEach attach to
-	 * the current group as functions are called. Registration runs inside a
-	 * function (e.g. a Register*Tests() routine called from main) — the framework
-	 * uses no macros, so specs must not be registered at namespace scope.
+	 * Imgui-style global context: registration functions act on a current describe.
+	 * Spec opens a first-level describe; Describe/It/BeforeEach/AfterEach attach to
+	 * the current describe as functions are called. Spec calls live at file scope
+	 * and auto-register via static init (like go_bandit); no macros, no manual
+	 * registration calls needed.
 	 */
 
-	// Self-registering top-level. Spec(name, fn) opens a first group named `name`.
-	void Spec(StringView name, std::function<void()> fn);
-	// Nameless top-level (like go_bandit); use Describe inside fn.
-	void Spec(std::function<void()> fn);
+	namespace details
+	{
+		// Detects whether a type can be rendered via std::format.
+		template<typename T, typename Char = char>
+		concept FormattableType = requires(const T& value)
+		{
+			std::formatter<std::remove_cvref_t<T>, Char>{};
+		};
+	}    // namespace details
 
-	// Nested group. Only valid inside a Spec; otherwise logs an error and ignores.
-	void Describe(StringView name, std::function<void()> fn);
-	// Register a runnable test in the current group.
+	// Self-registering top-level. Spec(name, fn) opens a first describe named `name`.
+	// fn runs immediately during registration, so TFunction (non-owning) is safe.
+	void Spec(StringView name, TFunction<void()> fn);
+	// Nameless top-level (like go_bandit); use Describe inside fn.
+	void Spec(TFunction<void()> fn);
+
+	// Nested describe. Only valid inside a Spec; otherwise logs an error and ignores.
+	void Describe(StringView name, TFunction<void()> fn);
+	// Register a runnable test in the current describe.
+	// Bodies are stored until RunTests, so std::function (owning) is required here.
 	void It(StringView name, std::function<void()> fn);
 	// Register a disabled test; never run.
 	void XIt(StringView name, std::function<void()> fn);
-	// Setup hook attached to the current group.
+	// Setup hook attached to the current describe.
 	void BeforeEach(std::function<void()> fn);
-	// Teardown hook attached to the current group.
+	// Teardown hook attached to the current describe.
 	void AfterEach(std::function<void()> fn);
 
+	// Settings for a test run. Empty filter runs everything; otherwise only tests
+	// whose full name contains the filter substring run.
+	struct TestSettings
+	{
+		StringView filter;
+	};
+
+	int RunTests(const TestSettings& settings);
 	int RunTests(int argc, char** argv);
 
 
@@ -47,7 +73,17 @@ namespace p
 	template<typename T>
 	inline String TestString(const T& value)
 	{
-		return Format("{}", value);
+		if constexpr (details::FormattableType<T>)
+		{
+			return Format("{}", value);
+		}
+		else
+		{
+			// Non-formattable type (structs, containers, byte views...).
+			// Render a generic placeholder instead of failing to compile.
+			(void)value;
+			return Format("<value@{}>", static_cast<const void*>(std::addressof(value)));
+		}
 	}
 
 	template<>
@@ -77,10 +113,53 @@ namespace p
 		return value ? String{value} : String{"(null)"};
 	}
 
+	inline String TestString(const std::string& value)
+	{
+		return String{StringView{value}};
+	}
+
+	// Any other pointer is shown as its address so failure messages stay formattable.
+	template<typename T>
+	inline String TestString(const T* value)
+	{
+		return Format("{}", static_cast<const void*>(value));
+	}
+
 	namespace details
 	{
 		// Format failure message from source location + description.
 		void Fail(const std::source_location& loc, StringView message);
+
+		// True when both Actual and Expected can be viewed as a StringView (string-ish).
+		template<typename A, typename E, typename = void>
+		struct IsStringBoth : std::false_type
+		{};
+
+		template<typename A, typename E>
+		struct IsStringBoth<A, E,
+		    std::void_t<decltype(StringView{std::declval<A>()}),
+		        decltype(StringView{std::declval<E>()})>> : std::true_type
+		{};
+
+		// Compares two possibly-different types: string-ish values compare by view,
+		// everything else uses operator==.
+		template<typename A, typename E, bool = IsStringBoth<A, E>::value>
+		struct ValuesEqual
+		{
+			static bool Eval(const A& a, const E& e)
+			{
+				return StringView{a} == StringView{e};
+			}
+		};
+
+		template<typename A, typename E>
+		struct ValuesEqual<A, E, false>
+		{
+			static bool Eval(const A& a, const E& e)
+			{
+				return a == e;
+			}
+		};
 	}    // namespace details
 
 
@@ -94,18 +173,20 @@ namespace p
 		    , loc(loc)
 		{}
 
-		void ToEqual(const Actual& expected) const
+		template<typename Expected>
+		void ToEqual(const Expected& expected) const
 		{
-			if (!(value == expected))
+			if (!details::ValuesEqual<Actual, Expected>::Eval(value, expected))
 			{
 				details::Fail(loc, Format(
 				    "Expected {} to equal {}", TestString(value), TestString(expected)));
 			}
 		}
 
-		void ToNotEqual(const Actual& expected) const
+		template<typename Expected>
+		void ToNotEqual(const Expected& expected) const
 		{
-			if (!(value != expected))
+			if (details::ValuesEqual<Actual, Expected>::Eval(value, expected))
 			{
 				details::Fail(loc, Format(
 				    "Expected {} to not equal {}", TestString(value), TestString(expected)));

@@ -1,11 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <PipeECS.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 using namespace std::chrono_literals;
 
@@ -24,72 +22,72 @@ struct StaticTypeThree
 };
 
 
-go_bandit([]()
+void RegisterECSStaticsTests()
 {
-	describe("ECS.Statics", []()
+	Spec("ECS.Statics", []()
 	{
-		it("Can set an static", [&]()
+		It("Can set an static", []()
 		{
 			IdContext ctx;
-			AssertThat(ctx.HasStatic<StaticType>(), Equals(false));
+			Expect(ctx.HasStatic<StaticType>()).ToEqual(false);
 			auto& var = ctx.SetStatic<StaticType>({4});
-			AssertThat(var.i, Equals(4));
-			AssertThat(ctx.HasStatic<StaticType>(), Equals(true));
-			AssertThat(ctx.HasStatic<StaticTypeTwo>(), Equals(false));
+			Expect(var.i).ToEqual(4);
+			Expect(ctx.HasStatic<StaticType>()).ToEqual(true);
+			Expect(ctx.HasStatic<StaticTypeTwo>()).ToEqual(false);
 		});
-		it("Can set two statics", [&]()
+		It("Can set two statics", []()
 		{
 			IdContext ctx;
-			AssertThat(ctx.HasStatic<StaticType>(), Equals(false));
-			AssertThat(ctx.HasStatic<StaticTypeTwo>(), Equals(false));
+			Expect(ctx.HasStatic<StaticType>()).ToEqual(false);
+			Expect(ctx.HasStatic<StaticTypeTwo>()).ToEqual(false);
 			auto& var1 = ctx.SetStatic<StaticType>({4});
 			auto& var2 = ctx.SetStatic<StaticTypeTwo>({2});
-			AssertThat(var1.i, Equals(4));
-			AssertThat(var2.i, Equals(2));
-			AssertThat(ctx.HasStatic<StaticType>(), Equals(true));
-			AssertThat(ctx.HasStatic<StaticTypeTwo>(), Equals(true));
+			Expect(var1.i).ToEqual(4);
+			Expect(var2.i).ToEqual(2);
+			Expect(ctx.HasStatic<StaticType>()).ToEqual(true);
+			Expect(ctx.HasStatic<StaticTypeTwo>()).ToEqual(true);
 		});
-		it("Can replace an static", [&]()
+		It("Can replace an static", []()
 		{
 			IdContext ctx;
-			AssertThat(ctx.HasStatic<StaticType>(), Equals(false));
+			Expect(ctx.HasStatic<StaticType>()).ToEqual(false);
 			ctx.SetStatic<StaticType>({4});
 			ctx.SetStatic<StaticType>({2});
-			AssertThat(ctx.GetStatic<StaticType>().i, Equals(2));
-			AssertThat(ctx.HasStatic<StaticType>(), Equals(true));
+			Expect(ctx.GetStatic<StaticType>().i).ToEqual(2);
+			Expect(ctx.HasStatic<StaticType>()).ToEqual(true);
 		});
-		it("Can get or set an static", [&]()
+		It("Can get or set an static", []()
 		{
 			IdContext ctx;
 			// Can set
-			AssertThat(ctx.GetOrSetStatic<StaticType>({4}).i, Equals(4));
+			Expect(ctx.GetOrSetStatic<StaticType>({4}).i).ToEqual(4);
 			// Can get
-			AssertThat(ctx.GetOrSetStatic<StaticType>({10}).i, Equals(4));
+			Expect(ctx.GetOrSetStatic<StaticType>({10}).i).ToEqual(4);
 		});
-		it("Can remove an static", [&]()
+		It("Can remove an static", []()
 		{
 			IdContext ctx;
 			ctx.SetStatic<StaticType>();
-			AssertThat(ctx.HasStatic<StaticType>(), Equals(true));
-			AssertThat(ctx.RemoveStatic<StaticType>(), Is().True());
-			AssertThat(ctx.HasStatic<StaticType>(), Equals(false));
+			Expect(ctx.HasStatic<StaticType>()).ToEqual(true);
+			Expect(ctx.RemoveStatic<StaticType>()).ToBeTrue();
+			Expect(ctx.HasStatic<StaticType>()).ToEqual(false);
 
-			AssertThat(ctx.RemoveStatic<StaticType>(), Is().False());
+			Expect(ctx.RemoveStatic<StaticType>()).ToBeFalse();
 		});
 
-		it("Can get statics", [&]()
+		It("Can get statics", []()
 		{
 			IdContext ctx;
 			ctx.SetStatic<StaticType>({4});
 			ctx.SetStatic<StaticTypeTwo>({2});
-			AssertThat(ctx.GetStatic<StaticType>().i, Equals(4));
-			AssertThat(ctx.GetStatic<StaticTypeTwo>().i, Equals(2));
+			Expect(ctx.GetStatic<StaticType>().i).ToEqual(4);
+			Expect(ctx.GetStatic<StaticTypeTwo>().i).ToEqual(2);
 
 			ctx.SetStatic<StaticTypeThree>({14});
-			AssertThat(ctx.GetStatic<StaticTypeThree>().i, Equals(14));
+			Expect(ctx.GetStatic<StaticTypeThree>().i).ToEqual(14);
 
 			ctx.RemoveStatic<StaticTypeThree>();
-			AssertThat(ctx.TryGetStatic<StaticTypeThree>(), Is().Null());
+			Expect(ctx.TryGetStatic<StaticTypeThree>()).ToEqual(nullptr);
 		});
 	});
-});
+}

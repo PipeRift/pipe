@@ -1,6 +1,6 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <Pipe/Core/Guid.h>
 #include <Pipe/Core/Map.h>
 #include <Pipe/Core/Tag.h>
@@ -9,8 +9,6 @@
 #include <PipeStrings.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
@@ -27,70 +25,70 @@ namespace Space
 }    // namespace Space
 
 
-go_bandit([]()
+void RegisterReflectionTypeNameTests()
 {
-	describe("Reflection.TypeName", []()
+	Spec("Reflection.TypeName", []()
 	{
-		it("Can get Platform type names", [&]()
+		It("Can get Platform type names", []()
 		{
-			AssertThat(GetTypeName<u8>(), Equals("u8"));
-			AssertThat(GetTypeName<u16>(), Equals("u16"));
-			AssertThat(GetTypeName<u32>(), Equals("u32"));
-			AssertThat(GetTypeName<u64>(), Equals("u64"));
-			AssertThat(GetTypeName<i8>(), Equals("i8"));
-			AssertThat(GetTypeName<i16>(), Equals("i16"));
-			AssertThat(GetTypeName<i32>(), Equals("i32"));
-			AssertThat(GetTypeName<i64>(), Equals("i64"));
-			AssertThat(GetTypeName<char>(), Equals("char"));
-			AssertThat(GetTypeName<StringView>(), Equals("StringView"));
-			AssertThat(GetTypeName<String>(), Equals("String"));
+			Expect(GetTypeName<u8>()).ToEqual("u8");
+			Expect(GetTypeName<u16>()).ToEqual("u16");
+			Expect(GetTypeName<u32>()).ToEqual("u32");
+			Expect(GetTypeName<u64>()).ToEqual("u64");
+			Expect(GetTypeName<i8>()).ToEqual("i8");
+			Expect(GetTypeName<i16>()).ToEqual("i16");
+			Expect(GetTypeName<i32>()).ToEqual("i32");
+			Expect(GetTypeName<i64>()).ToEqual("i64");
+			Expect(GetTypeName<char>()).ToEqual("char");
+			Expect(GetTypeName<StringView>()).ToEqual("StringView");
+			Expect(GetTypeName<String>()).ToEqual("String");
 		});
 
-		it("Can get Native type names", [&]()
+		It("Can get Native type names", []()
 		{
-			AssertThat(GetTypeName<bool>(), Equals("bool"));
-			AssertThat(GetTypeName<float>(), Equals("float"));
-			AssertThat(GetTypeName<double>(), Equals("double"));
+			Expect(GetTypeName<bool>()).ToEqual("bool");
+			Expect(GetTypeName<float>()).ToEqual("float");
+			Expect(GetTypeName<double>()).ToEqual("double");
 		});
 
-		it("Can get Class names", [&]()
+		It("Can get Class names", []()
 		{
-			AssertThat(GetTypeName<AClass>(), Equals("AClass"));
+			Expect(GetTypeName<AClass>()).ToEqual("AClass");
 		});
 
-		it("Can get Struct names", [&]()
+		It("Can get Struct names", []()
 		{
-			AssertThat(GetTypeName<AnStruct>(), Equals("AnStruct"));
+			Expect(GetTypeName<AnStruct>()).ToEqual("AnStruct");
 		});
 
-		it("Can get names with namespaces", [&]()
+		It("Can get names with namespaces", []()
 		{
-			AssertThat(GetTypeName<Space::Other>(), Equals("Space::Other"));
+			Expect(GetTypeName<Space::Other>()).ToEqual("Space::Other");
 		});
 
-		describe("Containers", []()
+		Describe("Containers", []()
 		{
-			it("Can get TArray names", [&]()
+			It("Can get TArray names", []()
 			{
-				AssertThat(GetTypeName<TArray<Guid>>(), Equals("TArray"));
-				AssertThat(GetFullTypeName<TArray<Guid>>(), Equals("TArray<p::Guid>"));
-				AssertThat(GetFullTypeName<TArray<Guid>>(false), Equals("TArray<Guid>"));
+				Expect(GetTypeName<TArray<Guid>>()).ToEqual("TArray");
+				Expect(GetFullTypeName<TArray<Guid>>()).ToEqual("TArray<p::Guid>");
+				Expect(GetFullTypeName<TArray<Guid>>(false)).ToEqual("TArray<Guid>");
 			});
 
-			it("Can get TMap names", [&]()
+			It("Can get TMap names", []()
 			{
 				auto name = GetTypeName<TMap<u8, bool>>();
-				AssertThat(name, Equals("TMap"));
+				Expect(name).ToEqual("TMap");
 
 				auto fullName = GetFullTypeName<TMap<u8, bool>>();
-				AssertThat(fullName, Equals("TMap<u8, bool>"));
+				Expect(fullName).ToEqual("TMap<u8, bool>");
 
 
 				auto namespaceName = GetFullTypeName<TMap<u8, Guid>>();
-				AssertThat(namespaceName, Equals("TMap<u8, p::Guid>"));
+				Expect(namespaceName).ToEqual("TMap<u8, p::Guid>");
 				auto noNamespaceName = GetFullTypeName<TMap<u8, Guid>>(false);
-				AssertThat(noNamespaceName, Equals("TMap<u8, Guid>"));
+				Expect(noNamespaceName).ToEqual("TMap<u8, Guid>");
 			});
 		});
 	});
-});
+}

@@ -1,28 +1,10 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include "bandit/grammar.h"
-
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <PipeECS.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
-
-namespace snowhouse
-{
-	template<>
-	struct Stringizer<Id>
-	{
-		static std::string ToString(Id id)
-		{
-			std::stringstream stream;
-			stream << "Id(" << id.value << ")";
-			return stream.str();
-		}
-	};
-}    // namespace snowhouse
 
 
 struct TypeA
@@ -33,7 +15,7 @@ struct TypeC
 {};
 
 
-go_bandit([]()
+namespace
 {
 	IdContext ctx;
 	Id id1;
@@ -41,9 +23,14 @@ go_bandit([]()
 	Id id3;
 	Id id4;
 	Id id5;
-	describe("ECS.Filtering", [&]()
+}    // namespace
+
+
+void RegisterECSFilteringTests()
+{
+	Spec("ECS.Filtering", []()
 	{
-		before_each([&]()
+		BeforeEach([]()
 		{
 			ctx = {};
 			id1 = AddId(ctx);
@@ -58,189 +45,189 @@ go_bandit([]()
 			ctx.Add<TypeB>(id5);
 		});
 
-		describe("FindAllIdsWith/FindAllIdsWithAny", [&]()
+		Describe("FindAllIdsWith/FindAllIdsWithAny", []()
 		{
-			it("Can get list matching all", [&]()
+			It("Can get list matching all", []()
 			{
 				TIdScope<TypeA, TypeB, TypeC> access{ctx};
 				TArray<Id> typeIds = FindAllIdsWith<TypeA>(access);
-				AssertThat(typeIds.Contains(id1), Is().True());
-				AssertThat(typeIds.Contains(id2), Is().True());
-				AssertThat(typeIds.Contains(id3), Is().False());
+				Expect(typeIds.Contains(id1)).ToBeTrue();
+				Expect(typeIds.Contains(id2)).ToBeTrue();
+				Expect(typeIds.Contains(id3)).ToBeFalse();
 
 				TArray<Id> type2Ids = FindAllIdsWith<TypeB, TypeC>(access);
-				AssertThat(type2Ids.Contains(id1), Is().False());
-				AssertThat(type2Ids.Contains(id2), Is().True());
-				AssertThat(type2Ids.Contains(id3), Is().True());
+				Expect(type2Ids.Contains(id1)).ToBeFalse();
+				Expect(type2Ids.Contains(id2)).ToBeTrue();
+				Expect(type2Ids.Contains(id3)).ToBeTrue();
 			});
 
-			it("Can get list matching any", [&]()
+			It("Can get list matching any", []()
 			{
 				TIdScope<TypeA, TypeB, TypeC> access{ctx};
 				TArray<Id> typeIds = FindAllIdsWithAny<TypeA>(access);
-				AssertThat(typeIds.Contains(id1), Is().True());
-				AssertThat(typeIds.Contains(id2), Is().True());
-				AssertThat(typeIds.Contains(id3), Is().False());
+				Expect(typeIds.Contains(id1)).ToBeTrue();
+				Expect(typeIds.Contains(id2)).ToBeTrue();
+				Expect(typeIds.Contains(id3)).ToBeFalse();
 
 				TArray<Id> type2Ids = FindAllIdsWithAny<TypeA, TypeC>(access);
-				AssertThat(type2Ids.Contains(id1), Is().True());
-				AssertThat(type2Ids.Contains(id2), Is().True());
-				AssertThat(type2Ids.Contains(id3), Is().True());
+				Expect(type2Ids.Contains(id1)).ToBeTrue();
+				Expect(type2Ids.Contains(id2)).ToBeTrue();
+				Expect(type2Ids.Contains(id3)).ToBeTrue();
 			});
 
-			it("Doesn't list removed ids", [&]()
+			It("Doesn't list removed ids", []()
 			{
 				TIdScope<TypeB> access{ctx};
-				RmId(ctx, id2, RmIdFlags::Instant);    // Remove first in the pool
-				RmId(ctx, id3, RmIdFlags::Instant);    // Remove last in the pool
-				RmId(ctx, id4, RmIdFlags::Instant);    // Remove last in the pool
+				RmId(ctx, id2, RmIdFlags::Instant);
+				RmId(ctx, id3, RmIdFlags::Instant);
+				RmId(ctx, id4, RmIdFlags::Instant);
 
 				TArray<Id> ids = FindAllIdsWith<TypeB>(access);
-				AssertThat(ids.Contains(NoId), Is().False());
-				AssertThat(ids.Size(), Equals(1));
+				Expect(ids.Contains(NoId)).ToBeFalse();
+				Expect(ids.Size()).ToEqual(1);
 			});
 
-			it("Doesn't list (deferred) removed ids", [&]()
+			It("Doesn't list (deferred) removed ids", []()
 			{
 				TIdScope<TypeB> access{ctx};
-				RmId(ctx, id2);    // Remove first in the pool
-				RmId(ctx, id3);    // Remove last in the pool
-				RmId(ctx, id4);    // Remove last in the pool
+				RmId(ctx, id2);
+				RmId(ctx, id3);
+				RmId(ctx, id4);
 
 				FlushDeferredRemovals(ctx);
 
 				TArray<Id> ids = FindAllIdsWith<TypeB>(access);
-				AssertThat(ids.Contains(NoId), Is().False());
-				AssertThat(ids.Size(), Equals(1));
+				Expect(ids.Contains(NoId)).ToBeFalse();
+				Expect(ids.Size()).ToEqual(1);
 			});
 		});
 
-		describe("ExcludeIdsWith", [&]()
+		Describe("ExcludeIdsWith", []()
 		{
-			it("Removes ids containing component", [&]()
+			It("Removes ids containing component", []()
 			{
 				TIdScope<TypeA, TypeB, TypeC> access{ctx};
 				TArray<Id> typeIds = FindAllIdsWithAny<TypeA>(access);
 
 				ExcludeIdsWith<TypeC>(access, typeIds);
-				AssertThat(typeIds.Contains(id1), Is().True());
-				AssertThat(typeIds.Contains(id2), Is().False());
-				AssertThat(typeIds.Contains(id3), Is().False());
+				Expect(typeIds.Contains(id1)).ToBeTrue();
+				Expect(typeIds.Contains(id2)).ToBeFalse();
+				Expect(typeIds.Contains(id3)).ToBeFalse();
 			});
 
-			it("Removes ids not containing component", [&]()
+			It("Removes ids not containing component", []()
 			{
 				TIdScope<TypeA, TypeB, TypeC> access{ctx};
 				TArray<Id> typeIds = FindAllIdsWithAny<TypeA>(access);
 
 				ExcludeIdsWithout<TypeC>(access, typeIds);
-				AssertThat(typeIds.Contains(id1), Is().False());
-				AssertThat(typeIds.Contains(id2), Is().True());
-				AssertThat(typeIds.Contains(id3), Is().False());
+				Expect(typeIds.Contains(id1)).ToBeFalse();
+				Expect(typeIds.Contains(id2)).ToBeTrue();
+				Expect(typeIds.Contains(id3)).ToBeFalse();
 			});
 
-			it("Removes ids containing multiple component", [&]()
+			It("Removes ids containing multiple component", []()
 			{
 				TIdScope<TypeA, TypeB, TypeC> access{ctx};
 				TArray<Id> typeIds = FindAllIdsWithAny<TypeA, TypeB, TypeC>(access);
 
 				ExcludeIdsWith<TypeB, TypeC>(access, typeIds);
-				AssertThat(typeIds.Contains(id1), Is().True());
-				AssertThat(typeIds.Contains(id2), Is().False());
-				AssertThat(typeIds.Contains(id3), Is().False());
+				Expect(typeIds.Contains(id1)).ToBeTrue();
+				Expect(typeIds.Contains(id2)).ToBeFalse();
+				Expect(typeIds.Contains(id3)).ToBeFalse();
 			});
 		});
 
-		describe("FindIdsWith", [&]()
+		Describe("FindIdsWith", []()
 		{
-			it("Finds ids containing a component from a list", [&]()
+			It("Finds ids containing a component from a list", []()
 			{
 				TArray<Id> source{id1, id2, id3};
 
 				TIdScope<TypeA> access{ctx};
 				TArray<Id> typeIds = FindIdsWith<TypeA>(access, source);
-				AssertThat(typeIds.Contains(id1), Is().True());
-				AssertThat(typeIds.Contains(id2), Is().True());
-				AssertThat(typeIds.Contains(id3), Is().False());
+				Expect(typeIds.Contains(id1)).ToBeTrue();
+				Expect(typeIds.Contains(id2)).ToBeTrue();
+				Expect(typeIds.Contains(id3)).ToBeFalse();
 			});
 
-			it("Finds ids not containing a component from a list", [&]()
+			It("Finds ids not containing a component from a list", []()
 			{
 				TArray<Id> source{id1, id2, id3};
 
 				TIdScope<TypeA> access{ctx};
 				TArray<Id> ids = FindIdsWithout<TypeA>(access, source);
-				AssertThat(ids.Contains(id1), Is().False());
-				AssertThat(ids.Contains(id2), Is().False());
-				AssertThat(ids.Contains(id3), Is().True());
+				Expect(ids.Contains(id1)).ToBeFalse();
+				Expect(ids.Contains(id2)).ToBeFalse();
+				Expect(ids.Contains(id3)).ToBeTrue();
 			});
 		});
 
-		describe("ExtractIdsWith", [&]()
+		Describe("ExtractIdsWith", []()
 		{
-			it("Finds and removes ids containing a component from a list", [&]()
+			It("Finds and removes ids containing a component from a list", []()
 			{
 				TArray<Id> source{id1, id2, id3};
 
 				TIdScope<TypeA> access{ctx};
 				TArray<Id> ids = ExtractIdsWith<TypeA>(access, source);
-				AssertThat(ids.Contains(id1), Is().True());
-				AssertThat(ids.Contains(id2), Is().True());
-				AssertThat(ids.Contains(id3), Is().False());
-				AssertThat(source.Contains(id1), Is().False());
-				AssertThat(source.Contains(id2), Is().False());
-				AssertThat(source.Contains(id3), Is().True());
+				Expect(ids.Contains(id1)).ToBeTrue();
+				Expect(ids.Contains(id2)).ToBeTrue();
+				Expect(ids.Contains(id3)).ToBeFalse();
+				Expect(source.Contains(id1)).ToBeFalse();
+				Expect(source.Contains(id2)).ToBeFalse();
+				Expect(source.Contains(id3)).ToBeTrue();
 			});
 
-			it("Finds and removes ids not containing a component from a list", [&]()
+			It("Finds and removes ids not containing a component from a list", []()
 			{
 				TArray<Id> source{id1, id2, id3};
 
 				TIdScope<TypeA> access{ctx};
 				TArray<Id> ids = ExtractIdsWithout<TypeA>(access, source);
-				AssertThat(ids.Contains(id1), Is().False());
-				AssertThat(ids.Contains(id2), Is().False());
-				AssertThat(ids.Contains(id3), Is().True());
-				AssertThat(source.Contains(id1), Is().True());
-				AssertThat(source.Contains(id2), Is().True());
-				AssertThat(source.Contains(id3), Is().False());
+				Expect(ids.Contains(id1)).ToBeFalse();
+				Expect(ids.Contains(id2)).ToBeFalse();
+				Expect(ids.Contains(id3)).ToBeTrue();
+				Expect(source.Contains(id1)).ToBeTrue();
+				Expect(source.Contains(id2)).ToBeTrue();
+				Expect(source.Contains(id3)).ToBeFalse();
 			});
 		});
 
-		it("Can filter directly from ECS", [&]()
+		It("Can filter directly from ECS", []()
 		{
 			TArray<Id> ids1 = FindAllIdsWith<TypeA>(ctx);
-			AssertThat(ids1.Contains(id1), Is().True());
+			Expect(ids1.Contains(id1)).ToBeTrue();
 
 			TArray<Id> ids2 = FindAllIdsWithAny<TypeA>(ctx);
-			AssertThat(ids2.Contains(id1), Is().True());
+			Expect(ids2.Contains(id1)).ToBeTrue();
 
 			TArray<Id> ids3 = FindAllIdsWithAny<TypeA>(ctx);
 			ExcludeIdsWith<TypeC>(ctx, ids3);
-			AssertThat(ids3.Contains(id1), Is().True());
+			Expect(ids3.Contains(id1)).ToBeTrue();
 
 			TArray<Id> ids4 = FindAllIdsWithAny<TypeA>(ctx);
 			ExcludeIdsWithout<TypeC>(ctx, ids4);
-			AssertThat(ids4.Contains(id1), Is().False());
+			Expect(ids4.Contains(id1)).ToBeFalse();
 		});
 
-		it("Can filter CRemoved", [&]()
+		It("Can filter CRemoved", []()
 		{
 			RmId(ctx, id1);
 			RmId(ctx, id2);
 			RmId(ctx, id3);
 
 			TArray<Id> ids1 = FindAllIdsWith<TypeA>(ctx);
-			AssertThat(ids1.Contains(id1), Is().True());
+			Expect(ids1.Contains(id1)).ToBeTrue();
 			TArray<Id> ids2 = FindAllIdsWith<CRemoved>(ctx);
-			AssertThat(ids2.Contains(id1), Is().True());
-			AssertThat(ids2.Contains(id2), Is().True());
-			AssertThat(ids2.Contains(id3), Is().True());
-			AssertThat(ids2.Size(), Equals(3));
+			Expect(ids2.Contains(id1)).ToBeTrue();
+			Expect(ids2.Contains(id2)).ToBeTrue();
+			Expect(ids2.Contains(id3)).ToBeTrue();
+			Expect(ids2.Size()).ToEqual(3);
 
 			TArray<Id> ids3 = FindAllIdsWith<CRemoved, TypeA>(ctx);
-			AssertThat(ids3.Contains(id1), Is().True());
-			AssertThat(ids3.Contains(id2), Is().True());
+			Expect(ids3.Contains(id1)).ToBeTrue();
+			Expect(ids3.Contains(id2)).ToBeTrue();
 		});
 	});
-});
+}

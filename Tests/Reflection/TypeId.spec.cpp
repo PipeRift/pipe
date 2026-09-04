@@ -1,31 +1,29 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <PipeReflect.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 struct One
 {};
 
 
-go_bandit([]()
+void RegisterReflectionTypeIdTests()
 {
-	describe("Reflection.TypeId", []()
+	Spec("Reflection.TypeId", []()
 	{
-		it("Ids can be valid and invalid", [&]()
+		It("Ids can be valid and invalid", []()
 		{
 			static constexpr TypeId id = GetTypeId<u8>();
-			AssertThat(id.IsValid(), Equals(true));
+			Expect(id.IsValid()).ToEqual(true);
 
 			static constexpr TypeId noId{};
-			AssertThat(noId.IsValid(), Equals(false));
+			Expect(noId.IsValid()).ToEqual(false);
 		});
 
-		it("Different types don't share an id", [&]()
+		It("Different types don't share an id", []()
 		{
 			static constexpr TypeId ids[]{
 			    GetTypeId<u8>(), GetTypeId<u16>(), GetTypeId<i32>(), GetTypeId<One>()};
@@ -36,9 +34,9 @@ go_bandit([]()
 			{
 				for (u32 e = i + 1; e < numIds; ++e)
 				{
-					AssertThat(ids[i], !Equals(ids[e]));
+					Expect(ids[i]).ToNotEqual(ids[e]);
 				}
 			}
 		});
 	});
-});
+}

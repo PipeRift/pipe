@@ -1,11 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <PipeECS.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
@@ -23,121 +21,121 @@ struct ScopeTypeC
 };
 
 
-go_bandit([]()
+void RegisterECSIdScopesTests()
 {
-	describe("ECS.IdScopes", []()
+	Spec("ECS.IdScopes", []()
 	{
-		describe("Templated", []()
+		Describe("Templated", []()
 		{
-			it("Can cache pools", [&]()
+			It("Can cache pools", []()
 			{
 				IdContext ctx;
 				TIdScope<Writes<ScopeTypeA, ScopeTypeB>> scope{ctx};
 
-				AssertThat(scope.GetPool<ScopeTypeA>(), Equals(ctx.GetPool<ScopeTypeA>()));
-				AssertThat(scope.GetPool<const ScopeTypeA>(), Equals(ctx.GetPool<ScopeTypeA>()));
-				AssertThat(scope.GetPool<const ScopeTypeB>(), Equals(ctx.GetPool<ScopeTypeB>()));
+				Expect(scope.GetPool<ScopeTypeA>()).ToEqual(ctx.GetPool<ScopeTypeA>());
+				Expect(scope.GetPool<const ScopeTypeA>()).ToEqual(ctx.GetPool<ScopeTypeA>());
+				Expect(scope.GetPool<const ScopeTypeB>()).ToEqual(ctx.GetPool<ScopeTypeB>());
 			});
 
-			it("Can check if contained", [&]()
+			It("Can check if contained", []()
 			{
 				IdContext ctx;
 				TPool<ScopeTypeA>& pool = ctx.AssurePool<ScopeTypeA>();
 				TIdScope<Writes<ScopeTypeA>> scope{ctx};
 				TIdScope<ScopeTypeA> scopeConst{ctx};
 				Id id = NoId;
-				AssertThat(scope.Has<ScopeTypeA>(id), Is().False());
-				AssertThat(scopeConst.Has<ScopeTypeA>(id), Is().False());
+				Expect(scope.Has<ScopeTypeA>(id)).ToBeFalse();
+				Expect(scopeConst.Has<ScopeTypeA>(id)).ToBeFalse();
 
 				id = AddId(ctx);
-				AssertThat(scope.Has<ScopeTypeA>(id), Is().False());
-				AssertThat(scopeConst.Has<ScopeTypeA>(id), Is().False());
+				Expect(scope.Has<ScopeTypeA>(id)).ToBeFalse();
+				Expect(scopeConst.Has<ScopeTypeA>(id)).ToBeFalse();
 
 				ctx.Add<ScopeTypeA>(id);
-				AssertThat(scope.Has<ScopeTypeA>(id), Is().True());
-				AssertThat(scopeConst.Has<ScopeTypeA>(id), Is().True());
+				Expect(scope.Has<ScopeTypeA>(id)).ToBeTrue();
+				Expect(scopeConst.Has<ScopeTypeA>(id)).ToBeTrue();
 
 				TIdScope<ScopeTypeA, ScopeTypeB> scope2{ctx};
 				ctx.Add<ScopeTypeB>(id);
-				AssertThat(scope2.Has<ScopeTypeB>(id), Is().True());
+				Expect(scope2.Has<ScopeTypeB>(id)).ToBeTrue();
 			});
 
-			it("Can initialize superset", [&]()
+			It("Can initialize superset", []()
 			{
 				IdContext ctx;
 				TPool<ScopeTypeA>& typePool = ctx.AssurePool<ScopeTypeA>();
 
 				TIdScope<Writes<ScopeTypeA, ScopeTypeB>> scope1{ctx};
 				TIdScope<Writes<ScopeTypeA>> superset1{scope1};
-				AssertThat(superset1.GetPool<ScopeTypeA>(), Equals(&typePool));
+				Expect(superset1.GetPool<ScopeTypeA>()).ToEqual(&typePool);
 
 				TIdScope<Writes<ScopeTypeA, ScopeTypeB>> scope2{ctx};
 				TIdScope<ScopeTypeA> superset2{scope2};
-				AssertThat(superset2.GetPool<const ScopeTypeA>(), Equals(&typePool));
+				Expect(superset2.GetPool<const ScopeTypeA>()).ToEqual(&typePool);
 
 				TIdScope<Writes<ScopeTypeA, ScopeTypeB>> scope3{ctx};
 				TIdScope<ScopeTypeA> superset3{scope3};
-				AssertThat(superset1.GetPool<ScopeTypeA>(), Equals(&typePool));
+				Expect(superset1.GetPool<ScopeTypeA>()).ToEqual(&typePool);
 			});
 
-			it("Can mark modify", [&]()
+			It("Can mark modify", []()
 			{
 				IdContext ctx;
 				Id id = AddId(ctx);
 				TIdScope<Writes<CMdfd<ScopeTypeC>>> scope1{ctx};
-				AssertThat(scope1.Has<CMdfd<ScopeTypeC>>(id), Is().False());
+				Expect(scope1.Has<CMdfd<ScopeTypeC>>(id)).ToBeFalse();
 				scope1.Modify<ScopeTypeC>(id);
-				AssertThat(scope1.Has<CMdfd<ScopeTypeC>>(id), Is().True());
-				AssertThat(scope1.IsModified<ScopeTypeC>(id), Is().True());
+				Expect(scope1.Has<CMdfd<ScopeTypeC>>(id)).ToBeTrue();
+				Expect(scope1.IsModified<ScopeTypeC>(id)).ToBeTrue();
 
 				scope1.Remove<CMdfd<ScopeTypeC>>(id);
-				AssertThat(scope1.Has<CMdfd<ScopeTypeC>>(id), Is().False());
-				AssertThat(scope1.IsModified<ScopeTypeC>(id), Is().False());
+				Expect(scope1.Has<CMdfd<ScopeTypeC>>(id)).ToBeFalse();
+				Expect(scope1.IsModified<ScopeTypeC>(id)).ToBeFalse();
 
 				scope1.Modify<ScopeTypeC>(id);
-				AssertThat(scope1.Has<CMdfd<ScopeTypeC>>(id), Is().True());
-				AssertThat(scope1.IsModified<ScopeTypeC>(id), Is().True());
+				Expect(scope1.Has<CMdfd<ScopeTypeC>>(id)).ToBeTrue();
+				Expect(scope1.IsModified<ScopeTypeC>(id)).ToBeTrue();
 			});
 
-			it("Can mark modify automatically", [&]()
+			It("Can mark modify automatically", []()
 			{
 				IdContext ctx;
 				Id id         = AddId(ctx);
 				using MyScope = TIdScope<Writes<ScopeTypeC, ScopeTypeB>, CMdfd<ScopeTypeB>>;
 				MyScope scope{ctx};
-				AssertThat(MyScope::WDependencies::Contains<CMdfd<ScopeTypeC>>(), Is().True());
-				AssertThat(MyScope::WDependencies::Contains<CMdfd<ScopeTypeB>>(), Is().False());
-				AssertThat(MyScope::RWDependencies::Contains<CMdfd<ScopeTypeC>>(), Is().True());
-				AssertThat(MyScope::RWDependencies::Contains<CMdfd<ScopeTypeB>>(), Is().True());
+				Expect(MyScope::WDependencies::Contains<CMdfd<ScopeTypeC>>()).ToBeTrue();
+				Expect(MyScope::WDependencies::Contains<CMdfd<ScopeTypeB>>()).ToBeFalse();
+				Expect(MyScope::RWDependencies::Contains<CMdfd<ScopeTypeC>>()).ToBeTrue();
+				Expect(MyScope::RWDependencies::Contains<CMdfd<ScopeTypeB>>()).ToBeTrue();
 
 				scope.Add<ScopeTypeC>(id);    // Type B should be auto modified
-				AssertThat(scope.IsModified<ScopeTypeC>(id), Is().True());
+				Expect(scope.IsModified<ScopeTypeC>(id)).ToBeTrue();
 				scope.Add<ScopeTypeB>(id);    // Type B should not be auto modified
-				AssertThat(scope.IsModified<ScopeTypeB>(id), Is().False());
+				Expect(scope.IsModified<ScopeTypeB>(id)).ToBeFalse();
 
 				scope.ClearPool<CMdfd<ScopeTypeC>>();
-				AssertThat(scope.IsModified<ScopeTypeC>(id), Is().False());
+				Expect(scope.IsModified<ScopeTypeC>(id)).ToBeFalse();
 
 				scope.Has<ScopeTypeC>(id);    // Has should never mark modify
-				AssertThat(scope.IsModified<ScopeTypeC>(id), Is().False());
+				Expect(scope.IsModified<ScopeTypeC>(id)).ToBeFalse();
 
 				scope.Get<const ScopeTypeC>(id);
-				AssertThat(scope.IsModified<ScopeTypeC>(id), Is().False());
+				Expect(scope.IsModified<ScopeTypeC>(id)).ToBeFalse();
 				scope.Get<ScopeTypeC>(id);
-				AssertThat(scope.IsModified<ScopeTypeC>(id), Is().True());
+				Expect(scope.IsModified<ScopeTypeC>(id)).ToBeTrue();
 				scope.Add<ScopeTypeB>(id);    // Type B should not be auto modified
-				AssertThat(scope.IsModified<ScopeTypeB>(id), Is().False());
+				Expect(scope.IsModified<ScopeTypeB>(id)).ToBeFalse();
 
 				scope.ClearPool<CMdfd<ScopeTypeC>>();
 
 				scope.Remove<ScopeTypeC>(id);
-				AssertThat(scope.Has<ScopeTypeC>(id), Is().False());
-				AssertThat(scope.IsModified<ScopeTypeC>(id), Is().True());
+				Expect(scope.Has<ScopeTypeC>(id)).ToBeFalse();
+				Expect(scope.IsModified<ScopeTypeC>(id)).ToBeTrue();
 
 				scope.Remove<ScopeTypeB>(id);    // Type B should not be auto modified
-				AssertThat(scope.Has<ScopeTypeB>(id), Is().False());
-				AssertThat(scope.IsModified<ScopeTypeB>(id), Is().False());
+				Expect(scope.Has<ScopeTypeB>(id)).ToBeFalse();
+				Expect(scope.IsModified<ScopeTypeB>(id)).ToBeFalse();
 			});
 		});
 	});
-});
+}

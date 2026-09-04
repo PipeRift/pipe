@@ -1,116 +1,114 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <Pipe/Core/StringView.h>
 #include <PipeStrings.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
-go_bandit([]()
+void RegisterCoreStringViewTests()
 {
-	describe("Strings", []()
+	Spec("Strings", []()
 	{
-		describe("StringView", []()
+		Describe("StringView", []()
 		{
-			it("Can assign from literal", [&]()
+			It("Can assign from literal", []()
 			{
 				StringView v{"Kiwi"};
-				AssertThat(v, Equals("Kiwi"));
-				AssertThat(v.size(), Equals(4));
+				Expect(v).ToEqual("Kiwi");
+				Expect(v.size()).ToEqual(4);
 			});
 
-			it("Can assign from string", [&]()
+			It("Can assign from string", []()
 			{
 				String str{"Kiwi"};
 				StringView v{str};
-				AssertThat(v, Equals("Kiwi"));
-				AssertThat(v.size(), Equals(4));
+				Expect(v).ToEqual("Kiwi");
+				Expect(v.size()).ToEqual(4);
 			});
 
-			it("Can copy empty", [&]()
+			It("Can copy empty", []()
 			{
 				StringView str{};
 				StringView str2{" "};
-				AssertThat(str.empty(), Equals(true));
-				AssertThat((u8*)str.data(), Equals(nullptr));
-				AssertThat(str2.empty(), Equals(false));
-				AssertThat((u8*)str2.data(), !Equals(nullptr));
+				Expect(str.empty()).ToEqual(true);
+				Expect((u8*)str.data()).ToEqual(nullptr);
+				Expect(str2.empty()).ToEqual(false);
+				Expect((u8*)str2.data()).ToNotEqual(nullptr);
 				str2 = str;
-				AssertThat(str2.empty(), Equals(true));
-				AssertThat((u8*)str2.data(), Equals(nullptr));
+				Expect(str2.empty()).ToEqual(true);
+				Expect((u8*)str2.data()).ToEqual(nullptr);
 			});
 
-			it("Can retrieve string data", [&]()
+			It("Can retrieve string data", []()
 			{
 				StringView v{"Kiwi"};
-				AssertThat(v.data(), Equals("Kiwi"));
-				AssertThat(v.size(), Equals(4));
+				Expect(v.data()).ToEqual("Kiwi");
+				Expect(v.size()).ToEqual(4);
 				StringView v2{};
-				AssertThat((u8*)v2.data(), Equals(nullptr));
-				AssertThat(v2.size(), Equals(0));
+				Expect((u8*)v2.data()).ToEqual(nullptr);
+				Expect(v2.size()).ToEqual(0);
 			});
 
-			it("Can compare", [&]()
+			It("Can compare", []()
 			{
 				StringView vKiwi{"Kiwi"};
 				StringView vKiwi2{"Kiwi"};
 				StringView vApple{"Apple"};
-				AssertThat(vKiwi, Equals(vKiwi2));
-				AssertThat(vKiwi, !Equals(vApple));
+				Expect(vKiwi).ToEqual(vKiwi2);
+				Expect(vKiwi).ToNotEqual(vApple);
 			});
 
-			it("Can copy", [&]()
+			It("Can copy", []()
 			{
 				StringView vKiwi{"Kiwi"};
 				StringView vApple{"Apple"};
 				StringView vCopy = vKiwi;
-				AssertThat(vCopy, Equals("Kiwi"));
-				AssertThat(vCopy, Equals(vKiwi));
-				AssertThat(vCopy, !Equals(vApple));
+				Expect(vCopy).ToEqual("Kiwi");
+				Expect(vCopy).ToEqual(vKiwi);
+				Expect(vCopy).ToNotEqual(vApple);
 				vCopy = vApple;
-				AssertThat(vCopy, Equals("Apple"));
-				AssertThat(vCopy, !Equals(vKiwi));
-				AssertThat(vCopy, Equals(vApple));
+				Expect(vCopy).ToEqual("Apple");
+				Expect(vCopy).ToNotEqual(vKiwi);
+				Expect(vCopy).ToEqual(vApple);
 			});
 
-			it("Can move", [&]()
+			It("Can move", []()
 			{
 				StringView vKiwi{"Kiwi"};
 				StringView vApple{"Apple"};
 				StringView vMove = Move(vKiwi);
-				AssertThat(vMove, Equals("Kiwi"));
+				Expect(vMove).ToEqual("Kiwi");
 				vMove = Move(vApple);
-				AssertThat(vMove, Equals("Apple"));
+				Expect(vMove).ToEqual("Apple");
 			});
 
-			describe("Strings", []()
+			Describe("Strings", []()
 			{
-				it("Can Find", [&]()
+				It("Can Find", []()
 				{
 					StringView v{"Kiwiwi"};
 
 					// Find Chars
-					AssertThat(Strings::Find(v, 'K', FindDir::Front), Equals(0));
-					AssertThat(Strings::Find(v, 'K', FindDir::Back), Equals(0));
-					AssertThat(Strings::Find(v, 'i', FindDir::Front), Equals(1));
-					AssertThat(Strings::Find(v, 'i', FindDir::Back), Equals(5));
+					Expect(Strings::Find(v, 'K', FindDir::Front)).ToEqual(0);
+					Expect(Strings::Find(v, 'K', FindDir::Back)).ToEqual(0);
+					Expect(Strings::Find(v, 'i', FindDir::Front)).ToEqual(1);
+					Expect(Strings::Find(v, 'i', FindDir::Back)).ToEqual(5);
 					// Find last chars
-					AssertThat(Strings::Find(v, 'w', FindDir::Front, true), Equals(0));    // 'K'
-					AssertThat(Strings::Find(v, 'w', FindDir::Back, true), Equals(5));     // 'i'
-					AssertThat(Strings::Find(v, 'K', FindDir::Front, true), Equals(1));    // 'i'
-					AssertThat(Strings::Find(v, 'i', FindDir::Back, true), Equals(4));     // 'w'
+					Expect(Strings::Find(v, 'w', FindDir::Front, true)).ToEqual(0);    // 'K'
+					Expect(Strings::Find(v, 'w', FindDir::Back, true)).ToEqual(5);     // 'i'
+					Expect(Strings::Find(v, 'K', FindDir::Front, true)).ToEqual(1);    // 'i'
+					Expect(Strings::Find(v, 'i', FindDir::Back, true)).ToEqual(4);     // 'w'
 
 					// Find Sub-strings
-					AssertThat(Strings::Find(v, "Ki", FindDir::Front), Equals(0));
-					AssertThat(Strings::Find(v, "Ki", FindDir::Back), Equals(0));
-					AssertThat(Strings::Find(v, "wi", FindDir::Front), Equals(2));
-					AssertThat(Strings::Find(v, "wi", FindDir::Back), Equals(4));
+					Expect(Strings::Find(v, "Ki", FindDir::Front)).ToEqual(0);
+					Expect(Strings::Find(v, "Ki", FindDir::Back)).ToEqual(0);
+					Expect(Strings::Find(v, "wi", FindDir::Front)).ToEqual(2);
+					Expect(Strings::Find(v, "wi", FindDir::Back)).ToEqual(4);
 				});
 			});
 		});
 	});
-});
+}

@@ -1,27 +1,11 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <PipeECS.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 using namespace std::chrono_literals;
-
-namespace snowhouse
-{
-	template<>
-	struct Stringizer<Id>
-	{
-		static std::string ToString(Id id)
-		{
-			std::stringstream stream;
-			stream << "Id(" << id.value << ")";
-			return stream.str();
-		}
-	};
-}    // namespace snowhouse
 
 
 struct EmptyComponent
@@ -60,45 +44,45 @@ struct TestComponent
 u32 TestComponent::destructed = 0;
 
 
-go_bandit([]()
+void RegisterECSComponentsTests()
 {
-	describe("ECS.Components", []()
+	Spec("ECS.Components", []()
 	{
-		it("Can add one component", [&]()
+		It("Can add one component", []()
 		{
 			IdContext ctx;
 			Id id = AddId(ctx);
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<EmptyComponent>(id)).ToEqual(nullptr);
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToEqual(nullptr);
 
 			ctx.Add<EmptyComponent>(id);
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().True());
-			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeTrue();
+			Expect(ctx.TryGet<EmptyComponent>(id)).ToEqual(nullptr);
 
 			ctx.Add<NonEmptyComponent>(id);
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeTrue();
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToNotEqual(nullptr);
 		});
 
-		it("Can remove one component", [&]()
+		It("Can remove one component", []()
 		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 
 			ctx.Remove<EmptyComponent>(id);
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<EmptyComponent>(id)).ToEqual(nullptr);
 
 			NonEmptyComponent::destructed = 0;
 			ctx.Remove<NonEmptyComponent>(id);
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
-			AssertThat(NonEmptyComponent::destructed, Equals(1));
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToEqual(nullptr);
+			Expect(NonEmptyComponent::destructed).ToEqual(1);
 		});
 
-		it("Can add many components", [&]()
+		It("Can add many components", []()
 		{
 			IdContext ctx;
 			TArray<Id> ids{3};
@@ -108,12 +92,12 @@ go_bandit([]()
 			for (Id id : ids)
 			{
 				auto* data = ctx.TryGet<NonEmptyComponent>(id);
-				AssertThat(data, !Equals(nullptr));
-				AssertThat(data->a, Equals(2));
+				Expect(data).ToNotEqual(nullptr);
+				Expect(data->a).ToEqual(2);
 			}
 		});
 
-		it("Can remove many components", [&]()
+		It("Can remove many components", []()
 		{
 			IdContext ctx;
 			TArray<Id> ids{3};
@@ -123,10 +107,10 @@ go_bandit([]()
 			NonEmptyComponent::destructed = 0;
 			TView<Id> firstTwo{ids.Data(), ids.Data() + 2};
 			ctx.Remove<NonEmptyComponent>(firstTwo);
-			AssertThat(NonEmptyComponent::destructed, Equals(2));
-			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[0]), Equals(nullptr));
-			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[1]), Equals(nullptr));
-			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[2]), !Equals(nullptr));
+			Expect(NonEmptyComponent::destructed).ToEqual(2);
+			Expect(ctx.TryGet<NonEmptyComponent>(ids[0])).ToEqual(nullptr);
+			Expect(ctx.TryGet<NonEmptyComponent>(ids[1])).ToEqual(nullptr);
+			Expect(ctx.TryGet<NonEmptyComponent>(ids[2])).ToNotEqual(nullptr);
 
 			// Repeat in different order
 			ctx.AddN(ids, NonEmptyComponent{2});
@@ -134,58 +118,58 @@ go_bandit([]()
 			NonEmptyComponent::destructed = 0;
 			TView<Id> lastTwo{ids.Data() + 1, ids.Data() + 3};
 			ctx.Remove<NonEmptyComponent>(lastTwo);
-			AssertThat(NonEmptyComponent::destructed, Equals(2));
-			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[0]), !Equals(nullptr));
-			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[1]), Equals(nullptr));
-			AssertThat(ctx.TryGet<NonEmptyComponent>(ids[2]), Equals(nullptr));
+			Expect(NonEmptyComponent::destructed).ToEqual(2);
+			Expect(ctx.TryGet<NonEmptyComponent>(ids[0])).ToNotEqual(nullptr);
+			Expect(ctx.TryGet<NonEmptyComponent>(ids[1])).ToEqual(nullptr);
+			Expect(ctx.TryGet<NonEmptyComponent>(ids[2])).ToEqual(nullptr);
 		});
 
-		it("Components are removed after node is deleted", [&]()
+		It("Components are removed after node is deleted", []()
 		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 
 			RmId(ctx, id, p::RmIdFlags::Instant);
-			AssertThat(ctx.IsValid(id), Is().False());
+			Expect(ctx.IsValid(id)).ToBeFalse();
 
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<EmptyComponent>(id)).ToEqual(nullptr);
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToEqual(nullptr);
 		});
 
-		it("Components are removed after node is deleted (deferred)", [&]()
+		It("Components are removed after node is deleted (deferred)", []()
 		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 
 			RmId(ctx, id);
-			AssertThat(ctx.IsValid(id), Is().False());
+			Expect(ctx.IsValid(id)).ToBeFalse();
 
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().True());
-			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeTrue();
+			Expect(ctx.TryGet<EmptyComponent>(id)).ToEqual(nullptr);
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeTrue();
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToNotEqual(nullptr);
 
 			FlushDeferredRemovals(ctx);
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<EmptyComponent>(id)).ToEqual(nullptr);
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToEqual(nullptr);
 		});
 
-		it("Components keep state when added", [&]()
+		It("Components keep state when added", []()
 		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.AddN(id, NonEmptyComponent{2});
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
-			AssertThat(ctx.Get<NonEmptyComponent>(id).a, Equals(2));
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToNotEqual(nullptr);
+			Expect(ctx.Get<NonEmptyComponent>(id).a).ToEqual(2);
 		});
 
-		it("Can copy registry", []()
+		It("Can copy registry", []()
 		{
 			IdContext ctxa;
 
@@ -195,32 +179,32 @@ go_bandit([]()
 			ctxa.AddN(id2, NonEmptyComponent{2});
 
 			IdContext ctxb{ctxa};
-			AssertThat(ctxb.Has<EmptyComponent>(id), Is().True());
-			AssertThat(ctxb.Has<NonEmptyComponent>(id), Is().True());
-			AssertThat(ctxb.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+			Expect(ctxb.Has<EmptyComponent>(id)).ToBeTrue();
+			Expect(ctxb.Has<NonEmptyComponent>(id)).ToBeTrue();
+			Expect(ctxb.TryGet<NonEmptyComponent>(id)).ToNotEqual(nullptr);
 
 			// Holds component values
-			AssertThat(ctxb.Has<NonEmptyComponent>(id2), Is().True());
-			AssertThat(ctxb.Get<NonEmptyComponent>(id2).a, Equals(2));
+			Expect(ctxb.Has<NonEmptyComponent>(id2)).ToBeTrue();
+			Expect(ctxb.Get<NonEmptyComponent>(id2).a).ToEqual(2);
 		});
 
-		it("Can check components", [&]()
+		It("Can check components", []()
 		{
 			IdContext ctx;
 			Id id = NoId;
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeFalse();
 
 			id = AddId(ctx);
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeFalse();
 
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().True());
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeTrue();
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeTrue();
 		});
 
-		it("Can destroy components on reset", [&]()
+		It("Can destroy components on reset", []()
 		{
 			NonEmptyComponent::destructed = 0;
 			TestComponent::destructed     = 0;
@@ -233,53 +217,53 @@ go_bandit([]()
 
 			ctx.Remove<NonEmptyComponent>(ids);
 			ctx.Remove<TestComponent>(ids[0]);
-			AssertThat(
-			    NonEmptyComponent::destructed, Equals(4));       // 3 + 1 (passed by value on Add())
-			AssertThat(TestComponent::destructed, Equals(2));    // 1 + 1 (passed by value on Add())
+			Expect(
+			    NonEmptyComponent::destructed).ToEqual(4);       // 3 + 1 (passed by value on Add())
+			Expect(TestComponent::destructed).ToEqual(2);    // 1 + 1 (passed by value on Add())
 
 			NonEmptyComponent::destructed = 0;
 			TestComponent::destructed     = 0;
 			ctx.Reset();
 
-			AssertThat(NonEmptyComponent::destructed, Equals(0));
-			AssertThat(TestComponent::destructed, Equals(2));
+			Expect(NonEmptyComponent::destructed).ToEqual(0);
+			Expect(TestComponent::destructed).ToEqual(2);
 		});
 
-		it("Components are removed with the entity", [&]()
+		It("Components are removed with the entity", []()
 		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 			RmId(ctx, id, p::RmIdFlags::Instant);
-			AssertThat(ctx.IsValid(id), Is().False());
+			Expect(ctx.IsValid(id)).ToBeFalse();
 
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<EmptyComponent>(id)).ToEqual(nullptr);
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToEqual(nullptr);
 		});
 
-		it("Components are removed with the entity (deferred)", [&]()
+		It("Components are removed with the entity (deferred)", []()
 		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 			RmId(ctx, id);
-			AssertThat(ctx.IsValid(id), Is().False());
+			Expect(ctx.IsValid(id)).ToBeFalse();
 
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().True());
-			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeTrue();
+			Expect(ctx.TryGet<EmptyComponent>(id)).ToEqual(nullptr);
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeTrue();
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToNotEqual(nullptr);
 
 			FlushDeferredRemovals(ctx);
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<EmptyComponent>(id), Equals(nullptr));
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().False());
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), Equals(nullptr));
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<EmptyComponent>(id)).ToEqual(nullptr);
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToEqual(nullptr);
 		});
 
-		it("Can access components on recicled entities", [&]()
+		It("Can access components on recicled entities", []()
 		{
 			IdContext ctx;
 			Id id = AddId(ctx);
@@ -288,22 +272,22 @@ go_bandit([]()
 
 			id = AddId(ctx);
 			ctx.Add<NonEmptyComponent>(id);
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().False());
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeFalse();
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeTrue();
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToNotEqual(nullptr);
 		});
 
-		it("Can access CRemoved", [&]()
+		It("Can access CRemoved", []()
 		{
 			IdContext ctx;
 			Id id = AddId(ctx);
 			ctx.Add<EmptyComponent, NonEmptyComponent>(id);
 			RmId(ctx, id);
 
-			AssertThat(ctx.Has<CRemoved>(id), Is().True());
-			AssertThat(ctx.Has<EmptyComponent>(id), Is().True());
-			AssertThat(ctx.Has<NonEmptyComponent>(id), Is().True());
-			AssertThat(ctx.TryGet<NonEmptyComponent>(id), !Equals(nullptr));
+			Expect(ctx.Has<CRemoved>(id)).ToBeTrue();
+			Expect(ctx.Has<EmptyComponent>(id)).ToBeTrue();
+			Expect(ctx.Has<NonEmptyComponent>(id)).ToBeTrue();
+			Expect(ctx.TryGet<NonEmptyComponent>(id)).ToNotEqual(nullptr);
 		});
 	});
-});
+}

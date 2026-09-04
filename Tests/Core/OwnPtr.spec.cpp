@@ -1,11 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <Pipe/Memory/OwnPtr.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
@@ -39,147 +37,147 @@ struct MockStruct
 	using PtrBuilder = TestPtrBuilder<T>;
 
 	bool bCalledNew = false;
-	static bool bCalledDelete;
+	inline static bool bCalledDelete = false;
 };
 
 
-go_bandit([]()
+void RegisterCoreOwnPtrTests()
 {
-	describe("Core.OwnPtr", []()
+	Spec("Core.OwnPtr", []()
 	{
-		describe("Owner pointer", []()
+		Describe("Owner pointer", []()
 		{
-			it("Can initialize to empty", [&]()
+			It("Can initialize to empty", []()
 			{
 				TOwnPtr<EmptyStruct> ptr;
-				AssertThat(ptr.IsValid(), Equals(false));
-				AssertThat(ptr.Get(), Equals(nullptr));
+				Expect(ptr.IsValid()).ToEqual(false);
+				Expect(ptr.Get()).ToEqual(nullptr);
 			});
 
-			it("Can instantiate", [&]()
+			It("Can instantiate", []()
 			{
 				TOwnPtr<EmptyStruct> ptr = MakeOwned<EmptyStruct>();
-				AssertThat(ptr.IsValid(), Equals(true));
-				AssertThat(ptr.Get(), Is().Not().EqualTo(nullptr));
+				Expect(ptr.IsValid()).ToEqual(true);
+				Expect(ptr.Get()).ToNotEqual(nullptr);
 			});
 
-			it("Owner can release", [&]()
+			It("Owner can release", []()
 			{
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
-				AssertThat(owner.IsValid(), Equals(true));
+				Expect(owner.IsValid()).ToEqual(true);
 
 				owner.Delete();
-				AssertThat(owner.IsValid(), Equals(false));
+				Expect(owner.IsValid()).ToEqual(false);
 			});
 
-			it("Owner is released when destroyed", [&]()
+			It("Owner is released when destroyed", []()
 			{
 				TPtr<EmptyStruct> ptr;
 				{
 					TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 
 					ptr = owner;
-					AssertThat(ptr.IsValid(), Equals(true));
+					Expect(ptr.IsValid()).ToEqual(true);
 				}
-				AssertThat(ptr.IsValid(), Equals(false));
+				Expect(ptr.IsValid()).ToEqual(false);
 			});
 
-			describe("Ptr Builder", []()
+			Describe("Ptr Builder", []()
 			{
-				it("Calls custom new", [&]()
+				It("Calls custom new", []()
 				{
 					auto owner = MakeOwned<MockStruct>();
-					AssertThat(owner->bCalledNew, Equals(true));
+					Expect(owner->bCalledNew).ToEqual(true);
 				});
 
-				it("Calls custom delete", [&]()
+				It("Calls custom delete", []()
 				{
 					MockStruct::bCalledDelete = false;
 					auto owner                = MakeOwned<MockStruct>();
-					AssertThat(MockStruct::bCalledDelete, Equals(false));
+					Expect(MockStruct::bCalledDelete).ToEqual(false);
 					owner.Delete();
-					AssertThat(MockStruct::bCalledDelete, Equals(true));
+					Expect(MockStruct::bCalledDelete).ToEqual(true);
 				});
 			});
 		});
 
-		describe("Weak pointer", []()
+		Describe("Weak pointer", []()
 		{
-			it("Can initialize to empty", [&]()
+			It("Can initialize to empty", []()
 			{
 				TPtr<EmptyStruct> ptr;
-				AssertThat(ptr.IsValid(), Equals(false));
-				AssertThat(ptr.Get(), Equals(nullptr));
+				Expect(ptr.IsValid()).ToEqual(false);
+				Expect(ptr.Get()).ToEqual(nullptr);
 			});
 
-			it("Can initialize from owner", [&]()
+			It("Can initialize from owner", []()
 			{
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				TPtr<EmptyStruct> ptr      = owner;
 
-				AssertThat(ptr.IsValid(), Equals(true));
-				AssertThat(ptr.Get(), Is().Not().EqualTo(nullptr));
+				Expect(ptr.IsValid()).ToEqual(true);
+				Expect(ptr.Get()).ToNotEqual(nullptr);
 			});
 
-			it("Can copy from other weak", [&]()
+			It("Can copy from other weak", []()
 			{
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				auto* raw                  = owner.Get();
 				TPtr<EmptyStruct> ptr      = owner;
 				TPtr<EmptyStruct> ptr2     = ptr;
 
-				AssertThat(ptr2.IsValid(), Equals(true));
-				AssertThat(ptr.Get(), Equals(raw));
-				AssertThat(ptr2.Get(), Equals(raw));
+				Expect(ptr2.IsValid()).ToEqual(true);
+				Expect(ptr.Get()).ToEqual(raw);
+				Expect(ptr2.Get()).ToEqual(raw);
 			});
 
-			it("Can move from other weak", [&]()
+			It("Can move from other weak", []()
 			{
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				auto* raw                  = owner.Get();
 				auto weak                  = owner.AsPtr();
 				auto movedWeak             = Move(weak);
 
-				AssertThat(weak.IsValid(), Equals(false));
-				AssertThat(movedWeak.IsValid(), Equals(true));
+				Expect(weak.IsValid()).ToEqual(false);
+				Expect(movedWeak.IsValid()).ToEqual(true);
 
-				AssertThat(weak.Get(), Equals(nullptr));
-				AssertThat(movedWeak.Get(), Equals(raw));
+				Expect(weak.Get()).ToEqual(nullptr);
+				Expect(movedWeak.Get()).ToEqual(raw);
 			});
 
-			it("Ptr is null after IsValid() == false", [&]()
+			It("Ptr is null after IsValid() == false", []()
 			{
 				TOwnPtr<EmptyStruct> owner = MakeOwned<EmptyStruct>();
 				TPtr<EmptyStruct> ptr      = owner;
 				owner.Delete();
 
-				AssertThat(ptr.Get(), Is().Not().EqualTo(nullptr));
+				Expect(ptr.Get()).ToNotEqual(nullptr);
 
-				AssertThat(ptr.IsValid(), Equals(false));
-				AssertThat(ptr.Get(), Equals(nullptr));
+				Expect(ptr.IsValid()).ToEqual(false);
+				Expect(ptr.Get()).ToEqual(nullptr);
 			});
 		});
 
-		describe("Comparisons", []()
+		Describe("Comparisons", []()
 		{
-			it("Owner can equal Owner", [&]()
+			It("Owner can equal Owner", []()
 			{
 				auto owner  = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
 				TOwnPtr<EmptyStruct> ownerEmpty;
 
-				AssertThat(owner == owner, Equals(true));
-				AssertThat(owner == owner2, Equals(false));
-				AssertThat(ownerEmpty == ownerEmpty, Equals(true));
-				AssertThat(owner == ownerEmpty, Equals(false));
+				Expect(owner == owner).ToEqual(true);
+				Expect(owner == owner2).ToEqual(false);
+				Expect(ownerEmpty == ownerEmpty).ToEqual(true);
+				Expect(owner == ownerEmpty).ToEqual(false);
 
-				AssertThat(owner != owner, Equals(false));
-				AssertThat(owner != owner2, Equals(true));
-				AssertThat(ownerEmpty != ownerEmpty, Equals(false));
-				AssertThat(owner != ownerEmpty, Equals(true));
+				Expect(owner != owner).ToEqual(false);
+				Expect(owner != owner2).ToEqual(true);
+				Expect(ownerEmpty != ownerEmpty).ToEqual(false);
+				Expect(owner != ownerEmpty).ToEqual(true);
 			});
 
-			it("Owner can equal Weak", [&]()
+			It("Owner can equal Weak", []()
 			{
 				auto owner  = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
@@ -187,18 +185,18 @@ go_bandit([]()
 				TOwnPtr<EmptyStruct> ownerEmpty;
 				TPtr<EmptyStruct> weakEmpty;
 
-				AssertThat(owner == weak, Equals(true));
-				AssertThat(owner2 == weak, Equals(false));
-				AssertThat(ownerEmpty == weak, Equals(false));
-				AssertThat(ownerEmpty == weakEmpty, Equals(true));
+				Expect(owner == weak).ToEqual(true);
+				Expect(owner2 == weak).ToEqual(false);
+				Expect(ownerEmpty == weak).ToEqual(false);
+				Expect(ownerEmpty == weakEmpty).ToEqual(true);
 
-				AssertThat(owner != weak, Equals(false));
-				AssertThat(owner2 != weak, Equals(true));
-				AssertThat(ownerEmpty != weak, Equals(true));
-				AssertThat(ownerEmpty != weakEmpty, Equals(false));
+				Expect(owner != weak).ToEqual(false);
+				Expect(owner2 != weak).ToEqual(true);
+				Expect(ownerEmpty != weak).ToEqual(true);
+				Expect(ownerEmpty != weakEmpty).ToEqual(false);
 			});
 
-			it("Weak can equal Weak", [&]()
+			It("Weak can equal Weak", []()
 			{
 				auto owner  = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
@@ -206,18 +204,18 @@ go_bandit([]()
 				auto weak2  = owner2.AsPtr();
 				TPtr<EmptyStruct> weakEmpty;
 
-				AssertThat(weak == weak, Equals(true));
-				AssertThat(weak2 == weak, Equals(false));
-				AssertThat(weakEmpty == weak, Equals(false));
-				AssertThat(weakEmpty == weakEmpty, Equals(true));
+				Expect(weak == weak).ToEqual(true);
+				Expect(weak2 == weak).ToEqual(false);
+				Expect(weakEmpty == weak).ToEqual(false);
+				Expect(weakEmpty == weakEmpty).ToEqual(true);
 
-				AssertThat(weak != weak, Equals(false));
-				AssertThat(weak2 != weak, Equals(true));
-				AssertThat(weakEmpty != weak, Equals(true));
-				AssertThat(weakEmpty != weakEmpty, Equals(false));
+				Expect(weak != weak).ToEqual(false);
+				Expect(weak2 != weak).ToEqual(true);
+				Expect(weakEmpty != weak).ToEqual(true);
+				Expect(weakEmpty != weakEmpty).ToEqual(false);
 			});
 
-			it("Weak can equal Owner", [&]()
+			It("Weak can equal Owner", []()
 			{
 				auto owner  = MakeOwned<EmptyStruct>();
 				auto owner2 = MakeOwned<EmptyStruct>();
@@ -226,124 +224,122 @@ go_bandit([]()
 				TOwnPtr<EmptyStruct> ownerEmpty;
 				TPtr<EmptyStruct> weakEmpty;
 
-				AssertThat(weak == owner, Equals(true));
-				AssertThat(weak2 == owner, Equals(false));
-				AssertThat(weakEmpty == owner, Equals(false));
-				AssertThat(weakEmpty == ownerEmpty, Equals(true));
+				Expect(weak == owner).ToEqual(true);
+				Expect(weak2 == owner).ToEqual(false);
+				Expect(weakEmpty == owner).ToEqual(false);
+				Expect(weakEmpty == ownerEmpty).ToEqual(true);
 
-				AssertThat(weak != owner, Equals(false));
-				AssertThat(weak2 != owner, Equals(true));
-				AssertThat(weakEmpty != owner, Equals(true));
-				AssertThat(weakEmpty != ownerEmpty, Equals(false));
+				Expect(weak != owner).ToEqual(false);
+				Expect(weak2 != owner).ToEqual(true);
+				Expect(weakEmpty != owner).ToEqual(true);
+				Expect(weakEmpty != ownerEmpty).ToEqual(false);
 			});
 		});
 
-		describe("Counter", []()
+		Describe("Counter", []()
 		{
-			it("Adds weaks", [&]()
+			It("Adds weaks", []()
 			{
 				auto owner          = MakeOwned<EmptyStruct>();
 				const auto* counter = owner.GetCounter();
-				AssertThat(counter->weakCount, Equals(0u));
+				Expect(counter->weakCount).ToEqual(0u);
 
 				auto weak = owner.AsPtr();
-				AssertThat(counter->weakCount, Equals(1u));
+				Expect(counter->weakCount).ToEqual(1u);
 			});
 
-			it("Removes weaks", [&]()
+			It("Removes weaks", []()
 			{
 				auto owner          = MakeOwned<EmptyStruct>();
 				const auto* counter = owner.GetCounter();
 				{
 					auto weak = owner.AsPtr();
-					AssertThat(counter->weakCount, Equals(1u));
+					Expect(counter->weakCount).ToEqual(1u);
 				}
-				AssertThat(counter->weakCount, Equals(0u));
+				Expect(counter->weakCount).ToEqual(0u);
 			});
 
-			it("Removes with owner release", [&]()
+			It("Removes with owner release", []()
 			{
 				auto owner = MakeOwned<EmptyStruct>();
-				AssertThat(owner.GetCounter(), Is().Not().EqualTo(nullptr));
+				Expect(owner.GetCounter()).ToNotEqual(nullptr);
 
 				owner.Delete();
-				AssertThat(owner.GetCounter(), Equals(nullptr));
+				Expect(owner.GetCounter()).ToEqual(nullptr);
 			});
 
-			it("Removes with no weakCount left", [&]()
+			It("Removes with no weakCount left", []()
 			{
 				auto owner = MakeOwned<EmptyStruct>();
 				auto weak  = owner.AsPtr();
-				AssertThat(weak.GetCounter(), Is().Not().EqualTo(nullptr));
+				Expect(weak.GetCounter()).ToNotEqual(nullptr);
 
 				owner.Delete();
-				AssertThat(weak.GetCounter(), Is().Not().EqualTo(nullptr));
+				Expect(weak.GetCounter()).ToNotEqual(nullptr);
 
 				weak.Reset();
-				AssertThat(owner.GetCounter(), Equals(nullptr));
+				Expect(owner.GetCounter()).ToEqual(nullptr);
 			});
 		});
 
 
-		it("Can detect custom PtrBuilders", [&]()
+		It("Can detect custom PtrBuilders", []()
 		{
-			AssertThat(p::HasCustomPtrBuilder<EmptyStruct>::value, Equals(false));
-			AssertThat(p::HasCustomPtrBuilder<MockStruct>::value, Equals(true));
+			Expect(p::HasCustomPtrBuilder<EmptyStruct>::value).ToEqual(false);
+			Expect(p::HasCustomPtrBuilder<MockStruct>::value).ToEqual(true);
 		});
 
-		describe("Typeless pointer", []()
+		Describe("Typeless pointer", []()
 		{
-			it("Can convert to OwnPtr from TOwnPtr", [&]()
+			It("Can convert to OwnPtr from TOwnPtr", []()
 			{
 				TOwnPtr<EmptyStruct> typedPtr = MakeOwned<EmptyStruct>();
-				AssertThat(typedPtr.IsValid(), Equals(true));
+				Expect(typedPtr.IsValid()).ToEqual(true);
 
 				EmptyStruct* data = typedPtr.Get();
 
 				OwnPtr ptr = Move(typedPtr);
-				AssertThat(typedPtr.IsValid(), Equals(false));
-				AssertThat(ptr.IsValid(), Equals(true));
-				AssertThat(ptr.Get(), Equals(data));
-				AssertThat(ptr.Get<EmptyStruct>(), Equals(data));
+				Expect(typedPtr.IsValid()).ToEqual(false);
+				Expect(ptr.IsValid()).ToEqual(true);
+				Expect(ptr.Get()).ToEqual(data);
+				Expect(ptr.Get<EmptyStruct>()).ToEqual(data);
 			});
 
-			it("Can convert to TOwnPtr from OwnPtr", [&]()
+			It("Can convert to TOwnPtr from OwnPtr", []()
 			{
 				OwnPtr ptr = MakeOwned<EmptyStruct>();
-				AssertThat(ptr.IsValid(), Equals(true));
+				Expect(ptr.IsValid()).ToEqual(true);
 				auto* data = ptr.Get<EmptyStruct>();
 
 				TOwnPtr<EmptyStruct> typedPtr = Move(ptr);
-				AssertThat(ptr.IsValid(), Equals(false));
-				AssertThat(typedPtr.IsValid(), Equals(true));
-				AssertThat(typedPtr.Get(), Equals(data));
+				Expect(ptr.IsValid()).ToEqual(false);
+				Expect(typedPtr.IsValid()).ToEqual(true);
+				Expect(typedPtr.Get()).ToEqual(data);
 			});
 
-			it("Can move", [&]()
+			It("Can move", []()
 			{
 				OwnPtr ptr1 = MakeOwned<EmptyStruct>();
-				AssertThat(ptr1.IsValid(), Equals(true));
-				AssertThat(ptr1.GetId(), Equals(GetTypeId<EmptyStruct>()));
+				Expect(ptr1.IsValid()).ToEqual(true);
+				Expect(ptr1.GetId()).ToEqual(GetTypeId<EmptyStruct>());
 				auto* data = ptr1.Get<EmptyStruct>();
 
 				OwnPtr ptr2 = Move(ptr1);
-				AssertThat(ptr1.IsValid(), Equals(false));
-				AssertThat(ptr1.Get<EmptyStruct>(), Equals(nullptr));
-				AssertThat(ptr1.GetId(), Equals(TypeId::None()));
+				Expect(ptr1.IsValid()).ToEqual(false);
+				Expect(ptr1.Get<EmptyStruct>()).ToEqual(nullptr);
+				Expect(ptr1.GetId()).ToEqual(TypeId::None());
 
-				AssertThat(ptr2.IsValid(), Equals(true));
-				AssertThat(ptr2.Get<EmptyStruct>(), Equals(data));
-				AssertThat(ptr2.GetId(), Equals(GetTypeId<EmptyStruct>()));
+				Expect(ptr2.IsValid()).ToEqual(true);
+				Expect(ptr2.Get<EmptyStruct>()).ToEqual(data);
+				Expect(ptr2.GetId()).ToEqual(GetTypeId<EmptyStruct>());
 			});
 
-			it("Cant retrive invalid types", [&]()
+			It("Cant retrive invalid types", []()
 			{
 				OwnPtr ptr = MakeOwned<EmptyStruct>();
-				AssertThat(ptr.Get<EmptyStruct>(), !Equals(nullptr));
-				AssertThat(ptr.Get<MockStruct>(), Equals(nullptr));
+				Expect(ptr.Get<EmptyStruct>()).ToNotEqual(nullptr);
+				Expect(ptr.Get<MockStruct>()).ToEqual(nullptr);
 			});
 		});
 	});
-});
-
-inline bool MockStruct::bCalledDelete = false;
+}

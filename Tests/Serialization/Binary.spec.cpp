@@ -1,30 +1,28 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <PipeSerialize.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
-go_bandit([]()
+void RegisterSerializationBinaryTests()
 {
-	describe("Serialization.Binary", []()
+	Spec("Serialization.Binary", []()
 	{
-		describe("Reader", [&]()
+		Describe("Reader", []()
 		{
-			it("Can create a reader", [&]()
+			It("Can create a reader", []()
 			{
 				BinaryFormatReader reader{TArray<u8>{}};
-				AssertThat(reader.IsValid(), Equals(false));
+				Expect(reader.IsValid()).ToEqual(false);
 
 				BinaryFormatReader reader2{TArray<u8>{255}};
-				AssertThat(reader2.IsValid(), Equals(true));
+				Expect(reader2.IsValid()).ToEqual(true);
 			});
 
-			it("Can read from object value", [&]()
+			It("Can read from object value", []()
 			{
 				TArray<u8> data{255};
 				BinaryFormatReader reader{data};
@@ -32,23 +30,23 @@ go_bandit([]()
 				ct.BeginObject();
 				u8 value = 0;
 				ct.Next(value);
-				AssertThat(value, Equals(255));
+				Expect(value).ToEqual(255);
 			});
 
-			it("Can read from array values", [&]()
+			It("Can read from array values", []()
 			{
 				TArray<u8> data{1, 0, 0, 0, 255};
 				BinaryFormatReader reader{data};
 				Reader ct = reader;
 				u32 size  = 0;
 				ct.BeginArray(size);
-				AssertThat(size, Equals(1));
+				Expect(size).ToEqual(1);
 				u8 value = 0;
 				ct.Next(value);
-				AssertThat(value, Equals(255));
+				Expect(value).ToEqual(255);
 			});
 
-			it("Can iterate arrays", [&]()
+			It("Can iterate arrays", []()
 			{
 				TArray<u8> data{2, 0, 0, 0,          // Array size of 2
 				    6, 0, 0, 0,                      // size 6
@@ -68,15 +66,15 @@ go_bandit([]()
 					{
 						StringView name;
 						ct.Next(name);
-						AssertThat(name, Equals(expected[i]));
+						Expect(name).ToEqual(expected[i]);
 					}
 					ct.Leave();
 				}
 			});
 
-			describe("Types", []()
+			Describe("Types", []()
 			{
-				it("Can read bool values", [&]()
+				It("Can read bool values", []()
 				{
 					TArray<u8> data{1, 0};
 					BinaryFormatReader reader{data};
@@ -84,12 +82,12 @@ go_bandit([]()
 					ct.BeginObject();
 					bool value = false;
 					ct.Next("a", value);
-					AssertThat(value, Equals(true));
+					Expect(value).ToEqual(true);
 					ct.Next("b", value);
-					AssertThat(value, Equals(false));
+					Expect(value).ToEqual(false);
 				});
 
-				it("Can read i8 values", [&]()
+				It("Can read i8 values", []()
 				{
 					TArray<u8> data{0, 127, 128};
 					BinaryFormatReader reader{data};
@@ -97,14 +95,14 @@ go_bandit([]()
 					ct.BeginObject();
 					i8 value = 0;
 					ct.Next("a", value);
-					AssertThat(value, Equals(0));
+					Expect(value).ToEqual(0);
 					ct.Next("b", value);
-					AssertThat(value, Equals(127));
+					Expect(value).ToEqual(127);
 					ct.Next("b", value);
-					AssertThat(value, Equals(-128));
+					Expect(value).ToEqual(-128);
 				});
 
-				it("Can read u8 values", [&]()
+				It("Can read u8 values", []()
 				{
 					TArray<u8> data{0, 255};
 					BinaryFormatReader reader{data};
@@ -112,12 +110,12 @@ go_bandit([]()
 					ct.BeginObject();
 					u8 value = 0;
 					ct.Next("a", value);
-					AssertThat(value, Equals(0));
+					Expect(value).ToEqual(0);
 					ct.Next("b", value);
-					AssertThat(value, Equals(255));
+					Expect(value).ToEqual(255);
 				});
 
-				it("Can read i16 values", [&]()
+				It("Can read i16 values", []()
 				{
 					// Test inbounds and out of bounds values
 					TArray<u8> data{0, 0, 0, 128, 255, 127};
@@ -126,14 +124,14 @@ go_bandit([]()
 					ct.BeginObject();
 					i16 value = 0;
 					ct.Next("a", value);
-					AssertThat(value, Equals(0));
+					Expect(value).ToEqual(0);
 					ct.Next("b", value);
-					AssertThat(value, Equals(Limits<i16>::Lowest()));
+					Expect(value).ToEqual(Limits<i16>::Lowest());
 					ct.Next("c", value);
-					AssertThat(value, Equals(Limits<i16>::Max()));
+					Expect(value).ToEqual(Limits<i16>::Max());
 				});
 
-				it("Can read u16 values", [&]()
+				It("Can read u16 values", []()
 				{
 					// Test inbounds and out of bounds values
 					TArray<u8> data{0, 0, 255, 255};
@@ -142,12 +140,12 @@ go_bandit([]()
 					ct.BeginObject();
 					u16 value = 0;
 					ct.Next("a", value);
-					AssertThat(value, Equals(0));
+					Expect(value).ToEqual(0);
 					ct.Next("b", value);
-					AssertThat(value, Equals(Limits<u16>::Max()));
+					Expect(value).ToEqual(Limits<u16>::Max());
 				});
 
-				it("Can read i32 values", [&]()
+				It("Can read i32 values", []()
 				{
 					// Test inbounds and out of bounds values
 					TArray<u8> data{0, 0, 0, 0, 0, 0, 0, 128, 255, 255, 255, 127};
@@ -156,14 +154,14 @@ go_bandit([]()
 					ct.BeginObject();
 					i32 value = 0;
 					ct.Next("a", value);
-					AssertThat(value, Equals(0));
+					Expect(value).ToEqual(0);
 					ct.Next("b", value);
-					AssertThat(value, Equals(Limits<i32>::Lowest()));
+					Expect(value).ToEqual(Limits<i32>::Lowest());
 					ct.Next("c", value);
-					AssertThat(value, Equals(Limits<i32>::Max()));
+					Expect(value).ToEqual(Limits<i32>::Max());
 				});
 
-				it("Can read u32 values", [&]()
+				It("Can read u32 values", []()
 				{
 					// Test inbounds and out of bounds values
 					TArray<u8> data{0, 0, 0, 0, 255, 255, 255, 255};
@@ -172,12 +170,12 @@ go_bandit([]()
 					ct.BeginObject();
 					u32 value = 0;
 					ct.Next("a", value);
-					AssertThat(value, Equals(0));
+					Expect(value).ToEqual(0);
 					ct.Next("b", value);
-					AssertThat(value, Equals(Limits<u32>::Max()));
+					Expect(value).ToEqual(Limits<u32>::Max());
 				});
 
-				it("Can read i64 values", [&]()
+				It("Can read i64 values", []()
 				{
 					// Test inbounds and out of bounds values
 					TArray<u8> data{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 255, 255, 255,
@@ -187,14 +185,14 @@ go_bandit([]()
 					ct.BeginObject();
 					i64 value = 0;
 					ct.Next("a", value);
-					AssertThat(value, Equals(0));
+					Expect(value).ToEqual(0);
 					ct.Next("b", value);
-					AssertThat(value, Equals(Limits<i64>::Lowest()));
+					Expect(value).ToEqual(Limits<i64>::Lowest());
 					ct.Next("c", value);
-					AssertThat(value, Equals(Limits<i64>::Max()));
+					Expect(value).ToEqual(Limits<i64>::Max());
 				});
 
-				it("Can read u64 values", [&]()
+				It("Can read u64 values", []()
 				{
 					// Test inbounds and out of bounds values
 					TArray<u8> data{0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255};
@@ -203,12 +201,12 @@ go_bandit([]()
 					ct.BeginObject();
 					u64 value = 0;
 					ct.Next("a", value);
-					AssertThat(value, Equals(0));
+					Expect(value).ToEqual(0);
 					ct.Next("b", value);
-					AssertThat(value, Equals(Limits<u64>::Max()));
+					Expect(value).ToEqual(Limits<u64>::Max());
 				});
 
-				it("Can read float values", [&]()
+				It("Can read float values", []()
 				{
 					TArray<u8> data{51, 51, 179, 191, 0, 0, 96, 64};
 					BinaryFormatReader reader{data};
@@ -216,12 +214,12 @@ go_bandit([]()
 					ct.BeginObject();
 					float value = 0.f;
 					ct.Next("a", value);
-					AssertThat(value, Equals(-1.4f));
+					Expect(value).ToEqual(-1.4f);
 					ct.Next("b", value);
-					AssertThat(value, Equals(3.5f));
+					Expect(value).ToEqual(3.5f);
 				});
 
-				it("Can read double values", [&]()
+				It("Can read double values", []()
 				{
 					TArray<u8> data{
 					    102, 102, 102, 102, 102, 102, 246, 191, 0, 0, 0, 0, 0, 0, 12, 64};
@@ -230,12 +228,12 @@ go_bandit([]()
 					ct.BeginObject();
 					double value = 0;
 					ct.Next("a", value);
-					AssertThat(value, Equals(-1.4));
+					Expect(value).ToEqual(-1.4);
 					ct.Next("b", value);
-					AssertThat(value, Equals(3.5));
+					Expect(value).ToEqual(3.5);
 				});
 
-				it("Can read StringView values", [&]()
+				It("Can read StringView values", []()
 				{
 					TArray<u8> data{3, 0, 0, 0, 'y', 'e', 's'};
 					BinaryFormatReader reader{data};
@@ -243,20 +241,20 @@ go_bandit([]()
 					ct.BeginObject();
 					StringView string;
 					ct.Next("a", string);
-					AssertThat(string, Equals("yes"));
+					Expect(string).ToEqual("yes");
 				});
 			});
 		});
 
-		describe("Writer", [&]()
+		Describe("Writer", []()
 		{
-			it("Can create a writer", [&]()
+			It("Can create a writer", []()
 			{
 				BinaryFormatWriter writer{};
-				AssertThat(writer.IsValid(), Equals(true));
+				Expect(writer.IsValid()).ToEqual(true);
 			});
 
-			it("Can write to object key", [&]()
+			It("Can write to object key", []()
 			{
 				BinaryFormatWriter writer{};
 				Writer& ct = writer;
@@ -264,10 +262,10 @@ go_bandit([]()
 				ct.Next("name", StringView{"Miguel"});
 
 				TArray<u8> expected{6, 0, 0, 0, 'M', 'i', 'g', 'u', 'e', 'l'};
-				AssertThat(writer.GetData(), Equals(TView<u8>{expected}));
+				Expect(writer.GetData()).ToEqual(TView<u8>{expected});
 			});
 
-			it("Can write arrays", [&]()
+			It("Can write arrays", []()
 			{
 				BinaryFormatWriter writer{};
 				Writer& ct = writer;
@@ -276,12 +274,12 @@ go_bandit([]()
 				ct.Next(u8(255));
 
 				TArray<u8> expected{2, 0, 0, 0, 255, 255};
-				AssertThat(writer.GetData(), Equals(TView<u8>{expected}));
+				Expect(writer.GetData()).ToEqual(TView<u8>{expected});
 			});
 
-			describe("Types", []()
+			Describe("Types", []()
 			{
-				it("Can write bool values", [&]()
+				It("Can write bool values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -289,10 +287,10 @@ go_bandit([]()
 					ct.Next("a", true);
 					ct.Next("b", false);
 					TArray<u8> expected{1, 0};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write i8 values", [&]()
+				It("Can write i8 values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -300,10 +298,10 @@ go_bandit([]()
 					ct.Next("a", i8(127));
 					ct.Next("b", i8(-128));
 					TArray<u8> expected{127, 128};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write u8 values", [&]()
+				It("Can write u8 values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -311,10 +309,10 @@ go_bandit([]()
 					ct.Next("a", u8(0));
 					ct.Next("b", u8(255));
 					TArray<u8> expected{0, 255};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write i16 values", [&]()
+				It("Can write i16 values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -322,10 +320,10 @@ go_bandit([]()
 					ct.Next("a", Limits<i16>::Max());
 					ct.Next("b", Limits<i16>::Lowest());
 					TArray<u8> expected{255, 127, 0, 128};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write u16 values", [&]()
+				It("Can write u16 values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -333,10 +331,10 @@ go_bandit([]()
 					ct.Next("a", Limits<u16>::Max());
 					ct.Next("b", Limits<u16>::Lowest());
 					TArray<u8> expected{255, 255, 0, 0};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write i32 values", [&]()
+				It("Can write i32 values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -344,10 +342,10 @@ go_bandit([]()
 					ct.Next("a", Limits<i32>::Max());
 					ct.Next("b", Limits<i32>::Lowest());
 					TArray<u8> expected{255, 255, 255, 127, 0, 0, 0, 128};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write u32 values", [&]()
+				It("Can write u32 values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -355,10 +353,10 @@ go_bandit([]()
 					ct.Next("a", Limits<u32>::Max());
 					ct.Next("b", Limits<u32>::Lowest());
 					TArray<u8> expected{255, 255, 255, 255, 0, 0, 0, 0};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write i64 values", [&]()
+				It("Can write i64 values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -367,10 +365,10 @@ go_bandit([]()
 					ct.Next("b", Limits<i64>::Lowest());
 					TArray<u8> expected{
 					    255, 255, 255, 255, 255, 255, 255, 127, 0, 0, 0, 0, 0, 0, 0, 128};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write u64 values", [&]()
+				It("Can write u64 values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -379,10 +377,10 @@ go_bandit([]()
 					ct.Next("b", Limits<u64>::Lowest());
 					TArray<u8> expected{
 					    255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write float values", [&]()
+				It("Can write float values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -390,10 +388,10 @@ go_bandit([]()
 					ct.Next("a", -1.4f);
 					ct.Next("b", 3.5f);
 					TArray<u8> expected{51, 51, 179, 191, 0, 0, 96, 64};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write double values", [&]()
+				It("Can write double values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
@@ -402,19 +400,19 @@ go_bandit([]()
 					ct.Next("b", 3.5);
 					TArray<u8> expected{
 					    102, 102, 102, 102, 102, 102, 246, 191, 0, 0, 0, 0, 0, 0, 12, 64};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 
-				it("Can write StringView values", [&]()
+				It("Can write StringView values", []()
 				{
 					BinaryFormatWriter writer{};
 					Writer ct = writer;
 					ct.BeginObject();
 					ct.Next("a", StringView{"yes"});
 					TArray<u8> expected{3, 0, 0, 0, 'y', 'e', 's'};
-					AssertThat(writer.GetData(), Equals(TView<u8>(expected)));
+					Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 				});
 			});
 		});
 	});
-});
+}

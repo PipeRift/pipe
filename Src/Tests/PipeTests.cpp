@@ -20,44 +20,46 @@ namespace p
 		struct TestCase
 		{
 			String name;
+			// Owning: bodies are stored until RunTests runs them.
 			std::function<void()> body;
 			bool skip = false;
 		};
 
-		struct TestGroup
+		struct TestDescribe
 		{
 			String name;
-			TArray<TestGroup> groups;    // nested describes
-			TArray<TestCase> tests;      // its
+			TArray<TestDescribe> describes;    // nested describes
+			TArray<TestCase> tests;            // its tests
+			// Owning: hooks are stored until RunTests runs them.
 			std::function<void()> beforeEach;
 			std::function<void()> afterEach;
 		};
 
-		// Entire registered suite (treat as a single virtual root group).
-		struct RegistryState
+		// Entire registered suite (treat as a single virtual root describe).
+		struct TestContext
 		{
-			TestGroup root{"", {}, {}, {}, {}};
+			TestDescribe root{"", {}, {}, {}, {}};
 
-			// Pointer into `root.groups` for the currently-adding group.
-			TestGroup* currentGroup    = nullptr;
-			int failedTests            = 0;
-			int runTests               = 0;
-			int skippedTests           = 0;
-			int currentTestFailureCount = 0;
+			// Pointer into `root.describes` for the currently-adding describe.
+			TestDescribe* currentDescribe     = nullptr;
+			i32 failedTests                   = 0;
+			i32 runTests                      = 0;
+			i32 skippedTests                  = 0;
+			i32 currentTestFailureCount       = 0;
 		};
 
 		// Function-local static: initialized on first use regardless of the
-		// static-init order of other translation units, so a `Spec` registrar
-		// defined in a separate TU can safely register during static init.
-		RegistryState& State()
+		// static-init order of other translation units, so a `Spec` call
+		// at file scope in a separate TU can safely register during static init.
+		TestContext& GetTestContext()
 		{
-			static RegistryState state;
-			return state;
+			static TestContext context;
+			return context;
 		}
 
-		TestGroup*& CurrentGroup()
+		TestDescribe*& CurrentDescribe()
 		{
-			return State().currentGroup;
+			return GetTestContext().currentDescribe;
 		}
 	}    // namespace
 
@@ -67,54 +69,54 @@ namespace p
 		void Fail(const std::source_location& loc, StringView message)
 		{
 			Error("PipeTests: {}:{}: {}", loc.file_name(), loc.line(), message);
-			++State().currentTestFailureCount;
+			++GetTestContext().currentTestFailureCount;
 		}
 	}    // namespace details
 
 
-	void Spec(StringView name, std::function<void()> fn)
+	void Spec(StringView name, TFunction<void()> fn)
 	{
-		RegistryState& state = State();
-		TestGroup group;
-		group.name       = String{name};
-		group.beforeEach = nullptr;
-		group.afterEach  = nullptr;
-		state.root.groups.Add(Move(group));
-		TestGroup* groupPtr = &state.root.groups.Last();
-		state.currentGroup  = groupPtr;
+		TestContext& context = GetTestContext();
+		TestDescribe describe;
+		describe.name       = String{name};
+		describe.beforeEach = nullptr;
+		describe.afterEach  = nullptr;
+		context.root.describes.Add(Move(describe));
+		TestDescribe* describePtr = &context.root.describes.Last();
+		context.currentDescribe   = describePtr;
 		fn();
-		state.currentGroup = nullptr;
+		context.currentDescribe = nullptr;
 	}
 
-	void Spec(std::function<void()> fn)
+	void Spec(TFunction<void()> fn)
 	{
-		RegistryState& state = State();
-		state.currentGroup   = &state.root;
+		TestContext& context   = GetTestContext();
+		context.currentDescribe = &context.root;
 		fn();
-		state.currentGroup = nullptr;
+		context.currentDescribe = nullptr;
 	}
 
-	void Describe(StringView name, std::function<void()> fn)
+	void Describe(StringView name, TFunction<void()> fn)
 	{
-		TestGroup*& current = CurrentGroup();
+		TestDescribe*& current = CurrentDescribe();
 		if (!current)
 		{
 			Error("PipeTests: Describe('{}') called outside a Spec. Ignoring.", name);
 			return;
 		}
 
-		TestGroup group;
-		group.name = String{name};
-		current->groups.Add(Move(group));
-		TestGroup* prevGroup = current;
-		current              = &current->groups.Last();
+		TestDescribe describe;
+		describe.name          = String{name};
+		current->describes.Add(Move(describe));
+		TestDescribe* prevDescribe = current;
+		current                    = &current->describes.Last();
 		fn();
-		current = prevGroup;
+		current = prevDescribe;
 	}
 
 	void It(StringView name, std::function<void()> fn)
 	{
-		TestGroup*& current = CurrentGroup();
+		TestDescribe*& current = CurrentDescribe();
 		if (!current)
 		{
 			Error("PipeTests: It('{}') called outside a Spec. Ignoring.", name);
@@ -129,7 +131,7 @@ namespace p
 
 	void XIt(StringView name, std::function<void()> fn)
 	{
-		TestGroup*& current = CurrentGroup();
+		TestDescribe*& current = CurrentDescribe();
 		if (!current)
 		{
 			Error("PipeTests: XIt('{}') called outside a Spec. Ignoring.", name);
@@ -144,7 +146,7 @@ namespace p
 
 	void BeforeEach(std::function<void()> fn)
 	{
-		TestGroup*& current = CurrentGroup();
+		TestDescribe*& current = CurrentDescribe();
 		if (!current)
 		{
 			Error("PipeTests: BeforeEach called outside a Spec. Ignoring.");
@@ -155,7 +157,7 @@ namespace p
 
 	void AfterEach(std::function<void()> fn)
 	{
-		TestGroup*& current = CurrentGroup();
+		TestDescribe*& current = CurrentDescribe();
 		if (!current)
 		{
 			Error("PipeTests: AfterEach called outside a Spec. Ignoring.");
@@ -167,52 +169,61 @@ namespace p
 
 	namespace
 	{
-		static String FullName(const TestGroup& group, const TestCase& test)
+		static String FullName(const TestDescribe& describe, const TestCase& test)
 		{
-			// Build "SpecName.SubGroup.TestName" for reporting. Root has empty name.
+			// Build "SpecName.SubDescribe.TestName" for reporting. Root has empty name.
 			String result;
-			if (!group.name.empty())
+			if (!describe.name.empty())
 			{
-				result += group.name;
+				result += describe.name;
 				result += ".";
 			}
 			result += test.name;
 			return result;
 		}
 
-		static void RunNested(TestGroup& group, TArray<std::function<void()>>& beforeHooks,
-		    TArray<std::function<void()>>& afterHooks)
+		static bool MatchesFilter(StringView fullName, StringView filter)
 		{
-			RegistryState& state = State();
-			if (group.beforeEach)
+			return filter.empty() || Strings::Contains(fullName, filter);
+		}
+
+		static void RunNested(TestDescribe& describe, TArray<std::function<void()>>& beforeHooks,
+		    TArray<std::function<void()>>& afterHooks, StringView filter)
+		{
+			TestContext& context = GetTestContext();
+			if (describe.beforeEach)
 			{
-				beforeHooks.Add(group.beforeEach);
+				beforeHooks.Add(describe.beforeEach);
 			}
-			if (group.afterEach)
+			if (describe.afterEach)
 			{
-				afterHooks.Add(group.afterEach);
+				afterHooks.Add(describe.afterEach);
 			}
 
-			for (TestGroup& sub : group.groups)
+			for (TestDescribe& sub : describe.describes)
 			{
-				RunNested(sub, beforeHooks, afterHooks);
+				RunNested(sub, beforeHooks, afterHooks, filter);
 			}
 
-			for (TestCase& test : group.tests)
+			for (TestCase& test : describe.tests)
 			{
 				if (test.skip)
 				{
-					++state.skippedTests;
+					++context.skippedTests;
 					continue;
 				}
-				++state.runTests;
+				if (!MatchesFilter(FullName(describe, test), filter))
+				{
+					continue;
+				}
+				++context.runTests;
 
 				for (auto& hook : beforeHooks)
 				{
 					hook();
 				}
 
-				state.currentTestFailureCount = 0;
+				context.currentTestFailureCount = 0;
 				bool passed = true;
 				try
 				{
@@ -221,9 +232,9 @@ namespace p
 				catch (...)
 				{
 					passed = false;
-					Error("PipeTests: test failed by exception: {}", FullName(group, test));
+					Error("PipeTests: test failed by exception: {}", FullName(describe, test));
 				}
-				passed = passed && (state.currentTestFailureCount == 0);
+				passed = passed && (context.currentTestFailureCount == 0);
 
 				for (i32 i = afterHooks.Size(); i > 0; --i)
 				{
@@ -232,20 +243,20 @@ namespace p
 
 				if (passed)
 				{
-					Info("  [PASS] {}", FullName(group, test));
+					Info("  [PASS] {}", FullName(describe, test));
 				}
 				else
 				{
-					++state.failedTests;
-					Error("  [FAIL] {}", FullName(group, test));
+					++context.failedTests;
+					Error("  [FAIL] {}", FullName(describe, test));
 				}
 			}
 
-			if (group.beforeEach)
+			if (describe.beforeEach)
 			{
 				beforeHooks.RemoveLast();
 			}
-			if (group.afterEach)
+			if (describe.afterEach)
 			{
 				afterHooks.RemoveLast();
 			}
@@ -253,20 +264,50 @@ namespace p
 	}    // namespace
 
 
-	int RunTests(int argc, char** argv)
+	int RunTests(const TestSettings& settings)
 	{
-		(void)argc;    // kept for future --filter support
-		(void)argv;
+		TestContext& context = GetTestContext();
+		context.runTests     = 0;
+		context.failedTests  = 0;
+		context.skippedTests = 0;
 
-		RegistryState& state = State();
-		Info("PipeTests: {} group(s) registered.", state.root.groups.Size());
+		Info("PipeTests: {} describe(s) registered.", context.root.describes.Size());
 		TArray<std::function<void()>> beforeHooks;
 		TArray<std::function<void()>> afterHooks;
-		RunNested(state.root, beforeHooks, afterHooks);
+		RunNested(context.root, beforeHooks, afterHooks, settings.filter);
 
-		Info("PipeTests complete: {} run, {} passed, {} failed, {} skipped.", state.runTests,
-		    state.runTests - state.failedTests, state.failedTests, state.skippedTests);
+		Info("PipeTests complete: {} run, {} passed, {} failed, {} skipped.", context.runTests,
+		    context.runTests - context.failedTests, context.failedTests, context.skippedTests);
 
-		return state.failedTests == 0 ? 0 : 1;
+		return context.failedTests == 0 ? 0 : 1;
+	}
+
+	int RunTests(int argc, char** argv)
+	{
+		TestSettings settings;
+		for (i32 i = 1; i < argc; ++i)
+		{
+			const StringView arg{argv[i]};
+			if (Strings::StartsWith(arg, StringView{"--filter="}))
+			{
+				settings.filter = Strings::RemoveFromStart(arg, StringView{"--filter="});
+			}
+			else if (Strings::Equals(arg, StringView{"--filter"}))
+			{
+				if (i + 1 < argc)
+				{
+					settings.filter = StringView{argv[++i]};
+				}
+			}
+			else if (Strings::StartsWith(arg, StringView{"--"}))
+			{
+				Warning("PipeTests: unknown argument '{}'. Ignoring.", arg);
+			}
+			else if (settings.filter.empty())
+			{
+				settings.filter = arg;
+			}
+		}
+		return RunTests(settings);
 	}
 }    // namespace p

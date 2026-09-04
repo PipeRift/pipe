@@ -1,6 +1,6 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
+#include <PipeTests.h>
 #include <Pipe/Core/StringView.h>
 #include <PipeMemoryArenas.h>
 #include <PipeStrings.h>
@@ -9,803 +9,803 @@
 #include <format>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 // Longer than the inline capacity, forcing heap allocations
 static const StringView longText = "0123456789ABCDEFGHIJ0123456789ABC";
 
+// Longer than the inline capacity, for arena allocation tests
+static const char* arenaLongText = "This string is long enough to exceed the inline capacity";
 
-go_bandit([]()
+
+void RegisterCoreStringTests()
 {
-	describe("Strings", []()
+	Spec("Strings", []()
 	{
-		describe("String", []()
+		Describe("String", []()
 		{
-			describe("Construction", []()
+			Describe("Construction", []()
 			{
-				it("Can default construct", [&]()
+				It("Can default construct", []()
 				{
 					String v{};
-					AssertThat(v.size(), Equals(0u));
-					AssertThat(v.empty(), Is().True());
-					AssertThat(v.length(), Equals(0u));
+					Expect(v.size()).ToEqual(0u);
+					Expect(v.empty()).ToBeTrue();
+					Expect(v.length()).ToEqual(0u);
 					// c_str() must always return a valid pointer to a null terminator
-					AssertThat(v.c_str() != nullptr, Is().True());
-					AssertThat(v.c_str()[0], Equals('\0'));
-					AssertThat(v.data() != nullptr, Is().True());
-					AssertThat(v.data()[0], Equals('\0'));
+					Expect(v.c_str() != nullptr).ToBeTrue();
+					Expect(v.c_str()[0]).ToEqual('\0');
+					Expect(v.data() != nullptr).ToBeTrue();
+					Expect(v.data()[0]).ToEqual('\0');
 				});
 
-				it("Can construct from literal", [&]()
+				It("Can construct from literal", []()
 				{
 					String v{"Kiwi"};
-					AssertThat(v, Equals("Kiwi"));
-					AssertThat(v.size(), Equals(4u));
+					Expect(v).ToEqual("Kiwi");
+					Expect(v.size()).ToEqual(4u);
 				});
 
-				it("Can construct from literal with count", [&]()
+				It("Can construct from literal with count", []()
 				{
 					String v{"KiwiApple", 4};
-					AssertThat(v, Equals("Kiwi"));
-					AssertThat(v.size(), Equals(4u));
+					Expect(v).ToEqual("Kiwi");
+					Expect(v.size()).ToEqual(4u);
 				});
 
-				it("Can construct from count and char", [&]()
+				It("Can construct from count and char", []()
 				{
 					String v(5, 'x');
-					AssertThat(v, Equals("xxxxx"));
-					AssertThat(v.size(), Equals(5u));
+					Expect(v).ToEqual("xxxxx");
+					Expect(v.size()).ToEqual(5u);
 				});
 
-				it("Can construct from string view", [&]()
+				It("Can construct from string view", []()
 				{
 					StringView str{"Kiwi"};
 					String v{str};
-					AssertThat(v, Equals("Kiwi"));
-					AssertThat(v.size(), Equals(4u));
+					Expect(v).ToEqual("Kiwi");
+					Expect(v.size()).ToEqual(4u);
 				});
 
-				it("Can construct from string view with pos and count", [&]()
+				It("Can construct from string view with pos and count", []()
 				{
 					StringView str{"KiwiApple"};
 					String v{str, 4, 5};
-					AssertThat(v, Equals("Apple"));
+					Expect(v).ToEqual("Apple");
 				});
 
-				it("Can construct from substring", [&]()
+				It("Can construct from substring", []()
 				{
 					String str{"KiwiApple"};
 					String v{str, 4};
-					AssertThat(v, Equals("Apple"));
+					Expect(v).ToEqual("Apple");
 					String v2{str, 4, 3};
-					AssertThat(v2, Equals("App"));
+					Expect(v2).ToEqual("App");
 				});
 
-				it("Can construct from iterators", [&]()
+				It("Can construct from iterators", []()
 				{
 					std::string_view sv = "Kiwi";
 					String v{sv.begin(), sv.end()};
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 				});
 
-				it("Can construct from initializer list", [&]()
+				It("Can construct from initializer list", []()
 				{
 					String v{'K', 'i', 'w', 'i'};
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 				});
 
-				it("Can copy construct", [&]()
+				It("Can copy construct", []()
 				{
 					String v{"Kiwi"};
 					String v2{v};
-					AssertThat(v2, Equals("Kiwi"));
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v2).ToEqual("Kiwi");
+					Expect(v).ToEqual("Kiwi");
 				});
 
-				it("Can move construct", [&]()
+				It("Can move construct", []()
 				{
 					String v{"Kiwi"};
 					String v2{Move(v)};
-					AssertThat(v2, Equals("Kiwi"));
+					Expect(v2).ToEqual("Kiwi");
 					// Moved-from string is valid and empty
-					AssertThat(v.size(), Equals(0u));
-					AssertThat(v.empty(), Is().True());
-					AssertThat(v.c_str()[0], Equals('\0'));
+					Expect(v.size()).ToEqual(0u);
+					Expect(v.empty()).ToBeTrue();
+					Expect(v.c_str()[0]).ToEqual('\0');
 				});
 			});
 
-			describe("Assignment", []()
+			Describe("Assignment", []()
 			{
-				it("Can assign from literal", [&]()
+				It("Can assign from literal", []()
 				{
 					String v;
 					v = "Kiwi";
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 				});
 
-				it("Can copy assign", [&]()
+				It("Can copy assign", []()
 				{
 					String vKiwi{"Kiwi"};
 					String vApple{"Apple"};
 					String vCopy = vKiwi;
-					AssertThat(vCopy, Equals("Kiwi"));
+					Expect(vCopy).ToEqual("Kiwi");
 					vCopy = vApple;
-					AssertThat(vCopy, Equals("Apple"));
-					AssertThat(vCopy, Equals(vApple));
+					Expect(vCopy).ToEqual("Apple");
+					Expect(vCopy).ToEqual(vApple);
 				});
 
-				it("Can move assign", [&]()
+				It("Can move assign", []()
 				{
 					String vKiwi{"Kiwi"};
 					String vApple{"Apple"};
 					String vMove = Move(vKiwi);
-					AssertThat(vKiwi.size(), Equals(0u));
-					AssertThat(vMove, Equals("Kiwi"));
+					Expect(vKiwi.size()).ToEqual(0u);
+					Expect(vMove).ToEqual("Kiwi");
 					vMove = Move(vApple);
-					AssertThat(vApple.size(), Equals(0u));
-					AssertThat(vMove, Equals("Apple"));
+					Expect(vApple.size()).ToEqual(0u);
+					Expect(vMove).ToEqual("Apple");
 				});
 
-				it("Can assign char", [&]()
+				It("Can assign char", []()
 				{
 					String v;
 					v = 'x';
-					AssertThat(v, Equals("x"));
+					Expect(v).ToEqual("x");
 				});
 
-				it("Can assign initializer list", [&]()
+				It("Can assign initializer list", []()
 				{
 					String v;
 					v = {'K', 'i', 'w', 'i'};
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 				});
 
-				it("Can assign string view", [&]()
+				It("Can assign string view", []()
 				{
 					String v;
 					StringView sv{"Kiwi"};
 					v = sv;
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 				});
 
-				it("Can assign", [&]()
+				It("Can assign", []()
 				{
 					String v;
 					v.assign("Kiwi");
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 					v.assign("KiwiApple", 4);
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 					v.assign(3, 'x');
-					AssertThat(v, Equals("xxx"));
+					Expect(v).ToEqual("xxx");
 					String other{"Apple"};
 					v.assign(other);
-					AssertThat(v, Equals("Apple"));
+					Expect(v).ToEqual("Apple");
 					v.assign(other, 2, 2);
-					AssertThat(v, Equals("pl"));
+					Expect(v).ToEqual("pl");
 					StringView sv{"KiwiApple"};
 					v.assign(sv, 4, 5);
-					AssertThat(v, Equals("Apple"));
+					Expect(v).ToEqual("Apple");
 					v.assign({'a', 'b', 'c'});
-					AssertThat(v, Equals("abc"));
+					Expect(v).ToEqual("abc");
 				});
 
-				it("Can self assign", [&]()
+				It("Can self assign", []()
 				{
 					String v{"Kiwi"};
 					const String& ref = v;
 					v                 = ref;
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 				});
 
-				it("Can self assign substrings", [&]()
+				It("Can self assign substrings", []()
 				{
 					String v{longText};
 					v.assign(v.c_str() + 10);
-					AssertThat(v, Equals("ABCDEFGHIJ0123456789ABC"));
+					Expect(v).ToEqual("ABCDEFGHIJ0123456789ABC");
 				});
 
-				it("Can self assign substrings with count", [&]()
+				It("Can self assign substrings with count", []()
 				{
 					String v{longText};
 					v.assign(v.c_str() + 5, 10);
-					AssertThat(v, Equals("56789ABCDE"));
+					Expect(v).ToEqual("56789ABCDE");
 				});
 			});
 
-			describe("Element access", []()
+			Describe("Element access", []()
 			{
-				it("Can index", [&]()
+				It("Can index", []()
 				{
 					String v{"Kiwi"};
-					AssertThat(v[0], Equals('K'));
-					AssertThat(v[3], Equals('i'));
+					Expect(v[0]).ToEqual('K');
+					Expect(v[3]).ToEqual('i');
 					v[0] = 'k';
-					AssertThat(v, Equals("kiwi"));
+					Expect(v).ToEqual("kiwi");
 					// pos == size() returns reference to null char
-					AssertThat(v[4], Equals('\0'));
+					Expect(v[4]).ToEqual('\0');
 				});
 
-				it("Can access at", [&]()
+				It("Can access at", []()
 				{
 					String v{"Kiwi"};
-					AssertThat(v.at(0), Equals('K'));
-					AssertThat(v.at(3), Equals('i'));
+					Expect(v.at(0)).ToEqual('K');
+					Expect(v.at(3)).ToEqual('i');
 					v.at(0) = 'k';
-					AssertThat(v, Equals("kiwi"));
+					Expect(v).ToEqual("kiwi");
 				});
 
-				it("Can access front and back", [&]()
+				It("Can access front and back", []()
 				{
 					String v{"Kiwi"};
-					AssertThat(v.front(), Equals('K'));
-					AssertThat(v.back(), Equals('i'));
+					Expect(v.front()).ToEqual('K');
+					Expect(v.back()).ToEqual('i');
 					v.front() = 'P';
 					v.back()  = 's';
-					AssertThat(v, Equals("Piws"));
+					Expect(v).ToEqual("Piws");
 				});
 
-				it("Can retrieve data", [&]()
+				It("Can retrieve data", []()
 				{
 					String v{"Kiwi"};
-					AssertThat(v.data(), Equals("Kiwi"));
-					AssertThat(v.size(), Equals(4u));
-					AssertThat(strlen(v.data()), Equals(4u));
+					Expect(v.data()).ToEqual("Kiwi");
+					Expect(v.size()).ToEqual(4u);
+					Expect(strlen(v.data())).ToEqual(4u);
 				});
 
-				it("Can convert to string view", [&]()
+				It("Can convert to string view", []()
 				{
 					String v{"Kiwi"};
 					StringView sv = v;
-					AssertThat(sv.size(), Equals(4u));
-					AssertThat(sv, Equals(StringView{"Kiwi"}));
+					Expect(sv.size()).ToEqual(4u);
+					Expect(sv).ToEqual(StringView{"Kiwi"});
 					StringView wsv{v};
-					AssertThat(wsv, Equals(StringView{"Kiwi"}));
+					Expect(wsv).ToEqual(StringView{"Kiwi"});
 				});
 			});
 
-			describe("Iterators", []()
+			Describe("Iterators", []()
 			{
-				it("Can iterate", [&]()
+				It("Can iterate", []()
 				{
 					String v{"Kiwi"};
 					u32 i = 0;
 					for (char c : v)
 					{
-						AssertThat(c, Equals("Kiwi"[i]));
+						Expect(c).ToEqual("Kiwi"[i]);
 						++i;
 					}
-					AssertThat(i, Equals(4u));
+					Expect(i).ToEqual(4u);
 				});
 
-				it("Can iterate const", [&]()
+				It("Can iterate const", []()
 				{
 					const String v{"Kiwi"};
 					u32 i = 0;
 					for (char c : v)
 					{
-						AssertThat(c, Equals("Kiwi"[i]));
+						Expect(c).ToEqual("Kiwi"[i]);
 						++i;
 					}
-					AssertThat(i, Equals(4u));
+					Expect(i).ToEqual(4u);
 				});
 
-				it("Can iterate manually", [&]()
+				It("Can iterate manually", []()
 				{
 					String v{"Kiwi"};
 					auto it  = v.begin();
 					auto end = v.end();
-					AssertThat(end - it, Equals(4));
-					AssertThat(*it, Equals('K'));
-					AssertThat(it[2], Equals('w'));
+					Expect(end - it).ToEqual(4);
+					Expect(*it).ToEqual('K');
+					Expect(it[2]).ToEqual('w');
 					++it;
-					AssertThat(*it, Equals('i'));
+					Expect(*it).ToEqual('i');
 					it += 2;
-					AssertThat(*it, Equals('i'));
+					Expect(*it).ToEqual('i');
 					--it;
-					AssertThat(*it, Equals('w'));
-					AssertThat(it == v.begin() + 2, Is().True());
-					AssertThat(it != v.begin(), Is().True());
+					Expect(*it).ToEqual('w');
+					Expect(it == v.begin() + 2).ToBeTrue();
+					Expect(it != v.begin()).ToBeTrue();
 				});
 
-				it("Can iterate reverse", [&]()
+				It("Can iterate reverse", []()
 				{
 					String v{"Kiwi"};
 					u32 i = 0;
 					for (auto rit = v.rbegin(); rit != v.rend(); ++rit)
 					{
-						AssertThat(*rit, Equals("Kiwi"[3 - i]));
+						Expect(*rit).ToEqual("Kiwi"[3 - i]);
 						++i;
 					}
-					AssertThat(i, Equals(4u));
+					Expect(i).ToEqual(4u);
 				});
 
-				it("Can iterate c-variants", [&]()
+				It("Can iterate c-variants", []()
 				{
 					String v{"Kiwi"};
-					AssertThat(*v.cbegin(), Equals('K'));
-					AssertThat(*(v.cend() - 1), Equals('i'));
-					AssertThat(*v.crbegin(), Equals('i'));
-					AssertThat(*(v.crend() - 1), Equals('K'));
+					Expect(*v.cbegin()).ToEqual('K');
+					Expect(*(v.cend() - 1)).ToEqual('i');
+					Expect(*v.crbegin()).ToEqual('i');
+					Expect(*(v.crend() - 1)).ToEqual('K');
 				});
 
-				it("Can mutate through iterators", [&]()
+				It("Can mutate through iterators", []()
 				{
 					String v{"Kiwi"};
 					std::transform(v.begin(), v.end(), v.begin(), [](char c)
 					{
 						return char(c + 1);
 					});
-					AssertThat(v, Equals("Ljxj"));
+					Expect(v).ToEqual("Ljxj");
 				});
 			});
 
-			describe("Capacity", []()
+			Describe("Capacity", []()
 			{
-				it("Can query size and length", [&]()
+				It("Can query size and length", []()
 				{
 					String v{"Kiwi"};
-					AssertThat(v.size(), Equals(4u));
-					AssertThat(v.length(), Equals(4u));
-					AssertThat(v.empty(), Is().False());
+					Expect(v.size()).ToEqual(4u);
+					Expect(v.length()).ToEqual(4u);
+					Expect(v.empty()).ToBeFalse();
 				});
 
-				it("Has short string optimization", [&]()
+				It("Has short string optimization", []()
 				{
 					String v{"Kiwi"};
 					// Short strings must fit in the internal buffer
-					AssertThat(v.capacity() >= 15u, Is().True());
-					AssertThat(v.capacity() <= 32u, Is().True());
+					Expect(v.capacity() >= 15u).ToBeTrue();
+					Expect(v.capacity() <= 32u).ToBeTrue();
 				});
 
-				it("Can reserve", [&]()
+				It("Can reserve", []()
 				{
 					String v;
 					v.reserve(100);
-					AssertThat(v.capacity() >= 100u, Is().True());
-					AssertThat(v.size(), Equals(0u));
+					Expect(v.capacity() >= 100u).ToBeTrue();
+					Expect(v.size()).ToEqual(0u);
 					v = "Kiwi";
-					AssertThat(v, Equals("Kiwi"));
-					AssertThat(v.capacity() >= 100u, Is().True());
+					Expect(v).ToEqual("Kiwi");
+					Expect(v.capacity() >= 100u).ToBeTrue();
 				});
 
-				it("Can shrink to fit", [&]()
+				It("Can shrink to fit", []()
 				{
 					String v;
 					v.reserve(100);
 					v = "Kiwi";
 					v.shrink_to_fit();
-					AssertThat(v, Equals("Kiwi"));
-					AssertThat(v.capacity() >= 4u, Is().True());
-					AssertThat(v.capacity() < 100u, Is().True());
+					Expect(v).ToEqual("Kiwi");
+					Expect(v.capacity() >= 4u).ToBeTrue();
+					Expect(v.capacity() < 100u).ToBeTrue();
 				});
 
-				it("Has max size", [&]()
+				It("Has max size", []()
 				{
 					String v;
 					// Lengths are stored internally as i32
-					AssertThat(v.max_size(), Equals(sizet(Limits<i32>::Max() - 1)));
+					Expect(v.max_size()).ToEqual(sizet(Limits<i32>::Max() - 1));
 				});
 			});
 
-			describe("Modifiers", []()
+			Describe("Modifiers", []()
 			{
-				it("Can clear", [&]()
+				It("Can clear", []()
 				{
 					String v{"Kiwi"};
 					v.clear();
-					AssertThat(v.empty(), Is().True());
-					AssertThat(v.size(), Equals(0u));
-					AssertThat(v.c_str()[0], Equals('\0'));
+					Expect(v.empty()).ToBeTrue();
+					Expect(v.size()).ToEqual(0u);
+					Expect(v.c_str()[0]).ToEqual('\0');
 				});
 
-				it("Can push and pop back", [&]()
+				It("Can push and pop back", []()
 				{
 					String v{"Ki"};
 					v.push_back('w');
 					v.push_back('i');
-					AssertThat(v, Equals("Kiwi"));
-					AssertThat(v.back(), Equals('i'));
+					Expect(v).ToEqual("Kiwi");
+					Expect(v.back()).ToEqual('i');
 					v.pop_back();
-					AssertThat(v, Equals("Kiw"));
+					Expect(v).ToEqual("Kiw");
 					v.pop_back();
 					v.pop_back();
 					v.pop_back();
-					AssertThat(v, Equals(""));
-					AssertThat(v.empty(), Is().True());
+					Expect(v).ToEqual("");
+					Expect(v.empty()).ToBeTrue();
 				});
 
-				it("Can append", [&]()
+				It("Can append", []()
 				{
 					String v{"Kiwi"};
 					v.append("Apple");
-					AssertThat(v, Equals("KiwiApple"));
+					Expect(v).ToEqual("KiwiApple");
 					v.append("Orange", 3);
-					AssertThat(v, Equals("KiwiAppleOra"));
+					Expect(v).ToEqual("KiwiAppleOra");
 					v.append(3, '-');
-					AssertThat(v, Equals("KiwiAppleOra---"));
+					Expect(v).ToEqual("KiwiAppleOra---");
 					String other{"End"};
 					v.append(other);
-					AssertThat(v, Equals("KiwiAppleOra---End"));
+					Expect(v).ToEqual("KiwiAppleOra---End");
 					v.append(other, 1, 2);
-					AssertThat(v, Equals("KiwiAppleOra---Endnd"));
+					Expect(v).ToEqual("KiwiAppleOra---Endnd");
 					StringView sv{"View"};
 					v.append(sv);
-					AssertThat(v, Equals("KiwiAppleOra---EndndView"));
+					Expect(v).ToEqual("KiwiAppleOra---EndndView");
 					v.append(sv, 2, 2);
-					AssertThat(v, Equals("KiwiAppleOra---EndndViewew"));
+					Expect(v).ToEqual("KiwiAppleOra---EndndViewew");
 					v.append({'!', '?'});
-					AssertThat(v, Equals("KiwiAppleOra---EndndViewew!?"));
+					Expect(v).ToEqual("KiwiAppleOra---EndndViewew!?");
 				});
 
-				it("Can append with operator+=", [&]()
+				It("Can append with operator+=", []()
 				{
 					String v{"Kiwi"};
 					v += "Apple";
-					AssertThat(v, Equals("KiwiApple"));
+					Expect(v).ToEqual("KiwiApple");
 					v += '!';
-					AssertThat(v, Equals("KiwiApple!"));
+					Expect(v).ToEqual("KiwiApple!");
 					String other{"End"};
 					v += other;
-					AssertThat(v, Equals("KiwiApple!End"));
+					Expect(v).ToEqual("KiwiApple!End");
 					v += StringView{"View"};
-					AssertThat(v, Equals("KiwiApple!EndView"));
+					Expect(v).ToEqual("KiwiApple!EndView");
 					v += {'a', 'b'};
-					AssertThat(v, Equals("KiwiApple!EndViewab"));
+					Expect(v).ToEqual("KiwiApple!EndViewab");
 				});
 
-				it("Can insert", [&]()
+				It("Can insert", []()
 				{
 					String v{"KiwiApple"};
 					v.insert(4, "Orange");
-					AssertThat(v, Equals("KiwiOrangeApple"));
+					Expect(v).ToEqual("KiwiOrangeApple");
 					v.insert(0, "-");
-					AssertThat(v, Equals("-KiwiOrangeApple"));
+					Expect(v).ToEqual("-KiwiOrangeApple");
 					v.insert(v.size(), "!");
-					AssertThat(v, Equals("-KiwiOrangeApple!"));
+					Expect(v).ToEqual("-KiwiOrangeApple!");
 					v.insert(0, 3, '=');
-					AssertThat(v, Equals("===-KiwiOrangeApple!"));
+					Expect(v).ToEqual("===-KiwiOrangeApple!");
 					String other{"XX"};
 					v.insert(3, other);
-					AssertThat(v, Equals("===XX-KiwiOrangeApple!"));
+					Expect(v).ToEqual("===XX-KiwiOrangeApple!");
 					StringView sv{"YY"};
 					v.insert(5, sv);
-					AssertThat(v, Equals("===XXYY-KiwiOrangeApple!"));
+					Expect(v).ToEqual("===XXYY-KiwiOrangeApple!");
 					v.insert(0, 2, 'Z');
-					AssertThat(v, Equals("ZZ===XXYY-KiwiOrangeApple!"));
+					Expect(v).ToEqual("ZZ===XXYY-KiwiOrangeApple!");
 				});
 
-				it("Can insert with iterator", [&]()
+				It("Can insert with iterator", []()
 				{
 					String v{"Kiwi"};
 					auto it = v.insert(v.begin() + 2, '-');
-					AssertThat(*it, Equals('-'));
-					AssertThat(v, Equals("Ki-wi"));
+					Expect(*it).ToEqual('-');
+					Expect(v).ToEqual("Ki-wi");
 					v.insert(v.end(), 3, '!');
-					AssertThat(v, Equals("Ki-wi!!!"));
+					Expect(v).ToEqual("Ki-wi!!!");
 					String other{"AB"};
 					v.insert(v.begin(), other.begin(), other.end());
-					AssertThat(v, Equals("ABKi-wi!!!"));
+					Expect(v).ToEqual("ABKi-wi!!!");
 					v.insert(v.begin() + 2, {'x', 'y'});
-					AssertThat(v, Equals("ABxyKi-wi!!!"));
+					Expect(v).ToEqual("ABxyKi-wi!!!");
 				});
 
-				it("Can erase", [&]()
+				It("Can erase", []()
 				{
 					String v{"KiwiApple"};
 					v.erase(4, 5);
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 					v.erase(2);
-					AssertThat(v, Equals("Ki"));
+					Expect(v).ToEqual("Ki");
 					v.erase(0, 1);
-					AssertThat(v, Equals("i"));
+					Expect(v).ToEqual("i");
 					v.erase(0, 10);
-					AssertThat(v, Equals(""));
+					Expect(v).ToEqual("");
 				});
 
-				it("Can erase with iterator", [&]()
+				It("Can erase with iterator", []()
 				{
 					String v{"Kiwi"};
 					auto it = v.erase(v.begin());
-					AssertThat(*it, Equals('i'));
-					AssertThat(v, Equals("iwi"));
+					Expect(*it).ToEqual('i');
+					Expect(v).ToEqual("iwi");
 					v.erase(v.begin() + 1, v.end());
-					AssertThat(v, Equals("i"));
+					Expect(v).ToEqual("i");
 				});
 
-				it("Can replace", [&]()
+				It("Can replace", []()
 				{
 					String v{"KiwiApple"};
 					v.replace(0, 4, "Orange");
-					AssertThat(v, Equals("OrangeApple"));
+					Expect(v).ToEqual("OrangeApple");
 					v.replace(0, 6, "X");
-					AssertThat(v, Equals("XApple"));
+					Expect(v).ToEqual("XApple");
 					v.replace(v.size() - 3, 3, "Z");
-					AssertThat(v, Equals("XApZ"));
+					Expect(v).ToEqual("XApZ");
 					String other{"Kiwi"};
 					v.replace(0, 4, other);
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 					StringView sv{"Two"};
 					v.replace(0, 4, sv);
-					AssertThat(v, Equals("Two"));
+					Expect(v).ToEqual("Two");
 					v.replace(0, 3, 2, 'y');
-					AssertThat(v, Equals("yy"));
+					Expect(v).ToEqual("yy");
 				});
 
-				it("Can replace with iterators", [&]()
+				It("Can replace with iterators", []()
 				{
 					String v{"KiwiApple"};
 					v.replace(v.begin(), v.begin() + 4, "Orange");
-					AssertThat(v, Equals("OrangeApple"));
+					Expect(v).ToEqual("OrangeApple");
 				});
 
-				it("Can resize", [&]()
+				It("Can resize", []()
 				{
 					String v{"Kiwi"};
 					v.resize(2);
-					AssertThat(v, Equals("Ki"));
+					Expect(v).ToEqual("Ki");
 					v.resize(4);
-					AssertThat(v.size(), Equals(4u));
-					AssertThat(v[2], Equals('\0'));
-					AssertThat(v[3], Equals('\0'));
+					Expect(v.size()).ToEqual(4u);
+					Expect(v[2]).ToEqual('\0');
+					Expect(v[3]).ToEqual('\0');
 					v.resize(6, 'x');
-					AssertThat(v[4], Equals('x'));
-					AssertThat(v[5], Equals('x'));
-					AssertThat(v.size(), Equals(6u));
+					Expect(v[4]).ToEqual('x');
+					Expect(v[5]).ToEqual('x');
+					Expect(v.size()).ToEqual(6u);
 				});
 
-				it("Can swap", [&]()
+				It("Can swap", []()
 				{
 					String a{"Kiwi"};
 					String b{"Apple"};
 					a.swap(b);
-					AssertThat(a, Equals("Apple"));
-					AssertThat(b, Equals("Kiwi"));
+					Expect(a).ToEqual("Apple");
+					Expect(b).ToEqual("Kiwi");
 				});
 
-				it("Can append from self", [&]()
+				It("Can append from self", []()
 				{
 					String v{longText};
 					v.append(v.c_str());
-					AssertThat(v, Equals(std::string{longText} + std::string{longText}));
+					Expect(v).ToEqual(std::string{longText} + std::string{longText});
 				});
 
-				it("Can append self substring", [&]()
+				It("Can append self substring", []()
 				{
 					String v{longText};
 					v.append(v.c_str() + 5);
-					AssertThat(v, Equals(std::string{longText} + std::string{longText.substr(5)}));
+					Expect(v).ToEqual(std::string{longText} + std::string{longText.substr(5)});
 				});
 
-				it("Can insert from self", [&]()
+				It("Can insert from self", []()
 				{
 					String v{longText};
 					v.insert(0, v.c_str());
-					AssertThat(v, Equals(std::string{longText} + std::string{longText}));
+					Expect(v).ToEqual(std::string{longText} + std::string{longText});
 				});
 
-				it("Can insert self substring", [&]()
+				It("Can insert self substring", []()
 				{
 					String v{longText};
 					v.insert(4, v.c_str() + 5);
-					AssertThat(v,
-					    Equals(std::string{longText.substr(0, 4)} + std::string{longText.substr(5)}
-					           + std::string{longText.substr(4)}));
+					Expect(v).ToEqual(std::string{longText.substr(0, 4)} + std::string{longText.substr(5)}
+					           + std::string{longText.substr(4)});
 				});
 
-				it("Can replace with self", [&]()
+				It("Can replace with self", []()
 				{
 					String v{longText};
 					v.replace(0, 4, v.c_str());
-					AssertThat(v, Equals(std::string{longText} + std::string{longText.substr(4)}));
+					Expect(v).ToEqual(std::string{longText} + std::string{longText.substr(4)});
 				});
 
-				it("Can replace self substring with count", [&]()
+				It("Can replace self substring with count", []()
 				{
 					String v{longText};
 					v.replace(5, 10, v.c_str() + 2, 5);
-					AssertThat(v, Equals(std::string{longText.substr(0, 5)} + "23456"
-					                     + std::string{longText.substr(15)}));
+					Expect(v).ToEqual(std::string{longText.substr(0, 5)} + "23456"
+					                     + std::string{longText.substr(15)});
 				});
 			});
 
-			describe("Operations", []()
+			Describe("Operations", []()
 			{
-				it("Can get substr", [&]()
+				It("Can get substr", []()
 				{
 					String v{"KiwiApple"};
-					AssertThat(v.substr(), Equals("KiwiApple"));
-					AssertThat(v.substr(4), Equals("Apple"));
-					AssertThat(v.substr(4, 3), Equals("App"));
-					AssertThat(v.substr(0, 100), Equals("KiwiApple"));
+					Expect(v.substr()).ToEqual("KiwiApple");
+					Expect(v.substr(4)).ToEqual("Apple");
+					Expect(v.substr(4, 3)).ToEqual("App");
+					Expect(v.substr(0, 100)).ToEqual("KiwiApple");
 				});
 
-				it("Can copy out", [&]()
+				It("Can copy out", []()
 				{
 					String v{"KiwiApple"};
 					char buffer[16]{};
 					const auto count = v.copy(buffer, 4, 4);
-					AssertThat(count, Equals(4u));
-					AssertThat(buffer, Equals("Appl"));
+					Expect(count).ToEqual(4u);
+					Expect(buffer).ToEqual("Appl");
 					buffer[count] = '\0';
 				});
 
-				it("Can compare", [&]()
+				It("Can compare", []()
 				{
 					String v{"Kiwi"};
 					String other{"Kiwi"};
 					String apple{"Apple"};
-					AssertThat(v.compare(other), Equals(0));
-					AssertThat(v.compare(apple) > 0, Is().True());
-					AssertThat(apple.compare(v) < 0, Is().True());
-					AssertThat(v.compare("Kiwi"), Equals(0));
-					AssertThat(v.compare("Kiwi2") < 0, Is().True());
-					AssertThat(v.compare(StringView{"Kiwi"}), Equals(0));
-					AssertThat(v.compare(0, 2, String{"Ki"}), Equals(0));
-					AssertThat(v.compare(2, 2, String{"wi"}), Equals(0));
+					Expect(v.compare(other)).ToEqual(0);
+					Expect(v.compare(apple) > 0).ToBeTrue();
+					Expect(apple.compare(v) < 0).ToBeTrue();
+					Expect(v.compare("Kiwi")).ToEqual(0);
+					Expect(v.compare("Kiwi2") < 0).ToBeTrue();
+					Expect(v.compare(StringView{"Kiwi"})).ToEqual(0);
+					Expect(v.compare(0, 2, String{"Ki"})).ToEqual(0);
+					Expect(v.compare(2, 2, String{"wi"})).ToEqual(0);
 				});
 
-				it("Can check prefix and suffix", [&]()
+				It("Can check prefix and suffix", []()
 				{
 					String v{"KiwiApple"};
-					AssertThat(v.starts_with("Kiwi"), Is().True());
-					AssertThat(v.starts_with('K'), Is().True());
-					AssertThat(v.starts_with(StringView{"Ki"}), Is().True());
-					AssertThat(v.starts_with("Apple"), Is().False());
-					AssertThat(v.ends_with("Apple"), Is().True());
-					AssertThat(v.ends_with('e'), Is().True());
-					AssertThat(v.ends_with(StringView{"le"}), Is().True());
-					AssertThat(v.ends_with("Kiwi"), Is().False());
+					Expect(v.starts_with("Kiwi")).ToBeTrue();
+					Expect(v.starts_with('K')).ToBeTrue();
+					Expect(v.starts_with(StringView{"Ki"})).ToBeTrue();
+					Expect(v.starts_with("Apple")).ToBeFalse();
+					Expect(v.ends_with("Apple")).ToBeTrue();
+					Expect(v.ends_with('e')).ToBeTrue();
+					Expect(v.ends_with(StringView{"le"})).ToBeTrue();
+					Expect(v.ends_with("Kiwi")).ToBeFalse();
 				});
 
-				it("Can check contains", [&]()
+				It("Can check contains", []()
 				{
 					String v{"KiwiApple"};
-					AssertThat(v.contains("wiA"), Is().True());
-					AssertThat(v.contains('A'), Is().True());
-					AssertThat(v.contains(StringView{"zzz"}), Is().False());
-					AssertThat(v.contains('z'), Is().False());
+					Expect(v.contains("wiA")).ToBeTrue();
+					Expect(v.contains('A')).ToBeTrue();
+					Expect(v.contains(StringView{"zzz"})).ToBeFalse();
+					Expect(v.contains('z')).ToBeFalse();
 				});
 
-				it("Can find", [&]()
+				It("Can find", []()
 				{
 					String v{"KiwiKiwi"};
-					AssertThat(v.find("Kiwi"), Equals(0u));
-					AssertThat(v.find("Kiwi", 1), Equals(4u));
-					AssertThat(v.find("Kiwi", 5), Equals(String::npos));
-					AssertThat(v.find('i'), Equals(1u));
-					AssertThat(v.find('i', 6), Equals(7u));
-					AssertThat(v.find('z'), Equals(String::npos));
-					AssertThat(v.find(String{"Kiwi"}), Equals(0u));
-					AssertThat(v.find(StringView{"Kiwi"}), Equals(0u));
+					Expect(v.find("Kiwi")).ToEqual(0u);
+					Expect(v.find("Kiwi", 1)).ToEqual(4u);
+					Expect(v.find("Kiwi", 5)).ToEqual(String::npos);
+					Expect(v.find('i')).ToEqual(1u);
+					Expect(v.find('i', 6)).ToEqual(7u);
+					Expect(v.find('z')).ToEqual(String::npos);
+					Expect(v.find(String{"Kiwi"})).ToEqual(0u);
+					Expect(v.find(StringView{"Kiwi"})).ToEqual(0u);
 				});
 
-				it("Can rfind", [&]()
+				It("Can rfind", []()
 				{
 					String v{"KiwiKiwi"};
-					AssertThat(v.rfind("Kiwi"), Equals(4u));
-					AssertThat(v.rfind("Kiwi", 3), Equals(0u));
-					AssertThat(v.rfind('i'), Equals(7u));
-					AssertThat(v.rfind('i', 5), Equals(5u));
-					AssertThat(v.rfind('z'), Equals(String::npos));
-					AssertThat(v.rfind(String{"Kiwi"}), Equals(4u));
-					AssertThat(v.rfind(StringView{"Kiwi"}), Equals(4u));
+					Expect(v.rfind("Kiwi")).ToEqual(4u);
+					Expect(v.rfind("Kiwi", 3)).ToEqual(0u);
+					Expect(v.rfind('i')).ToEqual(7u);
+					Expect(v.rfind('i', 5)).ToEqual(5u);
+					Expect(v.rfind('z')).ToEqual(String::npos);
+					Expect(v.rfind(String{"Kiwi"})).ToEqual(4u);
+					Expect(v.rfind(StringView{"Kiwi"})).ToEqual(4u);
 				});
 
-				it("Can find first of", [&]()
+				It("Can find first of", []()
 				{
 					String v{"KiwiApple"};
-					AssertThat(v.find_first_of("pl"), Equals(5u));
-					AssertThat(v.find_first_of("pl", 6), Equals(6u));
-					AssertThat(v.find_first_of('z'), Equals(String::npos));
-					AssertThat(v.find_first_of("xyz"), Equals(String::npos));
-					AssertThat(v.find_first_of(StringView{"Ap"}), Equals(4u));
+					Expect(v.find_first_of("pl")).ToEqual(5u);
+					Expect(v.find_first_of("pl", 6)).ToEqual(6u);
+					Expect(v.find_first_of('z')).ToEqual(String::npos);
+					Expect(v.find_first_of("xyz")).ToEqual(String::npos);
+					Expect(v.find_first_of(StringView{"Ap"})).ToEqual(4u);
 				});
 
-				it("Can find last of", [&]()
+				It("Can find last of", []()
 				{
 					String v{"KiwiApple"};
-					AssertThat(v.find_last_of("pl"), Equals(7u));
-					AssertThat(v.find_last_of("pl", 6), Equals(6u));
-					AssertThat(v.find_last_of('z'), Equals(String::npos));
-					AssertThat(v.find_last_of(StringView{"Ap"}), Equals(6u));
+					Expect(v.find_last_of("pl")).ToEqual(7u);
+					Expect(v.find_last_of("pl", 6)).ToEqual(6u);
+					Expect(v.find_last_of('z')).ToEqual(String::npos);
+					Expect(v.find_last_of(StringView{"Ap"})).ToEqual(6u);
 				});
 
-				it("Can find first not of", [&]()
+				It("Can find first not of", []()
 				{
 					String v{"aaab"};
-					AssertThat(v.find_first_not_of("a"), Equals(3u));
-					AssertThat(v.find_first_not_of("ab"), Equals(String::npos));
-					AssertThat(v.find_first_not_of('a'), Equals(3u));
-					AssertThat(v.find_first_not_of("ab", 3), Equals(String::npos));
+					Expect(v.find_first_not_of("a")).ToEqual(3u);
+					Expect(v.find_first_not_of("ab")).ToEqual(String::npos);
+					Expect(v.find_first_not_of('a')).ToEqual(3u);
+					Expect(v.find_first_not_of("ab", 3)).ToEqual(String::npos);
 				});
 
-				it("Can find last not of", [&]()
+				It("Can find last not of", []()
 				{
 					String v{"baaa"};
-					AssertThat(v.find_last_not_of("a"), Equals(0u));
-					AssertThat(v.find_last_not_of("ab"), Equals(String::npos));
-					AssertThat(v.find_last_not_of('a'), Equals(0u));
-					AssertThat(v.find_last_not_of("ab", 0), Equals(String::npos));
+					Expect(v.find_last_not_of("a")).ToEqual(0u);
+					Expect(v.find_last_not_of("ab")).ToEqual(String::npos);
+					Expect(v.find_last_not_of('a')).ToEqual(0u);
+					Expect(v.find_last_not_of("ab", 0)).ToEqual(String::npos);
 				});
 
-				it("Has npos", [&]()
+				It("Has npos", []()
 				{
-					AssertThat(String::npos, Equals(sizet(-1)));
-					AssertThat(StringView::npos, Equals(String::npos));
+					Expect(String::npos).ToEqual(sizet(-1));
+					Expect(StringView::npos).ToEqual(String::npos);
 				});
 			});
 
-			describe("Operators", []()
+			Describe("Operators", []()
 			{
-				it("Can concatenate", [&]()
+				It("Can concatenate", []()
 				{
 					String a{"Kiwi"};
 					String b{"Apple"};
-					AssertThat(a + b, Equals("KiwiApple"));
-					AssertThat(a + "X", Equals("KiwiX"));
-					AssertThat("X" + a, Equals("XKiwi"));
-					AssertThat(a + '!', Equals("Kiwi!"));
-					AssertThat('!' + a, Equals("!Kiwi"));
-					AssertThat(a + StringView{"V"}, Equals("KiwiV"));
-					AssertThat(StringView{"V"} + a, Equals("VKiwi"));
+					Expect(a + b).ToEqual("KiwiApple");
+					Expect(a + "X").ToEqual("KiwiX");
+					Expect("X" + a).ToEqual("XKiwi");
+					Expect(a + '!').ToEqual("Kiwi!");
+					Expect('!' + a).ToEqual("!Kiwi");
+					Expect(a + StringView{"V"}).ToEqual("KiwiV");
+					Expect(StringView{"V"} + a).ToEqual("VKiwi");
 				});
 
-				it("Can chain concatenate", [&]()
+				It("Can chain concatenate", []()
 				{
 					String a{"Kiwi"};
 					String result = a + " " + "Apple" + '!';
-					AssertThat(result, Equals("Kiwi Apple!"));
+					Expect(result).ToEqual("Kiwi Apple!");
 				});
 
-				it("Can compare with other types", [&]()
+				It("Can compare with other types", []()
 				{
 					String v{"Kiwi"};
-					AssertThat(v == String{"Kiwi"}, Is().True());
-					AssertThat(v != String{"Apple"}, Is().True());
-					AssertThat(v == "Kiwi", Is().True());
-					AssertThat(v != "Apple", Is().True());
-					AssertThat("Kiwi" == v, Is().True());
-					AssertThat("Apple" != v, Is().True());
-					AssertThat(v < "Lime", Is().True());
-					AssertThat("Lime" > v, Is().True());
-					AssertThat(v <= String{"Kiwi"}, Is().True());
-					AssertThat(v >= String{"Kiwi"}, Is().True());
-					AssertThat(v == StringView{"Kiwi"}, Is().True());
-					AssertThat(StringView{"Kiwi"} == v, Is().True());
-					AssertThat(v != StringView{"Apple"}, Is().True());
-					AssertThat(StringView{"Apple"} != v, Is().True());
-					AssertThat(v < StringView{"Lime"}, Is().True());
-					AssertThat(StringView{"Lime"} > v, Is().True());
+					Expect(v == String{"Kiwi"}).ToBeTrue();
+					Expect(v != String{"Apple"}).ToBeTrue();
+					Expect(v == "Kiwi").ToBeTrue();
+					Expect(v != "Apple").ToBeTrue();
+					Expect("Kiwi" == v).ToBeTrue();
+					Expect("Apple" != v).ToBeTrue();
+					Expect(v < "Lime").ToBeTrue();
+					Expect("Lime" > v).ToBeTrue();
+					Expect(v <= String{"Kiwi"}).ToBeTrue();
+					Expect(v >= String{"Kiwi"}).ToBeTrue();
+					Expect(v == StringView{"Kiwi"}).ToBeTrue();
+					Expect(StringView{"Kiwi"} == v).ToBeTrue();
+					Expect(v != StringView{"Apple"}).ToBeTrue();
+					Expect(StringView{"Apple"} != v).ToBeTrue();
+					Expect(v < StringView{"Lime"}).ToBeTrue();
+					Expect(StringView{"Lime"} > v).ToBeTrue();
 				});
 
-				it("Can three-way compare", [&]()
+				It("Can three-way compare", []()
 				{
 					String a{"Kiwi"};
 					String b{"Lime"};
-					AssertThat((a <=> b) < 0, Is().True());
-					AssertThat((b <=> a) > 0, Is().True());
-					AssertThat((a <=> String{"Kiwi"}) == 0, Is().True());
-					AssertThat((a <=> "Kiwi") == 0, Is().True());
+					Expect((a <=> b) < 0).ToBeTrue();
+					Expect((b <=> a) > 0).ToBeTrue();
+					Expect((a <=> String{"Kiwi"}) == 0).ToBeTrue();
+					Expect((a <=> "Kiwi") == 0).ToBeTrue();
 				});
 			});
 
-			describe("Memory", []()
+			Describe("Memory", []()
 			{
-				it("Keeps data valid when growing", [&]()
+				It("Keeps data valid when growing", []()
 				{
 					String v;
 					for (char c = 'a'; c <= 'z'; ++c)
 					{
 						v.push_back(c);
 					}
-					AssertThat(v.size(), Equals(26u));
-					AssertThat(v, Equals("abcdefghijklmnopqrstuvwxyz"));
-					AssertThat(v.c_str()[26], Equals('\0'));
+					Expect(v.size()).ToEqual(26u);
+					Expect(v).ToEqual("abcdefghijklmnopqrstuvwxyz");
+					Expect(v.c_str()[26]).ToEqual('\0');
 				});
 
-				it("Can reuse capacity", [&]()
+				It("Can reuse capacity", []()
 				{
 					String v;
 					v.reserve(1000);
@@ -815,162 +815,160 @@ go_bandit([]()
 						v.assign("KiwiAppleOrangeBanana");
 						v.clear();
 					}
-					AssertThat(v.capacity(), Equals(cap));
+					Expect(v.capacity()).ToEqual(cap);
 				});
 
-				it("Is valid after move assignment", [&]()
+				It("Is valid after move assignment", []()
 				{
 					String a{"Kiwi"};
 					String b;
 					b = Move(a);
-					AssertThat(b, Equals("Kiwi"));
+					Expect(b).ToEqual("Kiwi");
 					a = "Reused";
-					AssertThat(a, Equals("Reused"));
+					Expect(a).ToEqual("Reused");
 				});
 			});
 
-			describe("Format & Hash", []()
+			Describe("Format & Hash", []()
 			{
-				it("Can be formatted", [&]()
+				It("Can be formatted", []()
 				{
 					String v{"Kiwi"};
-					AssertThat(std::format("{}", v), Equals("Kiwi"));
-					AssertThat(Format("{}-{}", v, 5), Equals("Kiwi-5"));
+					Expect(std::format("{}", v)).ToEqual("Kiwi");
+					Expect(Format("{}-{}", v, 5)).ToEqual("Kiwi-5");
 					String out;
 					FormatTo(out, "{}!", v);
-					AssertThat(out, Equals("Kiwi!"));
+					Expect(out).ToEqual("Kiwi!");
 				});
 
-				it("Can be hashed", [&]()
+				It("Can be hashed", []()
 				{
 					String v{"Kiwi"};
-					AssertThat(GetHash(v), Equals(GetStringHash("Kiwi")));
-					AssertThat(GetHash(StringView{"Kiwi"}), Equals(GetHash(v)));
+					Expect(GetHash(v)).ToEqual(GetStringHash("Kiwi"));
+					Expect(GetHash(StringView{"Kiwi"})).ToEqual(GetHash(v));
 				});
 			});
 
-			describe("Arena", []()
+			Describe("Arena", []()
 			{
-				const char* longText = "This string is long enough to exceed the inline capacity";
-
-				it("Can default construct on an arena", [&]()
+				It("Can default construct on an arena", []()
 				{
 					MonoLinearArena arena{Memory::KB * 4};
 					String v{arena};
-					AssertThat(v.empty(), Is().True());
-					AssertThat(&v.GetArena(), Equals(static_cast<Arena*>(&arena)));
+					Expect(v.empty()).ToBeTrue();
+					Expect(&v.GetArena()).ToEqual(static_cast<Arena*>(&arena));
 					// Short strings still use the inline buffer
 					v = "Kiwi";
-					AssertThat(v, Equals("Kiwi"));
-					AssertThat(v.capacity() <= 32u, Is().True());
+					Expect(v).ToEqual("Kiwi");
+					Expect(v.capacity() <= 32u).ToBeTrue();
 				});
 
-				it("Can allocate on an arena", [&]()
+				It("Can allocate on an arena", []()
 				{
 					MonoLinearArena arena{Memory::KB * 4};
-					String v{arena, longText};
-					AssertThat(v, Equals(longText));
-					AssertThat(&v.GetArena(), Equals(static_cast<Arena*>(&arena)));
+					String v{arena, arenaLongText};
+					Expect(v).ToEqual(arenaLongText);
+					Expect(&v.GetArena()).ToEqual(static_cast<Arena*>(&arena));
 					// Long strings must allocate on the arena, not the current arena
-					AssertThat(v.capacity() >= v.size(), Is().True());
+					Expect(v.capacity() >= v.size()).ToBeTrue();
 				});
 
-				it("Can construct with count and char on an arena", [&]()
+				It("Can construct with count and char on an arena", []()
 				{
 					MonoLinearArena arena{Memory::KB * 4};
 					String v{arena, 64, 'x'};
-					AssertThat(v.size(), Equals(64u));
-					AssertThat(&v.GetArena(), Equals(static_cast<Arena*>(&arena)));
+					Expect(v.size()).ToEqual(64u);
+					Expect(&v.GetArena()).ToEqual(static_cast<Arena*>(&arena));
 				});
 
-				it("Can copy into an arena", [&]()
+				It("Can copy into an arena", []()
 				{
 					MonoLinearArena arena{Memory::KB * 4};
-					String original{longText};
+					String original{arenaLongText};
 					String v{arena, original};
-					AssertThat(v, Equals(original));
-					AssertThat(&v.GetArena(), Equals(static_cast<Arena*>(&arena)));
+					Expect(v).ToEqual(original);
+					Expect(&v.GetArena()).ToEqual(static_cast<Arena*>(&arena));
 				});
 
-				it("Keeps its arena when assigned", [&]()
+				It("Keeps its arena when assigned", []()
 				{
 					MonoLinearArena arena{Memory::KB * 4};
 					String v{arena};
-					v.assign(longText);
+					v.assign(arenaLongText);
 					v.append(" with some extra content to force a reallocation");
-					AssertThat(&v.GetArena(), Equals(static_cast<Arena*>(&arena)));
-					AssertThat(v.starts_with("This string"), Is().True());
+					Expect(&v.GetArena()).ToEqual(static_cast<Arena*>(&arena));
+					Expect(v.starts_with("This string")).ToBeTrue();
 				});
 			});
 
-			describe("Strings helpers", []()
+			Describe("Strings helpers", []()
 			{
-				it("RemoveFromStart", [&]()
+				It("RemoveFromStart", []()
 				{
 					String v{"KiwiApple"};
 					Strings::RemoveFromStart(v, 4);
-					AssertThat(v, Equals("Apple"));
+					Expect(v).ToEqual("Apple");
 					Strings::RemoveFromStart(v, 100);
-					AssertThat(v.empty(), Is().True());
+					Expect(v.empty()).ToBeTrue();
 				});
 
-				it("RemoveFromEnd", [&]()
+				It("RemoveFromEnd", []()
 				{
 					String v{"KiwiApple"};
 					Strings::RemoveFromEnd(v, 5);
-					AssertThat(v, Equals("Kiwi"));
+					Expect(v).ToEqual("Kiwi");
 					Strings::RemoveFromEnd(v, StringView{"wi"});
-					AssertThat(v, Equals("Ki"));
+					Expect(v).ToEqual("Ki");
 					Strings::RemoveFromEnd(v, 100);
-					AssertThat(v.empty(), Is().True());
+					Expect(v.empty()).ToBeTrue();
 				});
 
-				it("RemoveCharFromEnd", [&]()
+				It("RemoveCharFromEnd", []()
 				{
 					String v{"Kiwi!"};
-					AssertThat(Strings::RemoveCharFromEnd(v, '!'), Is().True());
-					AssertThat(v, Equals("Kiwi"));
-					AssertThat(Strings::RemoveCharFromEnd(v, '!'), Is().False());
-					AssertThat(v, Equals("Kiwi"));
+					Expect(Strings::RemoveCharFromEnd(v, '!')).ToBeTrue();
+					Expect(v).ToEqual("Kiwi");
+					Expect(Strings::RemoveCharFromEnd(v, '!')).ToBeFalse();
+					Expect(v).ToEqual("Kiwi");
 				});
 
-				it("ToSentenceCase", [&]()
+				It("ToSentenceCase", []()
 				{
-					AssertThat(Strings::ToSentenceCase(""), Equals(""));
-					AssertThat(Strings::ToSentenceCase("papa"), Equals("Papa"));
-					AssertThat(Strings::ToSentenceCase("papa "), Equals("Papa "));
-					AssertThat(Strings::ToSentenceCase("papa3"), Equals("Papa 3"));
-					AssertThat(Strings::ToSentenceCase("MisterPotato"), Equals("Mister Potato"));
+					Expect(Strings::ToSentenceCase("")).ToEqual("");
+					Expect(Strings::ToSentenceCase("papa")).ToEqual("Papa");
+					Expect(Strings::ToSentenceCase("papa ")).ToEqual("Papa ");
+					Expect(Strings::ToSentenceCase("papa3")).ToEqual("Papa 3");
+					Expect(Strings::ToSentenceCase("MisterPotato")).ToEqual("Mister Potato");
 				});
 
-				it("Convert u16 to u8", [&]()
+				It("Convert u16 to u8", []()
 				{
 					TString<Char16> utf16string{0x41, 0x0448, 0x65e5, 0xd834, 0xdd1e};
 					TString<Char8> u = Strings::Convert<TString<Char8>>(utf16string);
-					AssertThat(u.size(), Equals(10u));
+					Expect(u.size()).ToEqual(10u);
 				});
-				it("Convert u8 to u16", [&]()
+				It("Convert u8 to u16", []()
 				{
 					TString<AnsiChar> utf8_with_surrogates = "\xe6\x97\xa5\xd1\x88\xf0\x9d\x84\x9e";
 					TString<Char16> utf16result =
 					    Strings::Convert<TString<Char16>>(utf8_with_surrogates);
-					AssertThat(utf16result.size(), Equals(4u));
-					AssertThat(utf16result[2] == 0xd834, Is().True());
-					AssertThat(utf16result[3] == 0xdd1e, Is().True());
+					Expect(utf16result.size()).ToEqual(4u);
+					Expect(utf16result[2] == 0xd834).ToBeTrue();
+					Expect(utf16result[3] == 0xdd1e).ToBeTrue();
 				});
-				it("Convert u32 to u8", [&]()
+				It("Convert u32 to u8", []()
 				{
 					TString<Char32> utf32string = {0x448, 0x65E5, 0x10346};
 					TString<Char8> utf8result   = Strings::Convert<TString<Char8>>(utf32string);
-					AssertThat(utf8result.size(), Equals(9u));
+					Expect(utf8result.size()).ToEqual(9u);
 				});
-				it("Convert u8 to u32", [&]()
+				It("Convert u8 to u32", []()
 				{
 					TString<AnsiChar> twochars  = "\xe6\x97\xa5\xd1\x88";
 					TString<Char32> utf32result = Strings::Convert<TString<Char32>>(twochars);
-					AssertThat(utf32result.size(), Equals(2u));
+					Expect(utf32result.size()).ToEqual(2u);
 				});
 			});
 		});
 	});
-});
+}
