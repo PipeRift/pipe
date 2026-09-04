@@ -1,508 +1,486 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include "bandit/grammar.h"
 
-#include <bandit/bandit.h>
 #include <PipeECS.h>
+#include <PipeTest.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
-namespace snowhouse
+
+namespace
 {
-	template<>
-	struct Stringizer<Id>
-	{
-		static std::string ToString(Id id)
-		{
-			std::stringstream stream;
-			stream << "Id(" << id.value << ")";
-			return stream.str();
-		}
-	};
-}    // namespace snowhouse
+	IdContext ctx;
+	Id root;
+	Id child1;
+	Id child2;
+	Id child3;
+	Id grandchild;
+}    // namespace
 
 
-go_bandit([]()
+Spec("ECS.Hierarchy", []()
 {
-	describe("ECS.Hierarchy", []()
+	BeforeEach([]()
 	{
-		IdContext ctx;
-		Id root;
-		Id child1;
-		Id child2;
-		Id child3;
-		Id grandchild;
+		ctx        = {};
+		root       = AddId(ctx);
+		child1     = AddId(ctx);
+		child2     = AddId(ctx);
+		child3     = AddId(ctx);
+		grandchild = AddId(ctx);
+	});
 
-		before_each([&]()
+	Describe("AttachId", []()
+	{
+		It("Creates bidirectional parent-child link for single child", []()
 		{
-			ctx        = {};
-			root       = AddId(ctx);
-			child1     = AddId(ctx);
-			child2     = AddId(ctx);
-			child3     = AddId(ctx);
-			grandchild = AddId(ctx);
+			AttachId({ctx}, root, child1);
+
+			Expect(ctx.Has<CParent>(root)).ToBeTrue();
+			Expect(ctx.Has<CChild>(child1)).ToBeTrue();
+			Expect(ctx.Get<CParent>(root).children.Size()).ToEqual(1);
+			Expect(ctx.Get<CParent>(root).children[0]).ToEqual(child1);
+			Expect(ctx.Get<CChild>(child1).parent).ToEqual(root);
 		});
 
-		describe("AttachId", [&]()
+		It("Appends multiple children to same parent", []()
 		{
-			it("Creates bidirectional parent-child link for single child", [&]()
-			{
-				AttachId({ctx}, root, child1);
+			AttachId({ctx}, root, {child1, child2, child3});
 
-				AssertThat(ctx.Has<CParent>(root), Is().True());
-				AssertThat(ctx.Has<CChild>(child1), Is().True());
-				AssertThat(ctx.Get<CParent>(root).children.Size(), Equals(1));
-				AssertThat(ctx.Get<CParent>(root).children[0], Equals(child1));
-				AssertThat(ctx.Get<CChild>(child1).parent, Equals(root));
-			});
+			Expect(ctx.Has<CParent>(root)).ToBeTrue();
+			Expect(ctx.Has<CChild>(child1)).ToBeTrue();
+			Expect(ctx.Has<CChild>(child2)).ToBeTrue();
+			Expect(ctx.Has<CChild>(child3)).ToBeTrue();
+			Expect(ctx.Get<CParent>(root).children.Size()).ToEqual(3);
+			Expect(ctx.Get<CParent>(root).children[0]).ToEqual(child1);
+			Expect(ctx.Get<CParent>(root).children[1]).ToEqual(child2);
+			Expect(ctx.Get<CParent>(root).children[2]).ToEqual(child3);
+			Expect(ctx.Get<CChild>(child1).parent).ToEqual(root);
+			Expect(ctx.Get<CChild>(child2).parent).ToEqual(root);
+			Expect(ctx.Get<CChild>(child3).parent).ToEqual(root);
+		});
+	});
 
-			it("Appends multiple children to same parent", [&]()
-			{
-				AttachId({ctx}, root, {child1, child2, child3});
+	Describe("AttachIdAfter", []()
+	{
+		It("Inserts child after specified sibling preserving order", []()
+		{
+			AttachId({ctx}, root, {child1, child3});
+			AttachIdAfter({ctx}, root, child2, child1);
 
-				AssertThat(ctx.Has<CParent>(root), Is().True());
-				AssertThat(ctx.Has<CChild>(child1), Is().True());
-				AssertThat(ctx.Has<CChild>(child2), Is().True());
-				AssertThat(ctx.Has<CChild>(child3), Is().True());
-				AssertThat(ctx.Get<CParent>(root).children.Size(), Equals(3));
-				AssertThat(ctx.Get<CParent>(root).children[0], Equals(child1));
-				AssertThat(ctx.Get<CParent>(root).children[1], Equals(child2));
-				AssertThat(ctx.Get<CParent>(root).children[2], Equals(child3));
-				AssertThat(ctx.Get<CChild>(child1).parent, Equals(root));
-				AssertThat(ctx.Get<CChild>(child2).parent, Equals(root));
-				AssertThat(ctx.Get<CChild>(child3).parent, Equals(root));
-			});
+			Expect(ctx.Get<CParent>(root).children.Size()).ToEqual(3);
+			Expect(ctx.Get<CParent>(root).children.FindIndex(child2)).ToEqual(1);
+		});
+	});
+
+	Describe("TransferIdChildren", []()
+	{
+		It("Moves children from old parent to new parent", []()
+		{
+			Id newRoot = AddId(ctx);
+			AttachId({ctx}, root, {child1, child2});
+			TransferIdChildren({ctx}, {child1, child2}, newRoot);
+
+			Expect(ctx.Get<CParent>(root).children.IsEmpty()).ToBeTrue();
+			Expect(ctx.Has<CParent>(newRoot)).ToBeTrue();
+			Expect(ctx.Get<CParent>(newRoot).children.Size()).ToEqual(2);
+			Expect(ctx.Get<CChild>(child1).parent).ToEqual(newRoot);
+			Expect(ctx.Get<CChild>(child2).parent).ToEqual(newRoot);
+		});
+	});
+
+	Describe("DetachIdParent", []()
+	{
+		BeforeEach([]()
+		{
+			AttachId({ctx}, root, {child1, child2});
 		});
 
-		describe("AttachIdAfter", [&]()
+		It("Retains CChild component when keepComponents is true", []()
 		{
-			it("Inserts child after specified sibling preserving order", [&]()
-			{
-				AttachId({ctx}, root, {child1, child3});
-				AttachIdAfter({ctx}, root, child2, child1);
+			DetachIdParent({ctx}, child1, true);
 
-				AssertThat(ctx.Get<CParent>(root).children.Size(), Equals(3));
-				AssertThat(ctx.Get<CParent>(root).children.FindIndex(child2), Equals(1));
-			});
+			Expect(ctx.Has<CChild>(child1)).ToBeTrue();
+			Expect(ctx.Get<CChild>(child1).parent).ToEqual(NoId);
+			Expect(ctx.Get<CParent>(root).children.Size()).ToEqual(1);
 		});
 
-		describe("TransferIdChildren", [&]()
+		It("Removes CChild from detached child and removes from parent list", []()
 		{
-			it("Moves children from old parent to new parent", [&]()
-			{
-				Id newRoot = AddId(ctx);
-				AttachId({ctx}, root, {child1, child2});
-				TransferIdChildren({ctx}, {child1, child2}, newRoot);
+			DetachIdParent({ctx}, child1, false);
 
-				AssertThat(ctx.Get<CParent>(root).children.IsEmpty(), Is().True());
-				AssertThat(ctx.Has<CParent>(newRoot), Is().True());
-				AssertThat(ctx.Get<CParent>(newRoot).children.Size(), Equals(2));
-				AssertThat(ctx.Get<CChild>(child1).parent, Equals(newRoot));
-				AssertThat(ctx.Get<CChild>(child2).parent, Equals(newRoot));
-			});
+			Expect(ctx.Has<CChild>(child1)).ToBeFalse();
+			Expect(ctx.Get<CParent>(root).children.Contains(child1)).ToBeFalse();
 		});
 
-		describe("DetachIdParent", [&]()
+		It("Removes empty CParent when all children are detached", []()
 		{
-			before_each([&]()
-			{
-				AttachId({ctx}, root, {child1, child2});
-			});
+			DetachIdParent({ctx}, {child1, child2}, false);
 
-			it("Retains CChild component when keepComponents is true", [&]()
-			{
-				DetachIdParent({ctx}, child1, true);
+			Expect(ctx.Has<CChild>(child1)).ToBeFalse();
+			Expect(ctx.Has<CChild>(child2)).ToBeFalse();
+			Expect(ctx.Has<CParent>(root)).ToBeFalse();
+		});
+	});
 
-				AssertThat(ctx.Has<CChild>(child1), Is().True());
-				AssertThat(ctx.Get<CChild>(child1).parent, Equals(NoId));
-				AssertThat(ctx.Get<CParent>(root).children.Size(), Equals(1));
-			});
-
-			it("Removes CChild from detached child and removes from parent list", [&]()
-			{
-				DetachIdParent({ctx}, child1, false);
-
-				AssertThat(ctx.Has<CChild>(child1), Is().False());
-				AssertThat(ctx.Get<CParent>(root).children.Contains(child1), Is().False());
-			});
-
-			it("Removes empty CParent when all children are detached", [&]()
-			{
-				DetachIdParent({ctx}, {child1, child2}, false);
-
-				AssertThat(ctx.Has<CChild>(child1), Is().False());
-				AssertThat(ctx.Has<CChild>(child2), Is().False());
-				AssertThat(ctx.Has<CParent>(root), Is().False());
-			});
+	Describe("DetachIdChildren", []()
+	{
+		BeforeEach([]()
+		{
+			AttachId({ctx}, root, {child1, child2});
 		});
 
-		describe("DetachIdChildren", [&]()
+		It("Severes all children but retains CChild when keepComponents is true", []()
 		{
-			before_each([&]()
-			{
-				AttachId({ctx}, root, {child1, child2});
-			});
+			DetachIdChildren({ctx}, root, true);
 
-			it("Severes all children but retains CChild when keepComponents is true", [&]()
-			{
-				DetachIdChildren({ctx}, root, true);
-
-				AssertThat(ctx.Has<CChild>(child1), Is().True());
-				AssertThat(ctx.Has<CChild>(child2), Is().True());
-				AssertThat(ctx.Get<CChild>(child1).parent, Equals(NoId));
-				AssertThat(ctx.Get<CChild>(child2).parent, Equals(NoId));
-				AssertThat(ctx.Get<CParent>(root).children.IsEmpty(), Is().True());
-			});
-
-			it("Removes CChild and CParent when keepComponents is false", [&]()
-			{
-				DetachIdChildren({ctx}, root, false);
-
-				AssertThat(ctx.Has<CChild>(child1), Is().False());
-				AssertThat(ctx.Has<CChild>(child2), Is().False());
-				AssertThat(ctx.Has<CParent>(root), Is().False());
-			});
+			Expect(ctx.Has<CChild>(child1)).ToBeTrue();
+			Expect(ctx.Has<CChild>(child2)).ToBeTrue();
+			Expect(ctx.Get<CChild>(child1).parent).ToEqual(NoId);
+			Expect(ctx.Get<CChild>(child2).parent).ToEqual(NoId);
+			Expect(ctx.Get<CParent>(root).children.IsEmpty()).ToBeTrue();
 		});
 
-		describe("GetIdChildren", [&]()
+		It("Removes CChild and CParent when keepComponents is false", []()
 		{
-			before_each([&]()
-			{
-				AttachId({ctx}, root, {child1, child2});
-				AttachId({ctx}, child1, grandchild);
-			});
+			DetachIdChildren({ctx}, root, false);
 
-			it("Returns child list for parent entities", [&]()
-			{
-				const auto* children = GetIdChildren({ctx}, root);
-				AssertThat(children, !Equals(nullptr));
-				AssertThat(children->Size(), Equals(2));
-				AssertThat(children->Contains(child1), Is().True());
-				AssertThat(children->Contains(child2), Is().True());
-			});
+			Expect(ctx.Has<CChild>(child1)).ToBeFalse();
+			Expect(ctx.Has<CChild>(child2)).ToBeFalse();
+			Expect(ctx.Has<CParent>(root)).ToBeFalse();
+		});
+	});
 
-			it("Combines children from multiple parents into one list", [&]()
-			{
-				TArray<Id> outChildren;
-				GetIdChildren({ctx}, {root, child1}, outChildren);
-				AssertThat(outChildren.Size(), Equals(3));
-				AssertThat(outChildren.Contains(grandchild), Is().True());
-			});
-
-			it("Returns null for entities without CParent component", [&]()
-			{
-				AssertThat(GetIdChildren({ctx}, child2), Equals(nullptr));
-			});
+	Describe("GetIdChildren", []()
+	{
+		BeforeEach([]()
+		{
+			AttachId({ctx}, root, {child1, child2});
+			AttachId({ctx}, child1, grandchild);
 		});
 
-		describe("GetAllIdChildren", [&]()
+		It("Returns child list for parent entities", []()
 		{
-			before_each([&]()
-			{
-				AttachId({ctx}, root, child1);
-				AttachId({ctx}, child1, grandchild);
-			});
-
-			it("Recurses full tree depth to collect all descendents", [&]()
-			{
-				TArray<Id> outChildren;
-				GetAllIdChildren({ctx}, root, outChildren, 10);
-				AssertThat(outChildren.Size(), Equals(2));
-				AssertThat(outChildren.Contains(grandchild), Is().True());
-			});
-
-			it("Respects depth limit to return only immediate children", [&]()
-			{
-				TArray<Id> outChildren;
-				GetAllIdChildren({ctx}, root, outChildren, 1);
-				AssertThat(outChildren.Size(), Equals(1));
-				AssertThat(outChildren.Contains(grandchild), Is().False());
-			});
+			const auto* children = GetIdChildren({ctx}, root);
+			Expect(children).ToNotEqual(nullptr);
+			Expect(children->Size()).ToEqual(2);
+			Expect(children->Contains(child1)).ToBeTrue();
+			Expect(children->Contains(child2)).ToBeTrue();
 		});
 
-		describe("GetIdParent", [&]()
+		It("Combines children from multiple parents into one list", []()
 		{
-			before_each([&]()
-			{
-				AttachId({ctx}, root, child1);
-				AttachId({ctx}, child1, grandchild);
-			});
-
-			it("Returns parent Id for child entities", [&]()
-			{
-				AssertThat(GetIdParent({ctx}, child1), Equals(root));
-				AssertThat(GetIdParent({ctx}, grandchild), Equals(child1));
-			});
-
-			it("Returns unique parents for multiple children", [&]()
-			{
-				TArray<Id> outParents;
-				GetIdParent({ctx}, {child1, grandchild}, outParents);
-				AssertThat(outParents.Size(), Equals(2));
-				AssertThat(outParents.Contains(root), Is().True());
-				AssertThat(outParents.Contains(child1), Is().True());
-			});
-
-			it("Returns NoId for root entities without parent", [&]()
-			{
-				AssertThat(GetIdParent({ctx}, root), Equals(NoId));
-			});
-
-			it("Returns NoId for entities without CChild component", [&]()
-			{
-				AssertThat(GetIdParent({ctx}, child2), Equals(NoId));
-			});
+			TArray<Id> outChildren;
+			GetIdChildren({ctx}, {root, child1}, outChildren);
+			Expect(outChildren.Size()).ToEqual(3);
+			Expect(outChildren.Contains(grandchild)).ToBeTrue();
 		});
 
-		describe("GetAllIdParents", [&]()
+		It("Returns null for entities without CParent component", []()
 		{
-			before_each([&]()
-			{
-				AttachId({ctx}, root, child1);
-				AttachId({ctx}, child1, grandchild);
-			});
+			Expect(GetIdChildren({ctx}, child2)).ToEqual(nullptr);
+		});
+	});
 
-			it("Traverses full ancestry chain from leaf to root", [&]()
-			{
-				TArray<Id> outParents;
-				GetAllIdParents({ctx}, grandchild, outParents);
-				AssertThat(outParents.Size(), Equals(2));
-				AssertThat(outParents[0], Equals(child1));
-				AssertThat(outParents[1], Equals(root));
-			});
-
-			it("Returns empty when entity has no CChild component", [&]()
-			{
-				TArray<Id> outParents;
-				GetAllIdParents({ctx}, child2, outParents);
-				AssertThat(outParents.IsEmpty(), Is().True());
-			});
+	Describe("GetAllIdChildren", []()
+	{
+		BeforeEach([]()
+		{
+			AttachId({ctx}, root, child1);
+			AttachId({ctx}, child1, grandchild);
 		});
 
-		describe("FindIdParent", [&]()
+		It("Recurses full tree depth to collect all descendents", []()
 		{
-			before_each([&]()
-			{
-				AttachId({ctx}, root, child1);
-				AttachId({ctx}, child1, grandchild);
-			});
-
-			it("Finds ancestor two levels up matching predicate", [&]()
-			{
-				AssertThat(FindIdParent({ctx}, grandchild,
-				               [&](Id id)
-				{
-					return id == root;
-				}),
-				    Equals(root));
-			});
-
-			it("Finds immediate parent matching predicate", [&]()
-			{
-				AssertThat(FindIdParent({ctx}, grandchild,
-				               [&](Id id)
-				{
-					return id == child1;
-				}),
-				    Equals(child1));
-			});
-
-			it("Returns NoId when no ancestor matches predicate", [&]()
-			{
-				AssertThat(IsNone(FindIdParent({ctx}, grandchild,
-				               [](Id)
-				{
-					return false;
-				})),
-				    Is().True());
-			});
+			TArray<Id> outChildren;
+			GetAllIdChildren({ctx}, root, outChildren, 10);
+			Expect(outChildren.Size()).ToEqual(2);
+			Expect(outChildren.Contains(grandchild)).ToBeTrue();
 		});
 
-		describe("FindIdParents", [&]()
+		It("Respects depth limit to return only immediate children", []()
 		{
-			it("Finds nearest matching ancestor for deep entity", [&]()
-			{
-				Id intermediate = AddId(ctx);
-				AttachId({ctx}, root, child1);
-				AttachId({ctx}, child1, intermediate);
-				AttachId({ctx}, intermediate, grandchild);
+			TArray<Id> outChildren;
+			GetAllIdChildren({ctx}, root, outChildren, 1);
+			Expect(outChildren.Size()).ToEqual(1);
+			Expect(outChildren.Contains(grandchild)).ToBeFalse();
+		});
+	});
 
-				TArray<Id> outParents;
-				FindIdParents({ctx}, grandchild, outParents, [](Id)
-				{
-					return true;
-				});
-				AssertThat(outParents.Size(), Equals(1));
-				AssertThat(outParents.Contains(intermediate), Is().True());
-			});
-
-			it("Returns empty when no ancestor matches predicate", [&]()
-			{
-				TArray<Id> outParents;
-				FindIdParents({ctx}, child1, outParents, [](Id)
-				{
-					return false;
-				});
-				AssertThat(outParents.IsEmpty(), Is().True());
-			});
+	Describe("GetIdParent", []()
+	{
+		BeforeEach([]()
+		{
+			AttachId({ctx}, root, child1);
+			AttachId({ctx}, child1, grandchild);
 		});
 
-		describe("GetIdRoots", [&]()
+		It("Returns parent Id for child entities", []()
 		{
-			it("Returns empty when no hierarchy exists", [&]()
-			{
-				TArray<Id> roots;
-				GetIdRoots({ctx}, roots);
-				AssertThat(roots.IsEmpty(), Is().True());
-			});
-
-			it("Finds root of single-parent hierarchy", [&]()
-			{
-				AttachId({ctx}, root, {child1, child2});
-
-				TArray<Id> roots;
-				GetIdRoots({ctx}, roots);
-				AssertThat(roots.Size(), Equals(1));
-				AssertThat(roots.Contains(root), Is().True());
-			});
-
-			it("Returns multiple roots from independent trees", [&]()
-			{
-				Id root2 = AddId(ctx);
-				AttachId({ctx}, root, {child1, child2});
-				AttachId({ctx}, root2, child3);
-
-				TArray<Id> roots;
-				GetIdRoots({ctx}, roots);
-				AssertThat(roots.Size(), Equals(2));
-				AssertThat(roots.Contains(root), Is().True());
-				AssertThat(roots.Contains(root2), Is().True());
-			});
-
-			it("Excludes entities that are both parent and child of someone", [&]()
-			{
-				AttachId({ctx}, root, child1);
-				AttachId({ctx}, child1, grandchild);
-
-				TArray<Id> roots;
-				GetIdRoots({ctx}, roots);
-				AssertThat(roots.Size(), Equals(1));
-				AssertThat(roots.Contains(root), Is().True());
-				AssertThat(roots.Contains(child1), Is().False());
-			});
+			Expect(GetIdParent({ctx}, child1)).ToEqual(root);
+			Expect(GetIdParent({ctx}, grandchild)).ToEqual(child1);
 		});
 
-		describe("GetIdParentRoots", [&]()
+		It("Returns unique parents for multiple children", []()
 		{
-			before_each([&]()
-			{
-				AttachId({ctx}, root, child1);
-				AttachId({ctx}, child1, grandchild);
-			});
-
-			it("Walks child chain up to root ancestor", [&]()
-			{
-				TArray<Id> roots;
-				GetIdParentRoots({ctx}, grandchild, roots, false);
-				AssertThat(roots.Size(), Equals(1));
-				AssertThat(roots.Contains(root), Is().True());
-			});
-
-			it("Handles children from different trees", [&]()
-			{
-				Id root2    = AddId(ctx);
-				Id childOf2 = AddId(ctx);
-				AttachId({ctx}, root2, childOf2);
-
-				TArray<Id> roots;
-				GetIdParentRoots({ctx}, {grandchild, childOf2}, roots, false);
-				AssertThat(roots.Size(), Equals(2));
-				AssertThat(roots.Contains(root), Is().True());
-				AssertThat(roots.Contains(root2), Is().True());
-			});
-
-			it("Considers input entities as roots when considerChildren flag is set", [&]()
-			{
-				TArray<Id> roots;
-				GetIdParentRoots({ctx}, {root, grandchild}, roots, true);
-				AssertThat(roots.Size(), Equals(1));
-				AssertThat(roots.Contains(root), Is().True());
-			});
-
-			it("Returns empty for empty input", [&]()
-			{
-				TArray<Id> roots;
-				GetIdParentRoots({ctx}, {}, roots, false);
-				AssertThat(roots.IsEmpty(), Is().True());
-			});
-
-			it("Returns empty for entities with no parent", [&]()
-			{
-				TArray<Id> roots;
-				GetIdParentRoots({ctx}, child2, roots, false);
-				AssertThat(roots.IsEmpty(), Is().True());
-			});
+			TArray<Id> outParents;
+			GetIdParent({ctx}, {child1, grandchild}, outParents);
+			Expect(outParents.Size()).ToEqual(2);
+			Expect(outParents.Contains(root)).ToBeTrue();
+			Expect(outParents.Contains(child1)).ToBeTrue();
 		});
 
-		describe("FixParentIdLinks", [&]()
+		It("Returns NoId for root entities without parent", []()
 		{
-			before_each([&]()
-			{
-				AttachId({ctx}, root, child1);
-			});
-
-			it("Returns false when parent-child links are already correct", [&]()
-			{
-				AssertThat(FixParentIdLinks({ctx}, root), Is().False());
-			});
-
-			it("Fixes child->parent reference when it does not match parent's list", [&]()
-			{
-				ctx.Get<CChild>(child1).parent = NoId;
-
-				AssertThat(FixParentIdLinks({ctx}, root), Is().True());
-				AssertThat(ctx.Get<CChild>(child1).parent, Equals(root));
-			});
-
-			it("Adds missing CChild component to orphan children", [&]()
-			{
-				ctx.Remove<CChild>(child1);
-				AssertThat(ctx.Has<CChild>(child1), Is().False());
-
-				AssertThat(FixParentIdLinks({ctx}, root), Is().True());
-				AssertThat(ctx.Has<CChild>(child1), Is().True());
-				AssertThat(ctx.Get<CChild>(child1).parent, Equals(root));
-			});
+			Expect(GetIdParent({ctx}, root)).ToEqual(NoId);
 		});
 
-		describe("ValidateParentIdLinks", [&]()
+		It("Returns NoId for entities without CChild component", []()
 		{
-			before_each([&]()
+			Expect(GetIdParent({ctx}, child2)).ToEqual(NoId);
+		});
+	});
+
+	Describe("GetAllIdParents", []()
+	{
+		BeforeEach([]()
+		{
+			AttachId({ctx}, root, child1);
+			AttachId({ctx}, child1, grandchild);
+		});
+
+		It("Traverses full ancestry chain from leaf to root", []()
+		{
+			TArray<Id> outParents;
+			GetAllIdParents({ctx}, grandchild, outParents);
+			Expect(outParents.Size()).ToEqual(2);
+			Expect(outParents[0]).ToEqual(child1);
+			Expect(outParents[1]).ToEqual(root);
+		});
+
+		It("Returns empty when entity has no CChild component", []()
+		{
+			TArray<Id> outParents;
+			GetAllIdParents({ctx}, child2, outParents);
+			Expect(outParents.IsEmpty()).ToBeTrue();
+		});
+	});
+
+	Describe("FindIdParent", []()
+	{
+		BeforeEach([]()
+		{
+			AttachId({ctx}, root, child1);
+			AttachId({ctx}, child1, grandchild);
+		});
+
+		It("Finds ancestor two levels up matching predicate", []()
+		{
+			Expect(FindIdParent({ctx}, grandchild, [&](Id id)
 			{
-				AttachId({ctx}, root, child1);
-			});
+				return id == root;
+			})).ToEqual(root);
+		});
 
-			it("Returns true when all parent-child links are consistent", [&]()
+		It("Finds immediate parent matching predicate", []()
+		{
+			Expect(FindIdParent({ctx}, grandchild, [&](Id id)
 			{
-				AssertThat(ValidateParentIdLinks({ctx}, root), Is().True());
-			});
+				return id == child1;
+			})).ToEqual(child1);
+		});
 
-			it("Returns false when child->parent reference is mismatched", [&]()
+		It("Returns NoId when no ancestor matches predicate", []()
+		{
+			Expect(IsNone(FindIdParent({ctx}, grandchild, [](Id)
 			{
-				ctx.Get<CChild>(child1).parent = NoId;
+				return false;
+			}))).ToBeTrue();
+		});
+	});
 
-				AssertThat(ValidateParentIdLinks({ctx}, root), Is().False());
-			});
+	Describe("FindIdParents", []()
+	{
+		It("Finds nearest matching ancestor for deep entity", []()
+		{
+			Id intermediate = AddId(ctx);
+			AttachId({ctx}, root, child1);
+			AttachId({ctx}, child1, intermediate);
+			AttachId({ctx}, intermediate, grandchild);
 
-			it("Returns false when CChild component is missing from child", [&]()
+			TArray<Id> outParents;
+			FindIdParents({ctx}, grandchild, outParents, [&](Id id)
 			{
-				ctx.Remove<CChild>(child1);
-
-				AssertThat(ValidateParentIdLinks({ctx}, root), Is().False());
+				return id == intermediate;
 			});
+			Expect(outParents.Size()).ToEqual(1);
+			Expect(outParents.Contains(intermediate)).ToBeTrue();
+		});
+
+		It("Returns empty when no ancestor matches predicate", []()
+		{
+			TArray<Id> outParents;
+			FindIdParents({ctx}, child1, outParents, [](Id)
+			{
+				return false;
+			});
+			Expect(outParents.IsEmpty()).ToBeTrue();
+		});
+	});
+
+	Describe("GetIdRoots", []()
+	{
+		It("Returns empty when no hierarchy exists", []()
+		{
+			TArray<Id> roots;
+			GetIdRoots({ctx}, roots);
+			Expect(roots.IsEmpty()).ToBeTrue();
+		});
+
+		It("Finds root of single-parent hierarchy", []()
+		{
+			AttachId({ctx}, root, {child1, child2});
+
+			TArray<Id> roots;
+			GetIdRoots({ctx}, roots);
+			Expect(roots.Size()).ToEqual(1);
+			Expect(roots.Contains(root)).ToBeTrue();
+		});
+
+		It("Returns multiple roots from independent trees", []()
+		{
+			Id root2 = AddId(ctx);
+			AttachId({ctx}, root, {child1, child2});
+			AttachId({ctx}, root2, child3);
+
+			TArray<Id> roots;
+			GetIdRoots({ctx}, roots);
+			Expect(roots.Size()).ToEqual(2);
+			Expect(roots.Contains(root)).ToBeTrue();
+			Expect(roots.Contains(root2)).ToBeTrue();
+		});
+
+		It("Excludes entities that are both parent and child of someone", []()
+		{
+			AttachId({ctx}, root, child1);
+			AttachId({ctx}, child1, grandchild);
+
+			TArray<Id> roots;
+			GetIdRoots({ctx}, roots);
+			Expect(roots.Size()).ToEqual(1);
+			Expect(roots.Contains(root)).ToBeTrue();
+			Expect(roots.Contains(child1)).ToBeFalse();
+		});
+	});
+
+	Describe("GetIdParentRoots", []()
+	{
+		BeforeEach([]()
+		{
+			AttachId({ctx}, root, child1);
+			AttachId({ctx}, child1, grandchild);
+		});
+
+		It("Walks child chain up to root ancestor", []()
+		{
+			TArray<Id> roots;
+			GetIdParentRoots({ctx}, grandchild, roots, false);
+			Expect(roots.Size()).ToEqual(1);
+			Expect(roots.Contains(root)).ToBeTrue();
+		});
+
+		It("Handles children from different trees", []()
+		{
+			Id root2    = AddId(ctx);
+			Id childOf2 = AddId(ctx);
+			AttachId({ctx}, root2, childOf2);
+
+			TArray<Id> roots;
+			GetIdParentRoots({ctx}, {grandchild, childOf2}, roots, false);
+			Expect(roots.Size()).ToEqual(2);
+			Expect(roots.Contains(root)).ToBeTrue();
+			Expect(roots.Contains(root2)).ToBeTrue();
+		});
+
+		It("Considers input entities as roots when considerChildren flag is set", []()
+		{
+			TArray<Id> roots;
+			GetIdParentRoots({ctx}, {root, grandchild}, roots, true);
+			Expect(roots.Size()).ToEqual(1);
+			Expect(roots.Contains(root)).ToBeTrue();
+		});
+
+		It("Returns empty for empty input", []()
+		{
+			TArray<Id> roots;
+			GetIdParentRoots({ctx}, {}, roots, false);
+			Expect(roots.IsEmpty()).ToBeTrue();
+		});
+
+		It("Returns empty for entities with no parent", []()
+		{
+			TArray<Id> roots;
+			GetIdParentRoots({ctx}, child2, roots, false);
+			Expect(roots.IsEmpty()).ToBeTrue();
+		});
+	});
+
+	Describe("FixParentIdLinks", []()
+	{
+		BeforeEach([]()
+		{
+			AttachId({ctx}, root, child1);
+		});
+
+		It("Returns false when parent-child links are already correct", []()
+		{
+			Expect(FixParentIdLinks({ctx}, root)).ToBeFalse();
+		});
+
+		It("Fixes child->parent reference when it does not match parent's list", []()
+		{
+			ctx.Get<CChild>(child1).parent = NoId;
+
+			Expect(FixParentIdLinks({ctx}, root)).ToBeTrue();
+			Expect(ctx.Get<CChild>(child1).parent).ToEqual(root);
+		});
+
+		It("Adds missing CChild component to orphan children", []()
+		{
+			ctx.Remove<CChild>(child1);
+			Expect(ctx.Has<CChild>(child1)).ToBeFalse();
+
+			Expect(FixParentIdLinks({ctx}, root)).ToBeTrue();
+			Expect(ctx.Has<CChild>(child1)).ToBeTrue();
+			Expect(ctx.Get<CChild>(child1).parent).ToEqual(root);
+		});
+	});
+
+	Describe("ValidateParentIdLinks", []()
+	{
+		BeforeEach([]()
+		{
+			AttachId({ctx}, root, child1);
+		});
+
+		It("Returns true when all parent-child links are consistent", []()
+		{
+			Expect(ValidateParentIdLinks({ctx}, root)).ToBeTrue();
+		});
+
+		It("Returns false when child->parent reference is mismatched", []()
+		{
+			ctx.Get<CChild>(child1).parent = NoId;
+
+			Expect(ValidateParentIdLinks({ctx}, root)).ToBeFalse();
+		});
+
+		It("Returns false when CChild component is missing from child", []()
+		{
+			ctx.Remove<CChild>(child1);
+
+			Expect(ValidateParentIdLinks({ctx}, root)).ToBeFalse();
 		});
 	});
 });

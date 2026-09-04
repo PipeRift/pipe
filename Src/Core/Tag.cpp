@@ -212,6 +212,25 @@ namespace p
 			}
 		}
 
+		// Slow path: alloc & insert must be atomic. Re-check under exclusive lock, another thread
+		// may have inserted the same key already (duplicates would break string uniqueness).
+		ExclusiveScopedLock lock{stringsListMutex};
+
+		index = strings.LowerBound(hash);
+		if (index != NO_INDEX)
+		{
+			const auto& ref = strings[index];
+			if (hash == ref.hash)
+			{
+				// Found existing key
+				return *ref.str;
+			}
+		}
+		else
+		{
+			index = strings.Size();    // Insert at the end of the list
+		}
+
 		const sizet size = value.size();
 		auto* header = static_cast<TagHeader*>(arena.Alloc(GetAllocSize(size), alignof(TagHeader)));
 		header->activeTags = 0;
@@ -222,7 +241,6 @@ namespace p
 		p::CopyMem(data, value.data(), sizeof(char) * size);
 		data[header->size] = '\0';
 
-		ExclusiveScopedLock lock{stringsListMutex};
 		strings.Insert(index, {hash, header});
 		return *header;
 	}

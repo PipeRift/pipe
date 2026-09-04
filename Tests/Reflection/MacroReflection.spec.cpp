@@ -1,12 +1,11 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
 #include <PipeContainers.h>
 #include <PipeReflect.h>
+#include <PipeTest.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
+using namespace p;
 
 
 struct TestStruct
@@ -21,23 +20,20 @@ struct TestStruct
 };
 
 
-go_bandit([]()
+Spec("Reflection.Macros", []()
 {
-	describe("Reflection.Macros", []()
+	It("Can get property names", []()
 	{
-		it("Can get property names", [&]()
-		{
-			p::TypeId testStructType = p::RegisterTypeId<TestStruct>();
+		p::TypeId testStructType = p::RegisterTypeId<TestStruct>();
 
-			AssertThat(p::HasTypeFlags(testStructType, p::TF_Struct), Equals(true));
+		Expect(p::HasTypeFlags(testStructType, p::TF_Struct)).ToEqual(true);
 
-			auto properties = p::GetTypeProperties(testStructType);
-			AssertThat(properties.Size(), Equals(2));
+		auto properties = p::GetTypeProperties(testStructType);
+		Expect(properties.Size()).ToEqual(2);
 
-			// AssertThat(properties[0].typeId, Equals(p::GetTypeId<p::TArray<float>>()));
-			AssertThat(properties[0]->name.Data(), Equals("value0"));
-			// AssertThat(properties[1].typeId, Equals(p::GetTypeId<bool>()));
-			AssertThat(properties[1]->name.Data(), Equals("value1"));
-		});
+		// Expect(properties[0].typeId).ToEqual(p::GetTypeId<p::TArray<float>>());
+		Expect(properties[0]->name.Data()).ToEqual("value0");
+		// Expect(properties[1].typeId).ToEqual(p::GetTypeId<bool>());
+		Expect(properties[1]->name.Data()).ToEqual("value1");
 	});
 });

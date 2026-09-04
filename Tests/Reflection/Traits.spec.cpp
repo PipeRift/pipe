@@ -1,13 +1,12 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
 #include <Pipe/Core/TypeTraits.h>
 #include <PipeReflect.h>
 #include <PipeSerialize.h>
+#include <PipeTest.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
+using namespace p;
 
 
 struct TestNotSerializable
@@ -40,67 +39,64 @@ namespace p
 }    // namespace p
 
 
-go_bandit([]()
+Spec("Reflection.Traits", []()
 {
-	describe("Reflection.Traits", []()
+	Describe("Read/Write properties", []()
 	{
-		describe("Read/Write properties", []()
+		It("Can check for read properties", []()
 		{
-			it("Can check for read properties", [&]()
-			{
-				AssertThat(p::HasReadProperties<TestNotSerializable>(), Is().False());
-				AssertThat(p::HasReadProperties<TestSerializable>(), Is().True());
-				AssertThat(p::Readable<TestNotSerializable>, Is().False());
-				AssertThat(p::Readable<TestSerializable>, Is().True());
-			});
-
-			it("Can check for write properties", [&]()
-			{
-				AssertThat(p::HasWriteProperties<TestNotSerializable>(), Is().False());
-				AssertThat(p::HasWriteProperties<TestSerializable>(), Is().True());
-				AssertThat(p::Writable<TestNotSerializable>, Is().False());
-				AssertThat(p::Writable<TestSerializable>, Is().True());
-			});
+			Expect(p::HasReadProperties<TestNotSerializable>()).ToBeFalse();
+			Expect(p::HasReadProperties<TestSerializable>()).ToBeTrue();
+			Expect(p::Readable<TestNotSerializable>).ToBeFalse();
+			Expect(p::Readable<TestSerializable>).ToBeTrue();
 		});
 
-		describe("Read/Write external", []()
+		It("Can check for write properties", []()
 		{
-			it("Can check for read properties", [&]()
-			{
-				AssertThat(p::Readable<TestNotSerializable>, Is().False());
-				AssertThat(p::Readable<TestExternal>, Is().True());
-			});
+			Expect(p::HasWriteProperties<TestNotSerializable>()).ToBeFalse();
+			Expect(p::HasWriteProperties<TestSerializable>()).ToBeTrue();
+			Expect(p::Writable<TestNotSerializable>).ToBeFalse();
+			Expect(p::Writable<TestSerializable>).ToBeTrue();
+		});
+	});
 
-			it("Can check for write properties", [&]()
-			{
-				AssertThat(p::Writable<TestNotSerializable>, Is().False());
-				AssertThat(p::Writable<TestExternal>, Is().True());
-			});
+	Describe("Read/Write external", []()
+	{
+		It("Can check for read properties", []()
+		{
+			Expect(p::Readable<TestNotSerializable>).ToBeFalse();
+			Expect(p::Readable<TestExternal>).ToBeTrue();
 		});
 
-		describe("Read/Write external in namespace", []()
+		It("Can check for write properties", []()
 		{
-			it("Can check for read properties", [&]()
-			{
-				AssertThat(p::Readable<p::TestExternal2>, Is().True());
-			});
+			Expect(p::Writable<TestNotSerializable>).ToBeFalse();
+			Expect(p::Writable<TestExternal>).ToBeTrue();
+		});
+	});
 
-			it("Can check for write properties", [&]()
-			{
-				AssertThat(p::Writable<p::TestExternal2>, Is().True());
-			});
+	Describe("Read/Write external in namespace", []()
+	{
+		It("Can check for read properties", []()
+		{
+			Expect(p::Readable<p::TestExternal2>).ToBeTrue();
 		});
 
-		it("Can check super", []()
+		It("Can check for write properties", []()
 		{
-			AssertThat(p::HasSuper<TestNotSerializable>(), Is().False());
-			AssertThat(p::HasSuper<TestWithSuper>(), Is().True());
+			Expect(p::Writable<p::TestExternal2>).ToBeTrue();
 		});
+	});
 
-		it("Can build type on Arrays", []()
-		{
-			AssertThat(p::CanBuildType<p::TArray<bool>>(), Is().True());
-			AssertThat(p::HasExternalBuildType<p::TArray<bool>>(), Is().True());
-		});
+	It("Can check super", []()
+	{
+		Expect(p::HasSuper<TestNotSerializable>()).ToBeFalse();
+		Expect(p::HasSuper<TestWithSuper>()).ToBeTrue();
+	});
+
+	It("Can build type on Arrays", []()
+	{
+		Expect(p::CanBuildType<p::TArray<bool>>()).ToBeTrue();
+		Expect(p::HasExternalBuildType<p::TArray<bool>>()).ToBeTrue();
 	});
 });

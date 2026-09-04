@@ -1,11 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
 #include <PipeECS.h>
+#include <PipeTest.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
@@ -17,58 +15,55 @@ struct ECSTypeB
 {};
 
 
-go_bandit([]()
+Spec("ECS", []()
 {
-	describe("ECS", []()
+	It("Can copy context", []()
 	{
-		it("Can copy context", [&]()
-		{
-			static IdContext* ctxPtr = nullptr;
+		static IdContext* ctxPtr = nullptr;
 
-			IdContext origin;
-			Id id = AddId(origin);
+		IdContext origin;
+		Id id = AddId(origin);
 
-			ctxPtr = &origin;
-			origin.Add<ECSTypeA>(id);
+		ctxPtr = &origin;
+		origin.Add<ECSTypeA>(id);
 
-			IdContext target{origin};
-			AssertThat(origin.IsValid(id), Equals(true));
-			AssertThat(origin.Has<ECSTypeA>(id), Equals(true));
-			AssertThat(target.IsValid(id), Equals(true));
-			AssertThat(target.Has<ECSTypeA>(id), Equals(true));
+		IdContext target{origin};
+		Expect(origin.IsValid(id)).ToEqual(true);
+		Expect(origin.Has<ECSTypeA>(id)).ToEqual(true);
+		Expect(target.IsValid(id)).ToEqual(true);
+		Expect(target.Has<ECSTypeA>(id)).ToEqual(true);
 
-			ctxPtr = &target;
-			target.Add<ECSTypeB>(id);
-			AssertThat(target.Has<ECSTypeB>(id), Equals(true));
-		});
+		ctxPtr = &target;
+		target.Add<ECSTypeB>(id);
+		Expect(target.Has<ECSTypeB>(id)).ToEqual(true);
+	});
 
-		it("Can move context", [&]()
-		{
-			static IdContext* ctxPtr = nullptr;
+	It("Can move context", []()
+	{
+		static IdContext* ctxPtr = nullptr;
 
-			IdContext origin;
-			Id id = AddId(origin);
+		IdContext origin;
+		Id id = AddId(origin);
 
-			ctxPtr = &origin;
-			origin.Add<ECSTypeA>(id);
-			AssertThat(origin.Has<ECSTypeA>(id), Equals(true));
+		ctxPtr = &origin;
+		origin.Add<ECSTypeA>(id);
+		Expect(origin.Has<ECSTypeA>(id)).ToEqual(true);
 
-			IdContext target{Move(origin)};
-			AssertThat(origin.IsValid(id), Equals(false));
+		IdContext target{Move(origin)};
+		Expect(origin.IsValid(id)).ToEqual(false);
 
-			AssertThat(target.IsValid(id), Equals(true));
-			AssertThat(target.Has<ECSTypeA>(id), Equals(true));
+		Expect(target.IsValid(id)).ToEqual(true);
+		Expect(target.Has<ECSTypeA>(id)).ToEqual(true);
 
-			ctxPtr = &target;
-			target.Add<ECSTypeB>(id);
-			AssertThat(target.Has<ECSTypeB>(id), Equals(true));
-		});
+		ctxPtr = &target;
+		target.Add<ECSTypeB>(id);
+		Expect(target.Has<ECSTypeB>(id)).ToEqual(true);
+	});
 
-		it("Can assure pool", [&]()
-		{
-			IdContext origin;
-			TPool<ECSTypeA>& pool = origin.AssurePool<ECSTypeA>();
-			AssertThat(pool.Size(), Equals(0));
-		});
+	It("Can assure pool", []()
+	{
+		IdContext origin;
+		TPool<ECSTypeA>& pool = origin.AssurePool<ECSTypeA>();
+		Expect(pool.Size()).ToEqual(0);
 	});
 });

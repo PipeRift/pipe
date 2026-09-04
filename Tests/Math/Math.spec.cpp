@@ -1,361 +1,360 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
 #include <Pipe/Core/Limits.h>
 #include <PipeAlgorithms.h>
 #include <PipeContainers.h>
 #include <PipePlatform.h>
+#include <PipeTest.h>
 
 #include <cmath>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 
-go_bandit([]()
+namespace
 {
-	describe("Math.Math", []()
+	TArray<i32> bottomUp{23, 34, 50, 100, 120};
+	TArray<i32> topDown{120, 100, 50, 34, 23};
+}    // namespace
+
+
+Spec("Math.Math", []()
+{
+	Describe("Binary Search", []()
 	{
-		describe("Binary Search", []()
+		It("LowerBound", [=]()
 		{
-			TArray<i32> bottomUp{23, 34, 50, 100, 120};
-			TArray<i32> topDown{120, 100, 50, 34, 23};
+			Expect(bottomUp.LowerBound(34)).ToEqual(1);
+			Expect(bottomUp.LowerBound(100)).ToEqual(3);
+			Expect(bottomUp.LowerBound(51)).ToEqual(3);
 
-			it("LowerBound", [&]()
+
+			Expect(topDown.LowerBound(34, TGreater<>())).ToEqual(3);
+			Expect(topDown.LowerBound(100, TGreater<>())).ToEqual(1);
+			Expect(topDown.LowerBound(51, TGreater<>())).ToEqual(2);
+		});
+
+		It("UpperBound", [=]()
+		{
+			Expect(bottomUp.UpperBound(34)).ToEqual(2);
+			Expect(bottomUp.UpperBound(100)).ToEqual(4);
+
+			Expect(topDown.UpperBound(34, TGreater<>())).ToEqual(4);
+			Expect(topDown.UpperBound(100, TGreater<>())).ToEqual(2);
+		});
+
+		It("Can find equal", [=]()
+		{
+			Expect(bottomUp.FindSorted(0)).ToEqual(NO_INDEX);
+			Expect(bottomUp.FindSorted(34)).ToEqual(1);
+			Expect(bottomUp.FindSorted(33)).ToEqual(NO_INDEX);
+			Expect(bottomUp.FindSorted(121)).ToEqual(NO_INDEX);
+
+			Expect(topDown.FindSorted(34, TGreater<>())).ToEqual(3);
+		});
+
+		Describe("FindSortedMax", []()
+		{
+			Describe("Ordered by a < b", []()
 			{
-				AssertThat(bottomUp.LowerBound(34), Equals(1));
-				AssertThat(bottomUp.LowerBound(100), Equals(3));
-				AssertThat(bottomUp.LowerBound(51), Equals(3));
+				TArray<i32> bottomUp{23, 34, 50, 50, 100, 120};
 
-
-				AssertThat(topDown.LowerBound(34, TGreater<>()), Equals(3));
-				AssertThat(topDown.LowerBound(100, TGreater<>()), Equals(1));
-				AssertThat(topDown.LowerBound(51, TGreater<>()), Equals(2));
-			});
-
-			it("UpperBound", [&]()
-			{
-				AssertThat(bottomUp.UpperBound(34), Equals(2));
-				AssertThat(bottomUp.UpperBound(100), Equals(4));
-
-				AssertThat(topDown.UpperBound(34, TGreater<>()), Equals(4));
-				AssertThat(topDown.UpperBound(100, TGreater<>()), Equals(2));
-			});
-
-			it("Can find equal", [&]()
-			{
-				AssertThat(bottomUp.FindSorted(0), Equals(NO_INDEX));
-				AssertThat(bottomUp.FindSorted(34), Equals(1));
-				AssertThat(bottomUp.FindSorted(33), Equals(NO_INDEX));
-				AssertThat(bottomUp.FindSorted(121), Equals(NO_INDEX));
-
-				AssertThat(topDown.FindSorted(34, TGreater<>()), Equals(3));
-			});
-
-			describe("FindSortedMax", []()
-			{
-				describe("Ordered by a < b", []()
+				It("Find first item", [=]()
 				{
-					TArray<i32> bottomUp{23, 34, 50, 50, 100, 120};
+					auto i4 = bottomUp.FindSortedMax(23, false);
+					Expect(i4).ToEqual(NO_INDEX);
 
-					it("Find first item", [&]()
-					{
-						auto i4 = bottomUp.FindSortedMax(23, false);
-						AssertThat(i4, Equals(NO_INDEX));
+					auto i5 = bottomUp.FindSortedMax(23, true);
+					Expect(i5).ToEqual(0);
 
-						auto i5 = bottomUp.FindSortedMax(23, true);
-						AssertThat(i5, Equals(0));
-
-						auto i6 = bottomUp.FindSortedMax(22, true);
-						AssertThat(i6, Equals(NO_INDEX));
-					});
-
-					it("Find any item", [&]()
-					{
-						auto i1 = bottomUp.FindSortedMax(34, true);
-						AssertThat(i1, Equals(1));
-
-						auto i2 = bottomUp.FindSortedMax(33, true);
-						AssertThat(i2, Equals(0));
-
-						auto i3 = bottomUp.FindSortedMax(34, false);
-						AssertThat(i3, Equals(0));
-					});
-
-					it("Find last item", [&]()
-					{
-						auto i4 = bottomUp.FindSortedMax(120, false);
-						AssertThat(i4, Equals(4));
-
-						auto i5 = bottomUp.FindSortedMax(120, true);
-						AssertThat(i5, Equals(5));
-
-						auto i6 = bottomUp.FindSortedMax(121, true);
-						AssertThat(i6, Equals(5));
-
-						auto i7 = bottomUp.FindSortedMax(100, false);
-						AssertThat(i7, Equals(3));
-					});
+					auto i6 = bottomUp.FindSortedMax(22, true);
+					Expect(i6).ToEqual(NO_INDEX);
 				});
 
-				describe("Ordered by a > b", []()
+				It("Find any item", [=]()
 				{
-					TArray<i32> topDown{120, 100, 50, 50, 34, 23};
+					auto i1 = bottomUp.FindSortedMax(34, true);
+					Expect(i1).ToEqual(1);
 
-					it("Find first item", [&]()
-					{
-						auto i4 = topDown.FindSortedMax(120, true);
-						AssertThat(i4, Equals(0));
+					auto i2 = bottomUp.FindSortedMax(33, true);
+					Expect(i2).ToEqual(0);
 
-						auto i5 = topDown.FindSortedMax(120, false);
-						AssertThat(i5, Equals(1));
-
-						auto i6 = topDown.FindSortedMax(121, true);
-						AssertThat(i6, Equals(0));
-					});
-
-					it("Find any item", [&]()
-					{
-						auto i1 = topDown.FindSortedMax(34, true);
-						AssertThat(i1, Equals(4));
-
-						auto i2 = topDown.FindSortedMax(33, true);
-						AssertThat(i2, Equals(5));
-
-						auto i3 = topDown.FindSortedMax(34, false);
-						AssertThat(i3, Equals(5));
-					});
-
-					it("Find last item", [&]()
-					{
-						auto i4 = topDown.FindSortedMax(23, false);
-						AssertThat(i4, Equals(NO_INDEX));
-
-						auto i5 = topDown.FindSortedMax(23, true);
-						AssertThat(i5, Equals(5));
-
-						auto i6 = topDown.FindSortedMax(22, true);
-						AssertThat(i6, Equals(NO_INDEX));
-					});
+					auto i3 = bottomUp.FindSortedMax(34, false);
+					Expect(i3).ToEqual(0);
 				});
 
-				describe("All same values", []()
+				It("Find last item", [=]()
 				{
-					TArray<i32> allEqual{10, 10, 10};
+					auto i4 = bottomUp.FindSortedMax(120, false);
+					Expect(i4).ToEqual(4);
 
-					it("Doesnt find smaller", [&]()
-					{
-						auto i1 = allEqual.FindSortedMax(9, false);
-						AssertThat(i1, Equals(NO_INDEX));
+					auto i5 = bottomUp.FindSortedMax(120, true);
+					Expect(i5).ToEqual(5);
 
-						auto i2 = allEqual.FindSortedMax(10, false);
-						AssertThat(i2, Equals(NO_INDEX));
-					});
+					auto i6 = bottomUp.FindSortedMax(121, true);
+					Expect(i6).ToEqual(5);
 
-					it("Finds smaller", [&]()
-					{
-						auto i1 = allEqual.FindSortedMax(10, true);
-						AssertThat(i1, Equals(0));
-
-						auto i2 = allEqual.FindSortedMax(11, false);
-						AssertThat(i2, Equals(0));
-					});
+					auto i7 = bottomUp.FindSortedMax(100, false);
+					Expect(i7).ToEqual(3);
 				});
 			});
-			describe("FindSortedMin", []()
+
+			Describe("Ordered by a > b", []()
 			{
-				describe("Ordered by a < b", []()
+				TArray<i32> topDown{120, 100, 50, 50, 34, 23};
+
+				It("Find first item", [=]()
 				{
-					TArray<i32> bottomUp{23, 34, 50, 50, 100, 120};
+					auto i4 = topDown.FindSortedMax(120, true);
+					Expect(i4).ToEqual(0);
 
-					it("Find first item", [&]()
-					{
-						auto i1 = bottomUp.FindSortedMin(23, true);
-						AssertThat(i1, Equals(0));
+					auto i5 = topDown.FindSortedMax(120, false);
+					Expect(i5).ToEqual(1);
 
-						auto i2 = bottomUp.FindSortedMin(20, true);
-						AssertThat(i2, Equals(0));
-
-						auto i3 = bottomUp.FindSortedMin(23, false);
-						AssertThat(i3, Equals(1));
-					});
-
-					it("Find any item", [&]()
-					{
-						auto i1 = bottomUp.FindSortedMin(33, false);
-						AssertThat(i1, Equals(1));
-
-						auto i2 = bottomUp.FindSortedMin(34, true);
-						AssertThat(i2, Equals(1));
-
-						auto i3 = bottomUp.FindSortedMin(34, false);
-						AssertThat(i3, Equals(2));
-					});
-
-					it("Find last item", [&]()
-					{
-						auto i1 = bottomUp.FindSortedMin(100, false);
-						AssertThat(i1, Equals(5));
-
-						auto i2 = bottomUp.FindSortedMin(120, false);
-						AssertThat(i2, Equals(NO_INDEX));
-
-						auto i3 = bottomUp.FindSortedMin(120, true);
-						AssertThat(i3, Equals(5));
-
-						auto i4 = bottomUp.FindSortedMin(121, true);
-						AssertThat(i4, Equals(NO_INDEX));
-					});
+					auto i6 = topDown.FindSortedMax(121, true);
+					Expect(i6).ToEqual(0);
 				});
 
-				describe("Ordered by a > b", [&]()
+				It("Find any item", [=]()
 				{
-					TArray<i32> topDown{120, 100, 50, 50, 34, 23};
+					auto i1 = topDown.FindSortedMax(34, true);
+					Expect(i1).ToEqual(4);
 
-					it("Find first item", [&]()
-					{
-						auto i4 = topDown.FindSortedMin(120, true);
-						AssertThat(i4, Equals(0));
+					auto i2 = topDown.FindSortedMax(33, true);
+					Expect(i2).ToEqual(5);
 
-						auto i5 = topDown.FindSortedMin(120, false);
-						AssertThat(i5, Equals(NO_INDEX));
-
-						auto i6 = topDown.FindSortedMin(121, true);
-						AssertThat(i6, Equals(NO_INDEX));
-					});
-
-					it("Find any item", [&]()
-					{
-						auto i1 = topDown.FindSortedMin(34, true);
-						AssertThat(i1, Equals(4));
-
-						auto i2 = topDown.FindSortedMin(33, true);
-						AssertThat(i2, Equals(4));
-
-						auto i3 = topDown.FindSortedMin(34, false);
-						AssertThat(i3, Equals(3));
-					});
-
-					it("Find last item", [&]()
-					{
-						auto i4 = topDown.FindSortedMin(23, false);
-						AssertThat(i4, Equals(4));
-
-						auto i5 = topDown.FindSortedMin(23, true);
-						AssertThat(i5, Equals(5));
-
-						auto i6 = topDown.FindSortedMin(22, true);
-						AssertThat(i6, Equals(5));
-					});
+					auto i3 = topDown.FindSortedMax(34, false);
+					Expect(i3).ToEqual(5);
 				});
 
-				describe("All same values", []()
+				It("Find last item", [=]()
 				{
-					TArray<i32> allEqual{10, 10, 10};
+					auto i4 = topDown.FindSortedMax(23, false);
+					Expect(i4).ToEqual(NO_INDEX);
 
-					it("Doesnt find bigger", [&]()
-					{
-						auto i1 = allEqual.FindSortedMin(11, false);
-						AssertThat(i1, Equals(NO_INDEX));
+					auto i5 = topDown.FindSortedMax(23, true);
+					Expect(i5).ToEqual(5);
 
-						auto i2 = allEqual.FindSortedMin(10, false);
-						AssertThat(i2, Equals(NO_INDEX));
-					});
+					auto i6 = topDown.FindSortedMax(22, true);
+					Expect(i6).ToEqual(NO_INDEX);
+				});
+			});
 
-					it("Finds bigger", [&]()
-					{
-						auto i1 = allEqual.FindSortedMin(10, true);
-						AssertThat(i1, Equals(0));
+			Describe("All same values", []()
+			{
+				TArray<i32> allEqual{10, 10, 10};
 
-						auto i2 = allEqual.FindSortedMin(9, false);
-						AssertThat(i2, Equals(0));
-					});
+				It("Doesnt find smaller", [=]()
+				{
+					auto i1 = allEqual.FindSortedMax(9, false);
+					Expect(i1).ToEqual(NO_INDEX);
+
+					auto i2 = allEqual.FindSortedMax(10, false);
+					Expect(i2).ToEqual(NO_INDEX);
+				});
+
+				It("Finds smaller", [=]()
+				{
+					auto i1 = allEqual.FindSortedMax(10, true);
+					Expect(i1).ToEqual(0);
+
+					auto i2 = allEqual.FindSortedMax(11, false);
+					Expect(i2).ToEqual(0);
 				});
 			});
 		});
-
-		it("Can check Infinite", [&]()
+		Describe("FindSortedMin", []()
 		{
-			AssertThat(IsInf(0.0), Equals(false));
-			AssertThat(IsInf(-0.0), Equals(false));
-			AssertThat(IsInf(1.0), Equals(false));
-			AssertThat(IsInf(-1.0), Equals(false));
+			Describe("Ordered by a < b", []()
+			{
+				TArray<i32> bottomUp{23, 34, 50, 50, 100, 120};
+
+				It("Find first item", [=]()
+				{
+					auto i1 = bottomUp.FindSortedMin(23, true);
+					Expect(i1).ToEqual(0);
+
+					auto i2 = bottomUp.FindSortedMin(20, true);
+					Expect(i2).ToEqual(0);
+
+					auto i3 = bottomUp.FindSortedMin(23, false);
+					Expect(i3).ToEqual(1);
+				});
+
+				It("Find any item", [=]()
+				{
+					auto i1 = bottomUp.FindSortedMin(33, false);
+					Expect(i1).ToEqual(1);
+
+					auto i2 = bottomUp.FindSortedMin(34, true);
+					Expect(i2).ToEqual(1);
+
+					auto i3 = bottomUp.FindSortedMin(34, false);
+					Expect(i3).ToEqual(2);
+				});
+
+				It("Find last item", [=]()
+				{
+					auto i1 = bottomUp.FindSortedMin(100, false);
+					Expect(i1).ToEqual(5);
+
+					auto i2 = bottomUp.FindSortedMin(120, false);
+					Expect(i2).ToEqual(NO_INDEX);
+
+					auto i3 = bottomUp.FindSortedMin(120, true);
+					Expect(i3).ToEqual(5);
+
+					auto i4 = bottomUp.FindSortedMin(121, true);
+					Expect(i4).ToEqual(NO_INDEX);
+				});
+			});
+
+			Describe("Ordered by a > b", []()
+			{
+				TArray<i32> topDown{120, 100, 50, 50, 34, 23};
+
+				It("Find first item", [=]()
+				{
+					auto i4 = topDown.FindSortedMin(120, true);
+					Expect(i4).ToEqual(0);
+
+					auto i5 = topDown.FindSortedMin(120, false);
+					Expect(i5).ToEqual(NO_INDEX);
+
+					auto i6 = topDown.FindSortedMin(121, true);
+					Expect(i6).ToEqual(NO_INDEX);
+				});
+
+				It("Find any item", [=]()
+				{
+					auto i1 = topDown.FindSortedMin(34, true);
+					Expect(i1).ToEqual(4);
+
+					auto i2 = topDown.FindSortedMin(33, true);
+					Expect(i2).ToEqual(4);
+
+					auto i3 = topDown.FindSortedMin(34, false);
+					Expect(i3).ToEqual(3);
+				});
+
+				It("Find last item", [=]()
+				{
+					auto i4 = topDown.FindSortedMin(23, false);
+					Expect(i4).ToEqual(4);
+
+					auto i5 = topDown.FindSortedMin(23, true);
+					Expect(i5).ToEqual(5);
+
+					auto i6 = topDown.FindSortedMin(22, true);
+					Expect(i6).ToEqual(5);
+				});
+			});
+
+			Describe("All same values", []()
+			{
+				TArray<i32> allEqual{10, 10, 10};
+
+				It("Doesnt find bigger", [=]()
+				{
+					auto i1 = allEqual.FindSortedMin(11, false);
+					Expect(i1).ToEqual(NO_INDEX);
+
+					auto i2 = allEqual.FindSortedMin(10, false);
+					Expect(i2).ToEqual(NO_INDEX);
+				});
+
+				It("Finds bigger", [=]()
+				{
+					auto i1 = allEqual.FindSortedMin(10, true);
+					Expect(i1).ToEqual(0);
+
+					auto i2 = allEqual.FindSortedMin(9, false);
+					Expect(i2).ToEqual(0);
+				});
+			});
+		});
+	});
+
+	It("Can check Infinite", [=]()
+	{
+		Expect(IsInf(0.0)).ToEqual(false);
+		Expect(IsInf(-0.0)).ToEqual(false);
+		Expect(IsInf(1.0)).ToEqual(false);
+		Expect(IsInf(-1.0)).ToEqual(false);
+
+		static constexpr double dInfinite = Limits<double>::Infinity();
+		Expect(IsInf(dInfinite)).ToEqual(true);
+		Expect(IsInf(-dInfinite)).ToEqual(true);
+		Expect(IsPosInf(-dInfinite)).ToEqual(false);
+		Expect(IsNegInf(dInfinite)).ToEqual(false);
+		Expect(IsInf(Limits<double>::Max())).ToEqual(false);
+		Expect(IsInf(Limits<double>::Lowest())).ToEqual(false);
+		Expect(IsInf(double(bigNumber))).ToEqual(false);
+	});
+
+	It("Can check NAN", [=]()
+	{
+		Expect(IsNAN(0.0)).ToEqual(false);
+		Expect(IsNAN(Limits<double>::QuietNaN())).ToEqual(true);
+	});
+
+	Describe("Roundings", []()
+	{
+		It("Can Floor", [=]()
+		{
+			Expect(Floor(0.0)).ToEqual(std::floor(0.0));
+			Expect(Floor(-0.0)).ToEqual(std::floor(-0.0));
+			Expect(Floor(4.2)).ToEqual(std::floor(4.2));
+			Expect(Floor(4.5)).ToEqual(std::floor(4.5));
+			Expect(Floor(4.7)).ToEqual(std::floor(4.7));
+			Expect(Floor(5.0)).ToEqual(std::floor(5.0));
+			Expect(Floor(-4.2)).ToEqual(std::floor(-4.2));
+			Expect(Floor(-4.7)).ToEqual(std::floor(-4.7));
+			Expect(Floor(-5.0)).ToEqual(std::floor(-5.0));
+			Expect(Floor(99999999999999999.0 + 0.5)).ToEqual(99999999999999999.0);
 
 			static constexpr double dInfinite = Limits<double>::Infinity();
-			AssertThat(IsInf(dInfinite), Equals(true));
-			AssertThat(IsInf(-dInfinite), Equals(true));
-			AssertThat(IsPosInf(-dInfinite), Equals(false));
-			AssertThat(IsNegInf(dInfinite), Equals(false));
-			AssertThat(IsInf(Limits<double>::Max()), Equals(false));
-			AssertThat(IsInf(Limits<double>::Lowest()), Equals(false));
-			AssertThat(IsInf(double(bigNumber)), Equals(false));
+			Expect(Floor(-dInfinite)).ToEqual(std::floor(-dInfinite));
+			Expect(Floor(dInfinite)).ToEqual(std::floor(dInfinite));
+			Expect(IsNAN(Floor(Limits<double>::QuietNaN()))).ToEqual(true);
+		});
+		It("Can Ceil", [=]()
+		{
+			Expect(Ceil(0.0)).ToEqual(std::ceil(0.0));
+			Expect(Ceil(-0.0)).ToEqual(std::ceil(-0.0));
+			Expect(Ceil(4.2)).ToEqual(std::ceil(4.2));
+			Expect(Ceil(4.5)).ToEqual(std::ceil(4.5));
+			Expect(Ceil(4.7)).ToEqual(std::ceil(4.7));
+			Expect(Ceil(5.0)).ToEqual(std::ceil(5.0));
+			Expect(Ceil(-4.2)).ToEqual(std::ceil(-4.2));
+			Expect(Ceil(-4.7)).ToEqual(std::ceil(-4.7));
+			Expect(Ceil(-5.0)).ToEqual(std::ceil(-5.0));
+			Expect(Ceil(99999999999999999.0 - 0.5)).ToEqual(99999999999999999.0);
+
+			static constexpr double dInfinite = Limits<double>::Infinity();
+			Expect(Ceil(-dInfinite)).ToEqual(std::ceil(-dInfinite));
+			Expect(Ceil(dInfinite)).ToEqual(std::ceil(dInfinite));
+			Expect(IsNAN(Ceil(Limits<double>::QuietNaN()))).ToEqual(true);
 		});
 
-		it("Can check NAN", [&]()
+		It("Can Round", [=]()
 		{
-			AssertThat(IsNAN(0.0), Equals(false));
-			AssertThat(IsNAN(Limits<double>::QuietNaN()), Equals(true));
-		});
+			Expect(Round(0.0)).ToEqual(std::round(0.0));
+			Expect(Round(-0.0)).ToEqual(std::round(-0.0));
+			Expect(Round(4.2)).ToEqual(std::round(4.2));
+			Expect(Round(4.5)).ToEqual(std::round(4.5));
+			Expect(Round(4.7)).ToEqual(std::round(4.7));
+			Expect(Round(5.0)).ToEqual(std::round(5.0));
+			Expect(Round(-4.2)).ToEqual(std::round(-4.2));
+			Expect(Round(-4.7)).ToEqual(std::round(-4.7));
+			Expect(Round(-5.0)).ToEqual(std::round(-5.0));
+			Expect(Round(99999999999999999.0 - 0.4)).ToEqual(99999999999999999.0);
 
-		describe("Roundings", []()
-		{
-			it("Can Floor", [&]()
-			{
-				AssertThat(Floor(0.0), Equals(std::floor(0.0)));
-				AssertThat(Floor(-0.0), Equals(std::floor(-0.0)));
-				AssertThat(Floor(4.2), Equals(std::floor(4.2)));
-				AssertThat(Floor(4.5), Equals(std::floor(4.5)));
-				AssertThat(Floor(4.7), Equals(std::floor(4.7)));
-				AssertThat(Floor(5.0), Equals(std::floor(5.0)));
-				AssertThat(Floor(-4.2), Equals(std::floor(-4.2)));
-				AssertThat(Floor(-4.7), Equals(std::floor(-4.7)));
-				AssertThat(Floor(-5.0), Equals(std::floor(-5.0)));
-				AssertThat(Floor(99999999999999999.0 + 0.5), Equals(99999999999999999.0));
-
-				static constexpr double dInfinite = Limits<double>::Infinity();
-				AssertThat(Floor(-dInfinite), Equals(std::floor(-dInfinite)));
-				AssertThat(Floor(dInfinite), Equals(std::floor(dInfinite)));
-				AssertThat(IsNAN(Floor(Limits<double>::QuietNaN())), Equals(true));
-			});
-			it("Can Ceil", [&]()
-			{
-				AssertThat(Ceil(0.0), Equals(std::ceil(0.0)));
-				AssertThat(Ceil(-0.0), Equals(std::ceil(-0.0)));
-				AssertThat(Ceil(4.2), Equals(std::ceil(4.2)));
-				AssertThat(Ceil(4.5), Equals(std::ceil(4.5)));
-				AssertThat(Ceil(4.7), Equals(std::ceil(4.7)));
-				AssertThat(Ceil(5.0), Equals(std::ceil(5.0)));
-				AssertThat(Ceil(-4.2), Equals(std::ceil(-4.2)));
-				AssertThat(Ceil(-4.7), Equals(std::ceil(-4.7)));
-				AssertThat(Ceil(-5.0), Equals(std::ceil(-5.0)));
-				AssertThat(Ceil(99999999999999999.0 - 0.5), Equals(99999999999999999.0));
-
-				static constexpr double dInfinite = Limits<double>::Infinity();
-				AssertThat(Ceil(-dInfinite), Equals(std::ceil(-dInfinite)));
-				AssertThat(Ceil(dInfinite), Equals(std::ceil(dInfinite)));
-				AssertThat(IsNAN(Ceil(Limits<double>::QuietNaN())), Equals(true));
-			});
-
-			it("Can Round", [&]()
-			{
-				AssertThat(Round(0.0), Equals(std::round(0.0)));
-				AssertThat(Round(-0.0), Equals(std::round(-0.0)));
-				AssertThat(Round(4.2), Equals(std::round(4.2)));
-				AssertThat(Round(4.5), Equals(std::round(4.5)));
-				AssertThat(Round(4.7), Equals(std::round(4.7)));
-				AssertThat(Round(5.0), Equals(std::round(5.0)));
-				AssertThat(Round(-4.2), Equals(std::round(-4.2)));
-				AssertThat(Round(-4.7), Equals(std::round(-4.7)));
-				AssertThat(Round(-5.0), Equals(std::round(-5.0)));
-				AssertThat(Round(99999999999999999.0 - 0.4), Equals(99999999999999999.0));
-
-				static constexpr double dInfinite = Limits<double>::Infinity();
-				AssertThat(Round(-dInfinite), Equals(std::round(-dInfinite)));
-				AssertThat(Round(dInfinite), Equals(std::round(dInfinite)));
-				AssertThat(IsNAN(Round(Limits<double>::QuietNaN())), Equals(true));
-			});
+			static constexpr double dInfinite = Limits<double>::Infinity();
+			Expect(Round(-dInfinite)).ToEqual(std::round(-dInfinite));
+			Expect(Round(dInfinite)).ToEqual(std::round(dInfinite));
+			Expect(IsNAN(Round(Limits<double>::QuietNaN()))).ToEqual(true);
 		});
 	});
 });

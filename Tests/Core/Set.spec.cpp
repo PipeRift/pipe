@@ -1,11 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <bandit/bandit.h>
 #include <Pipe/Core/Set.h>
+#include <PipeTest.h>
 
 
-using namespace snowhouse;
-using namespace bandit;
 using namespace p;
 
 template<u32 Size>
@@ -16,79 +14,76 @@ struct TypeOfSize
 };
 
 
-go_bandit([]()
+Spec("Core.Set", []()
 {
-	describe("Core.Set", []()
+	It("Can initialize", []()
 	{
-		it("Can initialize", [&]()
-		{
-			TSet<i32> data1{};
-			TSet<i32> data2(u32(3));
-			TSet<i32> data3{5, 4, 3, 2};
+		TSet<i32> data1{};
+		TSet<i32> data2(u32(3));
+		TSet<i32> data3{5, 4, 3, 2};
 
-			AssertThat(data1.Size(), Equals(0));
-			AssertThat(data2.Size(), Equals(0));
-			AssertThat(data3.Size(), Equals(4));
+		Expect(data1.Size()).ToEqual(0);
+		Expect(data2.Size()).ToEqual(0);
+		Expect(data3.Size()).ToEqual(4);
 
-			AssertThat(data3[2], Equals(2));
-			AssertThat(data3[3], Equals(3));
-			AssertThat(data3[4], Equals(4));
-			AssertThat(data3[5], Equals(5));
-		});
+		Expect(data3[2]).ToEqual(2);
+		Expect(data3[3]).ToEqual(3);
+		Expect(data3[4]).ToEqual(4);
+		Expect(data3[5]).ToEqual(5);
+	});
 
-		it("Can copy", [&]()
-		{
-			TSet<i32> data1{6, 5};
-			TSet<i32> data2{data1};
-			AssertThat(data1.Size(), Equals(2));
-			AssertThat(data2.Size(), Equals(2));
-			AssertThat(data2[5], Equals(5));
-			AssertThat(data2[6], Equals(6));
+	It("Can copy", []()
+	{
+		TSet<i32> data1{6, 5};
+		TSet<i32> data2{data1};
+		Expect(data1.Size()).ToEqual(2);
+		Expect(data2.Size()).ToEqual(2);
+		Expect(data2[5]).ToEqual(5);
+		Expect(data2[6]).ToEqual(6);
 
-			TSet<i32> data3{6, 5};
-			TSet<i32> data4;
-			data4 = data3;
-			AssertThat(data3.Size(), Equals(2));
-			AssertThat(data4.Size(), Equals(2));
-			AssertThat(data4[5], Equals(5));
-			AssertThat(data4[6], Equals(6));
-		});
+		TSet<i32> data3{6, 5};
+		TSet<i32> data4;
+		data4 = data3;
+		Expect(data3.Size()).ToEqual(2);
+		Expect(data4.Size()).ToEqual(2);
+		Expect(data4[5]).ToEqual(5);
+		Expect(data4[6]).ToEqual(6);
+	});
 
-		it("Can move", [&]()
-		{
-			TSet<i32> data1{4, 3};
-			AssertThat(data1.Size(), Equals(2));
+	It("Can move", []()
+	{
+		TSet<i32> data1{4, 3};
+		Expect(data1.Size()).ToEqual(2);
 
-			TSet<i32> data2{Move(data1)};
-			AssertThat(data1.Size(), Equals(0));
-			AssertThat(data2.Size(), Equals(2));
+		TSet<i32> data2{Move(data1)};
+		Expect(data1.Size()).ToEqual(0);
+		Expect(data2.Size()).ToEqual(2);
 
-			TSet<i32> data3{4, 3};
-			TSet<i32> data4;
-			AssertThat(data3.Size(), Equals(2));
-			AssertThat(data4.Size(), Equals(0));
+		TSet<i32> data3{4, 3};
+		TSet<i32> data4;
+		Expect(data3.Size()).ToEqual(2);
+		Expect(data4.Size()).ToEqual(0);
 
-			data4 = Move(data3);
-			AssertThat(data3.Size(), Equals(0));
-			AssertThat(data4.Size(), Equals(2));
-			AssertThat(data4[3], Equals(3));
-			AssertThat(data4[4], Equals(4));
-		});
+		data4 = Move(data3);
+		Expect(data3.Size()).ToEqual(0);
+		Expect(data4.Size()).ToEqual(2);
+		Expect(data4[3]).ToEqual(3);
+		Expect(data4[4]).ToEqual(4);
+	});
 
-		it("Can access data", [&]()
-		{
-			TSet<i32> data1;
-			TSet<i32> data2{1, 5};
+	It("Can access data", []()
+	{
+		TSet<i32> data1;
+		TSet<i32> data2{1, 5};
 
-			AssertThat(data1.Size(), Equals(0));
-			AssertThat(data2.Size(), IsGreaterThanOrEqualTo(2));
+		Expect(data1.Size()).ToEqual(0);
+		Expect(data2.Size()).ToBeGreaterOrEqual(2);
 
-			AssertThat(data1.Contains(3), Equals(false));
-			AssertThat(data2.Contains(1), Equals(true));
-			AssertThat(data2.Contains(5), Equals(true));
-			AssertThat(data2.Contains(34), Equals(false));
-			AssertThat(data2[1], Equals(1));
-			AssertThat(data2[5], Equals(5));
-		});
+		Expect(data1.Contains(3)).ToEqual(false);
+		Expect(data2.Contains(1)).ToEqual(true);
+		Expect(data2.Contains(5)).ToEqual(true);
+		Expect(data2.Contains(34)).ToEqual(false);
+		Expect(data2[1]).ToEqual(1);
+		Expect(data2[5]).ToEqual(5);
 	});
 });

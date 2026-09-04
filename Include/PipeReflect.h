@@ -5,7 +5,6 @@
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Guid.h"
 #include "Pipe/Core/Macros.h"
-#include "PipeStrings.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Tag.h"
 #include "Pipe/Core/TypeId.h"
@@ -15,6 +14,7 @@
 #include "Pipe/Memory/OwnPtr.h"
 #include "PipeColor.h"
 #include "PipeSerialize.h"
+#include "PipeStrings.h"
 #include "PipeVectors.h"
 
 
