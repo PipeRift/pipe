@@ -25,38 +25,44 @@ The Pipe and Rift test suites rely on the vendored **Bandit** third-party test f
 
 ## API Design
 
-Style: **imgui-style global context**. All functions are global in namespace `p`; the user writes `using namespace p;`. There is no capture-scoped "only relevant functions" context — context is global and tracked as functions are called. The exception is `Spec`, which is self-registering.
+Style: **imgui-style global context**. All functions are global in namespace `p`; the user writes `using namespace p;`. There is no capture-scoped "only relevant functions" context — context is global and tracked as functions are called.
+
+**Macro-free registration (2026-09-04):** The framework uses **no macros** — `Spec`/`Describe`/`It`/`XIt`/`BeforeEach`/`AfterEach` are plain functions. Because a bare function call is ill-formed at namespace scope (C++ permits only declarations there), specs **cannot self-register at global scope**. Registrations run from a function: each spec file exports a `RegisterXxxTests()` routine, and the test executable's `main()` calls each one before `p::RunTests`. `Spec(name, fn)` opens a first-level named group; `Spec(fn)` registers the top level only.
 
 ```cpp
 using namespace p;
 
-// Spec(name, fn) = go_bandit + first-level named group
-Spec("Group", []() {
-    BeforeEach([]() { /* setup */ });
-    AfterEach([]() { /* teardown */ });
+// Registration runs inside a function — never at namespace scope (no macros).
+void RegisterGroupTests()
+{
+    // Spec(name, fn) = go_bandit + first-level named group
+    Spec("Group", []() {
+        BeforeEach([]() { /* setup */ });
+        AfterEach([]() { /* teardown */ });
 
-    Describe("Sub", []() {
-        It("does something", []() {
-            Expect(value).ToEqual(4);
-            Expect(value).ToNotEqual(5);
-            Expect(value).ToBeLess(5);
-            Expect(value).ToBeLessOrEqual(4);
-            Expect(value).ToBeGreater(2);
+        Describe("Sub", []() {
+            It("does something", []() {
+                Expect(value).ToEqual(4);
+                Expect(value).ToNotEqual(5);
+                Expect(value).ToBeLess(5);
+                Expect(value).ToBeLessOrEqual(4);
+                Expect(value).ToBeGreater(2);
+            });
+            XIt("disabled test", []() { /* never runs */ });
         });
-        XIt("disabled test", []() { /* never runs */ });
-    });
 
-    It("top-level test", []() {
-        Expect("acidic").ToContain("acid");
-        Expect(flag).ToBeTrue();
-        Expect(other).ToBeFalse();
+        It("top-level test", []() {
+            Expect("acidic").ToContain("acid");
+            Expect(flag).ToBeTrue();
+            Expect(other).ToBeFalse();
+        });
     });
-});
+}
 ```
 
 ### Top-level semantics
 
-- `Spec(name, fn)` — self-registering top-level entry that **also** opens a first-level group named `name`. This is the go_bandit + first `Describe` replacement.
+- `Spec(name, fn)` — top-level entry that **also** opens a first-level group named `name`. This is the go_bandit + first `Describe` replacement.
 - `Spec(fn)` (nameless) — registers the top level only (like `go_bandit`), adding no extra group; `Describe` is then used inside it.
 - `Describe` is **runtime-checked** to only be valid inside a `Spec`. If used outside a `Spec`: **log an error and ignore** the offending group (no exception).
 
@@ -64,7 +70,7 @@ Spec("Group", []() {
 
 | Function | Role |
 |----------|------|
-| `Spec(name, fn)` / `Spec(fn)` | Self-registering top-level; optional first named group |
+| `Spec(name, fn)` / `Spec(fn)` | Top-level group; called from a `Register*Tests()` routine |
 | `Describe(name, fn)` | Push a nested group; runtime-checked inside a `Spec` |
 | `It(name, fn)` | Register a runnable leaf test in the current group |
 | `XIt(name, fn)` | Register a leaf test marked **skipped** (never runs) |
@@ -94,16 +100,16 @@ Fluent matcher methods, naming in Pipe CamelCase:
 
 ### New files (in the Pipe submodule)
 
-- `Extern/Pipe/Include/PipeTests.h` — public API (global functions, `Expect` matcher, formatter hook). Mostly templates/macros.
-- `Extern/Pipe/Src/PipeTests.cpp` — global registration cursor (current-group stack), test registry, `p::RunTests(int, char**)`.
+- `Extern/Pipe/Include/PipeTests.h` — public API (global functions, `Expect` matcher, formatter hook). Mostly templates; **no macros**.
+- `Extern/Pipe/Src/Tests/PipeTests.cpp` — function-local static registry state, registration functions (`Spec`/`Describe`/`It`/`XIt`/`BeforeEach`/`AfterEach`), `p::RunTests(int, char**)`.
 
 ### Build — separate target, not into the runtime Pipe lib
 
 `Extern/Pipe/CMakeLists.txt`:
 
-- Define `add_library(PipeTests ...)` **unconditionally** (alongside `Pipe`, **before** the `PIPE_BUILD_TESTS` gate) so Rift can consume it via the submodule.
-- **Exclude `Src/PipeTests.cpp`** from Pipe's `file(GLOB_RECURSE ... Src/*.cpp)` (currently line 65) so the test framework does **not** ship in the runtime `Pipe` library. Add it only to the `PipeTests` target.
-- Give `PipeTests` the standard Pipe setup (`pipe_target_define_platform`, `pipe_target_enable_CPP20`, `pipe_target_disable_rtti`, `pipe_target_shared_output_directory`) and link `Pipe`; expose `Include/`.
+- Define `add_library(PipeTestsLib ...)` (alias `Pipe::TestsLib`) **unconditionally** (alongside `Pipe`, **before** the `PIPE_BUILD_TESTS` gate) so Rift can consume it via the submodule. (Name is `PipeTestsLib` because `PipeTests` is already the Bandit-based test-executable target.)
+- **Exclude `Src/Tests/PipeTests.cpp`** from Pipe's `file(GLOB_RECURSE ... Src/*.cpp)` (currently line 65) so the test framework does **not** ship in the runtime `Pipe` library. Add it only to the `PipeTestsLib` target.
+- Give `PipeTestsLib` the standard Pipe setup (`pipe_target_define_platform`, `pipe_target_enable_CPP20`, `pipe_target_disable_rtti`, `pipe_target_shared_output_directory`) and link `Pipe`; expose `Include/`.
 
 ### Runner
 
@@ -125,13 +131,13 @@ A current-group stack in `PipeTests.cpp`. `Describe` pushes its group, runs `fn`
 
 1. **Add `PipeTests` module** — header + source; `add_library(PipeTests)`; source-glob exclusion. Build succeeds.
 2. **Self-test the framework with small new tests** (no migration of existing tests):
-   - Create small **new** framework tests in `Extern/Pipe/Tests/PipeTests/` (e.g. `PipeTests.spec.cpp`) written with the new API to validate: `Spec`/`Describe`/`It`/`XIt`/`BeforeEach`/`AfterEach`, all `Expect` matchers, failure reporting, skip counting, `RunTests` exit code, and `Describe`-outside-`Spec` behavior.
-   - Wire a **separate small runner** (its own `main.cpp` calling `p::RunTests`) for this smoke target, running **alongside** the existing bandit `PipeTests` executable.
+   - Create small **new** framework tests in `Extern/Pipe/Tests/PipeTests/` (e.g. `PipeTests.spec.cpp`) written with the new API to validate: `Spec`/`Describe`/`It`/`XIt`/`BeforeEach`/`AfterEach`, all `Expect` matchers, failure reporting, skip counting, `RunTests` exit code, and `Describe`-outside-`Spec` behavior. The spec file exports a `Register*Tests()` routine.
+   - Wire a **separate small runner** (its own `main.cpp` calling the `Register*Tests()` then `p::RunTests`) for this smoke target, running **alongside** the existing bandit `PipeTests` executable.
    - Verify via `ctest` that **both** the new self-tests and the untouched bandit suite pass. Iterate until the framework is proven.
 3. **Final flip (LAST, only when the system is done):**
-   - Migrate existing `*spec.cpp` files file-by-file (transform map below).
-   - `Extern/Pipe/Tests/CMakeLists.txt`: link `Pipe` + `PipeTests`, drop `Bandit`; `main.cpp` → `p::RunTests(argc, argv)`; drop `--reporter=spec`.
-   - Migrate Rift `Tests/*.spec.cpp` + `Tests/CMakeLists.txt`: replace `Bandit` with `PipeTests`.
+   - Migrate existing `*spec.cpp` files file-by-file (transform map below). Each migrated file exports a `RegisterXxxTests()` routine instead of registering at global scope.
+   - `Extern/Pipe/Tests/CMakeLists.txt`: link `Pipe` + `PipeTestsLib`, drop `Bandit`; `main.cpp` calls each `Register*Tests()` then `p::RunTests(argc, argv)`; drop `--reporter=spec`.
+   - Migrate Rift `Tests/*.spec.cpp` + `Tests/CMakeLists.txt`: replace `Bandit` with `Pipe::TestsLib` (the alias), and call the migrated `Register*Tests()` from Rift's `Tests/main.cpp`.
    - Remove `Bandit`: delete the `Bandit` INTERFACE target from `Extern/Pipe/Extern/CMakeLists.txt`, remove the vendored `Extern/Pipe/Extern/Bandit/` directory, strip remaining bandit includes.
    - Final full `ctest` + `ClangFormat`/`ClangTidy` pass.
 
@@ -140,7 +146,7 @@ A current-group stack in `PipeTests.cpp`. `Describe` pushes its group, runs `fn`
 | Before (bandit) | After (PipeTests) |
 |-----------------|-------------------|
 | `#include <bandit/bandit.h>` + `using namespace snowhouse; using namespace bandit;` | `#include <PipeTests.h>` + `using namespace p;` |
-| `go_bandit([](){ describe("G", ...) })` | `Spec("G", [](){ ... })` |
+| `go_bandit([](){ describe("G", ...) })` (global scope) | Wrap in `void RegisterXxxTests() { Spec("G", [](){ ... }) }`; call from `main` |
 | `describe(...)` | `Describe(...)` |
 | `it(...)` | `It(...)` |
 | `xit(...)` | `XIt(...)` |
@@ -159,7 +165,7 @@ Note: existing test files that `using namespace snowhouse; using namespace bandi
 - `Bandit` INTERFACE target is defined in `Extern/Pipe/Extern/CMakeLists.txt`, added **unconditionally** (Pipe `CMakeLists.txt` line 47 `add_subdirectory(Extern)` runs before the `PIPE_BUILD_TESTS` gate).
 - Pipe supplies its own tests executable gated behind `PIPE_BUILD_TESTS` (default `PIPE_IS_PROJECT`, i.e. ON when Pipe is the top project).
 - Rift builds its **own** `RiftTests` executable in `Tests/CMakeLists.txt`, linking `RiftASTLib` + `Bandit` (imported through Pipe's `Extern`).
-- Therefore the `PipeTests` target must be defined **unconditionally** in Pipe's `CMakeLists.txt` so Rift can link it.
+- Therefore the `PipeTestsLib` target (alias `Pipe::TestsLib`) must be defined **unconditionally** in Pipe's `CMakeLists.txt` so Rift can link it.
 
 ## Constraints & style
 
