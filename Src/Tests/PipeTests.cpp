@@ -64,9 +64,9 @@ namespace p
 
 	namespace details
 	{
-		void Fail(const char* file, sizet line, StringView message)
+		void Fail(const std::source_location& loc, StringView message)
 		{
-			Error("PipeTests: {}:{}: {}", file, line, message);
+			Error("PipeTests: {}:{}: {}", loc.file_name(), loc.line(), message);
 			++State().currentTestFailureCount;
 		}
 	}    // namespace details

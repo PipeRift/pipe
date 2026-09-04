@@ -6,6 +6,7 @@
 #include "PipeStrings.h"
 
 #include <functional>
+#include <source_location>
 
 
 namespace p
@@ -78,8 +79,8 @@ namespace p
 
 	namespace details
 	{
-		// Format failure message from file:line + description.
-		void Fail(const char* file, sizet line, StringView message);
+		// Format failure message from source location + description.
+		void Fail(const std::source_location& loc, StringView message);
 	}    // namespace details
 
 
@@ -88,17 +89,16 @@ namespace p
 	class ExpectValue
 	{
 	public:
-		ExpectValue(const Actual& value, const char* file, sizet line)
+		ExpectValue(const Actual& value, const std::source_location& loc)
 		    : value(value)
-		    , file(file)
-		    , line(line)
+		    , loc(loc)
 		{}
 
 		void ToEqual(const Actual& expected) const
 		{
 			if (!(value == expected))
 			{
-				details::Fail(file, line, Format(
+				details::Fail(loc, Format(
 				    "Expected {} to equal {}", TestString(value), TestString(expected)));
 			}
 		}
@@ -107,7 +107,7 @@ namespace p
 		{
 			if (!(value != expected))
 			{
-				details::Fail(file, line, Format(
+				details::Fail(loc, Format(
 				    "Expected {} to not equal {}", TestString(value), TestString(expected)));
 			}
 		}
@@ -116,7 +116,7 @@ namespace p
 		{
 			if (!(value < other))
 			{
-				details::Fail(file, line, Format(
+				details::Fail(loc, Format(
 				    "Expected {} to be less than {}", TestString(value), TestString(other)));
 			}
 		}
@@ -125,7 +125,7 @@ namespace p
 		{
 			if (!(value <= other))
 			{
-				details::Fail(file, line, Format(
+				details::Fail(loc, Format(
 				    "Expected {} to be less or equal to {}", TestString(value), TestString(other)));
 			}
 		}
@@ -134,7 +134,7 @@ namespace p
 		{
 			if (!(value > other))
 			{
-				details::Fail(file, line, Format(
+				details::Fail(loc, Format(
 				    "Expected {} to be greater than {}", TestString(value), TestString(other)));
 			}
 		}
@@ -143,7 +143,7 @@ namespace p
 		{
 			if (!(value >= other))
 			{
-				details::Fail(file, line, Format(
+				details::Fail(loc, Format(
 				    "Expected {} to be greater or equal to {}", TestString(value), TestString(other)));
 			}
 		}
@@ -152,7 +152,7 @@ namespace p
 		{
 			if (!value)
 			{
-				details::Fail(file, line, "Expected value to be true");
+				details::Fail(loc, "Expected value to be true");
 			}
 		}
 
@@ -160,7 +160,7 @@ namespace p
 		{
 			if (value)
 			{
-				details::Fail(file, line, "Expected value to be false");
+				details::Fail(loc, "Expected value to be false");
 			}
 		}
 
@@ -169,7 +169,7 @@ namespace p
 			StringView view{value};
 			if (Strings::Find(view, sub) == StringView::npos)
 			{
-				details::Fail(file, line, Format(
+				details::Fail(loc, Format(
 				    "Expected {} to contain {}", TestString(value), TestString(sub)));
 			}
 		}
@@ -179,21 +179,20 @@ namespace p
 			StringView view{value};
 			if (Strings::Find(view, sub) != StringView::npos)
 			{
-				details::Fail(file, line, Format(
+				details::Fail(loc, Format(
 				    "Expected {} to not contain {}", TestString(value), TestString(sub)));
 			}
 		}
 
 	private:
 		const Actual& value;
-		const char* file;
-		sizet line;
+		std::source_location loc;
 	};
 
-	// Returns a matcher bound to file/line for reporting.
+	// Returns a matcher bound to the caller's source location for reporting.
 	template<typename T>
-	ExpectValue<T> Expect(const T& value, const char* file = __FILE__, sizet line = __LINE__)
+	ExpectValue<T> Expect(const T& value, const std::source_location loc = std::source_location::current())
 	{
-		return ExpectValue<T>(value, file, line);
+		return ExpectValue<T>(value, loc);
 	}
 };    // namespace p
