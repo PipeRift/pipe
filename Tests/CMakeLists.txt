@@ -1,7 +1,6 @@
 # Copyright 2015-2023 Piperift - All rights reserved
 
 file(GLOB_RECURSE TESTS_SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.h *.hpp)
-list(FILTER TESTS_SOURCE_FILES EXCLUDE REGEX ".*/PipeTests/.*")
 
 add_executable(PipeTests ${TESTS_SOURCE_FILES})
 target_include_directories(PipeTests PUBLIC .)
@@ -13,5 +12,3 @@ target_link_libraries(PipeTests PUBLIC Pipe PipeTest)
 pipe_add_sanitizers(PipeTests)
 
 add_test(NAME PipeTests COMMAND $<TARGET_FILE:PipeTests>)
-
-add_subdirectory(PipeTests)

@@ -22,33 +22,25 @@ public:
 };
 
 
-namespace
-{
-// Auto-registers via static init (macro-free go_bandit equivalent).
-const bool autoRegistered = []()
-{
 Spec("Reflection.Object", []()
 {
-	Describe("Pointers", []()
+Describe("Pointers", []()
+{
+	It("Can create object", []()
 	{
-		It("Can create object", []()
-		{
-			auto owner = p::MakeOwned<TestObject>();
+		auto owner = p::MakeOwned<TestObject>();
 
-			Expect(owner.Get()).ToNotEqual(nullptr);
-			Expect(owner->bConstructed).ToEqual(true);
-		});
+		Expect(owner.Get()).ToNotEqual(nullptr);
+		Expect(owner->bConstructed).ToEqual(true);
+	});
 
-		It("Can create object with owner", []()
-		{
-			auto owner  = p::MakeOwned<TestObject>();
-			auto owner2 = p::MakeOwned<TestObject>(owner);
+	It("Can create object with owner", []()
+	{
+		auto owner  = p::MakeOwned<TestObject>();
+		auto owner2 = p::MakeOwned<TestObject>(owner);
 
-			Expect(owner2->bConstructed).ToEqual(true);
-			Expect(owner2->GetOwner().Get()).ToEqual(owner.Get());
-		});
+		Expect(owner2->bConstructed).ToEqual(true);
+		Expect(owner2->GetOwner().Get()).ToEqual(owner.Get());
 	});
 });
-return true;
-}();
-}    // namespace
+});

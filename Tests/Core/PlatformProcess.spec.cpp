@@ -10,22 +10,14 @@
 using namespace p;
 
 
-namespace
-{
-// Auto-registers via static init (macro-free go_bandit equivalent).
-const bool autoRegistered = []()
-{
 Spec("Core.Subprocess", []()
 {
-	It("Can run process", []()
-	{
-		Expect(p::RunProcess({""}).IsSet()).ToEqual(false);
+It("Can run process", []()
+{
+	Expect(p::RunProcess({""}).IsSet()).ToEqual(false);
 
 #if defined(_MSC_VER)    // Test with a silent command (no stdout)
-		Expect(p::RunProcess({"cmd", "/c", "exit", "0"}).IsSet()).ToEqual(true);
+	Expect(p::RunProcess({"cmd", "/c", "exit", "0"}).IsSet()).ToEqual(true);
 #endif
-	});
 });
-return true;
-}();
-}    // namespace
+});

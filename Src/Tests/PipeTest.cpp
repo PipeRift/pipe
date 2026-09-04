@@ -41,11 +41,11 @@ namespace p
 			TestDescribe root{"", {}, {}, {}, {}};
 
 			// Pointer into `root.describes` for the currently-adding describe.
-			TestDescribe* currentDescribe     = nullptr;
-			i32 failedTests                   = 0;
-			i32 runTests                      = 0;
-			i32 skippedTests                  = 0;
-			i32 currentTestFailureCount       = 0;
+			TestDescribe* currentDescribe = nullptr;
+			i32 failedTests               = 0;
+			i32 runTests                  = 0;
+			i32 skippedTests              = 0;
+			i32 currentTestFailureCount   = 0;
 		};
 
 		// Function-local static: initialized on first use regardless of the
@@ -68,13 +68,13 @@ namespace p
 	{
 		void Fail(const std::source_location& loc, StringView message)
 		{
-			Error("PipeTests: {}:{}: {}", loc.file_name(), loc.line(), message);
+			Error("PipeTest: {}:{}: {}", loc.file_name(), loc.line(), message);
 			++GetTestContext().currentTestFailureCount;
 		}
 	}    // namespace details
 
 
-	void Spec(StringView name, TFunction<void()> fn)
+	void RegisterSpec(StringView name, TFunction<void()> fn)
 	{
 		TestContext& context = GetTestContext();
 		TestDescribe describe;
@@ -88,9 +88,9 @@ namespace p
 		context.currentDescribe = nullptr;
 	}
 
-	void Spec(TFunction<void()> fn)
+	void RegisterSpec(TFunction<void()> fn)
 	{
-		TestContext& context   = GetTestContext();
+		TestContext& context    = GetTestContext();
 		context.currentDescribe = &context.root;
 		fn();
 		context.currentDescribe = nullptr;
@@ -101,12 +101,12 @@ namespace p
 		TestDescribe*& current = CurrentDescribe();
 		if (!current)
 		{
-			Error("PipeTests: Describe('{}') called outside a Spec. Ignoring.", name);
+			Error("PipeTest: Describe('{}') called outside a Spec. Ignoring.", name);
 			return;
 		}
 
 		TestDescribe describe;
-		describe.name          = String{name};
+		describe.name = String{name};
 		current->describes.Add(Move(describe));
 		TestDescribe* prevDescribe = current;
 		current                    = &current->describes.Last();
@@ -119,7 +119,7 @@ namespace p
 		TestDescribe*& current = CurrentDescribe();
 		if (!current)
 		{
-			Error("PipeTests: It('{}') called outside a Spec. Ignoring.", name);
+			Error("PipeTest: It('{}') called outside a Spec. Ignoring.", name);
 			return;
 		}
 		TestCase test;
@@ -134,7 +134,7 @@ namespace p
 		TestDescribe*& current = CurrentDescribe();
 		if (!current)
 		{
-			Error("PipeTests: XIt('{}') called outside a Spec. Ignoring.", name);
+			Error("PipeTest: XIt('{}') called outside a Spec. Ignoring.", name);
 			return;
 		}
 		TestCase test;
@@ -149,7 +149,7 @@ namespace p
 		TestDescribe*& current = CurrentDescribe();
 		if (!current)
 		{
-			Error("PipeTests: BeforeEach called outside a Spec. Ignoring.");
+			Error("PipeTest: BeforeEach called outside a Spec. Ignoring.");
 			return;
 		}
 		current->beforeEach = fn;
@@ -160,7 +160,7 @@ namespace p
 		TestDescribe*& current = CurrentDescribe();
 		if (!current)
 		{
-			Error("PipeTests: AfterEach called outside a Spec. Ignoring.");
+			Error("PipeTest: AfterEach called outside a Spec. Ignoring.");
 			return;
 		}
 		current->afterEach = fn;
@@ -169,9 +169,16 @@ namespace p
 
 	namespace
 	{
+		// ANSI color codes (used when useColor is true).
+		const char* kColorReset  = "\033[0m";
+		const char* kColorGreen  = "\033[32m";
+		const char* kColorRed    = "\033[31m";
+		const char* kColorYellow = "\033[33m";
+		const char* kColorCyan   = "\033[36m";
+		const char* kColorDim    = "\033[90m";
+
 		static String FullName(const TestDescribe& describe, const TestCase& test)
 		{
-			// Build "SpecName.SubDescribe.TestName" for reporting. Root has empty name.
 			String result;
 			if (!describe.name.empty())
 			{
@@ -187,8 +194,31 @@ namespace p
 			return filter.empty() || Strings::Contains(fullName, filter);
 		}
 
+		static void ListNested(const TestDescribe& describe, StringView filter)
+		{
+			for (const TestDescribe& sub : describe.describes)
+			{
+				ListNested(sub, filter);
+			}
+			for (const TestCase& test : describe.tests)
+			{
+				String full = FullName(describe, test);
+				if (MatchesFilter(full, filter))
+				{
+					if (test.skip)
+					{
+						Info("  {}[SKIP]{} {}", kColorYellow, kColorReset, full);
+					}
+					else
+					{
+						Info("  {}{}{}", kColorDim, full, kColorReset);
+					}
+				}
+			}
+		}
+
 		static void RunNested(TestDescribe& describe, TArray<std::function<void()>>& beforeHooks,
-		    TArray<std::function<void()>>& afterHooks, StringView filter)
+		    TArray<std::function<void()>>& afterHooks, StringView filter, bool useColor)
 		{
 			TestContext& context = GetTestContext();
 			if (describe.beforeEach)
@@ -202,7 +232,7 @@ namespace p
 
 			for (TestDescribe& sub : describe.describes)
 			{
-				RunNested(sub, beforeHooks, afterHooks, filter);
+				RunNested(sub, beforeHooks, afterHooks, filter, useColor);
 			}
 
 			for (TestCase& test : describe.tests)
@@ -224,7 +254,7 @@ namespace p
 				}
 
 				context.currentTestFailureCount = 0;
-				bool passed = true;
+				bool passed                     = true;
 				try
 				{
 					test.body();
@@ -232,7 +262,7 @@ namespace p
 				catch (...)
 				{
 					passed = false;
-					Error("PipeTests: test failed by exception: {}", FullName(describe, test));
+					Error("PipeTest: test failed by exception: {}", FullName(describe, test));
 				}
 				passed = passed && (context.currentTestFailureCount == 0);
 
@@ -241,14 +271,30 @@ namespace p
 					afterHooks[i - 1]();
 				}
 
+				String name = FullName(describe, test);
 				if (passed)
 				{
-					Info("  [PASS] {}", FullName(describe, test));
+					if (useColor)
+					{
+						Info("  {}[PASS]{} {}{}{}{}", kColorGreen, kColorReset, kColorDim, name,
+						    kColorReset, kColorReset);
+					}
+					else
+					{
+						Info("  [PASS] {}", name);
+					}
 				}
 				else
 				{
 					++context.failedTests;
-					Error("  [FAIL] {}", FullName(describe, test));
+					if (useColor)
+					{
+						Error("  {}[FAIL]{} {}", kColorRed, kColorReset, name);
+					}
+					else
+					{
+						Error("  [FAIL] {}", name);
+					}
 				}
 			}
 
@@ -271,13 +317,40 @@ namespace p
 		context.failedTests  = 0;
 		context.skippedTests = 0;
 
-		Info("PipeTests: {} describe(s) registered.", context.root.describes.Size());
+		const char* cr = settings.useColor ? kColorReset : "";
+		const char* cb = settings.useColor ? kColorCyan : "";
+
+		Info("{}{}describe(s) registered.{}", cb, context.root.describes.Size(), cr);
+
+		// --list: print test names and exit.
+		if (settings.listOnly)
+		{
+			for (TestDescribe& spec : context.root.describes)
+			{
+				String specName = spec.name.empty() ? String{"(unnamed)"} : String{spec.name};
+				Info("{}", specName);
+				ListNested(spec, settings.filter);
+			}
+			return 0;
+		}
+
 		TArray<std::function<void()>> beforeHooks;
 		TArray<std::function<void()>> afterHooks;
-		RunNested(context.root, beforeHooks, afterHooks, settings.filter);
+		RunNested(context.root, beforeHooks, afterHooks, settings.filter, settings.useColor);
 
-		Info("PipeTests complete: {} run, {} passed, {} failed, {} skipped.", context.runTests,
-		    context.runTests - context.failedTests, context.failedTests, context.skippedTests);
+		i32 passed = context.runTests - context.failedTests;
+		if (settings.useColor)
+		{
+			Info("{}PipeTest{}: {}{} run{}, {}{}{} passed{}, {}{}{} failed{}, {}{} skipped{}", cb,
+			    kColorReset, context.runTests, cr, cr, passed > 0 ? kColorGreen : "", passed,
+			    cr, context.failedTests > 0 ? kColorRed : "", context.failedTests, cr,
+			    context.skippedTests > 0 ? kColorYellow : "", context.skippedTests, cr);
+		}
+		else
+		{
+			Info("PipeTest: {} run, {} passed, {} failed, {} skipped.", context.runTests, passed,
+			    context.failedTests, context.skippedTests);
+		}
 
 		return context.failedTests == 0 ? 0 : 1;
 	}
@@ -292,16 +365,24 @@ namespace p
 			{
 				settings.filter = Strings::RemoveFromStart(arg, StringView{"--filter="});
 			}
-			else if (Strings::Equals(arg, StringView{"--filter"}))
+			else if (Strings::Equals(arg, StringView{"--filter"}) || Strings::Equals(arg, StringView{"-f"}))
 			{
 				if (i + 1 < argc)
 				{
 					settings.filter = StringView{argv[++i]};
 				}
 			}
+			else if (Strings::Equals(arg, StringView{"--list"}) || Strings::Equals(arg, StringView{"-l"}))
+			{
+				settings.listOnly = true;
+			}
+			else if (Strings::Equals(arg, StringView{"--no-color"}))
+			{
+				settings.useColor = false;
+			}
 			else if (Strings::StartsWith(arg, StringView{"--"}))
 			{
-				Warning("PipeTests: unknown argument '{}'. Ignoring.", arg);
+				Warning("PipeTest: unknown argument '{}'. Ignoring.", arg);
 			}
 			else if (settings.filter.empty())
 			{

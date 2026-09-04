@@ -89,111 +89,103 @@ struct p::TFlags<SerTypeD> : public p::DefaultTFlags
 };
 
 
-namespace
-{
-// Auto-registers via static init (macro-free go_bandit equivalent).
-const bool autoRegistered = []()
-{
 Spec("Serialization", []()
 {
-	Describe("Serializers in global scope", []()
+Describe("Serializers in global scope", []()
+{
+	It("Can use custom Read()", []()
 	{
-		It("Can use custom Read()", []()
-		{
-			SerTypeA val{};
-			JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
+		SerTypeA val{};
+		JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
-			Reader& ct = reader;
-			ct.BeginObject();
-			ct.Next("type", val);
-			Expect(val.value).ToEqual(true);
-		});
-
-		It("Can use custom Write()", []()
-		{
-			SerTypeA val{};
-			val.value = true;
-
-			JsonFormatWriter writer{};
-			Writer ct = writer;
-			ct.BeginObject();
-			ct.Next("type", val);
-			Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
-		});
-
-		It("Can use Serialize() instead of Read()", []()
-		{
-			SerTypeB val{};
-			JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
-
-			Reader& ct = reader;
-			ct.BeginObject();
-			ct.Next("type", val);
-			Expect(val.value).ToEqual(true);
-		});
-
-		It("Can use Serialize() instead of Write()", []()
-		{
-			SerTypeB val{};
-			val.value = true;
-
-			JsonFormatWriter writer{};
-			Writer ct = writer;
-			ct.BeginObject();
-			ct.Next("type", val);
-			Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
-		});
+		Reader& ct = reader;
+		ct.BeginObject();
+		ct.Next("type", val);
+		Expect(val.value).ToEqual(true);
 	});
 
-	Describe("Serializers as members", []()
+	It("Can use custom Write()", []()
 	{
-		It("Can use custom Read()", []()
-		{
-			SerTypeC val{};
-			JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
+		SerTypeA val{};
+		val.value = true;
 
-			Reader& ct = reader;
-			ct.BeginObject();
-			ct.Next("type", val);
-			Expect(val.value).ToEqual(true);
-		});
+		JsonFormatWriter writer{};
+		Writer ct = writer;
+		ct.BeginObject();
+		ct.Next("type", val);
+		Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
+	});
 
-		It("Can use custom Write()", []()
-		{
-			SerTypeC val{};
-			val.value = true;
+	It("Can use Serialize() instead of Read()", []()
+	{
+		SerTypeB val{};
+		JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
 
-			JsonFormatWriter writer{};
-			Writer ct = writer;
-			ct.BeginObject();
-			ct.Next("type", val);
-			Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
-		});
+		Reader& ct = reader;
+		ct.BeginObject();
+		ct.Next("type", val);
+		Expect(val.value).ToEqual(true);
+	});
 
-		It("Can use Serialize() instead of Read()", []()
-		{
-			SerTypeD val{};
-			JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
+	It("Can use Serialize() instead of Write()", []()
+	{
+		SerTypeB val{};
+		val.value = true;
 
-			Reader& ct = reader;
-			ct.BeginObject();
-			ct.Next("type", val);
-			Expect(val.value).ToEqual(true);
-		});
-
-		It("Can use Serialize() instead of Write()", []()
-		{
-			SerTypeD val{};
-			val.value = true;
-
-			JsonFormatWriter writer{};
-			Writer ct = writer;
-			ct.BeginObject();
-			ct.Next("type", val);
-			Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
-		});
+		JsonFormatWriter writer{};
+		Writer ct = writer;
+		ct.BeginObject();
+		ct.Next("type", val);
+		Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
 	});
 });
-return true;
-}();
-}    // namespace
+
+Describe("Serializers as members", []()
+{
+	It("Can use custom Read()", []()
+	{
+		SerTypeC val{};
+		JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
+
+		Reader& ct = reader;
+		ct.BeginObject();
+		ct.Next("type", val);
+		Expect(val.value).ToEqual(true);
+	});
+
+	It("Can use custom Write()", []()
+	{
+		SerTypeC val{};
+		val.value = true;
+
+		JsonFormatWriter writer{};
+		Writer ct = writer;
+		ct.BeginObject();
+		ct.Next("type", val);
+		Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
+	});
+
+	It("Can use Serialize() instead of Read()", []()
+	{
+		SerTypeD val{};
+		JsonFormatReader reader{"{\"type\": {\"value\": true }}"};
+
+		Reader& ct = reader;
+		ct.BeginObject();
+		ct.Next("type", val);
+		Expect(val.value).ToEqual(true);
+	});
+
+	It("Can use Serialize() instead of Write()", []()
+	{
+		SerTypeD val{};
+		val.value = true;
+
+		JsonFormatWriter writer{};
+		Writer ct = writer;
+		ct.BeginObject();
+		ct.Next("type", val);
+		Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
+	});
+});
+});

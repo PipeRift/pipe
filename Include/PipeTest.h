@@ -3,11 +3,12 @@
 #pragma once
 
 #include "Pipe/Core/Function.h"
+#include "Pipe/Core/Macros.h"
 #include "Pipe/Core/StringView.h"
 #include "PipeStrings.h"
 
-#include <functional>
 #include <format>
+#include <functional>
 #include <memory>
 #include <source_location>
 #include <string>
@@ -30,17 +31,18 @@ namespace p
 	{
 		// Detects whether a type can be rendered via std::format.
 		template<typename T, typename Char = char>
-		concept FormattableType = requires(const T& value)
-		{
-			std::formatter<std::remove_cvref_t<T>, Char>{};
-		};
+		concept FormattableType =
+		    requires(const T& value) { std::formatter<std::remove_cvref_t<T>, Char>{}; };
 	}    // namespace details
+
+	void RegisterSpec(StringView name, TFunction<void()> fn);
+	void RegisterSpec(TFunction<void()> fn);
 
 	// Self-registering top-level. Spec(name, fn) opens a first describe named `name`.
 	// fn runs immediately during registration, so TFunction (non-owning) is safe.
-	void Spec(StringView name, TFunction<void()> fn);
-	// Nameless top-level (like go_bandit); use Describe inside fn.
-	void Spec(TFunction<void()> fn);
+	// Macro handles static-init registration at file scope.
+#define Spec(...) \
+	static const bool P_CAT(_pipeSpecReg_, __COUNTER__) = (::p::RegisterSpec(__VA_ARGS__), true);
 
 	// Nested describe. Only valid inside a Spec; otherwise logs an error and ignores.
 	void Describe(StringView name, TFunction<void()> fn);
@@ -54,11 +56,12 @@ namespace p
 	// Teardown hook attached to the current describe.
 	void AfterEach(std::function<void()> fn);
 
-	// Settings for a test run. Empty filter runs everything; otherwise only tests
-	// whose full name contains the filter substring run.
+	// Settings for a test run.
 	struct TestSettings
 	{
-		StringView filter;
+		StringView filter;    // Empty runs all; otherwise substring match on full name.
+		bool listOnly = false;    // List test names without running.
+		bool useColor = true;    // Colorized output.
 	};
 
 	int RunTests(const TestSettings& settings);
@@ -168,9 +171,7 @@ namespace p
 	class ExpectValue
 	{
 	public:
-		ExpectValue(const Actual& value, const std::source_location& loc)
-		    : value(value)
-		    , loc(loc)
+		ExpectValue(const Actual& value, const std::source_location& loc) : value(value), loc(loc)
 		{}
 
 		template<typename Expected>
@@ -178,8 +179,8 @@ namespace p
 		{
 			if (!details::ValuesEqual<Actual, Expected>::Eval(value, expected))
 			{
-				details::Fail(loc, Format(
-				    "Expected {} to equal {}", TestString(value), TestString(expected)));
+				details::Fail(loc,
+				    Format("Expected {} to equal {}", TestString(value), TestString(expected)));
 			}
 		}
 
@@ -188,8 +189,8 @@ namespace p
 		{
 			if (details::ValuesEqual<Actual, Expected>::Eval(value, expected))
 			{
-				details::Fail(loc, Format(
-				    "Expected {} to not equal {}", TestString(value), TestString(expected)));
+				details::Fail(loc,
+				    Format("Expected {} to not equal {}", TestString(value), TestString(expected)));
 			}
 		}
 
@@ -197,8 +198,8 @@ namespace p
 		{
 			if (!(value < other))
 			{
-				details::Fail(loc, Format(
-				    "Expected {} to be less than {}", TestString(value), TestString(other)));
+				details::Fail(loc,
+				    Format("Expected {} to be less than {}", TestString(value), TestString(other)));
 			}
 		}
 
@@ -206,8 +207,8 @@ namespace p
 		{
 			if (!(value <= other))
 			{
-				details::Fail(loc, Format(
-				    "Expected {} to be less or equal to {}", TestString(value), TestString(other)));
+				details::Fail(loc, Format("Expected {} to be less or equal to {}",
+				                       TestString(value), TestString(other)));
 			}
 		}
 
@@ -215,8 +216,8 @@ namespace p
 		{
 			if (!(value > other))
 			{
-				details::Fail(loc, Format(
-				    "Expected {} to be greater than {}", TestString(value), TestString(other)));
+				details::Fail(loc, Format("Expected {} to be greater than {}", TestString(value),
+				                       TestString(other)));
 			}
 		}
 
@@ -224,8 +225,8 @@ namespace p
 		{
 			if (!(value >= other))
 			{
-				details::Fail(loc, Format(
-				    "Expected {} to be greater or equal to {}", TestString(value), TestString(other)));
+				details::Fail(loc, Format("Expected {} to be greater or equal to {}",
+				                       TestString(value), TestString(other)));
 			}
 		}
 
@@ -250,8 +251,8 @@ namespace p
 			StringView view{value};
 			if (Strings::Find(view, sub) == StringView::npos)
 			{
-				details::Fail(loc, Format(
-				    "Expected {} to contain {}", TestString(value), TestString(sub)));
+				details::Fail(
+				    loc, Format("Expected {} to contain {}", TestString(value), TestString(sub)));
 			}
 		}
 
@@ -260,8 +261,8 @@ namespace p
 			StringView view{value};
 			if (Strings::Find(view, sub) != StringView::npos)
 			{
-				details::Fail(loc, Format(
-				    "Expected {} to not contain {}", TestString(value), TestString(sub)));
+				details::Fail(loc,
+				    Format("Expected {} to not contain {}", TestString(value), TestString(sub)));
 			}
 		}
 
@@ -272,7 +273,8 @@ namespace p
 
 	// Returns a matcher bound to the caller's source location for reporting.
 	template<typename T>
-	ExpectValue<T> Expect(const T& value, const std::source_location loc = std::source_location::current())
+	ExpectValue<T> Expect(
+	    const T& value, const std::source_location loc = std::source_location::current())
 	{
 		return ExpectValue<T>(value, loc);
 	}

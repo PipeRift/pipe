@@ -1,7 +1,7 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <PipeTest.h>
 #include <PipeContainers.h>
+#include <PipeTest.h>
 
 
 using namespace p;
@@ -41,11 +41,6 @@ struct CopyType
 };
 
 
-namespace
-{
-// Auto-registers via static init (macro-free go_bandit equivalent).
-const bool autoRegistered = []()
-{
 Spec("Containers.Array", []()
 {
 	It("Can initialize", []()
@@ -965,7 +960,7 @@ Spec("Containers.Array", []()
 	});
 });
 
-Describe("Containers.BitArray", []()
+Spec("Containers.BitArray", []()
 {
 	It("Can initialize", []()
 	{
@@ -1136,6 +1131,3 @@ Describe("Containers.BitArray", []()
 		});
 	});
 });
-return true;
-}();
-}    // namespace

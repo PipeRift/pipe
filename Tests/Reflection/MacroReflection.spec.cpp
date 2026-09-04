@@ -20,28 +20,20 @@ struct TestStruct
 };
 
 
-namespace
-{
-// Auto-registers via static init (macro-free go_bandit equivalent).
-const bool autoRegistered = []()
-{
 Spec("Reflection.Macros", []()
 {
-	It("Can get property names", []()
-	{
-		p::TypeId testStructType = p::RegisterTypeId<TestStruct>();
+It("Can get property names", []()
+{
+	p::TypeId testStructType = p::RegisterTypeId<TestStruct>();
 
-		Expect(p::HasTypeFlags(testStructType, p::TF_Struct)).ToEqual(true);
+	Expect(p::HasTypeFlags(testStructType, p::TF_Struct)).ToEqual(true);
 
-		auto properties = p::GetTypeProperties(testStructType);
-		Expect(properties.Size()).ToEqual(2);
+	auto properties = p::GetTypeProperties(testStructType);
+	Expect(properties.Size()).ToEqual(2);
 
-		// Expect(properties[0].typeId).ToEqual(p::GetTypeId<p::TArray<float>>());
-		Expect(properties[0]->name.Data()).ToEqual("value0");
-		// Expect(properties[1].typeId).ToEqual(p::GetTypeId<bool>());
-		Expect(properties[1]->name.Data()).ToEqual("value1");
-	});
+	// Expect(properties[0].typeId).ToEqual(p::GetTypeId<p::TArray<float>>());
+	Expect(properties[0]->name.Data()).ToEqual("value0");
+	// Expect(properties[1].typeId).ToEqual(p::GetTypeId<bool>());
+	Expect(properties[1]->name.Data()).ToEqual("value1");
 });
-return true;
-}();
-}    // namespace
+});
