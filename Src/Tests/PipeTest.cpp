@@ -341,9 +341,9 @@ namespace p
 		i32 passed = context.runTests - context.failedTests;
 		if (settings.useColor)
 		{
-			Info("{}PipeTest{}: {}{} run{}, {}{}{} passed{}, {}{}{} failed{}, {}{} skipped{}.", cb,
-			    kColorReset, context.runTests, cr, cr, passed > 0 ? kColorGreen : "", passed,
-			    cr, context.failedTests > 0 ? kColorRed : "", context.failedTests, cr,
+			Info("{}PipeTest{}: {} run, {}{}{} passed{}, {}{}{} failed{}, {}{} skipped{}.", cb,
+			    kColorReset, context.runTests, passed > 0 ? kColorGreen : "", passed, cr,
+			    context.failedTests > 0 ? kColorRed : "", context.failedTests, cr,
 			    context.skippedTests > 0 ? kColorYellow : "", context.skippedTests, cr);
 		}
 		else
