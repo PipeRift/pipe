@@ -10,7 +10,7 @@
 #include "Pipe.h"
 #include "Pipe/Core/Log.h"
 #include "PipeStrings.h"
-#include "PipeTests.h"
+#include "PipeTest.h"
 
 
 namespace p

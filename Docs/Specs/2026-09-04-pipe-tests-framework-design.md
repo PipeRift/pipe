@@ -100,15 +100,15 @@ Fluent matcher methods, naming in Pipe CamelCase:
 
 ### New files (in the Pipe submodule)
 
-- `Extern/Pipe/Include/PipeTests.h` — public API (global functions, `Expect` matcher, formatter hook). Mostly templates; **no macros**.
-- `Extern/Pipe/Src/Tests/PipeTests.cpp` — function-local static `TestContext`, registration functions (`Spec`/`Describe`/`It`/`XIt`/`BeforeEach`/`AfterEach`), `p::RunTests(settings)` + `p::RunTests(int, char**)` argv forwarder.
+- `Extern/Pipe/Include/PipeTest.h` — public API (global functions, `Expect` matcher, formatter hook). Mostly templates; **no macros**.
+- `Extern/Pipe/Src/Tests/PipeTest.cpp` — function-local static `TestContext`, registration functions (`Spec`/`Describe`/`It`/`XIt`/`BeforeEach`/`AfterEach`), `p::RunTests(settings)` + `p::RunTests(int, char**)` argv forwarder.
 
 ### Build — separate target, not into the runtime Pipe lib
 
 `Extern/Pipe/CMakeLists.txt`:
 
-- Define `add_library(PipeTests ...)` (alias `Pipe::Tests`) **unconditionally** (alongside `Pipe`, **before** the `PIPE_BUILD_TESTS` gate) so Rift can consume it via the submodule. (The suite executable is `PipeTesting`, alias `Pipe::Testing`, so the `PipeTests` name is free for the framework library.)
-- **Exclude `Src/Tests/PipeTests.cpp`** from Pipe's `file(GLOB_RECURSE ... Src/*.cpp)` (currently line 65) so the test framework does **not** ship in the runtime `Pipe` library. Add it only to the `PipeTests` target.
+- Define `add_library(PipeTest ...)` (alias `Pipe::Test`) **unconditionally** (alongside `Pipe`, **before** the `PIPE_BUILD_TESTS` gate) so Rift can consume it via the submodule. (The suite executable keeps the `PipeTests` name with no alias.)
+- **Exclude `Src/Tests/PipeTest.cpp`** from Pipe's `file(GLOB_RECURSE ... Src/*.cpp)` (currently line 65) so the test framework does **not** ship in the runtime `Pipe` library. Add it only to the `PipeTests` target.
 - Give `PipeTests` the standard Pipe setup (`pipe_target_define_platform`, `pipe_target_enable_CPP20`, `pipe_target_disable_rtti`, `pipe_target_shared_output_directory`) and link `Pipe`; expose `Include/`.
 
 ### Runner
@@ -128,15 +128,15 @@ A current-describe cursor in `PipeTests.cpp` (`TestContext::currentDescribe`, ac
 
 **Deliberate: do NOT migrate existing tests and do NOT remove third-party libraries until the very end, when the framework is done and self-tested.** Bandit stays linked and coexists throughout development.
 
-1. **Add `PipeTests` module** — header + source; `add_library(PipeTests)`; source-glob exclusion. Build succeeds.
+1. **Add `PipeTest` module** — header + source; `add_library(PipeTest)`; source-glob exclusion. Build succeeds.
 2. **Self-test the framework with small new tests** (no migration of existing tests):
    - Create small **new** framework tests in `Extern/Pipe/Tests/PipeTests/` (e.g. `PipeTests.spec.cpp`) written with the new API to validate: `Spec`/`Describe`/`It`/`XIt`/`BeforeEach`/`AfterEach`, all `Expect` matchers, failure reporting, skip counting, `RunTests` exit code, and `Describe`-outside-`Spec` behavior. The spec file holds `Spec(...)` at file scope (auto-registers).
-   - Wire a **separate small runner** (its own `main.cpp` calling `p::RunTests`) for this smoke target, running **alongside** the existing bandit `PipeTesting` executable.
+   - Wire a **separate small runner** (its own `main.cpp` calling `p::RunTests`) for this smoke target, running **alongside** the existing bandit `PipeTests` executable.
    - Verify via `ctest` that **both** the new self-tests and the untouched bandit suite pass. Iterate until the framework is proven.
 3. **Final flip (LAST, only when the system is done):**
    - Migrate existing `*spec.cpp` files file-by-file (transform map below). Each migrated file holds `Spec(...)` at file scope (auto-registers; no wrapper, no `main` changes).
-   - `Extern/Pipe/Tests/CMakeLists.txt`: rename suite exe to `PipeTesting`, link `Pipe` + `PipeTests`, drop `Bandit`; `main.cpp` calls `p::RunTests(argc, argv)`; drop `--reporter=spec`.
-   - Migrate Rift `Tests/*.spec.cpp` + `Tests/CMakeLists.txt`: replace `Bandit` with `Pipe::Tests` (the alias); Rift's `Tests/main.cpp` only swaps `bandit::run` for `p::RunTests`.
+   - `Extern/Pipe/Tests/CMakeLists.txt`: keep suite exe `PipeTests` (no alias), link `Pipe` + `PipeTest`, drop `Bandit`; `main.cpp` calls `p::RunTests(argc, argv)`; drop `--reporter=spec`.
+   - Migrate Rift `Tests/*.spec.cpp` + `Tests/CMakeLists.txt`: replace `Bandit` with `Pipe::Test` (the alias); Rift's `Tests/main.cpp` only swaps `bandit::run` for `p::RunTests`.
    - Remove `Bandit`: delete the `Bandit` INTERFACE target from `Extern/Pipe/Extern/CMakeLists.txt`, remove the vendored `Extern/Pipe/Extern/Bandit/` directory, strip remaining bandit includes.
    - Final full `ctest` + `ClangFormat`/`ClangTidy` pass.
 
@@ -144,8 +144,8 @@ A current-describe cursor in `PipeTests.cpp` (`TestContext::currentDescribe`, ac
 
 | Before (bandit) | After (PipeTests) |
 |-----------------|-------------------|
-| `#include <bandit/bandit.h>` + `using namespace snowhouse; using namespace bandit;` | `#include <PipeTests.h>` + `using namespace p;` |
-| `go_bandit([](){ describe("G", ...) })` (global scope) | File-scope `Spec("G", [](){ ... })`; auto-registers, no `main` changes |
+| `#include <bandit/bandit.h>` + `using namespace snowhouse; using namespace bandit;` | `#include <PipeTest.h>` + `using namespace p;` |
+| `go_bandit([](){ describe("G", ...) })` (global scope) | `Spec("G", [](){ ... })` inside a TU-local static registrar (`namespace { const bool autoRegistered = [](){ Spec(...); return true; }(); }`); auto-registers, no `main` changes |
 | `describe(...)` | `Describe(...)` |
 | `it(...)` | `It(...)` |
 | `xit(...)` | `XIt(...)` |
@@ -164,7 +164,7 @@ Note: existing test files that `using namespace snowhouse; using namespace bandi
 - `Bandit` INTERFACE target is defined in `Extern/Pipe/Extern/CMakeLists.txt`, added **unconditionally** (Pipe `CMakeLists.txt` line 47 `add_subdirectory(Extern)` runs before the `PIPE_BUILD_TESTS` gate).
 - Pipe supplies its own tests executable gated behind `PIPE_BUILD_TESTS` (default `PIPE_IS_PROJECT`, i.e. ON when Pipe is the top project).
 - Rift builds its **own** `RiftTests` executable in `Tests/CMakeLists.txt`, linking `RiftASTLib` + `Bandit` (imported through Pipe's `Extern`).
-- Therefore the `PipeTests` target (alias `Pipe::Tests`) must be defined **unconditionally** in Pipe's `CMakeLists.txt` so Rift can link it.
+- Therefore the `PipeTest` target (alias `Pipe::Test`) must be defined **unconditionally** in Pipe's `CMakeLists.txt` so Rift can link it.
 
 ## Constraints & style
 

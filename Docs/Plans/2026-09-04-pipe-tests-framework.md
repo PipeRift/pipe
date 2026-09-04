@@ -4,15 +4,30 @@
 
 **Goal:** Build a Pipe-native test framework (`PipeTests` module) that mirrors Bandit's structure with imgui-style global context, used by both PipeTests and RiftTests.
 
-**Architecture:** A new `PipeTests` module in the Pipe submodule (`Include/PipeTests.h` + `Src/PipeTests.cpp`) built as a **separate CMake library target** (never compiled into the runtime `Pipe` library). Global registration cursor tracks the current test group as functions are called. `Expect(value)` returns a fluent matcher. `p::RunTests(argc, argv)` runs the suite. Existing Bandit tests are NOT migrated and Bandit is NOT removed until the final task.
+**Architecture:** A new `PipeTests` module in the Pipe submodule (`Include/PipeTest.h` + `Src/PipeTest.cpp`) built as a **separate CMake library target** (never compiled into the runtime `Pipe` library). Global registration cursor tracks the current test group as functions are called. `Expect(value)` returns a fluent matcher. `p::RunTests(argc, argv)` runs the suite. Existing Bandit tests are NOT migrated and Bandit is NOT removed until the final task.
 
-**Macro-free registration (decision 2026-09-04):** The framework uses NO macros. `Spec`/`Describe`/`It`/`XIt`/`BeforeEach`/`AfterEach` are plain functions in namespace `p`. `Spec` calls live at file scope and auto-register via static init (like `go_bandit`); no manual registration calls needed — `main()` only calls `p::RunTests`. The registry uses a function-local `static` (`GetTestContext()`), so it initializes on first use regardless of translation-unit order. `Spec(fn)` (nameless, go_bandit-style) and `Spec(name, fn)` are both supported; `Spec(fn)` registers into the virtual root describe.
+**Macro-free registration (decision 2026-09-04):** The framework uses NO macros. `Spec`/`Describe`/`It`/`XIt`/`BeforeEach`/`AfterEach` are plain functions in namespace `p`. A bare function call is ill-formed at namespace scope, so each spec file wraps its `Spec` call in a TU-local static registrar (the macro-free equivalent of what `go_bandit` expands to); it auto-registers via static init — no manual registration calls needed, `main()` only calls `p::RunTests`. The registry uses a function-local `static` (`GetTestContext()`), so it initializes on first use regardless of translation-unit order. `Spec(fn)` (nameless, go_bandit-style) and `Spec(name, fn)` are both supported; `Spec(fn)` registers into the virtual root describe.
+
+```cpp
+namespace
+{
+// Auto-registers via static init (macro-free go_bandit equivalent).
+const bool autoRegistered = []()
+{
+Spec("Strings", []()
+{
+	// ... Describe/It ...
+});
+return true;
+}();
+}    // namespace
+```
 
 **Design changes (2026-09-04, post-Task 6):**
 - `RunTests` split: `RunTests(int argc, char** argv)` parses argv into a `TestSettings` struct (`StringView filter`; `--filter=X`, `--filter X`, or positional) and forwards to `RunTests(const TestSettings&)`, so other systems can run tests programmatically without text args.
 - Pipe types throughout: `i32` counters, `TFunction<void()>` for immediately-invoked callbacks (`Spec`/`Describe`), `TArray`/`String`/`StringView`. Stored bodies/hooks (`It`/`XIt`/`BeforeEach`/`AfterEach`, hook stacks) stay `std::function` (owning) because `TFunction` is a non-owning view and would dangle.
 - Internals renamed: `TestGroup` → `TestDescribe` (`describes` field), `RegistryState` → `TestContext`, `State()` → `GetTestContext()`, `CurrentGroup()` → `CurrentDescribe()`, `currentGroup` → `currentDescribe`.
-- Targets renamed: framework library `PipeTestsLib` → `PipeTests` (alias `Pipe::TestsLib` → `Pipe::Tests`); test executable `PipeTests` → `PipeTesting` (alias `Pipe::Testing`, ctest `PipeTesting`).
+- Targets renamed: framework library `PipeTestsLib` → `PipeTest` (alias `Pipe::TestsLib` → `Pipe::Test`); test executable `PipeTests` → `PipeTesting` → `PipeTests` (no alias, ctest `PipeTests`).
 
 **Tech Stack:** C++20, CMake 3.26+, no exceptions, no RTTI (`-fno-rtti`). Pipe core types: `StringView`, `String`, `TArray`, `TFunction`, `i32`, `std::function` (stored callbacks only), `p::Format`, `p::Info/Warning/Error`.
 
@@ -49,8 +64,8 @@ Append after the `Pipe` library block in `Extern/Pipe/CMakeLists.txt` (after lin
 ################################################################################
 #   PipeTests (test framework library, not part of the runtime Pipe library)
 
-add_library(PipeTests STATIC Src/PipeTests.cpp)
-add_library(Pipe::Tests ALIAS PipeTests)
+add_library(PipeTest STATIC Src/PipeTest.cpp)
+add_library(Pipe::Test ALIAS PipeTest)
 pipe_target_define_platform(PipeTests)
 target_include_directories(PipeTests PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>)
 pipe_target_enable_CPP20(PipeTests)
@@ -59,14 +74,14 @@ pipe_target_shared_output_directory(PipeTests)
 target_link_libraries(PipeTests PUBLIC Pipe)
 ```
 
-Note: `Src/PipeTests.cpp` does not exist yet; CMake will fail until Task 2 creates it.
+Note: `Src/PipeTest.cpp` does not exist yet; CMake will fail until Task 2 creates it.
 
-- [ ] **Step 2: Ensure `Src/PipeTests.cpp` is excluded from the `Pipe` library glob**
+- [ ] **Step 2: Ensure `Src/PipeTest.cpp` is excluded from the `Pipe` library glob**
 
 The `Pipe` library compiles `Src/*.cpp` via `file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.c)` (line 65). `PipeTests.cpp` in `Src/` would be globbed into `Pipe`. Since the git repo does not track glob output, verify the exclusion after Task 2 by confirming the `Pipe` target does not include `PipeTests.cpp` (build command in Task 2 will confirm).
-**If needed**: remove `Src/PipeTests.cpp` match from the glob by excluding subdirectory — glob includes it. To keep `PipeTests.cpp` out of `Pipe`, place it under a subdirectory instead: put the implementation at `Src/Tests/PipeTests.cpp` (not `Src/PipeTests.cpp`), and point the `PipeTests` target at `Src/Tests/PipeTests.cpp`. The `Pipe` glob `Src/*.cpp` (non-recursive at top level only matches `PipeTests.cpp` if directly in `Src/`; the actual glob is `GLOB_RECURSE ... Src/*.cpp` which is recursive and WILL pick up `Src/Tests/PipeTests.cpp`).
+**If needed**: remove `Src/PipeTest.cpp` match from the glob by excluding subdirectory — glob includes it. To keep `PipeTests.cpp` out of `Pipe`, place it under a subdirectory instead: put the implementation at `Src/Tests/PipeTest.cpp` (not `Src/PipeTest.cpp`), and point the `PipeTests` target at `Src/Tests/PipeTest.cpp`. The `Pipe` glob `Src/*.cpp` (non-recursive at top level only matches `PipeTests.cpp` if directly in `Src/`; the actual glob is `GLOB_RECURSE ... Src/*.cpp` which is recursive and WILL pick up `Src/Tests/PipeTest.cpp`).
 
-**Decision (must-follow):** Place the implementation at `Src/Tests/PipeTests.cpp` and exclude the `Src/Tests` directory from the `Pipe` source glob. Modify the `Pipe` glob (line 65) to exclude the `PipeTests` implementation:
+**Decision (must-follow):** Place the implementation at `Src/Tests/PipeTest.cpp` and exclude the `Src/Tests` directory from the `Pipe` source glob. Modify the `Pipe` glob (line 65) to exclude the `PipeTests` implementation:
 
 ```cmake
 file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.c)
@@ -74,10 +89,10 @@ list(FILTER PIPE_SOURCE_FILES EXCLUDE REGEX ".*/Src/Tests/.*")
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
 ```
 
-Then the `PipeTests` target in this task uses `Src/Tests/PipeTests.cpp`:
+Then the `PipeTests` target in this task uses `Src/Tests/PipeTest.cpp`:
 
 ```cmake
-add_library(PipeTests STATIC Src/Tests/PipeTests.cpp)
+add_library(PipeTest STATIC Src/Tests/PipeTest.cpp)
 ```
 
 - [ ] **Step 3: Configure + build (may fail until Task 2 creates the source)**
@@ -87,7 +102,7 @@ Run (from `Extern/Pipe`):
 cmake -S . -B Build
 cmake --build Build --config Release
 ```
-Expected: fails only because `Src/Tests/PipeTests.cpp` (and `Include/PipeTests.h`) do not exist yet. This is acceptable mid-plan; the target is created and validated in Task 2.
+Expected: fails only because `Src/Tests/PipeTest.cpp` (and `Include/PipeTest.h`) do not exist yet. This is acceptable mid-plan; the target is created and validated in Task 2.
 
 - [ ] **Step 4: Commit**
 
@@ -98,10 +113,10 @@ git commit -m "build: add PipeTests library target"
 
 ---
 
-### Task 2: `PipeTests.h` public header — registration functions
+### Task 2: `PipeTest.h` public header — registration functions
 
 **Files:**
-- Create: `Extern/Pipe/Include/PipeTests.h`
+- Create: `Extern/Pipe/Include/PipeTest.h`
 
 **Interfaces:**
 - Consumes: `Pipe/Core/Log.h` (for error logging), `StringView.h`.
@@ -119,7 +134,7 @@ git commit -m "build: add PipeTests library target"
 
 - [ ] **Step 1: Declare the registration API**
 
-Create `Extern/Pipe/Include/PipeTests.h`:
+Create `Extern/Pipe/Include/PipeTest.h`:
 
 ```cpp
 // Copyright 2015-2026 Piperift. All Rights Reserved.
@@ -171,7 +186,7 @@ namespace p
 - [ ] **Step 2: Commit**
 
 ```bash
-git add Include/PipeTests.h
+git add Include/PipeTest.h
 git commit -m "feat: declare PipeTests registration API"
 ```
 
@@ -180,10 +195,10 @@ git commit -m "feat: declare PipeTests registration API"
 ### Task 3: `PipeTests.cpp` — registry, cursor, runner (skip + summary)
 
 **Files:**
-- Create: `Extern/Pipe/Src/Tests/PipeTests.cpp`
+- Create: `Extern/Pipe/Src/Tests/PipeTest.cpp`
 
 **Interfaces:**
-- Consumes: `PipeTests.h`, `Pipe.h`, `Pipe/Core/Log.h`, `PipeStrings.h`, `StringView.h`, `TArray`.
+- Consumes: `PipeTest.h`, `Pipe.h`, `Pipe/Core/Log.h`, `PipeStrings.h`, `StringView.h`, `TArray`.
 - Produces: implementation of `Spec`, `Describe`, `It`, `XIt`, `BeforeEach`, `AfterEach`, `RunTests`. Matcher `Expect` is a separate task (Task 4); until then `It` bodies cannot assert.
 
 The runner must support:
@@ -205,7 +220,7 @@ The runner must support:
 	#include "PipeNewDelete.h"
 #endif
 
-#include "PipeTests.h"
+#include "PipeTest.h"
 #include "Pipe.h"
 #include "Pipe/Core/Log.h"
 #include "PipeStrings.h"
@@ -546,7 +561,7 @@ Expected: target `PipeTests` builds, `Pipe` library does NOT include `PipeTests.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add Src/Tests/PipeTests.cpp
+git add Src/Tests/PipeTest.cpp
 git commit -m "feat: add PipeTests registry and runner"
 ```
 
@@ -559,7 +574,7 @@ git commit -m "feat: add PipeTests registry and runner"
 - Create: `Extern/Pipe/Tests/PipeTests/main.cpp`
 
 **Interfaces:**
-- Consumes: `PipeTests.h`, `Pipe.h`, `p::Expect` (Task 5). To avoid depending on Task 5, implement this task to compile against the header and **defer the actual `Expect` matcher to Task 5**, adding assertions there in step 3. The framework uses no macros (`Spec` at file scope auto-registers); assertions arrive with `Expect` in Task 5.
+- Consumes: `PipeTest.h`, `Pipe.h`, `p::Expect` (Task 5). To avoid depending on Task 5, implement this task to compile against the header and **defer the actual `Expect` matcher to Task 5**, adding assertions there in step 3. The framework uses no macros (`Spec` at file scope auto-registers); assertions arrive with `Expect` in Task 5.
 
 - Produces: a second test executable `PipeTestsSelf` registered in CTest, proving the framework runs alongside the untouched Bandit suite.
 
@@ -575,7 +590,7 @@ git commit -m "feat: add PipeTests registry and runner"
 // including it here too would cause duplicate-definition linker errors.
 
 #include <Pipe.h>
-#include <PipeTests.h>
+#include <PipeTest.h>
 
 
 int main(int argc, char* argv[])
@@ -592,7 +607,7 @@ int main(int argc, char* argv[])
 ```cpp
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include <PipeTests.h>
+#include <PipeTest.h>
 
 #include <functional>
 
@@ -675,16 +690,16 @@ git commit -m "test: add PipeTests self-test suite"
 ### Task 5: `Expect` fluent matcher + extensible formatter
 
 **Files:**
-- Modify: `Extern/Pipe/Include/PipeTests.h`
-- Modify: `Extern/Pipe/Src/Tests/PipeTests.cpp`
+- Modify: `Extern/Pipe/Include/PipeTest.h`
+- Modify: `Extern/Pipe/Src/Tests/PipeTest.cpp`
 
 **Interfaces:**
-- Consumes: `PipeTests.h` registration API (Task 2/3), Pipe `Format`, `StringView`, `Number` concept (`TypeTraits.h`).
+- Consumes: `PipeTest.h` registration API (Task 2/3), Pipe `Format`, `StringView`, `Number` concept (`TypeTraits.h`).
 - Produces: `Expect(value)` matcher returned by `p::Expect(value)` with methods `ToEqual`, `ToNotEqual`, `ToBeLess`, `ToBeLessOrEqual`, `ToBeGreater`, `ToBeGreaterOrEqual`, `ToBeTrue`, `ToBeFalse`, `ToContain`, `ToNotContain`. Failure prints `file:line` + actual/expected via an extensible `ToString`-style hook (`p::TestString`).
 
-- [ ] **Step 1: Add the formatter hook and matcher to `PipeTests.h`**
+- [ ] **Step 1: Add the formatter hook and matcher to `PipeTest.h`**
 
-Append to `PipeTests.h`:
+Append to `PipeTest.h`:
 
 ```cpp
 	// Extensible value-to-string hook for failure messages.
@@ -928,7 +943,7 @@ In `RunNested`, before running the body reset the count, after body if `currentT
 Update `Extern/Pipe/Tests/PipeTests/PipeTests.spec.cpp` to use `Expect`:
 
 ```cpp
-#include <PipeTests.h>
+#include <PipeTest.h>
 #include <PipeStrings.h>
 
 using namespace p;
@@ -979,7 +994,7 @@ Verify one failure is caught: temporarily add to a test `Expect(1).ToEqual(2);`,
 - [ ] **Step 5: Commit**
 
 ```bash
-git add Include/PipeTests.h Src/Tests/PipeTests.cpp Tests/PipeTests
+git add Include/PipeTest.h Src/Tests/PipeTest.cpp Tests/PipeTests
 git commit -m "feat: add Expect fluent matcher"
 ```
 
@@ -997,7 +1012,7 @@ git commit -m "feat: add Expect fluent matcher"
 - Modify: `Tests/CMakeLists.txt` (Rift) and `Tests/*.spec.cpp` (Rift) in `D:\Projects\Piperift\rift`
 
 **Interfaces:**
-- Consumes: `PipeTests.h`, `p::RunTests` (Tasks 2-5).
+- Consumes: `PipeTest.h`, `p::RunTests` (Tasks 2-5).
 - Produces: Bandit fully removed; both Pipe and Rift suites run on the native framework.
 
 ⚠️ **This task is intentionally LAST. Do not start it until Tasks 1-5 are complete and verified.**
@@ -1036,7 +1051,7 @@ go_bandit([]()
 
 New:
 ```cpp
-#include <PipeTests.h>
+#include <PipeTest.h>
 #include <Pipe/Core/StringView.h>
 #include <PipeStrings.h>
 
@@ -1059,9 +1074,9 @@ Spec("Strings", []()
 ```
 
 Transform rules (from the spec):
-- `#include <bandit/bandit.h>` → `#include <PipeTests.h>`
+- `#include <bandit/bandit.h>` → `#include <PipeTest.h>`
 - `using namespace snowhouse; using namespace bandit;` → remove both; keep `using namespace p;`
-- **Top-level:** `go_bandit([](){ describe("G", [](){ ...` → `Spec("G", [](){ ...` at file scope (drop the outer `go_bandit` extra nesting and one `describe` level; the top `Spec("Strings", ...)` replaces go_bandit+first describe and auto-registers via static init — no wrapper function, no `main.cpp` changes).
+- **Top-level:** `go_bandit([](){ describe("G", [](){ ...` → `Spec("G", [](){ ...` wrapped in the file-scope static registrar above (drop the outer `go_bandit` extra nesting and one `describe` level; the top `Spec("Strings", ...)` replaces go_bandit+first describe and auto-registers — no `main.cpp` changes).
 - `describe(` → `Describe(`
 - `it(` → `It(` (drop the `[&]` → `[]`; lambdas no longer need `&` capture since framework state is global)
 - `xit(` → `XIt(`
@@ -1095,19 +1110,19 @@ Convert every `Extern/Pipe/Tests/**/*.spec.cpp` using the transform rules above.
 - [ ] **Step 4: Switch PipeTests exe to the new framework**
 
 `Extern/Pipe/Tests/CMakeLists.txt`:
-- Rename the suite executable `PipeTests` → `PipeTesting` (alias `Pipe::Testing`); link the framework library: `target_link_libraries(PipeTesting PUBLIC Pipe PipeTests)` (framework library is `PipeTests`, alias `Pipe::Tests`)
+Keep the suite executable `PipeTests` (no alias); link the framework library: `target_link_libraries(PipeTests PUBLIC Pipe PipeTest)` (framework library is `PipeTest`, alias `Pipe::Test`)
 - Remove `--reporter=spec` from `add_test(...)`:
-  `add_test(NAME PipeTesting COMMAND $<TARGET_FILE:PipeTesting>)`
-- Remove the `list(FILTER ...)` exclusion added in Task 4 (restore the plain glob) so all spec files (including migrated ones) build into `PipeTesting`.
+  `add_test(NAME PipeTests COMMAND $<TARGET_FILE:PipeTests>)`
+- Remove the `list(FILTER ...)` exclusion added in Task 4 (restore the plain glob) so all spec files (including migrated ones) build into `PipeTests`.
 
 `Extern/Pipe/Tests/main.cpp`: replace `int result = bandit::run(argc, argv);` with `int result = p::RunTests(argc, argv);`, and remove `#include <bandit/bandit.h>`. Specs auto-register at file scope, so `main.cpp` needs no per-file calls. Keep the `p::Initialize`/`p::Shutdown` calls; `PipeNewDelete.h` no longer needs to be included here since `PipeTests` provides the override.
 
-`Extern/Pipe/Tests/PipeTests/CMakeLists.txt`: keep the `PipeTestsSelf` target for framework self-checks, OR fold the self-test spec files into the main `PipeTesting` glob (remove the separate subdirectory). Keep `PipeTestsSelf` as-is for now (harmless), unless the main glob re-includes its files. Since the main glob is `GLOB_RECURSE *.cpp` from `Tests/`, it WILL include `Tests/PipeTests/*.cpp` again → duplicate `main()`. So when restoring the plain glob in step 4, re-apply a filter to EXCLUDE `Tests/PipeTests/` from the main `PipeTesting` exe (keep `PipeTestsSelf` as a separate target):
+`Extern/Pipe/Tests/PipeTests/CMakeLists.txt`: keep the `PipeTestsSelf` target for framework self-checks, OR fold the self-test spec files into the main `PipeTests` glob (remove the separate subdirectory). Keep `PipeTestsSelf` as-is for now (harmless), unless the main glob re-includes its files. Since the main glob is `GLOB_RECURSE *.cpp` from `Tests/`, it WILL include `Tests/PipeTests/*.cpp` again → duplicate `main()`. So when restoring the plain glob in step 4, re-apply a filter to EXCLUDE `Tests/PipeTests/` from the main `PipeTests` exe (keep `PipeTestsSelf` as a separate target):
 
 ```cmake
 file(GLOB_RECURSE TESTS_SOURCE_FILES CONFIGURE_DEPENDS *.cpp *.h *.hpp)
 list(FILTER TESTS_SOURCE_FILES EXCLUDE REGEX ".*/PipeTests/.*")
-add_executable(PipeTesting ${TESTS_SOURCE_FILES})
+add_executable(PipeTests ${TESTS_SOURCE_FILES})
 ```
 
 Keep `add_subdirectory(PipeTests)` for `PipeTestsSelf`.
@@ -1130,7 +1145,7 @@ Expected: `PipeTests` runs all migrated tests with names/locations under the new
 - [ ] **Step 7: Migrate Rift tests + CMake**
 
 In `D:\Projects\Piperift\rift`:
-- `Tests/CMakeLists.txt`: `target_link_libraries(RiftTests PUBLIC RiftASTLib Bandit)` → `target_link_libraries(RiftTests PUBLIC RiftASTLib Pipe::Tests)` (the framework library is `PipeTests`, alias `Pipe::Tests`; it is defined unconditionally in `Extern/Pipe/CMakeLists.txt` per Task 1). Rift's `Tests/main.cpp` only swaps `bandit::run` for `p::RunTests` (specs auto-register).
+- `Tests/CMakeLists.txt`: `target_link_libraries(RiftTests PUBLIC RiftASTLib Bandit)` → `target_link_libraries(RiftTests PUBLIC RiftASTLib Pipe::Test)` (the framework library is `PipeTest`, alias `Pipe::Test`; it is defined unconditionally in `Extern/Pipe/CMakeLists.txt` per Task 1). Rift's `Tests/main.cpp` only swaps `bandit::run` for `p::RunTests` (specs auto-register).
 - Convert Rift `Tests/Project.spec.cpp`, `Tests/AST/Statements.spec.cpp`, `Tests/AST/Expressions.spec.cpp`, `Tests/AST/Namespaces.spec.cpp` per the transform rules (uses `before_each`/`after_each` → `BeforeEach`/`AfterEach`, `AssertThat(result, Equals(true))` → `Expect(result).ToBeTrue()`, etc.). Each file holds its `Spec(...)` at file scope; remove `#include <bandit/bandit.h>` and `using namespace snowhouse/bandit`.
 
 - [ ] **Step 8: Full project build + tests + format**

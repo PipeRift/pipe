@@ -3,24 +3,29 @@
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Subprocess.h"
 
-#include <PipeTests.h>
+#include <PipeTest.h>
 #include <Pipe/Files/PlatformPaths.h>
 
 
 using namespace p;
 
 
-void RegisterCorePlatformProcessTests()
+namespace
 {
-	Spec("Core.Subprocess", []()
+// Auto-registers via static init (macro-free go_bandit equivalent).
+const bool autoRegistered = []()
+{
+Spec("Core.Subprocess", []()
+{
+	It("Can run process", []()
 	{
-		It("Can run process", []()
-		{
-			Expect(p::RunProcess({""}).IsSet()).ToEqual(false);
+		Expect(p::RunProcess({""}).IsSet()).ToEqual(false);
 
-	#if defined(_MSC_VER)    // Test with a silent command (no stdout)
-			Expect(p::RunProcess({"cmd", "/c", "exit", "0"}).IsSet()).ToEqual(true);
-	#endif
-		});
+#if defined(_MSC_VER)    // Test with a silent command (no stdout)
+		Expect(p::RunProcess({"cmd", "/c", "exit", "0"}).IsSet()).ToEqual(true);
+#endif
 	});
-}
+});
+return true;
+}();
+}    // namespace
