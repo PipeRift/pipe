@@ -39,10 +39,11 @@ namespace p
 			TestGroup root{"", {}, {}, {}, {}};
 
 			// Pointer into `root.groups` for the currently-adding group.
-			TestGroup* currentGroup = nullptr;
-			int failedTests         = 0;
-			int runTests            = 0;
-			int skippedTests        = 0;
+			TestGroup* currentGroup    = nullptr;
+			int failedTests            = 0;
+			int runTests               = 0;
+			int skippedTests           = 0;
+			int currentTestFailureCount = 0;
 		};
 
 		// Function-local static: initialized on first use regardless of the
@@ -59,6 +60,16 @@ namespace p
 			return State().currentGroup;
 		}
 	}    // namespace
+
+
+	namespace details
+	{
+		void Fail(const char* file, sizet line, StringView message)
+		{
+			Error("PipeTests: {}:{}: {}", file, line, message);
+			++State().currentTestFailureCount;
+		}
+	}    // namespace details
 
 
 	void Spec(StringView name, std::function<void()> fn)
@@ -201,6 +212,7 @@ namespace p
 					hook();
 				}
 
+				state.currentTestFailureCount = 0;
 				bool passed = true;
 				try
 				{
@@ -211,6 +223,7 @@ namespace p
 					passed = false;
 					Error("PipeTests: test failed by exception: {}", FullName(group, test));
 				}
+				passed = passed && (state.currentTestFailureCount == 0);
 
 				for (i32 i = afterHooks.Size(); i > 0; --i)
 				{

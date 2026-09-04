@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Pipe/Core/StringView.h"
+#include "PipeStrings.h"
 
 #include <functional>
 
@@ -35,4 +36,164 @@ namespace p
 	void AfterEach(std::function<void()> fn);
 
 	int RunTests(int argc, char** argv);
+
+
+	// Extensible value-to-string hook for failure messages.
+	// Specialize for user types. Default handles numbers and string views.
+	template<typename T>
+	inline String TestString(const T& value);
+
+	template<typename T>
+	inline String TestString(const T& value)
+	{
+		return Format("{}", value);
+	}
+
+	template<>
+	inline String TestString<bool>(const bool& value)
+	{
+		return value ? String{"true"} : String{"false"};
+	}
+
+	template<>
+	inline String TestString<char>(const char& value)
+	{
+		return String{value};
+	}
+
+	inline String TestString(const StringView value)
+	{
+		return String{value};
+	}
+
+	inline String TestString(const String& value)
+	{
+		return String{value};
+	}
+
+	inline String TestString(const char* value)
+	{
+		return value ? String{value} : String{"(null)"};
+	}
+
+	namespace details
+	{
+		// Format failure message from file:line + description.
+		void Fail(const char* file, sizet line, StringView message);
+	}    // namespace details
+
+
+	// ---- fluent assertion ----
+	template<typename Actual>
+	class ExpectValue
+	{
+	public:
+		ExpectValue(const Actual& value, const char* file, sizet line)
+		    : value(value)
+		    , file(file)
+		    , line(line)
+		{}
+
+		void ToEqual(const Actual& expected) const
+		{
+			if (!(value == expected))
+			{
+				details::Fail(file, line, Format(
+				    "Expected {} to equal {}", TestString(value), TestString(expected)));
+			}
+		}
+
+		void ToNotEqual(const Actual& expected) const
+		{
+			if (!(value != expected))
+			{
+				details::Fail(file, line, Format(
+				    "Expected {} to not equal {}", TestString(value), TestString(expected)));
+			}
+		}
+
+		void ToBeLess(const Actual& other) const
+		{
+			if (!(value < other))
+			{
+				details::Fail(file, line, Format(
+				    "Expected {} to be less than {}", TestString(value), TestString(other)));
+			}
+		}
+
+		void ToBeLessOrEqual(const Actual& other) const
+		{
+			if (!(value <= other))
+			{
+				details::Fail(file, line, Format(
+				    "Expected {} to be less or equal to {}", TestString(value), TestString(other)));
+			}
+		}
+
+		void ToBeGreater(const Actual& other) const
+		{
+			if (!(value > other))
+			{
+				details::Fail(file, line, Format(
+				    "Expected {} to be greater than {}", TestString(value), TestString(other)));
+			}
+		}
+
+		void ToBeGreaterOrEqual(const Actual& other) const
+		{
+			if (!(value >= other))
+			{
+				details::Fail(file, line, Format(
+				    "Expected {} to be greater or equal to {}", TestString(value), TestString(other)));
+			}
+		}
+
+		void ToBeTrue() const
+		{
+			if (!value)
+			{
+				details::Fail(file, line, "Expected value to be true");
+			}
+		}
+
+		void ToBeFalse() const
+		{
+			if (value)
+			{
+				details::Fail(file, line, "Expected value to be false");
+			}
+		}
+
+		void ToContain(const StringView sub) const
+		{
+			StringView view{value};
+			if (Strings::Find(view, sub) == StringView::npos)
+			{
+				details::Fail(file, line, Format(
+				    "Expected {} to contain {}", TestString(value), TestString(sub)));
+			}
+		}
+
+		void ToNotContain(const StringView sub) const
+		{
+			StringView view{value};
+			if (Strings::Find(view, sub) != StringView::npos)
+			{
+				details::Fail(file, line, Format(
+				    "Expected {} to not contain {}", TestString(value), TestString(sub)));
+			}
+		}
+
+	private:
+		const Actual& value;
+		const char* file;
+		sizet line;
+	};
+
+	// Returns a matcher bound to file/line for reporting.
+	template<typename T>
+	ExpectValue<T> Expect(const T& value, const char* file = __FILE__, sizet line = __LINE__)
+	{
+		return ExpectValue<T>(value, file, line);
+	}
 };    // namespace p
