@@ -14,11 +14,11 @@ namespace p
 	},
 	.warningCallback = [](StringView msg)
 	{
-		std::cout << msg << '\n';
+		std::cout << "\033[33m" << msg << "\033[0m\n";
 	},
 	.errorCallback = [](StringView msg)
 	{
-		std::cerr << msg << '\n';
+		std::cerr << "\033[31m" << msg << "\033[0m\n";
 	}};
 	// clang-format on
 

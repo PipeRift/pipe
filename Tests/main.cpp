@@ -4,9 +4,9 @@
 // replacement operator new/delete (P_OVERRIDE_NEWDELETE) in its own translation unit;
 // including it here too would cause duplicate-definition linker errors.
 
-#include <PipeTest.h>
 #include <Pipe.h>
 #include <PipeMemoryArenas.h>
+#include <PipeTest.h>
 
 #include <cstdlib>
 

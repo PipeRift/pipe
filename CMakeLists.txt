@@ -12,7 +12,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ################################################################################
 # Project
 
-project(Pipe VERSION 0.1 LANGUAGES CXX C)
+project(Pipe VERSION 1.7 LANGUAGES CXX C)
 
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -65,6 +65,7 @@ target_include_directories(Pipe PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE
 file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.c)
 list(FILTER PIPE_SOURCE_FILES EXCLUDE REGEX ".*/Src/Tests/.*")
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
+target_compile_definitions(Pipe PUBLIC P_VERSION="${PROJECT_VERSION}")
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)

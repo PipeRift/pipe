@@ -56,12 +56,25 @@ namespace p
 	// Teardown hook attached to the current describe.
 	void AfterEach(std::function<void()> fn);
 
+	// Which reporter formats the test output.
+	enum class TestReporter : u8
+	{
+		Spec,          // Verbose, bandit-style "describe / it ... OK" output (default).
+		Dots,          // Compact progress: one character (., F, S) per test.
+		Singleline,    // Single progress line updated in place, "\r" based.
+		Info,          // Verbose "begin/end" contexts, "[ PASS ]" tests, timing support.
+	};
+
 	// Settings for a test run.
 	struct TestSettings
 	{
-		StringView filter;    // Empty runs all; otherwise substring match on full name.
-		bool listOnly = false;    // List test names without running.
-		bool useColor = true;    // Colorized output.
+		StringView only;        // Run only describe/it containing substring.
+		StringView skip;        // Skip all describe/it containing substring.
+		bool dryRun = false;    // Report full tree as SKIPPED, run nothing (bandit semantics).
+		bool breakOnFailure   = false;    // Stop the test run on the first failing test.
+		bool useColor         = true;     // Colorized output.
+		bool reportTiming     = false;    // Report per-test timing information.
+		TestReporter reporter = TestReporter::Dots;
 	};
 
 	int RunTests(const TestSettings& settings);
@@ -133,6 +146,9 @@ namespace p
 		// Format failure message from source location + description.
 		void Fail(const std::source_location& loc, StringView message);
 
+		// Counts an assertion. Used to detect tests that ran no expects.
+		void CountAssert();
+
 		// True when both Actual and Expected can be viewed as a StringView (string-ish).
 		template<typename A, typename E, typename = void>
 		struct IsStringBoth : std::false_type
@@ -172,7 +188,9 @@ namespace p
 	{
 	public:
 		ExpectValue(const Actual& value, const std::source_location& loc) : value(value), loc(loc)
-		{}
+		{
+			details::CountAssert();
+		}
 
 		template<typename Expected>
 		void ToEqual(const Expected& expected) const

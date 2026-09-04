@@ -3,8 +3,8 @@
 #pragma once
 
 #include "Pipe/Core/FixedString.h"
-#include "PipeStrings.h"
 #include "PipeMath.h"
+#include "PipeStrings.h"
 #include "PipeVectors.h"
 
 
@@ -727,8 +727,7 @@ namespace p
 		{
 			if (includeAlpha)
 			{
-				return Format(
-				    "{:02X}{:02X}{:02X}{:02X}", this->r, this->g, this->b, this->a);
+				return Format("{:02X}{:02X}{:02X}{:02X}", this->r, this->g, this->b, this->a);
 			}
 			return Format("{:02X}{:02X}{:02X}", this->r, this->g, this->b);
 		}
