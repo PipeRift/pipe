@@ -12,11 +12,13 @@ namespace p
 	/**
 	 * Test framework for Pipe and Rift.
 	 * Imgui-style global context: registration functions act on a current group.
-	 * Spec is self-registering; Describe/It/BeforeEach/AfterEach attach to the
-	 * current group as functions are called.
+	 * Spec opens a first-level group; Describe/It/BeforeEach/AfterEach attach to
+	 * the current group as functions are called. Registration runs inside a
+	 * function (e.g. a Register*Tests() routine called from main) — the framework
+	 * uses no macros, so specs must not be registered at namespace scope.
 	 */
 
-	// Self-registering top-level. Spec(name, fn) also opens a first group named `name`.
+	// Self-registering top-level. Spec(name, fn) opens a first group named `name`.
 	void Spec(StringView name, std::function<void()> fn);
 	// Nameless top-level (like go_bandit); use Describe inside fn.
 	void Spec(std::function<void()> fn);

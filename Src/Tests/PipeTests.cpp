@@ -7,10 +7,10 @@
 	#include "PipeNewDelete.h"
 #endif
 
-#include "PipeTests.h"
 #include "Pipe.h"
 #include "Pipe/Core/Log.h"
 #include "PipeStrings.h"
+#include "PipeTests.h"
 
 
 namespace p
@@ -34,39 +34,59 @@ namespace p
 		};
 
 		// Entire registered suite (treat as a single virtual root group).
-		TestGroup root{"", {}, {}, {}, {}};
+		struct RegistryState
+		{
+			TestGroup root{"", {}, {}, {}, {}};
 
-		// Pointer into `root.groups` for the currently-adding group.
-		TestGroup* currentGroup = nullptr;
-		int failedTests  = 0;
-		int runTests     = 0;
-		int skippedTests = 0;
+			// Pointer into `root.groups` for the currently-adding group.
+			TestGroup* currentGroup = nullptr;
+			int failedTests         = 0;
+			int runTests            = 0;
+			int skippedTests        = 0;
+		};
+
+		// Function-local static: initialized on first use regardless of the
+		// static-init order of other translation units, so a `Spec` registrar
+		// defined in a separate TU can safely register during static init.
+		RegistryState& State()
+		{
+			static RegistryState state;
+			return state;
+		}
+
+		TestGroup*& CurrentGroup()
+		{
+			return State().currentGroup;
+		}
 	}    // namespace
 
 
 	void Spec(StringView name, std::function<void()> fn)
 	{
+		RegistryState& state = State();
 		TestGroup group;
 		group.name       = String{name};
 		group.beforeEach = nullptr;
 		group.afterEach  = nullptr;
-		root.groups.Add(Move(group));
-		TestGroup* groupPtr = &root.groups.Last();
-		currentGroup        = groupPtr;
+		state.root.groups.Add(Move(group));
+		TestGroup* groupPtr = &state.root.groups.Last();
+		state.currentGroup  = groupPtr;
 		fn();
-		currentGroup = nullptr;
+		state.currentGroup = nullptr;
 	}
 
 	void Spec(std::function<void()> fn)
 	{
-		currentGroup = &root;
+		RegistryState& state = State();
+		state.currentGroup   = &state.root;
 		fn();
-		currentGroup = nullptr;
+		state.currentGroup = nullptr;
 	}
 
 	void Describe(StringView name, std::function<void()> fn)
 	{
-		if (!currentGroup)
+		TestGroup*& current = CurrentGroup();
+		if (!current)
 		{
 			Error("PipeTests: Describe('{}') called outside a Spec. Ignoring.", name);
 			return;
@@ -74,16 +94,17 @@ namespace p
 
 		TestGroup group;
 		group.name = String{name};
-		currentGroup->groups.Add(Move(group));
-		TestGroup* prevGroup = currentGroup;
-		currentGroup         = &currentGroup->groups.Last();
+		current->groups.Add(Move(group));
+		TestGroup* prevGroup = current;
+		current              = &current->groups.Last();
 		fn();
-		currentGroup = prevGroup;
+		current = prevGroup;
 	}
 
 	void It(StringView name, std::function<void()> fn)
 	{
-		if (!currentGroup)
+		TestGroup*& current = CurrentGroup();
+		if (!current)
 		{
 			Error("PipeTests: It('{}') called outside a Spec. Ignoring.", name);
 			return;
@@ -92,12 +113,13 @@ namespace p
 		test.name = String{name};
 		test.body = fn;
 		test.skip = false;
-		currentGroup->tests.Add(Move(test));
+		current->tests.Add(Move(test));
 	}
 
 	void XIt(StringView name, std::function<void()> fn)
 	{
-		if (!currentGroup)
+		TestGroup*& current = CurrentGroup();
+		if (!current)
 		{
 			Error("PipeTests: XIt('{}') called outside a Spec. Ignoring.", name);
 			return;
@@ -106,27 +128,29 @@ namespace p
 		test.name = String{name};
 		test.body = fn;
 		test.skip = true;
-		currentGroup->tests.Add(Move(test));
+		current->tests.Add(Move(test));
 	}
 
 	void BeforeEach(std::function<void()> fn)
 	{
-		if (!currentGroup)
+		TestGroup*& current = CurrentGroup();
+		if (!current)
 		{
 			Error("PipeTests: BeforeEach called outside a Spec. Ignoring.");
 			return;
 		}
-		currentGroup->beforeEach = fn;
+		current->beforeEach = fn;
 	}
 
 	void AfterEach(std::function<void()> fn)
 	{
-		if (!currentGroup)
+		TestGroup*& current = CurrentGroup();
+		if (!current)
 		{
 			Error("PipeTests: AfterEach called outside a Spec. Ignoring.");
 			return;
 		}
-		currentGroup->afterEach = fn;
+		current->afterEach = fn;
 	}
 
 
@@ -145,10 +169,10 @@ namespace p
 			return result;
 		}
 
-		static void RunNested(TestGroup& group,
-		    TArray<std::function<void()>>& beforeHooks,
+		static void RunNested(TestGroup& group, TArray<std::function<void()>>& beforeHooks,
 		    TArray<std::function<void()>>& afterHooks)
 		{
+			RegistryState& state = State();
 			if (group.beforeEach)
 			{
 				beforeHooks.Add(group.beforeEach);
@@ -167,10 +191,10 @@ namespace p
 			{
 				if (test.skip)
 				{
-					++skippedTests;
+					++state.skippedTests;
 					continue;
 				}
-				++runTests;
+				++state.runTests;
 
 				for (auto& hook : beforeHooks)
 				{
@@ -199,7 +223,7 @@ namespace p
 				}
 				else
 				{
-					++failedTests;
+					++state.failedTests;
 					Error("  [FAIL] {}", FullName(group, test));
 				}
 			}
@@ -221,14 +245,15 @@ namespace p
 		(void)argc;    // kept for future --filter support
 		(void)argv;
 
-		Info("PipeTests: {} group(s) registered.", root.groups.Size());
+		RegistryState& state = State();
+		Info("PipeTests: {} group(s) registered.", state.root.groups.Size());
 		TArray<std::function<void()>> beforeHooks;
 		TArray<std::function<void()>> afterHooks;
-		RunNested(root, beforeHooks, afterHooks);
+		RunNested(state.root, beforeHooks, afterHooks);
 
-		Info("PipeTests complete: {} run, {} passed, {} failed, {} skipped.",
-		    runTests, runTests - failedTests, failedTests, skippedTests);
+		Info("PipeTests complete: {} run, {} passed, {} failed, {} skipped.", state.runTests,
+		    state.runTests - state.failedTests, state.failedTests, state.skippedTests);
 
-		return failedTests == 0 ? 0 : 1;
+		return state.failedTests == 0 ? 0 : 1;
 	}
 }    // namespace p
