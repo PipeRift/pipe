@@ -25,7 +25,7 @@ struct Dummy
 };
 
 
-Spec("ECS.PageBuffer", []()
+P_SPEC("ECS.PageBuffer", []()
 {
 	It("Can reserve", []()
 	{

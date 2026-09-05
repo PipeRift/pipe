@@ -8,7 +8,7 @@
 using namespace p;
 
 
-Spec("Files.Paths", []()
+P_SPEC("Files.Paths", []()
 {
 	It("Can get root name and path", []()
 	{

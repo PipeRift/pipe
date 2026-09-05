@@ -21,7 +21,7 @@ struct ScopeTypeC
 };
 
 
-Spec("ECS.IdScopes", []()
+P_SPEC("ECS.IdScopes", []()
 {
 	Describe("Templated", []()
 	{

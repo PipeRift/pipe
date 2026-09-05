@@ -22,7 +22,7 @@ public:
 };
 
 
-Spec("Reflection.Object", []()
+P_SPEC("Reflection.Object", []()
 {
 	Describe("Pointers", []()
 	{

@@ -53,7 +53,7 @@ struct MoveType
 };
 
 
-Spec("Memory.Operations", []()
+P_SPEC("Memory.Operations", []()
 {
 	It("Can default construct", []()
 	{

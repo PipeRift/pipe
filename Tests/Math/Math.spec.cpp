@@ -19,7 +19,7 @@ namespace
 }    // namespace
 
 
-Spec("Math.Math", []()
+P_SPEC("Math.Math", []()
 {
 	Describe("Binary Search", []()
 	{

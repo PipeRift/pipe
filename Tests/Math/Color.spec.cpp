@@ -7,7 +7,7 @@
 using namespace p;
 
 
-Spec("Math.Color", []()
+P_SPEC("Math.Color", []()
 {
 	Describe("Helpers", []()
 	{

@@ -26,7 +26,7 @@ namespace
 }    // namespace
 
 
-Spec("ECS.Filtering", []()
+P_SPEC("ECS.Filtering", []()
 {
 	BeforeEach([]()
 	{

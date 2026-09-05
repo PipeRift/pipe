@@ -13,7 +13,7 @@ struct TypeOfSize
 	p::u8 data[size]{0};    // Fill data for debugging
 };
 
-Spec("Memory.BigBestFitArena", []()
+P_SPEC("Memory.BigBestFitArena", []()
 {
 	It("Reserves a block on construction", []()
 	{

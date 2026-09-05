@@ -25,7 +25,7 @@ namespace Space
 }    // namespace Space
 
 
-Spec("Reflection.TypeName", []()
+P_SPEC("Reflection.TypeName", []()
 {
 	It("Can get Platform type names", []()
 	{

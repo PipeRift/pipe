@@ -18,7 +18,7 @@ static const StringView longText = "0123456789ABCDEFGHIJ0123456789ABC";
 static const char* arenaLongText = "This string is long enough to exceed the inline capacity";
 
 
-Spec("Strings", []()
+P_SPEC("Strings", []()
 {
 	Describe("String", []()
 	{

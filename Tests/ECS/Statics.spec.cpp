@@ -22,7 +22,7 @@ struct StaticTypeThree
 };
 
 
-Spec("ECS.Statics", []()
+P_SPEC("ECS.Statics", []()
 {
 	It("Can set an static", []()
 	{

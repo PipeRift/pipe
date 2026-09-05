@@ -89,7 +89,7 @@ struct p::TFlags<SerTypeD> : public p::DefaultTFlags
 };
 
 
-Spec("Serialization", []()
+P_SPEC("Serialization", []()
 {
 	Describe("Serializers in global scope", []()
 	{

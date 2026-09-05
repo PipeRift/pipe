@@ -7,7 +7,7 @@
 using namespace p;
 
 
-Spec("Serialization.Binary", []()
+P_SPEC("Serialization.Binary", []()
 {
 	Describe("Reader", []()
 	{

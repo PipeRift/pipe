@@ -28,7 +28,7 @@ struct Foo
 inline bool Foo::called = false;
 
 
-Spec("Core.Function", []()
+P_SPEC("Core.Function", []()
 {
 	It("Can create empty", []()
 	{

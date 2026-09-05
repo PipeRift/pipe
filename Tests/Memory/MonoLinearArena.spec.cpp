@@ -7,7 +7,7 @@
 using namespace p;
 
 
-Spec("Memory.MonoLinearArena", []()
+P_SPEC("Memory.MonoLinearArena", []()
 {
 	It("Reserves a block on construction", []()
 	{

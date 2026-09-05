@@ -7,7 +7,7 @@
 using namespace p;
 
 
-Spec("Serialization.Json", []()
+P_SPEC("Serialization.Json", []()
 {
 	Describe("Reader", []()
 	{

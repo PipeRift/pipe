@@ -41,7 +41,7 @@ struct CopyType
 };
 
 
-Spec("Containers.Array", []()
+P_SPEC("Containers.Array", []()
 {
 	It("Can initialize", []()
 	{
@@ -960,7 +960,7 @@ Spec("Containers.Array", []()
 	});
 });
 
-Spec("Containers.BitArray", []()
+P_SPEC("Containers.BitArray", []()
 {
 	It("Can initialize", []()
 	{

@@ -15,7 +15,7 @@ struct ECSTypeB
 {};
 
 
-Spec("ECS", []()
+P_SPEC("ECS", []()
 {
 	It("Can copy context", []()
 	{

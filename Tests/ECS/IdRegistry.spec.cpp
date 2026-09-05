@@ -8,7 +8,7 @@ using namespace p;
 using namespace std::chrono_literals;
 
 
-Spec("ECS.IdRegistry", []()
+P_SPEC("ECS.IdRegistry", []()
 {
 	It("Can create one id", []()
 	{

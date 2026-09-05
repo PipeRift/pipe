@@ -44,7 +44,7 @@ struct TestComponent
 u32 TestComponent::destructed = 0;
 
 
-Spec("ECS.Components", []()
+P_SPEC("ECS.Components", []()
 {
 	It("Can add one component", []()
 	{

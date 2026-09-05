@@ -14,7 +14,7 @@ struct TypeOfSize
 };
 
 
-Spec("Memory.BestFitArena", []()
+P_SPEC("Memory.BestFitArena", []()
 {
 	It("Reserves a block on construction", []()
 	{

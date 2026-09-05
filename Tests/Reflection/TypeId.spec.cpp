@@ -10,7 +10,7 @@ struct One
 {};
 
 
-Spec("Reflection.TypeId", []()
+P_SPEC("Reflection.TypeId", []()
 {
 	It("Ids can be valid and invalid", []()
 	{

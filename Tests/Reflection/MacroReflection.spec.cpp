@@ -20,7 +20,7 @@ struct TestStruct
 };
 
 
-Spec("Reflection.Macros", []()
+P_SPEC("Reflection.Macros", []()
 {
 	It("Can get property names", []()
 	{

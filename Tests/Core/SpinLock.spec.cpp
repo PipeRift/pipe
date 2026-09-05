@@ -11,7 +11,7 @@
 using namespace p;
 
 
-Spec("Core.SpinLock", []()
+P_SPEC("Core.SpinLock", []()
 {
 	Describe("SpinLock", []()
 	{

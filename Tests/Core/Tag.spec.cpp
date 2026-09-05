@@ -7,7 +7,7 @@
 using namespace p;
 
 
-Spec("Core.Tag", []()
+P_SPEC("Core.Tag", []()
 {
 	It("Can copy empty", []()
 	{

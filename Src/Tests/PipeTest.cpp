@@ -64,9 +64,10 @@ namespace p
 			// Assertion detail accumulated for the current test (file:line: msg).
 			String currentFailureDetail;
 
-			TestReporter reporter = TestReporter::Spec;
-			bool useColor         = true;
-			bool reportTiming     = false;
+			// Id of the selected reporter (matches settings.reporter).
+			TTypeId<ITestReporter> reporter{};
+			bool useColor     = true;
+			bool reportTiming = false;
 
 			// Wall time of the last executed test body, in seconds.
 			double lastTestDuration = 0.0;
@@ -75,7 +76,7 @@ namespace p
 		};
 
 		// Function-local static: initialized on first use regardless of the
-		// static-init order of other translation units, so a `Spec` call
+		// static-init order of other translation units, so a `P_SPEC` call
 		// at file scope in a separate TU can safely register during static init.
 		TestContext& GetTestContext()
 		{
@@ -205,6 +206,26 @@ namespace p
 		current->afterEach = fn;
 	}
 
+	// Reporter interface (public so TestSettings can reference its type id).
+	// Mirrors bandit's reporter callbacks. Each reporter formats the run
+	// differently; all share the same per-test execution flow in RunNested.
+	struct ITestReporter
+	{
+		virtual ~ITestReporter() = default;
+
+		virtual void TestRunStarting() {}
+		virtual void TestRunComplete() = 0;
+		virtual void ContextStarting(StringView) {}
+		virtual void ContextEnded(StringView) {}
+		virtual void ItStarting(StringView) {}
+		virtual void ItSucceeded(StringView) {}
+		// Test passed but made no assertions (e.g. smoke tests).
+		virtual void ItSucceededNoAssertions(StringView) {}
+		virtual void ItFailed(StringView) {}
+		virtual void ItUnknownError(StringView) {}
+		virtual void ItSkipped(StringView) {}
+	};
+
 
 	namespace
 	{
@@ -293,26 +314,6 @@ namespace p
 			}
 			return Colored(Yellow, Format(" ({})", FormatDuration(context.lastTestDuration)));
 		}
-
-		// ---- Reporter interface ----
-		// Mirrors bandit's reporter callbacks. Each reporter formats the run
-		// differently; all share the same per-test execution flow in RunNested.
-		struct ITestReporter
-		{
-			virtual ~ITestReporter() = default;
-
-			virtual void TestRunStarting() {}
-			virtual void TestRunComplete() = 0;
-			virtual void ContextStarting(StringView) {}
-			virtual void ContextEnded(StringView) {}
-			virtual void ItStarting(StringView) {}
-			virtual void ItSucceeded(StringView) {}
-			// Test passed but made no assertions (e.g. smoke tests).
-			virtual void ItSucceededNoAssertions(StringView) {}
-			virtual void ItFailed(StringView) {}
-			virtual void ItUnknownError(StringView) {}
-			virtual void ItSkipped(StringView) {}
-		};
 
 		// Shared summary footer (defined below; forward-declared for reporters).
 		static void WriteSummary();
@@ -868,14 +869,24 @@ namespace p
 			return 0;
 		}
 
+		const TypeId reporterId = settings.reporter;
 		TUniquePtr<ITestReporter> reporter;
-		switch (settings.reporter)
+		if (reporterId == GetTypeId<DotsReporter>())
 		{
-			case TestReporter::Dots: reporter = MakeUnique<DotsReporter>(); break;
-			case TestReporter::Singleline: reporter = MakeUnique<SinglelineReporter>(); break;
-			case TestReporter::Info: reporter = MakeUnique<InfoReporter>(); break;
-			case TestReporter::Spec:
-			default: reporter = MakeUnique<SpecReporter>(); break;
+			reporter = MakeUnique<DotsReporter>();
+		}
+		else if (reporterId == GetTypeId<SinglelineReporter>())
+		{
+			reporter = MakeUnique<SinglelineReporter>();
+		}
+		else if (reporterId == GetTypeId<InfoReporter>())
+		{
+			reporter = MakeUnique<InfoReporter>();
+		}
+		else
+		{
+			// Spec (also the fallback for an unset/unknown reporter id).
+			reporter = MakeUnique<SpecReporter>();
 		}
 
 		reporter->TestRunStarting();
@@ -915,19 +926,19 @@ namespace p
 				const StringView name = Strings::RemoveFromStart(arg, StringView{"--reporter="});
 				if (Strings::Equals(name, StringView{"dots"}))
 				{
-					settings.reporter = TestReporter::Dots;
+					settings.reporter = TTypeId<DotsReporter>();
 				}
 				else if (Strings::Equals(name, StringView{"singleline"}))
 				{
-					settings.reporter = TestReporter::Singleline;
+					settings.reporter = TTypeId<SinglelineReporter>();
 				}
 				else if (Strings::Equals(name, StringView{"spec"}))
 				{
-					settings.reporter = TestReporter::Spec;
+					settings.reporter = TTypeId<SpecReporter>();
 				}
 				else if (Strings::Equals(name, StringView{"info"}))
 				{
-					settings.reporter = TestReporter::Info;
+					settings.reporter = TTypeId<InfoReporter>();
 				}
 				else
 				{
@@ -942,23 +953,23 @@ namespace p
 					const StringView name{argv[++i]};
 					if (Strings::Equals(name, StringView{"dots"}))
 					{
-						settings.reporter = TestReporter::Dots;
+						settings.reporter = TTypeId<DotsReporter>();
 					}
 					else if (Strings::Equals(name, StringView{"singleline"}))
 					{
-						settings.reporter = TestReporter::Singleline;
+						settings.reporter = TTypeId<SinglelineReporter>();
 					}
 					else if (Strings::Equals(name, StringView{"spec"}))
 					{
-						settings.reporter = TestReporter::Spec;
+						settings.reporter = TTypeId<DotsReporter>();
 					}
 					else if (Strings::Equals(name, StringView{"info"}))
 					{
-						settings.reporter = TestReporter::Info;
+						settings.reporter = TTypeId<InfoReporter>();
 					}
 					else
 					{
-						Warning("PipeTest: unknown reporter '{}'. Using 'dots'.", name);
+						Warning("PipeTest: unknown reporter '{}'. Using 'spec'.", name);
 					}
 				}
 			}

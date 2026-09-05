@@ -5,6 +5,7 @@
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Macros.h"
 #include "Pipe/Core/StringView.h"
+#include "Pipe/Core/TypeId.h"
 #include "PipeStrings.h"
 
 #include <format>
@@ -38,11 +39,35 @@ namespace p
 	void RegisterSpec(StringView name, TFunction<void()> fn);
 	void RegisterSpec(TFunction<void()> fn);
 
-	// Self-registering top-level. Spec(name, fn) opens a first describe named `name`.
-	// fn runs immediately during registration, so TFunction (non-owning) is safe.
-	// Macro handles static-init registration at file scope.
-#define Spec(...) \
-	static const bool P_CAT(_pipeSpecReg_, __COUNTER__) = (::p::RegisterSpec(__VA_ARGS__), true);
+	// Self-registering top-level describe. Registers its spec body on
+	// construction (same pattern as TTypeAutoRegister). The body runs
+	// immediately during registration, so TFunction (non-owning) is safe.
+	struct TSpecAutoRegister
+	{
+		constexpr TSpecAutoRegister(StringView name, TFunction<void()> fn)
+		{
+			RegisterSpec(name, fn);
+		}
+		constexpr TSpecAutoRegister(TFunction<void()> fn)
+		{
+			RegisterSpec(fn);
+		}
+	};
+
+	// Declares the spec's body function and registers it on static init.
+	// The body is written as a plain function block after the macro, so it
+	// is NOT part of the macro arguments and preprocessor directives are
+	// allowed inside:
+	//
+	//     P_SPEC("Files.Paths", []()
+	//     {
+	//         It("Some test", []() {
+	//             #if P_PLATFORM_WINDOWS
+	//             ...
+	//             #endif
+	//         });
+	//     });
+#define P_SPEC static const p::TSpecAutoRegister P_CAT(_pipeSpecReg_, __COUNTER__)
 
 	// Nested describe. Only valid inside a Spec; otherwise logs an error and ignores.
 	void Describe(StringView name, TFunction<void()> fn);
@@ -56,14 +81,9 @@ namespace p
 	// Teardown hook attached to the current describe.
 	void AfterEach(std::function<void()> fn);
 
-	// Which reporter formats the test output.
-	enum class TestReporter : u8
-	{
-		Spec,          // Verbose, bandit-style "describe / it ... OK" output (default).
-		Dots,          // Compact progress: one character (., F, S) per test.
-		Singleline,    // Single progress line updated in place, "\r" based.
-		Info,          // Verbose "begin/end" contexts, "[ PASS ]" tests, timing support.
-	};
+	// Reporter interface (defined in Src/Tests/PipeTest.cpp). Forward
+	// declaration so TestSettings can reference its type id.
+	struct ITestReporter;
 
 	// Settings for a test run.
 	struct TestSettings
@@ -71,10 +91,13 @@ namespace p
 		StringView only;        // Run only describe/it containing substring.
 		StringView skip;        // Skip all describe/it containing substring.
 		bool dryRun = false;    // Report full tree as SKIPPED, run nothing (bandit semantics).
-		bool breakOnFailure   = false;    // Stop the test run on the first failing test.
-		bool useColor         = true;     // Colorized output.
-		bool reportTiming     = false;    // Report per-test timing information.
-		TestReporter reporter = TestReporter::Dots;
+		bool breakOnFailure = false;    // Stop the test run on the first failing test.
+		bool useColor       = true;     // Colorized output.
+		bool reportTiming   = false;    // Report per-test timing information.
+		// Reporter to use, identified by type. Invalid (default) means Spec.
+		// Bound to ITestReporter, so only reporter types can be assigned
+		// (e.g. TTypeId<ITestReporter>::Of<DotsReporter>()).
+		TTypeId<ITestReporter> reporter;
 	};
 
 	int RunTests(const TestSettings& settings);

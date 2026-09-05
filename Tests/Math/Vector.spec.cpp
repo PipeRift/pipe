@@ -7,7 +7,7 @@
 using namespace p;
 
 
-Spec("Math.Vector", []()
+P_SPEC("Math.Vector", []()
 {
 	Describe("v2", []()
 	{

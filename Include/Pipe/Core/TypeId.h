@@ -101,6 +101,41 @@ namespace p
 		return GetTypeId<Mut<T>>();
 	}
 
+	// A TypeId bound to a base type.
+	template<typename T>
+	struct TTypeId : public TypeId
+	{
+		constexpr TTypeId() : TypeId(GetTypeId<T>()) {}
+		constexpr TTypeId(p::Undefined) : TypeId(GetTypeId<T>()) {}
+
+		// From another TTypeId bound to a compatible (same or derived) type.
+		template<Derived<T, true> T2>
+		constexpr TTypeId(const TTypeId<T2>& other) : TypeId(other)
+		{}
+
+		// From a runtime TypeId.
+		TTypeId(TypeId id) : TypeId(IsCompatible(GetTypeId<T>(), id) ? id : TypeId{}) {}
+
+		constexpr TTypeId& operator=(const TTypeId&) = default;
+		template<Derived<T, true> T2>
+		constexpr TTypeId& operator=(const TTypeId<T2>& other)
+		{
+			TypeId::operator=(other);
+			return *this;
+		}
+		TTypeId& operator=(TypeId id)
+		{
+			TypeId::operator=(IsCompatible(GetTypeId<T>(), id) ? id : TypeId{});
+			return *this;
+		}
+
+	private:
+		static bool IsCompatible(TypeId parentId, TypeId childId)
+		{
+			return parentId == childId || IsTypeParentOf(parentId, childId);
+		}
+	};
+
 
 #pragma region Castable
 	struct Castable

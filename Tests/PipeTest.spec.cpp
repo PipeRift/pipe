@@ -12,7 +12,7 @@ static int afterEachCount  = 0;
 static int topTestResult   = 0;
 
 
-Spec("PipeTest", []()
+P_SPEC("PipeTest", []()
 {
 	BeforeEach([]()
 	{

@@ -8,7 +8,7 @@
 using namespace p;
 
 
-Spec("Strings", []()
+P_SPEC("Strings", []()
 {
 	Describe("StringView", []()
 	{

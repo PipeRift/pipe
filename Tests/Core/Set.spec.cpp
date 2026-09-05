@@ -14,7 +14,7 @@ struct TypeOfSize
 };
 
 
-Spec("Core.Set", []()
+P_SPEC("Core.Set", []()
 {
 	It("Can initialize", []()
 	{

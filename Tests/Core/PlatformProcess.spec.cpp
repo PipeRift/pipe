@@ -10,13 +10,13 @@
 using namespace p;
 
 
-Spec("Core.Subprocess", []()
+P_SPEC("Core.Subprocess", []()
 {
 	It("Can run process", []()
 	{
 		Expect(p::RunProcess({""}).IsSet()).ToEqual(false);
 
-#if defined(_MSC_VER)    // Test with a silent command (no stdout)
+#if defined(P_PLATFORM_WINDOWS)
 		Expect(p::RunProcess({"cmd", "/c", "exit", "0"}).IsSet()).ToEqual(true);
 #endif
 	});

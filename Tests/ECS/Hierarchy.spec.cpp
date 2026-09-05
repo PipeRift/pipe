@@ -19,7 +19,7 @@ namespace
 }    // namespace
 
 
-Spec("ECS.Hierarchy", []()
+P_SPEC("ECS.Hierarchy", []()
 {
 	BeforeEach([]()
 	{

@@ -39,7 +39,7 @@ namespace p
 }    // namespace p
 
 
-Spec("Reflection.Traits", []()
+P_SPEC("Reflection.Traits", []()
 {
 	Describe("Read/Write properties", []()
 	{

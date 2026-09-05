@@ -41,7 +41,7 @@ struct MockStruct
 };
 
 
-Spec("Core.OwnPtr", []()
+P_SPEC("Core.OwnPtr", []()
 {
 	Describe("Owner pointer", []()
 	{

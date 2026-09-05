@@ -7,7 +7,7 @@
 using namespace p;
 
 
-Spec("Time.DateTime", []()
+P_SPEC("Time.DateTime", []()
 {
 	It("Can get day of year", []()
 	{

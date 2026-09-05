@@ -22,7 +22,7 @@ static const MemoryStatsEvent* LiveFind(const MemoryStats& s, void* ptr)
 }
 
 
-Spec("Memory.MemoryStats", []()
+P_SPEC("Memory.MemoryStats", []()
 {
 	Describe("Basic", []()
 	{
