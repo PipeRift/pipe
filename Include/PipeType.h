@@ -280,6 +280,13 @@ namespace p
 		return GetTypeId<Mut<T>>();
 	}
 
+
+	namespace details
+	{
+		P_API bool IsTypeIdCompatible(TypeId parentId, TypeId childId);
+	}    // namespace details
+
+
 	// A TypeId bound to a base type.
 	template<typename T>
 	struct TTypeId : public TypeId
@@ -293,7 +300,8 @@ namespace p
 		{}
 
 		// From a runtime TypeId.
-		TTypeId(TypeId id) : TypeId(IsCompatible(GetTypeId<T>(), id) ? id : TypeId{}) {}
+		TTypeId(TypeId id) : TypeId(details::IsTypeIdCompatible(GetTypeId<T>(), id) ? id : TypeId{})
+		{}
 
 		constexpr TTypeId& operator=(const TTypeId&) = default;
 		template<Derived<T, true> T2>
@@ -304,14 +312,8 @@ namespace p
 		}
 		TTypeId& operator=(TypeId id)
 		{
-			TypeId::operator=(IsCompatible(GetTypeId<T>(), id) ? id : TypeId{});
+			TypeId::operator=(details::IsTypeIdCompatible(GetTypeId<T>(), id) ? id : TypeId{});
 			return *this;
-		}
-
-	private:
-		static bool IsCompatible(TypeId parentId, TypeId childId)
-		{
-			return parentId == childId || IsTypeParentOf(parentId, childId);
 		}
 	};
 
