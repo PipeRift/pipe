@@ -2571,8 +2571,8 @@ namespace p
 					{
 						break;
 					}
-					const p::Color ac  = details::GetArenaColor(va.arena->GetTypeId());
-					const ImU32 dotCol = ac.DWColor();
+					const p::Color ac   = details::GetArenaColor(va.arena->GetTypeId());
+					const ImU32 dotCol  = ac.DWColor();
 					sizet arenaUsed     = 0;
 					sizet arenaCapacity = 0;
 					bool found          = false;
@@ -2614,16 +2614,16 @@ namespace p
 					static String usedStr;
 					static String capStr;
 					static String line;
-					const float h  = ImGui::GetTextLineHeight();
-					const float sq = h * 0.7f;
+					const float h   = ImGui::GetTextLineHeight();
+					const float sq  = h * 0.7f;
 					const float pad = (h - sq) * 0.5f;
 					for (i32 r = 0; r < rowCount; ++r)
 					{
 						const TipRow& row = rows[r];
 						usedStr.clear();
 						Strings::ParseMemorySizeTo(usedStr, row.used);
-						const ImVec4 col{row.col.r / 255.0f, row.col.g / 255.0f,
-						    row.col.b / 255.0f, 1.0f};
+						const ImVec4 col{
+						    row.col.r / 255.0f, row.col.g / 255.0f, row.col.b / 255.0f, 1.0f};
 						const ImVec2 p = ImGui::GetCursorScreenPos();
 						ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y + pad),
 						    ImVec2(p.x + sq, p.y + pad + sq), row.col.DWColor());
@@ -4464,9 +4464,8 @@ namespace p
 			dst.parentArenaIdx = src.parentArenaIdx;
 
 			// Deep-copy live allocs so the capture owns its data.
-			dst.ownedLiveAllocs = src.captured
-			                        ? src.ownedLiveAllocs
-			                        : (src.live ? *src.live : TSet<MemoryStatsEvent>{});
+			dst.ownedLiveAllocs = src.captured ? src.ownedLiveAllocs
+			                                   : (src.live ? *src.live : TSet<MemoryStatsEvent>{});
 			dst.captured        = true;
 			dst.live            = nullptr;
 

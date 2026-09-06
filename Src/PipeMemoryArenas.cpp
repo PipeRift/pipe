@@ -561,8 +561,7 @@ namespace p
 
 		ReduceSlot(
 		    slotIndex, slot, ToOffset(header, block.data), ToOffset(header->end, block.data));
-		const sizet realSize =
-		    static_cast<u8*>(header->end) - reinterpret_cast<u8*>(header);
+		const sizet realSize = static_cast<u8*>(header->end) - reinterpret_cast<u8*>(header);
 		freeSize -= realSize;
 		stats.Add(header, realSize);
 		return ptr;

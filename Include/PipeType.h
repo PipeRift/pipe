@@ -1,12 +1,98 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
+
 #pragma once
 
 #include "Pipe/Core/FixedString.h"
+#include "Pipe/Core/Hash.h"
 #include "Pipe/Core/StringView.h"
+#include "Pipe/Core/Utility.h"
+#include "PipePlatform.h"
+
+#include <format>
+#include <iostream>
 
 
 namespace p
 {
+	struct P_API TypeId
+	{
+	protected:
+		u64 id;
+#if P_DEBUG
+		StringView debugName;
+#endif
+
+
+	public:
+		constexpr TypeId() : id{0} {}
+		constexpr TypeId(p::Undefined) {}
+		explicit constexpr TypeId(u64 id) : id{id} {}
+#if P_DEBUG
+		explicit constexpr TypeId(u64 id, StringView debugName) : id{id}, debugName{debugName} {}
+#endif
+
+		constexpr u64 GetId() const
+		{
+			return id;
+		}
+
+		StringView GetDebugName() const
+		{
+#if P_DEBUG
+			return debugName;
+#else
+			return {};
+#endif
+		}
+
+		constexpr bool IsValid() const
+		{
+			return id != 0;
+		}
+
+		constexpr auto operator==(const TypeId& other) const
+		{
+			return id == other.id;
+		}
+		constexpr auto operator<(const TypeId& other) const
+		{
+			return id < other.id;
+		}
+		constexpr auto operator>(const TypeId& other) const
+		{
+			return id > other.id;
+		}
+		constexpr auto operator<=(const TypeId& other) const
+		{
+			return id <= other.id;
+		}
+		constexpr auto operator>=(const TypeId& other) const
+		{
+			return id >= other.id;
+		}
+		constexpr operator bool() const
+		{
+			return IsValid();
+		}
+
+		static consteval TypeId None()
+		{
+			return TypeId{};
+		}
+	};
+
+	inline sizet GetHash(const TypeId& id)
+	{
+		return GetHash(id.GetId());
+	}
+
+	inline std::ostream& operator<<(std::ostream& stream, TypeId typeId)
+	{
+		stream << "TypeId(id=" << typeId.GetId() << ")";
+		return stream;
+	}
+
+
 	namespace TypeName
 	{
 		template<class T>
@@ -172,11 +258,112 @@ namespace p
 	}
 
 	template<typename T>
-	consteval StringView GetTypeName(bool includeNamespaces = true) requires(IsMap<T>())
+	inline consteval StringView GetTypeName(bool includeNamespaces = true) requires(IsMap<T>())
 	{
 		return "TMap";
 	}
+
+
+	template<typename T>
+	inline consteval TypeId GetTypeId() requires(!IsConst<T>)
+	{
+		return TypeId{p::GetStringHash(P_UNIQUE_FUNCTION_ID),
+#if P_DEBUG
+		    GetTypeName<T>()
+#endif
+		};
+	}
+
+	template<typename T>
+	inline consteval TypeId GetTypeId() requires(IsConst<T>)
+	{
+		return GetTypeId<Mut<T>>();
+	}
+
+
+	namespace details
+	{
+		P_API bool IsTypeIdCompatible(TypeId parentId, TypeId childId);
+	}    // namespace details
+
+
+	// A TypeId bound to a base type.
+	template<typename T>
+	struct TTypeId : public TypeId
+	{
+		constexpr TTypeId() : TypeId(GetTypeId<T>()) {}
+		constexpr TTypeId(p::Undefined) : TypeId(GetTypeId<T>()) {}
+
+		// From another TTypeId bound to a compatible (same or derived) type.
+		template<Derived<T, true> T2>
+		constexpr TTypeId(const TTypeId<T2>& other) : TypeId(other)
+		{}
+
+		// From a runtime TypeId.
+		TTypeId(TypeId id) : TypeId(details::IsTypeIdCompatible(GetTypeId<T>(), id) ? id : TypeId{})
+		{}
+
+		constexpr TTypeId& operator=(const TTypeId&) = default;
+		template<Derived<T, true> T2>
+		constexpr TTypeId& operator=(const TTypeId<T2>& other)
+		{
+			TypeId::operator=(other);
+			return *this;
+		}
+		TTypeId& operator=(TypeId id)
+		{
+			TypeId::operator=(details::IsTypeIdCompatible(GetTypeId<T>(), id) ? id : TypeId{});
+			return *this;
+		}
+	};
+
+
+#pragma region Castable
+	struct Castable
+	{
+	private:
+		mutable TypeId typeId;
+
+	public:
+		TypeId GetTypeId() const
+		{
+			if (!typeId)
+			{
+				typeId = ProvideTypeId();
+			}
+			return typeId;
+		}
+
+	protected:
+		virtual TypeId ProvideTypeId() const = 0;
+	};
+
+	template<typename T>
+	concept IsCastable = Derived<std::remove_pointer_t<T>, Castable, false>;
+#pragma endregion Castable
 }    // namespace p
+
+
+template<>
+struct std::formatter<p::TypeId> : public std::formatter<p::u64>
+{
+	template<typename FormatContext>
+	auto format(const p::TypeId& typeId, FormatContext& ctx) const
+	{
+#if P_DEBUG
+		const p::StringView debugName = typeId.GetDebugName();
+		if (!debugName.empty())
+		{
+			return std::formatter<p::StringView>{}.format(debugName, ctx);
+		}
+#endif
+		return formatter<p::u64>::format(typeId.GetId(), ctx);
+	}
+};
+
+template<typename T>
+struct std::formatter<p::TTypeId<T>> : public std::formatter<p::TypeId>
+{};
 
 #define P_OVERRIDE_TYPE_NAME(type, name)                                            \
 	template<>                                                                      \

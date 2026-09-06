@@ -296,8 +296,8 @@ namespace p
 			case MonthOfYear::December: MonthStr = "Dec"; break;
 		}
 
-		return Format("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT", DayStr, GetDay(),
-		    MonthStr, GetYear(), GetHour(), GetMinute(), GetSecond());
+		return Format("{}, {:02d} {} {} {:02i}:{:02i}:{:02i} GMT", DayStr, GetDay(), MonthStr,
+		    GetYear(), GetHour(), GetMinute(), GetSecond());
 	}
 
 

@@ -12,7 +12,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ################################################################################
 # Project
 
-project(Pipe VERSION 0.1 LANGUAGES CXX C)
+project(Pipe VERSION 1.7 LANGUAGES CXX C)
 
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -63,7 +63,9 @@ pipe_target_define_platform(Pipe)
 target_include_directories(Pipe PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>)
 target_include_directories(Pipe PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Src>)
 file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.c)
+list(FILTER PIPE_SOURCE_FILES EXCLUDE REGEX ".*/Src/Tests/.*")
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
+target_compile_definitions(Pipe PUBLIC P_VERSION="${PROJECT_VERSION}")
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)
@@ -79,6 +81,19 @@ pipe_add_sanitizers(Pipe)
 pipe_target_shared_output_directory(Pipe)
 #pipe_target_link_time_optimization(Pipe)
 pipe_target_disable_rtti(Pipe PRIVATE)
+
+
+################################################################################
+#   PipeTest (test framework library, not part of the runtime Pipe library)
+
+add_library(PipeTest STATIC Src/Tests/PipeTest.cpp)
+add_library(Pipe::Test ALIAS PipeTest)
+pipe_target_define_platform(PipeTest)
+target_include_directories(PipeTest PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Include>)
+pipe_target_enable_CPP20(PipeTest)
+pipe_target_disable_rtti(PipeTest PRIVATE)
+pipe_target_shared_output_directory(PipeTest)
+target_link_libraries(PipeTest PUBLIC Pipe)
 
 
 ################################################################################

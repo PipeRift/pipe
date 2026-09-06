@@ -133,7 +133,7 @@ namespace p
 		{
 			if (instance && method)
 			{
-				if constexpr (IsObject<Type>)
+				if constexpr (Derived<Type, class BaseObject, false>)
 				{
 					return Bind<Type>(instance->AsPtr(), Move(method));
 				}

@@ -138,9 +138,7 @@ namespace p
 	{
 		switch (error)
 		{
-			case FWE_FileNotFound:
-				lastFileWatcherError = Format("File not found ({})", log);
-				break;
+			case FWE_FileNotFound: lastFileWatcherError = Format("File not found ({})", log); break;
 			case FWE_FileRepeated:
 				lastFileWatcherError = Format("File repeated in watches ({})", log);
 				break;

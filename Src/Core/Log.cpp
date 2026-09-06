@@ -2,39 +2,24 @@
 
 #include "Pipe/Core/Log.h"
 
-#include "Pipe/Files/Files.h"
-#include "Pipe/Files/Paths.h"
-#include "Pipe/Memory/OwnPtr.h"
-#include "PipeTime.h"
-
 #include <iostream>
 
 namespace p
 {
 	// clang-format off
 	const Logger defaultLogger = Logger{
-		.infoCallback = [](StringView msg) {
-			String text;
-			auto now = DateTime::Now();
-			now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-			FormatTo(text, "[Info] {}\n", msg);
-			std::cout << text;
-		},
-		.warningCallback = [](StringView msg) {
-			String text;
-			auto now = DateTime::Now();
-			now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-			FormatTo(text, "[Warning] {}\n", msg);
-			std::cout << text;
-		},
-		.errorCallback = [](StringView msg) {
-			String text;
-			auto now = DateTime::Now();
-			now.ToString("[%Y/%m/%d %H:%M:%S]", text);
-			FormatTo(text, "[Error] {}\n", msg);
-			std::cout << text;
-		}
-	};
+	.infoCallback = [](StringView msg)
+	{
+		std::cout << msg << '\n';
+	},
+	.warningCallback = [](StringView msg)
+	{
+		std::cout << "\033[33m" << msg << "\033[0m\n";
+	},
+	.errorCallback = [](StringView msg)
+	{
+		std::cerr << "\033[31m" << msg << "\033[0m\n";
+	}};
 	// clang-format on
 
 	const Logger* globalLogger = nullptr;
