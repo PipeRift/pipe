@@ -14,8 +14,13 @@
 #include "PipeTest.h"
 #include "PipeTime.h"
 
+#include <cstdio>
+
 #if P_PLATFORM_WINDOWS
+	#include <io.h>
 	#include <windows.h>
+#else
+	#include <unistd.h>
 #endif
 
 
@@ -44,7 +49,7 @@ namespace p
 		// Entire registered suite (treat as a single virtual root describe).
 		struct TestContext
 		{
-			TestDescribe root{"", {}, {}, {}, {}};
+			TestDescribe root;
 
 			// Pointer into `root.describes` for the currently-adding describe.
 			TestDescribe* currentDescribe = nullptr;
@@ -88,6 +93,32 @@ namespace p
 		{
 			return GetTestContext().currentDescribe;
 		}
+
+		// Appends a new describe to `parent` and returns it.
+		TestDescribe& AddDescribe(TestDescribe& parent, StringView name)
+		{
+			TestDescribe describe;
+			describe.name = String{name};
+			parent.describes.Add(Move(describe));
+			return parent.describes.Last();
+		}
+
+		// Registers a test in the current describe. `kind` names the API
+		// (It/XIt) and is used in error messages.
+		void AddTest(StringView kind, StringView name, std::function<void()> fn, bool skip)
+		{
+			TestDescribe*& current = CurrentDescribe();
+			if (!current)
+			{
+				Error("PipeTest: {}('{}') called outside a Spec. Ignoring.", kind, name);
+				return;
+			}
+			TestCase test;
+			test.name = String{name};
+			test.body = Move(fn);
+			test.skip = skip;
+			current->tests.Add(Move(test));
+		}
 	}    // namespace
 
 
@@ -116,14 +147,8 @@ namespace p
 
 	void RegisterSpec(StringView name, TFunction<void()> fn)
 	{
-		TestContext& context = GetTestContext();
-		TestDescribe describe;
-		describe.name       = String{name};
-		describe.beforeEach = nullptr;
-		describe.afterEach  = nullptr;
-		context.root.describes.Add(Move(describe));
-		TestDescribe* describePtr = &context.root.describes.Last();
-		context.currentDescribe   = describePtr;
+		TestContext& context    = GetTestContext();
+		context.currentDescribe = &AddDescribe(context.root, name);
 		fn();
 		context.currentDescribe = nullptr;
 	}
@@ -145,43 +170,20 @@ namespace p
 			return;
 		}
 
-		TestDescribe describe;
-		describe.name = String{name};
-		current->describes.Add(Move(describe));
 		TestDescribe* prevDescribe = current;
-		current                    = &current->describes.Last();
+		current                    = &AddDescribe(*current, name);
 		fn();
 		current = prevDescribe;
 	}
 
 	void It(StringView name, std::function<void()> fn)
 	{
-		TestDescribe*& current = CurrentDescribe();
-		if (!current)
-		{
-			Error("PipeTest: It('{}') called outside a Spec. Ignoring.", name);
-			return;
-		}
-		TestCase test;
-		test.name = String{name};
-		test.body = fn;
-		test.skip = false;
-		current->tests.Add(Move(test));
+		AddTest("It", name, Move(fn), false);
 	}
 
 	void XIt(StringView name, std::function<void()> fn)
 	{
-		TestDescribe*& current = CurrentDescribe();
-		if (!current)
-		{
-			Error("PipeTest: XIt('{}') called outside a Spec. Ignoring.", name);
-			return;
-		}
-		TestCase test;
-		test.name = String{name};
-		test.body = fn;
-		test.skip = true;
-		current->tests.Add(Move(test));
+		AddTest("XIt", name, Move(fn), true);
 	}
 
 	void BeforeEach(std::function<void()> fn)
@@ -237,31 +239,6 @@ namespace p
 		using Terminal::Green;
 		using Terminal::Red;
 		using Terminal::Yellow;
-
-		// Full test name: all enclosing describe names plus the test name,
-		// e.g. "Containers.BitArray.Copy.Can copy empty". Used for filtering
-		// and failure reports, so `--only` matches any parent describe too.
-		static String FullName(StringView testName)
-		{
-			TestContext& context = GetTestContext();
-			String result;
-			for (i32 i = 0; i < context.contextStack.Size(); ++i)
-			{
-				result += context.contextStack[i];
-				result += '.';
-			}
-			result += testName;
-			return result;
-		}
-
-		// Whether a test (by full describe+it name) should run given the
-		// `only`/`skip` substring selection and the skip set.
-		static bool Matches(StringView fullName, StringView only, StringView skip)
-		{
-			const bool included = only.empty() || Strings::Contains(fullName, only);
-			const bool excluded = !skip.empty() && Strings::Contains(fullName, skip);
-			return included && !excluded;
-		}
 
 		// Color a string for terminal output, honoring the useColor flag.
 		static String Colored(const char* color, StringView text)
@@ -431,9 +408,22 @@ namespace p
 		};
 
 		// ---- Singleline reporter ----
-		// bandit's `singleline` reporter: prints a live status line after each test.
+		// bandit's `singleline` reporter: prints a single self-overwriting
+		// progress line on real terminals only. On redirected streams no
+		// per-test progress is printed, so the output stays clean; failure
+		// details and totals are deferred to TestRunComplete and reported
+		// exactly once.
 		struct SinglelineReporter : ITestReporter
 		{
+			SinglelineReporter()
+			{
+#if P_PLATFORM_WINDOWS
+				isTty = ::_isatty(::_fileno(stdout));
+#else
+				isTty = isatty(STDOUT_FILENO) != 0;
+#endif
+			}
+
 			void ItSucceeded(StringView) override
 			{
 				PrintStatus();
@@ -457,29 +447,58 @@ namespace p
 			void PrintStatus()
 			{
 				TestContext& context = GetTestContext();
-				i32 run              = context.runTests;
-				i32 failed           = context.failedTests;
-				i32 passed           = run - failed;
+				const i32 run        = context.runTests;
 				if (run <= 0)
 				{
 					Error("Could not find any tests.");
 					return;
 				}
-
-				Info("Executed {} tests.", run);
-				if (failed == 0)
+				if (!isTty)
 				{
-					if (failed <= 0)
-					{}
-					Info("{}\n {} failed.", run, passed, Colored(Red, Format("{}", failed)));
+					return;
 				}
-				else
-				{
-					Info("Executed {} tests.", run);
-				}
+				DrawLine(StatusLine(context));
 			}
 
 			void TestRunComplete() override;
+
+		private:
+			// bandit's live status line: only includes the succeeded/failed
+			// counts once something has failed, with the failed count red.
+			static String StatusLine(const TestContext& context)
+			{
+				const i32 run = context.runTests;
+				if (context.failedTests == 0)
+				{
+					return Format("Executed {} tests.", run);
+				}
+				return Format("Executed {} tests. {} succeeded. {}", run, run - context.failedTests,
+				    Colored(Red, Format("{} failed.", context.failedTests)));
+			}
+
+			// Overwrites the current line in place on a real terminal (console
+			// API on Windows, carriage-return elsewhere).
+			void DrawLine(StringView text)
+			{
+#if P_PLATFORM_WINDOWS
+				const HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+				if (handle != INVALID_HANDLE_VALUE)
+				{
+					CONSOLE_SCREEN_BUFFER_INFO info;
+					if (GetConsoleScreenBufferInfo(handle, &info) != 0)
+					{
+						const COORD position = {0, info.dwCursorPosition.Y};
+						SetConsoleCursorPosition(handle, position);
+						WriteConsoleA(
+						    handle, text.data(), static_cast<DWORD>(text.size()), nullptr, nullptr);
+						return;
+					}
+				}
+#endif
+				std::cout << '\r' << text << std::flush;
+			}
+
+			bool isTty = false;
 		};
 
 		// ---- Info reporter (verbose with timing support) ----
@@ -672,6 +691,20 @@ namespace p
 
 		void SinglelineReporter::TestRunComplete()
 		{
+			TestContext& context = GetTestContext();
+
+			// Final live line mirrors bandit's singleline reporter: executed/
+			// succeeded/failed totals right before the failure summary.
+			const String line = StatusLine(context);
+			if (isTty)
+			{
+				DrawLine(line);
+				std::cout << std::endl;
+			}
+			else
+			{
+				Info("{}", line);
+			}
 			WriteSummary();
 		}
 
@@ -706,7 +739,16 @@ namespace p
 				// tests marked skip, are reported as SKIPPED, not hidden.
 				// With break-on-failure, everything after the first failure
 				// is skipped too.
-				if (test.skip || !Matches(FullName(test.name), only, skip)
+				String fullName;
+				for (i32 i = 0; i < context.contextStack.Size(); ++i)
+				{
+					fullName += context.contextStack[i];
+					fullName += '.';
+				}
+				fullName += test.name;
+				const bool included = only.empty() || Strings::Contains(fullName, only);
+				const bool excluded = !skip.empty() && Strings::Contains(fullName, skip);
+				if (test.skip || !included || excluded
 				    || (breakOnFailure && context.encounteredFailure))
 				{
 					++context.skippedTests;
@@ -745,8 +787,6 @@ namespace p
 					afterHooks[i - 1]();
 				}
 
-				String full = FullName(test.name);
-
 				if (passed)
 				{
 					if (context.currentTestAssertCount == 0)
@@ -765,14 +805,14 @@ namespace p
 					if (unknown)
 					{
 						reporter.ItUnknownError(test.name);
-						context.failures.Add(full + ":\nUnknown exception\n");
+						context.failures.Add(fullName + ":\nUnknown exception\n");
 					}
 					else
 					{
 						reporter.ItFailed(test.name);
 						String detail = context.currentFailureDetail;
-						context.failures.Add(
-						    detail.empty() ? (full + ":\n") : (full + ":\n" + detail + "\n"));
+						context.failures.Add(detail.empty() ? (fullName + ":\n")
+						                                    : (fullName + ":\n" + detail + "\n"));
 					}
 				}
 			}
@@ -921,9 +961,12 @@ namespace p
 			{
 				settings.skip = Strings::RemoveFromStart(arg, StringView{"--skip="});
 			}
-			else if (Strings::StartsWith(arg, StringView{"--reporter="}))
+			else if (Strings::StartsWith(arg, StringView{"-r="})
+			         || Strings::StartsWith(arg, StringView{"--reporter="}))
 			{
-				const StringView name = Strings::RemoveFromStart(arg, StringView{"--reporter="});
+				StringView name = Strings::RemoveFromStart(arg, StringView{"-r="});
+				name            = Strings::RemoveFromStart(name, StringView{"--reporter="});
+
 				if (Strings::Equals(name, StringView{"dots"}))
 				{
 					settings.reporter = TTypeId<DotsReporter>();
@@ -942,35 +985,7 @@ namespace p
 				}
 				else
 				{
-					Warning("PipeTest: unknown reporter '{}'. Using 'dots'.", name);
-				}
-			}
-			else if (Strings::Equals(arg, StringView{"--reporter"})
-			         || Strings::Equals(arg, StringView{"-r"}))
-			{
-				if (i + 1 < argc)
-				{
-					const StringView name{argv[++i]};
-					if (Strings::Equals(name, StringView{"dots"}))
-					{
-						settings.reporter = TTypeId<DotsReporter>();
-					}
-					else if (Strings::Equals(name, StringView{"singleline"}))
-					{
-						settings.reporter = TTypeId<SinglelineReporter>();
-					}
-					else if (Strings::Equals(name, StringView{"spec"}))
-					{
-						settings.reporter = TTypeId<DotsReporter>();
-					}
-					else if (Strings::Equals(name, StringView{"info"}))
-					{
-						settings.reporter = TTypeId<InfoReporter>();
-					}
-					else
-					{
-						Warning("PipeTest: unknown reporter '{}'. Using 'spec'.", name);
-					}
+					Warning("PipeTest: unknown reporter '{}'. Using default.", name);
 				}
 			}
 			else if (Strings::Equals(arg, StringView{"--report-timing"}))

@@ -172,36 +172,24 @@ namespace p
 		// Counts an assertion. Used to detect tests that ran no expects.
 		void CountAssert();
 
-		// True when both Actual and Expected can be viewed as a StringView (string-ish).
-		template<typename A, typename E, typename = void>
-		struct IsStringBoth : std::false_type
-		{};
-
-		template<typename A, typename E>
-		struct IsStringBoth<A, E,
-		    std::void_t<decltype(StringView{std::declval<A>()}),
-		        decltype(StringView{std::declval<E>()})>> : std::true_type
-		{};
+		// Detect types constructible into a StringView (string-ish values).
+		template<typename T>
+		concept IsStringLike = requires(const T& value) { StringView{value}; };
 
 		// Compares two possibly-different types: string-ish values compare by view,
 		// everything else uses operator==.
-		template<typename A, typename E, bool = IsStringBoth<A, E>::value>
-		struct ValuesEqual
+		template<typename A, typename E>
+		bool ValuesEqual(const A& a, const E& e)
 		{
-			static bool Eval(const A& a, const E& e)
+			if constexpr (IsStringLike<A> && IsStringLike<E>)
 			{
 				return StringView{a} == StringView{e};
 			}
-		};
-
-		template<typename A, typename E>
-		struct ValuesEqual<A, E, false>
-		{
-			static bool Eval(const A& a, const E& e)
+			else
 			{
 				return a == e;
 			}
-		};
+		}
 	}    // namespace details
 
 
@@ -218,7 +206,7 @@ namespace p
 		template<typename Expected>
 		void ToEqual(const Expected& expected) const
 		{
-			if (!details::ValuesEqual<Actual, Expected>::Eval(value, expected))
+			if (!details::ValuesEqual(value, expected))
 			{
 				details::Fail(loc,
 				    Format("Expected {} to equal {}", TestString(value), TestString(expected)));
@@ -228,7 +216,7 @@ namespace p
 		template<typename Expected>
 		void ToNotEqual(const Expected& expected) const
 		{
-			if (details::ValuesEqual<Actual, Expected>::Eval(value, expected))
+			if (details::ValuesEqual(value, expected))
 			{
 				details::Fail(loc,
 				    Format("Expected {} to not equal {}", TestString(value), TestString(expected)));
