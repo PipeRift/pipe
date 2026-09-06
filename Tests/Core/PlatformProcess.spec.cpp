@@ -16,7 +16,7 @@ P_SPEC("Core.Subprocess", []()
 	{
 		Expect(p::RunProcess({""}).IsSet()).ToEqual(false);
 
-#if defined(P_PLATFORM_WINDOWS)
+#if P_PLATFORM_WINDOWS
 		Expect(p::RunProcess({"cmd", "/c", "exit", "0"}).IsSet()).ToEqual(true);
 #endif
 	});
