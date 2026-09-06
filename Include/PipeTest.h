@@ -42,13 +42,13 @@ namespace p
 	// Self-registering top-level describe. Registers its spec body on
 	// construction (same pattern as TTypeAutoRegister). The body runs
 	// immediately during registration, so TFunction (non-owning) is safe.
-	struct TSpecAutoRegister
+	struct SpecAutoRegister
 	{
-		constexpr TSpecAutoRegister(StringView name, TFunction<void()> fn)
+		SpecAutoRegister(StringView name, TFunction<void()> fn)
 		{
 			RegisterSpec(name, fn);
 		}
-		constexpr TSpecAutoRegister(TFunction<void()> fn)
+		SpecAutoRegister(TFunction<void()> fn)
 		{
 			RegisterSpec(fn);
 		}
@@ -67,7 +67,7 @@ namespace p
 	//             #endif
 	//         });
 	//     });
-#define P_SPEC static const p::TSpecAutoRegister P_CAT(_pipeSpecReg_, __COUNTER__)
+#define P_SPEC static const p::SpecAutoRegister P_CAT(_pipeSpecReg_, __COUNTER__)
 
 	// Nested describe. Only valid inside a Spec; otherwise logs an error and ignores.
 	void Describe(StringView name, TFunction<void()> fn);
