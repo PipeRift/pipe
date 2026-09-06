@@ -4,13 +4,13 @@
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Templates.h"
 #include "Pipe/Core/TypeFlags.h"
-#include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "PipeColor.h"
 #include "PipeContainers.h"
 #include "PipePlatform.h"
 #include "PipeSerializeFwd.h"
 #include "PipeStrings.h"
+#include "PipeType.h"
 
 #include <utility>
 

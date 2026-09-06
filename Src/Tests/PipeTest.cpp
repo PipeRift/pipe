@@ -9,7 +9,7 @@
 
 #include "Pipe.h"
 #include "Pipe/Core/Log.h"
-#include "Pipe/Memory/UniquePtr.h"
+#include "Pipe/Memory/OwnPtr.h"
 #include "PipeStrings.h"
 #include "PipeTest.h"
 #include "PipeTime.h"
@@ -870,23 +870,23 @@ namespace p
 		}
 
 		const TypeId reporterId = settings.reporter;
-		TUniquePtr<ITestReporter> reporter;
+		TOwnPtr<ITestReporter> reporter;
 		if (reporterId == GetTypeId<DotsReporter>())
 		{
-			reporter = MakeUnique<DotsReporter>();
+			reporter = MakeOwned<DotsReporter>();
 		}
 		else if (reporterId == GetTypeId<SinglelineReporter>())
 		{
-			reporter = MakeUnique<SinglelineReporter>();
+			reporter = MakeOwned<SinglelineReporter>();
 		}
 		else if (reporterId == GetTypeId<InfoReporter>())
 		{
-			reporter = MakeUnique<InfoReporter>();
+			reporter = MakeOwned<InfoReporter>();
 		}
 		else
 		{
 			// Spec (also the fallback for an unset/unknown reporter id).
-			reporter = MakeUnique<SpecReporter>();
+			reporter = MakeOwned<SpecReporter>();
 		}
 
 		reporter->TestRunStarting();
@@ -896,7 +896,7 @@ namespace p
 		TArray<std::function<void()>> beforeHooks;
 		TArray<std::function<void()>> afterHooks;
 		RunNested(context.root, beforeHooks, afterHooks, settings.only, settings.skip,
-		    settings.breakOnFailure, *reporter.Get());
+		    settings.breakOnFailure, *reporter);
 
 		// Total duration is wall time from run start to run end.
 		const Timespan runElapsed = DateTime::Now() - runStart;

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Pipe/Core/Checks.h"
-#include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 #include "Pipe/Memory/PtrBuilder.h"
@@ -577,4 +576,30 @@ namespace p
 	{
 		return GetHash(ptr.GetRaw());
 	}
+
+
+#pragma region Casts
+	template<typename To, typename From>
+	TPtr<To> Cast(const TPtr<From>& value)
+	{
+		if (Cast<To>(value.Get()))
+		{
+			TPtr<To> ptr{};
+			ptr.CopyFromUnsafe(value);
+			return ptr;
+		}
+		return {};
+	}
+
+	template<typename From, typename To = From>
+	TPtr<To> Cast(const TOwnPtr<From>& value)
+	{
+		if constexpr (Derived<From, To>)    // Is T2 is T or its base
+		{
+			return TPtr<To>{value};
+		}
+		TPtr<From> ptr{value};
+		return Cast<To>(ptr);
+	}
+#pragma endregion Casts
 }    // namespace p

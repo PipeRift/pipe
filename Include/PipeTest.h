@@ -5,7 +5,7 @@
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Macros.h"
 #include "Pipe/Core/StringView.h"
-#include "Pipe/Core/TypeId.h"
+#include "PipeReflect.h"
 #include "PipeStrings.h"
 
 #include <format>

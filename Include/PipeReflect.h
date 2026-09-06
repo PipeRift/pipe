@@ -7,14 +7,12 @@
 #include "Pipe/Core/Macros.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Tag.h"
-#include "Pipe/Core/TypeId.h"
-#include "Pipe/Core/TypeName.h"
 #include "Pipe/Extern/magic_enum.hpp"
 #include "Pipe/Files/STDFileSystem.h"
-#include "Pipe/Memory/OwnPtr.h"
 #include "PipeColor.h"
 #include "PipeSerialize.h"
 #include "PipeStrings.h"
+#include "PipeType.h"
 #include "PipeVectors.h"
 
 
@@ -29,9 +27,6 @@ namespace p
 	class BaseObject;
 
 #pragma region Traits
-	template<typename T>
-	concept IsObject = Derived<T, class BaseObject, false>;
-
 	template<typename T>
 	consteval bool HasSuper()
 	{
@@ -571,7 +566,7 @@ namespace p
 			if constexpr (IsStructOrClass<T>)
 			{
 				AddTypeFlags(TF_Struct);
-				if constexpr (IsObject<T>)
+				if constexpr (Derived<T, class BaseObject, false>)
 				{
 					static ObjectTypeOps objectOps;
 					AssignSerializableTypeOps<T>(objectOps);
@@ -846,107 +841,6 @@ P_NATIVE_NAMED(p::Color, "Color")
 
 namespace p
 {
-#pragma region Objects
-	class P_API BaseObject : public Castable
-	{
-	protected:
-		BaseObject() = default;
-
-	public:
-		virtual ~BaseObject() = default;
-
-		TPtr<Object> AsPtr() const;
-	};
-
-
-	// For shared export purposes, we separate pointers from the exported Class
-	struct P_API ObjectOwnership
-	{
-		TPtr<BaseObject> self;
-		TPtr<BaseObject> owner;
-		static TPtr<BaseObject> nextOwner;
-
-
-		ObjectOwnership();
-		const TPtr<BaseObject>& AsPtr() const;
-		const TPtr<BaseObject>& GetOwner() const;
-	};
-
-
-	template<typename T>
-	struct TObjectPtrBuilder : public TPtrBuilder<T>
-	{
-		template<typename... Args>
-		static T* New(Arena& arena, Args&&... args, const TPtr<BaseObject>& owner = {})
-		{
-			// Sets owner during construction
-			// TODO: Fix self not existing at the moment of construction
-			ObjectOwnership::nextOwner = owner;
-			return new (p::Alloc<T>(arena)) T(std::forward<Args>(args)...);
-		}
-
-		// Allow creation of classes using reflection
-		static T* New(Arena& arena, TypeId type, TPtr<BaseObject> owner = {})
-		{
-			if (GetTypeId<T>() == type || IsTypeParentOf(GetTypeId<T>(), type))
-			{
-				if (auto* ops = GetTypeObjectOps(type))
-				{
-					// Sets owner during construction
-					// TODO: Fix self not existing at the moment of construction
-					ObjectOwnership::nextOwner = owner;
-					return Cast<T>(ops->onNew(arena));
-				}
-			}
-			return nullptr;
-		}
-
-		static void Delete(Arena& arena, void* rawPtr)
-		{
-			T* ptr               = static_cast<T*>(rawPtr);
-			const sizet typeSize = GetTypeSize(ptr->GetTypeId());
-			ptr->~T();
-			arena.Free((void*)ptr, typeSize);    // size depends on inheritance!
-		}
-	};
-
-
-	class P_API Object : public BaseObject
-	{
-	public:
-		using Self = Object;
-		template<typename T>
-		using PtrBuilder = TObjectPtrBuilder<T>;
-
-		p::TypeId ProvideTypeId() const override
-		{
-			return p::GetTypeId<Object>();
-		}
-
-		static constexpr p::TypeFlags staticFlags = TF_None;
-
-		P_REFLECTION_BODY({})
-
-	private:
-		ObjectOwnership ownership;
-
-
-	public:
-		Object() = default;
-
-		void ChangeOwner(const TPtr<BaseObject>& inOwner);
-		template<typename T = Object>
-		TPtr<T> AsPtr() const
-		{
-			return Cast<T>(ownership.AsPtr());
-		}
-		template<typename T = Object>
-		TPtr<T> GetOwner() const
-		{
-			return Cast<T>(ownership.GetOwner());
-		}
-	};
-#pragma endregion Objects
 
 
 #pragma region Casts
@@ -980,29 +874,6 @@ namespace p
 			}
 		}
 		return nullptr;
-	}
-
-	template<typename To, typename From>
-	TPtr<To> Cast(const TPtr<From>& value)
-	{
-		if (Cast<To>(value.Get()))
-		{
-			TPtr<To> ptr{};
-			ptr.CopyFromUnsafe(value);
-			return ptr;
-		}
-		return {};
-	}
-
-	template<typename From, typename To = From>
-	TPtr<To> Cast(const TOwnPtr<From>& value)
-	{
-		if constexpr (Derived<From, To>)    // Is T2 is T or its base
-		{
-			return TPtr<To>{value};
-		}
-		TPtr<From> ptr{value};
-		return Cast<To>(ptr);
 	}
 #pragma endregion Casts
 };    // namespace p
