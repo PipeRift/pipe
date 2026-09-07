@@ -5,12 +5,12 @@
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Guid.h"
 #include "Pipe/Core/Log.h"
-#include "Pipe/Core/String.h"
 #include "Pipe/Core/Tag.h"
 #include "Pipe/Extern/yyjson.h"
 #include "Pipe/Extern/ryml.hpp"
 #include "Pipe/Extern/fast_float.h"
 #include "PipeMath.h"
+#include "PipeStrings.h"
 
 #include <charconv>
 

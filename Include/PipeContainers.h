@@ -668,6 +668,19 @@ namespace p
 #pragma endregion Search
 
 
+#pragma region Subviews
+		constexpr Type& First() const;
+		constexpr Type& Last() const;
+
+		constexpr TView<Type> FirstUnsafe(i32 n) const;
+		constexpr TView<Type> First(i32 n) const;
+		constexpr TView<Type> LastUnsafe(i32 n) const;
+		constexpr TView<Type> Last(i32 n) const;
+		constexpr TView<Type> SliceUnsafe(i32 offset, i32 n) const;
+		constexpr TView<Type> Slice(i32 offset, i32 n) const;
+#pragma endregion Subviews
+
+
 		template<typename OtherType>
 		bool operator==(const IArray<OtherType>& other) const
 		{
@@ -797,7 +810,7 @@ namespace p
 			Assign(first, std::distance(first, last));
 		}
 
-		constexpr TArray(Arena& arena) : arena{&arena} {}
+		explicit constexpr TArray(Arena& arena) : arena{&arena} {}
 		constexpr TArray(Arena& arena, i32 initialSize) : arena{&arena}
 		{
 			Assign(initialSize);
@@ -1323,12 +1336,7 @@ namespace p
 		 */
 		bool RemoveAt(i32 index, const Shrink shouldShrink = Shrink::Yes)
 		{
-			if (Super::IsValidIndex(index))
-			{
-				RemoveAtUnsafe(index, shouldShrink);
-				return true;
-			}
-			return false;
+			return RemoveAt(index, 1, shouldShrink);
 		}
 
 		/**
@@ -1352,12 +1360,7 @@ namespace p
 		 */
 		bool RemoveAtSwap(i32 index, const Shrink shouldShrink = Shrink::Yes)
 		{
-			if (Super::IsValidIndex(index))
-			{
-				RemoveAtSwapUnsafe(index, shouldShrink);
-				return true;
-			}
-			return false;
+			return RemoveAtSwap(index, 1, shouldShrink);
 		}
 
 		/**
@@ -1382,17 +1385,7 @@ namespace p
 		 */
 		void RemoveAtUnsafe(i32 index, const Shrink shouldShrink = Shrink::Yes)
 		{
-			const i32 lastIndex   = index + 1;
-			const i32 countToPull = Super::size - lastIndex;
-			DestroyItems(Super::data + index, 1);
-			MoveItems(Super::data + index, countToPull, Super::data + lastIndex);
-			--Super::size;
-
-			/// @OPTIMIZE: Shrinking can be combined to avoid moving trailing elements twice
-			if (shouldShrink == Shrink::Yes)
-			{
-				Shrink();
-			}
+			RemoveAtUnsafe(index, 1, shouldShrink);
 		}
 
 		/**
@@ -1423,9 +1416,7 @@ namespace p
 		 */
 		void RemoveAtSwapUnsafe(i32 index, const Shrink shouldShrink = Shrink::Yes)
 		{
-			const i32 lastIndex = Super::size - 1;
-			Super::SwapUnsafe(index, lastIndex);
-			RemoveAtUnsafe(lastIndex, shouldShrink);
+			RemoveAtSwapUnsafe(index, 1, shouldShrink);
 		}
 
 		/**
@@ -1687,51 +1678,6 @@ namespace p
 #pragma endregion Storage
 
 
-#pragma region Subviews
-		constexpr Type& First() const
-		{
-			P_Check(Super::size != 0);
-			return Super::data[0];
-		}
-		constexpr Type& Last() const
-		{
-			P_Check(Super::size != 0);
-			return Super::data[Super::size - 1];
-		}
-
-		constexpr TView<Type> FirstUnsafe(i32 n) const
-		{
-			return {Super::data, n};
-		}
-		constexpr TView<Type> First(i32 n) const
-		{
-			n = Clamp(n, 0, Super::size);
-			return FirstUnsafe(n);
-		}
-
-		constexpr TView<Type> LastUnsafe(i32 n) const
-		{
-			return {Super::data + (Super::size - n), n};
-		}
-		constexpr TView<Type> Last(i32 n) const
-		{
-			n = Clamp(n, 0, Super::size);
-			return LastUnsafe(n);
-		}
-
-		constexpr TView<Type> SliceUnsafe(i32 offset, i32 n) const
-		{
-			return {Super::data + offset, n};
-		}
-		constexpr TView<Type> Slice(i32 offset, i32 n) const
-		{
-			offset = Clamp(offset, 0, Super::size - 1);
-			n      = Clamp(n, 0, Super::size);
-			return LastUnsafe(n);
-		}
-#pragma endregion Subviews
-
-
 	protected:
 		void CopyFrom(const IArray<const Type>& other);
 
@@ -1811,51 +1757,64 @@ namespace p
 			Super::size = other.Size();
 			return *this;
 		}
-
-#pragma region Subviews
-		constexpr Type& First() const
-		{
-			P_Check(Super::size != 0);
-			return Super::data[0];
-		}
-		constexpr Type& Last() const
-		{
-			P_Check(Super::size != 0);
-			return Super::data[Super::size - 1];
-		}
-
-		constexpr TView FirstUnsafe(i32 n) const
-		{
-			return {Super::data, n};
-		}
-		constexpr TView First(i32 n) const
-		{
-			n = Clamp(n, 0, Super::size);
-			return FirstUnsafe(n);
-		}
-
-		constexpr TView LastUnsafe(i32 n) const
-		{
-			return {Super::data + (Super::size - n), n};
-		}
-		constexpr TView Last(i32 n) const
-		{
-			n = Clamp(n, 0, Super::size);
-			return LastUnsafe(n);
-		}
-
-		constexpr TView SliceUnsafe(i32 offset, i32 n) const
-		{
-			return {Super::data + offset, n};
-		}
-		constexpr TView Slice(i32 offset, i32 n) const
-		{
-			offset = Clamp(offset, 0, Super::size - 1);
-			n      = Clamp(n, 0, Super::size);
-			return LastUnsafe(n);
-		}
-#pragma endregion Subviews
 	};
+
+
+	////////////////////////////////
+	// IArray Implementation
+#pragma region IArray Implementation
+
+	template<typename Type>
+	constexpr Type& IArray<Type>::First() const
+	{
+		P_Check(size != 0);
+		return data[0];
+	}
+	template<typename Type>
+	constexpr Type& IArray<Type>::Last() const
+	{
+		P_Check(size != 0);
+		return data[size - 1];
+	}
+
+	template<typename Type>
+	constexpr TView<Type> IArray<Type>::FirstUnsafe(i32 n) const
+	{
+		return {data, n};
+	}
+	template<typename Type>
+	constexpr TView<Type> IArray<Type>::First(i32 n) const
+	{
+		n = Clamp(n, 0, size);
+		return FirstUnsafe(n);
+	}
+
+	template<typename Type>
+	constexpr TView<Type> IArray<Type>::LastUnsafe(i32 n) const
+	{
+		return {data + (size - n), n};
+	}
+	template<typename Type>
+	constexpr TView<Type> IArray<Type>::Last(i32 n) const
+	{
+		n = Clamp(n, 0, size);
+		return LastUnsafe(n);
+	}
+
+	template<typename Type>
+	constexpr TView<Type> IArray<Type>::SliceUnsafe(i32 offset, i32 n) const
+	{
+		return {data + offset, n};
+	}
+	template<typename Type>
+	constexpr TView<Type> IArray<Type>::Slice(i32 offset, i32 n) const
+	{
+		offset = Clamp(offset, 0, size);
+		n      = Clamp(n, 0, size - offset);
+		return SliceUnsafe(offset, n);
+	}
+
+#pragma endregion IArray Implementation
 
 
 	struct P_API BitArray
@@ -1924,16 +1883,14 @@ namespace p
 
 		void Clear();
 
-		// Returns index of next set bit in array (wraps around)
-		i32 GetNextSet(i32 index) const;
+		// Returns index of next set bit in array (wraps around only if loops)
+		i32 GetNextSet(i32 index, bool loops = false) const;
 
-		// @return index of previous set bit in array (wraps around)
-		i32 GetPreviousSet(i32 index) const;
+		// @return index of previous set bit in array (wraps around only if loops)
+		i32 GetPreviousSet(i32 index, bool loops = false) const;
 
-		/**
-		 * Count the number of set bits in this array  FromIndex <= bit < ToIndex
-		 */
-		i32 CountSetBits(i32 fromIndex = 0, i32 toIndex = NO_INDEX) const;
+		/** @return number of set bits in the whole array. */
+		i32 CountSetBits() const;
 
 		constexpr u32* Data() const
 		{
@@ -2037,6 +1994,10 @@ namespace p
 		{
 			return ((bitSize - 1) >> 5) + 1;
 		}
+
+	private:
+
+		void SetFromBools(const bool* data, i32 count);
 	};
 
 
@@ -2082,15 +2043,25 @@ namespace p
 		}
 		else if (atIndex != oldSize)
 		{
-			// Imagine we insert 1 element at the start of "A B":
-			// First we move last trailing elements to unconstructed positions
-			// "A B #" -> "A # B"
-			MoveConstructItems(Super::data + oldSize, count, Super::data + oldSize - count);
+			const i32 trailing = oldSize - atIndex;
+			if (count <= trailing)
+			{
+				// Imagine we insert 1 element at the start of "A B":
+				// First we move last trailing elements to unconstructed positions
+				// "A B #" -> "A # B"
+				MoveConstructItems(Super::data + oldSize, count, Super::data + oldSize - count);
 
-			// Then we push the other trailing elements
-			// "A # B" -> "# A B"
-			Type* const ptrToPush = Super::data + atIndex;
-			MoveItemsBackwards(ptrToPush + count, oldSize - atIndex - count, ptrToPush);
+				// Then we push the other trailing elements
+				// "A # B" -> "# A B"
+				Type* const ptrToPush = Super::data + atIndex;
+				MoveItemsBackwards(ptrToPush + count, oldSize - atIndex - count, ptrToPush);
+			}
+			else
+			{
+				// All trailing elements end up past the old end (in uninitialized slots)
+				MoveConstructItems<Type, true>(
+				    Super::data + atIndex + count, trailing, Super::data + atIndex);
+			}
 		}
 		else
 		{

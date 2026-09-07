@@ -1,6 +1,6 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#include "Pipe/Core/String.h"
+#include "PipeStrings.h"
 
 #include "Pipe/Core/Char.h"
 #include "PipeMath.h"
@@ -11,12 +11,12 @@ namespace p::Strings
 
 	String ToSentenceCase(StringView value)
 	{
+		String result;
 		if (value.empty())
 		{
-			return {};
+			return result;
 		}
 
-		String result;
 		result.reserve(value.size());
 
 		const char* p    = value.data();
@@ -47,7 +47,8 @@ namespace p::Strings
 
 	void RemoveFromEnd(String& str, sizet size)
 	{
-		str.resize(str.size() - size);
+		// Clamp to the string length to prevent underflowing the size
+		str.resize(str.size() - Min(size, str.size()));
 	}
 	void RemoveFromEnd(String& str, StringView subStr)
 	{
@@ -71,7 +72,7 @@ namespace p::Strings
 	{
 		sizet current, previous = 0;
 		current = str.find(delim);
-		while (current != std::string::npos)
+		while (current != String::npos)
 		{
 			tokens.Add(str.substr(previous, current - previous));
 			previous = current + 1;
@@ -98,17 +99,17 @@ namespace p::Strings
 		return IsNumeric(str.data());
 	}
 
-	bool IsNumeric(const char* Str)
+	bool IsNumeric(const char* str)
 	{
-		if (*Str == '-' || *Str == '+')
+		if (*str == '-' || *str == '+')
 		{
-			Str++;
+			str++;
 		}
 
 		bool bHasDot = false;
-		while (*Str != '\0')
+		while (*str != '\0')
 		{
-			if (*Str == '.')
+			if (*str == '.')
 			{
 				if (bHasDot)
 				{
@@ -116,35 +117,52 @@ namespace p::Strings
 				}
 				bHasDot = true;
 			}
-			else if (!FChar::IsDigit(*Str))
+			else if (!FChar::IsDigit(*str))
 			{
 				return false;
 			}
 
-			++Str;
+			++str;
 		}
 
 		return true;
 	}
 
-	String ParseMemorySize(sizet size)
+	String ParseMemorySize(sizet size, bool asBits)
 	{
-		if (size <= 0)
+		String result;
+		ParseMemorySizeTo(result, size, asBits);
+		return result;
+	}
+
+	void ParseMemorySizeTo(String& str, sizet size, bool asBits)
+	{
+		if (size == 0)
 		{
-			return "0B";
+			str.append(asBits ? "0b" : "0B");
+			return;
 		}
 
-		static StringView sizes[]{"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+		constexpr StringView byteSizes[]{"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+		constexpr StringView bitSizes[]{"b", "kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb"};
 
-		const double scaleD    = Log(double(size), 1024.l);
-		const u32 scale        = u32(FloorToI64(scaleD));
+		const StringView* sizes = byteSizes;
+		double dSize(size);
+		if (asBits)
+		{
+			sizes = bitSizes;
+			dSize *= 0.125;    // /8
+		}
+		const double dScale    = Log(dSize, 1024.l);
+		const u32 scale        = u32(FloorToI64(dScale));
 		const double finalSize = double(size) / Pow(1024, scale);
 
-		String sizeStr = Format("{:.1f}", finalSize);
+		FormatTo(str, StringView{"{:.1f}"}, finalSize);
 		// Remove trailing zeros
-		RemoveFromEnd(sizeStr, sizeStr.size() - Find(sizeStr, '0', FindDir::Back, true) - 1);
-		RemoveFromEnd(sizeStr, sizeStr.size() - Find(sizeStr, '.', FindDir::Back, true) - 1);
+		RemoveFromEnd(str, str.size() - Find(str, '0', FindDir::Back, true) - 1);
+		RemoveFromEnd(str, str.size() - Find(str, '.', FindDir::Back, true) - 1);
 
-		return Format("{}{}", sizeStr, sizes[scale]);
+		str.append(sizes[scale]);    // Suffix
 	}
+
 }    // namespace p::Strings

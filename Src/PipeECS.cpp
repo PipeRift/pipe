@@ -444,8 +444,8 @@ namespace p
 	ComponentPool& ComponentPool::operator=(const ComponentPool& other) noexcept
 	{
 		typeId       = other.typeId;
-		idIndices    = {*other.arena};
-		idList       = {*other.arena};
+		idIndices    = TPageBuffer<i32, 4096>{*other.arena};
+		idList       = TArray<Id>{*other.arena};
 		arena        = other.arena;
 		removePolicy = other.removePolicy;
 		typeId       = other.typeId;

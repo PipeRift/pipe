@@ -98,7 +98,7 @@ namespace p
 
 	void MonoLinearArena::Release(bool keepIfSelfAllocated)
 	{
-		stats.Release();
+		stats.Reset();
 		insert = block.data;
 		count  = 0;
 		if (selfAllocated && !keepIfSelfAllocated)
@@ -261,7 +261,7 @@ namespace p
 
 	void MultiLinearArena::Release()
 	{
-		stats.Release();
+		stats.Reset();
 		smallPool.Release(GetParentArena());
 		mediumPool.Release(GetParentArena());
 		bigPool.Release(GetParentArena());
@@ -561,8 +561,7 @@ namespace p
 
 		ReduceSlot(
 		    slotIndex, slot, ToOffset(header, block.data), ToOffset(header->end, block.data));
-		const sizet realSize =
-		    static_cast<u8*>(header->end) - reinterpret_cast<u8*>(header);
+		const sizet realSize = static_cast<u8*>(header->end) - reinterpret_cast<u8*>(header);
 		freeSize -= realSize;
 		stats.Add(header, realSize);
 		return ptr;

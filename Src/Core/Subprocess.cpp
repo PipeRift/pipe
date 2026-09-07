@@ -3,10 +3,10 @@
 
 #include "Pipe/Core/Log.h"
 #include "Pipe/Core/Optional.h"
-#include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
 #include "PipeContainers.h"
 #include "PipePlatform.h"
+#include "PipeStrings.h"
 
 #include <stdio.h>
 #include <string.h>

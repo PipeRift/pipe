@@ -656,7 +656,7 @@ namespace p
 
 	String ToString(const Path& path)
 	{
-		return path.string<char, std::char_traits<char>, std::allocator<char>>();
+		return Strings::Convert<String>(PathView{path.c_str(), path.native().size()});
 	}
 
 	Path ToSTDPath(StringView pathStr)

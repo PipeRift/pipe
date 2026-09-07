@@ -7,6 +7,10 @@
 #include <cstddef>
 #include <cstdint>
 
+#ifndef P_VERSION
+	#define P_VERSION "0.0"
+#endif
+
 // Platform Break includes
 #ifdef _MSC_VER
 #elif defined(__i386__) || defined(__x86_64__)

@@ -3,10 +3,10 @@
 #pragma once
 
 #include "Pipe/Core/Limits.h"
-#include "Pipe/Core/TypeId.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
 #include "PipeContainersFwd.h"
+#include "PipeType.h"
 
 
 namespace p

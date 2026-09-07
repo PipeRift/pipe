@@ -2,10 +2,11 @@
 
 #pragma once
 
-#include "Pipe/Core/String.h"
 #include "Pipe/Core/StringView.h"
+#include "Pipe/Files/Paths.h"
 #include "Pipe/Files/STDFileSystem.h"
 #include "PipeContainers.h"
+#include "PipeStrings.h"
 
 
 namespace p
@@ -15,6 +16,20 @@ namespace p
 	P_API bool ExistsAsFile(const Path& path);
 	P_API bool ExistsAsFolder(const Path& path);
 	P_API SpaceInfo Space(const Path& target);
+
+	// StringView overloads — create Path internally
+	inline bool ExistsAsFile(StringView path)
+	{
+		return ExistsAsFile(ToSTDPath(path));
+	}
+	inline bool ExistsAsFolder(StringView path)
+	{
+		return ExistsAsFolder(ToSTDPath(path));
+	}
+	inline SpaceInfo Space(StringView path)
+	{
+		return Space(ToSTDPath(path));
+	}
 
 
 	/** String API */

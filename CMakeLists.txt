@@ -12,7 +12,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ################################################################################
 # Project
 
-project(Pipe VERSION 0.1 LANGUAGES CXX C)
+project(Pipe VERSION 1.7 LANGUAGES CXX C)
 
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -23,6 +23,7 @@ endif()
 option(PIPE_BUILD_SHARED "Build shared libraries" ON)
 option(PIPE_BUILD_TESTS "Build Pipe tests" ${PIPE_IS_PROJECT})
 option(PIPE_ENABLE_ALLOCATION_STACKS "Should allocation call stacks be tracked?" OFF)
+option(PIPE_OVERRIDE_NEWDELETE "Should pipe's compilation unit override new/delete" ON)
 option(PIPE_BUILD_WARNINGS "Enable compiler warnings" OFF)
 option(PIPE_ENABLE_CLANG_TOOLS "Enable clang-tidy and clang-format" ${PIPE_IS_PROJECT})
 
@@ -63,10 +64,15 @@ target_include_directories(Pipe PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_
 target_include_directories(Pipe PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Src>)
 file(GLOB_RECURSE PIPE_SOURCE_FILES CONFIGURE_DEPENDS Src/*.cpp Src/*.c)
 target_sources(Pipe PRIVATE ${PIPE_SOURCE_FILES})
+target_compile_definitions(Pipe PUBLIC P_VERSION="${PROJECT_VERSION}")
 target_compile_definitions(Pipe PRIVATE NOMINMAX)
 
 if(PIPE_ENABLE_ALLOCATION_STACKS)
     target_compile_definitions(Pipe PUBLIC P_ENABLE_ALLOCATION_STACKS=0)
+endif()
+
+if(PIPE_OVERRIDE_NEWDELETE)
+    target_compile_definitions(Pipe PUBLIC P_OVERRIDE_NEWDELETE=1)
 endif()
 
 pipe_target_enable_CPP20(Pipe)

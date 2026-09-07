@@ -8,7 +8,7 @@
 
 
 /// @OPTIMIZE: Try to remove this include
-#include "Pipe/Core/String.h"
+#include "PipeStrings.h"
 
 #include <format>
 

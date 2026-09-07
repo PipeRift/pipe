@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Pipe/Core/Char.h"
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Optional.h"
 #include "PipePlatform.h"
@@ -82,6 +83,23 @@ namespace p
 		constexpr bool Equals(const TStringView<CharType> str, const CharType c)
 		{
 			return str.size() == 1 && str[0] == c;
+		}
+
+		template<typename CharType>
+		constexpr bool IEquals(const TStringView<CharType> str, const TStringView<CharType> other)
+		{
+			return str.size() == other.size()
+			    && std::equal(str.begin(), str.end(), other.begin(), [](CharType a, CharType b)
+			{
+				return TCharHelpers<CharType>::ToLower(a) == TCharHelpers<CharType>::ToLower(b);
+			});
+		}
+
+		template<typename CharType>
+		constexpr bool IEquals(const TStringView<CharType> str, const CharType c)
+		{
+			return str.size() == 1
+			    && TCharHelpers<CharType>::ToLower(str[0]) == TCharHelpers<CharType>::ToLower(c);
 		}
 
 		template<typename CharType>
@@ -226,6 +244,16 @@ namespace p
 		P_API constexpr bool Equals(const StringView str, const char c)
 		{
 			return Equals<char>(str, c);
+		}
+
+		P_API inline bool IEquals(const StringView str, const StringView other)
+		{
+			return IEquals<char>(str, other);
+		}
+
+		P_API constexpr bool IEquals(const StringView str, const char c)
+		{
+			return IEquals<char>(str, c);
 		}
 
 		P_API constexpr bool StartsWith(const StringView str, const StringView subStr)

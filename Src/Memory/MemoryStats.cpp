@@ -2,9 +2,9 @@
 
 #include "Pipe/Memory/MemoryStats.h"
 
-#include "Pipe/Core/Set.h"
-#include "Pipe/Core/String.h"
+#include "Pipe/Core/Map.h"
 #include "PipeMath.h"
+#include "PipeStrings.h"
 
 
 namespace p
@@ -59,10 +59,10 @@ namespace p
 		void PrintAllocationError(StringView error, const MemoryStatsEvent* allocation)
 		{
 			String msg;
-			Strings::FormatTo(msg, error);
+			FormatTo(msg, error);
 			if (allocation)
 			{
-				Strings::FormatTo(msg, " ({} {})", static_cast<void*>(allocation->GetPtr()),
+				FormatTo(msg, " ({} {})", static_cast<void*>(allocation->GetPtr()),
 				    Strings::ParseMemorySize(allocation->GetSize()));
 			}
 			std::puts(msg.data());
@@ -70,7 +70,10 @@ namespace p
 	}    // namespace
 
 	MemoryStats::MemoryStats()
-	    : events{GetStatsArena()}, live{GetStatsArena()}, frees{GetStatsArena()}
+	    : liveAllocations{GetStatsArena()}
+	    , errors{GetStatsArena()}
+	    , pending{GetStatsArena()}
+	    , pendingErrors{GetStatsArena()}
 	{}
 
 	MemoryStats::~MemoryStats()
@@ -81,253 +84,195 @@ namespace p
 		{
 			CheckLeaks();
 		}
-		// Delete all thread contexts. The producer is no longer running
+		// Free the remaining queue chunks. The producer is no longer running
 		// (the MemoryStats is being destroyed), so it's safe to free any
 		// remaining chunks.
-		ThreadContext* c = contexts.exchange(nullptr, std::memory_order_acq_rel);
-		while (c)
+		ScopedLock guard(lock);
+		EventChunk* chunk = firstChunk;
+		while (chunk)
 		{
-			ThreadContext* next = c->nextCtx;
-			if (ThreadContext::Chunk* chunk = c->head.load(std::memory_order_relaxed))
-			{
-				chunk->~Chunk();
-				p::Free<ThreadContext::Chunk>(GetStatsArena(), chunk, 1);
-			}
-			c->~ThreadContext();
-			p::Free<ThreadContext>(GetStatsArena(), c, 1);
-			c = next;
+			EventChunk* const next = chunk->next;
+			chunk->~EventChunk();
+			p::Free<EventChunk>(GetStatsArena(), chunk, 1);
+			chunk = next;
 		}
+		if (EventChunk* freed = spareChunk)
+		{
+			freed->~EventChunk();
+			p::Free<EventChunk>(GetStatsArena(), freed, 1);
+		}
+		firstChunk = nullptr;
+		lastChunk  = nullptr;
+		spareChunk = nullptr;
 	}
 
-	MemoryStats::ThreadContext* MemoryStats::GetOrCreateContext()
+	void MemoryStats::PushEvent(const MemoryStatsEvent& ev)
 	{
-		// Per-thread, per-MemoryStats context. The thread_local cache holds
-		// the most recently used context; we replace it if the owner changed.
-		thread_local ThreadContext* ctx = nullptr;
-		if (!ctx || ctx->owner != this)
-		{
-			ctx = p::Alloc<ThreadContext>(GetStatsArena(), 1);
-			new (ctx) ThreadContext{};
-			ctx->owner = this;
-			// Link into the global list. Append-only, so no synchronization
-			// needed with the consumer beyond the CAS.
-			ThreadContext* old = contexts.load(std::memory_order_relaxed);
-			do
-			{
-				ctx->nextCtx = old;
-			} while (!contexts.compare_exchange_weak(
-			    old, ctx, std::memory_order_release, std::memory_order_relaxed));
-		}
-		return ctx;
-	}
+		ScopedLock guard(lock);
 
-	void MemoryStats::PushEvent(void* ptr, sizet size, bool isFree)
-	{
-		auto* ctx               = GetOrCreateContext();
-		ThreadContext::Chunk* c = ctx->tail;
-		if (!c || c->writeIdx.load(std::memory_order_relaxed) >= ThreadContext::Chunk::capacity)
+		EventChunk* chunk = lastChunk;
+		if (!chunk || chunk->size >= EventChunk::capacity) [[unlikely]]
 		{
-			// Allocate a new chunk. Initialize it with the event already
-			// written so the consumer sees a complete slot on first read.
-			ThreadContext::Chunk* newC = p::Alloc<ThreadContext::Chunk>(GetStatsArena(), 1);
-			new (newC) ThreadContext::Chunk{};
-			if (isFree)
+			// Cold path: no chunk yet or current chunk is full. Allocate a new
+			// chunk, reusing the spareChunk if the collector left one.
+			chunk = spareChunk;
+			if (chunk)
 			{
-				newC->slots[0] = {static_cast<u8*>(ptr), size, MemoryStatsEventFlags::IsFree};
+				spareChunk = nullptr;
 			}
 			else
 			{
-				newC->slots[0] = {static_cast<u8*>(ptr), size};
+				chunk = p::Alloc<EventChunk>(GetStatsArena(), 1);
 			}
-			newC->writeIdx.store(1, std::memory_order_release);
-			if (c)
+			new (chunk) EventChunk{};
+
+			if (lastChunk)
 			{
-				// Publish new chunk via the old chunk's next. Consumer
-				// discovers it after we've fully initialized newC.
-				c->next.store(newC, std::memory_order_release);
+				lastChunk->next = chunk;
 			}
 			else
 			{
-				// First chunk: publish via head.
-				ctx->head.store(newC, std::memory_order_release);
+				firstChunk = chunk;
 			}
-			ctx->tail = newC;
-			return;
+			lastChunk = chunk;
 		}
-		const u32 idx = c->writeIdx.load(std::memory_order_relaxed);
-		if (isFree)
-		{
-			c->slots[idx] = {static_cast<u8*>(ptr), size, MemoryStatsEventFlags::IsFree};
-		}
-		else
-		{
-			c->slots[idx] = {static_cast<u8*>(ptr), size};
-		}
-		// Release the write so the consumer sees the slot data before the
-		// new writeIdx.
-		c->writeIdx.store(idx + 1, std::memory_order_release);
+		chunk->slots[chunk->size] = ev;
+		++chunk->size;
 	}
 
-	void MemoryStats::Add(void* ptr, sizet size)
-	{
-		PushEvent(ptr, size, false);
-	}
-
-	void MemoryStats::Remove(void* ptr, sizet size)
-	{
-		if (!ptr)
-		{
-			return;
-		}
-		PushEvent(ptr, size, true);
-	}
-
-	void MemoryStats::Release()
+	void MemoryStats::Reset()
 	{
 		// Drain all thread buffers and reset state.
 		CollectStats();
 		used           = 0;
 		totalAllocated = 0;
-		events.Clear();
+		liveAllocations.Clear();
+		errors.Clear();
 	}
 
 	void MemoryStats::CollectStats() const
 	{
-		// Walk all thread contexts and drain their chunk chains. For each
-		// chunk, process all available events, then free the chunk if the
-		// producer has already linked a successor.
-		ThreadContext* c = contexts.load(std::memory_order_acquire);
-		for (; c != nullptr; c = c->nextCtx)
-		{
-			ThreadContext::Chunk* chunk = c->head.load(std::memory_order_acquire);
-			while (chunk != nullptr)
+		// Phase 1: drain the shared event queue into a scratch buffer,
+		// keeping the lock hold time to just the memcpy.
+		pending.Clear();
+		EventChunk* chunk;
+		{    // Guard detaches the chunk list; producers can no longer reach it.
+			ScopedLock guard(lock);
+			chunk      = firstChunk;
+			firstChunk = nullptr;
+			lastChunk  = nullptr;
+			if (chunk && !spareChunk)    // Spare chunk still needs lock and draining
 			{
-				const u32 writeIdx = chunk->writeIdx.load(std::memory_order_acquire);
-				while (chunk->readIdx < writeIdx)
+				pending.Append(chunk->slots, chunk->size);
+				spareChunk = chunk;
+				chunk      = chunk->next;
+				spareChunk->~EventChunk();
+			}
+		}
+
+		// Drain safely events from all detached chunks
+		while (chunk)
+		{
+			pending.Append(chunk->slots, chunk->size);
+
+			EventChunk* const next = chunk->next;
+			chunk->~EventChunk();
+			p::Free<EventChunk>(GetStatsArena(), chunk, 1);
+			chunk = next;
+		}
+		pendingErrors.Resize(pending.Size(), MemoryStatsErrorType::None);
+
+		// Iterate events to track live allocations and errors
+		for (i32 i = 0; i < pending.Size(); ++i)
+		{
+			const MemoryStatsEvent& ev = pending[i];
+			if (ev.IsFree())
+			{
+				if (MemoryStatsEvent* liveEv = liveAllocations.Find(ev))
 				{
-					const MemoryStatsEvent& ev = chunk->slots[chunk->readIdx];
-					if (ev.IsFree())
+					if (liveEv->GetSize() != ev.GetSize())
 					{
-						used -= ev.GetSize();
-						totalAllocated -= ev.GetSize();
+						pendingErrors[i] = MemoryStatsErrorType::SizeMismatch;
 					}
 					else
 					{
-						used += ev.GetSize();
-						totalAllocated += ev.GetSize();
+						liveAllocations.Remove(ev);
 					}
-					events.Add(ev);
-					++chunk->readIdx;
 				}
-				ThreadContext::Chunk* next = chunk->next.load(std::memory_order_acquire);
-				if (next == nullptr)
+				else
 				{
-					// Producer hasn't allocated a successor yet. Stop.
-					break;
+					pendingErrors[i] = MemoryStatsErrorType::UnknownFree;
 				}
-				// Producer has moved on. Safe to free this chunk.
-				c->head.store(next, std::memory_order_relaxed);
-				chunk->~Chunk();
-				p::Free<ThreadContext::Chunk>(GetStatsArena(), chunk, 1);
-				chunk = next;
-			}
-		}
-
-
-		// Fast (ptr,size) key: XOR ptr with mixed size to produce a
-		// single u64. Cheaper to hash than the full 16-byte event.
-		auto EventKey = [](const MemoryStatsEvent& ev) -> u64
-		{
-			return reinterpret_cast<u64>(ev.GetPtr())
-			     ^ (static_cast<u64>(ev.GetSize()) * 0x9E3779B97F4A7C15ULL);
-		};
-
-		// Reverse scan: build live bitmask + set of unmatched free keys.
-		live.Resize(events.Size());
-		live.SetAllFalse();
-		TSet<u64> freeKeys{GetStatsArena()};
-		for (i32 i = events.Size() - 1; i >= 0; --i)
-		{
-			const auto& ev = events[i];
-			if (ev.IsFree())
-			{
-				freeKeys.Insert(EventKey(ev));
 			}
 			else
 			{
-				auto it = freeKeys.FindIt(EventKey(ev));
-				if (it != freeKeys.end())
+				if (liveAllocations.Contains(ev))
 				{
-					freeKeys.RemoveIt(it);
+					pendingErrors[i] = MemoryStatsErrorType::UnfreedRealloc;
 				}
 				else
 				{
-					live.SetTrue(i);
+					liveAllocations.Insert(ev);
 				}
 			}
 		}
 
-		// In-place compaction + bitmask rebuild (single pass).
-		// Drops matched alloc/free pairs, keeps leaks + stray frees.
-		frees.Resize(events.Size());
-		frees.SetAllFalse();
-		i32 writeIdx = 0;
-		for (i32 i = 0; i < events.Size(); ++i)
+		// Record errors and remove events so that stats are calculated correctly.\
+		// (Order of events is no longer needed)
+		for (i32 i = 0; i < pendingErrors.Size(); ++i)
 		{
-			const MemoryStatsEvent& ev = events[i];
-			const bool keep =
-			    ev.IsFree() ? freeKeys.Contains(EventKey(ev)) : live.IsSet(i);
-			if (keep)
+			if (pendingErrors[i] != MemoryStatsErrorType::None)
 			{
-				const bool isFree = ev.IsFree();
-				if (writeIdx != i)
-				{
-					events[writeIdx] = ev;
-				}
-				if (isFree)
-				{
-					frees.SetTrue(writeIdx);
-					live.SetFalse(writeIdx);
-				}
-				else
-				{
-					live.SetTrue(writeIdx);
-				}
-				++writeIdx;
+				errors.Add({pending[i], pendingErrors[i]});
+
+				pending.RemoveAtSwapUnsafe(i);
+				pendingErrors.RemoveAtSwapUnsafe(i);
+				--i;
 			}
 		}
-		events.Resize(writeIdx);
-		frees.Resize(writeIdx);
-		live.Resize(writeIdx);
+
+		// Record stats
+		for (i32 i = 0; i < pending.Size(); ++i)
+		{
+			const MemoryStatsEvent& ev = pending[i];
+			const sizet size           = ev.GetSize();
+			if (ev.IsFree())
+			{
+				used -= size;
+			}
+			else
+			{
+				used += size;
+				totalAllocated += size;
+			}
+		}
 	}
 
 	void MemoryStats::CheckLeaks() const
 	{
-		const i32 numLeaks = live.CountSetBits();
+		const i32 numLeaks = liveAllocations.Size();
 		if (numLeaks <= 0)
 		{
 			return;
 		}
 
 		String errorMsg;
-		Strings::FormatTo(errorMsg, "{}: {} allocs were not freed!", name, numLeaks);
+		FormatTo(errorMsg, "{}: {} allocs were not freed!", name ? name : "MemoryStats", numLeaks);
 
 		const i32 shown = Min(64, numLeaks);
-		i32 i           = -1;
 		i32 printed     = 0;
-		while (printed < shown)
+		for (const auto& ev : liveAllocations)
 		{
-			i = live.GetNextSet(i);
-			if (i == NO_INDEX)
+			if (printed >= shown)
 			{
 				break;
 			}
-			PrintAllocationError("", &events[i]);
+			PrintAllocationError("", &ev);
 			++printed;
 		}
 		if (numLeaks > shown)
 		{
-			Strings::FormatTo(errorMsg, "\n...\n{} more not shown.", numLeaks - shown);
+			FormatTo(errorMsg, "\n...\n{} more not shown.", numLeaks - shown);
 		}
 		std::puts(errorMsg.data());
 	}

@@ -4,9 +4,9 @@
 
 #include "Pipe/Core/FixedString.h"
 #include "Pipe/Core/Log.h"
-#include "Pipe/Core/String.h"
 #include "Pipe/Files/Files.h"
 #include "Pipe/Files/Paths.h"
+#include "PipeStrings.h"
 
 
 #if P_PLATFORM_WINDOWS
@@ -241,7 +241,7 @@ namespace p
 		}
 		else if (IsFile(path))
 		{
-			const String parameters = Strings::Format("/select,{}", path);
+			const String parameters = Format("/select,{}", path);
 			::ShellExecuteA(
 			    nullptr, "open", "explorer.exe", parameters.data(), nullptr, SW_SHOWNORMAL);
 		}
