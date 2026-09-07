@@ -2,12 +2,12 @@
 
 #pragma once
 
+#include "Fwd/PipeContainers.h"
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/Function.h"
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/Utility.h"
 #include "PipeAlgorithms.h"
-#include "PipeContainersFwd.h"
 #include "PipeMath.h"
 #include "PipeMemory.h"
 #include "PipePlatform.h"
@@ -463,7 +463,7 @@ namespace p
 			const i32 LastIndex = Size() - 1;
 			for (i32 i = 0; i <= LastIndex; ++i)
 			{
-				const i32 Index = p::Random(i, LastIndex);
+				const i32 Index = Random(i, LastIndex);
 				if (i != Index)
 				{
 					Swap(i, Index);
@@ -477,7 +477,7 @@ namespace p
 			const i32 LastIndex = firstIdx + count;
 			for (i32 i = firstIdx; i <= LastIndex; ++i)
 			{
-				const i32 Index = p::Random(i, LastIndex);
+				const i32 Index = Random(i, LastIndex);
 				if (i != Index)
 				{
 					Swap(i, Index);

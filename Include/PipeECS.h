@@ -1,6 +1,7 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
+#include "Fwd/PipeECS.h"
 #include "Pipe/Core/Map.h"
 #include "Pipe/Core/PageBuffer.h"
 #include "Pipe/Core/Templates.h"
@@ -8,7 +9,6 @@
 #include "Pipe/Memory/OwnPtr.h"
 #include "Pipe/Memory/UniquePtr.h"
 #include "PipeContainers.h"
-#include "PipeECSFwd.h"
 #include "PipePlatform.h"
 #include "PipeReflect.h"
 

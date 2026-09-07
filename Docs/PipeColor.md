@@ -1,9 +1,9 @@
 ---
 title: Pipe Color
 ---
-**Header:** [`<PipeColor.h>`](https://github.com/PipeRift/pipe/blob/main/Include/PipeColor.h)
+**Header:** [`<PipeColor.h>`](../Include/PipeColor.h)
 **Namespace:** `p`
-**Uses:** [`PipeMath`](./PipeMath.md) [`PipeVectors`](./PipeVectors.md)
+**Uses:** [`PipeMath`](./PipeMath.md)
 
 ## Overview
 

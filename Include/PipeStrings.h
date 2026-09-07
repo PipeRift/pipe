@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Pipe/Core/Hash.h"
-#include "Pipe/Core/STDFormat.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
 #if defined(__clang__)
@@ -14,13 +13,11 @@
 #if defined(__clang__)
 	#pragma clang diagnostic pop
 #endif
+#include "Fwd/PipeSerialize.h"
 #include "PipeContainers.h"
+#include "PipeMath.h"
 #include "PipeMemory.h"
 #include "PipePlatform.h"
-#include "PipeSerializeFwd.h"
-
-#include <algorithm>
-#include <string>
 
 
 namespace p
@@ -1431,6 +1428,8 @@ namespace p
 	}
 }    // namespace p
 
+
+#pragma region Formatters
 template<typename CharType, p::u32 InlineCapacity>
 struct std::formatter<p::TString<CharType, InlineCapacity>, CharType>
     : std::formatter<std::basic_string_view<CharType>, CharType>
@@ -1442,6 +1441,92 @@ struct std::formatter<p::TString<CharType, InlineCapacity>, CharType>
 		    std::basic_string_view<CharType>{str.data(), str.size()}, ctx);
 	}
 };
+
+
+// Support for std::format of pointers
+template<typename T>
+requires(!p::IsVoid<T> && !p::IsChar<T>)
+struct std::formatter<T*> : public std::formatter<const void*>
+{
+	template<typename FormatContext>
+	auto format(T* ptr, FormatContext& ctx) const
+	{
+		return formatter<const void*>::format(ptr, ctx);
+	}
+};
+
+
+template<typename T>
+struct std::formatter<p::Vec<2, T>>
+{
+	p::String formatStr;
+
+	constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin())
+	{
+		auto begin = ctx.begin();
+		if (begin == ctx.end())
+		{
+			formatStr = "({}, {})";
+			return begin;
+		}
+
+		auto end = begin;
+		while (*begin != '{')
+		{
+			--begin;
+		}
+		while (*end != '}')
+		{
+			++end;
+		}
+		const p::StringView valueFormat{begin, end + 1};
+		formatStr = std::format("({}, {})", valueFormat, valueFormat);
+		return end;
+	}
+
+	template<typename FormatContext>
+	auto format(const p::Vec<2, T>& v, FormatContext& ctx) const
+	{
+		return std::vformat_to(ctx.out(), formatStr, std::make_format_args(v.x, v.y));
+	}
+};
+
+
+template<typename T>
+struct std::formatter<p::Vec<3, T>>
+{
+	p::String formatStr;
+
+	constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin())
+	{
+		auto begin = ctx.begin();
+		if (begin == ctx.end())
+		{
+			formatStr = "({}, {}, {})";
+			return begin;
+		}
+
+		auto end = begin;
+		while (*begin != '{')
+		{
+			--begin;
+		}
+		while (*end != '}')
+		{
+			++end;
+		}
+		const p::StringView valueFormat{begin, end + 1};
+		formatStr = std::format("({}, {}, {})", valueFormat, valueFormat, valueFormat);
+		return end;
+	}
+	template<typename FormatContext>
+	auto format(const p::Vec<3, T>& v, FormatContext& ctx) const
+	{
+		return vformat_to(ctx.out(), formatStr, std::make_format_args(v.x, v.y, v.z));
+	}
+};
+#pragma endregion Formatters
+
 
 template<typename CharType, p::u32 InlineCapacity>
 struct std::hash<p::TString<CharType, InlineCapacity>>

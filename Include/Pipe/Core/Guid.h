@@ -2,8 +2,8 @@
 
 #pragma once
 
+#include "Fwd/PipeSerialize.h"
 #include "PipeAlgorithms.h"
-#include "PipeSerializeFwd.h"
 #include "PipeStrings.h"
 
 

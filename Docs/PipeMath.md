@@ -1,13 +1,16 @@
 ---
 title: Pipe Math
 ---
-**Header:** [<PipeMath.h>](https://github.com/PipeRift/pipe/blob/main/Include/PipeMath.h)
+**Header:** [<PipeMath.h>](../Include/PipeMath.h)
+**Forward Declarations:** [<Fwd/PipeMath.h>](../Include/Fwd/PipeMath.h)
 **Namespace:** `p`
 **Uses:** [`PipePlatform`](./PipePlatform.md)
 
 ## Overview
 
 `PipeMath` provides a collection of constexpr and runtime math utilities in the `p` namespace. Functions are overloaded by type via C++20 concepts (`FloatingPoint<T>`, `SignedIntegral<T>`, `UnsignedIntegral<T>`, `Number<T>`) to dispatch between constexpr compile-time implementations (when `std::is_constant_evaluated()` is true) and standard library fallbacks at runtime.
+
+It also hosts the vector math types (`Vec`, `TAABB`/`Rect`/`Box`, `Rotator`, `Quat`) formerly in `PipeVectors`.
 
 All functions marked with `P_API` are exported from the Pipe shared library; others are inline or template-only.
 ## Constants

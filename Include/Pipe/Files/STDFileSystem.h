@@ -2,11 +2,11 @@
 
 #pragma once
 
+#include "Fwd/PipeSerialize.h"
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Hash.h"
 #include "Pipe/Core/StringView.h"
 #include "PipePlatform.h"
-#include "PipeSerializeFwd.h"
 
 #include <filesystem>
 #include <format>

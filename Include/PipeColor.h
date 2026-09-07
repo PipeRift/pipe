@@ -5,7 +5,6 @@
 #include "Pipe/Core/FixedString.h"
 #include "PipeMath.h"
 #include "PipeStrings.h"
-#include "PipeVectors.h"
 
 
 namespace p

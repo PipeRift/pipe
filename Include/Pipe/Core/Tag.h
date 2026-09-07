@@ -1,9 +1,9 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 #pragma once
 
+#include "Fwd/PipeSerialize.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Utility.h"
-#include "PipeSerializeFwd.h"
 #include "PipeStrings.h"
 
 #include <format>

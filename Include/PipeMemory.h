@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include "Fwd/PipeContainers.h"
 #include "Pipe/Core/Limits.h"
 #include "Pipe/Core/TypeTraits.h"
 #include "Pipe/Core/Utility.h"
-#include "PipeContainersFwd.h"
 #include "PipeType.h"
 
 
@@ -513,7 +513,7 @@ namespace p
 		}
 
 	protected:
-		TypeId ProvideTypeId() const override
+		inline TypeId ProvideTypeId() const override
 		{
 			return p::GetTypeId<Arena>();
 		}
@@ -533,7 +533,7 @@ namespace p
 		}
 
 	protected:
-		TypeId ProvideTypeId() const override
+		inline TypeId ProvideTypeId() const override
 		{
 			return p::GetTypeId<ChildArena>();
 		}

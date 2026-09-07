@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "Pipe/Core/STDFormat.h"
 #include "PipePlatform.h"
+
+#include <format>
 
 
 namespace p::details

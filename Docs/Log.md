@@ -1,4 +1,9 @@
-# Log
+---
+title: Log
+---
+**Header:** [`<Pipe/Core/Log.h>`](../Include/Pipe/Core/Log.h)
+**Namespace:** `p`
+**Uses:** [`PipeStrings`](./PipeStrings.md)
 
 The logging system in Pipe provides a callback-based logger with three severity levels: `Info`, `Warning`, and `Error`.
 

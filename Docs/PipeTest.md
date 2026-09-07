@@ -1,14 +1,14 @@
 ---
 title: Pipe Test
 ---
-**Header:** [`<PipeTest.h>`](https://github.com/PipeRift/pipe/blob/main/Include/PipeTest.h)`]
+**Header:** [`<PipeTest.h>`](../Include/PipeTest.h)
 **Namespace:** `p`
-**Uses:** [`PipeReflect`](./PipeECS.md) `PipeStrings` `PipeTime`
+**Uses:** [`PipeReflect`](./PipeECS.md) [`PipeStrings`](./PipeStrings.md) [`PipeTime`](./PipeTime.md)
 
 ## Overview
 
 `PipeTest` is test framework built into Pipe, used by the library to test itself.
-It is heavily inspired by `Bandit`, following similar APIs and outputs to fully support existing IDE tools built for that library.
+It is heavily inspired by `Bandit`, following similar APIs and outputs to support existing IDE tools built for that library.
 
 ```cpp
 #include <PipeTest.h>
@@ -28,7 +28,7 @@ P_SPEC("Math", []()
     {
         // never runs
     });
-    
+
     AfterEach([]() { /* runs after each test */ });
 });
 ```
@@ -136,6 +136,11 @@ struct SpecialReporter : p::ITestReporter
 
 - Tests not matched by `--only`, matched by `--skip`, marked `XIt`, or after a `--break-on-failure` trigger are all reported as **SKIPPED** (bandit semantics). They are not hidden — only excluded from execution.
 - Failures are buffered during the run and emitted by the reporter at the end, so they don't interleave with deferred context output.
+
+## IDE Tools
+### VSCode
+You can use extension [Bandit Test Explorer](https://marketplace.visualstudio.com/items?itemName=dampsoft.vscode-banditcpp-test-adapter):
+![[BanditTestExplorer.png]]
 
 ---
 

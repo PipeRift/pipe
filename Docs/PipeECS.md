@@ -1,7 +1,8 @@
 ---
 title: Pipe ECS
 ---
-**Header:** [<PipeECS.h>](https://github.com/PipeRift/pipe/blob/main/Include/PipeECS.h)
+**Header:** [<PipeECS.h>](../Include/PipeECS.h)
+**Forward Declarations:** [<Fwd/PipeECS.h>](../Include/Fwd/PipeECS.h)
 **Namespace:** `p`
 **Uses:** [`PipeContainers`](../Include/PipeContainers.h) [`PipePlatform`](./PipePlatform.md) [`PipeReflect`](./PipeReflect.md)
 
