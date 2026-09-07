@@ -36,8 +36,8 @@ namespace p
 		    requires(const T& value) { std::formatter<std::remove_cvref_t<T>, Char>{}; };
 	}    // namespace details
 
-	void RegisterSpec(StringView name, TFunction<void()> fn);
-	void RegisterSpec(TFunction<void()> fn);
+	P_API void RegisterSpec(StringView name, TFunction<void()> fn);
+	P_API void RegisterSpec(TFunction<void()> fn);
 
 	// Self-registering top-level describe. Registers its spec body on
 	// construction (same pattern as TTypeAutoRegister). The body runs
@@ -70,20 +70,42 @@ namespace p
 #define P_SPEC static const p::SpecAutoRegister P_CAT(_pipeSpecReg_, __COUNTER__)
 
 	// Nested describe. Only valid inside a Spec; otherwise logs an error and ignores.
-	void Describe(StringView name, TFunction<void()> fn);
+	P_API void Describe(StringView name, TFunction<void()> fn);
 	// Register a runnable test in the current describe.
 	// Bodies are stored until RunTests, so std::function (owning) is required here.
-	void It(StringView name, std::function<void()> fn);
+	P_API void It(StringView name, std::function<void()> fn);
 	// Register a disabled test; never run.
-	void XIt(StringView name, std::function<void()> fn);
+	P_API void XIt(StringView name, std::function<void()> fn);
 	// Setup hook attached to the current describe.
-	void BeforeEach(std::function<void()> fn);
+	P_API void BeforeEach(std::function<void()> fn);
 	// Teardown hook attached to the current describe.
-	void AfterEach(std::function<void()> fn);
+	P_API void AfterEach(std::function<void()> fn);
 
-	// Reporter interface (defined in Src/Tests/PipeTest.cpp). Forward
-	// declaration so TestSettings can reference its type id.
-	struct ITestReporter;
+
+	// Reporter interface. Each reporter formats the run differently.
+	struct P_API ITestReporter
+	{
+		P_STRUCT(ITestReporter)
+
+		virtual ~ITestReporter() = default;
+
+		virtual void TestRunStarting() {}
+		virtual void TestRunComplete() = 0;
+		virtual void ContextStarting(StringView) {}
+		virtual void ContextEnded(StringView) {}
+		virtual void ItStarting(StringView) {}
+		virtual void ItSucceeded(StringView) {}
+		// Test passed but made no assertions (e.g. smoke tests).
+		virtual void ItSucceededNoAssertions(StringView) {}
+		virtual void ItFailed(StringView) {}
+		virtual void ItUnknownError(StringView) {}
+		virtual void ItSkipped(StringView) {}
+	};
+
+
+	// Finds a registered reporter type by name (case-insensitive). Matches
+	// either the full type name ("SpecReporter") or its preffix ("Spec").
+	P_API TTypeId<ITestReporter> FindReporter(StringView name);
 
 	// Settings for a test run.
 	struct TestSettings
@@ -100,8 +122,8 @@ namespace p
 		TTypeId<ITestReporter> reporter;
 	};
 
-	int RunTests(const TestSettings& settings);
-	int RunTests(int argc, char** argv);
+	P_API int RunTests(const TestSettings& settings);
+	P_API int RunTests(int argc, char** argv);
 
 
 	// Extensible value-to-string hook for failure messages.
@@ -167,10 +189,10 @@ namespace p
 	namespace details
 	{
 		// Format failure message from source location + description.
-		void Fail(const std::source_location& loc, StringView message);
+		P_API void Fail(const std::source_location& loc, StringView message);
 
 		// Counts an assertion. Used to detect tests that ran no expects.
-		void CountAssert();
+		P_API void CountAssert();
 
 		// Detect types constructible into a StringView (string-ish values).
 		template<typename T>

@@ -1,17 +1,10 @@
 // Copyright 2015-2026 Piperift. All Rights Reserved.
 
-#ifndef P_OVERRIDE_NEWDELETE
-	#define P_OVERRIDE_NEWDELETE 1
-#endif
-#if P_OVERRIDE_NEWDELETE
-	#include "PipeNewDelete.h"
-#endif
+#include "PipeTest.h"
 
-#include "Pipe.h"
 #include "Pipe/Core/Log.h"
 #include "Pipe/Memory/OwnPtr.h"
 #include "PipeStrings.h"
-#include "PipeTest.h"
 #include "PipeTime.h"
 
 #include <cstdio>
@@ -69,8 +62,6 @@ namespace p
 			// Assertion detail accumulated for the current test (file:line: msg).
 			String currentFailureDetail;
 
-			// Id of the selected reporter (matches settings.reporter).
-			TTypeId<ITestReporter> reporter{};
 			bool useColor     = true;
 			bool reportTiming = false;
 
@@ -124,12 +115,12 @@ namespace p
 
 	namespace details
 	{
-		void CountAssert()
+		P_API void CountAssert()
 		{
 			++GetTestContext().currentTestAssertCount;
 		}
 
-		void Fail(const std::source_location& loc, StringView message)
+		P_API void Fail(const std::source_location& loc, StringView message)
 		{
 			// Not printed immediately: failures are reported by the reporter
 			// at the end of the run, so they never interleave with deferred
@@ -145,7 +136,7 @@ namespace p
 		}
 	}    // namespace details
 
-	void RegisterSpec(StringView name, TFunction<void()> fn)
+	P_API void RegisterSpec(StringView name, TFunction<void()> fn)
 	{
 		TestContext& context    = GetTestContext();
 		context.currentDescribe = &AddDescribe(context.root, name);
@@ -153,7 +144,7 @@ namespace p
 		context.currentDescribe = nullptr;
 	}
 
-	void RegisterSpec(TFunction<void()> fn)
+	P_API void RegisterSpec(TFunction<void()> fn)
 	{
 		TestContext& context    = GetTestContext();
 		context.currentDescribe = &context.root;
@@ -161,7 +152,7 @@ namespace p
 		context.currentDescribe = nullptr;
 	}
 
-	void Describe(StringView name, TFunction<void()> fn)
+	P_API void Describe(StringView name, TFunction<void()> fn)
 	{
 		TestDescribe*& current = CurrentDescribe();
 		if (!current)
@@ -176,17 +167,17 @@ namespace p
 		current = prevDescribe;
 	}
 
-	void It(StringView name, std::function<void()> fn)
+	P_API void It(StringView name, std::function<void()> fn)
 	{
 		AddTest("It", name, Move(fn), false);
 	}
 
-	void XIt(StringView name, std::function<void()> fn)
+	P_API void XIt(StringView name, std::function<void()> fn)
 	{
 		AddTest("XIt", name, Move(fn), true);
 	}
 
-	void BeforeEach(std::function<void()> fn)
+	P_API void BeforeEach(std::function<void()> fn)
 	{
 		TestDescribe*& current = CurrentDescribe();
 		if (!current)
@@ -197,7 +188,7 @@ namespace p
 		current->beforeEach = fn;
 	}
 
-	void AfterEach(std::function<void()> fn)
+	P_API void AfterEach(std::function<void()> fn)
 	{
 		TestDescribe*& current = CurrentDescribe();
 		if (!current)
@@ -208,25 +199,25 @@ namespace p
 		current->afterEach = fn;
 	}
 
-	// Reporter interface (public so TestSettings can reference its type id).
-	// Mirrors bandit's reporter callbacks. Each reporter formats the run
-	// differently; all share the same per-test execution flow in RunNested.
-	struct ITestReporter
+	P_API TTypeId<ITestReporter> FindReporter(StringView name)
 	{
-		virtual ~ITestReporter() = default;
+		const TypeId baseId = GetTypeId<ITestReporter>();
+		for (const TypeId id : GetRegisteredTypeIds())
+		{
+			if (!IsTypeParentOf(baseId, id))
+			{
+				continue;
+			}
 
-		virtual void TestRunStarting() {}
-		virtual void TestRunComplete() = 0;
-		virtual void ContextStarting(StringView) {}
-		virtual void ContextEnded(StringView) {}
-		virtual void ItStarting(StringView) {}
-		virtual void ItSucceeded(StringView) {}
-		// Test passed but made no assertions (e.g. smoke tests).
-		virtual void ItSucceededNoAssertions(StringView) {}
-		virtual void ItFailed(StringView) {}
-		virtual void ItUnknownError(StringView) {}
-		virtual void ItSkipped(StringView) {}
-	};
+			// "spec" matches SpecReporter; the full name also matches ("specreporter").
+			const StringView typeName = RemoveNamespace(GetTypeName(id));
+			if (Strings::IEquals(Strings::RemoveFromEnd(typeName, "Reporter"), name))
+			{
+				return TTypeId<ITestReporter>{id};
+			}
+		}
+		return TTypeId<ITestReporter>{TypeId{}};    // No match: invalid id
+	}
 
 
 	namespace
@@ -299,6 +290,9 @@ namespace p
 		// bandit's `spec` reporter: indented contexts, "- it <name> ... OK".
 		struct SpecReporter : ITestReporter
 		{
+			using Super = ITestReporter;
+			P_STRUCT(SpecReporter)
+
 			i32 indentation = 0;
 			String lastIt;
 
@@ -365,6 +359,9 @@ namespace p
 		// lines (a fresh line every kLineWidth tests) rather than one line each.
 		struct DotsReporter : ITestReporter
 		{
+			using Super = ITestReporter;
+			P_STRUCT(DotsReporter)
+
 			bool anyResults = false;
 
 			void ItSucceeded(StringView) override
@@ -415,6 +412,9 @@ namespace p
 		// exactly once.
 		struct SinglelineReporter : ITestReporter
 		{
+			using Super = ITestReporter;
+			P_STRUCT(SinglelineReporter)
+
 			SinglelineReporter()
 			{
 #if P_PLATFORM_WINDOWS
@@ -507,6 +507,9 @@ namespace p
 		// and its own summary. Honors --report-timing on every test line.
 		struct InfoReporter : ITestReporter
 		{
+			using Super = ITestReporter;
+			P_STRUCT(InfoReporter)
+
 			// One entry per active describe, outermost first.
 			struct ContextInfo
 			{
@@ -866,7 +869,7 @@ namespace p
 	}    // namespace
 
 
-	int RunTests(const TestSettings& settings)
+	P_API int RunTests(const TestSettings& settings)
 	{
 #if P_PLATFORM_WINDOWS
 		// Enable ANSI escape sequences on the Windows console, otherwise
@@ -890,7 +893,6 @@ namespace p
 		context.runTests     = 0;
 		context.failedTests  = 0;
 		context.skippedTests = 0;
-		context.reporter     = settings.reporter;
 		context.useColor     = settings.useColor;
 		context.reportTiming = settings.reportTiming;
 		context.contextStack.Clear();
@@ -947,7 +949,7 @@ namespace p
 		return context.failedTests == 0 ? 0 : 1;
 	}
 
-	int RunTests(int argc, char** argv)
+	P_API int RunTests(int argc, char** argv)
 	{
 		TestSettings settings;
 		for (i32 i = 1; i < argc; ++i)
@@ -967,23 +969,8 @@ namespace p
 				StringView name = Strings::RemoveFromStart(arg, StringView{"-r="});
 				name            = Strings::RemoveFromStart(name, StringView{"--reporter="});
 
-				if (Strings::Equals(name, StringView{"dots"}))
-				{
-					settings.reporter = TTypeId<DotsReporter>();
-				}
-				else if (Strings::Equals(name, StringView{"singleline"}))
-				{
-					settings.reporter = TTypeId<SinglelineReporter>();
-				}
-				else if (Strings::Equals(name, StringView{"spec"}))
-				{
-					settings.reporter = TTypeId<SpecReporter>();
-				}
-				else if (Strings::Equals(name, StringView{"info"}))
-				{
-					settings.reporter = TTypeId<InfoReporter>();
-				}
-				else
+				settings.reporter = FindReporter(name);
+				if (!settings.reporter)
 				{
 					Warning("PipeTest: unknown reporter '{}'. Using default.", name);
 				}
