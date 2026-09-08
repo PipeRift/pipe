@@ -4219,9 +4219,11 @@ namespace p
 			{
 				if (memoryDbg.hasSelection)
 				{
-					ImGui::Text("0x%llX - 0x%llX",
-					    static_cast<unsigned long long>(memoryDbg.selectionStart),
-					    static_cast<unsigned long long>(memoryDbg.selectionEnd));
+					static String selectionLabel;
+					selectionLabel.clear();
+					FormatTo(selectionLabel, "0x{:X} - 0x{:X}", memoryDbg.selectionStart,
+					    memoryDbg.selectionEnd);
+					ImGui::Text("%s", selectionLabel.c_str());
 					ImGui::Separator();
 				}
 				if (ImGui::MenuItem("Focus selection"))
@@ -4387,9 +4389,10 @@ namespace p
 
 					detailsLabel = GetTypeName(selectedArena->typeId);
 					ImGui::Text("Type: %s", detailsLabel.c_str());
-					ImGui::Text("Range: 0x%llX - 0x%llX",
+					FormatTo(detailsLabel, "Range: 0x{:X} - 0x{:X}",
 					    reinterpret_cast<sizet>(selectedArena->begin),
 					    reinterpret_cast<sizet>(selectedArena->begin) + selectedArena->capacity);
+					ImGui::Text("%s", detailsLabel.c_str());
 					ImGui::SeparatorText("Usage");
 					if (selectedArena->capacity > 0)
 					{

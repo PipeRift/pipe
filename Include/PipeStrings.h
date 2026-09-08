@@ -7,7 +7,11 @@
 #include "Pipe/Core/Utility.h"
 #if defined(__clang__)
 	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wcharacter-conversion"
+	#if defined(__has_warning)
+		#if __has_warning("-Wcharacter-conversion")
+			#pragma clang diagnostic ignored "-Wcharacter-conversion"
+		#endif
+	#endif
 #endif
 #include "Pipe/Extern/utf8/unchecked.h"
 #if defined(__clang__)
