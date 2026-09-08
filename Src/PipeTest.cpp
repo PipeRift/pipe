@@ -772,6 +772,7 @@ namespace p
 				bool passed                     = true;
 				bool unknown                    = false;
 				const DateTime testStart        = DateTime::Now();
+#if defined(_CPPUNWIND) || defined(__cpp_exceptions)
 				try
 				{
 					test.body();
@@ -781,6 +782,9 @@ namespace p
 					passed  = false;
 					unknown = true;
 				}
+#else
+				test.body();
+#endif
 				passed                     = passed && (context.currentTestFailureCount == 0);
 				const Timespan testElapsed = DateTime::Now() - testStart;
 				context.lastTestDuration   = testElapsed.GetTotalSeconds<double>();
