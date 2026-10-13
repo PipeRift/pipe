@@ -121,10 +121,14 @@ namespace p
 
 	void* HeapAlloc(sizet size)
 	{
-#if P_PLATFORM_WINDOWS
-		return _aligned_malloc(size, __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+		// Must stay paired with HeapFree: MSVC/MinGW use the aligned CRT allocators, POSIX uses
+		// malloc. Both provide at least the default new alignment.
+#if defined(_MSC_VER) || (defined(__MINGW32__) && (__MSVCRT_VERSION__ >= 0x0700))
+		return ::_aligned_malloc(size, __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+#elif defined(__MINGW32__)
+		return ::__mingw_aligned_malloc(size, __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #else
-		return malloc(size);
+		return ::malloc(size);
 #endif
 	}
 
