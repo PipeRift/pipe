@@ -123,10 +123,8 @@ namespace p
 	{
 		// Must stay paired with HeapFree: MSVC/MinGW use the aligned CRT allocators, POSIX uses
 		// malloc. Both provide at least the default new alignment.
-#if defined(_MSC_VER) || (defined(__MINGW32__) && (__MSVCRT_VERSION__ >= 0x0700))
+#if defined(_MSC_VER) || defined(__MINGW32__)
 		return ::_aligned_malloc(size, __STDCPP_DEFAULT_NEW_ALIGNMENT__);
-#elif defined(__MINGW32__)
-		return ::__mingw_aligned_malloc(size, __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #else
 		return ::malloc(size);
 #endif
@@ -134,17 +132,15 @@ namespace p
 
 	void* HeapAlloc(sizet size, sizet align)
 	{
-		//  - MSVC / MinGW (MSVCRT >= 7): _aligned_malloc         -> _aligned_free
-		//  - MinGW (older):              __mingw_aligned_malloc  -> __mingw_aligned_free
-		//  - Android / SunOS:            memalign                -> free
-		//  - POSIX (Linux, macOS, iOS, BSD, SunOS 5.11+): posix_memalign -> free
+		// Dispatches per platform:
+		//  - MSVC / MinGW: _aligned_malloc   -> _aligned_free
+		//  - Android:      memalign          -> free
+		//  - POSIX (Linux, macOS, iOS, BSD): posix_memalign -> free
 		// posix_memalign needs a power-of-two alignment of at least sizeof(void*); the others
 		// accept any power of two. None require the size to be a multiple of the alignment
 		// (unlike C11 aligned_alloc).
-#if defined(_MSC_VER) || (defined(__MINGW32__) && (__MSVCRT_VERSION__ >= 0x0700))
+#if defined(_MSC_VER) || defined(__MINGW32__)
 		return ::_aligned_malloc(size, align);
-#elif defined(__MINGW32__)
-		return ::__mingw_aligned_malloc(size, align);
 #elif P_PLATFORM_ANDROID
 		return ::memalign(align, size);
 #else
@@ -172,10 +168,8 @@ namespace p
 
 	void HeapFree(void* ptr)
 	{
-#if defined(_MSC_VER) || (defined(__MINGW32__) && (__MSVCRT_VERSION__ >= 0x0700))
+#if defined(_MSC_VER) || defined(__MINGW32__)
 		::_aligned_free(ptr);
-#elif defined(__MINGW32__)
-		::__mingw_aligned_free(ptr);
 #else
 		::free(ptr);
 #endif
