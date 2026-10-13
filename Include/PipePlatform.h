@@ -33,13 +33,6 @@
 		#define P_PLATFORM_WINDOWS 0
 	#endif
 #endif
-#ifndef P_PLATFORM_ANDROID
-	#if defined(__ANDROID__) || defined(ANDROID)
-		#define P_PLATFORM_ANDROID 1
-	#else
-		#define P_PLATFORM_ANDROID 0
-	#endif
-#endif
 #ifndef P_PLATFORM_LINUX
 	#if defined(__linux__)
 		#define P_PLATFORM_LINUX 1
@@ -70,6 +63,13 @@
 		#define P_PLATFORM_BSD 1
 	#else
 		#define P_PLATFORM_BSD 0
+	#endif
+#endif
+#ifndef P_PLATFORM_ANDROID
+	#if defined(__ANDROID__) || defined(ANDROID)
+		#define P_PLATFORM_ANDROID 1
+	#else
+		#define P_PLATFORM_ANDROID 0
 	#endif
 #endif
 
