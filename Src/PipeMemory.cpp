@@ -11,6 +11,8 @@
 
 #if P_PLATFORM_WINDOWS
 	#include <malloc.h>    // _aligned_malloc, _aligned_free, _aligned_realloc
+#elif P_PLATFORM_ANDROID
+	#include <malloc.h>    // memalign
 #endif
 
 
@@ -128,15 +130,21 @@ namespace p
 
 	void* HeapAlloc(sizet size, sizet align)
 	{
-		// Mirrors boost::alignment: posix_memalign / _aligned_malloc require a valid alignment
-		// (a power of two and at least sizeof(void*)). posix_memalign, unlike aligned_alloc,
-		// does not require the size to be a multiple of the alignment.
+		// Mirrors boost::alignment, whose backends differ per platform:
+		//  - Windows: _aligned_malloc / _aligned_free
+		//  - Android: memalign / free
+		//  - POSIX (Linux, macOS, iOS, BSD): posix_memalign / free
+		// All of them need a power-of-two alignment; posix_memalign also requires it to be at
+		// least sizeof(void*). Unlike C11 aligned_alloc, none require size to be a multiple of
+		// the alignment.
 		if (align < sizeof(void*))
 		{
 			align = sizeof(void*);
 		}
 #if P_PLATFORM_WINDOWS
 		return _aligned_malloc(size, align);
+#elif P_PLATFORM_ANDROID
+		return ::memalign(align, size);
 #else
 		void* ptr = nullptr;
 		if (::posix_memalign(&ptr, align, size) != 0)
