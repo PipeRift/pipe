@@ -402,10 +402,14 @@ namespace p
 	StringView LinuxPlatformPaths::GetCurrentPath()
 	{
 		static String path;
-		path.reserve(GetMaxPathLength());
-		if (getcwd(path.data(), path.capacity()) != nullptr)
+		path.resize(GetMaxPathLength());
+		if (getcwd(path.data(), path.size()) != nullptr)
 		{
 			path.resize(std::strlen(path.data()));
+		}
+		else
+		{
+			path.clear();
 		}
 		return path;
 	}
@@ -549,10 +553,14 @@ namespace p
 	StringView MacPlatformPaths::GetCurrentPath()
 	{
 		static String path;
-		path.reserve(GetMaxPathLength());
-		if (getcwd(path.data(), path.capacity()) != nullptr)
+		path.resize(GetMaxPathLength());
+		if (getcwd(path.data(), path.size()) != nullptr)
 		{
 			path.resize(std::strlen(path.data()));
+		}
+		else
+		{
+			path.clear();
 		}
 		return path;
 	}

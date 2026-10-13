@@ -72,6 +72,13 @@ P_SPEC("Files.Paths", []()
 		Expect(p::PlatformPaths::GetExecutablePath()).ToNotEqual("");
 	});
 
+	It("Can get current path", []()
+	{
+		const StringView currentPath = p::PlatformPaths::GetCurrentPath();
+		Expect(currentPath.empty()).ToEqual(false);
+		Expect(p::IsAbsolutePath(currentPath)).ToEqual(true);
+	});
+
 	It("Can get extension", []()
 	{
 #if P_PLATFORM_WINDOWS
