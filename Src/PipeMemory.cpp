@@ -11,6 +11,8 @@
 
 #if P_PLATFORM_WINDOWS
 	#include <malloc.h>    // _aligned_malloc, _aligned_free, _aligned_realloc
+#elif P_PLATFORM_ANDROID
+	#include <malloc.h>    // memalign
 #endif
 
 
@@ -119,6 +121,8 @@ namespace p
 
 	void* HeapAlloc(sizet size)
 	{
+		// Must stay paired with HeapFree: Windows uses the aligned CRT allocators, POSIX uses
+		// malloc. Both provide at least the default new alignment.
 #if P_PLATFORM_WINDOWS
 		return _aligned_malloc(size, __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #else
@@ -128,10 +132,28 @@ namespace p
 
 	void* HeapAlloc(sizet size, sizet align)
 	{
+		// Dispatches per platform:
+		//  - Windows: _aligned_malloc   -> _aligned_free
+		//  - Android: memalign          -> free
+		//  - POSIX (Linux, macOS, iOS, BSD): posix_memalign -> free
+		// posix_memalign needs a power-of-two alignment of at least sizeof(void*); the others
+		// accept any power of two. None require the size to be a multiple of the alignment
+		// (unlike C11 aligned_alloc).
 #if P_PLATFORM_WINDOWS
 		return _aligned_malloc(size, align);
+#elif P_PLATFORM_ANDROID
+		return memalign(align, size);
 #else
-		return aligned_alloc(align, size);
+		if (align < sizeof(void*))
+		{
+			align = sizeof(void*);
+		}
+		void* ptr = nullptr;
+		if (posix_memalign(&ptr, align, size) != 0)
+		{
+			ptr = nullptr;
+		}
+		return ptr;
 #endif
 	}
 
