@@ -124,9 +124,9 @@ namespace p
 		// Must stay paired with HeapFree: Windows uses the aligned CRT allocators, POSIX uses
 		// malloc. Both provide at least the default new alignment.
 #if P_PLATFORM_WINDOWS
-		return ::_aligned_malloc(size, __STDCPP_DEFAULT_NEW_ALIGNMENT__);
+		return _aligned_malloc(size, __STDCPP_DEFAULT_NEW_ALIGNMENT__);
 #else
-		return ::malloc(size);
+		return malloc(size);
 #endif
 	}
 
@@ -140,16 +140,16 @@ namespace p
 		// accept any power of two. None require the size to be a multiple of the alignment
 		// (unlike C11 aligned_alloc).
 #if P_PLATFORM_WINDOWS
-		return ::_aligned_malloc(size, align);
+		return _aligned_malloc(size, align);
 #elif P_PLATFORM_ANDROID
-		return ::memalign(align, size);
+		return memalign(align, size);
 #else
 		if (align < sizeof(void*))
 		{
 			align = sizeof(void*);
 		}
 		void* ptr = nullptr;
-		if (::posix_memalign(&ptr, align, size) != 0)
+		if (posix_memalign(&ptr, align, size) != 0)
 		{
 			ptr = nullptr;
 		}
@@ -169,9 +169,9 @@ namespace p
 	void HeapFree(void* ptr)
 	{
 #if P_PLATFORM_WINDOWS
-		::_aligned_free(ptr);
+		_aligned_free(ptr);
 #else
-		::free(ptr);
+		free(ptr);
 #endif
 	}
 
