@@ -134,7 +134,6 @@ namespace p
 
 	void* HeapAlloc(sizet size, sizet align)
 	{
-		// Same behavior as boost::alignment::aligned_alloc, which dispatches per platform:
 		//  - MSVC / MinGW (MSVCRT >= 7): _aligned_malloc         -> _aligned_free
 		//  - MinGW (older):              __mingw_aligned_malloc  -> __mingw_aligned_free
 		//  - Android / SunOS:            memalign                -> free
