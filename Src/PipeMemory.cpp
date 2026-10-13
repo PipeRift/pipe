@@ -130,22 +130,25 @@ namespace p
 
 	void* HeapAlloc(sizet size, sizet align)
 	{
-		// Mirrors boost::alignment, whose backends differ per platform:
-		//  - Windows: _aligned_malloc / _aligned_free
-		//  - Android: memalign / free
-		//  - POSIX (Linux, macOS, iOS, BSD): posix_memalign / free
-		// All of them need a power-of-two alignment; posix_memalign also requires it to be at
-		// least sizeof(void*). Unlike C11 aligned_alloc, none require size to be a multiple of
-		// the alignment.
+		// Same behavior as boost::alignment::aligned_alloc, which dispatches per platform:
+		//  - MSVC / MinGW (MSVCRT >= 7): _aligned_malloc         -> _aligned_free
+		//  - MinGW (older):              __mingw_aligned_malloc  -> __mingw_aligned_free
+		//  - Android / SunOS:            memalign                -> free
+		//  - POSIX (Linux, macOS, iOS, BSD, SunOS 5.11+): posix_memalign -> free
+		// posix_memalign needs a power-of-two alignment of at least sizeof(void*); the others
+		// accept any power of two. None require the size to be a multiple of the alignment
+		// (unlike C11 aligned_alloc).
+#if defined(_MSC_VER) || (defined(__MINGW32__) && (__MSVCRT_VERSION__ >= 0x0700))
+		return ::_aligned_malloc(size, align);
+#elif defined(__MINGW32__)
+		return ::__mingw_aligned_malloc(size, align);
+#elif P_PLATFORM_ANDROID
+		return ::memalign(align, size);
+#else
 		if (align < sizeof(void*))
 		{
 			align = sizeof(void*);
 		}
-#if P_PLATFORM_WINDOWS
-		return _aligned_malloc(size, align);
-#elif P_PLATFORM_ANDROID
-		return ::memalign(align, size);
-#else
 		void* ptr = nullptr;
 		if (::posix_memalign(&ptr, align, size) != 0)
 		{
@@ -166,10 +169,12 @@ namespace p
 
 	void HeapFree(void* ptr)
 	{
-#if P_PLATFORM_WINDOWS
-		_aligned_free(ptr);
+#if defined(_MSC_VER) || (defined(__MINGW32__) && (__MSVCRT_VERSION__ >= 0x0700))
+		::_aligned_free(ptr);
+#elif defined(__MINGW32__)
+		::__mingw_aligned_free(ptr);
 #else
-		free(ptr);
+		::free(ptr);
 #endif
 	}
 
