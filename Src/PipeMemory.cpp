@@ -128,10 +128,19 @@ namespace p
 
 	void* HeapAlloc(sizet size, sizet align)
 	{
+		// aligned_alloc/_aligned_malloc require a valid alignment (a power of two and at least
+		// the platform minimum); aligned_alloc additionally requires a size that is a multiple
+		// of it. Small alignments (e.g. alignof(char) == 1) fall back to the unaligned path,
+		// which already guarantees the default alignment.
+		if (align <= __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+		{
+			return HeapAlloc(size);
+		}
+		const sizet alignedSize = (size + align - 1) & ~(align - 1);
 #if P_PLATFORM_WINDOWS
-		return _aligned_malloc(size, align);
+		return _aligned_malloc(alignedSize, align);
 #else
-		return aligned_alloc(align, size);
+		return aligned_alloc(align, alignedSize);
 #endif
 	}
 
