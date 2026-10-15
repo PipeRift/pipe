@@ -2413,9 +2413,11 @@ namespace p
 	 * - All children of A and D (where A->B->C, D->E->F) are B, C, E and F.
 	 * - All children of A and B (where A->B->C->D) are B, C, D, C, D (duplicates are not
 	 * handled).
+	 * @param depth Number of levels to recurse. Negative (e.g. -1) or 0 recurses the
+	 * whole tree.
 	 */
 	P_API void GetAllIdChildren(TIdScopeRef<CParent> scope, TView<const Id> parentIds,
-	    TArray<Id>& outChildrenIds, u32 depth = 1);
+	    TArray<Id>& outChildrenIds, i32 depth = -1);
 
 	P_API Id GetIdParent(TIdScopeRef<CChild> scope, Id childId);
 	P_API void GetIdParent(

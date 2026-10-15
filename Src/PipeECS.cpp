@@ -1375,10 +1375,12 @@ namespace p
 	}
 
 	void GetAllIdChildren(TIdScopeRef<CParent> access, TView<const Id> parentIds,
-	    TArray<Id>& outChildrenIds, u32 depth)
+	    TArray<Id>& outChildrenIds, i32 depth)
 	{
-		P_Check(depth > 0);
-
+		if (depth < 0)
+		{
+			depth = Limits<i32>::Max();
+		}
 		TArray<Id> currentLinked{};
 		TArray<Id> pendingInspection;
 		pendingInspection.Append(parentIds);
