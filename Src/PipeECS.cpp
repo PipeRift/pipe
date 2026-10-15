@@ -86,9 +86,10 @@ namespace p
 		const i32 nRecicled = Min(newIds.Size(), available.Size());
 		if (nRecicled > 0)
 		{
+			const i32 firstRecycled = available.Size() - nRecicled;
 			for (i32 i = 0; i < nRecicled; ++i)
 			{
-				const Index index = available.Last();
+				const Index index = available[firstRecycled + i];
 				auto& id          = entities[i32(index)];
 				id = MakeId(index, id.GetVersion());    // Set entity index to mark it as valid
 				newIds[i] = id;
