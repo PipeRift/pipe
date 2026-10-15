@@ -1242,12 +1242,18 @@ namespace p
 			if constexpr (StoresLastModified<Component>)
 			{
 				// Keeping the live value requires storing a copy of its previous value
-				static_assert(Store == EModifyStore::Copy && IsCopyConstructible<Component>,
-				    "Components marked ModifyOnGet must be copy constructible, "
-				    "otherwise their last modified value can't be stored.");
-				static_assert(Store == EModifyStore::Move && (IsCopyConstructible<Component> || IsMoveConstructible<Component>)),
-				    "Components marked ModifyOnAdd or ModifyOnRemove must be copy or move constructible, "
-				    "otherwise their last modified value can't be stored.");
+				if constexpr (Store == EModifyStore::Copy)
+				{
+					static_assert(IsCopyConstructible<Component>,
+					    "Components marked ModifyOnGet must be copy constructible, "
+					    "otherwise their last modified value can't be stored.");
+				}
+				else
+				{
+					static_assert(IsCopyConstructible<Component> || IsMoveConstructible<Component>,
+					    "Components marked ModifyOnAdd or ModifyOnRemove must be copy or move "
+					    "constructible, otherwise their last modified value can't be stored.");
+				}
 
 				if (!pool)
 				{
