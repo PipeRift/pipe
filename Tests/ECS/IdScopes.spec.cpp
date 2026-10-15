@@ -20,6 +20,14 @@ struct ScopeTypeC
 	bool data;    // Not empty type
 };
 
+struct ScopeTypeD
+{
+	P_STRUCT(ScopeTypeD, TF_ECS_ModifyAndStoreOnEdit)
+
+	P_PROP(value)
+	String value;    // Not empty type
+};
+
 
 P_SPEC("ECS", []()
 {
@@ -95,6 +103,31 @@ P_SPEC("ECS", []()
 				scope1.Modify<ScopeTypeC>(id);
 				Expect(scope1.Has<CMdfd<ScopeTypeC>>(id)).ToBeTrue();
 				Expect(scope1.IsModified<ScopeTypeC>(id)).ToBeTrue();
+			});
+
+			It("Keeps the live value when storing the last modified value", []()
+			{
+				IdContext ctx;
+				Id id = AddId(ctx);
+				TIdScope<Writes<ScopeTypeD>, CMdfd<ScopeTypeD>> scope{ctx};
+				scope.Add<ScopeTypeD>(id, ScopeTypeD{String{"hello"}});
+
+				// Simulate the dirty pool having been flushed, so the next get is the
+				// first one to store the last value
+				scope.ClearPool<CMdfd<ScopeTypeD>>();
+
+				// Reading it marks it modified without consuming the live value
+				Expect(scope.Get<ScopeTypeD>(id).value == String{"hello"}).ToBeTrue();
+				Expect(scope.IsModified<ScopeTypeD>(id)).ToBeTrue();
+
+				const auto& modified = scope.Get<CMdfd<ScopeTypeD>>(id);
+				Expect(modified.Last.value == String{"hello"}).ToBeTrue();
+
+				// Removing it stores its value, since it's gone right after
+				scope.ClearPool<CMdfd<ScopeTypeD>>();
+				scope.Remove<ScopeTypeD>(id);
+				Expect(scope.Has<ScopeTypeD>(id)).ToBeFalse();
+				Expect(scope.Get<CMdfd<ScopeTypeD>>(id).Last.value == String{"hello"}).ToBeTrue();
 			});
 
 			It("Can mark modify automatically", []()

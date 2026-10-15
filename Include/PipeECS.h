@@ -211,6 +211,17 @@ namespace p
 		using Type = T;
 	};
 
+	/**
+	 * How the last modified value of a component is stored.
+	 */
+	enum class EModifyStore
+	{
+		/** The live value is copied into last value */
+		Copy,
+		/** The live value is moved (or copied) into last value */
+		Move,
+	};
+
 	template<typename Component>
 	static constexpr bool IsMdfdType() requires(!HasTypeMember<Component>)
 	{
@@ -1224,12 +1235,20 @@ namespace p
 			return (Has<Component>(id) && ...);
 		}
 
-		template<typename Component>
+		template<typename Component, EModifyStore Store = EModifyStore::Copy>
 		void Modify(TView<const Id> ids, TPool<Component>* pool = nullptr) const
 		{
 			auto& mdfdPool = AssurePool<CMdfd<Component>>();
 			if constexpr (StoresLastModified<Component>)
 			{
+				// Keeping the live value requires storing a copy of its previous value
+				static_assert(Store == EModifyStore::Copy && IsCopyConstructible<Component>,
+				    "Components marked ModifyOnGet must be copy constructible, "
+				    "otherwise their last modified value can't be stored.");
+				static_assert(Store == EModifyStore::Move && (IsCopyConstructible<Component> || IsMoveConstructible<Component>)),
+				    "Components marked ModifyOnAdd or ModifyOnRemove must be copy or move constructible, "
+				    "otherwise their last modified value can't be stored.");
+
 				if (!pool)
 				{
 					pool = GetPool<Component>();
@@ -1246,7 +1265,7 @@ namespace p
 					                          // modified already
 					{
 						Component* comp = pool->TryGet(id);
-						if constexpr (IsMoveConstructible<Component>)
+						if constexpr (Store == EModifyStore::Move && IsMoveConstructible<Component>)
 						{
 							mdfdPool.Add(
 							    id, comp ? CMdfd<Component>{p::Move(*comp)} : CMdfd<Component>{});
@@ -1277,7 +1296,7 @@ namespace p
 			auto& pool = AssurePool<Component>();
 			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
 			{
-				Modify<Component>(id, &pool);
+				Modify<Component, EModifyStore::Move>(id, &pool);
 			}
 			return pool.Add(id, p::Fwd<Component>(value));
 		}
@@ -1288,7 +1307,7 @@ namespace p
 			auto& pool = AssurePool<Component>();
 			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
 			{
-				Modify<Component>(id, &pool);
+				Modify<Component, EModifyStore::Move>(id, &pool);
 			}
 			return pool.Add(id, value);
 		}
@@ -1307,7 +1326,7 @@ namespace p
 			auto& pool = AssurePool<Component>();
 			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
 			{
-				Modify<Component>(ids, &pool);
+				Modify<Component, EModifyStore::Move>(ids, &pool);
 			}
 			return pool.Add(ids.begin(), ids.end(), value);
 		}
@@ -1319,7 +1338,7 @@ namespace p
 			auto& pool = AssurePool<Component>();
 			if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
 			{
-				Modify<Component>(ids, &pool);
+				Modify<Component, EModifyStore::Move>(ids, &pool);
 			}
 			pool.Add(ids.begin(), ids.end(), values.begin());
 		}
@@ -1340,7 +1359,7 @@ namespace p
 			{
 				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnRm))
 				{
-					Modify<Component>(id, pool);
+					Modify<Component, EModifyStore::Move>(id, pool);
 				}
 				pool->Remove(id);
 			}
@@ -1357,7 +1376,7 @@ namespace p
 			{
 				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnRm))
 				{
-					Modify<Component>(ids, pool);
+					Modify<Component, EModifyStore::Move>(ids, pool);
 				}
 				pool->Remove(ids);
 			}
@@ -1376,7 +1395,7 @@ namespace p
 			if constexpr (IsMutable<Component>
 			              && HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnGet))
 			{
-				Modify<Component>(id, pool);
+				Modify<Component, EModifyStore::Copy>(id, pool);
 			}
 			return pool->Get(id);
 		}
@@ -1392,7 +1411,7 @@ namespace p
 				{
 					if (value)
 					{
-						Modify<Component>(id, pool);
+						Modify<Component, EModifyStore::Copy>(id, pool);
 					}
 				}
 				return value;
@@ -1409,7 +1428,7 @@ namespace p
 			{
 				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnGet))
 				{
-					Modify<Component>(id, *pool);
+					Modify<Component, EModifyStore::Copy>(id, *pool);
 				}
 				return pool.Get(id);
 			}
@@ -1417,7 +1436,7 @@ namespace p
 			{
 				if constexpr (HasAnyTypeStaticFlags<Component>(TF_ECS_ModifyOnAdd))
 				{
-					Modify<Component>(id, *pool);
+					Modify<Component, EModifyStore::Move>(id, *pool);
 				}
 				return pool.Add(id);
 			}
