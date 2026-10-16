@@ -291,6 +291,16 @@ namespace ImGui
 		    desc_id, ImVec4{col.r, col.g, col.b, col.a}, flags, ImVec2{size.x, size.y});
 	}
 
+	inline void SetTooltip(p::StringView text)
+	{
+		if (!BeginTooltipEx(ImGuiTooltipFlags_OverridePrevious, ImGuiWindowFlags_None))
+		{
+			return;
+		}
+		Text(text);
+		EndTooltip();
+	}
+
 	inline void HelpTooltip(p::StringView text,
 	    ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip | ImGuiHoveredFlags_NoSharedDelay)
 	{
