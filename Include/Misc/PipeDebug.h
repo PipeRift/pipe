@@ -735,7 +735,7 @@ namespace p
 				for (i32 i = 0; i < size; ++i)
 				{
 					tmpLabel.clear();
-					FormatTo(tmpLabel, "Index {}", i);
+					FormatTo(tmpLabel, "{}", i);
 					Inspect(tmpLabel, ops->GetItem(data, i), ops->itemType);
 
 					++ins.propStack.Last().index;
@@ -774,7 +774,19 @@ namespace p
 		                               | ImGuiTreeNodeFlags_SpanAllColumns
 		                               | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0)
 		                               | (defaultOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0);
-		bool open                      = ImGui::TreeNodeEx(name.data(), flags);
+		// Categories are always enabled to navigate contents, but keep the disabled look
+		const bool disabled = (GImGui->CurrentItemFlags & ImGuiItemFlags_Disabled) != 0;
+		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, false);
+		if (disabled)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+		}
+		bool open = ImGui::TreeNodeEx(name.data(), flags);
+		if (disabled)
+		{
+			ImGui::PopStyleColor();
+		}
+		ImGui::PopItemFlag();
 		ImGui::Indent();
 		return open;
 	}
@@ -1410,8 +1422,8 @@ namespace p
 							nextId = IdFromString(asString, &GetDebugCtx());
 						}
 
-						ImGui::CheckboxFlags("Edit Mode", &inspector.flags, IDF_EditAll);
-
+						ImGui::CheckboxFlags("Edit Viewable", &inspector.flags, IDF_EditAll);
+						ImGui::SetItemTooltip("Force allow editing on fields not marked as such.");
 						ImGui::SeparatorText("Advanced");
 						ImGui::CheckboxFlags("View All Properties", &inspector.flags, IDF_ViewAll);
 						ImGui::EndMenu();
@@ -3324,7 +3336,7 @@ namespace p
 			const float colW =
 			    (arenaCount > 0 && colAreaW > 0.0f)
 			        ? p::Min((colAreaW - colGap * (arenaCount + 1)) / (float)arenaCount, colMaxW)
-			        : 0.0f;
+					: 0.0f;
 			const float colTotalW = colW + colGap;
 			const float graphX0   = canvasPos.x;
 			const float graphW    = canvasSize.x;
@@ -3571,7 +3583,7 @@ namespace p
 											const ImU32 hexCol =
 											    (byte == 0)
 											        ? p::Color{90, 90, 90, 255}.DWColor()
-											        : p::Color{220, 220, 220, 255}.DWColor();
+													: p::Color{220, 220, 220, 255}.DWColor();
 											const float xOff = static_cast<float>(lineByteIdx)
 											                 * (charTextSize.x * 2.0f);
 											drawList->AddText(
@@ -3585,7 +3597,7 @@ namespace p
 											    printable ? static_cast<char>(byte) : '.';
 											const ImU32 asciiCol =
 											    printable ? p::Color{220, 220, 220, 255}.DWColor()
-											              : p::Color{90, 90, 90, 255}.DWColor();
+												          : p::Color{90, 90, 90, 255}.DWColor();
 											const float xOff =
 											    static_cast<float>(lineByteIdx) * charTextSize.x;
 											drawList->AddText(
@@ -4317,7 +4329,7 @@ namespace p
 							const double relX =
 							    (wAddressH > 0.0)
 							        ? ((static_cast<double>(my) - wAddressY0) / wAddressH)
-							        : 0.0;
+									: 0.0;
 							const double newStart     = addrAtCursor - relX * newViewRange;
 							memoryDbg.viewStart       = static_cast<sizet>(newStart);
 							memoryDbg.viewRange       = newViewRange;

@@ -301,6 +301,14 @@ namespace ImGui
 		EndTooltip();
 	}
 
+	inline void SetItemTooltip(p::StringView text)
+	{
+		if (IsItemHovered(ImGuiHoveredFlags_ForTooltip))
+		{
+			SetTooltip(text);
+		}
+	}
+
 	inline void HelpTooltip(p::StringView text,
 	    ImGuiHoveredFlags flags = ImGuiHoveredFlags_ForTooltip | ImGuiHoveredFlags_NoSharedDelay)
 	{
