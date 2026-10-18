@@ -168,6 +168,10 @@ namespace p
 		// Context menu extensibility
 		using ContextMenuCallback = TFunction<void(TView<const Id> ids)>;
 		TArray<ContextMenuCallback> contextMenuCallbacks;
+
+		// Optional host-provided name per id, so the entity list can show and filter by it
+		using IdNameCallback = TFunction<StringView(Id)>;
+		IdNameCallback getName;
 	};
 
 	namespace details
@@ -1205,7 +1209,13 @@ namespace p
 			}
 
 
-			ImGui::TableSetColumnIndex(2);    // Previews
+			if (ecsDbg.getName)
+			{
+				ImGui::TableSetColumnIndex(2);    // Name
+				ImGui::Text(ecsDbg.getName(id));
+			}
+
+			ImGui::TableSetColumnIndex(ecsDbg.getName ? 3 : 2);    // Previews
 			ImGui::PushStyleCompact();
 			static String poolName;
 			ImGui::PushButtonColor(previewColor);
@@ -1311,13 +1321,19 @@ namespace p
 			static const ImGuiTableFlags tableFlags =
 			    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
 			    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
-			if (ImGui::BeginTable("entityTable", 3, tableFlags))
+			const bool hasNames = static_cast<bool>(ecsDbg.getName);
+			if (ImGui::BeginTable("entityTable", hasNames ? 4 : 3, tableFlags))
 			{
-				ImGui::TableSetupColumn("Inspect",
-				    ImGuiTableColumnFlags_IndentDisable | ImGuiTableColumnFlags_WidthFixed
-				        | ImGuiTableColumnFlags_NoResize);    // Inspect
-				ImGui::TableSetupColumn(
-				    "Id", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_IndentEnable);
+				ImGui::TableSetupColumn("Inspect", ImGuiTableColumnFlags_IndentDisable
+				                                       | ImGuiTableColumnFlags_WidthFixed
+				                                       | ImGuiTableColumnFlags_NoResize);
+				ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_NoHide
+				                                  | ImGuiTableColumnFlags_IndentEnable
+				                                  | ImGuiTableColumnFlags_WidthFixed);
+				if (hasNames)
+				{
+					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
+				}
 				ImGui::TableSetupColumn("Previews");
 
 				ImGui::TableSetupScrollFreeze(0, 1);
@@ -1342,13 +1358,19 @@ namespace p
 			static const ImGuiTableFlags tableFlags =
 			    ImGuiTableFlags_Reorderable | ImGuiTableFlags_Resizable | ImGuiTableFlags_Hideable
 			    | ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_ScrollY;
-			if (ImGui::BeginTable("entityTable", 3, tableFlags))
+			const bool hasNames = static_cast<bool>(ecsDbg.getName);
+			if (ImGui::BeginTable("entityTable", hasNames ? 4 : 3, tableFlags))
 			{
-				ImGui::TableSetupColumn("Inspect",
-				    ImGuiTableColumnFlags_IndentDisable | ImGuiTableColumnFlags_WidthFixed
-				        | ImGuiTableColumnFlags_NoResize);    // Inspect
-				ImGui::TableSetupColumn(
-				    "Id", ImGuiTableColumnFlags_NoHide | ImGuiTableColumnFlags_IndentEnable);
+				ImGui::TableSetupColumn("Inspect", ImGuiTableColumnFlags_IndentDisable
+				                                       | ImGuiTableColumnFlags_WidthFixed
+				                                       | ImGuiTableColumnFlags_NoResize);
+				ImGui::TableSetupColumn("Id", ImGuiTableColumnFlags_NoHide
+				                                  | ImGuiTableColumnFlags_IndentEnable
+				                                  | ImGuiTableColumnFlags_WidthFixed);
+				if (hasNames)
+				{
+					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
+				}
 				ImGui::TableSetupColumn("Previews");
 
 				ImGui::TableSetupScrollFreeze(0, 1);
@@ -1739,8 +1761,22 @@ namespace p
 						static p::String idText;
 						idText.clear();
 						ToString(id, idText);
-						return !ecsDbg.filter.PassFilter(
-						    idText.c_str(), idText.c_str() + idText.size());
+						if (ecsDbg.filter.PassFilter(
+						        idText.c_str(), idText.c_str() + idText.size()))
+						{
+							return false;
+						}
+
+						if (ecsDbg.getName)
+						{
+							const StringView name = ecsDbg.getName(id);
+							if (!name.empty()
+							    && ecsDbg.filter.PassFilter(name.data(), name.data() + name.size()))
+							{
+								return false;
+							}
+						}
+						return true;
 					});
 				}
 
