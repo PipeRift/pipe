@@ -258,6 +258,32 @@ namespace ImGui
 		    details::InputTextCallback, &cbUserData);
 	}
 
+	inline bool MenuItem(p::StringView label, const char* shortcut = nullptr, bool selected = false,
+	    bool enabled = true)
+	{
+		// If StringView doesn't end in \0, need to use a temporal
+		if (label.data()[label.size()] != '\0')
+		{
+			static p::String tmpLabel;
+			tmpLabel = label;
+			label    = tmpLabel;
+		}
+		return MenuItem(label.data(), shortcut, selected, enabled);
+	}
+
+	inline bool MenuItem(
+	    p::StringView label, const char* shortcut, bool* p_selected, bool enabled = true)
+	{
+		// If StringView doesn't end in \0, need to use a temporal
+		if (label.data()[label.size()] != '\0')
+		{
+			static p::String tmpLabel;
+			tmpLabel = label;
+			label    = tmpLabel;
+		}
+		return MenuItem(label.data(), shortcut, p_selected, enabled);
+	}
+
 	inline bool Selectable(p::StringView label, bool selected = false,
 	    ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0))
 	{
