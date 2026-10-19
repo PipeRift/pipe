@@ -14,6 +14,7 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeImGui requires v1.9
 #include "Pipe/Core/Checks.h"
 #include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/Map.h"
+#include "Pipe/Files/Paths.h"
 #include "PipeColor.h"
 #include "PipeContainers.h"
 #include "PipeECS.h"
@@ -673,6 +674,39 @@ namespace p
 		    v4, { ImGui::InputScalarN("##value", ImGuiDataType_Float, &value, 4); });
 		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
 		    v4d, { ImGui::InputScalarN("##value", ImGuiDataType_Double, &value, 4); });
+
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(LinearColor, {
+			ImGui::ColorEdit4("##value", reinterpret_cast<float*>(&value),
+			    ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaBar
+			        | ImGuiColorEditFlags_AlphaPreviewHalf);
+		});
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(HSVColor, {
+			LinearColor linear{value};
+			if (ImGui::ColorEdit4("##value", reinterpret_cast<float*>(&linear),
+			        ImGuiColorEditFlags_Float | ImGuiColorEditFlags_DisplayHSV
+			            | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf))
+			{
+				value = HSVColor{linear};
+			}
+		});
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(Color, {
+			LinearColor linear{value};
+			if (ImGui::ColorEdit4("##value", reinterpret_cast<float*>(&linear),
+			        ImGuiColorEditFlags_Uint8 | ImGuiColorEditFlags_DisplayRGB
+			            | ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_AlphaPreviewHalf))
+			{
+				value = Color{linear};
+			}
+		});
+
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(Path, {
+			ImGui::SetNextItemWidth(p::Min(300.f, ImGui::GetContentRegionAvail().x));
+			String asString = ToString(value);
+			if (ImGui::InputText("##value", asString))
+			{
+				value = Path{ToSTDPath(asString)};
+			}
+		});
 
 		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(Id, {
 			String asString = ToString(value);
