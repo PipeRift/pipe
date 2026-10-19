@@ -11,10 +11,18 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeImGui requires v1.9
 #endif
 
 
+#include "Pipe/Core/Checks.h"
+#include "Pipe/Core/EnumFlags.h"
+#include "Pipe/Core/Map.h"
 #include "PipeColor.h"
+#include "PipeContainers.h"
+#include "PipeECS.h"
+#include "PipeReflect.h"
+#include "PipeStrings.h"
 #include "PipeTime.h"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 
 
 namespace p
@@ -451,3 +459,521 @@ namespace ImGui
 #ifdef P_IMGUI_IMPLEMENTATION
 #endif
 }    // namespace ImGui
+
+
+namespace p
+{
+	///////////////////////////////////////////////////////////
+	// Inspection
+	//
+	// Immediate mode reflection inspection.
+
+	struct TypeInspection
+	{
+		using RowCallback =
+		    TFunction<void(StringView label, void* data, TypeId typeId, bool& open)>;
+		using ChildrenCallback = TFunction<void(void* data, TypeId typeId)>;
+
+		RowCallback onDrawRow;
+		ChildrenCallback onDrawChildren;
+	};
+
+	using InspectionFlags = u32;
+	enum InspectionFlags_
+	{
+		IF_None    = 0,         // -> No flags
+		IF_ViewAll = 1 << 0,    // -> View all properties, even those without PF_View or PF_Edit
+		IF_EditAll = 1 << 1,    // -> Allow editing on all properties, even those without PF_Edit
+		IF_ViewAndEditAll = IF_ViewAll | IF_EditAll
+
+		// Any other flags up to 64 bytes are available to the user
+	};
+	P_DEFINE_FLAG_OPERATORS(InspectionFlags_)
+
+	struct InspectionContext
+	{
+		struct PropStack
+		{
+			TypeId typeId;
+			void* data = nullptr;
+			i32 index  = NO_INDEX;
+		};
+		TMap<TypeId, TypeInspection> registeredTypes;
+		TArray<PropStack> propStack;
+		InspectionFlags flags   = IF_None;
+		ImGuiTextFilter* filter = nullptr;
+		// Optional Id registry used by Id related inspections
+		IdContext* idContext = nullptr;
+		bool initialized     = false;
+	};
+
+	namespace details
+	{
+		// We replace ImGui's GetCurrentWindow() in case "GImGui" has been overriden which can
+		// cause link errors
+		inline ImGuiWindow* GetCurrentWindow()
+		{
+			ImGuiContext& g                = *ImGui::GetCurrentContext();
+			g.CurrentWindow->WriteAccessed = true;
+			return g.CurrentWindow;
+		}
+	}    // namespace details
+
+
+	// Type inspections are registered into the current inspection context
+	void RegisterTypeInspection(TypeId typeId, TypeInspection::RowCallback onDrawRow,
+	    TypeInspection::ChildrenCallback onDrawChildren = {});
+	template<typename T>
+	inline void RegisterTypeInspection(
+	    TypeInspection::RowCallback onDrawRow, TypeInspection::ChildrenCallback onDrawChildren = {})
+	{
+		RegisterTypeInspection(GetTypeId<T>(), Move(onDrawRow), Move(onDrawChildren));
+	}
+
+	void RemoveTypeInspection(TypeId typeId);
+
+	// Registers the inspections of Pipe's native types into the current context
+	void RegisterPipeTypeInspections();
+
+
+	bool BeginInspection(InspectionContext& ctx, const char* label, v2 size = v2{0.f, 0.f},
+	    InspectionFlags flags = IF_None, ImGuiTextFilter* filter = nullptr,
+	    IdContext* idContext = nullptr);
+	void EndInspection();
+
+	void InspectSetKeyColumn();
+	void InspectSetKeyAsText(StringView label);
+	void InspectSetValueColumn();
+	bool InspectBeginCategory(p::StringView name, bool isLeaf, bool defaultOpen = false);
+	void InspectEndCategory();
+	void Inspect(StringView label, void* data, TypeId typeId);
+	template<typename T>
+	inline void Inspect(StringView label, T* data)
+	{
+		Inspect(label, data, GetTypeId<T>());
+	}
+	void InspectProperties(void* data, TypeId typeId);
+
+
+	///////////////////////////////////////////////////////////
+	// Implementation
+#ifdef P_IMGUI_IMPLEMENTATION
+	static InspectionContext* currentInspection = nullptr;
+
+
+	#define EnsureInsideInspection     \
+		P_EnsureMsg(currentInspection, \
+		    "No inspection context available! Forgot to call BeginInspection()?")
+
+
+	void RegisterTypeInspection(TypeId typeId, TypeInspection::RowCallback onDrawRow,
+	    TypeInspection::ChildrenCallback onDrawChildren)
+	{
+		if (EnsureInsideInspection)
+		{
+			currentInspection->registeredTypes.Insert(
+			    typeId, {Move(onDrawRow), Move(onDrawChildren)});
+		}
+	}
+
+	void RemoveTypeInspection(TypeId typeId)
+	{
+		if (EnsureInsideInspection)
+		{
+			currentInspection->registeredTypes.Remove(typeId);
+		}
+	}
+
+	#define P_DECLARE_COMMON_VALUE_TYPEINSPECTION(type, valueCode)      \
+		p::RegisterTypeInspection<type>(                                \
+		    [](StringView label, void* data, TypeId typeId, bool& open) \
+		{                                                               \
+			InspectSetKeyAsText(label);                                 \
+			InspectSetValueColumn();                                    \
+			type& value = *static_cast<type*>(data);                    \
+			valueCode                                                   \
+		})
+	void RegisterPipeTypeInspections()
+	{
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(bool, { ImGui::Checkbox("##value", &value); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(String, { ImGui::InputText("##value", value); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(StringView, {
+			ImGui::InputText("##value", const_cast<char*>(value.data()), value.size(),
+			    ImGuiInputTextFlags_ReadOnly);
+		});
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(Tag, {
+			String str{value.AsString()};
+			if (ImGui::InputText("##value", str))
+			{
+				value = Tag{str};
+			}
+		});
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    i8, { ImGui::InputScalar("##value", ImGuiDataType_S8, &value); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    u8, { ImGui::InputScalar("##value", ImGuiDataType_U8, &value); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    i32, { ImGui::InputScalar("##value", ImGuiDataType_S32, &value); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    u32, { ImGui::InputScalar("##value", ImGuiDataType_U32, &value); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    i64, { ImGui::InputScalar("##value", ImGuiDataType_S64, &value); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    u64, { ImGui::InputScalar("##value", ImGuiDataType_U64, &value); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    float, { ImGui::InputScalar("##value", ImGuiDataType_Float, &value); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    double, { ImGui::InputScalar("##value", ImGuiDataType_Double, &value); });
+
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v2_i8, { ImGui::InputScalarN("##value", ImGuiDataType_S8, &value, 2); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v2_u8, { ImGui::InputScalarN("##value", ImGuiDataType_U8, &value, 2); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v2_i32, { ImGui::InputScalarN("##value", ImGuiDataType_S32, &value, 2); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v2_u32, { ImGui::InputScalarN("##value", ImGuiDataType_U32, &value, 2); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v2_i64, { ImGui::InputScalarN("##value", ImGuiDataType_S64, &value, 2); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v2_u64, { ImGui::InputScalarN("##value", ImGuiDataType_U64, &value, 2); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v2, { ImGui::InputScalarN("##value", ImGuiDataType_Float, &value, 2); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v2d, { ImGui::InputScalarN("##value", ImGuiDataType_Double, &value, 2); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v3_i8, { ImGui::InputScalarN("##value", ImGuiDataType_S8, &value, 3); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v3_u8, { ImGui::InputScalarN("##value", ImGuiDataType_U8, &value, 3); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v3_i32, { ImGui::InputScalarN("##value", ImGuiDataType_S32, &value, 3); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v3_u32, { ImGui::InputScalarN("##value", ImGuiDataType_U32, &value, 3); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v3_i64, { ImGui::InputScalarN("##value", ImGuiDataType_S64, &value, 3); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v3_u64, { ImGui::InputScalarN("##value", ImGuiDataType_U64, &value, 3); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v3, { ImGui::InputScalarN("##value", ImGuiDataType_Float, &value, 3); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v3d, { ImGui::InputScalarN("##value", ImGuiDataType_Double, &value, 3); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v4_i8, { ImGui::InputScalarN("##value", ImGuiDataType_S8, &value, 4); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v4_u8, { ImGui::InputScalarN("##value", ImGuiDataType_U8, &value, 4); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v4_i32, { ImGui::InputScalarN("##value", ImGuiDataType_S32, &value, 4); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v4_u32, { ImGui::InputScalarN("##value", ImGuiDataType_U32, &value, 4); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v4_i64, { ImGui::InputScalarN("##value", ImGuiDataType_S64, &value, 4); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v4_u64, { ImGui::InputScalarN("##value", ImGuiDataType_U64, &value, 4); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v4, { ImGui::InputScalarN("##value", ImGuiDataType_Float, &value, 4); });
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(
+		    v4d, { ImGui::InputScalarN("##value", ImGuiDataType_Double, &value, 4); });
+
+		P_DECLARE_COMMON_VALUE_TYPEINSPECTION(Id, {
+			String asString = ToString(value);
+			ImGui::SetNextItemWidth(100.f);
+			if (ImGui::InputText("##IdValue", asString, ImGuiInputTextFlags_EscapeClearsAll))
+			{
+				value = IdFromString(
+				    asString, currentInspection ? currentInspection->idContext : nullptr);
+			}
+		});
+	}
+
+
+	bool BeginInspection(InspectionContext& ctx, const char* label, v2 size, InspectionFlags flags,
+	    ImGuiTextFilter* filter, IdContext* idContext)
+	{
+		if (!P_EnsureMsg(!currentInspection,
+		        "Called BeginInspection() but there was a Inspection Context already! "
+		        "Forgot to call EndInspection()?"))
+		{
+			return false;
+		}
+		currentInspection            = &ctx;
+		currentInspection->flags     = flags;
+		currentInspection->filter    = filter;
+		currentInspection->idContext = idContext;
+
+		if (!currentInspection->initialized)
+		{
+			RegisterPipeTypeInspections();
+			currentInspection->initialized = true;
+		}
+
+		const ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable
+		                                 | ImGuiTableFlags_SizingStretchProp
+		                                 | ImGuiTableFlags_PadOuterX;
+		if (ImGui::BeginTable(label, 2, tableFlags, {size.x, size.y}))
+		{
+			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.5f);
+			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			return true;
+		}
+		return false;
+	}
+
+	void EndInspection()
+	{
+		ImGui::EndTable();
+		if (P_EnsureMsg(currentInspection,
+		        "Called EndInspection() but there was no current Inspection Context! Forgot "
+		        "to call BeginInspection()?"))
+		{
+			currentInspection->filter = nullptr;
+			currentInspection->propStack.Clear();
+		}
+		currentInspection = nullptr;
+	}
+
+
+	void InspectSetKeyColumn()
+	{
+		ImGui::TableSetColumnIndex(0);
+	}
+
+	void InspectSetKeyAsText(StringView label)
+	{
+		InspectSetKeyColumn();
+		ImGui::AlignTextToFramePadding();
+		ImGui::TextUnformatted(label.data(), label.data() + label.size());
+	}
+
+	void InspectSetValueColumn()
+	{
+		ImGui::TableSetColumnIndex(1);
+	}
+
+	bool InspectBeginCategory(p::StringView name, bool isLeaf, bool defaultOpen)
+	{
+		InspectSetKeyColumn();
+		ImGui::AlignTextToFramePadding();
+		ImGui::Unindent();
+		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_AllowOverlap
+		                               | ImGuiTreeNodeFlags_SpanAllColumns
+		                               | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0)
+		                               | (defaultOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0);
+		// Categories are always enabled to navigate contents, but keep the disabled look
+		const bool disabled = (GImGui->CurrentItemFlags & ImGuiItemFlags_Disabled) != 0;
+		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, false);
+		if (disabled)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+		}
+		bool open = ImGui::TreeNodeEx(name.data(), flags);
+		if (disabled)
+		{
+			ImGui::PopStyleColor();
+		}
+		ImGui::PopItemFlag();
+		ImGui::Indent();
+		return open;
+	}
+	void InspectEndCategory()
+	{
+		ImGui::TreePop();
+	}
+
+	void Inspect(StringView label, void* data, TypeId typeId)
+	{
+		if (!EnsureInsideInspection || !data)
+		{
+			return;
+		}
+
+		const bool isContainer = p::HasTypeFlags(typeId, p::TF_Container);
+		const bool isStruct    = p::HasTypeFlags(typeId, p::TF_Struct);
+		const bool isEnum      = p::HasTypeFlags(typeId, p::TF_Enum);
+
+		ImGui::TableNextRow();
+		ImGui::PushID(data);
+		bool open = false;
+		auto* it  = currentInspection->registeredTypes.Find(typeId);
+		if (it && it->onDrawRow)
+		{
+			it->onDrawRow(label, data, typeId, open);
+		}
+		else if (isEnum)
+		{
+			InspectSetKeyAsText(label);
+			InspectSetValueColumn();
+			const auto* ops = static_cast<const EnumTypeOps*>(GetTypeOps(typeId));
+			if (P_EnsureMsg(ops, "Type is an enum but has no enum ops!"))
+			{
+				const i32 count = ops->Size();
+
+				// Compare the enum value bytes against all registered values to find its index
+				i32 currentIndex = NO_INDEX;
+				u64 value        = 0;
+				memcpy(&value, data, ops->valueSize);
+				for (i32 i = 0; i < count; ++i)
+				{
+					u64 registered = 0;
+					memcpy(&registered, ops->GetValuePtrByIndex(i), ops->valueSize);
+					if (registered == value)
+					{
+						currentIndex = i;
+						break;
+					}
+				}
+
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				String preview{
+				    currentIndex >= 0 ? ops->names[currentIndex].AsString() : StringView{}};
+				if (ImGui::BeginCombo("##enumValue", preview.c_str()))
+				{
+					for (i32 i = 0; i < count; ++i)
+					{
+						String name{ops->names[i].AsString()};
+						if (ImGui::Selectable(name.c_str(), i == currentIndex))
+						{
+							ops->SetValueFromIndex(data, i);
+						}
+						if (i == currentIndex)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+					ImGui::EndCombo();
+				}
+			}
+		}
+		else if (isContainer)
+		{
+			const auto* ops = GetTypeContainerOps(typeId);
+			P_Check(ops);
+			const i32 size = ops->GetSize(data);
+			open           = InspectBeginCategory(label, size <= 0);
+
+			InspectSetValueColumn();
+			ImGui::Text("%i items", size);
+
+			const float widthAvailable =
+			    ImGui::GetContentRegionAvail().x + details::GetCurrentWindow()->DC.Indent.x;
+			ImGui::SameLine(widthAvailable - 20.f);
+			if (ImGui::SmallButton("..."))
+			{
+				ImGui::OpenPopup("ContextualSettings");
+			}
+
+			if (ImGui::BeginPopupContextItem("ContextualSettings"))
+			{
+				if (ImGui::MenuItem("Add"))
+				{
+					ops->AddItem(data, nullptr);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::HelpTooltip("Add: Add one item");
+				if (ImGui::MenuItem("Clear"))
+				{
+					ops->Clear(data);
+					ImGui::CloseCurrentPopup();
+				}
+				ImGui::HelpTooltip("Clear: Remove all items of the array");
+				ImGui::EndPopup();
+			}
+		}
+		else if (isStruct)
+		{
+			auto props = GetTypeProperties(typeId);
+			open       = InspectBeginCategory(label, props.Size() <= 0);
+		}
+
+		if (!currentInspection->propStack.IsEmpty())    // Container item buttons
+		{
+			const auto& prop = currentInspection->propStack[0];
+			if (p::HasTypeFlags(prop.typeId, p::TF_Container))
+			{
+				const float widthAvailable =
+				    ImGui::GetContentRegionAvail().x + details::GetCurrentWindow()->DC.Indent.x;
+				ImGui::SameLine(widthAvailable - 20.f);
+				if (ImGui::SmallButton("..."))
+				{
+					ImGui::OpenPopup("ContextualSettings");
+				}
+				if (ImGui::BeginPopupContextItem("ContextualSettings"))
+				{
+					if (p::HasTypeFlags(prop.typeId, p::TF_Container) && ImGui::MenuItem("Remove"))
+					{
+						const auto* ops = GetTypeContainerOps(prop.typeId);
+						ops->RemoveItem(prop.data, prop.index);
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::HelpTooltip("Remove: Remove this item from its array");
+					ImGui::EndPopup();
+				}
+			}
+		}
+
+		if (open)
+		{
+			if (it && it->onDrawChildren)
+			{
+				it->onDrawChildren(data, typeId);
+			}
+			else if (isContainer)
+			{
+				const auto* ops = GetTypeContainerOps(typeId);
+				String tmpLabel;
+				const i32 size = ops->GetSize(data);
+				currentInspection->propStack.Add({typeId, data, 0});
+				for (i32 i = 0; i < size; ++i)
+				{
+					tmpLabel.clear();
+					FormatTo(tmpLabel, "{}", i);
+					Inspect(tmpLabel, ops->GetItem(data, i), ops->itemType);
+
+					++currentInspection->propStack.Last().index;
+				}
+				currentInspection->propStack.RemoveLast();
+				InspectEndCategory();
+			}
+			else if (isStruct)
+			{
+				InspectProperties(data, typeId);
+				InspectEndCategory();
+			}
+		}
+		ImGui::PopID();
+	}
+	void InspectProperties(void* data, TypeId typeId)
+	{
+		if (!EnsureInsideInspection || !data)
+		{
+			return;
+		}
+
+		const bool viewAll = HasFlag(currentInspection->flags, IF_ViewAll);
+		const bool editAll = HasFlag(currentInspection->flags, IF_EditAll);
+
+		auto props = GetTypeProperties(typeId);
+		if (!props.IsEmpty())
+		{
+			currentInspection->propStack.Add({typeId, data, 0});
+			for (const auto* prop : props)
+			{
+				if (viewAll || prop->HasFlag(PF_View))
+				{
+					StringView name = prop->name.AsString();
+					if (!currentInspection->filter || !currentInspection->filter->IsActive()
+					    || currentInspection->filter->PassFilter(
+					        name.data(), name.data() + name.size()))
+					{
+						ImGui::BeginDisabled(!editAll && !prop->HasFlag(PF_Edit));
+						Inspect(name, prop->access(data), prop->typeId);
+						ImGui::EndDisabled();
+					}
+				}
+
+				++currentInspection->propStack.Last().index;
+			}
+			currentInspection->propStack.RemoveLast();
+		}
+	}
+#endif
+}    // namespace p
