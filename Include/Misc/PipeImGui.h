@@ -112,6 +112,10 @@ namespace ImGui
 	{
 		PushID(reinterpret_cast<void*>(p::sizet(id)));
 	}
+	inline void PushID(p::Id id)
+	{
+		PushID(reinterpret_cast<void*>(p::sizet(id.value)));
+	}
 	inline ImGuiID GetID(p::StringView id)
 	{
 		return GetID(id.data(), id.data() + id.size());
