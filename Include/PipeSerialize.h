@@ -791,7 +791,11 @@ namespace p
 	{
 	private:
 		TView<u8> data;
-		u8* pointer = nullptr;
+		u8* pointer  = nullptr;
+		bool errored = false;
+
+		sizet Remaining() const;
+		u8* ReadBytes(sizet size);
 
 	public:
 		P_API BinaryFormatReader(TView<u8> data);
@@ -820,6 +824,9 @@ namespace p
 		P_API bool IsObject() const override;
 		P_API bool IsArray() const override;
 		P_API bool IsValid() const override;
+
+		/** True once a read tried to exceed the buffer. */
+		P_API bool HasError() const;
 	};
 
 	struct BinaryFormatWriter : public IFormatWriter

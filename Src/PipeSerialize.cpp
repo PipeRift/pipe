@@ -965,132 +965,169 @@ namespace p
 
 	BinaryFormatReader::~BinaryFormatReader() {}
 
+	sizet BinaryFormatReader::Remaining() const
+	{
+		return data.EndData() - pointer;
+	}
+
+	u8* BinaryFormatReader::ReadBytes(sizet size)
+	{
+		u8* ptr = pointer;
+		pointer += size;
+		if (errored || pointer > data.EndData()) [[unlikely]]
+		{
+			pointer -= size;    // We add in advance and reduce here to avoid one operation
+			errored = true;
+			return nullptr;
+		}
+		return ptr;
+	}
+
 	void BinaryFormatReader::BeginArray(u32& size)
 	{
 		Read(size);
+		// If every element takes at least 1 byte, a larger size is impossible
+		if (errored || size > Remaining())
+		{
+			size    = 0;
+			errored = true;
+		}
 	}
 
 	bool BinaryFormatReader::EnterNext(StringView)
 	{
 		// Nothing to do
-		return true;
+		return !errored;
 	}
 
 	bool BinaryFormatReader::EnterNext()
 	{
 		// Nothing to do
-		return true;
+		return !errored;
 	}
 
 	void BinaryFormatReader::Read(bool& val)
 	{
-		val = bool(*pointer);
-		++pointer;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(1))
+		{
+			val = bool(*ptr);
+		}
 	}
 
 	void BinaryFormatReader::Read(i8& val)
 	{
-		val = i8(*pointer);
-		++pointer;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(1))
+		{
+			val = i8(*ptr);
+		}
 	}
+
 	void BinaryFormatReader::Read(u8& val)
 	{
-		val = *pointer;
-		++pointer;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(1))
+		{
+			val = *ptr;
+		}
 	}
 
 	void BinaryFormatReader::Read(i16& val)
 	{
-		val = pointer[0];
-		val |= i16(pointer[1]) << 8;
-		pointer += 2;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(2))
+		{
+			val = ptr[0];
+			val |= i16(ptr[1]) << 8;
+		}
 	}
 
 	void BinaryFormatReader::Read(u16& val)
 	{
-		val = pointer[0];
-		val |= u16(pointer[1]) << 8;
-		pointer += 2;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(2))
+		{
+			val = ptr[0];
+			val |= u16(ptr[1]) << 8;
+		}
 	}
 
 	void BinaryFormatReader::Read(i32& val)
 	{
-		val = pointer[0];
-		val |= i32(pointer[1]) << 8;
-		val |= i32(pointer[2]) << 16;
-		val |= i32(pointer[3]) << 24;
-		pointer += 4;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(4))
+		{
+			val = ptr[0];
+			val |= i32(ptr[1]) << 8;
+			val |= i32(ptr[2]) << 16;
+			val |= i32(ptr[3]) << 24;
+		}
 	}
 
 	void BinaryFormatReader::Read(u32& val)
 	{
-		val = pointer[0];
-		val |= u32(pointer[1]) << 8;
-		val |= u32(pointer[2]) << 16;
-		val |= u32(pointer[3]) << 24;
-		pointer += 4;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(4))
+		{
+			val = ptr[0];
+			val |= u32(ptr[1]) << 8;
+			val |= u32(ptr[2]) << 16;
+			val |= u32(ptr[3]) << 24;
+		}
 	}
 
 	void BinaryFormatReader::Read(i64& val)
 	{
-		val = pointer[0];
-		val |= i64(pointer[1]) << 8;
-		val |= i64(pointer[2]) << 16;
-		val |= i64(pointer[3]) << 24;
-		val |= i64(pointer[4]) << 32;
-		val |= i64(pointer[5]) << 40;
-		val |= i64(pointer[6]) << 48;
-		val |= i64(pointer[7]) << 56;
-		pointer += 8;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(8))
+		{
+			val = ptr[0];
+			val |= i64(ptr[1]) << 8;
+			val |= i64(ptr[2]) << 16;
+			val |= i64(ptr[3]) << 24;
+			val |= i64(ptr[4]) << 32;
+			val |= i64(ptr[5]) << 40;
+			val |= i64(ptr[6]) << 48;
+			val |= i64(ptr[7]) << 56;
+		}
 	}
 
 	void BinaryFormatReader::Read(u64& val)
 	{
-		val = pointer[0];
-		val |= u64(pointer[1]) << 8;
-		val |= u64(pointer[2]) << 16;
-		val |= u64(pointer[3]) << 24;
-		val |= u64(pointer[4]) << 32;
-		val |= u64(pointer[5]) << 40;
-		val |= u64(pointer[6]) << 48;
-		val |= u64(pointer[7]) << 56;
-		pointer += 8;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(8))
+		{
+			val = ptr[0];
+			val |= u64(ptr[1]) << 8;
+			val |= u64(ptr[2]) << 16;
+			val |= u64(ptr[3]) << 24;
+			val |= u64(ptr[4]) << 32;
+			val |= u64(ptr[5]) << 40;
+			val |= u64(ptr[6]) << 48;
+			val |= u64(ptr[7]) << 56;
+		}
 	}
 
 	void BinaryFormatReader::Read(float& val)
 	{
-		p::CopyMem(&val, pointer, 4);
-		pointer += 4;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(4))
+		{
+			p::CopyMem(&val, ptr, 4);
+		}
 	}
 
 	void BinaryFormatReader::Read(double& val)
 	{
-		p::CopyMem(&val, pointer, 8);
-		pointer += 8;
-		P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+		if (const u8* ptr = ReadBytes(8))
+		{
+			p::CopyMem(&val, ptr, 8);
+		}
 	}
 
 	void BinaryFormatReader::Read(StringView& val)
 	{
 		i32 size = 0;
 		Read(size);
-		const sizet sizeInBytes = size * sizeof(char);
-		if (P_EnsureMsg(pointer + sizeInBytes <= data.EndData(),
-		        "The size of a string readen exceeds the read buffer!")) [[likely]]
+		if (errored || size < 0 || size > Remaining()) [[unlikely]]
 		{
-			val = StringView{reinterpret_cast<char*>(pointer), sizeInBytes};
-			pointer += sizeInBytes;
-			P_CheckMsg(pointer <= data.EndData(), "The read buffer has been exceeded");
+			errored = true;
+		}
+		else
+		{
+			val = StringView{reinterpret_cast<char*>(pointer), sizet(size)};
+			pointer += size;
 		}
 	}
 
@@ -1109,6 +1146,11 @@ namespace p
 	bool BinaryFormatReader::IsValid() const
 	{
 		return data.Data() && !data.IsEmpty();
+	}
+
+	bool BinaryFormatReader::HasError() const
+	{
+		return errored;
 	}
 
 
@@ -1252,7 +1294,11 @@ namespace p
 		if (size + offset > capacity) [[unlikely]]
 		{
 			const u32 oldCapacity = capacity;
-			capacity *= 2;    // Grow capacity exponentially
+			do
+			{
+				capacity *= 2;    // Grow capacity exponentially
+			} while (size + offset > capacity);
+
 			u8* oldData = data;
 
 			data = static_cast<u8*>(Alloc<u8>(arena, capacity));
