@@ -340,9 +340,10 @@ namespace ImGui
 		EndTooltip();
 	}
 
-	inline void SetItemTooltip(p::StringView text)
+	inline void SetItemTooltip(p::StringView text, ImGuiHoveredFlags flags = 0)
 	{
-		if (IsItemHovered(ImGuiHoveredFlags_ForTooltip))
+		flags |= ImGuiHoveredFlags_ForTooltip;
+		if (IsItemHovered(flags))
 		{
 			SetTooltip(text);
 		}
