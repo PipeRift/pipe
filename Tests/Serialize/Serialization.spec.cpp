@@ -110,7 +110,7 @@ P_SPEC("Serialization", []()
 			val.value = true;
 
 			JsonFormatWriter writer{};
-			Writer ct = writer;
+			Writer& ct = writer;
 			ct.BeginObject();
 			ct.Next("type", val);
 			Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
@@ -133,7 +133,7 @@ P_SPEC("Serialization", []()
 			val.value = true;
 
 			JsonFormatWriter writer{};
-			Writer ct = writer;
+			Writer& ct = writer;
 			ct.BeginObject();
 			ct.Next("type", val);
 			Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
@@ -159,7 +159,7 @@ P_SPEC("Serialization", []()
 			val.value = true;
 
 			JsonFormatWriter writer{};
-			Writer ct = writer;
+			Writer& ct = writer;
 			ct.BeginObject();
 			ct.Next("type", val);
 			Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");
@@ -182,7 +182,7 @@ P_SPEC("Serialization", []()
 			val.value = true;
 
 			JsonFormatWriter writer{};
-			Writer ct = writer;
+			Writer& ct = writer;
 			ct.BeginObject();
 			ct.Next("type", val);
 			Expect(writer.ToString(false)).ToEqual("{\"type\":{\"value\":true}}");

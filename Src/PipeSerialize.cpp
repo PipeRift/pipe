@@ -62,14 +62,9 @@ namespace p
 		GetFormat().BeginObject();
 	}
 
-	bool Reader::EnterNext()
+	bool Reader::EnterNext(StringView matchKey)
 	{
-		return GetFormat().EnterNext();
-	}
-
-	bool Reader::EnterNext(StringView& key)
-	{
-		return GetFormat().EnterNext(key);
+		return GetFormat().EnterNext(matchKey);
 	}
 
 	bool Reader::Enter(StringView key)
@@ -291,7 +286,7 @@ namespace p
 		}
 	}
 
-	bool ReadWriter::EnterNext(StringView& key)
+	bool ReadWriter::EnterNext(StringView key)
 	{
 		if (IsWriting())
 		{
@@ -336,18 +331,6 @@ namespace p
 		else
 		{
 			reader->BeginArray(size);
-		}
-	}
-
-	bool ReadWriter::EnterNext()
-	{
-		if (IsWriting())
-		{
-			return writer->EnterNext();
-		}
-		else
-		{
-			return reader->EnterNext();
 		}
 	}
 
@@ -482,13 +465,14 @@ namespace p
 		}
 	}
 
-	bool JsonFormatReader::EnterNext()
+	bool JsonFormatReader::EnterNext(StringView matchKey)
 	{
 		if (!current.value)
 		{
 			return false;
 		}
-		else if (unsafe_yyjson_is_arr(current.value))
+
+		if (unsafe_yyjson_is_arr(current.value))
 		{
 			const i32 size = i32(unsafe_yyjson_get_len(current.value));
 			const i32 next = current.lastIndex + 1;    // NO_INDEX (-1) + 1 is the first element
@@ -506,45 +490,32 @@ namespace p
 		}
 		else if (unsafe_yyjson_is_obj(current.value))
 		{
-			StringView key;    // The key is not needed
-			return EnterNext(key);
+			const i32 size = i32(unsafe_yyjson_get_len(current.value));
+			const i32 next = current.lastIndex + 1;
+			if (!P_EnsureMsg(next < size,
+			        "Tried to enter past the end of the object (Index: {}, Max: {})",
+			        current.lastIndex, size)) [[unlikely]]
+			{
+				return false;    // End of the object
+			}
+
+			// Next member, whatever its key is
+			yyjson_val* const keyValue = current.last ? unsafe_yyjson_get_next(current.last)
+			                                          : unsafe_yyjson_get_first(current.value);
+			const StringView enteredKey{
+			    unsafe_yyjson_get_str(keyValue), unsafe_yyjson_get_len(keyValue)};
+			if (matchKey.data() != nullptr && enteredKey != matchKey)
+			{
+				return false;    // Key mismatch: nothing is entered
+			}
+			PushValue(keyValue + 1, next, enteredKey);
+			return true;
 		}
 
 		P_CheckMsg(false,
 		    "Tried to enter a value outside an array or object. Has BeginArray()/"
 		    "BeginObject() been called?");
 		return false;
-	}
-
-	bool JsonFormatReader::EnterNext(StringView& key)
-	{
-		key = {};
-		if (!current.value)
-		{
-			return false;
-		}
-		if (!P_EnsureMsg(unsafe_yyjson_is_obj(current.value),
-		        "EnterNext(key) is only valid for objects. Use EnterNext() for arrays."))
-		    [[unlikely]]
-		{
-			return false;
-		}
-
-		const i32 size = i32(unsafe_yyjson_get_len(current.value));
-		const i32 next = current.lastIndex + 1;
-		if (!P_EnsureMsg(next < size,
-		        "Tried to enter past the end of the object (Index: {}, Max: {})", current.lastIndex,
-		        size)) [[unlikely]]
-		{
-			return false;    // End of the object
-		}
-
-		// Next member, whatever its key is
-		yyjson_val* const keyValue = current.last ? unsafe_yyjson_get_next(current.last)
-		                                          : unsafe_yyjson_get_first(current.value);
-		key = {unsafe_yyjson_get_str(keyValue), unsafe_yyjson_get_len(keyValue)};
-		PushValue(keyValue + 1, next, key);
-		return true;
 	}
 
 	bool JsonFormatReader::Enter(StringView key)
@@ -1602,19 +1573,14 @@ namespace p
 		current.size               = size;
 	}
 
-	bool BinaryFormatReader::EnterNext()
+	bool BinaryFormatReader::EnterNext(StringView matchKey)
 	{
 		if (!pointer) [[unlikely]]
 		{
 			return false;
 		}
 		const auto type = Binary::GetType(current.flags);
-		if (type == Binary::Flags::Type_Object)
-		{
-			StringView key;
-			return EnterNext(key);
-		}
-		if (type != Binary::Flags::Type_Array) [[unlikely]]
+		if (type == Binary::Flags::Type_Array)
 		{
 			const i32 next = current.lastIndex + 1;    // NO_INDEX (-1) + 1 is the first element
 			if (!P_EnsureMsg(next < current.size,
@@ -1641,57 +1607,51 @@ namespace p
 			}
 			return true;
 		}
+		else if (type == Binary::Flags::Type_Object)
+		{
+			const i32 next = current.lastIndex + 1;
+			if (!P_EnsureMsg(next < current.size,
+			        "Tried to enter past the end of the object (Children: {})", current.size))
+			    [[unlikely]]
+			{
+				return false;    // End of the object
+			}
+
+			if (current.structuredChildren)
+			{
+				StringView key;
+				u8* afterKey = Binary::ReadKey(pointer, data.EndData(), key);
+				if (!afterKey)
+				{
+					return false;
+				}
+				if (matchKey.data() != nullptr && key != matchKey)
+				{
+					return false;
+				}
+				pointer = afterKey;
+				Value value{u32(pointer - data.Data()), Binary::Flags::Type_Raw, next};
+				value.key = key;
+				PushValue(value);
+				pointer = Binary::ReadFlags(current.flags, pointer);
+				if (!pointer)
+				{
+					PopValue();
+					return false;
+				}
+			}
+			else
+			{
+				// Non-structured values carry no keys. We dont check
+				PushValue(Value{u32(pointer - data.Data()), Binary::Flags::Type_None, next});
+			}
+			return true;
+		}
 
 		P_CheckMsg(false,
 		    "Tried to enter a value outside an array or object. Has BeginArray()/"
 		    "BeginObject() been called?");
 		return false;
-	}
-
-	bool BinaryFormatReader::EnterNext(StringView& key)
-	{
-		key = {};
-		if (!pointer) [[unlikely]]
-		{
-			return false;
-		}
-		if (!P_EnsureMsg(Binary::GetType(current.flags) == Binary::Flags::Type_Object,
-		        "EnterNext(key) is only valid for objects. Use EnterNext() for arrays."))
-		    [[unlikely]]
-		{
-			return false;
-		}
-
-		const i32 next = current.lastIndex + 1;
-		if (!P_EnsureMsg(next < current.size,
-		        "Tried to enter past the end of the object (Children: {})", current.size))
-		    [[unlikely]]
-		{
-			return false;    // End of the object
-		}
-
-		if (current.structuredChildren)
-		{
-			pointer = Binary::ReadKey(pointer, data.EndData(), key);
-			if (!pointer)
-			{
-				return false;
-			}
-			Value value{u32(pointer - data.Data()), Binary::Flags::Type_Raw, next};
-			value.key = key;
-			PushValue(value);
-			pointer = Binary::ReadFlags(current.flags, pointer);
-			if (!pointer)
-			{
-				PopValue();
-				return false;
-			}
-		}
-		else
-		{
-			PushValue(Value{u32(pointer - data.Data()), Binary::Flags::Type_None, next});
-		}
-		return true;
 	}
 
 	bool BinaryFormatReader::Enter(StringView key)
@@ -1706,8 +1666,8 @@ namespace p
 		{
 			return false;
 		}
-		if (!P_EnsureMsg(current.structuredChildren, "Enter(key) needs FF_RW_Structured flag")
-		    || index < 0) [[unlikely]]
+		if (!P_EnsureMsg(current.structuredChildren, "Enter(key) needs FF_RW_Structured flag"))
+		    [[unlikely]]
 		{
 			return false;
 		}
@@ -2003,15 +1963,15 @@ namespace p
 				size += keySize;
 			}
 		}
-		
+
 		if (Binary::GetType(current.flags) >= Binary::Flags::Type_Array)
 		{
 			++current.size;
 		}
 
 		valueStack.Add(current);
-		current       = Value{
-		    size, parent.structuredChildren ? Binary::Flags::Type_Raw : Binary::Flags::Type_None};
+		current = Value{
+		    size, current.structuredChildren ? Binary::Flags::Type_Raw : Binary::Flags::Type_None};
 		return true;
 	}
 

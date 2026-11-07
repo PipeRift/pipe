@@ -22,7 +22,7 @@ P_SPEC("Serialization.Binary", []()
 
 		It("Can read from object value", []()
 		{
-			TArray<u8> data{255};
+			TArray<u8> data{1, 0, 0, 0, 255};
 			BinaryFormatReader reader{data};
 			Reader ct = reader;
 			ct.BeginObject();
@@ -36,7 +36,7 @@ P_SPEC("Serialization.Binary", []()
 			TArray<u8> data{1, 0, 0, 0, 255};
 			BinaryFormatReader reader{data};
 			Reader ct = reader;
-			u32 size  = 0;
+			i32 size  = 0;
 			ct.BeginArray(size);
 			Expect(size).ToEqual(1);
 			u8 value = 0;
@@ -46,7 +46,8 @@ P_SPEC("Serialization.Binary", []()
 
 		It("Can iterate arrays", []()
 		{
-			TArray<u8> data{2, 0, 0, 0,          // Array size of 2
+			TArray<u8> data{1, 0, 0, 0,          // Object size of 1
+			    2, 0, 0, 0,                      // Array size of 2
 			    6, 0, 0, 0,                      // size 6
 			    'M', 'i', 'g', 'u', 'e', 'l',    //
 			    4, 0, 0, 0,                      // size 4
@@ -55,10 +56,10 @@ P_SPEC("Serialization.Binary", []()
 
 			Reader& ct = reader;
 			ct.BeginObject();
-			if (ct.EnterNext("players"))
+			if (ct.EnterNext())
 			{
 				static const StringView expected[]{"Miguel", "Juan"};
-				u32 size;
+				i32 size = 0;
 				ct.BeginArray(size);
 				for (u32 i = 0; i < size; ++i)
 				{
@@ -74,7 +75,7 @@ P_SPEC("Serialization.Binary", []()
 		{
 			It("Can read bool values", []()
 			{
-				TArray<u8> data{1, 0};
+				TArray<u8> data{2, 0, 0, 0, 1, 0};
 				BinaryFormatReader reader{data};
 				Reader& ct = reader;
 				ct.BeginObject();
@@ -87,7 +88,7 @@ P_SPEC("Serialization.Binary", []()
 
 			It("Can read i8 values", []()
 			{
-				TArray<u8> data{0, 127, 128};
+				TArray<u8> data{3, 0, 0, 0, 0, 127, 128};
 				BinaryFormatReader reader{data};
 				Reader& ct = reader;
 				ct.BeginObject();
@@ -102,7 +103,7 @@ P_SPEC("Serialization.Binary", []()
 
 			It("Can read u8 values", []()
 			{
-				TArray<u8> data{0, 255};
+				TArray<u8> data{2, 0, 0, 0, 0, 255};
 				BinaryFormatReader reader{data};
 				Reader& ct = reader;
 				ct.BeginObject();
@@ -116,9 +117,9 @@ P_SPEC("Serialization.Binary", []()
 			It("Can read i16 values", []()
 			{
 				// Test inbounds and out of bounds values
-				TArray<u8> data{0, 0, 0, 128, 255, 127};
+				TArray<u8> data{3, 0, 0, 0, 0, 0, 0, 128, 255, 127};
 				BinaryFormatReader reader{data};
-				Reader ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				i16 value = 0;
 				ct.Next("a", value);
@@ -132,9 +133,9 @@ P_SPEC("Serialization.Binary", []()
 			It("Can read u16 values", []()
 			{
 				// Test inbounds and out of bounds values
-				TArray<u8> data{0, 0, 255, 255};
+				TArray<u8> data{2, 0, 0, 0, 0, 0, 255, 255};
 				BinaryFormatReader reader{data};
-				Reader ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				u16 value = 0;
 				ct.Next("a", value);
@@ -146,9 +147,9 @@ P_SPEC("Serialization.Binary", []()
 			It("Can read i32 values", []()
 			{
 				// Test inbounds and out of bounds values
-				TArray<u8> data{0, 0, 0, 0, 0, 0, 0, 128, 255, 255, 255, 127};
+				TArray<u8> data{3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 255, 255, 255, 127};
 				BinaryFormatReader reader{data};
-				Reader ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				i32 value = 0;
 				ct.Next("a", value);
@@ -162,9 +163,9 @@ P_SPEC("Serialization.Binary", []()
 			It("Can read u32 values", []()
 			{
 				// Test inbounds and out of bounds values
-				TArray<u8> data{0, 0, 0, 0, 255, 255, 255, 255};
+				TArray<u8> data{2, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255};
 				BinaryFormatReader reader{data};
-				Reader ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				u32 value = 0;
 				ct.Next("a", value);
@@ -176,10 +177,10 @@ P_SPEC("Serialization.Binary", []()
 			It("Can read i64 values", []()
 			{
 				// Test inbounds and out of bounds values
-				TArray<u8> data{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 255, 255, 255,
-				    255, 255, 255, 255, 127};
+				TArray<u8> data{3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128,
+				    255, 255, 255, 255, 255, 255, 255, 127};
 				BinaryFormatReader reader{data};
-				Reader ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				i64 value = 0;
 				ct.Next("a", value);
@@ -193,9 +194,9 @@ P_SPEC("Serialization.Binary", []()
 			It("Can read u64 values", []()
 			{
 				// Test inbounds and out of bounds values
-				TArray<u8> data{0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255};
+				TArray<u8> data{2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255};
 				BinaryFormatReader reader{data};
-				Reader ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				u64 value = 0;
 				ct.Next("a", value);
@@ -206,9 +207,9 @@ P_SPEC("Serialization.Binary", []()
 
 			It("Can read float values", []()
 			{
-				TArray<u8> data{51, 51, 179, 191, 0, 0, 96, 64};
+				TArray<u8> data{2, 0, 0, 0, 51, 51, 179, 191, 0, 0, 96, 64};
 				BinaryFormatReader reader{data};
-				Reader ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				float value = 0.f;
 				ct.Next("a", value);
@@ -219,9 +220,10 @@ P_SPEC("Serialization.Binary", []()
 
 			It("Can read double values", []()
 			{
-				TArray<u8> data{102, 102, 102, 102, 102, 102, 246, 191, 0, 0, 0, 0, 0, 0, 12, 64};
+				TArray<u8> data{2, 0, 0, 0, 102, 102, 102, 102, 102, 102, 246, 191, 0, 0, 0, 0, 0, 0,
+				    12, 64};
 				BinaryFormatReader reader{data};
-				Reader ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				double value = 0;
 				ct.Next("a", value);
@@ -232,9 +234,9 @@ P_SPEC("Serialization.Binary", []()
 
 			It("Can read StringView values", []()
 			{
-				TArray<u8> data{3, 0, 0, 0, 'y', 'e', 's'};
+				TArray<u8> data{1, 0, 0, 0, 3, 0, 0, 0, 'y', 'e', 's'};
 				BinaryFormatReader reader{data};
-				Reader ct = reader;
+				Reader& ct = reader;
 				ct.BeginObject();
 				StringView string;
 				ct.Next("a", string);
@@ -258,7 +260,7 @@ P_SPEC("Serialization.Binary", []()
 			ct.BeginObject();
 			ct.Next("name", StringView{"Miguel"});
 
-			TArray<u8> expected{6, 0, 0, 0, 'M', 'i', 'g', 'u', 'e', 'l'};
+			TArray<u8> expected{1, 0, 0, 0, 6, 0, 0, 0, 'M', 'i', 'g', 'u', 'e', 'l'};
 			Expect(writer.GetData()).ToEqual(TView<u8>{expected});
 		});
 
@@ -279,88 +281,88 @@ P_SPEC("Serialization.Binary", []()
 			It("Can write bool values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", true);
 				ct.Next("b", false);
-				TArray<u8> expected{1, 0};
+				TArray<u8> expected{2, 0, 0, 0, 1, 0};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
 
 			It("Can write i8 values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", i8(127));
 				ct.Next("b", i8(-128));
-				TArray<u8> expected{127, 128};
+				TArray<u8> expected{2, 0, 0, 0, 127, 128};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
 
 			It("Can write u8 values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", u8(0));
 				ct.Next("b", u8(255));
-				TArray<u8> expected{0, 255};
+				TArray<u8> expected{2, 0, 0, 0, 0, 255};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
 
 			It("Can write i16 values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", Limits<i16>::Max());
 				ct.Next("b", Limits<i16>::Lowest());
-				TArray<u8> expected{255, 127, 0, 128};
+				TArray<u8> expected{2, 0, 0, 0, 255, 127, 0, 128};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
 
 			It("Can write u16 values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", Limits<u16>::Max());
 				ct.Next("b", Limits<u16>::Lowest());
-				TArray<u8> expected{255, 255, 0, 0};
+				TArray<u8> expected{2, 0, 0, 0, 255, 255, 0, 0};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
 
 			It("Can write i32 values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", Limits<i32>::Max());
 				ct.Next("b", Limits<i32>::Lowest());
-				TArray<u8> expected{255, 255, 255, 127, 0, 0, 0, 128};
+				TArray<u8> expected{2, 0, 0, 0, 255, 255, 255, 127, 0, 0, 0, 128};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
 
 			It("Can write u32 values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", Limits<u32>::Max());
 				ct.Next("b", Limits<u32>::Lowest());
-				TArray<u8> expected{255, 255, 255, 255, 0, 0, 0, 0};
+				TArray<u8> expected{2, 0, 0, 0, 255, 255, 255, 255, 0, 0, 0, 0};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
 
 			It("Can write i64 values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", Limits<i64>::Max());
 				ct.Next("b", Limits<i64>::Lowest());
-				TArray<u8> expected{
+				TArray<u8> expected{2, 0, 0, 0,
 				    255, 255, 255, 255, 255, 255, 255, 127, 0, 0, 0, 0, 0, 0, 0, 128};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
@@ -368,33 +370,33 @@ P_SPEC("Serialization.Binary", []()
 			It("Can write u64 values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", Limits<u64>::Max());
 				ct.Next("b", Limits<u64>::Lowest());
-				TArray<u8> expected{255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0};
+				TArray<u8> expected{2, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 0};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
 
 			It("Can write float values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", -1.4f);
 				ct.Next("b", 3.5f);
-				TArray<u8> expected{51, 51, 179, 191, 0, 0, 96, 64};
+				TArray<u8> expected{2, 0, 0, 0, 51, 51, 179, 191, 0, 0, 96, 64};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
 
 			It("Can write double values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", -1.4);
 				ct.Next("b", 3.5);
-				TArray<u8> expected{
+				TArray<u8> expected{2, 0, 0, 0,
 				    102, 102, 102, 102, 102, 102, 246, 191, 0, 0, 0, 0, 0, 0, 12, 64};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
@@ -402,10 +404,10 @@ P_SPEC("Serialization.Binary", []()
 			It("Can write StringView values", []()
 			{
 				BinaryFormatWriter writer{};
-				Writer ct = writer;
+				Writer& ct = writer;
 				ct.BeginObject();
 				ct.Next("a", StringView{"yes"});
-				TArray<u8> expected{3, 0, 0, 0, 'y', 'e', 's'};
+				TArray<u8> expected{1, 0, 0, 0, 3, 0, 0, 0, 'y', 'e', 's'};
 				Expect(writer.GetData()).ToEqual(TView<u8>(expected));
 			});
 		});

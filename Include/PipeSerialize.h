@@ -71,17 +71,13 @@ namespace p
 		void BeginObject();
 
 		/**
-		 * Enters the next value of the current array or object (regardless of its key).
-		 * Complexity: O(1)
+		 * Enters the next value of the current array or object.
+		 * On objects, when `matchKey` is non-null, the member is entered only if its
+		 * key matches; otherwise nothing is entered and false is returned. The key is
+		 * ignored on arrays.
+		 * @see GetCurrentKey() and GetCurrentIndex()
 		 */
-		bool EnterNext();
-
-		/**
-		 * Enters the next object key value and writes its key into `key`.
-		 * Only valid on objects; use EnterNext() for arrays.
-		 * Complexity: O(1)
-		 */
-		bool EnterNext(StringView& key);
+		bool EnterNext(StringView matchKey = {});
 
 		/**
 		 * Finds the member with this key, starting after the last entered value.
@@ -247,7 +243,7 @@ namespace p
 
 		/**
 		 * Marks current scope as an Object.
-		 * See EnterNext(name) & Next(name, value)
+		 * @see EnterNext(matchKey) & Next(name, value)
 		 */
 		void BeginObject();
 
@@ -419,13 +415,11 @@ namespace p
 		 */
 		void BeginObject();
 
-		/** Enters the next key/index of the current value. */
-		bool EnterNext();
-
-		/** Enters the next object key value and writes its key into `key`.
-		 * Only valid on objects; use EnterNext() for arrays.
+		/** Enters the next object member or array element. Readers match `matchKey` when
+		 * non-null; writers write it.
+		 * @see GetCurrentKey() and GetCurrentIndex()
 		 */
-		bool EnterNext(StringView& key);
+		bool EnterNext(StringView key = {});
 
 		/** Enters the member with this key (readers search, writers add or replace). */
 		bool Enter(StringView key);
@@ -593,12 +587,13 @@ namespace p
 		virtual void BeginObject() = 0;
 		/** Marks the current value as an array scope. */
 		virtual void BeginArray(i32& size) = 0;
-		/** Enters the next value of the current scope, regardless of its key. */
-		virtual bool EnterNext() = 0;
-		/** Enters the next object key value and writes its key into `key`.
-		 * Only valid on objects; use EnterNext() for arrays.
+		/** Enters the next value of the current array or object.
+		 * On objects, when `matchKey` is non-null, the member is entered only if its
+		 * key matches; otherwise nothing is entered and false is returned. The key is
+		 * ignored on arrays.
+		 * @see GetCurrentKey() and GetCurrentIndex()
 		 */
-		virtual bool EnterNext(StringView& key) = 0;
+		virtual bool EnterNext(StringView matchKey = {}) = 0;
 		/** Finds the member with this key, starting after the last entered value.
 		 * Requires FF_RW_Structured
 		 */
@@ -830,8 +825,7 @@ namespace p
 		P_API void BeginObject() override;
 		P_API void BeginArray(i32& size) override;
 
-		P_API bool EnterNext() override;
-		P_API bool EnterNext(StringView& key) override;
+		P_API bool EnterNext(StringView matchKey = {}) override;
 		P_API bool Enter(StringView key) override;
 		P_API bool Enter(i32 index) override;
 		P_API void Leave() override;
@@ -981,8 +975,7 @@ namespace p
 		P_API void BeginObject() override;
 		P_API void BeginArray(i32& size) override;
 
-		P_API bool EnterNext() override;
-		P_API bool EnterNext(StringView& key) override;
+		P_API bool EnterNext(StringView matchKey = {}) override;
 		/** Finds a member by key. Requires FF_RW_Structured. */
 		P_API bool Enter(StringView key) override;
 		/** Enters the member at this index of the current scope. Requires FF_RW_Structured. */
