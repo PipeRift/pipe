@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Fwd/PipeSerialize.h"
+#include "Pipe/Core/EnumFlags.h"
 #include "Pipe/Core/StringView.h"
 #include "Pipe/Core/Templates.h"
 #include "Pipe/Core/TypeFlags.h"
@@ -31,12 +32,16 @@ namespace p
 	// clang-format on
 
 
-	enum WriteFlags : sizet
+	enum FormatFlags : sizet
 	{
-		WriteFlags_None              = 0,
-		WriteFlags_CacheStringKeys   = 1 << 0,
-		WriteFlags_CacheStringValues = 1 << 1,
-		WriteFlags_CacheStrings      = WriteFlags_CacheStringKeys | WriteFlags_CacheStringValues
+		FF_None                = 0,
+		FF_W_CacheStringKeys   = 1 << 0,
+		FF_W_CacheStringValues = 1 << 1,
+		FF_W_CacheStrings      = FF_W_CacheStringKeys | FF_W_CacheStringValues,
+		/** Stores member keys so the stream is self-describing:
+		 * Readers can look members up by name instead of only reading them in order.
+		 */
+		FF_RW_Structured = 1 << 2
 	};
 
 
@@ -52,34 +57,66 @@ namespace p
 		Reader() = default;
 
 	public:
-		explicit Reader(const Reader&)   = default;
+		Reader(const Reader&)            = default;
 		Reader& operator=(const Reader&) = default;
+		Reader(Reader&&)                 = default;
+		Reader& operator=(Reader&&)      = default;
 		virtual ~Reader() {}
 
 
 		/**
 		 * Marks current scope as an Object.
-		 * See EnterNext(name) & Next(name, value)
+		 * See EnterNext() & Next(name, value)
 		 */
 		void BeginObject();
 
 		/**
-		 * Enters the scope of a key in an object.
-		 * To make an object scope, see 'BeginObject()'
-		 * Complexity: Ordered access O(1), Inverse order O(n)
-		 * @return true if inside an object scope and the key is found.
+		 * Enters the next value of the current array or object (regardless of its key).
+		 * Complexity: O(1)
 		 */
-		bool EnterNext(StringView name);
+		bool EnterNext();
 
 		/**
-		 * Finds and reads a value at key "name" of an object.
+		 * Enters the next object key value and writes its key into `key`.
+		 * Only valid on objects; use EnterNext() for arrays.
+		 * Complexity: O(1)
+		 */
+		bool EnterNext(StringView& key);
+
+		/**
+		 * Finds the member with this key, starting after the last entered value.
+		 * Complexity: O(1) when the key is next, O(n) when it is behind and the lookup wraps.
+		 */
+		bool Enter(StringView key);
+
+		/**
+		 * Enters the member at this index of the current scope.
+		 * Complexity: O(1) for arrays, O(n) for objects.
+		 */
+		bool Enter(i32 index);
+
+		/** Exits the current scope, resuming the parent one. */
+		void Leave();
+
+		/** Key of the current member if object. */
+		StringView GetCurrentKey() const;
+		/** Position of the current member inside its parent. */
+		i32 GetCurrentIndex() const;
+
+		void PushAddFlags(FormatFlags flags);
+		void PushRemoveFlags(FormatFlags flags);
+		void PopFlags();
+		FormatFlags GetFlags();
+
+		/**
+		 * Finds and reads a value at a key of an object.
 		 * Complexity: Ordered access O(1), Inverse order O(n)
 		 * This function won't do anything on array or uninitialized scopes
 		 */
 		template<typename T>
-		void Next(StringView name, T& val)
+		void Next(StringView key, T& val)
 		{
-			if (EnterNext(name))
+			if (Enter(key))
 			{
 				Serialize(val);
 				Leave();
@@ -91,15 +128,7 @@ namespace p
 		 * See EnterNext() & Next(value)
 		 * @param size of the array being read
 		 */
-		void BeginArray(u32& size);
-
-		/**
-		 * Enters the scope of the next element of an array.
-		 * To make an object scope, see 'BeginArray()'
-		 * Complexity: O(1)
-		 * @return true if inside an array scope and num elements is not exceeded.
-		 */
-		bool EnterNext();
+		void BeginArray(i32& size);
 
 		/**
 		 * Reads a type from the next element of an array.
@@ -129,8 +158,6 @@ namespace p
 			}
 		}
 
-		void Leave();
-
 		bool IsObject();
 		bool IsArray();
 
@@ -144,6 +171,11 @@ namespace p
 		}
 
 		inline IFormatReader& GetFormat()
+		{
+			return *formatReader;
+		}
+
+		inline const IFormatReader& GetFormat() const
 		{
 			return *formatReader;
 		}
@@ -187,10 +219,10 @@ namespace p
 	template<typename T>
 	void Read(Reader& r, T& val) requires(IsArray<T>())
 	{
-		u32 size;
+		i32 size;
 		r.BeginArray(size);
 		val.Resize(size);
-		for (u32 i = 0; i < size; ++i)
+		for (i32 i = 0; i < size; ++i)
 		{
 			r.Next(val[i]);
 		}
@@ -220,20 +252,33 @@ namespace p
 		void BeginObject();
 
 		/**
-		 * Enters the scope of a key in an object.
+		 * Enters and adds next array index or key value of an object.
+		 * Complexity: O(1)
 		 * To make object scope, see 'BeginObject()'
-		 * @return true if inside an object scope and the key is found.
+		 * @return true if the value could be added to the current scope.
 		 */
-		bool EnterNext(StringView name);
+		bool EnterNext(StringView key = {});
 
 		/**
-		 * Finds and writes a type at key "name" of an object.
+		 * Enters the member with this key, adding it or replacing the existing one.
+		 * Complexity: O(n) when the member has to be found.
+		 */
+		bool Enter(StringView key);
+		/**
+		 * Enters the element at this index, adding it or replacing the existing one.
+		 * Complexity: O(n) when the element has to be reached.
+		 */
+		bool Enter(i32 index);
+
+		/**
+		 * Writes a type at a key of an object.
+		 * Complexity: O(1)
 		 * This function won't do anything on array or uninitialized scopes
 		 */
 		template<typename T>
-		void Next(StringView name, const T& val)
+		void Next(StringView key, const T& val)
 		{
-			if (EnterNext(name))
+			if (EnterNext(key))
 			{
 				Serialize(val);
 				Leave();
@@ -243,20 +288,12 @@ namespace p
 		/**
 		 * Marks current scope as an Array.
 		 * See EnterNext() & Next(value)
-		 * @param size of the array being read
+		 * @param size of the array being written
 		 */
-		void BeginArray(u32 size);
+		void BeginArray(i32 size);
 
 		/**
-		 * Enters the scope of the next element of an array.
-		 * To make an object scope, see 'BeginArray()'
-		 * Complexity: O(1)
-		 * @return true if inside an array scope and num elements is not exceeded.
-		 */
-		bool EnterNext();
-
-		/**
-		 * Reads a type from the next element of an array.
+		 * Writes a type into the next element of an array.
 		 * Complexity: O(1)
 		 * This function won't do anything on object or uninitialized scopes
 		 */
@@ -271,7 +308,7 @@ namespace p
 		}
 
 
-		// Write a type into the current scope
+		/** Writes a type into the current value. */
 		template<typename T>
 		void Serialize(const T& val)
 		{
@@ -284,6 +321,7 @@ namespace p
 			}
 		}
 
+		/** Exits the current scope, resuming the parent one. */
 		void Leave();
 
 		static constexpr bool IsReading()
@@ -295,11 +333,17 @@ namespace p
 			return true;
 		}
 
-		void PushAddFlags(WriteFlags flags);
-		void PushRemoveFlags(WriteFlags flags);
+		void PushAddFlags(FormatFlags flags);
+		void PushRemoveFlags(FormatFlags flags);
 		void PopFlags();
+		FormatFlags GetFlags();
 
 		inline IFormatWriter& GetFormat()
+		{
+			return *formatWriter;
+		}
+
+		inline const IFormatWriter& GetFormat() const
 		{
 			return *formatWriter;
 		}
@@ -343,9 +387,9 @@ namespace p
 	template<typename T>
 	void Write(Writer& w, const T& val) requires(IsArray<T>())
 	{
-		u32 size = val.Size();
+		const i32 size = i32(val.Size());
 		w.BeginArray(size);
-		for (u32 i = 0; i < size; ++i)
+		for (i32 i = 0; i < size; ++i)
 		{
 			w.Next(val[i]);
 		}
@@ -366,51 +410,54 @@ namespace p
 		ReadWriter(Writer& writer) : reader{nullptr}, writer{&writer} {}
 		ReadWriter(const ReadWriter& other)            = default;
 		ReadWriter& operator=(const ReadWriter& other) = default;
+		ReadWriter(ReadWriter&& other)                 = default;
+		ReadWriter& operator=(ReadWriter&& other)      = default;
 
 		/**
-		 * Starts the deserialization of an scope as an object.
+		 * Marks current value as an Object.
+		 * See EnterNext(key) & Next(key, value)
 		 */
 		void BeginObject();
 
-		/**
-		 * Enters the scope of a key in an object.
-		 * This function will fail on array scopes
-		 */
-		bool EnterNext(StringView name);
+		/** Enters the next key/index of the current value. */
+		bool EnterNext();
 
-		/**
-		 * Deserializes a value from an object key
-		 * This function will fail on array scopes
+		/** Enters the next object key value and writes its key into `key`.
+		 * Only valid on objects; use EnterNext() for arrays.
 		 */
+		bool EnterNext(StringView& key);
+
+		/** Enters the member with this key (readers search, writers add or replace). */
+		bool Enter(StringView key);
+
+		/** Enters the element at this index (readers search, writers add or replace). */
+		bool Enter(i32 index);
+
+		/** Reads or writes a value at a key of an object. */
 		template<typename T>
-		void Next(StringView name, T& val)
+		void Next(StringView key, T& val)
 		{
 			if (IsWriting())
 			{
-				writer->Next(name, val);
+				writer->Next(key, val);
 			}
 			else
 			{
-				reader->Next(name, val);
+				reader->Next(key, val);
 			}
 		}
 
 
 		/**
-		 * Starts the deserialization of an scope as an array.
-		 * @param size of the array being read
+		 * Marks current value as an Array.
+		 * See EnterNext() & Next(value)
+		 * @param size of the array being read or written
 		 */
-		void BeginArray(u32& size);
+		void BeginArray(i32& size);
 
 		/**
-		 * Enters the scope of the next element of an array.
-		 * This function will fail on object scopes
-		 */
-		bool EnterNext();
-
-		/**
-		 * Deserializes a value from the next element of an array.
-		 * This function will fail on object scopes
+		 * Reads or writes the next element of an array.
+		 * Complexity: O(1)
 		 */
 		template<typename T>
 		void Next(T& val)
@@ -425,7 +472,7 @@ namespace p
 			}
 		}
 
-		// Reads or Writes a type from the current scope
+		/** Reads or writes a type from the current scope. */
 		template<typename T>
 		void Serialize(T& val)
 		{
@@ -439,6 +486,7 @@ namespace p
 			}
 		}
 
+		/** Exits the current scope, resuming the parent one. */
 		void Leave();
 
 		bool IsReading() const
@@ -462,8 +510,8 @@ namespace p
 			return *writer;
 		}
 
-		void PushAddFlags(WriteFlags flags);
-		void PushRemoveFlags(WriteFlags flags);
+		void PushAddFlags(FormatFlags flags);
+		void PushRemoveFlags(FormatFlags flags);
 		void PopFlags();
 	};
 
@@ -510,6 +558,9 @@ namespace p
 	private:
 		Reader reader{};
 
+		sizet activeFlags = FF_None;
+		TArray<sizet> flagStack;
+
 
 	public:
 		IFormatReader()
@@ -517,27 +568,86 @@ namespace p
 			reader.formatReader = this;
 		}
 
-		virtual ~IFormatReader()                = default;
-		virtual void BeginObject()              = 0;
-		virtual void BeginArray(u32& size)      = 0;
-		virtual bool EnterNext(StringView name) = 0;
-		virtual bool EnterNext()                = 0;
-		virtual void Leave()                    = 0;
-		virtual void Read(bool& val)            = 0;
-		virtual void Read(i8& val)              = 0;
-		virtual void Read(u8& val)              = 0;
-		virtual void Read(i16& val)             = 0;
-		virtual void Read(u16& val)             = 0;
-		virtual void Read(i32& val)             = 0;
-		virtual void Read(u32& val)             = 0;
-		virtual void Read(i64& val)             = 0;
-		virtual void Read(u64& val)             = 0;
-		virtual void Read(float& val)           = 0;
-		virtual void Read(double& val)          = 0;
-		virtual void Read(StringView& val)      = 0;
-		virtual bool IsObject() const           = 0;
-		virtual bool IsArray() const            = 0;
-		virtual bool IsValid() const            = 0;
+		IFormatReader(const IFormatReader&)            = delete;
+		IFormatReader& operator=(const IFormatReader&) = delete;
+		IFormatReader(IFormatReader&& other) noexcept
+		    : reader{Move(other.reader)}
+		    , activeFlags{other.activeFlags}
+		    , flagStack{Move(other.flagStack)}
+		{
+			reader.formatReader = this;
+		}
+		IFormatReader& operator=(IFormatReader&& other) noexcept
+		{
+			if (this != &other)
+			{
+				activeFlags         = other.activeFlags;
+				flagStack           = Move(other.flagStack);
+				reader.formatReader = this;
+			}
+			return *this;
+		}
+
+		virtual ~IFormatReader() = default;
+		/** Marks the current value as an object scope. */
+		virtual void BeginObject() = 0;
+		/** Marks the current value as an array scope. */
+		virtual void BeginArray(i32& size) = 0;
+		/** Enters the next value of the current scope, regardless of its key. */
+		virtual bool EnterNext() = 0;
+		/** Enters the next object key value and writes its key into `key`.
+		 * Only valid on objects; use EnterNext() for arrays.
+		 */
+		virtual bool EnterNext(StringView& key) = 0;
+		/** Finds the member with this key, starting after the last entered value.
+		 * Requires FF_RW_Structured
+		 */
+		virtual bool Enter(StringView key) = 0;
+		/** Enters the member at this index of the current scope.
+		 * Requires FF_RW_Structured
+		 */
+		virtual bool Enter(i32 index) = 0;
+		/** Exits the current scope. */
+		virtual void Leave() = 0;
+		/** Key of the last entered member; empty when it was unnamed. */
+		virtual StringView GetCurrentKey() const = 0;
+		/** Position of the last entered member inside its scope. */
+		virtual i32 GetCurrentIndex() const = 0;
+		virtual void Read(bool& val)        = 0;
+		virtual void Read(i8& val)          = 0;
+		virtual void Read(u8& val)          = 0;
+		virtual void Read(i16& val)         = 0;
+		virtual void Read(u16& val)         = 0;
+		virtual void Read(i32& val)         = 0;
+		virtual void Read(u32& val)         = 0;
+		virtual void Read(i64& val)         = 0;
+		virtual void Read(u64& val)         = 0;
+		virtual void Read(float& val)       = 0;
+		virtual void Read(double& val)      = 0;
+		virtual void Read(StringView& val)  = 0;
+		virtual bool IsObject() const       = 0;
+		virtual bool IsArray() const        = 0;
+		virtual bool IsValid() const        = 0;
+
+		void PushAddFlags(FormatFlags flags)
+		{
+			flagStack.Add(activeFlags);
+			activeFlags |= flags;
+		}
+		void PushRemoveFlags(FormatFlags flags)
+		{
+			flagStack.Add(activeFlags);
+			activeFlags &= ~sizet(flags);
+		}
+		void PopFlags()
+		{
+			activeFlags = flagStack.Last();
+			flagStack.RemoveAt(flagStack.Size() - 1);
+		}
+		FormatFlags GetFlags() const
+		{
+			return FormatFlags(activeFlags);
+		}
 
 		Reader& GetReader()
 		{
@@ -560,7 +670,7 @@ namespace p
 		Writer writer{};
 
 
-		sizet activeFlags = WriteFlags_None;
+		sizet activeFlags = FF_None;
 		TArray<sizet> flagStack;
 
 	public:
@@ -569,33 +679,59 @@ namespace p
 			writer.formatWriter = this;
 		}
 
-		virtual ~IFormatWriter()                = default;
-		virtual void BeginObject()              = 0;
-		virtual void BeginArray(u32 size)       = 0;
-		virtual bool EnterNext(StringView name) = 0;
-		virtual bool EnterNext()                = 0;
-		virtual void Leave()                    = 0;
-		virtual void Write(bool val)            = 0;
-		virtual void Write(i8 val)              = 0;
-		virtual void Write(u8 val)              = 0;
-		virtual void Write(i16 val)             = 0;
-		virtual void Write(u16 val)             = 0;
-		virtual void Write(i32 val)             = 0;
-		virtual void Write(u32 val)             = 0;
-		virtual void Write(i64 val)             = 0;
-		virtual void Write(u64 val)             = 0;
-		virtual void Write(float val)           = 0;
-		virtual void Write(double val)          = 0;
-		virtual void Write(StringView val)      = 0;
-		virtual bool IsValid() const            = 0;
+		IFormatWriter(const IFormatWriter&)            = delete;
+		IFormatWriter& operator=(const IFormatWriter&) = delete;
+		IFormatWriter(IFormatWriter&& other) noexcept
+		    : writer{Move(other.writer)}
+		    , activeFlags{other.activeFlags}
+		    , flagStack{Move(other.flagStack)}
+		{
+			writer.formatWriter = this;
+		}
+		IFormatWriter& operator=(IFormatWriter&& other) noexcept
+		{
+			if (this != &other)
+			{
+				activeFlags         = other.activeFlags;
+				flagStack           = Move(other.flagStack);
+				writer.formatWriter = this;
+			}
+			return *this;
+		}
+
+		virtual ~IFormatWriter() = default;
+		/** Marks the current value as an object scope. */
+		virtual void BeginObject() = 0;
+		/** Marks the current value as an array scope. */
+		virtual void BeginArray(i32 size)           = 0;
+		virtual bool EnterNext(StringView key = {}) = 0;
+		/** Enters the member with this key, adding it or replacing the existing one. */
+		virtual bool Enter(StringView key) = 0;
+		/** Enters the element at this index, adding it or replacing the existing one. */
+		virtual bool Enter(i32 index) = 0;
+		/** Exits the current scope. */
+		virtual void Leave()               = 0;
+		virtual void Write(bool val)       = 0;
+		virtual void Write(i8 val)         = 0;
+		virtual void Write(u8 val)         = 0;
+		virtual void Write(i16 val)        = 0;
+		virtual void Write(u16 val)        = 0;
+		virtual void Write(i32 val)        = 0;
+		virtual void Write(u32 val)        = 0;
+		virtual void Write(i64 val)        = 0;
+		virtual void Write(u64 val)        = 0;
+		virtual void Write(float val)      = 0;
+		virtual void Write(double val)     = 0;
+		virtual void Write(StringView val) = 0;
+		virtual bool IsValid() const       = 0;
 
 
-		void PushAddFlags(WriteFlags flags)
+		void PushAddFlags(FormatFlags flags)
 		{
 			flagStack.Add(activeFlags);
 			activeFlags |= flags;
 		}
-		void PushRemoveFlags(WriteFlags flags)
+		void PushRemoveFlags(FormatFlags flags)
 		{
 			flagStack.Add(activeFlags);
 			activeFlags &= ~flags;
@@ -606,9 +742,9 @@ namespace p
 			flagStack.RemoveAt(flagStack.Size() - 1);
 		}
 
-		sizet GetFlags() const
+		FormatFlags GetFlags() const
 		{
-			return activeFlags;
+			return FormatFlags(activeFlags);
 		}
 
 		Writer& GetWriter()
@@ -656,17 +792,18 @@ namespace p
 		};
 
 	private:
-		struct Scope
+		struct Value
 		{
-			u32 id             = 0;
-			u32 size           = 0;
-			yyjson_val* parent = nullptr;
+			yyjson_val* value = nullptr;     // The value itself
+			i32 index         = NO_INDEX;    // This value's index inside its parent (arrays)
+			StringView key;                  // This value's key (objects)
+			yyjson_val* last = nullptr;      // Last member entered/left from this value
+			i32 lastIndex    = NO_INDEX;     // Index of that member
 		};
-		String insituBuffer;
-		yyjson_doc* doc     = nullptr;
-		yyjson_val* root    = nullptr;
-		yyjson_val* current = nullptr;
-		TArray<Scope> scopeStack;
+		yyjson_doc* doc  = nullptr;
+		yyjson_val* root = nullptr;
+		Value current{};             // Value being read
+		TArray<Value> valueStack;    // Values enclosing `current`
 		ReadError error;
 
 
@@ -676,6 +813,10 @@ namespace p
 		 * @param data containing the constant json string
 		 * @see JsonFormatReader(String& data, bool insitu = true) for optional insitu reading
 		 */
+		JsonFormatReader(const JsonFormatReader&)            = delete;
+		JsonFormatReader& operator=(const JsonFormatReader&) = delete;
+		P_API JsonFormatReader(JsonFormatReader&& other) noexcept;
+		P_API JsonFormatReader& operator=(JsonFormatReader&& other) noexcept;
 		P_API explicit JsonFormatReader(StringView data);
 		/**
 		 * Configures a JsonFormatReader to read from an string buffer
@@ -687,11 +828,15 @@ namespace p
 		P_API ~JsonFormatReader();
 
 		P_API void BeginObject() override;
-		P_API void BeginArray(u32& size) override;
+		P_API void BeginArray(i32& size) override;
 
-		P_API bool EnterNext(StringView name) override;
 		P_API bool EnterNext() override;
+		P_API bool EnterNext(StringView& key) override;
+		P_API bool Enter(StringView key) override;
+		P_API bool Enter(i32 index) override;
 		P_API void Leave() override;
+		P_API StringView GetCurrentKey() const override;
+		P_API i32 GetCurrentIndex() const override;
 
 		P_API void Read(bool& val) override;
 		P_API void Read(i8& val) override;
@@ -720,41 +865,44 @@ namespace p
 	private:
 		void InternalInit(char* data, sizet size, bool insitu);
 
-		u32 InternalBegin();
-		bool FindNextKey(u32 firstId, yyjson_val* firstKey, StringView name, u32& outIndex,
-		    yyjson_val*& outValue);
-		Scope& GetScope();
-		void PushScope(yyjson_val* newScope);
-		void PopScope();
+		void PushValue(yyjson_val* newValue, i32 newIndex = NO_INDEX, StringView newKey = {});
+		void PopValue();
 	};
 
 
 	struct JsonFormatWriter : public IFormatWriter
 	{
 	private:
-		struct Scope
+		struct Value
 		{
-			yyjson_mut_val* key    = nullptr;
 			yyjson_mut_val* parent = nullptr;
+			yyjson_mut_val* key    = nullptr;
+			i32 index              = NO_INDEX;    // Array element to replace, NO_INDEX otherwise
+			bool replace           = false;       // Object member to replace
 		};
 		yyjson_mut_doc* doc     = nullptr;
 		yyjson_mut_val* current = nullptr;
-		TArray<Scope> scopeStack;
+		TArray<Value> valueStack;
 		bool open = true;
 		StringView asString;
 
 
 	public:
+		JsonFormatWriter(const JsonFormatWriter&)            = delete;
+		JsonFormatWriter& operator=(const JsonFormatWriter&) = delete;
+		P_API JsonFormatWriter(JsonFormatWriter&& other) noexcept;
+		P_API JsonFormatWriter& operator=(JsonFormatWriter&& other) noexcept;
 		P_API JsonFormatWriter();
 		P_API ~JsonFormatWriter();
 
 		// BEGIN Writer Interface
-		P_API bool EnterNext(StringView name) override;
-		P_API bool EnterNext() override;
+		P_API bool EnterNext(StringView key = {}) override;
+		P_API bool Enter(StringView key) override;
+		P_API bool Enter(i32 index) override;
 		P_API void Leave() override;
 
 		P_API void BeginObject() override;
-		P_API void BeginArray(u32 size) override;
+		P_API void BeginArray(i32 size) override;
 
 		P_API void Write(bool val) override;
 		P_API void Write(i8 val) override;
@@ -780,33 +928,68 @@ namespace p
 		P_API StringView ToString(bool pretty = true, bool ensureClosed = true);
 
 	private:
-		Scope& GetScope();
-		void PushScope(StringView key);
-		void PopScope();
+		Value& GetCurrentValue();
+		void PushValue(StringView key, bool replace = false);
+		void PushValue(i32 index);
+		void PopValue();
 	};
 #pragma endregion JsonFormat
 
 #pragma region BinaryFormat
+	namespace Binary
+	{
+		enum class Flags : u8;
+	}
+
 	struct BinaryFormatReader : public IFormatReader
 	{
 	private:
+		/** One value: bounds, identity, iteration and framing. */
+		struct Value
+		{
+			u32 offset          = 0;           // First byte of the value, from the stream start
+			Binary::Flags flags = {};          // Value type
+			i32 index           = NO_INDEX;    // This value's index inside its parent (arrays)
+			StringView key;                    // This value's key (objects)
+			i32 lastIndex = NO_INDEX;          // Last element entered/left from this value
+			i32 size      = NO_INDEX;          // Array element count
+			bool structuredChildren = false;
+		};
+
 		TView<u8> data;
-		u8* pointer  = nullptr;
-		bool errored = false;
+		u8* pointer = nullptr;
+
+		Value current;
+		TArray<Value> valueStack;
 
 		sizet Remaining() const;
 		u8* ReadBytes(sizet size);
 
+		/** Enters a value, moving the enclosing one to the stack. */
+		void PushValue(Value value);
+		/** Leaves the current value, skipping whatever the caller did not read. */
+		void PopValue();
+
 	public:
+		BinaryFormatReader(const BinaryFormatReader&)                            = delete;
+		BinaryFormatReader& operator=(const BinaryFormatReader&)                 = delete;
+		P_API BinaryFormatReader(BinaryFormatReader&& other) noexcept            = default;
+		P_API BinaryFormatReader& operator=(BinaryFormatReader&& other) noexcept = default;
 		P_API BinaryFormatReader(TView<u8> data);
 		P_API ~BinaryFormatReader();
 
-		P_API void BeginObject() override {}    // Nothing to do
-		P_API void BeginArray(u32& size) override;
+		P_API void BeginObject() override;
+		P_API void BeginArray(i32& size) override;
 
-		P_API bool EnterNext(StringView name) override;    // Nothing to do
-		P_API bool EnterNext() override;                   // Nothing to do
-		P_API void Leave() override {}                     // Nothing to do
+		P_API bool EnterNext() override;
+		P_API bool EnterNext(StringView& key) override;
+		/** Finds a member by key. Requires FF_RW_Structured. */
+		P_API bool Enter(StringView key) override;
+		/** Enters the member at this index of the current scope. Requires FF_RW_Structured. */
+		P_API bool Enter(i32 index) override;
+		P_API void Leave() override;
+		P_API StringView GetCurrentKey() const override;
+		P_API i32 GetCurrentIndex() const override;
 
 		P_API void Read(bool& val) override;
 		P_API void Read(i8& val) override;
@@ -832,22 +1015,39 @@ namespace p
 	struct BinaryFormatWriter : public IFormatWriter
 	{
 	private:
-		Arena& arena;
+		/** One value: payload position, scope flags and scope framing. */
+		struct Value
+		{
+			u32 offset              = 0;     // First byte of the payload
+			Binary::Flags flags     = {};    // Value type
+			bool structuredChildren = false;
+			i32 size                = 0;     // Elements entered in this object/array
+		};
+
+		Arena* arena = nullptr;
 		u8* data     = nullptr;
 		u32 size     = 0;
 		u32 capacity = 0;
 
+		Value current;
+		TArray<Value> valueStack;
+
 
 	public:
+		BinaryFormatWriter(const BinaryFormatWriter&)            = delete;
+		BinaryFormatWriter& operator=(const BinaryFormatWriter&) = delete;
+		P_API BinaryFormatWriter(BinaryFormatWriter&& other) noexcept;
+		P_API BinaryFormatWriter& operator=(BinaryFormatWriter&& other) noexcept;
 		P_API BinaryFormatWriter(Arena& arena = p::GetCurrentArena());
 		P_API ~BinaryFormatWriter();
 
 		// BEGIN Writer Interface
-		P_API void BeginObject() override {}         // Nothing to do
-		P_API void BeginArray(u32 size) override;    // Nothing to do
-		P_API bool EnterNext(StringView name) override;
-		P_API bool EnterNext() override;
-		P_API void Leave() override {}    // Nothing to do
+		P_API void BeginObject() override;
+		P_API void BeginArray(i32 size) override;
+		P_API bool EnterNext(StringView key = {}) override;
+		P_API bool Enter(StringView key) override;
+		P_API bool Enter(i32 index) override;
+		P_API void Leave() override;
 		P_API void Write(bool val) override;
 		P_API void Write(i8 val) override;
 		P_API void Write(u8 val) override;

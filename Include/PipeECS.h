@@ -2527,7 +2527,7 @@ namespace p
 	template<typename T>
 	inline void EntityReader::SerializePool()
 	{
-		if (EnterNext(GetTypeName<T>(false)))
+		if (Enter(GetTypeName<T>(false)))
 		{
 			auto& pool = GetContext().AssurePool<T>();
 
@@ -2541,7 +2541,7 @@ namespace p
 					key.clear();
 					FormatTo(key, "{}", i);
 
-					if (EnterNext(key))
+					if (Enter(key))
 					{
 						if constexpr (!IsEmpty<T>)
 						{
@@ -2599,7 +2599,7 @@ namespace p
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
-		PushAddFlags(p::WriteFlags_CacheStringKeys);
+		PushAddFlags(p::FF_W_CacheStringKeys);
 		if (EnterNext(GetTypeName<T>(false)))
 		{
 			if (serializingMany) [[likely]]

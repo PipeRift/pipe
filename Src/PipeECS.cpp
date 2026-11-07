@@ -220,7 +220,7 @@ namespace p
 		// Create all non-root entities
 		AddId(context, {ids.Data() + maxSize, ids.Data() + ids.Size()});
 
-		if (EnterNext("components"))
+		if (Enter("components"))
 		{
 			BeginObject();
 			serializingMany = true;
