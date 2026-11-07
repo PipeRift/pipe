@@ -67,16 +67,6 @@ namespace p
 		return GetFormat().EnterNext(matchKey);
 	}
 
-	bool Reader::Enter(StringView key)
-	{
-		return GetFormat().Enter(key);
-	}
-
-	bool Reader::Enter(i32 index)
-	{
-		return GetFormat().Enter(index);
-	}
-
 	void Reader::Leave()
 	{
 		GetFormat().Leave();
@@ -90,6 +80,11 @@ namespace p
 	i32 Reader::GetCurrentIndex() const
 	{
 		return GetFormat().GetCurrentIndex();
+	}
+
+	i32 Reader::GetCurrentSize() const
+	{
+		return GetFormat().GetCurrentSize();
 	}
 
 	void Reader::PushAddFlags(FormatFlags flags)
@@ -189,16 +184,6 @@ namespace p
 		return GetFormat().EnterNext(key);
 	}
 
-	bool Writer::Enter(StringView key)
-	{
-		return GetFormat().Enter(key);
-	}
-
-	bool Writer::Enter(i32 index)
-	{
-		return GetFormat().Enter(index);
-	}
-
 	void Writer::BeginArray(i32 size)
 	{
 		GetFormat().BeginArray(size);
@@ -295,30 +280,6 @@ namespace p
 		else
 		{
 			return reader->EnterNext(key);
-		}
-	}
-
-	bool ReadWriter::Enter(StringView key)
-	{
-		if (IsWriting())
-		{
-			return writer->Enter(key);
-		}
-		else
-		{
-			return reader->Enter(key);
-		}
-	}
-
-	bool ReadWriter::Enter(i32 index)
-	{
-		if (IsWriting())
-		{
-			return writer->Enter(index);
-		}
-		else
-		{
-			return reader->Enter(index);
 		}
 	}
 
@@ -476,11 +437,9 @@ namespace p
 		{
 			const i32 size = i32(unsafe_yyjson_get_len(current.value));
 			const i32 next = current.lastIndex + 1;    // NO_INDEX (-1) + 1 is the first element
-			if (!P_EnsureMsg(next < size,
-			        "Tried to enter past the end of the array (Index: {}, Max: {})",
-			        current.lastIndex, size)) [[unlikely]]
+			if (next >= size) [[unlikely]]
 			{
-				return false;    // End of the array
+				return false;
 			}
 
 			yyjson_val* const keyValue = current.last ? unsafe_yyjson_get_next(current.last)
@@ -492,11 +451,9 @@ namespace p
 		{
 			const i32 size = i32(unsafe_yyjson_get_len(current.value));
 			const i32 next = current.lastIndex + 1;
-			if (!P_EnsureMsg(next < size,
-			        "Tried to enter past the end of the object (Index: {}, Max: {})",
-			        current.lastIndex, size)) [[unlikely]]
+			if (next >= size) [[unlikely]]
 			{
-				return false;    // End of the object
+				return false;
 			}
 
 			// Next member, whatever its key is
@@ -518,83 +475,6 @@ namespace p
 		return false;
 	}
 
-	bool JsonFormatReader::Enter(StringView key)
-	{
-		if (P_EnsureMsg(yyjson_is_obj(current.value),
-		        "Tried to enter a value outside of an object. Has BeginObject() been called?"))
-		    [[likely]]
-		{
-			if (!P_EnsureMsg(key.data() != nullptr, "Enter() needs a key to look for")) [[unlikely]]
-			{
-				return false;
-			}
-			// Start after the last entered value, or at the first one
-			yyjson_val* keyValue = current.last ? unsafe_yyjson_get_next(current.last)
-			                                    : unsafe_yyjson_get_first(current.value);
-
-			const i32 size = i32(unsafe_yyjson_get_len(current.value));
-			// Search forward, then wrap once through the beginning
-			for (i32 i = current.lastIndex + 1; i < size; ++i)
-			{
-				yyjson_val* const value = keyValue + 1;
-				if (unsafe_yyjson_equals_strn(keyValue, key.data(), key.size()))
-				{
-					const StringView keyName{
-					    unsafe_yyjson_get_str(keyValue), unsafe_yyjson_get_len(keyValue)};
-					PushValue(value, i, keyName);
-					return true;
-				}
-				keyValue = unsafe_yyjson_get_next(value);
-			}
-
-			if (current.lastIndex != NO_INDEX)
-			{
-				keyValue = unsafe_yyjson_get_first(current.value);
-				for (i32 i = 0; i <= current.lastIndex; ++i)
-				{
-					yyjson_val* const value = keyValue + 1;
-					if (unsafe_yyjson_equals_strn(keyValue, key.data(), key.size()))
-					{
-						const StringView keyName{
-						    unsafe_yyjson_get_str(keyValue), unsafe_yyjson_get_len(keyValue)};
-						PushValue(value, i, keyName);
-						return true;
-					}
-					keyValue = unsafe_yyjson_get_next(value);
-				}
-			}
-		}
-		return false;
-	}
-
-	bool JsonFormatReader::Enter(i32 index)
-	{
-		if (P_EnsureMsg(yyjson_is_arr(current.value),
-		        "Tried to enter value by index but not in an array. Call BeginArray().")) [[likely]]
-		{
-			if (index >= 0 && index < i32(unsafe_yyjson_get_len(current.value)))
-			{
-				yyjson_val* val = unsafe_yyjson_get_first(current.value);
-				if (unsafe_yyjson_arr_is_flat(current.value))
-				{
-					val = val + index;
-				}
-				else
-				{
-					i32 i = index;
-					while (--i > -1)
-					{
-						val = unsafe_yyjson_get_next(val);
-					}
-				}
-
-				PushValue(val, index);
-				return true;
-			}
-		}
-		return false;
-	}
-
 	void JsonFormatReader::Leave()
 	{
 		if (P_EnsureMsg(valueStack.Size() >= 1,
@@ -613,6 +493,16 @@ namespace p
 	i32 JsonFormatReader::GetCurrentIndex() const
 	{
 		return current.index;
+	}
+
+	i32 JsonFormatReader::GetCurrentSize() const
+	{
+		if (current.value
+		    && (unsafe_yyjson_is_obj(current.value) || unsafe_yyjson_is_arr(current.value)))
+		{
+			return i32(unsafe_yyjson_get_len(current.value));
+		}
+		return 0;
 	}
 
 	void JsonFormatReader::Read(bool& val)
@@ -940,7 +830,7 @@ namespace p
 		return valueStack.Last();
 	}
 
-	void JsonFormatWriter::PushValue(StringView key, bool replace)
+	void JsonFormatWriter::PushValue(StringView key)
 	{
 		P_CheckMsg(key.data() != nullptr, "Tried to add an object key value without a key");
 		yyjson_mut_val* keyValue;
@@ -952,7 +842,7 @@ namespace p
 		{
 			keyValue = yyjson_mut_strn(doc, key.data(), key.size());
 		}
-		valueStack.Add({.parent = current, .key = keyValue, .replace = replace});
+		valueStack.Add({.parent = current, .key = keyValue});
 		current = nullptr;    // New value
 	}
 
@@ -972,14 +862,7 @@ namespace p
 				case YYJSON_TYPE_OBJ:
 					if (value.key)
 					{
-						if (value.replace)
-						{
-							yyjson_mut_obj_put(value.parent, value.key, current);
-						}
-						else
-						{
-							yyjson_mut_obj_add(value.parent, value.key, current);
-						}
+						yyjson_mut_obj_add(value.parent, value.key, current);
 					}
 					break;
 				case YYJSON_TYPE_ARR:
@@ -1027,39 +910,6 @@ namespace p
 		P_CheckMsg(false,
 		    "Tried to enter a value outside an array or object. Has BeginArray()/"
 		    "BeginObject() been called?");
-		return false;
-	}
-
-	bool JsonFormatWriter::Enter(StringView key)
-	{
-		if (yyjson_mut_is_obj(current))
-		{
-			if (key.data() == nullptr) [[unlikely]]
-			{
-				return false;    // Objects need a key
-			}
-			PushValue(key, true);
-			return true;
-		}
-		P_CheckMsg(false, "Enter(key) is only valid for objects. Use Enter(index) for arrays.");
-		return false;
-	}
-
-	bool JsonFormatWriter::Enter(i32 index)
-	{
-		if (yyjson_mut_is_arr(current))
-		{
-			const i32 count = i32(yyjson_mut_arr_size(current));
-			if (index < 0 || index > count) [[unlikely]]
-			{
-				P_CheckMsg(false, "Array index out of range (Index: {}, Size: {})", index, count);
-				return false;
-			}
-			// Existing elements are replaced on Leave, index == count appends
-			PushValue(index);
-			return true;
-		}
-		P_CheckMsg(false, "Enter(index) is only valid for arrays. Use Enter(key) for objects.");
 		return false;
 	}
 
@@ -1583,9 +1433,7 @@ namespace p
 		if (type == Binary::Flags::Type_Array)
 		{
 			const i32 next = current.lastIndex + 1;    // NO_INDEX (-1) + 1 is the first element
-			if (!P_EnsureMsg(next < current.size,
-			        "Tried to enter past the end of the array (Children: {})", current.size))
-			    [[unlikely]]
+			if (next >= current.size) [[unlikely]]
 			{
 				return false;    // End of the array
 			}
@@ -1610,9 +1458,7 @@ namespace p
 		else if (type == Binary::Flags::Type_Object)
 		{
 			const i32 next = current.lastIndex + 1;
-			if (!P_EnsureMsg(next < current.size,
-			        "Tried to enter past the end of the object (Children: {})", current.size))
-			    [[unlikely]]
+			if (next >= current.size) [[unlikely]]
 			{
 				return false;    // End of the object
 			}
@@ -1654,52 +1500,6 @@ namespace p
 		return false;
 	}
 
-	bool BinaryFormatReader::Enter(StringView key)
-	{
-		if (!pointer) [[unlikely]]
-		{
-			return false;
-		}
-		if (!P_EnsureMsg(GetType(current.flags) == Binary::Flags::Type_Object,
-		        "Tried to enter a value outside of an object. Has BeginObject() been called?"))
-		    [[unlikely]]
-		{
-			return false;
-		}
-		if (!P_EnsureMsg(current.structuredChildren, "Enter(key) needs FF_RW_Structured flag"))
-		    [[unlikely]]
-		{
-			return false;
-		}
-		if (!P_EnsureMsg(key.data() != nullptr, "Enter() needs a key to look for")) [[unlikely]]
-		{
-			return false;
-		}
-
-		return false;    // TODO Search by key
-	}
-
-	bool BinaryFormatReader::Enter(i32 index)
-	{
-		if (!pointer) [[unlikely]]
-		{
-			return false;
-		}
-		if (!P_EnsureMsg(GetType(current.flags) == Binary::Flags::Type_Array,
-		        "Tried to enter a value outside of an array. Has BeginArray() been called?"))
-		    [[unlikely]]
-		{
-			return false;
-		}
-		if (!P_EnsureMsg(current.structuredChildren, "Enter(index) needs FF_RW_Structured flag")
-		    || index < 0) [[unlikely]]
-		{
-			return false;
-		}
-
-		return false;    // TODO
-	}
-
 	void BinaryFormatReader::Leave()
 	{
 		if (P_EnsureMsg(!valueStack.IsEmpty(),
@@ -1718,6 +1518,11 @@ namespace p
 	i32 BinaryFormatReader::GetCurrentIndex() const
 	{
 		return current.index;
+	}
+
+	i32 BinaryFormatReader::GetCurrentSize() const
+	{
+		return current.size;
 	}
 
 	void BinaryFormatReader::Read(bool& val)
@@ -1973,29 +1778,6 @@ namespace p
 		current = Value{
 		    size, current.structuredChildren ? Binary::Flags::Type_Raw : Binary::Flags::Type_None};
 		return true;
-	}
-
-	bool BinaryFormatWriter::Enter(StringView key)
-	{
-		if (!P_EnsureMsg(Binary::IsStructured(current.flags),
-		        "Enter(key) needs a structured scope")) [[unlikely]]
-		{
-			return false;
-		}
-
-		return EnterNext(key);
-	}
-
-	bool BinaryFormatWriter::Enter(i32 index)
-	{
-		if (!P_EnsureMsg(Binary::IsStructured(current.flags),
-		        "Enter(index) needs a structured scope")) [[unlikely]]
-		{
-			return false;
-		}
-
-		// Streams are append-only, the index is ignored
-		return EnterNext();
 	}
 
 	void BinaryFormatWriter::Leave()

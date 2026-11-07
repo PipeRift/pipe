@@ -220,13 +220,15 @@ namespace p
 		// Create all non-root entities
 		AddId(context, {ids.Data() + maxSize, ids.Data() + ids.Size()});
 
-		if (Enter("components"))
+		if (EnterNext("components"))
 		{
+			PushAddFlags(p::FF_RW_Structured);
 			BeginObject();
 			serializingMany = true;
 			onReadPools(*this);
 			serializingMany = false;
 			Leave();
+			PopFlags();
 		}
 
 		FixParentIdLinks(context, parents);
@@ -248,7 +250,9 @@ namespace p
 		}
 		ids.Assign(&entity, 1);
 
+		PushAddFlags(p::FF_RW_Structured);
 		onReadPools(*this);
+		PopFlags();
 
 		FixParentIdLinks(context, parent);
 	}
@@ -280,11 +284,13 @@ namespace p
 		Next("count", ids.Size());
 		if (EnterNext("components"))
 		{
+			PushAddFlags(p::FF_RW_Structured);
 			BeginObject();
 			serializingMany = true;
 			onWritePools(*this);
 			serializingMany = false;
 			Leave();
+			PopFlags();
 		}
 	}
 
@@ -298,7 +304,9 @@ namespace p
 		ids.Assign(&entity, 1);
 		MapIdsToIndices();
 
+		PushAddFlags(p::FF_RW_Structured);
 		onWritePools(*this);
+		PopFlags();
 	}
 
 	const TArray<Id>& EntityWriter::GetIds() const

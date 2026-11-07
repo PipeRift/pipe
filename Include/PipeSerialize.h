@@ -79,18 +79,6 @@ namespace p
 		 */
 		bool EnterNext(StringView matchKey = {});
 
-		/**
-		 * Finds the member with this key, starting after the last entered value.
-		 * Complexity: O(1) when the key is next, O(n) when it is behind and the lookup wraps.
-		 */
-		bool Enter(StringView key);
-
-		/**
-		 * Enters the member at this index of the current scope.
-		 * Complexity: O(1) for arrays, O(n) for objects.
-		 */
-		bool Enter(i32 index);
-
 		/** Exits the current scope, resuming the parent one. */
 		void Leave();
 
@@ -98,6 +86,8 @@ namespace p
 		StringView GetCurrentKey() const;
 		/** Position of the current member inside its parent. */
 		i32 GetCurrentIndex() const;
+		/** Number of members in the current object or array scope, or NO_INDEX. */
+		i32 GetCurrentSize() const;
 
 		void PushAddFlags(FormatFlags flags);
 		void PushRemoveFlags(FormatFlags flags);
@@ -105,18 +95,20 @@ namespace p
 		FormatFlags GetFlags();
 
 		/**
-		 * Finds and reads a value at a key of an object.
-		 * Complexity: Ordered access O(1), Inverse order O(n)
+		 * Reads a value at a key of an object.
+		 * Enters the next member only when its key matches.
 		 * This function won't do anything on array or uninitialized scopes
 		 */
 		template<typename T>
-		void Next(StringView key, T& val)
+		bool Next(StringView key, T& val)
 		{
-			if (Enter(key))
+			if (EnterNext(key))
 			{
 				Serialize(val);
 				Leave();
+				return true;
 			}
+			return false;
 		}
 
 		/**
@@ -254,17 +246,6 @@ namespace p
 		 * @return true if the value could be added to the current scope.
 		 */
 		bool EnterNext(StringView key = {});
-
-		/**
-		 * Enters the member with this key, adding it or replacing the existing one.
-		 * Complexity: O(n) when the member has to be found.
-		 */
-		bool Enter(StringView key);
-		/**
-		 * Enters the element at this index, adding it or replacing the existing one.
-		 * Complexity: O(n) when the element has to be reached.
-		 */
-		bool Enter(i32 index);
 
 		/**
 		 * Writes a type at a key of an object.
@@ -420,12 +401,6 @@ namespace p
 		 * @see GetCurrentKey() and GetCurrentIndex()
 		 */
 		bool EnterNext(StringView key = {});
-
-		/** Enters the member with this key (readers search, writers add or replace). */
-		bool Enter(StringView key);
-
-		/** Enters the element at this index (readers search, writers add or replace). */
-		bool Enter(i32 index);
 
 		/** Reads or writes a value at a key of an object. */
 		template<typename T>
@@ -594,20 +569,14 @@ namespace p
 		 * @see GetCurrentKey() and GetCurrentIndex()
 		 */
 		virtual bool EnterNext(StringView matchKey = {}) = 0;
-		/** Finds the member with this key, starting after the last entered value.
-		 * Requires FF_RW_Structured
-		 */
-		virtual bool Enter(StringView key) = 0;
-		/** Enters the member at this index of the current scope.
-		 * Requires FF_RW_Structured
-		 */
-		virtual bool Enter(i32 index) = 0;
 		/** Exits the current scope. */
 		virtual void Leave() = 0;
 		/** Key of the last entered member; empty when it was unnamed. */
 		virtual StringView GetCurrentKey() const = 0;
 		/** Position of the last entered member inside its scope. */
 		virtual i32 GetCurrentIndex() const = 0;
+		/** Number of members in the current object or array scope, or NO_INDEX. */
+		virtual i32 GetCurrentSize() const = 0;
 		virtual void Read(bool& val)        = 0;
 		virtual void Read(i8& val)          = 0;
 		virtual void Read(u8& val)          = 0;
@@ -700,10 +669,6 @@ namespace p
 		/** Marks the current value as an array scope. */
 		virtual void BeginArray(i32 size)           = 0;
 		virtual bool EnterNext(StringView key = {}) = 0;
-		/** Enters the member with this key, adding it or replacing the existing one. */
-		virtual bool Enter(StringView key) = 0;
-		/** Enters the element at this index, adding it or replacing the existing one. */
-		virtual bool Enter(i32 index) = 0;
 		/** Exits the current scope. */
 		virtual void Leave()               = 0;
 		virtual void Write(bool val)       = 0;
@@ -826,11 +791,10 @@ namespace p
 		P_API void BeginArray(i32& size) override;
 
 		P_API bool EnterNext(StringView matchKey = {}) override;
-		P_API bool Enter(StringView key) override;
-		P_API bool Enter(i32 index) override;
 		P_API void Leave() override;
 		P_API StringView GetCurrentKey() const override;
 		P_API i32 GetCurrentIndex() const override;
+		P_API i32 GetCurrentSize() const override;
 
 		P_API void Read(bool& val) override;
 		P_API void Read(i8& val) override;
@@ -872,7 +836,6 @@ namespace p
 			yyjson_mut_val* parent = nullptr;
 			yyjson_mut_val* key    = nullptr;
 			i32 index              = NO_INDEX;    // Array element to replace, NO_INDEX otherwise
-			bool replace           = false;       // Object member to replace
 		};
 		yyjson_mut_doc* doc     = nullptr;
 		yyjson_mut_val* current = nullptr;
@@ -891,8 +854,6 @@ namespace p
 
 		// BEGIN Writer Interface
 		P_API bool EnterNext(StringView key = {}) override;
-		P_API bool Enter(StringView key) override;
-		P_API bool Enter(i32 index) override;
 		P_API void Leave() override;
 
 		P_API void BeginObject() override;
@@ -923,7 +884,7 @@ namespace p
 
 	private:
 		Value& GetCurrentValue();
-		void PushValue(StringView key, bool replace = false);
+		void PushValue(StringView key);
 		void PushValue(i32 index);
 		void PopValue();
 	};
@@ -976,13 +937,10 @@ namespace p
 		P_API void BeginArray(i32& size) override;
 
 		P_API bool EnterNext(StringView matchKey = {}) override;
-		/** Finds a member by key. Requires FF_RW_Structured. */
-		P_API bool Enter(StringView key) override;
-		/** Enters the member at this index of the current scope. Requires FF_RW_Structured. */
-		P_API bool Enter(i32 index) override;
 		P_API void Leave() override;
 		P_API StringView GetCurrentKey() const override;
 		P_API i32 GetCurrentIndex() const override;
+		P_API i32 GetCurrentSize() const override;
 
 		P_API void Read(bool& val) override;
 		P_API void Read(i8& val) override;
@@ -1038,8 +996,6 @@ namespace p
 		P_API void BeginObject() override;
 		P_API void BeginArray(i32 size) override;
 		P_API bool EnterNext(StringView key = {}) override;
-		P_API bool Enter(StringView key) override;
-		P_API bool Enter(i32 index) override;
 		P_API void Leave() override;
 		P_API void Write(bool val) override;
 		P_API void Write(i8 val) override;

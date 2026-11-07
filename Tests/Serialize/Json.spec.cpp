@@ -37,7 +37,7 @@ P_SPEC("Serialization.Json", []()
 
 			Reader& ct = reader;
 			ct.BeginObject();
-			if (ct.Enter("players"))
+			if (ct.EnterNext("players"))
 			{
 				i32 size = 0;
 				ct.BeginArray(size);
@@ -59,7 +59,7 @@ P_SPEC("Serialization.Json", []()
 
 			Reader& ct = reader;
 			ct.BeginObject();
-			if (ct.Enter("players"))
+			if (ct.EnterNext("players"))
 			{
 				static const StringView expected[]{"Miguel", "Juan"};
 				i32 size = 0;
@@ -122,7 +122,7 @@ P_SPEC("Serialization.Json", []()
 			Expect(ct.EnterNext()).ToBeFalse();
 		});
 
-		It("Does not leak a name search into the parent object", []()
+		It("Does not match inner keys in the parent object", []()
 		{
 			// "y" lives in the outer object, but the inner object's pool is contiguous
 			String data{"{\"inner\": {\"x\": 1}, \"y\": 2}"};
@@ -130,36 +130,20 @@ P_SPEC("Serialization.Json", []()
 
 			Reader& ct = reader;
 			ct.BeginObject();
-			Expect(ct.Enter("inner")).ToBeTrue();
+			Expect(ct.EnterNext("inner")).ToBeTrue();
 			ct.BeginObject();
 
-			Expect(ct.Enter("y")).ToBeFalse();    // Not a member of the inner object
-			Expect(ct.Enter("x")).ToBeTrue();
+			Expect(ct.EnterNext("y")).ToBeFalse();    // Not a member of the inner object
+			Expect(ct.EnterNext("x")).ToBeTrue();
 			u8 value = 0;
 			ct.Serialize(value);
 			Expect(value).ToEqual(1);
 
 			ct.Leave();
 			ct.Leave();
-			Expect(ct.Enter("y")).ToBeTrue();
+			Expect(ct.EnterNext("y")).ToBeTrue();
 			ct.Serialize(value);
 			Expect(value).ToEqual(2);
-			ct.Leave();
-		});
-
-		It("Includes the current member when wrapping a name search", []()
-		{
-			String data{"{\"a\": 1, \"b\": 2}"};
-			JsonFormatReader reader{data};
-
-			Reader& ct = reader;
-			ct.BeginObject();
-			Expect(ct.Enter("b")).ToBeTrue();
-			ct.Leave();
-
-			// A full loop reaches the member we came from
-			Expect(ct.Enter("b")).ToBeTrue();
-			Expect(ct.GetCurrentKey() == "b").ToBeTrue();
 			ct.Leave();
 		});
 
@@ -172,46 +156,19 @@ P_SPEC("Serialization.Json", []()
 			ct.BeginObject();
 
 			u8 value = 0;
-			Expect(ct.Enter("b")).ToBeTrue();
-			Expect(ct.GetCurrentKey() == "b").ToBeTrue();
-			Expect(ct.GetCurrentIndex()).ToEqual(1);
-			ct.Serialize(value);
-			Expect(value).ToEqual(2);
-			ct.Leave();
-
-			// Wraps around, and the index is the member's position
-			Expect(ct.Enter("a")).ToBeTrue();
+			Expect(ct.EnterNext()).ToBeTrue();
 			Expect(ct.GetCurrentKey() == "a").ToBeTrue();
 			Expect(ct.GetCurrentIndex()).ToEqual(0);
 			ct.Serialize(value);
 			Expect(value).ToEqual(1);
 			ct.Leave();
-		});
 
-		It("Enters array elements by index", []()
-		{
-			String data{"[7, 8, 9]"};
-			JsonFormatReader reader{data};
-
-			Reader& ct = reader;
-			i32 size = 0;
-			ct.BeginArray(size);
-			Expect(size).ToEqual(3u);
-
-			u8 value = 0;
-			Expect(ct.Enter(2)).ToBeTrue();
-			Expect(ct.GetCurrentIndex()).ToEqual(2);
+			Expect(ct.EnterNext()).ToBeTrue();
+			Expect(ct.GetCurrentKey() == "b").ToBeTrue();
+			Expect(ct.GetCurrentIndex()).ToEqual(1);
 			ct.Serialize(value);
-			Expect(value).ToEqual(9);
+			Expect(value).ToEqual(2);
 			ct.Leave();
-
-			Expect(ct.Enter(0)).ToBeTrue();
-			Expect(ct.GetCurrentIndex()).ToEqual(0);
-			ct.Serialize(value);
-			Expect(value).ToEqual(7);
-			ct.Leave();
-
-			Expect(ct.Enter(3)).ToBeFalse();
 		});
 
 		It("Can check types", []()
@@ -222,7 +179,7 @@ P_SPEC("Serialization.Json", []()
 			Reader& ct = reader;
 			Expect(reader.IsObject()).ToEqual(true);
 			ct.BeginObject();
-			if (ct.Enter("players"))
+			if (ct.EnterNext("players"))
 			{
 				Expect(reader.IsArray()).ToEqual(true);
 				ct.Leave();
@@ -243,22 +200,6 @@ P_SPEC("Serialization.Json", []()
 
 			ct.Next("other", name);
 			Expect(name).ToEqual("Juan");
-		});
-
-		It("Can find multiple unordered keys", []()
-		{
-			String data{"{\"one\": \"Miguel\", \"other\": \"Juan\"}"};
-			JsonFormatReader reader{data};
-
-			Reader& ct = reader;
-			Expect(reader.IsObject()).ToEqual(true);
-			ct.BeginObject();
-			StringView name;
-			ct.Next("other", name);
-			Expect(name).ToEqual("Juan");
-
-			ct.Next("one", name);
-			Expect(name).ToEqual("Miguel");
 		});
 
 		Describe("Types", []()
@@ -428,55 +369,6 @@ P_SPEC("Serialization.Json", []()
 			Expect(writer.ToString(false)).ToEqual("{\"name\":\"Miguel\"}");
 		});
 
-		It("Replaces existing values with Enter and appends with EnterNext", []()
-		{
-			JsonFormatWriter writer{};
-			Writer& out = writer;
-			out.BeginObject();
-			if (out.EnterNext("a"))
-			{
-				out.Serialize(u8(1));
-				out.Leave();
-			}
-			if (out.EnterNext("b"))
-			{
-				out.Serialize(u8(2));
-				out.Leave();
-			}
-
-			// Enter modifies the existing member
-			if (out.Enter("a"))
-			{
-				out.Serialize(u8(5));
-				out.Leave();
-			}
-			Expect(writer.ToString(false)).ToEqual("{\"a\":5,\"b\":2}");
-		});
-
-		It("Replaces and appends array elements by index", []()
-		{
-			JsonFormatWriter writer{};
-			Writer& out = writer;
-			i32 size = 2;
-			out.BeginArray(size);
-			out.Next(u8(1));
-			out.Next(u8(2));
-
-			// Existing elements are replaced
-			if (out.Enter(0))
-			{
-				out.Serialize(u8(9));
-				out.Leave();
-			}
-			// Entering the size appends
-			if (out.Enter(2))
-			{
-				out.Serialize(u8(3));
-				out.Leave();
-			}
-			Expect(writer.ToString(false)).ToEqual("[9,2,3]");
-		});
-
 		It("Writes empty object keys and unnamed array elements", []()
 		{
 			JsonFormatWriter writer{};
@@ -504,7 +396,7 @@ P_SPEC("Serialization.Json", []()
 			JsonFormatReader reader{writer.ToString(false)};
 			Reader& in = reader;
 			in.BeginObject();
-			Expect(in.Enter("")).ToBeTrue();
+			Expect(in.EnterNext("")).ToBeTrue();
 			Expect(in.GetCurrentKey().empty()).ToBeTrue();
 			u8 value = 0;
 			in.Serialize(value);
@@ -564,7 +456,7 @@ P_SPEC("Serialization.Json", []()
 			Expect(ct.GetCurrentIndex()).ToEqual(0);
 			ct.Leave();
 
-			Expect(ct.Enter("")).ToBeTrue();    // Searches the empty key
+			Expect(ct.EnterNext("")).ToBeTrue();    // Searches the empty key
 			Expect(ct.GetCurrentKey().empty()).ToBeTrue();
 			Expect(ct.GetCurrentIndex()).ToEqual(1);
 			u8 value = 0;

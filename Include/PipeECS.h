@@ -355,7 +355,28 @@ namespace p
 		template<typename... T>
 		void SerializePools()
 		{
-			(SerializePool<T>(), ...);
+			using ReadFn = void (*)(EntityReader&);
+			struct PoolEntry
+			{
+				StringView name;
+				ReadFn read;
+			};
+			const PoolEntry entries[]{
+			    {GetTypeName<T>(false), [](EntityReader& reader) { reader.SerializePool<T>(); }}...};
+
+			while(EnterNext())
+			{
+				const StringView componentKey = GetCurrentKey();
+				for (const PoolEntry& entry : entries)
+				{
+					if (entry.name == componentKey)
+					{
+						entry.read(*this);
+						break;
+					}
+				}
+				Leave();
+			}
 		}
 
 		const TArray<Id>& GetIds() const;
@@ -2527,49 +2548,45 @@ namespace p
 	template<typename T>
 	inline void EntityReader::SerializePool()
 	{
-		if (Enter(GetTypeName<T>(false)))
+		auto& pool = GetContext().AssurePool<T>();
+
+		if (serializingMany) [[likely]]
 		{
-			auto& pool = GetContext().AssurePool<T>();
-
-			if (serializingMany) [[likely]]
+			BeginObject();
+			while (EnterNext())
 			{
-				String key;
-				BeginObject();
-				for (i32 i = 0; i < ids.Size(); ++i)
+				const TOptional<i32> entityIndex = Strings::ToNumber<i32>(GetCurrentKey());
+				if (!entityIndex || !ids.IsValidIndex(entityIndex.Get()))
 				{
-					const Id id = ids[i];
-					key.clear();
-					FormatTo(key, "{}", i);
-
-					if (Enter(key))
-					{
-						if constexpr (!IsEmpty<T>)
-						{
-							T& comp = pool.Has(id) ? pool.Get(id) : pool.Add(id);
-							Serialize(comp);
-						}
-						else
-						{
-							pool.Add(id);
-						}
-						Leave();
-					}
+					Leave();
+					continue;
 				}
-			}
-			else
-			{
+
+				const Id id = ids[entityIndex.Get()];
 				if constexpr (!IsEmpty<T>)
 				{
-					const Id id = ids[0];
-					T& comp     = pool.Has(id) ? pool.Get(id) : pool.Add(id);
+					T& comp = pool.Has(id) ? pool.Get(id) : pool.Add(id);
 					Serialize(comp);
 				}
 				else
 				{
-					pool.Add(ids[0]);
+					pool.Add(id);
 				}
+				Leave();
 			}
-			Leave();
+		}
+		else
+		{
+			if constexpr (!IsEmpty<T>)
+			{
+				const Id id = ids[0];
+				T& comp     = pool.Has(id) ? pool.Get(id) : pool.Add(id);
+				Serialize(comp);
+			}
+			else
+			{
+				pool.Add(ids[0]);
+			}
 		}
 	}
 
@@ -2599,7 +2616,8 @@ namespace p
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
-		PushAddFlags(p::FF_W_CacheStringKeys);
+		PushAddFlags(
+		    p::FormatFlags(p::FF_W_CacheStringKeys | p::FF_RW_Structured));
 		if (EnterNext(GetTypeName<T>(false)))
 		{
 			if (serializingMany) [[likely]]

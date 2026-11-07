@@ -43,52 +43,7 @@ P_SPEC("Serialization.BinaryNames", []()
 		Expect(reader.HasError()).ToBeFalse();
 	});
 
-	It("Finds a member even when it is not next", []()
-	{
-		BinaryFormatWriter writer{};
-		writer.PushAddFlags(FF_RW_Structured);
-		Writer& out = writer;
-		out.BeginObject();
-		out.Next("a", u8(1));
-		out.Next("b", u8(2));
-
-		BinaryFormatReader reader{writer.GetData()};
-		reader.PushAddFlags(FF_RW_Structured);
-		Reader& ct = reader;
-		ct.BeginObject();
-
-		u8 value = 0;
-		ct.Next("b", value);
-		Expect(value).ToEqual(2);    // Searched past "a"
-		ct.Next("a", value);
-		Expect(value).ToEqual(1);    // Wrapped back to "a"
-		Expect(reader.HasError()).ToBeFalse();
-	});
-
-	It("Finds a member by name", []()
-	{
-		BinaryFormatWriter writer{};
-		writer.PushAddFlags(FF_RW_Structured);
-		Writer& out = writer;
-		out.BeginObject();
-		out.Next("a", u8(1));
-		out.Next("b", u8(2));
-		out.Next("c", u8(3));
-
-		BinaryFormatReader reader{writer.GetData()};
-		reader.PushAddFlags(FF_RW_Structured);
-		Reader& ct = reader;
-		ct.BeginObject();
-
-		u8 value = 0;
-		Expect(ct.Enter("c")).ToBeTrue();
-		ct.Serialize(value);
-		ct.Leave();
-		Expect(value).ToEqual(3);
-		Expect(reader.HasError()).ToBeFalse();
-	});
-
-	It("Keeps the stream when a name is not found", []()
+	It("Keeps the stream when the next key does not match", []()
 	{
 		BinaryFormatWriter writer{};
 		writer.PushAddFlags(FF_RW_Structured);
@@ -101,7 +56,7 @@ P_SPEC("Serialization.BinaryNames", []()
 		Reader& ct = reader;
 		ct.BeginObject();
 
-		Expect(ct.Enter("missing")).ToBeFalse();
+		Expect(ct.EnterNext("missing")).ToBeFalse();
 
 		u8 value = 0;
 		ct.Next("a", value);
@@ -125,48 +80,18 @@ P_SPEC("Serialization.BinaryNames", []()
 
 		Expect(ct.EnterNext()).ToBeTrue();
 		Expect(ct.GetCurrentKey() == "a").ToBeTrue();
-		Expect(ct.GetCurrentIndex()).ToEqual(NO_INDEX);    // Objects have no index
+		Expect(ct.GetCurrentIndex()).ToEqual(0);
 		ct.Leave();
 
 		Expect(ct.EnterNext()).ToBeTrue();
 		Expect(ct.GetCurrentKey() == "b").ToBeTrue();
-		Expect(ct.GetCurrentIndex()).ToEqual(NO_INDEX);
+		Expect(ct.GetCurrentIndex()).ToEqual(1);
 		ct.Leave();
 
 		Expect(ct.EnterNext()).ToBeFalse();
 	});
 
-	It("Enters a member by index", []()
-	{
-		BinaryFormatWriter writer{};
-		writer.PushAddFlags(FF_RW_Structured);
-		Writer& out = writer;
-		out.BeginObject();
-		out.Next("a", u8(1));
-		out.Next("b", u8(2));
-		out.Next("c", u8(3));
-
-		BinaryFormatReader reader{writer.GetData()};
-		reader.PushAddFlags(FF_RW_Structured);
-		Reader& ct = reader;
-		ct.BeginObject();
-
-		u8 value = 0;
-		Expect(ct.Enter(2)).ToBeTrue();
-		Expect(ct.GetCurrentKey() == "c").ToBeTrue();
-		ct.Serialize(value);
-		ct.Leave();
-		Expect(value).ToEqual(3);
-
-		// Indexes wrap once, so 0 is still reachable from the end.
-		Expect(ct.Enter(0)).ToBeTrue();
-		Expect(ct.GetCurrentKey() == "a").ToBeTrue();
-		ct.Serialize(value);
-		ct.Leave();
-		Expect(value).ToEqual(1);
-	});
-
-	It("Enters array elements by index", []()
+	It("Enters array elements in order", []()
 	{
 		BinaryFormatWriter writer{};
 		writer.PushAddFlags(FF_RW_Structured);
@@ -186,23 +111,19 @@ P_SPEC("Serialization.BinaryNames", []()
 		Reader& ct = reader;
 		ct.BeginObject();
 
-		if (ct.Enter("items"))
+		if (ct.EnterNext("items"))
 		{
 			i32 size = 0;
 			ct.BeginArray(size);
 			Expect(size).ToEqual(3u);
 
 			u8 value = 0;
-			Expect(ct.Enter(0)).ToBeTrue();
-			Expect(ct.GetCurrentIndex()).ToEqual(0);
-			ct.Serialize(value);
-			ct.Leave();
+			ct.Next(value);
 			Expect(value).ToEqual(7);
-
-			Expect(ct.Enter(1)).ToBeTrue();
-			ct.Serialize(value);
-			ct.Leave();
+			ct.Next(value);
 			Expect(value).ToEqual(8);
+			ct.Next(value);
+			Expect(value).ToEqual(9);
 			ct.Leave();
 		}
 		else
@@ -288,7 +209,7 @@ P_SPEC("Serialization.BinaryNames", []()
 		ct.Next("count", count);
 		Expect(count).ToEqual(2u);
 
-		if (ct.Enter("items"))
+		if (ct.EnterNext("items"))
 		{
 			i32 size = 0;
 			ct.BeginArray(size);
@@ -326,7 +247,7 @@ P_SPEC("Serialization.BinaryNames", []()
 		reader.PushAddFlags(FF_RW_Structured);
 		Reader& ct = reader;
 		ct.BeginObject();
-		if (ct.Enter("child"))
+		if (ct.EnterNext("child"))
 		{
 			ct.BeginObject();
 			u8 x = 0;
