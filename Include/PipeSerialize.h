@@ -126,13 +126,15 @@ namespace p
 		 * This function won't do anything on object or uninitialized values
 		 */
 		template<typename T>
-		void Next(T& val)
+		bool Next(T& val)
 		{
 			if (EnterNext())
 			{
 				Serialize(val);
 				Leave();
+				return true;
 			}
+			return false;
 		}
 
 		// Reads a type from the current value
@@ -272,13 +274,15 @@ namespace p
 		 * This function won't do anything on array or uninitialized values
 		 */
 		template<typename T>
-		void Next(StringView key, const T& val)
+		bool Next(StringView key, const T& val)
 		{
 			if (EnterNext(key))
 			{
 				Serialize(val);
 				Leave();
+				return true;
 			}
+			return false;
 		}
 
 		/**
@@ -287,13 +291,15 @@ namespace p
 		 * This function won't do anything on object or uninitialized values
 		 */
 		template<typename T>
-		void Next(const T& val)
+		bool Next(const T& val)
 		{
 			if (EnterNext())
 			{
 				Serialize(val);
 				Leave();
+				return true;
 			}
+			return false;
 		}
 
 
@@ -406,27 +412,6 @@ namespace p
 		 */
 		bool BeginObject();
 
-		/** Enters the next object member or array element. Readers match `matchKey` when
-		 * non-null; writers write it.
-		 * @see GetCurrentKey() and GetCurrentIndex()
-		 */
-		bool EnterNext(StringView key = {});
-
-		/** Reads or writes a value at a key of an object. */
-		template<typename T>
-		void Next(StringView key, T& val)
-		{
-			if (IsWriting())
-			{
-				writer->Next(key, val);
-			}
-			else
-			{
-				reader->Next(key, val);
-			}
-		}
-
-
 		/**
 		 * Marks current value as an Array.
 		 * See EnterNext() & Next(value)
@@ -435,20 +420,40 @@ namespace p
 		 */
 		bool BeginArray(i32& size);
 
+		/** Enters the next object member or array element. Readers match `matchKey` when
+		 * non-null; writers write it.
+		 * @see GetCurrentKey() and GetCurrentIndex()
+		 */
+		bool EnterNext(StringView key = {});
+
+		/** Reads or writes a value at a key of an object. */
+		template<typename T>
+		bool Next(StringView key, T& val)
+		{
+			if (IsWriting())
+			{
+				return writer->Next(key, val);
+			}
+			else
+			{
+				return reader->Next(key, val);
+			}
+		}
+
 		/**
 		 * Reads or writes the next element of an array.
 		 * Complexity: O(1)
 		 */
 		template<typename T>
-		void Next(T& val)
+		bool Next(T& val)
 		{
 			if (IsWriting())
 			{
-				// writeContext->Next(val);
+				return writer->Next(val);
 			}
 			else
 			{
-				reader->Next(val);
+				return reader->Next(val);
 			}
 		}
 
