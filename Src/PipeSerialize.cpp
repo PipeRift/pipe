@@ -57,9 +57,9 @@ bool yyjson_mut_obj_add_val(
 namespace p
 {
 #pragma region Reader
-	void Reader::BeginObject()
+	bool Reader::BeginObject()
 	{
-		GetFormat().BeginObject();
+		return GetFormat().BeginObject();
 	}
 
 	bool Reader::EnterNext(StringView matchKey)
@@ -107,9 +107,9 @@ namespace p
 		return GetFormat().GetFlags();
 	}
 
-	void Reader::BeginArray(i32& size)
+	bool Reader::BeginArray(i32& size)
 	{
-		GetFormat().BeginArray(size);
+		return GetFormat().BeginArray(size);
 	}
 
 	bool Reader::IsObject()
@@ -174,19 +174,19 @@ namespace p
 
 
 #pragma region Writer
-	void Writer::BeginObject()
-	{
-		GetFormat().BeginObject();
-	}
-
 	bool Writer::EnterNext(StringView key)
 	{
 		return GetFormat().EnterNext(key);
 	}
 
-	void Writer::BeginArray(i32 size)
+	bool Writer::BeginObject()
 	{
-		GetFormat().BeginArray(size);
+		return GetFormat().BeginObject();
+	}
+
+	bool Writer::BeginArray(i32 size)
+	{
+		return GetFormat().BeginArray(size);
 	}
 
 	void Writer::Leave()
@@ -259,18 +259,6 @@ namespace p
 
 
 #pragma region ReadWriter
-	void ReadWriter::BeginObject()
-	{
-		if (IsWriting())
-		{
-			writer->BeginObject();
-		}
-		else
-		{
-			reader->BeginObject();
-		}
-	}
-
 	bool ReadWriter::EnterNext(StringView key)
 	{
 		if (IsWriting())
@@ -283,15 +271,27 @@ namespace p
 		}
 	}
 
-	void ReadWriter::BeginArray(i32& size)
+	bool ReadWriter::BeginObject()
 	{
 		if (IsWriting())
 		{
-			writer->BeginArray(size);
+			return writer->BeginObject();
 		}
 		else
 		{
-			reader->BeginArray(size);
+			return reader->BeginObject();
+		}
+	}
+
+	bool ReadWriter::BeginArray(i32& size)
+	{
+		if (IsWriting())
+		{
+			return writer->BeginArray(size);
+		}
+		else
+		{
+			return reader->BeginArray(size);
 		}
 	}
 
@@ -407,22 +407,24 @@ namespace p
 		valueStack.RemoveLast(1, Shrink::No);
 	}
 
-	void JsonFormatReader::BeginObject()
+	bool JsonFormatReader::BeginObject()
 	{
-		P_CheckMsg(
+		return P_EnsureMsg(
 		    yyjson_is_obj(current.value), "BeginObject() called on a value that is not an object");
 	}
 
-	void JsonFormatReader::BeginArray(i32& size)
+	bool JsonFormatReader::BeginArray(i32& size)
 	{
 		if (P_EnsureMsg(yyjson_is_arr(current.value),
 		        "BeginArray() called on a value that is not an array"))
 		{
 			size = i32(yyjson_get_len(current.value));
+			return true;
 		}
 		else
 		{
 			size = 0;
+			return false;
 		}
 	}
 
@@ -834,7 +836,7 @@ namespace p
 	{
 		P_CheckMsg(key.data() != nullptr, "Tried to add an object key value without a key");
 		yyjson_mut_val* keyValue;
-		if ((GetFlags() & FF_W_CacheStringKeys) > 0)
+		if (HasFlag(GetFlags(), FF_W_CacheStringKeys))
 		{
 			keyValue = yyjson_mut_strncpy(doc, key.data(), key.size());
 		}
@@ -924,30 +926,32 @@ namespace p
 		}
 	}
 
-	void JsonFormatWriter::BeginObject()
+	bool JsonFormatWriter::BeginObject()
 	{
 		if (current) [[unlikely]]
 		{
 			P_CheckMsg(unsafe_yyjson_is_obj(current),
 			    "Value is already initialized but it is not an object. Is BeginObject() being "
 			    "mixed with BeginArray() in the same value?");
-			return;
+			return false;
 		}
 
 		current = yyjson_mut_obj(doc);
+		return true;
 	}
 
-	void JsonFormatWriter::BeginArray(i32 size)
+	bool JsonFormatWriter::BeginArray(i32 size)
 	{
 		if (current) [[unlikely]]
 		{
 			P_CheckMsg(unsafe_yyjson_is_arr(current),
 			    "Value is already initialized but it is not an array. Is BeginArray() being mixed "
 			    "with BeginObject() in the same value?");
-			return;
+			return false;
 		}
 
 		current = yyjson_mut_arr(doc);
+		return true;
 	}
 
 	void JsonFormatWriter::Write(bool val)
@@ -996,7 +1000,7 @@ namespace p
 	}
 	void JsonFormatWriter::Write(StringView val)
 	{
-		if ((GetFlags() & FF_W_CacheStringValues) > 0)
+		if (HasFlag(GetFlags(), FF_W_CacheStringValues))
 		{
 			current = yyjson_mut_strncpy(doc, val.data(), val.size());
 		}
@@ -1081,6 +1085,8 @@ namespace p
 			SubType_SInt = 1 << 3,    // ___01___
 			/** Real number subtype: `double`. */
 			SubType_Real = 2 << 3,    // ___10___
+			/** Array/Object subtype: Its children are structured. */
+			SubType_Structured = 3 << 3,    // ___01___
 
 			// Number Size
 			SizeMask = 3 << 5,    // _11_____
@@ -1114,7 +1120,7 @@ namespace p
 			return flags & Flags::TypeMask;
 		}
 
-		constexpr bool IsStructured(Flags flags)
+		constexpr bool IsTyped(Flags flags)
 		{
 			return GetType(flags) != Flags::Type_None;
 		}
@@ -1123,10 +1129,13 @@ namespace p
 		 * Structured values must match the type stored in their flags. */
 		constexpr bool AcceptsStructuredType(Flags flags, Flags expected)
 		{
-			switch (GetType(flags))
+			const Flags type = GetType(flags);
+			switch (type)
 			{
 				case Flags::Type_None: return true;
-				case Flags::Type_Bool: return GetType(expected) == Flags::Type_Bool;
+				case Flags::Type_Bool:
+					// Bool subtypes carry the value, so only the type must match.
+					return type == GetType(expected);
 				default: return flags == expected;
 			}
 		}
@@ -1221,7 +1230,7 @@ namespace p
 
 		u8* ReadFlags(Flags& currentFlags, u8* p)
 		{
-			if (IsStructured(currentFlags))
+			if (IsTyped(currentFlags))
 			{
 				u8 rawFlags  = 0;
 				p            = ReadRaw(p, rawFlags);
@@ -1339,32 +1348,28 @@ namespace p
 
 		sizet WriteFlags(Flags& currentFlags, u8* p, sizet offset, Flags flags)
 		{
-			if (IsStructured(currentFlags))
+			if (IsTyped(currentFlags))
 			{
-				currentFlags = flags;
-				return WriteRaw(p, offset, u8(currentFlags));
+				offset = WriteRaw(p, offset, u8(flags));
 			}
+			currentFlags = flags;
 			return offset;
 		}
 	}    // namespace Binary
 
-#define EnsureCanRead(expectedType)                                                             \
-	if (!P_EnsureMsg(!current.used,                                                             \
-	        "Already read this value. Has BeginArray, BeginObject or Read been called before?") \
-	    || !Binary::AcceptsStructuredType(current.flags, expectedType)) [[unlikely]]            \
-	{                                                                                           \
-		return;                                                                                 \
-	}                                                                                           \
-	current.used = true
+#define EnsureCanRead(expectedType)                                                          \
+	(P_EnsureMsg(!current.used,                                                              \
+	     "Already read this value. Has BeginArray, BeginObject or Read been called before?") \
+	            && Binary::AcceptsStructuredType(current.flags, expectedType)                \
+	        ? (current.used = true)                                                          \
+			: false)
 
-#define EnsureCanWrite()                                                                    \
-	if (!P_EnsureMsg(!current.used,                                                         \
-	        "Already written this value. Has BeginArray, BeginObject or Write been called " \
-	        "before?")) [[unlikely]]                                                        \
-	{                                                                                       \
-		return;                                                                             \
-	}                                                                                       \
-	current.used = true
+#define EnsureCanWrite()                                                                 \
+	(P_EnsureMsg(!current.used,                                                          \
+	     "Already written this value. Has BeginArray, BeginObject or Write been called " \
+	     "before?")                                                                      \
+	        ? (current.used = true)                                                      \
+			: false)
 
 
 	BinaryFormatReader::BinaryFormatReader(TView<u8> data) : data{data}, pointer{data.Data()}
@@ -1422,137 +1427,156 @@ namespace p
 		if (current.end)
 		{
 			pointer = current.end;
-		}
-		else if (Binary::GetType(current.flags) == Binary::Flags::Type_String)
-		{
-			// Strings store their length in the stream; read it only to skip an unread string
-			if (sizeof(i32) > Remaining()) [[unlikely]]
-			{
-				pointer = nullptr;
-				return;
-			}
-			u8* next = Binary::ReadRaw(pointer, current.count);
-			if (current.count < 0 || current.count > (data.EndData() - next)) [[unlikely]]
-			{
-				pointer = nullptr;
-				return;
-			}
-			pointer = next + current.count;
-		}
-		// No way to know the size of this value
-	}
-
-	void BinaryFormatReader::ReadSize()
-	{
-		current.end = nullptr;
-
-		const auto type = Binary::GetType(current.flags);
-		switch (type)
-		{
-			case Binary::Flags::Type_Number: {
-				const u32 size = 1u << ((u32(current.flags) & u32(Binary::Flags::SizeMask))
-				                        >> Binary::SizeShift);
-				if (size > Remaining()) [[unlikely]]
-				{
-					pointer = nullptr;
-					return;
-				}
-				current.end = pointer + size;
-				break;
-			}
-			case Binary::Flags::Type_Object:
-			case Binary::Flags::Type_Array: {
-				if (sizeof(u32) > Remaining()) [[unlikely]]
-				{
-					pointer = nullptr;
-					return;
-				}
-				u32 dataSize = 0;
-				pointer      = Binary::ReadRaw(pointer, dataSize);
-				if (dataSize > Remaining()) [[unlikely]]
-				{
-					pointer = nullptr;
-					return;
-				}
-				current.end = pointer + dataSize;
-				break;
-			}
-		}
-	}
-
-	void BinaryFormatReader::BeginObject()
-	{
-		EnsureCanRead(Binary::Flags::Type_Object);
-
-		// Structured objects already had their size read by EnterNext()/ReadSize().
-		// Root and non-structured objects still carry the size header here.
-		if (!Binary::IsStructured(current.flags))
-		{
-			if (sizeof(u32) > Remaining()) [[unlikely]]
-			{
-				pointer = nullptr;
-				return;
-			}
-
-			u32 dataSize = 0;
-			pointer      = Binary::ReadRaw(pointer, dataSize);
-			if (dataSize > Remaining()) [[unlikely]]
-			{
-				pointer = nullptr;
-				return;
-			}
-			current.end = pointer + dataSize;
-		}
-
-		current.flags              = Binary::Flags::Type_Object;
-		current.structuredChildren = HasFlag(GetFlags(), FF_RW_Structured);
-	}
-
-	void BinaryFormatReader::BeginArray(i32& size)
-	{
-		EnsureCanRead(Binary::Flags::Type_Array);
-
-		if (!Binary::IsStructured(current.flags))
-		{
-			// No flags: data size followed by the element count
-			if (!pointer || sizeof(u32) > Remaining()) [[unlikely]]
-			{
-				pointer       = nullptr;
-				size          = 0;
-				current.count = 0;
-				return;
-			}
-			u32 dataSize = 0;
-			pointer      = Binary::ReadRaw(pointer, dataSize);
-			if (dataSize > Remaining()) [[unlikely]]
-			{
-				pointer       = nullptr;
-				size          = 0;
-				current.count = 0;
-				return;
-			}
-			current.end = pointer + dataSize;
-		}
-
-		if (!pointer || sizeof(i32) > Remaining()) [[unlikely]]
-		{
-			pointer       = nullptr;
-			size          = 0;
-			current.count = 0;
 			return;
 		}
+
+		switch (Binary::GetType(current.flags))
+		{
+			case Binary::Flags::Type_String: {
+				if (sizeof(i32) > Remaining()) [[unlikely]]
+				{
+					pointer = nullptr;
+					return;
+				}
+				i32 size = 0;
+				u8* next = Binary::ReadRaw(pointer, size);
+				if (size < 0 || size > (data.EndData() - next)) [[unlikely]]
+				{
+					pointer = nullptr;
+					return;
+				}
+				pointer = next + size;
+				break;
+			}
+			case Binary::Flags::Type_Number: {
+				// Unread numbers carry their size in the flags.
+				if (!current.used)
+				{
+					const u32 size = 1u << ((u32(current.flags) & u32(Binary::Flags::SizeMask))
+					                        >> Binary::SizeShift);
+					if (size > Remaining()) [[unlikely]]
+					{
+						pointer = nullptr;
+						return;
+					}
+					pointer += size;
+				}
+				break;
+			}
+			case Binary::Flags::Type_Object: {
+				if (HasFlag(current.flags, Binary::Flags::SubType_Structured))
+				{
+					PushAddFlags(FF_RW_Structured);
+				}
+				else
+				{
+					PushRemoveFlags(FF_RW_Structured);
+				}
+
+
+				if (BeginObject() && current.end)
+				{
+					pointer = current.end;
+				}
+				PopFlags();
+				break;
+			}
+			case Binary::Flags::Type_Array: {
+				if (HasFlag(current.flags, Binary::Flags::SubType_Structured))
+				{
+					PushAddFlags(FF_RW_Structured);
+				}
+				else
+				{
+					PushRemoveFlags(FF_RW_Structured);
+				}
+
+				i32 size = 0;
+				if (BeginArray(size) && current.end)
+				{
+					pointer = current.end;
+				}
+				PopFlags();
+				break;
+			}
+		}
+	}
+
+	bool BinaryFormatReader::BeginObject()
+	{
+		Binary::Flags expectedFlags = Binary::Flags::Type_Object;
+		if (HasFlag(GetFlags(), FF_RW_Structured))
+		{
+			expectedFlags |= Binary::Flags::SubType_Structured;
+		}
+
+		// Already used, or a value that is not an object with the expected flags.
+		if (!EnsureCanRead(expectedFlags))
+		{
+			return false;
+		}
+
+		current.flags = expectedFlags;
+
+		if (sizeof(u32) > Remaining()) [[unlikely]]
+		{
+			pointer = nullptr;
+			return false;
+		}
+		u32 dataSize = 0;
+		pointer      = Binary::ReadRaw(pointer, dataSize);
+		if (dataSize > Remaining()) [[unlikely]]
+		{
+			pointer = nullptr;
+			return false;
+		}
+		current.end = pointer + dataSize;
+		return pointer != nullptr;
+	}
+
+	bool BinaryFormatReader::BeginArray(i32& size)
+	{
+		size = 0;
+
+		Binary::Flags expectedFlags = Binary::Flags::Type_Array;
+		if (HasFlag(GetFlags(), FF_RW_Structured))
+		{
+			expectedFlags |= Binary::Flags::SubType_Structured;
+		}
+
+		// Already used, or a value that is not an array with the expected flags.
+		if (!EnsureCanRead(expectedFlags))
+		{
+			return false;
+		}
+
+		// Schema-driven values take their type from this call.
+		current.flags = expectedFlags;
+
+		if (sizeof(u32) > Remaining()) [[unlikely]]
+		{
+			pointer       = nullptr;
+			return false;
+		}
+		u32 dataSize = 0;
+		pointer      = Binary::ReadRaw(pointer, dataSize);
+		dataSize += sizeof(i32);    // count value
+		if (dataSize > Remaining()) [[unlikely]]
+		{
+			pointer       = nullptr;
+			return false;
+		}
+		current.end = pointer + dataSize;
 		pointer = Binary::ReadRaw(pointer, size);
 		if (size < 0 || size > Remaining()) [[unlikely]]
 		{
 			pointer       = nullptr;
 			size          = 0;
 			current.count = 0;
-			return;
+			return false;
 		}
 		current.count = size;
-
-		current.flags              = Binary::Flags::Type_Array;
-		current.structuredChildren = HasFlag(GetFlags(), FF_RW_Structured);
+		return true;
 	}
 
 	bool BinaryFormatReader::EnterNext(StringView matchKey)
@@ -1573,12 +1597,11 @@ namespace p
 			Value value;
 			value.offset = u32(pointer - data.Data());
 			value.index  = next;
-			if (current.structuredChildren)
+			if (HasFlag(current.flags, Binary::Flags::SubType_Structured))
 			{
 				value.flags = Binary::Flags::Type_Null;
 				PushValue(value);
 				pointer = Binary::ReadFlags(current.flags, pointer);
-				ReadSize();
 				if (!pointer)
 				{
 					PopValue();
@@ -1600,7 +1623,7 @@ namespace p
 				return false;    // End of the object
 			}
 
-			if (current.structuredChildren)
+			if (HasFlag(current.flags, Binary::Flags::SubType_Structured))
 			{
 				StringView key;
 				u8* afterKey = Binary::ReadKey(pointer, data.EndData(), key);
@@ -1616,7 +1639,6 @@ namespace p
 				value.key    = key;
 				PushValue(value);
 				pointer = Binary::ReadFlags(current.flags, pointer);
-				ReadSize();
 				if (!pointer)
 				{
 					PopValue();
@@ -1668,7 +1690,10 @@ namespace p
 
 	void BinaryFormatReader::Read(bool& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_Bool);
+		if (!EnsureCanRead(Binary::Flags::Type_Bool))
+		{
+			return;
+		}
 		// If value is structured and bool, we store as flag
 		if (Binary::GetType(current.flags) == Binary::Flags::Type_Bool)
 		{
@@ -1684,7 +1709,10 @@ namespace p
 
 	void BinaryFormatReader::Read(i8& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_I8);
+		if (!EnsureCanRead(Binary::Flags::Type_I8))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(1))
 		{
 			val = i8(*ptr);
@@ -1693,7 +1721,10 @@ namespace p
 
 	void BinaryFormatReader::Read(u8& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_U8);
+		if (!EnsureCanRead(Binary::Flags::Type_U8))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(1))
 		{
 			val = *ptr;
@@ -1702,7 +1733,10 @@ namespace p
 
 	void BinaryFormatReader::Read(i16& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_I16);
+		if (!EnsureCanRead(Binary::Flags::Type_I16))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(2))
 		{
 			val = ptr[0];
@@ -1712,7 +1746,10 @@ namespace p
 
 	void BinaryFormatReader::Read(u16& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_U16);
+		if (!EnsureCanRead(Binary::Flags::Type_U16))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(2))
 		{
 			val = ptr[0];
@@ -1722,7 +1759,10 @@ namespace p
 
 	void BinaryFormatReader::Read(i32& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_I32);
+		if (!EnsureCanRead(Binary::Flags::Type_I32))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(4))
 		{
 			val = ptr[0];
@@ -1734,7 +1774,10 @@ namespace p
 
 	void BinaryFormatReader::Read(u32& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_U32);
+		if (!EnsureCanRead(Binary::Flags::Type_U32))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(4))
 		{
 			val = ptr[0];
@@ -1746,7 +1789,10 @@ namespace p
 
 	void BinaryFormatReader::Read(i64& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_I64);
+		if (!EnsureCanRead(Binary::Flags::Type_I64))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(8))
 		{
 			val = ptr[0];
@@ -1762,7 +1808,10 @@ namespace p
 
 	void BinaryFormatReader::Read(u64& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_U64);
+		if (!EnsureCanRead(Binary::Flags::Type_U64))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(8))
 		{
 			val = ptr[0];
@@ -1778,7 +1827,10 @@ namespace p
 
 	void BinaryFormatReader::Read(float& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_F32);
+		if (!EnsureCanRead(Binary::Flags::Type_F32))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(4))
 		{
 			p::CopyMem(&val, ptr, 4);
@@ -1787,7 +1839,10 @@ namespace p
 
 	void BinaryFormatReader::Read(double& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_F64);
+		if (!EnsureCanRead(Binary::Flags::Type_F64))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(8))
 		{
 			p::CopyMem(&val, ptr, 8);
@@ -1796,7 +1851,10 @@ namespace p
 
 	void BinaryFormatReader::Read(StringView& val)
 	{
-		EnsureCanRead(Binary::Flags::Type_String);
+		if (!EnsureCanRead(Binary::Flags::Type_String))
+		{
+			return;
+		}
 		if (!pointer || sizeof(i32) > Remaining()) [[unlikely]]
 		{
 			pointer = nullptr;
@@ -1880,29 +1938,43 @@ namespace p
 		}
 	}
 
-	void BinaryFormatWriter::BeginObject()
+	bool BinaryFormatWriter::BeginObject()
 	{
-		EnsureCanWrite();
-
+		if (!EnsureCanWrite()) [[unlikely]]
+		{
+			return false;
+		}
 		PreAlloc(sizeof(u8) + sizeof(u32));
-		size          = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_Object);
-		size          = Binary::WriteRaw(data, size, u32(0));    // Patched on leave
-		current.flags = Binary::Flags::Type_Object;
-		current.structuredChildren = HasFlag(GetFlags(), FF_RW_Structured);
-		current.count              = 0;
+		Binary::Flags flags = Binary::Flags::Type_Object;
+		if (HasFlag(GetFlags(), FF_RW_Structured))
+		{
+			flags = flags | Binary::Flags::SubType_Structured;
+		}
+		size          = Binary::WriteFlags(current.flags, data, size, flags);
+		current.begin = size;
+		size          = Binary::WriteRaw(data, size, u32(0));    // Size patched on leave
+		current.count = 0;
+		return true;
 	}
 
-	void BinaryFormatWriter::BeginArray(i32 arraySize)
+	bool BinaryFormatWriter::BeginArray(i32 arraySize)
 	{
-		EnsureCanWrite();
-
+		if (!EnsureCanWrite()) [[unlikely]]
+		{
+			return false;
+		}
 		PreAlloc(sizeof(u8) + sizeof(u32) + sizeof(i32));
-		size          = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_Array);
+		Binary::Flags flags = Binary::Flags::Type_Array;
+		if (HasFlag(GetFlags(), FF_RW_Structured))
+		{
+			flags = flags | Binary::Flags::SubType_Structured;
+		}
+		size          = Binary::WriteFlags(current.flags, data, size, flags);
+		current.begin = u32(size);
 		size          = Binary::WriteRaw(data, size, u32(0));       // Size patched on leave
 		size          = Binary::WriteRaw(data, size, arraySize);    // Count patched on leave
-		current.flags = Binary::Flags::Type_Array;
-		current.structuredChildren = HasFlag(GetFlags(), FF_RW_Structured);
-		current.count              = 0;
+		current.count = 0;
+		return true;
 	}
 
 	bool BinaryFormatWriter::EnterNext(StringView key)
@@ -1920,7 +1992,9 @@ namespace p
 			P_EnsureMsg(key.data() == nullptr, "Cant EnterNext with a key on arrays. Ignored.");
 		}
 
-		if (current.structuredChildren)
+		++current.count;
+
+		if (HasFlag(current.flags, Binary::Flags::SubType_Structured))
 		{
 			if (type == Binary::Flags::Type_Object)
 			{
@@ -1933,13 +2007,11 @@ namespace p
 			}
 		}
 
-		++current.count;
 
-		const bool structuredChildren = current.structuredChildren;
+		const bool structuredChildren = HasFlag(current.flags, Binary::Flags::SubType_Structured);
 		valueStack.Add(current);
-		current        = Value{};
-		current.offset = size;
-		current.flags  = structuredChildren ? Binary::Flags::Type_Null : Binary::Flags::Type_None;
+		current       = Value{};
+		current.flags = structuredChildren ? Binary::Flags::Type_Null : Binary::Flags::Type_None;
 		return true;
 	}
 
@@ -1950,7 +2022,7 @@ namespace p
 			return;    // Unbalanced (no value was entered)
 		}
 
-		UpdateValueSize(valueStack.Last().structuredChildren);
+		UpdateValueSize();
 
 		current = valueStack.Last();
 		valueStack.RemoveLast(1, Shrink::No);
@@ -1958,88 +2030,125 @@ namespace p
 
 	void BinaryFormatWriter::Write(bool val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(1);
-		size = Binary::WriteFlags(
+		const bool typed = Binary::IsTyped(current.flags);
+		size             = Binary::WriteFlags(
 		    current.flags, data, size, val ? Binary::Flags::Type_True : Binary::Flags::Type_False);
-		if (!Binary::IsStructured(current.flags))
+		if (!typed)
 		{
 			size = Binary::WriteRaw(data, size, u8(val));
 		}
 	}
 	void BinaryFormatWriter::Write(i8 val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(2);
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_I8);
 		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(u8 val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(2);
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_U8);
 		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(i16 val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(3);
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_I16);
 		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(u16 val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(3);
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_U16);
 		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(i32 val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(5);
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_I32);
 		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(u32 val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(5);
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_U32);
 		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(i64 val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(9);
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_I64);
 		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(u64 val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(9);
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_U64);
 		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(float val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(5);
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_F32);
 		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(double val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(9);
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_F64);
 		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(StringView val)
 	{
-		EnsureCanWrite();
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		current.count = i32(val.size());
 		PreAlloc(1u + sizeof(u32) + u32(current.count));
 		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_String);
@@ -2065,24 +2174,26 @@ namespace p
 			{
 				return;
 			}
-			UpdateValueSize(false);
+			UpdateValueSize();
 			closed = true;
 		}
 	}
 
-	void BinaryFormatWriter::UpdateValueSize(bool hasFlags)
+	void BinaryFormatWriter::UpdateValueSize()
 	{
-		const auto type        = Binary::GetType(current.flags);
-		const u32 headerOffset = current.offset + (hasFlags ? 1u : 0u);
-		switch (type)
+		switch (Binary::GetType(current.flags))
 		{
-			case Binary::Flags::Type_Object:
-				Binary::WriteRaw(data, headerOffset, u32(size - (headerOffset + sizeof(u32))));
+			case Binary::Flags::Type_Object: {    // [Size]
+				const u32 dataSize = u32(size - (current.begin + sizeof(u32)));
+				Binary::WriteRaw(data, current.begin, dataSize);
 				break;
-			case Binary::Flags::Type_Array:
-				Binary::WriteRaw(data, headerOffset, u32(size - (headerOffset + sizeof(u32))));
-				Binary::WriteRaw(data, headerOffset + sizeof(u32), current.count);
+			}
+			case Binary::Flags::Type_Array: {    // [Size][Count]
+				const u32 dataSize = size - (current.begin + sizeof(u32) + sizeof(i32));
+				Binary::WriteRaw(data, current.begin, dataSize);
+				Binary::WriteRaw(data, current.begin + sizeof(u32), current.count);
 				break;
+			}
 			default: break;
 		}
 	}

@@ -362,9 +362,14 @@ namespace p
 				ReadFn read;
 			};
 			const PoolEntry entries[]{
-			    {GetTypeName<T>(false), [](EntityReader& reader) { reader.SerializePool<T>(); }}...};
+			    {GetTypeName<T>(false), [](EntityReader& reader)
+			{
+				reader.SerializePool<T>();
+			}}
+                ...
+            };
 
-			while(EnterNext())
+			while (EnterNext())
 			{
 				const StringView componentKey = GetCurrentKey();
 				for (const PoolEntry& entry : entries)
@@ -2616,8 +2621,7 @@ namespace p
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
-		PushAddFlags(
-		    p::FormatFlags(p::FF_W_CacheStringKeys | p::FF_RW_Structured));
+		PushAddFlags(p::FormatFlags(p::FF_W_CacheStringKeys | p::FF_RW_Structured));
 		if (EnterNext(GetTypeName<T>(false)))
 		{
 			if (serializingMany) [[likely]]

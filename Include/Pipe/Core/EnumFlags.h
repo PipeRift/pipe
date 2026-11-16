@@ -111,4 +111,12 @@ namespace p
 	constexpr Type operator&(Type lhs, Type rhs)            \
 	{                                                       \
 		return static_cast<Type>(*lhs & *rhs);              \
+	}                                                       \
+	constexpr Type& operator|=(Type& lhs, Type rhs)         \
+	{                                                       \
+		return lhs = lhs | rhs;                             \
+	}                                                       \
+	constexpr Type& operator&=(Type& lhs, Type rhs)         \
+	{                                                       \
+		return lhs = lhs & rhs;                             \
 	}

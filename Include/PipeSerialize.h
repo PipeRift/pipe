@@ -65,12 +65,6 @@ namespace p
 
 
 		/**
-		 * Marks current value as an Object.
-		 * See EnterNext() & Next(name, value)
-		 */
-		void BeginObject();
-
-		/**
 		 * Enters the next value of the current array or object.
 		 * On objects, when `matchKey` is non-null, the member is entered only if its
 		 * key matches; otherwise nothing is entered and false is returned. The key is
@@ -79,6 +73,21 @@ namespace p
 		 */
 		bool EnterNext(StringView matchKey = {});
 
+		/**
+		 * Marks current value as an Object.
+		 * See EnterNext() & Next(name, value)
+		 * @return true if the value was entered; false leaves it untouched
+		 */
+		bool BeginObject();
+
+		/**
+		 * Marks current value as an Array.
+		 * See EnterNext() & Next(value)
+		 * @param size of the array being read
+		 * @return true if the value was entered; false sets size to 0
+		 */
+		bool BeginArray(i32& size);
+
 		/** Leaves the current value, resuming the parent one. */
 		void Leave();
 
@@ -86,7 +95,7 @@ namespace p
 		StringView GetCurrentKey() const;
 		/** Position of the current member inside its parent. */
 		i32 GetCurrentIndex() const;
-		/** Array, object or array size in the current value, else 0. */
+		/** Array or string length in the current value, else 0. */
 		i32 GetCurrentCount() const;
 
 		void PushAddFlags(FormatFlags flags);
@@ -110,13 +119,6 @@ namespace p
 			}
 			return false;
 		}
-
-		/**
-		 * Marks current value as an Array.
-		 * See EnterNext() & Next(value)
-		 * @param size of the array being read
-		 */
-		void BeginArray(i32& size);
 
 		/**
 		 * Reads a type from the next element of an array.
@@ -192,9 +194,11 @@ namespace p
 	template<typename T1, typename T2>
 	void Read(Reader& r, p::TPair<T1, T2>& val)
 	{
-		r.BeginObject();
-		r.Next("first", val.first);
-		r.Next("second", val.second);
+		if (r.BeginObject())
+		{
+			r.Next("first", val.first);
+			r.Next("second", val.second);
+		}
 	}
 
 	template<typename T>
@@ -207,12 +211,14 @@ namespace p
 	template<typename T>
 	void Read(Reader& r, T& val) requires(IsArray<T>())
 	{
-		i32 size;
-		r.BeginArray(size);
-		val.Resize(size);
-		for (i32 i = 0; i < size; ++i)
+		i32 size = 0;
+		if (r.BeginArray(size))
 		{
-			r.Next(val[i]);
+			val.Resize(size);
+			for (i32 i = 0; i < size; ++i)
+			{
+				r.Next(val[i]);
+			}
 		}
 	}
 #pragma endregion Reader
@@ -234,18 +240,31 @@ namespace p
 		virtual ~Writer() {}
 
 		/**
-		 * Marks current value as an Object.
-		 * @see EnterNext(matchKey) & Next(name, value)
-		 */
-		void BeginObject();
-
-		/**
 		 * Enters and adds next array index or key value of an object.
 		 * Complexity: O(1)
 		 * To make the value an object, see 'BeginObject()'
 		 * @return true if the value could be added under the current value.
 		 */
 		bool EnterNext(StringView key = {});
+
+		/**
+		 * Marks current value as an Object.
+		 * @see EnterNext(matchKey) & Next(name, value)
+		 * @return true if the value was started
+		 */
+		bool BeginObject();
+
+		/**
+		 * Marks current value as an Array.
+		 * See EnterNext() & Next(value)
+		 * @param size of the array being written
+		 * @return true if the value was started
+		 */
+		bool BeginArray(i32 size);
+
+
+		/** Leaves the current value, resuming the parent one. */
+		void Leave();
 
 		/**
 		 * Writes a type at a key of an object.
@@ -261,13 +280,6 @@ namespace p
 				Leave();
 			}
 		}
-
-		/**
-		 * Marks current value as an Array.
-		 * See EnterNext() & Next(value)
-		 * @param size of the array being written
-		 */
-		void BeginArray(i32 size);
 
 		/**
 		 * Writes a type into the next element of an array.
@@ -297,9 +309,6 @@ namespace p
 				Write(*this, val);
 			}
 		}
-
-		/** Leaves the current value, resuming the parent one. */
-		void Leave();
 
 		static constexpr bool IsReading()
 		{
@@ -393,8 +402,9 @@ namespace p
 		/**
 		 * Marks current value as an Object.
 		 * See EnterNext(key) & Next(key, value)
+		 * @return true if the value is an object
 		 */
-		void BeginObject();
+		bool BeginObject();
 
 		/** Enters the next object member or array element. Readers match `matchKey` when
 		 * non-null; writers write it.
@@ -421,8 +431,9 @@ namespace p
 		 * Marks current value as an Array.
 		 * See EnterNext() & Next(value)
 		 * @param size of the array being read or written
+		 * @return true if the value is an array
 		 */
-		void BeginArray(i32& size);
+		bool BeginArray(i32& size);
 
 		/**
 		 * Reads or writes the next element of an array.
@@ -559,9 +570,9 @@ namespace p
 
 		virtual ~IFormatReader() = default;
 		/** Marks the current value as an object. */
-		virtual void BeginObject() = 0;
+		virtual bool BeginObject() = 0;
 		/** Marks the current value as an array. */
-		virtual void BeginArray(i32& size) = 0;
+		virtual bool BeginArray(i32& size) = 0;
 		/** Enters the next value of the current array or object.
 		 * On objects, when `matchKey` is non-null, the member is entered only if its
 		 * key matches; otherwise nothing is entered and false is returned. The key is
@@ -575,7 +586,7 @@ namespace p
 		virtual StringView GetCurrentKey() const = 0;
 		/** Position of the last entered member inside its parent. */
 		virtual i32 GetCurrentIndex() const = 0;
-		/** Array, object or array size in the current value, else 0. */
+		/** Array or string length in the current value, else 0. */
 		virtual i32 GetCurrentCount() const = 0;
 		virtual void Read(bool& val)        = 0;
 		virtual void Read(i8& val)          = 0;
@@ -601,7 +612,7 @@ namespace p
 		void PushRemoveFlags(FormatFlags flags)
 		{
 			flagStack.Add(activeFlags);
-			activeFlags &= ~sizet(flags);
+			activeFlags &= ~flags;
 		}
 		void PopFlags()
 		{
@@ -665,9 +676,9 @@ namespace p
 
 		virtual ~IFormatWriter() = default;
 		/** Marks the current value as an object. */
-		virtual void BeginObject() = 0;
+		virtual bool BeginObject() = 0;
 		/** Marks the current value as an array. */
-		virtual void BeginArray(i32 size)           = 0;
+		virtual bool BeginArray(i32 size)           = 0;
 		virtual bool EnterNext(StringView key = {}) = 0;
 		/** Leaves the current value. */
 		virtual void Leave()               = 0;
@@ -787,8 +798,8 @@ namespace p
 		P_API explicit JsonFormatReader(String& data);
 		P_API ~JsonFormatReader();
 
-		P_API void BeginObject() override;
-		P_API void BeginArray(i32& size) override;
+		P_API bool BeginObject() override;
+		P_API bool BeginArray(i32& size) override;
 
 		P_API bool EnterNext(StringView matchKey = {}) override;
 		P_API void Leave() override;
@@ -856,8 +867,8 @@ namespace p
 		P_API bool EnterNext(StringView key = {}) override;
 		P_API void Leave() override;
 
-		P_API void BeginObject() override;
-		P_API void BeginArray(i32 size) override;
+		P_API bool BeginObject() override;
+		P_API bool BeginArray(i32 size) override;
 
 		P_API void Write(bool val) override;
 		P_API void Write(i8 val) override;
@@ -905,13 +916,12 @@ namespace p
 			Binary::Flags flags = {};          // Value type
 			u32 offset          = 0;           // First byte of the value, from the stream start
 			u8* end             = nullptr;     // End of the value's payload
-			u32 size      = 0;                 // Data size in bytes (structured)
-			i32 count     = 0;                 // Element count or string length
-			i32 lastIndex = NO_INDEX;          // Last element entered/left from this value
+			u32 size            = 0;           // Data size in bytes (structured)
+			i32 count           = 0;           // Element count or string length
+			i32 lastIndex       = NO_INDEX;    // Last element entered/left from this value
 			i32 index           = NO_INDEX;    // This value's index inside its parent (arrays)
 			StringView key;                    // This value's key (objects)
-			bool structuredChildren = false;
-			bool used               = false;   // Read/BeginObject/BeginArray already called
+			bool used = false;                 // Read/BeginObject/BeginArray already called
 		};
 
 		TView<u8> data;
@@ -929,8 +939,6 @@ namespace p
 		void PopValue();
 		/** Advances past the current value without reading it. */
 		void SkipValue();
-		/** Reads the type-specific header (size) of the current value. */
-		void ReadSize();
 
 	public:
 		BinaryFormatReader(const BinaryFormatReader&)                            = delete;
@@ -940,8 +948,8 @@ namespace p
 		P_API BinaryFormatReader(TView<u8> data);
 		P_API ~BinaryFormatReader();
 
-		P_API void BeginObject() override;
-		P_API void BeginArray(i32& size) override;
+		P_API bool BeginObject() override;
+		P_API bool BeginArray(i32& size) override;
 
 		P_API bool EnterNext(StringView matchKey = {}) override;
 		P_API void Leave() override;
@@ -976,11 +984,10 @@ namespace p
 		/** One value: payload position, flags and framing. */
 		struct Value
 		{
-			u32 offset              = 0;     // First byte of the value (flags position)
-			Binary::Flags flags     = {};    // Value type
-			bool structuredChildren = false;
-			bool used               = false; // Write/BeginObject/BeginArray already called
-			i32 count               = 0;     // Elements entered in this object/array
+			u32 begin           = 0;        // First byte position of the value
+			Binary::Flags flags = {};       // Value type
+			bool used           = false;    // Write/BeginObject/BeginArray already called
+			i32 count           = 0;        // Elements entered in this object/array
 		};
 
 		Arena* arena = nullptr;
@@ -1002,8 +1009,8 @@ namespace p
 		P_API ~BinaryFormatWriter();
 
 		// BEGIN Writer Interface
-		P_API void BeginObject() override;
-		P_API void BeginArray(i32 size) override;
+		P_API bool BeginObject() override;
+		P_API bool BeginArray(i32 size) override;
 		P_API bool EnterNext(StringView key = {}) override;
 		P_API void Leave() override;
 		P_API void Write(bool val) override;
@@ -1032,7 +1039,7 @@ namespace p
 	private:
 		void PreAlloc(p::u32 offset);
 		/** Patches the current value's size/count header. */
-		void UpdateValueSize(bool hasFlags);
+		void UpdateValueSize();
 	};
 #pragma endregion BinaryFormat
 
