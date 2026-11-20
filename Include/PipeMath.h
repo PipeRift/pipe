@@ -914,7 +914,7 @@ namespace p
 		constexpr Vec(T x, T y, T z) : x{x}, y{y}, z{z} {}
 		template<typename T2>
 		explicit constexpr Vec(const Vec<3, T2>& other) requires(std::is_convertible_v<T2, T>)
-		    : x{other.x}, y{other.y}, z{other.z}
+		    : x{T(other.x)}, y{T(other.y)}, z{T(other.z)}
 		{}
 
 		constexpr Vec<2, T> XY() const
@@ -1180,7 +1180,7 @@ namespace p
 		constexpr Vec(T x, T y, T z, T w) : x{x}, y{y}, z{z}, w{w} {}
 		template<typename T2>
 		explicit constexpr Vec(const Vec<4, T2>& other) requires(std::is_convertible_v<T2, T>)
-		    : x{other.x}, y{other.y}, z{other.z}, w{other.w}
+		    : x{T(other.x)}, y{T(other.y)}, z{T(other.z)}, w{T(other.w)}
 		{}
 
 		constexpr Vec<3, T> XYZ() const
@@ -1245,7 +1245,6 @@ namespace p
 		return {value / vector.x, value / vector.y, value / vector.z, value / vector.w};
 	}
 
-
 	using v2  = Vec<2, float>;
 	using v3  = Vec<3, float>;
 	using v4  = Vec<4, float>;
@@ -1260,6 +1259,9 @@ namespace p
 	using v4_i8 = Vec<4, i8>;
 	using v4_u8 = Vec<4, u8>;
 
+	using v2i    = Vec<2, i32>;
+	using v3i    = Vec<3, i32>;
+	using v4i    = Vec<4, i32>;
 	using v2_i32 = Vec<2, i32>;
 	using v2_u32 = Vec<2, u32>;
 	using v3_i32 = Vec<3, i32>;
@@ -1286,6 +1288,11 @@ namespace p
 		TAABB() = default;
 		constexpr TAABB(p::Undefined) : min{p::Undefined{}}, max{p::Undefined{}} {}
 		constexpr TAABB(Vec<size, T> min, Vec<size, T> max) : min{min}, max{max} {}
+		template<Number T2>
+		explicit constexpr TAABB(const TAABB<size, T2>& other)
+		    requires(std::is_convertible_v<T2, T>)
+		    : min{other.min}, max{other.max}
+		{}
 
 
 		// Limit this AABB by another AABB
@@ -1429,7 +1436,7 @@ namespace p
 			return min + (max - min) * 0.5f;
 		}
 
-		Vec<size, T> Clamp(const Vec<size, T>& point)
+		Vec<size, T> Clamp(const Vec<size, T>& point) const
 		{
 			Vec<size, T> clamped;
 			clamped.x = p::Clamp(point.x, min.x, max.x);
@@ -1437,6 +1444,10 @@ namespace p
 			if constexpr (size >= 3)
 			{
 				clamped.z = p::Clamp(point.z, min.z, max.z);
+			}
+			if constexpr (size >= 4)
+			{
+				clamped.w = p::Clamp(point.w, min.w, max.w);
 			}
 			return clamped;
 		}
@@ -1608,10 +1619,35 @@ namespace p
 		}
 	};
 
+
 	template<u32 size, Number T>
 	inline p::sizet GetHash(Vec<size, T> v)
 	{
 		return HashBytes(&v, sizeof(Vec<size, T>));
+	}
+
+	/** Component-wise minimum of two vectors. */
+	template<u32 size, Number T>
+	constexpr Vec<size, T> Min(const Vec<size, T>& a, const Vec<size, T>& b)
+	{
+		Vec<size, T> result;
+		for (u32 i = 0; i < size; ++i)
+		{
+			result[i] = Min(a[i], b[i]);
+		}
+		return result;
+	}
+
+	/** Component-wise maximum of two vectors. */
+	template<u32 size, Number T>
+	constexpr Vec<size, T> Max(const Vec<size, T>& a, const Vec<size, T>& b)
+	{
+		Vec<size, T> result;
+		for (u32 i = 0; i < size; ++i)
+		{
+			result[i] = Max(a[i], b[i]);
+		}
+		return result;
 	}
 
 #pragma region Collisions

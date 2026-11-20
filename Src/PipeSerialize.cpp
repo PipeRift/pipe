@@ -1499,6 +1499,7 @@ namespace p
 				PopFlags();
 				break;
 			}
+			default: break;
 		}
 	}
 
@@ -1555,7 +1556,7 @@ namespace p
 
 		if (sizeof(u32) > Remaining()) [[unlikely]]
 		{
-			pointer       = nullptr;
+			pointer = nullptr;
 			return false;
 		}
 		u32 dataSize = 0;
@@ -1563,11 +1564,11 @@ namespace p
 		dataSize += sizeof(i32);    // count value
 		if (dataSize > Remaining()) [[unlikely]]
 		{
-			pointer       = nullptr;
+			pointer = nullptr;
 			return false;
 		}
 		current.end = pointer + dataSize;
-		pointer = Binary::ReadRaw(pointer, size);
+		pointer     = Binary::ReadRaw(pointer, size);
 		if (size < 0 || size > Remaining()) [[unlikely]]
 		{
 			pointer       = nullptr;
