@@ -1416,40 +1416,8 @@ namespace p
 				        && r.max.w <= max.w);
 			}
 		}
-		constexpr bool Overlaps(const Vec<size, T>& p) const
-		{
-			if constexpr (size == 2)
-			{
-				return (p.x > min.x && p.y > min.y) && (p.x < max.x && p.y < max.y);
-			}
-			else if constexpr (size == 3)
-			{
-				return (p.x > min.x && p.y > min.y && p.z > min.z)
-				    && (p.x < max.x && p.y < max.y && p.z < max.z);
-			}
-			else if constexpr (size == 4)
-			{
-				return (p.x > min.x && p.y > min.y && p.z > min.z && p.w > min.w)
-				    && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
-			}
-		}
-		constexpr bool Overlaps(const TAABB& r) const
-		{
-			if constexpr (size == 2)
-			{
-				return (r.min.x < max.x && r.min.y < max.y) && (r.max.x > min.x && r.max.y > min.y);
-			}
-			else if constexpr (size == 3)
-			{
-				return (r.min.x < max.x && r.min.y < max.y && r.min.z < max.z)
-				    && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z);
-			}
-			else if constexpr (size == 4)
-			{
-				return (r.min.x < max.x && r.min.y < max.y && r.min.z < max.z && r.min.w < max.w)
-				    && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z && r.max.w > min.w);
-			}
-		}
+		constexpr bool Overlaps(const Vec<size, T>& p) const;
+		constexpr bool Overlaps(const TAABB& r) const;
 
 		constexpr Vec<size, T> GetSize() const
 		{
@@ -1645,5 +1613,131 @@ namespace p
 	{
 		return HashBytes(&v, sizeof(Vec<size, T>));
 	}
+
+#pragma region Collisions
+	template<u32 size, Number T>
+	constexpr bool RayToAABB(const TAABB<size, T>& b, const Vec<size, T>& r1,
+	    const Vec<size, T>& r2, T* minFraction = nullptr, T* maxFraction = nullptr);
+#pragma endregion
+
+
+#pragma region Implementation
+	template<u32 size, Number T>
+	constexpr bool TAABB<size, T>::Overlaps(const Vec<size, T>& p) const
+	{
+		if constexpr (size == 2)
+		{
+			return (p.x > min.x && p.y > min.y) && (p.x < max.x && p.y < max.y);
+		}
+		else if constexpr (size == 3)
+		{
+			return (p.x > min.x && p.y > min.y && p.z > min.z)
+			    && (p.x < max.x && p.y < max.y && p.z < max.z);
+		}
+		else if constexpr (size == 4)
+		{
+			return (p.x > min.x && p.y > min.y && p.z > min.z && p.w > min.w)
+			    && (p.x < max.x && p.y < max.y && p.z < max.z && p.w < max.w);
+		}
+	}
+
+	template<u32 size, Number T>
+	constexpr bool TAABB<size, T>::Overlaps(const TAABB& r) const
+	{
+		if constexpr (size == 2)
+		{
+			return (r.min.x < max.x && r.min.y < max.y) && (r.max.x > min.x && r.max.y > min.y);
+		}
+		else if constexpr (size == 3)
+		{
+			return (r.min.x < max.x && r.min.y < max.y && r.min.z < max.z)
+			    && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z);
+		}
+		else if constexpr (size == 4)
+		{
+			return (r.min.x < max.x && r.min.y < max.y && r.min.z < max.z && r.min.w < max.w)
+			    && (r.max.x > min.x && r.max.y > min.y && r.max.z > min.z && r.max.w > min.w);
+		}
+	}
+
+	template<u32 size, Number T>
+	constexpr bool RayToAABB(const TAABB<size, T>& b, const Vec<size, T>& r1,
+	    const Vec<size, T>& r2, T* minFraction, T* maxFraction)
+	{
+		Vec<size, T> dir = r2 - r1;
+		const T length   = dir.Length();
+		if (length < T(verySmallNumber))
+		{
+			bool inside = true;
+			for (u32 axis = 0; axis < size; ++axis)
+			{
+				inside &= r1[axis] >= b.min[axis] && r1[axis] <= b.max[axis];
+			}
+			if (inside)
+			{
+				if (minFraction)
+				{
+					*minFraction = T(0);
+				}
+				if (maxFraction)
+				{
+					*maxFraction = T(0);
+				}
+				return true;
+			}
+			return false;
+		}
+
+		dir *= (T(1) / length);
+		T tMin = T(0);
+		T tMax = length;
+		for (u32 axis = 0; axis < size; ++axis)
+		{
+			const T c        = dir[axis];
+			const T rayStart = r1[axis];
+			const T boxMin   = b.min[axis];
+			const T boxMax   = b.max[axis];
+
+			if (Abs(c) < T(verySmallNumber))
+			{
+				if (rayStart < boxMin || rayStart > boxMax)
+				{
+					return false;
+				}
+				continue;
+			}
+
+			T t1 = (boxMin - rayStart) / c;
+			T t2 = (boxMax - rayStart) / c;
+			if (t1 > t2)
+			{
+				const T temp = t1;
+				t1           = t2;
+				t2           = temp;
+			}
+			tMin = Max(tMin, t1);
+			tMax = Min(tMax, t2);
+			if (tMin > tMax)
+			{
+				return false;
+			}
+		}
+
+		if (tMax < T(0))
+		{
+			return false;
+		}
+
+		if (minFraction)
+		{
+			*minFraction = p::Clamp(tMin / length, T(0), T(1));
+		}
+		if (maxFraction)
+		{
+			*maxFraction = p::Clamp(tMax / length, T(0), T(1));
+		}
+		return true;
+	}
+#pragma endregion Implementation
 #pragma endregion Vectors
 }    // namespace p
