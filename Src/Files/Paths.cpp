@@ -142,7 +142,7 @@ namespace p
 
 			if (!IsSeparator(first[0]))
 			{    // all the other root-names start with a slash; check that first because
-				 // we expect paths without a leading slash to be very common
+			     // we expect paths without a leading slash to be very common
 				return first;
 			}
 
