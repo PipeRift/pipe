@@ -271,6 +271,42 @@ namespace ImGui
 		    details::InputTextCallback, &cbUserData);
 	}
 
+	/**
+	 * Single-line input whose contents stay horizontally centered, both while
+	 * editing and when inactive. Honors SetNextItemWidth().
+	 */
+	inline bool InputTextCentered(const char* label, p::String& str, const char* hint = nullptr,
+	    ImGuiInputTextFlags flags = 0)
+	{
+		const ImGuiStyle& style = GetStyle();
+		const float paddingX    = style.FramePadding.x;
+		const float paddingY    = style.FramePadding.y;
+		const float width       = CalcItemWidth();
+		const float textWidth   = CalcTextSize(str.c_str()).x;
+		const float innerWidth  = width - paddingX * 2.0f;
+		const float extra       = ImMax((innerWidth - textWidth) * 0.5f, 0.0f);
+
+		PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(paddingX + extra, paddingY));
+		const bool changed = InputText(label, str, flags);
+		PopStyleVar();
+
+		// The hint is drawn separately so the caret can stay centered while the
+		// hint itself remains centered in the field.
+		if (str.empty() && !IsItemActive() && hint != nullptr && hint[0] != '\0')
+		{
+			const ImVec2 fieldMin = GetItemRectMin();
+			const ImVec2 fieldMax = GetItemRectMax();
+			const ImVec2 textSize = CalcTextSize(hint);
+			const ImVec2 textPos{fieldMin.x + (fieldMax.x - fieldMin.x - textSize.x) * 0.5f,
+			    fieldMin.y + (fieldMax.y - fieldMin.y - textSize.y) * 0.5f};
+			ImDrawList* drawList = GetWindowDrawList();
+			drawList->PushClipRect(fieldMin, fieldMax, true);
+			drawList->AddText(textPos, GetColorU32(ImGuiCol_TextDisabled), hint);
+			drawList->PopClipRect();
+		}
+		return changed;
+	}
+
 	inline bool MenuItem(p::StringView label, const char* shortcut = nullptr, bool selected = false,
 	    bool enabled = true)
 	{

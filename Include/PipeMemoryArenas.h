@@ -171,7 +171,7 @@ namespace p
 			LinearBlock* last = nullptr;
 			void* unaligned = nullptr;    // Pointer where this block was allocated before alignment
 
-			constexpr u8* End(sizet blockSize) const
+			u8* End(sizet blockSize) const
 			{
 				return (u8*)this + blockSize;
 			}

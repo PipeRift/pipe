@@ -7,7 +7,7 @@
 // Forward declarations of all serialization
 namespace p
 {
-	enum WriteFlags : sizet;
+	enum FormatFlags : sizet;
 
 	struct Reader;
 	struct Writer;

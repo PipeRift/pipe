@@ -153,7 +153,7 @@ namespace p
 		if constexpr (GetEnumSize<T>() > 0)
 		{
 			// Might not be necessary to cache string since enum name is static
-			w.PushAddFlags(WriteFlags_CacheStringValues);
+			w.PushAddFlags(FF_W_CacheStringValues);
 			w.Serialize(GetEnumName(val));
 			w.PopFlags();
 		}
