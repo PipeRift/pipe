@@ -23,7 +23,7 @@ jobs:
           - ubuntu-24.04
           - macos-15
         compiler:
-          - clang-21
+          - clang-22
           - gcc-15
           - msvc
         exclude:
@@ -52,7 +52,12 @@ jobs:
       - name: Cache Build
         uses: actions/cache@v4
         with:
-          path: Build
+          # Keep compiled objects, but never restore the configure state: it stores
+          # absolute compiler paths that break after a runner image update.
+          path: |
+            Build
+            !Build/CMakeCache.txt
+            !Build/CMakeFiles/**
           key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.config }}-build-${{ secrets.VCACHE}}
 
       - name: Configure
