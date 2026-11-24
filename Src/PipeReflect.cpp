@@ -312,6 +312,83 @@ namespace p
 		return index != NO_INDEX ? registry.operations[index] : nullptr;
 	}
 
+	bool EqualsType(TypeId id, const void* a, const void* b)
+	{
+		if (a == b)
+		{
+			return true;
+		}
+		else if (!a || !b)
+		{
+			return false;
+		}
+		else if (const auto* ops = GetTypeOps(id); ops && ops->equal)
+		{
+			return ops->equal(a, b);
+		}
+		else if (HasTypeFlags(id, TF_Container))
+		{
+			const ContainerTypeOps* ops = GetTypeContainerOps(id);
+			const i32 size              = ops->GetSize(const_cast<void*>(a));
+			if (size != ops->GetSize(const_cast<void*>(b)))
+			{
+				return false;
+			}
+			for (i32 index = 0; index < size; ++index)
+			{
+				if (!EqualsType(ops->itemType, ops->GetItem(const_cast<void*>(a), index),
+				        ops->GetItem(const_cast<void*>(b), index)))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		else if (HasTypeFlags(id, TF_Struct))
+		{
+			for (const TypeProperty* property : GetTypeProperties(id))
+			{
+				if (!EqualsType(property->typeId, property->access(const_cast<void*>(a)),
+				        property->access(const_cast<void*>(b))))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	void CopyType(TypeId id, void* dest, const void* source)
+	{
+		if (dest == source || !dest || !source)
+		{
+			return;
+		}
+		else if (const TypeOps* ops = GetTypeOps(id); ops && ops->copy)
+		{
+			ops->copy(dest, source);
+		}
+		else if (HasTypeFlags(id, TF_Container))
+		{
+			const ContainerTypeOps* ops = GetTypeContainerOps(id);
+			ops->Clear(dest);
+			const i32 size = ops->GetSize(const_cast<void*>(source));
+			for (i32 index = 0; index < size; ++index)
+			{
+				ops->AddItem(dest, ops->GetItem(const_cast<void*>(source), index));
+			}
+		}
+		else if (HasTypeFlags(id, TF_Struct))    // Copy property by property
+		{
+			for (const TypeProperty* property : GetTypeProperties(id))
+			{
+				CopyType(property->typeId, property->access(dest),
+				    property->access(const_cast<void*>(source)));
+			}
+		}
+	}
+
 	const ObjectTypeOps* GetTypeObjectOps(TypeId id)
 	{
 		auto& registry  = GetRegistry();

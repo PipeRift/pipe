@@ -193,11 +193,11 @@ namespace p
 
 				const float hue =
 				    (rgbMax == rgbMin ? 0.0f
-				        : rgbMax == this->r
-				            ? Mod((((this->g - this->b) / rgbRange) * 60.0f) + 360.0f, 360.0f)
-				        : rgbMax == this->g ? (((this->b - this->r) / rgbRange) * 60.0f) + 120.0f
-				        : rgbMax == this->b ? (((this->r - this->g) / rgbRange) * 60.0f) + 240.0f
-				                            : 0.0f);
+					    : rgbMax == this->r
+					        ? Mod((((this->g - this->b) / rgbRange) * 60.0f) + 360.0f, 360.0f)
+					    : rgbMax == this->g ? (((this->b - this->r) / rgbRange) * 60.0f) + 120.0f
+					    : rgbMax == this->b ? (((this->r - this->g) / rgbRange) * 60.0f) + 240.0f
+					                        : 0.0f);
 
 				const float saturation = (rgbMax == 0.0f ? 0.0f : rgbRange / rgbMax);
 				const float value      = rgbMax;
@@ -495,6 +495,11 @@ namespace p
 			{
 				return DWColor() == other.DWColor();
 			}
+			else if constexpr (mode == ColorMode::HSV)
+			{
+				return this->h == other.h && this->s == other.s && this->v == other.v
+				    && this->a == other.a;
+			}
 			else
 			{
 				return this->r == other.r && this->g == other.g && this->b == other.b
@@ -503,9 +508,14 @@ namespace p
 		}
 		constexpr bool operator!=(const TColor& other) const
 		{
-			if constexpr (mode != ColorMode::RGBA)
+			if constexpr (mode == ColorMode::RGBA)
 			{
 				return DWColor() == other.DWColor();
+			}
+			else if constexpr (mode == ColorMode::HSV)
+			{
+				return this->h != other.h || this->s != other.s || this->v != other.v
+				    || this->a != other.a;
 			}
 			else
 			{

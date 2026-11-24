@@ -10,10 +10,10 @@
 #include "Pipe/Extern/magic_enum.hpp"
 #include "Pipe/Files/STDFileSystem.h"
 #include "PipeColor.h"
+#include "PipeMath.h"
 #include "PipeSerialize.h"
 #include "PipeStrings.h"
 #include "PipeType.h"
-#include "PipeMath.h"
 
 
 #ifndef P_AUTOREGISTER_ENABLED
@@ -250,9 +250,13 @@ namespace p
 	{
 		using ReadFunc  = void(Reader&, void*);
 		using WriteFunc = void(Writer&, void*);
+		using EqualFunc = bool(const void*, const void*);
+		using CopyFunc  = void(void*, const void*);
 
 		ReadFunc* read   = nullptr;
 		WriteFunc* write = nullptr;
+		EqualFunc* equal = nullptr;
+		CopyFunc* copy   = nullptr;
 	};
 
 	struct P_API EnumTypeOps : public TypeOps
@@ -359,6 +363,8 @@ namespace p
 	/// @return the properties of this type
 	P_API TView<const TypeProperty*> GetTypeProperties(TypeId id);
 	P_API const TypeOps* GetTypeOps(TypeId id);
+	P_API bool EqualsType(TypeId id, const void* a, const void* b);
+	P_API void CopyType(TypeId id, void* dest, const void* source);
 	P_API const ObjectTypeOps* GetTypeObjectOps(TypeId id);
 	P_API const ContainerTypeOps* GetTypeContainerOps(TypeId id);
 
@@ -441,6 +447,21 @@ namespace p
 				w.Serialize(*static_cast<T*>(instance));
 			}
 		};
+		if constexpr (!IsArray<T>() && !requires { typename T::ItemType; }
+		              && requires(const T& a, const T& b) { a == b; })
+		{
+			ops.equal = [](const void* a, const void* b)
+			{
+				return static_cast<bool>(*static_cast<const T*>(a) == *static_cast<const T*>(b));
+			};
+		}
+		if constexpr (IsCopyAssignable<T>)
+		{
+			ops.copy = [](void* dest, const void* source)
+			{
+				*static_cast<T*>(dest) = *static_cast<const T*>(source);
+			};
+		}
 	}
 	template<typename T>
 	void AssignEnumTypeOps(EnumTypeOps& ops)

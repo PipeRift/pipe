@@ -25,6 +25,23 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeImGui requires v1.9
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#if defined(__has_include)
+	#if __has_include(<IconsFontAwesome7.h>)
+		#include <IconsFontAwesome7.h>
+	#elif __has_include(<IconsFontAwesome6.h>)
+		#include <IconsFontAwesome6.h>
+	#endif
+#endif
+
+#ifndef ICON_FA_ARROW_ROTATE_LEFT
+	#define ICON_FA_ARROW_ROTATE_LEFT "\xe2\x86\x90"
+	#define P_DEFINED_ICON_FA_ARROW_ROTATE_LEFT
+#endif
+#ifndef ICON_FA_EYE
+	#define ICON_FA_EYE "\xe2\x97\x89"
+	#define P_DEFINED_ICON_FA_EYE
+#endif
+
 
 namespace p
 {
@@ -523,9 +540,10 @@ namespace p
 	using InspectionFlags = u32;
 	enum InspectionFlags_
 	{
-		IF_None    = 0,         // -> No flags
-		IF_ViewAll = 1 << 0,    // -> View all properties, even those without PF_View or PF_Edit
-		IF_EditAll = 1 << 1,    // -> Allow editing on all properties, even those without PF_Edit
+		IF_None      = 0,         // -> No flags
+		IF_ViewAll   = 1 << 0,    // -> View all properties, even those without PF_View or PF_Edit
+		IF_EditAll   = 1 << 1,    // -> Allow editing on all properties, even those without PF_Edit
+		IF_NoPadding = 1 << 2,    // -> Remove table outer/inner horizontal padding
 		IF_ViewAndEditAll = IF_ViewAll | IF_EditAll
 
 		// Any other flags up to 64 bytes are available to the user
@@ -536,12 +554,20 @@ namespace p
 	{
 		struct PropStack
 		{
-			TypeId typeId;
-			void* data = nullptr;
-			i32 index  = NO_INDEX;
+			TypeId typeId           = TypeId::None();
+			void* data              = nullptr;
+			const void* defaultData = nullptr;
+			i32 index               = NO_INDEX;
+			bool modified           = false;
+			bool isDefault          = true;
+			float rowY              = 0.0f;
 		};
+
 		TMap<TypeId, TypeInspection> registeredTypes;
+		/** Parent properties of the currently inspected property. */
 		TArray<PropStack> propStack;
+		/** Property currently being inspected. */
+		PropStack currentProperty;
 		InspectionFlags flags   = IF_None;
 		ImGuiTextFilter* filter = nullptr;
 		// Optional Id registry used by Id related inspections
@@ -583,24 +609,131 @@ namespace p
 	    IdContext* idContext = nullptr);
 	void EndInspection();
 
+	/** Whether the current inspection scope was edited. */
+	bool IsInspectionModified();
+	/** Whether the current inspection scope equals its default value. */
+	bool IsInspectionDefault();
+
 	void InspectSetKeyColumn();
 	void InspectSetKeyAsText(StringView label);
 	void InspectSetValueColumn();
 	bool InspectBeginCategory(p::StringView name, bool isLeaf, bool defaultOpen = false);
 	void InspectEndCategory();
-	void Inspect(StringView label, void* data, TypeId typeId);
+	/** Pushes a property value frame; structs should wrap their category with this. */
+	void InspectPushProperty(TypeId typeId, void* data, const void* defaultData = nullptr);
+	/** Pops the property frame and draws its deferred default button. */
+	void InspectPopProperty();
+	/** Inspects a value, optionally comparing it against a default value. */
+	void Inspect(StringView label, void* data, TypeId typeId, const void* defaultData = nullptr);
 	template<typename T>
-	inline void Inspect(StringView label, T* data)
+	inline void Inspect(StringView label, T* data, const T* defaultData = nullptr)
 	{
-		Inspect(label, data, GetTypeId<T>());
+		Inspect(label, data, GetTypeId<T>(), defaultData);
 	}
-	void InspectProperties(void* data, TypeId typeId);
+	void InspectProperties(TypeId typeId, void* data, const void* defaultData = nullptr);
+	template<typename T>
+	inline void InspectProperties(T* data, const T* defaultData = nullptr)
+	{
+		InspectProperties(GetTypeId<T>(), data, defaultData);
+	}
 
 
 	///////////////////////////////////////////////////////////
 	// Implementation
 #ifdef P_IMGUI_IMPLEMENTATION
 	static InspectionContext* currentInspection = nullptr;
+
+	bool IsInspectionModified()
+	{
+		return !currentInspection && currentInspection->currentProperty.modified;
+	}
+
+	bool IsInspectionDefault()
+	{
+		return !currentInspection || currentInspection->currentProperty.isDefault;
+	}
+
+	namespace details
+	{
+		inline void MarkModified()
+		{
+			for (InspectionContext::PropStack& scope : currentInspection->propStack)
+			{
+				scope.modified = true;
+			}
+			currentInspection->currentProperty.modified = true;
+		}
+
+		inline void MarkNonDefault()
+		{
+			for (InspectionContext::PropStack& scope : currentInspection->propStack)
+			{
+				scope.isDefault = false;
+			}
+			currentInspection->currentProperty.isDefault = false;
+		}
+
+		inline void CaptureRow(InspectionContext::PropStack& scope)
+		{
+			ImGuiTable* table = ImGui::GetCurrentTable();
+			if (table != nullptr && table->ColumnsCount >= 3)
+			{
+				scope.rowY = table->RowPosY1;
+			}
+		}
+
+		inline void DrawResetButton(const InspectionContext::PropStack& scope)
+		{
+			if (scope.isDefault || scope.data == nullptr || scope.defaultData == nullptr)
+			{
+				return;
+			}
+
+			ImGuiTable* table = ImGui::GetCurrentTable();
+			if (table == nullptr)
+			{
+				return;
+			}
+			const int savedRow    = table->CurrentRow;
+			const int savedColumn = table->CurrentColumn;
+			const float savedY1   = table->RowPosY1;
+			const float savedY2   = table->RowPosY2;
+			table->RowPosY1       = scope.rowY;
+			table->RowPosY2       = scope.rowY + ImGui::GetFrameHeight();
+			ImGui::TableSetColumnIndex(2);
+			ImGui::PushID(scope.data);
+
+			const float size = ImGui::GetFrameHeight();
+			ImGui::InvisibleButton("reset##reset", ImVec2(size, size));
+			const bool hovered = ImGui::IsItemHovered();
+			if (ImGui::IsItemClicked())
+			{
+				p::CopyType(scope.typeId, scope.data, scope.defaultData);
+				MarkModified();
+			}
+			const char* icon      = ICON_FA_ARROW_ROTATE_LEFT;
+			const ImVec2 iconSize = ImGui::CalcTextSize(icon);
+			const ImVec2 min      = ImGui::GetItemRectMin();
+			const ImVec2 max      = ImGui::GetItemRectMax();
+			ImGui::GetWindowDrawList()->AddText(
+			    ImVec2((min.x + max.x - iconSize.x) * 0.5f, (min.y + max.y - iconSize.y) * 0.5f),
+			    ImGui::GetColorU32(hovered ? ImGuiCol_Text : ImGuiCol_TextDisabled), icon);
+
+			ImGui::PopID();
+			table->RowPosY1   = savedY1;
+			table->RowPosY2   = savedY2;
+			table->CurrentRow = savedRow;
+			if (savedColumn >= 0)
+			{
+				ImGui::TableSetColumnIndex(savedColumn);
+			}
+			else
+			{
+				ImGui::TableEndCell(table);
+				table->CurrentColumn = -1;
+			}
+		}
+	}    // namespace details
 
 
 	#define EnsureInsideInspection     \
@@ -781,13 +914,21 @@ namespace p
 			currentInspection->initialized = true;
 		}
 
-		const ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable
-		                                 | ImGuiTableFlags_SizingStretchProp
-		                                 | ImGuiTableFlags_PadOuterX;
-		if (ImGui::BeginTable(label, 2, tableFlags, {size.x, size.y}))
+		ImGuiTableFlags tableFlags = ImGuiTableFlags_Resizable | ImGuiTableFlags_SizingStretchProp
+		                           | ImGuiTableFlags_NoBordersInBody;
+		if (HasFlag(flags, IF_NoPadding))
+		{
+			tableFlags |= ImGuiTableFlags_NoPadOuterX | ImGuiTableFlags_NoPadInnerX;
+		}
+		else
+		{
+			tableFlags |= ImGuiTableFlags_PadOuterX;
+		}
+		if (ImGui::BeginTable(label, 3, tableFlags, {size.x, size.y}))
 		{
 			ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthStretch, 0.5f);
 			ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 1.f);
+			ImGui::TableSetupColumn("Reset", ImGuiTableColumnFlags_WidthFixed, 22.0f);
 			return true;
 		}
 		return false;
@@ -800,7 +941,6 @@ namespace p
 		        "Called EndInspection() but there was no current Inspection Context! Forgot "
 		        "to call BeginInspection()?"))
 		{
-			currentInspection->filter = nullptr;
 			currentInspection->propStack.Clear();
 		}
 		currentInspection = nullptr;
@@ -822,13 +962,13 @@ namespace p
 	void InspectSetValueColumn()
 	{
 		ImGui::TableSetColumnIndex(1);
+		ImGui::SetNextItemWidth(-1.0f);
 	}
 
 	bool InspectBeginCategory(p::StringView name, bool isLeaf, bool defaultOpen)
 	{
 		InspectSetKeyColumn();
 		ImGui::AlignTextToFramePadding();
-		ImGui::Unindent();
 		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_AllowOverlap
 		                               | ImGuiTreeNodeFlags_SpanAllColumns
 		                               | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0)
@@ -840,21 +980,47 @@ namespace p
 		{
 			ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
 		}
-		bool open = ImGui::TreeNodeEx(name.data(), flags);
+		const bool open = ImGui::TreeNodeEx(name.data(), flags);
 		if (disabled)
 		{
 			ImGui::PopStyleColor();
 		}
 		ImGui::PopItemFlag();
-		ImGui::Indent();
 		return open;
 	}
+
+	void InspectPushProperty(TypeId typeId, void* data, const void* defaultData)
+	{
+		InspectionContext::PropStack scope;
+		scope.typeId      = typeId;
+		scope.data        = data;
+		scope.defaultData = defaultData;
+		details::CaptureRow(scope);
+		currentInspection->propStack.Add(scope);
+	}
+
+	void InspectPopProperty()
+	{
+		if (currentInspection == nullptr || currentInspection->propStack.IsEmpty())
+		{
+			return;
+		}
+		InspectionContext::PropStack scope = currentInspection->propStack.Last();
+		currentInspection->propStack.RemoveLast();
+		if (scope.isDefault && scope.defaultData != nullptr
+		    && !p::EqualsType(scope.typeId, scope.data, scope.defaultData))
+		{
+			scope.isDefault = false;
+			details::MarkNonDefault();
+		}
+		details::DrawResetButton(scope);
+	}
+
 	void InspectEndCategory()
 	{
 		ImGui::TreePop();
 	}
-
-	void Inspect(StringView label, void* data, TypeId typeId)
+	void Inspect(StringView label, void* data, TypeId typeId, const void* defaultData)
 	{
 		if (!EnsureInsideInspection || !data)
 		{
@@ -867,6 +1033,7 @@ namespace p
 
 		ImGui::TableNextRow();
 		ImGui::PushID(data);
+		InspectPushProperty(typeId, data, defaultData);
 		bool open = false;
 		auto* it  = currentInspection->registeredTypes.Find(typeId);
 		if (it && it->onDrawRow)
@@ -931,7 +1098,7 @@ namespace p
 			const float widthAvailable =
 			    ImGui::GetContentRegionAvail().x + details::GetCurrentWindow()->DC.Indent.x;
 			ImGui::SameLine(widthAvailable - 20.f);
-			if (ImGui::SmallButton("..."))
+			if (ImGui::TextButton(ICON_FA_EYE, "container_settings"))
 			{
 				ImGui::OpenPopup("ContextualSettings");
 			}
@@ -956,27 +1123,27 @@ namespace p
 		else if (isStruct)
 		{
 			auto props = GetTypeProperties(typeId);
-			open       = InspectBeginCategory(label, props.Size() <= 0);
+			open       = InspectBeginCategory(label, props.Size() <= 0, defaultData != nullptr);
 		}
 
 		if (!currentInspection->propStack.IsEmpty())    // Container item buttons
 		{
-			const auto& prop = currentInspection->propStack[0];
-			if (p::HasTypeFlags(prop.typeId, p::TF_Container))
+			InspectionContext::PropStack& parent = currentInspection->propStack.Last();
+			if (p::HasTypeFlags(parent.typeId, p::TF_Container))
 			{
 				const float widthAvailable =
 				    ImGui::GetContentRegionAvail().x + details::GetCurrentWindow()->DC.Indent.x;
 				ImGui::SameLine(widthAvailable - 20.f);
-				if (ImGui::SmallButton("..."))
+				if (ImGui::TextButton(ICON_FA_EYE, "container_settings"))
 				{
 					ImGui::OpenPopup("ContextualSettings");
 				}
 				if (ImGui::BeginPopupContextItem("ContextualSettings"))
 				{
-					if (p::HasTypeFlags(prop.typeId, p::TF_Container) && ImGui::MenuItem("Remove"))
+					if (ImGui::MenuItem("Remove"))
 					{
-						const auto* ops = GetTypeContainerOps(prop.typeId);
-						ops->RemoveItem(prop.data, prop.index);
+						const auto* ops = GetTypeContainerOps(parent.typeId);
+						ops->RemoveItem(parent.data, parent.index);
 						ImGui::CloseCurrentPopup();
 					}
 					ImGui::HelpTooltip("Remove: Remove this item from its array");
@@ -996,27 +1163,30 @@ namespace p
 				const auto* ops = GetTypeContainerOps(typeId);
 				String tmpLabel;
 				const i32 size = ops->GetSize(data);
-				currentInspection->propStack.Add({typeId, data, 0});
 				for (i32 i = 0; i < size; ++i)
 				{
+					currentInspection->currentProperty.index = i;
 					tmpLabel.clear();
 					FormatTo(tmpLabel, "{}", i);
 					Inspect(tmpLabel, ops->GetItem(data, i), ops->itemType);
-
-					++currentInspection->propStack.Last().index;
 				}
-				currentInspection->propStack.RemoveLast();
 				InspectEndCategory();
 			}
 			else if (isStruct)
 			{
-				InspectProperties(data, typeId);
+				InspectProperties(typeId, data, defaultData);
 				InspectEndCategory();
 			}
 		}
+		if (ImGui::IsItemEdited())
+		{
+			details::MarkModified();
+		}
+		InspectPopProperty();
 		ImGui::PopID();
 	}
-	void InspectProperties(void* data, TypeId typeId)
+
+	void InspectProperties(TypeId typeId, void* data, const void* defaultData)
 	{
 		if (!EnsureInsideInspection || !data)
 		{
@@ -1029,7 +1199,6 @@ namespace p
 		auto props = GetTypeProperties(typeId);
 		if (!props.IsEmpty())
 		{
-			currentInspection->propStack.Add({typeId, data, 0});
 			for (const auto* prop : props)
 			{
 				if (viewAll || prop->HasFlag(PF_View))
@@ -1040,15 +1209,24 @@ namespace p
 					        name.data(), name.data() + name.size()))
 					{
 						ImGui::BeginDisabled(!editAll && !prop->HasFlag(PF_Edit));
-						Inspect(name, prop->access(data), prop->typeId);
+						const void* defaultProperty =
+						    defaultData != nullptr ? prop->access(const_cast<void*>(defaultData))
+							                       : nullptr;
+						Inspect(name, prop->access(data), prop->typeId, defaultProperty);
 						ImGui::EndDisabled();
 					}
 				}
-
-				++currentInspection->propStack.Last().index;
 			}
-			currentInspection->propStack.RemoveLast();
 		}
 	}
 #endif
 }    // namespace p
+
+#ifdef P_DEFINED_ICON_FA_ARROW_ROTATE_LEFT
+	#undef ICON_FA_ARROW_ROTATE_LEFT
+	#undef P_DEFINED_ICON_FA_ARROW_ROTATE_LEFT
+#endif
+#ifdef P_DEFINED_ICON_FA_EYE
+	#undef ICON_FA_EYE
+	#undef P_DEFINED_ICON_FA_EYE
+#endif

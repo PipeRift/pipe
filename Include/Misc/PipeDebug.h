@@ -1153,7 +1153,7 @@ namespace p
 						if (openComponent)
 						{
 							ImGui::Indent();
-							InspectProperties(data, typeId);
+							InspectProperties(typeId, data);
 							ImGui::Unindent();
 						}
 					}
