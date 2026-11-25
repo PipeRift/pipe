@@ -1153,7 +1153,9 @@ namespace p
 						if (openComponent)
 						{
 							ImGui::Indent();
+							InspectPushFlags(IF_HideDefaults);
 							InspectProperties(typeId, data);
+							InspectPopFlags();
 							ImGui::Unindent();
 						}
 					}

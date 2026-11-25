@@ -35,6 +35,7 @@ namespace p
 		TArray<StringView> names{arena};
 		TArray<u64> flags{arena};
 		TArray<Metadata> metadata{arena};
+		TArray<const void*> defaults{arena};
 		TArray<TArray<TypeProperty>> ownProperties{arena};
 		TArray<TArray<const TypeProperty*>> allProperties{arena};
 		TArray<const TypeOps*> operations{arena};
@@ -167,6 +168,7 @@ namespace p
 		registry.ownProperties.Reserve(expectedTypeCount);
 		registry.allProperties.Reserve(expectedTypeCount);
 		registry.operations.Reserve(expectedTypeCount);
+		registry.defaults.Reserve(expectedTypeCount);
 
 		// Register native types (P_AUTOREGISTER_ENABLED=0 disables TTypeAutoRegister)
 		RegisterTypeId<u8>();
@@ -320,6 +322,13 @@ namespace p
 		return index != NO_INDEX ? &registry.metadata[index] : nullptr;
 	}
 
+	const void* GetTypeDefault(TypeId id)
+	{
+		auto& registry  = GetRegistry();
+		const i32 index = details::GetTypeIndex(registry, id);
+		return index != NO_INDEX ? registry.defaults[index] : nullptr;
+	}
+
 	bool EqualsType(TypeId id, const void* a, const void* b)
 	{
 		if (a == b)
@@ -451,6 +460,7 @@ namespace p
 		registry.names.Insert(index);
 		registry.flags.Insert(index);
 		registry.metadata.Insert(index);
+		registry.defaults.Insert(index);
 		registry.ownProperties.Insert(index);
 		registry.allProperties.Insert(index);
 		registry.operations.Insert(index);
@@ -511,6 +521,12 @@ namespace p
 	{
 		P_CheckEditingType;
 		GetRegistry().metadata[currentEdit.index] = meta;
+	}
+
+	void SetTypeDefault(const void* value)
+	{
+		P_CheckEditingType;
+		GetRegistry().defaults[currentEdit.index] = value;
 	}
 
 	void SetTypeName(StringView name)

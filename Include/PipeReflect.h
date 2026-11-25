@@ -387,6 +387,7 @@ namespace p
 	P_API TView<const TypeProperty*> GetTypeProperties(TypeId id);
 	P_API const TypeOps* GetTypeOps(TypeId id);
 	P_API const Metadata* GetTypeMeta(TypeId id);
+	P_API const void* GetTypeDefault(TypeId id);
 	P_API bool EqualsType(TypeId id, const void* a, const void* b);
 	P_API void CopyType(TypeId id, void* dest, const void* source);
 	P_API const ObjectTypeOps* GetTypeObjectOps(TypeId id);
@@ -435,6 +436,7 @@ namespace p
 	P_API void SetTypeSize(sizet size);
 	P_API void SetTypeName(StringView name);
 	P_API void SetTypeMeta(const Metadata& meta);
+	P_API void SetTypeDefault(const void* value);
 	P_API void SetTypeFlags(TypeFlags flags);
 	P_API void AddTypeFlags(TypeFlags flags);
 	P_API void RemoveTypeFlags(TypeFlags flags);
@@ -611,6 +613,13 @@ namespace p
 			}
 			SetTypeSize(sizeof(T));
 			SetTypeName(GetTypeName<T>());
+
+			if constexpr (!IsPointer<T> && !std::is_abstract_v<T>
+			              && std::is_default_constructible_v<T>)
+			{
+				static const T defaultValue{};
+				SetTypeDefault(&defaultValue);
+			}
 
 			if constexpr (IsStructOrClass<T>)
 			{

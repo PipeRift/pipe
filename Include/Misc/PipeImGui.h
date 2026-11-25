@@ -544,7 +544,8 @@ namespace p
 		IF_ViewAll   = 1 << 0,    // -> View all properties, even those without PF_View or PF_Edit
 		IF_EditAll   = 1 << 1,    // -> Allow editing on all properties, even those without PF_Edit
 		IF_NoPadding = 1 << 2,    // -> Remove table outer/inner horizontal padding
-		IF_ViewAndEditAll = IF_ViewAll | IF_EditAll
+		IF_ViewAndEditAll = IF_ViewAll | IF_EditAll,
+		IF_HideDefaults   = 1 << 3    // -> Dont draw reset to default buttons
 
 		// Any other flags up to 64 bytes are available to the user
 	};
@@ -568,7 +569,9 @@ namespace p
 		TArray<PropStack> propStack;
 		/** Property currently being inspected. */
 		PropStack currentProperty;
-		InspectionFlags flags   = IF_None;
+		InspectionFlags flags = IF_None;
+		/** Saved flags for InspectPushFlags()/InspectPopFlags(). */
+		TArray<InspectionFlags> flagsStack;
 		ImGuiTextFilter* filter = nullptr;
 		// Optional Id registry used by Id related inspections
 		IdContext* idContext = nullptr;
@@ -614,6 +617,10 @@ namespace p
 	/** Whether the current inspection scope equals its default value. */
 	bool IsInspectionDefault();
 
+	/** Adds flags for the following inspected values until InspectPopFlags(). */
+	void InspectPushFlags(InspectionFlags flags);
+	void InspectPopFlags();
+
 	void InspectSetKeyColumn();
 	void InspectSetKeyAsText(StringView label);
 	void InspectSetValueColumn();
@@ -647,12 +654,33 @@ namespace p
 
 	bool IsInspectionModified()
 	{
-		return !currentInspection && currentInspection->currentProperty.modified;
+		return currentInspection && currentInspection->currentProperty.modified;
 	}
 
 	bool IsInspectionDefault()
 	{
 		return !currentInspection || currentInspection->currentProperty.isDefault;
+	}
+
+	void InspectPushFlags(InspectionFlags flags)
+	{
+		if (!P_EnsureMsg(currentInspection,
+		        "No inspection context available! Forgot to call BeginInspection()?"))
+		{
+			return;
+		}
+		currentInspection->flagsStack.Add(currentInspection->flags);
+		currentInspection->flags |= flags;
+	}
+
+	void InspectPopFlags()
+	{
+		if (!currentInspection || currentInspection->flagsStack.IsEmpty())
+		{
+			return;
+		}
+		currentInspection->flags = currentInspection->flagsStack.Last();
+		currentInspection->flagsStack.RemoveLast();
 	}
 
 	namespace details
@@ -686,7 +714,8 @@ namespace p
 
 		inline void DrawResetButton(const InspectionContext::PropStack& scope)
 		{
-			if (scope.isDefault || !scope.data || !scope.defaultData)
+			if (HasFlag(currentInspection->flags, IF_HideDefaults) || scope.isDefault || !scope.data
+			    || !scope.defaultData)
 			{
 				return;
 			}
@@ -768,8 +797,7 @@ namespace p
 			}
 		}
 
-		inline bool HeaderRow(
-		    StringView name, bool isLeaf, bool defaultOpen, StringView hint = {})
+		inline bool HeaderRow(StringView name, bool isLeaf, bool defaultOpen, StringView hint = {})
 		{
 			ImGui::TableSetColumnIndex(0);
 			ImGui::AlignTextToFramePadding();
@@ -1003,6 +1031,7 @@ namespace p
 		        "to call BeginInspection()?"))
 		{
 			currentInspection->propStack.Clear();
+			currentInspection->flagsStack.Clear();
 		}
 		currentInspection = nullptr;
 	}
@@ -1075,6 +1104,11 @@ namespace p
 		if (!EnsureInsideInspection || !data)
 		{
 			return;
+		}
+
+		if (!defaultData)
+		{
+			defaultData = GetTypeDefault(typeId);
 		}
 
 		const bool isContainer = p::HasTypeFlags(typeId, p::TF_Container);
@@ -1174,8 +1208,8 @@ namespace p
 		else if (isStruct)
 		{
 			auto props = GetTypeProperties(typeId);
-			open       = details::HeaderRow(label, props.Size() <= 0, defaultData,
-			    metadata ? metadata->hint : StringView{});
+			open       = details::HeaderRow(
+			    label, props.Size() <= 0, defaultData, metadata ? metadata->hint : StringView{});
 		}
 
 		if (!currentInspection->propStack.IsEmpty())    // Container item buttons
@@ -1247,6 +1281,11 @@ namespace p
 		if (!EnsureInsideInspection || !data)
 		{
 			return;
+		}
+
+		if (!defaultData)
+		{
+			defaultData = GetTypeDefault(typeId);
 		}
 
 		const bool viewAll = HasFlag(currentInspection->flags, IF_ViewAll);
