@@ -34,6 +34,7 @@ namespace p
 		TArray<sizet> sizes{arena};
 		TArray<StringView> names{arena};
 		TArray<u64> flags{arena};
+		TArray<Metadata> metadata{arena};
 		TArray<TArray<TypeProperty>> ownProperties{arena};
 		TArray<TArray<const TypeProperty*>> allProperties{arena};
 		TArray<const TypeOps*> operations{arena};
@@ -312,6 +313,13 @@ namespace p
 		return index != NO_INDEX ? registry.operations[index] : nullptr;
 	}
 
+	const Metadata* GetTypeMeta(TypeId id)
+	{
+		auto& registry  = GetRegistry();
+		const i32 index = details::GetTypeIndex(registry, id);
+		return index != NO_INDEX ? &registry.metadata[index] : nullptr;
+	}
+
 	bool EqualsType(TypeId id, const void* a, const void* b)
 	{
 		if (a == b)
@@ -325,6 +333,11 @@ namespace p
 		else if (const auto* ops = GetTypeOps(id); ops && ops->equal)
 		{
 			return ops->equal(a, b);
+		}
+		else if (HasTypeFlags(id, TF_Native))
+		{
+			const sizet size = GetTypeSize(id);
+			return size > 0 && memcmp(a, b, size) == 0;
 		}
 		else if (HasTypeFlags(id, TF_Container))
 		{
@@ -368,6 +381,14 @@ namespace p
 		else if (const TypeOps* ops = GetTypeOps(id); ops && ops->copy)
 		{
 			ops->copy(dest, source);
+		}
+		else if (HasTypeFlags(id, TF_Native))
+		{
+			const sizet size = GetTypeSize(id);
+			if (size > 0)
+			{
+				memcpy(dest, source, size);
+			}
 		}
 		else if (HasTypeFlags(id, TF_Container))
 		{
@@ -429,6 +450,7 @@ namespace p
 		registry.sizes.Insert(index);
 		registry.names.Insert(index);
 		registry.flags.Insert(index);
+		registry.metadata.Insert(index);
 		registry.ownProperties.Insert(index);
 		registry.allProperties.Insert(index);
 		registry.operations.Insert(index);
@@ -483,6 +505,12 @@ namespace p
 	{
 		P_CheckEditingType;
 		GetRegistry().sizes[currentEdit.index] = size;
+	}
+
+	void SetTypeMeta(const Metadata& meta)
+	{
+		P_CheckEditingType;
+		GetRegistry().metadata[currentEdit.index] = meta;
 	}
 
 	void SetTypeName(StringView name)

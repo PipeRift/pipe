@@ -309,7 +309,7 @@ namespace ImGui
 
 		// The hint is drawn separately so the caret can stay centered while the
 		// hint itself remains centered in the field.
-		if (str.empty() && !IsItemActive() && hint != nullptr && hint[0] != '\0')
+		if (str.empty() && !IsItemActive() && hint && hint[0] != '\0')
 		{
 			const ImVec2 fieldMin = GetItemRectMin();
 			const ImVec2 fieldMax = GetItemRectMax();
@@ -624,11 +624,13 @@ namespace p
 	/** Pops the property frame and draws its deferred default button. */
 	void InspectPopProperty();
 	/** Inspects a value, optionally comparing it against a default value. */
-	void Inspect(StringView label, void* data, TypeId typeId, const void* defaultData = nullptr);
+	void Inspect(StringView label, void* data, TypeId typeId, const void* defaultData = nullptr,
+	    const Metadata* metadata = nullptr);
 	template<typename T>
-	inline void Inspect(StringView label, T* data, const T* defaultData = nullptr)
+	inline void Inspect(StringView label, T* data, const T* defaultData = nullptr,
+	    const Metadata* metadata = nullptr)
 	{
-		Inspect(label, data, GetTypeId<T>(), defaultData);
+		Inspect(label, data, GetTypeId<T>(), defaultData, metadata);
 	}
 	void InspectProperties(TypeId typeId, void* data, const void* defaultData = nullptr);
 	template<typename T>
@@ -676,7 +678,7 @@ namespace p
 		inline void CaptureRow(InspectionContext::PropStack& scope)
 		{
 			ImGuiTable* table = ImGui::GetCurrentTable();
-			if (table != nullptr && table->ColumnsCount >= 3)
+			if (table && table->ColumnsCount >= 3)
 			{
 				scope.rowY = table->RowPosY1;
 			}
@@ -684,13 +686,13 @@ namespace p
 
 		inline void DrawResetButton(const InspectionContext::PropStack& scope)
 		{
-			if (scope.isDefault || scope.data == nullptr || scope.defaultData == nullptr)
+			if (scope.isDefault || !scope.data || !scope.defaultData)
 			{
 				return;
 			}
 
 			ImGuiTable* table = ImGui::GetCurrentTable();
-			if (table == nullptr)
+			if (!table)
 			{
 				return;
 			}
@@ -732,6 +734,65 @@ namespace p
 				ImGui::TableEndCell(table);
 				table->CurrentColumn = -1;
 			}
+		}
+
+		inline void DrawRowTooltip(StringView hint)
+		{
+			const ImGuiTable* table = ImGui::GetCurrentTable();
+			if (hint.empty() || !table)
+			{
+				return;
+			}
+
+			// Item tooltips submitted earlier in this row take priority over the row tooltip.
+			ImGuiContext& g                = *GImGui;
+			static ImGuiWindow* rowTooltip = nullptr;
+			static int rowTooltipFrame     = -1;
+			const bool itemTooltipActive =
+			    g.TooltipPreviousWindow && g.TooltipPreviousWindow->LastFrameActive == g.FrameCount
+			    && !(g.TooltipPreviousWindow == rowTooltip && rowTooltipFrame == g.FrameCount);
+			if (itemTooltipActive || !ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows)
+			    || ImGui::IsPopupOpen(
+			        nullptr, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
+			{
+				return;
+			}
+
+			const ImVec2 min{table->WorkRect.Min.x, table->RowPosY1};
+			const ImVec2 max{table->WorkRect.Max.x, table->RowPosY2};
+			if (ImGui::IsMouseHoveringRect(min, max, false))
+			{
+				ImGui::SetTooltip("%.*s", static_cast<int>(hint.size()), hint.data());
+				rowTooltip      = g.TooltipPreviousWindow;
+				rowTooltipFrame = g.FrameCount;
+			}
+		}
+
+		inline bool HeaderRow(
+		    StringView name, bool isLeaf, bool defaultOpen, StringView hint = {})
+		{
+			ImGui::TableSetColumnIndex(0);
+			ImGui::AlignTextToFramePadding();
+			const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_AllowOverlap
+			                               | ImGuiTreeNodeFlags_SpanAllColumns
+			                               | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0)
+			                               | (defaultOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0);
+			// Headers are always enabled to navigate contents, but keep the disabled look
+			const bool disabled = (GImGui->CurrentItemFlags & ImGuiItemFlags_Disabled) != 0;
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, false);
+			if (disabled)
+			{
+				ImGui::PushStyleColor(
+				    ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+			}
+			const bool open = ImGui::TreeNodeEx(name.data(), flags);
+			DrawRowTooltip(hint);
+			if (disabled)
+			{
+				ImGui::PopStyleColor();
+			}
+			ImGui::PopItemFlag();
+			return open;
 		}
 	}    // namespace details
 
@@ -967,60 +1028,49 @@ namespace p
 
 	bool InspectBeginCategory(p::StringView name, bool isLeaf, bool defaultOpen)
 	{
-		InspectSetKeyColumn();
-		ImGui::AlignTextToFramePadding();
-		const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_AllowOverlap
-		                               | ImGuiTreeNodeFlags_SpanAllColumns
-		                               | (isLeaf ? ImGuiTreeNodeFlags_Leaf : 0)
-		                               | (defaultOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0);
-		// Categories are always enabled to navigate contents, but keep the disabled look
-		const bool disabled = (GImGui->CurrentItemFlags & ImGuiItemFlags_Disabled) != 0;
-		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, false);
-		if (disabled)
-		{
-			ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
-		}
-		const bool open = ImGui::TreeNodeEx(name.data(), flags);
-		if (disabled)
-		{
-			ImGui::PopStyleColor();
-		}
-		ImGui::PopItemFlag();
-		return open;
-	}
-
-	void InspectPushProperty(TypeId typeId, void* data, const void* defaultData)
-	{
-		InspectionContext::PropStack scope;
-		scope.typeId      = typeId;
-		scope.data        = data;
-		scope.defaultData = defaultData;
-		details::CaptureRow(scope);
-		currentInspection->propStack.Add(scope);
-	}
-
-	void InspectPopProperty()
-	{
-		if (currentInspection == nullptr || currentInspection->propStack.IsEmpty())
-		{
-			return;
-		}
-		InspectionContext::PropStack scope = currentInspection->propStack.Last();
-		currentInspection->propStack.RemoveLast();
-		if (scope.isDefault && scope.defaultData != nullptr
-		    && !p::EqualsType(scope.typeId, scope.data, scope.defaultData))
-		{
-			scope.isDefault = false;
-			details::MarkNonDefault();
-		}
-		details::DrawResetButton(scope);
+		return details::HeaderRow(name, isLeaf, defaultOpen);
 	}
 
 	void InspectEndCategory()
 	{
 		ImGui::TreePop();
 	}
-	void Inspect(StringView label, void* data, TypeId typeId, const void* defaultData)
+
+	void InspectPushProperty(TypeId typeId, void* data, const void* defaultData)
+	{
+		currentInspection->propStack.Add(currentInspection->currentProperty);
+		currentInspection->currentProperty = {.typeId = typeId,
+		    .data                                     = data,
+		    .defaultData                              = defaultData,
+		    .index                                    = NO_INDEX,
+		    .modified                                 = false,
+		    .isDefault                                = true};
+		details::CaptureRow(currentInspection->currentProperty);
+	}
+
+	void InspectPopProperty()
+	{
+		InspectionContext::PropStack scope = currentInspection->currentProperty;
+		if (scope.isDefault && scope.defaultData
+		    && !p::EqualsType(scope.typeId, scope.data, scope.defaultData))
+		{
+			scope.isDefault = false;
+			details::MarkNonDefault();
+		}
+		details::DrawResetButton(scope);
+		if (!currentInspection->propStack.IsEmpty())
+		{
+			currentInspection->currentProperty = currentInspection->propStack.Last();
+			currentInspection->propStack.RemoveLast();
+		}
+		else
+		{
+			currentInspection->currentProperty = {};
+		}
+	}
+
+	void Inspect(StringView label, void* data, TypeId typeId, const void* defaultData,
+	    const Metadata* metadata)
 	{
 		if (!EnsureInsideInspection || !data)
 		{
@@ -1090,7 +1140,8 @@ namespace p
 			const auto* ops = GetTypeContainerOps(typeId);
 			P_Check(ops);
 			const i32 size = ops->GetSize(data);
-			open           = InspectBeginCategory(label, size <= 0);
+			open           = details::HeaderRow(
+			    label, size <= 0, false, metadata ? metadata->hint : StringView{});
 
 			InspectSetValueColumn();
 			ImGui::Text("%i items", size);
@@ -1123,7 +1174,8 @@ namespace p
 		else if (isStruct)
 		{
 			auto props = GetTypeProperties(typeId);
-			open       = InspectBeginCategory(label, props.Size() <= 0, defaultData != nullptr);
+			open       = details::HeaderRow(label, props.Size() <= 0, defaultData,
+			    metadata ? metadata->hint : StringView{});
 		}
 
 		if (!currentInspection->propStack.IsEmpty())    // Container item buttons
@@ -1170,17 +1222,21 @@ namespace p
 					FormatTo(tmpLabel, "{}", i);
 					Inspect(tmpLabel, ops->GetItem(data, i), ops->itemType);
 				}
-				InspectEndCategory();
+				ImGui::TreePop();
 			}
 			else if (isStruct)
 			{
 				InspectProperties(typeId, data, defaultData);
-				InspectEndCategory();
+				ImGui::TreePop();
 			}
 		}
 		if (ImGui::IsItemEdited())
 		{
 			details::MarkModified();
+		}
+		if (metadata && !isStruct && !isContainer)
+		{
+			details::DrawRowTooltip(metadata->hint);
 		}
 		InspectPopProperty();
 		ImGui::PopID();
@@ -1197,25 +1253,75 @@ namespace p
 		const bool editAll = HasFlag(currentInspection->flags, IF_EditAll);
 
 		auto props = GetTypeProperties(typeId);
-		if (!props.IsEmpty())
+		if (props.IsEmpty())
 		{
-			for (const auto* prop : props)
+			return;
+		}
+
+		auto passesFilter = [&](StringView text)
+		{
+			return !currentInspection->filter
+			    || currentInspection->filter->PassFilter(text.data(), text.data() + text.size());
+		};
+
+		auto isVisible = [&](const TypeProperty* prop)
+		{
+			if (!viewAll && !prop->HasFlag(PF_View))
 			{
-				if (viewAll || prop->HasFlag(PF_View))
+				return false;
+			}
+			return passesFilter(prop->meta.category) || passesFilter(prop->name.AsString());
+		};
+
+		auto drawProperty = [&](const TypeProperty* prop)
+		{
+			StringView name = prop->name.AsString();
+			ImGui::BeginDisabled(!editAll && !prop->HasFlag(PF_Edit));
+			const void* defaultProperty =
+			    defaultData ? prop->access(const_cast<void*>(defaultData)) : nullptr;
+			Inspect(name, prop->access(data), prop->typeId, defaultProperty, &prop->meta);
+			ImGui::EndDisabled();
+		};
+
+		TArray<const TypeProperty*> visibleProperties;
+		for (const TypeProperty* prop : props)
+		{
+			if (isVisible(prop))
+			{
+				visibleProperties.Add(prop);
+			}
+		}
+
+		for (const TypeProperty* prop : visibleProperties)
+		{
+			if (prop->meta.category.empty())
+			{
+				drawProperty(prop);
+			}
+		}
+
+		TArray<StringView> categories;
+		for (const TypeProperty* prop : visibleProperties)
+		{
+			if (!prop->meta.category.empty() && !categories.Contains(prop->meta.category))
+			{
+				categories.Add(prop->meta.category);
+			}
+		}
+
+		for (StringView category : categories)
+		{
+			ImGui::TableNextRow();
+			if (InspectBeginCategory(category, false, true))
+			{
+				for (const TypeProperty* prop : visibleProperties)
 				{
-					StringView name = prop->name.AsString();
-					if (!currentInspection->filter || !currentInspection->filter->IsActive()
-					    || currentInspection->filter->PassFilter(
-					        name.data(), name.data() + name.size()))
+					if (prop->meta.category == category)
 					{
-						ImGui::BeginDisabled(!editAll && !prop->HasFlag(PF_Edit));
-						const void* defaultProperty =
-						    defaultData != nullptr ? prop->access(const_cast<void*>(defaultData))
-							                       : nullptr;
-						Inspect(name, prop->access(data), prop->typeId, defaultProperty);
-						ImGui::EndDisabled();
+						drawProperty(prop);
 					}
 				}
+				InspectEndCategory();
 			}
 		}
 	}

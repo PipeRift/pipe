@@ -209,6 +209,36 @@ namespace p
 	};
 	P_DEFINE_FLAG_OPERATORS(PropertyFlags_)
 
+	struct Metadata
+	{
+		p::StringView category;
+		p::StringView hint;
+	};
+
+	struct PropertyArgs
+	{
+		PropertyFlags flags = PF_None;
+		Metadata metadata;
+
+		constexpr PropertyArgs(PropertyFlags value = PF_None, Metadata meta = {})
+		    : flags{value}, metadata{meta}
+		{}
+		constexpr PropertyArgs(Metadata meta, PropertyFlags value = PF_None)
+		    : flags{value}, metadata{meta}
+		{}
+	};
+
+	struct TypeArgs
+	{
+		TypeFlags flags = TF_None;
+		Metadata metadata;
+
+		constexpr TypeArgs(TypeFlags value = TF_None, Metadata meta = {})
+		    : flags{value}, metadata{meta}
+		{}
+		constexpr TypeArgs(Metadata meta, TypeFlags value = TF_None) : flags{value}, metadata{meta}
+		{}
+	};
 
 	// Functions used to surround macro flag values making them template safe
 	constexpr TypeFlags InitTypeFlags()
@@ -216,14 +246,6 @@ namespace p
 		return TF_None;
 	}
 	constexpr TypeFlags InitTypeFlags(TypeFlags flags)
-	{
-		return flags;
-	}
-	constexpr PropertyFlags InitPropertyFlags()
-	{
-		return PF_None;
-	}
-	constexpr PropertyFlags InitPropertyFlags(PropertyFlags flags)
 	{
 		return flags;
 	}
@@ -239,6 +261,7 @@ namespace p
 		u64 flags          = 0;
 		AccessFunc* access = nullptr;
 		Tag name;
+		Metadata meta;
 
 		bool HasFlag(PropertyFlags flag) const;
 		bool HasAllFlags(PropertyFlags inFlags) const;
@@ -363,6 +386,7 @@ namespace p
 	/// @return the properties of this type
 	P_API TView<const TypeProperty*> GetTypeProperties(TypeId id);
 	P_API const TypeOps* GetTypeOps(TypeId id);
+	P_API const Metadata* GetTypeMeta(TypeId id);
 	P_API bool EqualsType(TypeId id, const void* a, const void* b);
 	P_API void CopyType(TypeId id, void* dest, const void* source);
 	P_API const ObjectTypeOps* GetTypeObjectOps(TypeId id);
@@ -410,13 +434,14 @@ namespace p
 	P_API void SetTypeParent(TypeId parentId);
 	P_API void SetTypeSize(sizet size);
 	P_API void SetTypeName(StringView name);
+	P_API void SetTypeMeta(const Metadata& meta);
 	P_API void SetTypeFlags(TypeFlags flags);
 	P_API void AddTypeFlags(TypeFlags flags);
 	P_API void RemoveTypeFlags(TypeFlags flags);
 	P_API void AddTypeProperty(const TypeProperty& property);
 	template<typename T>
-	constexpr void AddTypeProperty(
-	    TypeProperty::AccessFunc* access, StringView name, PropertyFlags flags = PF_None)
+	constexpr void AddTypeProperty(TypeProperty::AccessFunc* access, StringView name,
+	    PropertyFlags flags = PF_None, Metadata meta = {})
 	{
 		using PropType = std::remove_pointer_t<T>;
 		if constexpr (IsPointer<T>)
@@ -425,8 +450,11 @@ namespace p
 			    !IsPointer<PropType>, "Nested pointers (T**) are not supported in reflection");
 			flags |= PF_Pointer;
 		}
-		AddTypeProperty(TypeProperty{
-		    .typeId = RegisterTypeId<PropType>(), .flags = flags, .access = access, .name = name});
+		AddTypeProperty(TypeProperty{.typeId = RegisterTypeId<PropType>(),
+		    .flags                           = flags,
+		    .access                          = access,
+		    .name                            = name,
+		    .meta                            = Move(meta)});
 	}
 
 	P_API void SetTypeOps(const TypeOps* operations);
@@ -700,8 +728,7 @@ namespace p
 
 
 /** Defines a Class */
-#define P_CLASS_HEADER_NO_FLAGS(type) P_CLASS_HEADER_FLAGS(type, p::TF_None)
-#define P_CLASS_HEADER_FLAGS(type, flags)                                \
+#define __P_CLASS_HEADER(type, flags)                                    \
 public:                                                                  \
 	using Self                                = type;                    \
 	static constexpr p::TypeFlags staticFlags = p::InitTypeFlags(flags); \
@@ -713,21 +740,21 @@ public:                                                                  \
 
 
 /** Defines an Struct */
-#define P_STRUCT_HEADER_NO_FLAGS(type) P_STRUCT_HEADER_FLAGS(type, p::TF_None)
-#define P_STRUCT_HEADER_FLAGS(type, flags)                               \
+#define __P_STRUCT_HEADER(type, flags)                                   \
 public:                                                                  \
 	using Self                                = type;                    \
 	static constexpr p::TypeFlags staticFlags = p::InitTypeFlags(flags); \
 	static_assert(!(staticFlags & p::TF_Abstract), "Only objects can use TF_Abstract");
 
 
-#define P_REFLECTION_BODY(buildCode)                                      \
+#define P_REFLECTION_BODY(code)                                           \
 private:                                                                  \
 	static inline p::TTypeAutoRegister<Self> typeAutoRegister;            \
                                                                           \
 public:                                                                   \
 	static void BuildType()                                               \
 	{                                                                     \
+		code;                                                             \
 		__BuildProperty(p::MetaCounter<0>{});                             \
 	}                                                                     \
 	void ReadProperties(p::Reader& r)                                     \
@@ -762,9 +789,7 @@ private:                                                                  \
 public:
 
 
-#define P_PROPERTY_NO_FLAGS(name) P_PROPERTY_FLAGS(name, p::PF_None)
-#define P_PROPERTY_FLAGS(name, flags) __P_PROPERTY_IMPL(name, P_CAT(__refl_id_, name), flags)
-#define __P_PROPERTY_IMPL(name, id_name, flags)                                                   \
+#define __P_PROPERTY_IMPL(name, id_name, args)                                                    \
 	static constexpr p::u32 id_name = decltype(__refl_Counter(p::MetaCounter<255>{}))::value;     \
 	static constexpr p::MetaCounter<(id_name) + 1> __refl_Counter(p::MetaCounter<(id_name) + 1>); \
                                                                                                   \
@@ -773,13 +798,13 @@ public:
 		p::AddTypeProperty<decltype(name)>([](void* instance)                                     \
 		{                                                                                         \
 			return (void*)&static_cast<Self*>(instance)->name;                                    \
-		}, #name, p::InitPropertyFlags(flags));                                                   \
+		}, #name, args.flags, args.metadata);                                                     \
 		/* Registry next property if any */                                                       \
 		__BuildProperty(p::MetaCounter<id_name + 1>{});                                           \
 	}                                                                                             \
 	void __ReadProperty(p::Reader& r, p::MetaCounter<id_name>)                                    \
 	{                                                                                             \
-		if constexpr (!(p::InitPropertyFlags(flags) & p::PF_NotSerialized))                       \
+		if constexpr (!(args.flags & p::PF_NotSerialized))                                        \
 		{ /* Don't serialize property if NotSerialized */                                         \
 			r.Next(#name, name);                                                                  \
 		}                                                                                         \
@@ -788,7 +813,7 @@ public:
 	}                                                                                             \
 	void __WriteProperty(p::Writer& w, p::MetaCounter<id_name>) const                             \
 	{                                                                                             \
-		if constexpr (!(p::InitPropertyFlags(flags) & p::PF_NotSerialized))                       \
+		if constexpr (!(args.flags & p::PF_NotSerialized))                                        \
 		{ /* Don't serialize property if NotSerialized */                                         \
 			w.Next(#name, name);                                                                  \
 		}                                                                                         \
@@ -797,31 +822,16 @@ public:
 	}
 
 
-#define P_REFL_INTERNAL_GET_3RD_ARG(arg1, arg2, arg3, ...) arg3
-#define P_REFL_GET_3RD_ARG(tuple) P_REFL_INTERNAL_GET_3RD_ARG tuple
+#define P_CLASS(type, ...)                                 \
+	__P_CLASS_HEADER(type, p::TypeArgs{__VA_ARGS__}.flags) \
+	P_REFLECTION_BODY({ p::SetTypeMeta(p::TypeArgs{__VA_ARGS__}.metadata); })
 
-#define P_REFL_INTERNAL_GET_4TH_ARG(arg1, arg2, arg3, arg4, ...) arg4
-#define P_REFL_GET_4TH_ARG(tuple) P_REFL_INTERNAL_GET_4TH_ARG tuple
-
-#define P_TYPE_INVALID(...) static_assert(false, "Invalid type macro. Missing first parameters");
-
-#define P_TYPE_CHOOSER(TYPE_NO_FLAGS, TYPE_FLAGS, type, ...) \
-	P_REFL_GET_3RD_ARG((type, __VA_ARGS__, TYPE_FLAGS, TYPE_NO_FLAGS, TYPE_INVALID))
-
-#define P_PROP_CHOOSER(PROPERTY_NO_FLAGS, PROPERTY_FLAGS, name, ...) \
-	P_REFL_GET_3RD_ARG((name, __VA_ARGS__, PROPERTY_FLAGS, PROPERTY_NO_FLAGS, PROPERTY_INVALID))
-
-
-#define P_CLASS(type, ...)                                                           \
-	P_TYPE_CHOOSER(P_CLASS_HEADER_NO_FLAGS, P_CLASS_HEADER_FLAGS, type, __VA_ARGS__) \
-	(type, __VA_ARGS__) P_REFLECTION_BODY({})
-
-#define P_STRUCT(type, ...)                                                            \
-	P_TYPE_CHOOSER(P_STRUCT_HEADER_NO_FLAGS, P_STRUCT_HEADER_FLAGS, type, __VA_ARGS__) \
-	(type, __VA_ARGS__) P_REFLECTION_BODY({})
+#define P_STRUCT(type, ...)                                 \
+	__P_STRUCT_HEADER(type, p::TypeArgs{__VA_ARGS__}.flags) \
+	P_REFLECTION_BODY({ p::SetTypeMeta(p::TypeArgs{__VA_ARGS__}.metadata); })
 
 #define P_PROP(name, ...) \
-	P_PROP_CHOOSER(P_PROPERTY_NO_FLAGS, P_PROPERTY_FLAGS, name, __VA_ARGS__)(name, __VA_ARGS__)
+	__P_PROPERTY_IMPL(name, P_CAT(__refl_id_, name), (p::PropertyArgs{__VA_ARGS__}))
 #pragma endregion Macros
 
 
