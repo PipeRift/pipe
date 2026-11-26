@@ -34,10 +34,7 @@ namespace p
 	}
 
 	template<typename T>
-	consteval bool HasStaticFlags()
-	{
-		return requires() { T::staticFlags; };
-	}
+	concept HasStaticFlags = requires { T::staticFlags; };
 
 	template<u32 N>
 	struct MetaCounter : MetaCounter<N - 1>
@@ -165,25 +162,27 @@ namespace p
 	using TypeFlags = u64;
 	enum TypeFlags_
 	{
-		TF_None          = 0,         // -> No flags
-		TF_NotSerialized = 1 << 0,    // -> This type ignores serialization
-		TF_Abstract      = 1 << 1,    // -> Reflection cant create instances on this type
+		TF_None = 0,    // -> No flags
 
-		TF_Native    = 1 << 2,
-		TF_Enum      = 1 << 5,
-		TF_Struct    = 1 << 3,
-		TF_Object    = 1 << 4,
-		TF_Container = 1 << 6,
+		TF_Native    = 1 << 0,
+		TF_Enum      = 1 << 1,
+		TF_Struct    = 1 << 2,
+		TF_Object    = 1 << 3,
+		TF_Container = 1 << 4,
+
+		TF_NotSerialized = 1 << 5,    // -> This type ignores serialization
+		TF_Abstract      = 1 << 6,    // -> Reflection cant create instances on this type
+		TF_NoDefault     = 1 << 7,    // -> Dont create a default-constructed value (e.g. arenas)
 
 		// -> In ECS, should this type's last value be stored in the CMdfd component before being
 		// removed?
-		TF_ECS_StoreLastModified = 1 << 7,
+		TF_ECS_StoreLastModified = 1 << 16,
 		// -> In ECS, should this type be marked modified automatically on add?
-		TF_ECS_ModifyOnAdd = 1 << 8,
+		TF_ECS_ModifyOnAdd = 1 << 17,
 		// -> In ECS, should this type be marked modified automatically on get?
-		TF_ECS_ModifyOnGet = 1 << 9,
+		TF_ECS_ModifyOnGet = 1 << 18,
 		// -> In ECS, should this type be marked modified automatically on remove?
-		TF_ECS_ModifyOnRm = 1 << 10,
+		TF_ECS_ModifyOnRm = 1 << 19,
 		// -> In ECS, should this type be marked modified automatically on add, get or remove?
 		TF_ECS_ModifyOnEdit = TF_ECS_ModifyOnAdd | TF_ECS_ModifyOnGet | TF_ECS_ModifyOnRm,
 		// -> In ECS, syntax sugar for flags TF_ECS_StoreLastModified and TF_ECS_ModifyOnEdit
@@ -191,9 +190,12 @@ namespace p
 
 		// Any other flags up to 64 bytes are available to the user
 	};
-
-
 	P_DEFINE_FLAG_OPERATORS(TypeFlags_)
+
+	template<typename T>
+	concept HasTypeDefault =
+	    !IsPointer<T> && !std::is_abstract_v<T> && std::is_default_constructible_v<T>
+	    && requires { requires !HasStaticFlags<T> || (T::staticFlags & TF_NoDefault) == TF_None; };
 
 	using PropertyFlags = u64;
 	enum PropertyFlags_
@@ -366,7 +368,7 @@ namespace p
 	template<typename T>
 	constexpr bool HasTypeStaticFlags(TypeFlags flags)
 	{
-		if constexpr (HasStaticFlags<T>())
+		if constexpr (HasStaticFlags<T>)
 		{
 			return HasAllFlags(T::staticFlags, flags);
 		}
@@ -375,7 +377,7 @@ namespace p
 	template<typename T>
 	constexpr bool HasAnyTypeStaticFlags(TypeFlags flags)
 	{
-		if constexpr (HasStaticFlags<T>())
+		if constexpr (HasStaticFlags<T>)
 		{
 			return HasAnyFlags(T::staticFlags, flags);
 		}
@@ -389,6 +391,13 @@ namespace p
 	P_API const Metadata* GetTypeMeta(TypeId id);
 	P_API const void* GetTypeDefault(TypeId id);
 	P_API bool EqualsType(TypeId id, const void* a, const void* b);
+	/** Is the value the type's registered default-constructed value? Pointer comparison only. */
+	P_API bool IsTypeDefault(TypeId id, const void* data);
+	template<typename T>
+	inline bool IsTypeDefault(const T& value)
+	{
+		return IsTypeDefault(GetTypeId<T>(), &value);
+	}
 	P_API void CopyType(TypeId id, void* dest, const void* source);
 	P_API const ObjectTypeOps* GetTypeObjectOps(TypeId id);
 	P_API const ContainerTypeOps* GetTypeContainerOps(TypeId id);
@@ -614,8 +623,7 @@ namespace p
 			SetTypeSize(sizeof(T));
 			SetTypeName(GetTypeName<T>());
 
-			if constexpr (!IsPointer<T> && !std::is_abstract_v<T>
-			              && std::is_default_constructible_v<T>)
+			if constexpr (HasTypeDefault<T>)
 			{
 				static const T defaultValue{};
 				SetTypeDefault(&defaultValue);

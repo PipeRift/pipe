@@ -381,6 +381,16 @@ namespace p
 		return false;
 	}
 
+	bool IsTypeDefault(TypeId id, const void* data)
+	{
+		if (data)
+		{
+			const void* defaultValue = GetTypeDefault(id);
+			return data == defaultValue;
+		}
+		return false;
+	}
+
 	void CopyType(TypeId id, void* dest, const void* source)
 	{
 		if (dest == source || !dest || !source)

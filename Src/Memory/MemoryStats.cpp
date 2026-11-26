@@ -76,6 +76,46 @@ namespace p
 	    , pendingErrors{GetStatsArena()}
 	{}
 
+	MemoryStats::MemoryStats(MemoryStats&& other) noexcept
+	    : liveAllocations{Move(other.liveAllocations)}
+	    , errors{Move(other.errors)}
+	    , pending{Move(other.pending)}
+	    , pendingErrors{Move(other.pendingErrors)}
+	{
+		name           = Exchange(other.name, nullptr);
+		detectLeaks    = Exchange(other.detectLeaks, false);
+		used           = Exchange(other.used, 0);
+		totalAllocated = Exchange(other.totalAllocated, 0);
+
+		ScopedLock guard(other.lock);
+		firstChunk = Exchange(other.firstChunk, nullptr);
+		lastChunk  = Exchange(other.lastChunk, nullptr);
+		spareChunk = Exchange(other.spareChunk, nullptr);
+	}
+
+	MemoryStats& MemoryStats::operator=(MemoryStats&& other) noexcept
+	{
+		if (this != &other)
+		{
+			ReleaseEventChunks();
+
+			name            = Exchange(other.name, nullptr);
+			detectLeaks     = Exchange(other.detectLeaks, false);
+			liveAllocations = Move(other.liveAllocations);
+			errors          = Move(other.errors);
+			pending         = Move(other.pending);
+			pendingErrors   = Move(other.pendingErrors);
+			used            = Exchange(other.used, 0);
+			totalAllocated  = Exchange(other.totalAllocated, 0);
+
+			ScopedLock guard(other.lock);
+			firstChunk = Exchange(other.firstChunk, nullptr);
+			lastChunk  = Exchange(other.lastChunk, nullptr);
+			spareChunk = Exchange(other.spareChunk, nullptr);
+		}
+		return *this;
+	}
+
 	MemoryStats::~MemoryStats()
 	{
 		// Final drain + optional leak diagnostics.
@@ -84,9 +124,14 @@ namespace p
 		{
 			CheckLeaks();
 		}
+		ReleaseEventChunks();
+	}
+
+	void MemoryStats::ReleaseEventChunks()
+	{
 		// Free the remaining queue chunks. The producer is no longer running
-		// (the MemoryStats is being destroyed), so it's safe to free any
-		// remaining chunks.
+		// (the MemoryStats is being destroyed or replaced), so it's safe to
+		// free any remaining chunks.
 		ScopedLock guard(lock);
 		EventChunk* chunk = firstChunk;
 		while (chunk)

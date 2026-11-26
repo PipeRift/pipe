@@ -35,6 +35,40 @@ namespace p
 	}
 #pragma endregion Heap Arena
 
+#pragma region Passthrough Arena
+	void* PTArena::Alloc(const sizet size)
+	{
+		void* ptr = GetParentArena().Alloc(size);
+		stats.Add(ptr, size);
+		return ptr;
+	}
+
+	void* PTArena::Alloc(const sizet size, const sizet align)
+	{
+		void* ptr = GetParentArena().Alloc(size, align);
+		stats.Add(ptr, size);
+		return ptr;
+	}
+
+	bool PTArena::Realloc(void* ptr, const sizet ptrSize, const sizet size)
+	{
+		if (!GetParentArena().Realloc(ptr, ptrSize, size))
+		{
+			return false;
+		}
+		// Arena::Realloc grows in place, so the pointer stays valid.
+		stats.Remove(ptr, ptrSize);
+		stats.Add(ptr, size);
+		return true;
+	}
+
+	void PTArena::Free(void* ptr, const sizet size)
+	{
+		stats.Remove(ptr, size);
+		GetParentArena().Free(ptr, size);
+	}
+#pragma endregion Passthrough Arena
+
 #pragma region Mono Linear
 	MonoLinearArena::MonoLinearArena(ArenaBlock externalBlock, Arena& parentArena)
 	    : ChildArena(&parentArena), insert{externalBlock.data}, block{Move(externalBlock)}

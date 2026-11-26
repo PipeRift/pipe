@@ -116,6 +116,8 @@ namespace p
 	public:
 
 		MemoryStats();
+		MemoryStats(MemoryStats&& other) noexcept;
+		MemoryStats& operator=(MemoryStats&& other) noexcept;
 		~MemoryStats();
 
 		// Tracks an allocation. Writes one 16B event.
@@ -162,6 +164,7 @@ namespace p
 		mutable EventChunk* lastChunk  = nullptr;
 		mutable EventChunk* spareChunk = nullptr;
 
+		void ReleaseEventChunks();
 		void PushEvent(const MemoryStatsEvent& ev);
 	};
 

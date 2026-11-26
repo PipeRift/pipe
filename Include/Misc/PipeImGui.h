@@ -26,20 +26,42 @@ static_assert(false, "Imgui v" IMGUI_VERSION " found but PipeImGui requires v1.9
 #include <imgui_internal.h>
 
 #if defined(__has_include)
-	#if __has_include(<IconsFontAwesome7.h>)
+	#if __has_include(<IconsRemix.h>)
+		#include <IconsRemix.h>
+	#elif __has_include(<IconsFontAwesome7.h>)
 		#include <IconsFontAwesome7.h>
 	#elif __has_include(<IconsFontAwesome6.h>)
 		#include <IconsFontAwesome6.h>
 	#endif
 #endif
 
-#ifndef ICON_FA_ARROW_ROTATE_LEFT
-	#define ICON_FA_ARROW_ROTATE_LEFT "\xe2\x86\x90"
-	#define P_DEFINED_ICON_FA_ARROW_ROTATE_LEFT
-#endif
-#ifndef ICON_FA_EYE
-	#define ICON_FA_EYE "\xe2\x97\x89"
-	#define P_DEFINED_ICON_FA_EYE
+#if defined(FONT_ICON_FILE_NAME_RI)
+	#define ICON_P_RETURN ICON_RI_ARROW_GO_BACK_LINE
+	#define ICON_P_EYE ICON_RI_EYE_LINE
+	#define ICON_P_X ICON_RI_CLOSE_LINE
+	#define ICON_P_ADD ICON_RI_ADD_LINE
+	#define ICON_P_CAPTURE_BACK ICON_RI_PLAY_REVERSE_LARGE_FILL
+	#define ICON_P_CAPTURE_FWD ICON_RI_PLAY_LARGE_FILL
+	#define ICON_P_CAPTURE_RECORD ICON_RI_CIRCLE_FILL
+	#define ICON_P_CAPTURE_TRASH ICON_RI_DELETE_BIN_FILL
+#elif defined(FONT_ICON_FILE_NAME_FA)
+	#define ICON_P_RETURN ICON_FA_ARROW_ROTATE_LEFT
+	#define ICON_P_EYE ICON_FA_EYE
+	#define ICON_P_X ICON_FA_XMARK
+	#define ICON_P_ADD ICON_FA_PLUS
+	#define ICON_P_CAPTURE_BACK ICON_FA_STEP_BACKWARD
+	#define ICON_P_CAPTURE_FWD ICON_FA_STEP_FORWARD
+	#define ICON_P_CAPTURE_RECORD ICON_FA_CIRCLE
+	#define ICON_P_CAPTURE_TRASH ICON_FA_TRASH
+#else
+	#define ICON_P_RETURN "\xe2\x86\x90"
+	#define ICON_P_EYE "\xe2\x97\x89"
+	#define ICON_P_X " × "
+	#define ICON_P_ADD "+"
+	#define ICON_P_CAPTURE_BACK "<"
+	#define ICON_P_CAPTURE_FWD ">"
+	#define ICON_P_CAPTURE_RECORD "o"
+	#define ICON_P_CAPTURE_TRASH "x"
 #endif
 
 
@@ -324,6 +346,67 @@ namespace ImGui
 		return changed;
 	}
 
+
+	/**
+	 * Numeric field with a leading icon: the icon drags the value horizontally,
+	 * while the value itself is clicked and typed like a normal input.
+	 */
+	inline bool IconDragFloat(const char* label, float* value, float minValue, float maxValue,
+	    const char* format = "%.2f", float speed = 0.25f, const char* icon = nullptr)
+	{
+		const ImGuiStyle& style = GetStyle();
+		const float width       = CalcItemWidth();
+		const float height      = GetFrameHeight();
+		const float iconWidth   = height;
+		const ImVec2 start      = GetCursorScreenPos();
+		const ImRect frame(start, ImVec2(start.x + width, start.y + height));
+
+		// Shared frame behind both the icon and the input field.
+		ImDrawList* drawList = GetWindowDrawList();
+		drawList->AddRectFilled(
+		    frame.Min, frame.Max, GetColorU32(ImGuiCol_FrameBg), style.FrameRounding);
+		drawList->AddRect(frame.Min, frame.Max, GetColorU32(ImGuiCol_Border), style.FrameRounding);
+
+		PushID(label);
+		InvisibleButton("##icon", ImVec2(iconWidth, height));
+		PopID();
+		const bool iconHovered = IsItemHovered();
+		if (iconHovered)
+		{
+			SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+		}
+		bool dragChanged = false;
+		if (IsItemActive())
+		{
+			const float delta = GetIO().MouseDelta.x;
+			if (delta != 0.0f)
+			{
+				*value      = p::Clamp(*value + delta * speed, minValue, maxValue);
+				dragChanged = true;
+			}
+		}
+		if (icon)
+		{
+			const ImVec2 iconSize = CalcTextSize(icon);
+			const ImVec2 iconPos{
+			    start.x + (iconWidth - iconSize.x) * 0.5f, start.y + (height - iconSize.y) * 0.5f};
+			drawList->AddText(
+			    iconPos, GetColorU32(iconHovered ? ImGuiCol_Text : ImGuiCol_TextDisabled), icon);
+		}
+
+		SameLine(0.0f, 0.0f);
+		const ImVec4 transparent{0.0f, 0.0f, 0.0f, 0.0f};
+		PushStyleColor(ImGuiCol_FrameBg, transparent);
+		PushStyleColor(ImGuiCol_FrameBgHovered, transparent);
+		PushStyleColor(ImGuiCol_FrameBgActive, transparent);
+		PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+		SetNextItemWidth(width - iconWidth);
+		const bool inputChanged = InputFloat(label, value, 0.0f, 0.0f, format);
+		PopStyleVar();
+		PopStyleColor(3);
+
+		return inputChanged || dragChanged;
+	}
 	inline bool MenuItem(p::StringView label, const char* shortcut = nullptr, bool selected = false,
 	    bool enabled = true)
 	{
@@ -742,7 +825,7 @@ namespace p
 				p::CopyType(scope.typeId, scope.data, scope.defaultData);
 				MarkModified();
 			}
-			const char* icon      = ICON_FA_ARROW_ROTATE_LEFT;
+			const char* icon      = ICON_P_RETURN;
 			const ImVec2 iconSize = ImGui::CalcTextSize(icon);
 			const ImVec2 min      = ImGui::GetItemRectMin();
 			const ImVec2 max      = ImGui::GetItemRectMax();
@@ -1183,7 +1266,7 @@ namespace p
 			const float widthAvailable =
 			    ImGui::GetContentRegionAvail().x + details::GetCurrentWindow()->DC.Indent.x;
 			ImGui::SameLine(widthAvailable - 20.f);
-			if (ImGui::TextButton(ICON_FA_EYE, "container_settings"))
+			if (ImGui::TextButton(ICON_P_EYE, "container_settings"))
 			{
 				ImGui::OpenPopup("ContextualSettings");
 			}
@@ -1220,7 +1303,7 @@ namespace p
 				const float widthAvailable =
 				    ImGui::GetContentRegionAvail().x + details::GetCurrentWindow()->DC.Indent.x;
 				ImGui::SameLine(widthAvailable - 20.f);
-				if (ImGui::TextButton(ICON_FA_EYE, "container_settings"))
+				if (ImGui::TextButton(ICON_P_EYE, "container_settings"))
 				{
 					ImGui::OpenPopup("ContextualSettings");
 				}
@@ -1366,12 +1449,3 @@ namespace p
 	}
 #endif
 }    // namespace p
-
-#ifdef P_DEFINED_ICON_FA_ARROW_ROTATE_LEFT
-	#undef ICON_FA_ARROW_ROTATE_LEFT
-	#undef P_DEFINED_ICON_FA_ARROW_ROTATE_LEFT
-#endif
-#ifdef P_DEFINED_ICON_FA_EYE
-	#undef ICON_FA_EYE
-	#undef P_DEFINED_ICON_FA_EYE
-#endif

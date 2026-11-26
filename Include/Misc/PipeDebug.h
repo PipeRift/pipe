@@ -110,13 +110,6 @@ namespace p
 
 	namespace details
 	{
-		// Capture transport icons (raw UTF-8, FontAwesome5 solid)
-		// Avoids including IconsFontAwesome5.h in Pipe headers.
-		constexpr const char* ICON_CI_CAPTURE_BACK   = "\xef\x81\x88";    // fa-step-backward
-		constexpr const char* ICON_CI_CAPTURE_FWD    = "\xef\x81\x91";    // fa-step-forward
-		constexpr const char* ICON_CI_CAPTURE_RECORD = "\xef\x84\x91";    // fa-circle
-		constexpr const char* ICON_CI_CAPTURE_TRASH  = "\xef\x87\xb8";    // fa-trash
-
 		void DrawEntityInspector(StringView label, DebugECSInspector& inspector,
 		    bool* open = nullptr, ImGuiWindowFlags flags = 0);
 	}    // namespace details
@@ -618,7 +611,7 @@ namespace p
 			}
 			poolTypes.Remove(typesToRemove);
 
-			if (ImGui::Button(" + "))
+			if (ImGui::Button(" " ICON_P_ADD " "))
 			{
 				ecsDbg.typeChooserFilter.Clear();
 				ImGui::OpenPopup("Select Type##popup");
@@ -1041,7 +1034,7 @@ namespace p
 
 					if (valid)
 					{
-						if (ImGui::Button(" + "))
+						if (ImGui::Button(" " ICON_P_ADD " "))
 						{
 							wantAddComponent = true;
 						}
@@ -1051,7 +1044,7 @@ namespace p
 						}
 					}
 
-					const float cloneWidth  = ImGui::CalcTextSize("-->").x
+					const float cloneWidth  = ImGui::CalcTextSize(ICON_P_EYE).x
 					                        + ImGui::GetStyle().FramePadding.x * 2.f
 					                        + ImGui::GetStyle().ItemSpacing.x;
 					const float filterWidth = ImGui::GetContentRegionAvail().x - cloneWidth
@@ -1060,7 +1053,7 @@ namespace p
 					ImGui::DrawFilterWithHint(inspector.filter, "##filter", "Search...", 0.f);
 
 					ImGui::SameLine();
-					if (ImGui::Button("-->"))
+					if (ImGui::Button(ICON_P_EYE))
 					{
 						clone = true;
 					}
@@ -1461,7 +1454,7 @@ namespace p
 		static p::String inspectLabel;
 		inspectLabel.clear();
 		const bool inspected = IsInspectingId(ecsDbg, id);
-		const char* icon     = inspected ? " × " : "-->";
+		const char* icon     = inspected ? ICON_P_X : ICON_P_EYE;
 		FormatTo(inspectLabel, "{}##{}", icon, id);
 		ImGui::PushTextColor(
 		    inspected ? ImGui::GetTextColor() : ImGui::GetTextColor().Translucency(0.3f));
@@ -2649,7 +2642,7 @@ namespace p
 			const bool canGoBack = memoryDbg.IsLive() ? !memoryDbg.captures.IsEmpty()
 			                                          : (memoryDbg.captureIndex - 1) >= 0;
 			ImGui::BeginDisabled(!canGoBack);
-			if (ImGui::TextButton(details::ICON_CI_CAPTURE_BACK, "Previous Capture") && canGoBack)
+			if (ImGui::TextButton(ICON_P_CAPTURE_BACK, "Previous Capture") && canGoBack)
 			{
 				if (memoryDbg.IsLive())
 				{
@@ -2675,7 +2668,7 @@ namespace p
 			const bool canGoForward =
 			    !memoryDbg.IsLive() && (memoryDbg.captureIndex + 1) <= memoryDbg.captures.Size();
 			ImGui::BeginDisabled(!canGoForward);
-			if (ImGui::TextButton(details::ICON_CI_CAPTURE_FWD, "Next Capture"))
+			if (ImGui::TextButton(ICON_P_CAPTURE_FWD, "Next Capture"))
 			{
 				const i32 newIndex = memoryDbg.captureIndex + 1;
 				if (memoryDbg.captures.IsValidIndex(newIndex))
@@ -2693,7 +2686,7 @@ namespace p
 
 			// Capture (record)
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.86f, 0.16f, 0.16f, 1.0f));
-			if (ImGui::TextButton(details::ICON_CI_CAPTURE_RECORD, "Capture"))
+			if (ImGui::TextButton(ICON_P_CAPTURE_RECORD, "Capture"))
 			{
 				CaptureMemory(*currentContext);
 				memoryDbg.captureIndex = i32(memoryDbg.captures.Size()) - 1;
@@ -2705,7 +2698,7 @@ namespace p
 			// Erase
 			const bool canErase = !memoryDbg.IsLive();
 			ImGui::BeginDisabled(!canErase);
-			if (ImGui::TextButton(details::ICON_CI_CAPTURE_TRASH, "Erase Capture") && canErase)
+			if (ImGui::TextButton(ICON_P_CAPTURE_TRASH, "Erase Capture") && canErase)
 			{
 				memoryDbg.captures.RemoveAt(memoryDbg.captureIndex);
 				if (memoryDbg.captures.IsEmpty())
@@ -2788,6 +2781,11 @@ namespace p
 		DrawMemoryTimeline(memoryDbg);
 
 
+		// Docked panes keep the short titles but use unique IDs so "Details"
+		// does not collide with the editor's Properties window.
+		constexpr const char* viewWindowName    = "View##PipeMemoryDebugger";
+		constexpr const char* detailsWindowName = "Details##PipeMemoryDebugger";
+
 		// DockSpace — splits 0.5 (right) for Details, the rest for the View graph.
 		const ImGuiID dockspaceId = ImGui::GetID("MemoryDebuggerDockspace");
 		if (memoryDbg.resetLayout || ImGui::DockBuilderGetNode(dockspaceId) == nullptr)
@@ -2802,10 +2800,10 @@ namespace p
 			ImGui::DockBuilderGetNode(memoryDbg.detailsDockId)->LocalFlags |=
 			    ImGuiDockNodeFlags_AutoHideTabBar;
 			// Re-dock windows (SetNextWindowDockID FirstUseEver is one-shot)
-			ImGui::DockBuilderDockWindow("View", memoryDbg.graphDockId);
+			ImGui::DockBuilderDockWindow(viewWindowName, memoryDbg.graphDockId);
 			if (memoryDbg.showDetails)
 			{
-				ImGui::DockBuilderDockWindow("Details", memoryDbg.detailsDockId);
+				ImGui::DockBuilderDockWindow(detailsWindowName, memoryDbg.detailsDockId);
 			}
 			ImGui::DockBuilderFinish(dockspaceId);
 		}
@@ -2837,7 +2835,11 @@ namespace p
 			                          + (colMaxW + colGap) * arenaCount + colGap + 32.0f;
 			ImGui::SetNextWindowSize(ImVec2(desiredGraphW, 400.0f), ImGuiCond_FirstUseEver);
 		}
-		if (ImGui::Begin("View", nullptr))
+		if (memoryDbg.graphDockId != 0)
+		{
+			ImGui::SetNextWindowDockID(memoryDbg.graphDockId, ImGuiCond_Appearing);
+		}
+		if (ImGui::Begin(viewWindowName, nullptr))
 		{
 			ImDrawList* drawList = ImGui::GetWindowDrawList();
 
@@ -4011,9 +4013,9 @@ namespace p
 		{
 			if (memoryDbg.detailsDockId != 0)
 			{
-				ImGui::SetNextWindowDockID(memoryDbg.detailsDockId, ImGuiCond_FirstUseEver);
+				ImGui::SetNextWindowDockID(memoryDbg.detailsDockId, ImGuiCond_Appearing);
 			}
-			if (ImGui::Begin("Details"))
+			if (ImGui::Begin(detailsWindowName))
 			{
 				static String detailsLabel;
 				static String sizeStr;
