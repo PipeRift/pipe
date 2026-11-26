@@ -26,14 +26,14 @@ struct MoveType
 	}
 };
 
-struct CopyType
+struct CopyValueType
 {
 	i32 value = 0;
 
-	CopyType() = default;
-	CopyType(i32 value) : value(value) {}
-	CopyType(const CopyType& other) : value{other.value} {}
-	CopyType& operator=(const CopyType& other)
+	CopyValueType() = default;
+	CopyValueType(i32 value) : value(value) {}
+	CopyValueType(const CopyValueType& other) : value{other.value} {}
+	CopyValueType& operator=(const CopyValueType& other)
 	{
 		value = other.value;
 		return *this;
@@ -627,10 +627,10 @@ P_SPEC("Containers.Array", []()
 
 		It("Can insert many non trivial values inline", []()
 		{
-			TArray<CopyType, 8> data;
-			data.Add(CopyType{1});
-			data.Add(CopyType{2});
-			data.Insert(1, 3, CopyType{9});    // More values than trailing elements
+			TArray<CopyValueType, 8> data;
+			data.Add(CopyValueType{1});
+			data.Add(CopyValueType{2});
+			data.Insert(1, 3, CopyValueType{9});    // More values than trailing elements
 			Expect(data.Size()).ToEqual(5);
 			Expect(data[0].value).ToEqual(1);
 			Expect(data[1].value).ToEqual(9);

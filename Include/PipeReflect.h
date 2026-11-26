@@ -10,10 +10,10 @@
 #include "Pipe/Extern/magic_enum.hpp"
 #include "Pipe/Files/STDFileSystem.h"
 #include "PipeColor.h"
+#include "PipeMath.h"
 #include "PipeSerialize.h"
 #include "PipeStrings.h"
 #include "PipeType.h"
-#include "PipeMath.h"
 
 
 #ifndef P_AUTOREGISTER_ENABLED
@@ -34,10 +34,7 @@ namespace p
 	}
 
 	template<typename T>
-	consteval bool HasStaticFlags()
-	{
-		return requires() { T::staticFlags; };
-	}
+	concept HasStaticFlags = requires { T::staticFlags; };
 
 	template<u32 N>
 	struct MetaCounter : MetaCounter<N - 1>
@@ -153,7 +150,7 @@ namespace p
 		if constexpr (GetEnumSize<T>() > 0)
 		{
 			// Might not be necessary to cache string since enum name is static
-			w.PushAddFlags(WriteFlags_CacheStringValues);
+			w.PushAddFlags(FF_W_CacheStringValues);
 			w.Serialize(GetEnumName(val));
 			w.PopFlags();
 		}
@@ -165,25 +162,27 @@ namespace p
 	using TypeFlags = u64;
 	enum TypeFlags_
 	{
-		TF_None          = 0,         // -> No flags
-		TF_NotSerialized = 1 << 0,    // -> This type ignores serialization
-		TF_Abstract      = 1 << 1,    // -> Reflection cant create instances on this type
+		TF_None = 0,    // -> No flags
 
-		TF_Native    = 1 << 2,
-		TF_Enum      = 1 << 5,
-		TF_Struct    = 1 << 3,
-		TF_Object    = 1 << 4,
-		TF_Container = 1 << 6,
+		TF_Native    = 1 << 0,
+		TF_Enum      = 1 << 1,
+		TF_Struct    = 1 << 2,
+		TF_Object    = 1 << 3,
+		TF_Container = 1 << 4,
+
+		TF_NotSerialized = 1 << 5,    // -> This type ignores serialization
+		TF_Abstract      = 1 << 6,    // -> Reflection cant create instances on this type
+		TF_NoDefault     = 1 << 7,    // -> Dont create a default-constructed value (e.g. arenas)
 
 		// -> In ECS, should this type's last value be stored in the CMdfd component before being
 		// removed?
-		TF_ECS_StoreLastModified = 1 << 7,
+		TF_ECS_StoreLastModified = 1 << 16,
 		// -> In ECS, should this type be marked modified automatically on add?
-		TF_ECS_ModifyOnAdd = 1 << 8,
+		TF_ECS_ModifyOnAdd = 1 << 17,
 		// -> In ECS, should this type be marked modified automatically on get?
-		TF_ECS_ModifyOnGet = 1 << 9,
+		TF_ECS_ModifyOnGet = 1 << 18,
 		// -> In ECS, should this type be marked modified automatically on remove?
-		TF_ECS_ModifyOnRm = 1 << 10,
+		TF_ECS_ModifyOnRm = 1 << 19,
 		// -> In ECS, should this type be marked modified automatically on add, get or remove?
 		TF_ECS_ModifyOnEdit = TF_ECS_ModifyOnAdd | TF_ECS_ModifyOnGet | TF_ECS_ModifyOnRm,
 		// -> In ECS, syntax sugar for flags TF_ECS_StoreLastModified and TF_ECS_ModifyOnEdit
@@ -191,9 +190,12 @@ namespace p
 
 		// Any other flags up to 64 bytes are available to the user
 	};
-
-
 	P_DEFINE_FLAG_OPERATORS(TypeFlags_)
+
+	template<typename T>
+	concept HasTypeDefault =
+	    !IsPointer<T> && !std::is_abstract_v<T> && std::is_default_constructible_v<T>
+	    && requires { requires !HasStaticFlags<T> || (T::staticFlags & TF_NoDefault) == TF_None; };
 
 	using PropertyFlags = u64;
 	enum PropertyFlags_
@@ -209,6 +211,36 @@ namespace p
 	};
 	P_DEFINE_FLAG_OPERATORS(PropertyFlags_)
 
+	struct Metadata
+	{
+		p::StringView category;
+		p::StringView hint;
+	};
+
+	struct PropertyArgs
+	{
+		PropertyFlags flags = PF_None;
+		Metadata metadata;
+
+		constexpr PropertyArgs(PropertyFlags value = PF_None, Metadata meta = {})
+		    : flags{value}, metadata{meta}
+		{}
+		constexpr PropertyArgs(Metadata meta, PropertyFlags value = PF_None)
+		    : flags{value}, metadata{meta}
+		{}
+	};
+
+	struct TypeArgs
+	{
+		TypeFlags flags = TF_None;
+		Metadata metadata;
+
+		constexpr TypeArgs(TypeFlags value = TF_None, Metadata meta = {})
+		    : flags{value}, metadata{meta}
+		{}
+		constexpr TypeArgs(Metadata meta, TypeFlags value = TF_None) : flags{value}, metadata{meta}
+		{}
+	};
 
 	// Functions used to surround macro flag values making them template safe
 	constexpr TypeFlags InitTypeFlags()
@@ -216,14 +248,6 @@ namespace p
 		return TF_None;
 	}
 	constexpr TypeFlags InitTypeFlags(TypeFlags flags)
-	{
-		return flags;
-	}
-	constexpr PropertyFlags InitPropertyFlags()
-	{
-		return PF_None;
-	}
-	constexpr PropertyFlags InitPropertyFlags(PropertyFlags flags)
 	{
 		return flags;
 	}
@@ -239,6 +263,7 @@ namespace p
 		u64 flags          = 0;
 		AccessFunc* access = nullptr;
 		Tag name;
+		Metadata meta;
 
 		bool HasFlag(PropertyFlags flag) const;
 		bool HasAllFlags(PropertyFlags inFlags) const;
@@ -250,9 +275,13 @@ namespace p
 	{
 		using ReadFunc  = void(Reader&, void*);
 		using WriteFunc = void(Writer&, void*);
+		using EqualFunc = bool(const void*, const void*);
+		using CopyFunc  = void(void*, const void*);
 
 		ReadFunc* read   = nullptr;
 		WriteFunc* write = nullptr;
+		EqualFunc* equal = nullptr;
+		CopyFunc* copy   = nullptr;
 	};
 
 	struct P_API EnumTypeOps : public TypeOps
@@ -339,7 +368,7 @@ namespace p
 	template<typename T>
 	constexpr bool HasTypeStaticFlags(TypeFlags flags)
 	{
-		if constexpr (HasStaticFlags<T>())
+		if constexpr (HasStaticFlags<T>)
 		{
 			return HasAllFlags(T::staticFlags, flags);
 		}
@@ -348,7 +377,7 @@ namespace p
 	template<typename T>
 	constexpr bool HasAnyTypeStaticFlags(TypeFlags flags)
 	{
-		if constexpr (HasStaticFlags<T>())
+		if constexpr (HasStaticFlags<T>)
 		{
 			return HasAnyFlags(T::staticFlags, flags);
 		}
@@ -359,6 +388,17 @@ namespace p
 	/// @return the properties of this type
 	P_API TView<const TypeProperty*> GetTypeProperties(TypeId id);
 	P_API const TypeOps* GetTypeOps(TypeId id);
+	P_API const Metadata* GetTypeMeta(TypeId id);
+	P_API const void* GetTypeDefault(TypeId id);
+	P_API bool EqualsType(TypeId id, const void* a, const void* b);
+	/** Is the value the type's registered default-constructed value? Pointer comparison only. */
+	P_API bool IsTypeDefault(TypeId id, const void* data);
+	template<typename T>
+	inline bool IsTypeDefault(const T& value)
+	{
+		return IsTypeDefault(GetTypeId<T>(), &value);
+	}
+	P_API void CopyType(TypeId id, void* dest, const void* source);
 	P_API const ObjectTypeOps* GetTypeObjectOps(TypeId id);
 	P_API const ContainerTypeOps* GetTypeContainerOps(TypeId id);
 
@@ -404,13 +444,15 @@ namespace p
 	P_API void SetTypeParent(TypeId parentId);
 	P_API void SetTypeSize(sizet size);
 	P_API void SetTypeName(StringView name);
+	P_API void SetTypeMeta(const Metadata& meta);
+	P_API void SetTypeDefault(const void* value);
 	P_API void SetTypeFlags(TypeFlags flags);
 	P_API void AddTypeFlags(TypeFlags flags);
 	P_API void RemoveTypeFlags(TypeFlags flags);
 	P_API void AddTypeProperty(const TypeProperty& property);
 	template<typename T>
-	constexpr void AddTypeProperty(
-	    TypeProperty::AccessFunc* access, StringView name, PropertyFlags flags = PF_None)
+	constexpr void AddTypeProperty(TypeProperty::AccessFunc* access, StringView name,
+	    PropertyFlags flags = PF_None, Metadata meta = {})
 	{
 		using PropType = std::remove_pointer_t<T>;
 		if constexpr (IsPointer<T>)
@@ -419,8 +461,11 @@ namespace p
 			    !IsPointer<PropType>, "Nested pointers (T**) are not supported in reflection");
 			flags |= PF_Pointer;
 		}
-		AddTypeProperty(TypeProperty{
-		    .typeId = RegisterTypeId<PropType>(), .flags = flags, .access = access, .name = name});
+		AddTypeProperty(TypeProperty{.typeId = RegisterTypeId<PropType>(),
+		    .flags                           = flags,
+		    .access                          = access,
+		    .name                            = name,
+		    .meta                            = Move(meta)});
 	}
 
 	P_API void SetTypeOps(const TypeOps* operations);
@@ -441,6 +486,21 @@ namespace p
 				w.Serialize(*static_cast<T*>(instance));
 			}
 		};
+		if constexpr (!IsArray<T>() && !requires { typename T::ItemType; }
+		              && requires(const T& a, const T& b) { a == b; })
+		{
+			ops.equal = [](const void* a, const void* b)
+			{
+				return static_cast<bool>(*static_cast<const T*>(a) == *static_cast<const T*>(b));
+			};
+		}
+		if constexpr (IsCopyAssignable<T>)
+		{
+			ops.copy = [](void* dest, const void* source)
+			{
+				*static_cast<T*>(dest) = *static_cast<const T*>(source);
+			};
+		}
 	}
 	template<typename T>
 	void AssignEnumTypeOps(EnumTypeOps& ops)
@@ -563,6 +623,12 @@ namespace p
 			SetTypeSize(sizeof(T));
 			SetTypeName(GetTypeName<T>());
 
+			if constexpr (HasTypeDefault<T>)
+			{
+				static const T defaultValue{};
+				SetTypeDefault(&defaultValue);
+			}
+
 			if constexpr (IsStructOrClass<T>)
 			{
 				AddTypeFlags(TF_Struct);
@@ -679,8 +745,7 @@ namespace p
 
 
 /** Defines a Class */
-#define P_CLASS_HEADER_NO_FLAGS(type) P_CLASS_HEADER_FLAGS(type, p::TF_None)
-#define P_CLASS_HEADER_FLAGS(type, flags)                                \
+#define __P_CLASS_HEADER(type, flags)                                    \
 public:                                                                  \
 	using Self                                = type;                    \
 	static constexpr p::TypeFlags staticFlags = p::InitTypeFlags(flags); \
@@ -692,21 +757,21 @@ public:                                                                  \
 
 
 /** Defines an Struct */
-#define P_STRUCT_HEADER_NO_FLAGS(type) P_STRUCT_HEADER_FLAGS(type, p::TF_None)
-#define P_STRUCT_HEADER_FLAGS(type, flags)                               \
+#define __P_STRUCT_HEADER(type, flags)                                   \
 public:                                                                  \
 	using Self                                = type;                    \
 	static constexpr p::TypeFlags staticFlags = p::InitTypeFlags(flags); \
 	static_assert(!(staticFlags & p::TF_Abstract), "Only objects can use TF_Abstract");
 
 
-#define P_REFLECTION_BODY(buildCode)                                      \
+#define P_REFLECTION_BODY(code)                                           \
 private:                                                                  \
 	static inline p::TTypeAutoRegister<Self> typeAutoRegister;            \
                                                                           \
 public:                                                                   \
 	static void BuildType()                                               \
 	{                                                                     \
+		code;                                                             \
 		__BuildProperty(p::MetaCounter<0>{});                             \
 	}                                                                     \
 	void ReadProperties(p::Reader& r)                                     \
@@ -741,9 +806,7 @@ private:                                                                  \
 public:
 
 
-#define P_PROPERTY_NO_FLAGS(name) P_PROPERTY_FLAGS(name, p::PF_None)
-#define P_PROPERTY_FLAGS(name, flags) __P_PROPERTY_IMPL(name, P_CAT(__refl_id_, name), flags)
-#define __P_PROPERTY_IMPL(name, id_name, flags)                                                   \
+#define __P_PROPERTY_IMPL(name, id_name, args)                                                    \
 	static constexpr p::u32 id_name = decltype(__refl_Counter(p::MetaCounter<255>{}))::value;     \
 	static constexpr p::MetaCounter<(id_name) + 1> __refl_Counter(p::MetaCounter<(id_name) + 1>); \
                                                                                                   \
@@ -752,13 +815,13 @@ public:
 		p::AddTypeProperty<decltype(name)>([](void* instance)                                     \
 		{                                                                                         \
 			return (void*)&static_cast<Self*>(instance)->name;                                    \
-		}, #name, p::InitPropertyFlags(flags));                                                   \
+		}, #name, args.flags, args.metadata);                                                     \
 		/* Registry next property if any */                                                       \
 		__BuildProperty(p::MetaCounter<id_name + 1>{});                                           \
 	}                                                                                             \
 	void __ReadProperty(p::Reader& r, p::MetaCounter<id_name>)                                    \
 	{                                                                                             \
-		if constexpr (!(p::InitPropertyFlags(flags) & p::PF_NotSerialized))                       \
+		if constexpr (!(args.flags & p::PF_NotSerialized))                                        \
 		{ /* Don't serialize property if NotSerialized */                                         \
 			r.Next(#name, name);                                                                  \
 		}                                                                                         \
@@ -767,7 +830,7 @@ public:
 	}                                                                                             \
 	void __WriteProperty(p::Writer& w, p::MetaCounter<id_name>) const                             \
 	{                                                                                             \
-		if constexpr (!(p::InitPropertyFlags(flags) & p::PF_NotSerialized))                       \
+		if constexpr (!(args.flags & p::PF_NotSerialized))                                        \
 		{ /* Don't serialize property if NotSerialized */                                         \
 			w.Next(#name, name);                                                                  \
 		}                                                                                         \
@@ -776,31 +839,16 @@ public:
 	}
 
 
-#define P_REFL_INTERNAL_GET_3RD_ARG(arg1, arg2, arg3, ...) arg3
-#define P_REFL_GET_3RD_ARG(tuple) P_REFL_INTERNAL_GET_3RD_ARG tuple
+#define P_CLASS(type, ...)                                 \
+	__P_CLASS_HEADER(type, p::TypeArgs{__VA_ARGS__}.flags) \
+	P_REFLECTION_BODY({ p::SetTypeMeta(p::TypeArgs{__VA_ARGS__}.metadata); })
 
-#define P_REFL_INTERNAL_GET_4TH_ARG(arg1, arg2, arg3, arg4, ...) arg4
-#define P_REFL_GET_4TH_ARG(tuple) P_REFL_INTERNAL_GET_4TH_ARG tuple
-
-#define P_TYPE_INVALID(...) static_assert(false, "Invalid type macro. Missing first parameters");
-
-#define P_TYPE_CHOOSER(TYPE_NO_FLAGS, TYPE_FLAGS, type, ...) \
-	P_REFL_GET_3RD_ARG((type, __VA_ARGS__, TYPE_FLAGS, TYPE_NO_FLAGS, TYPE_INVALID))
-
-#define P_PROP_CHOOSER(PROPERTY_NO_FLAGS, PROPERTY_FLAGS, name, ...) \
-	P_REFL_GET_3RD_ARG((name, __VA_ARGS__, PROPERTY_FLAGS, PROPERTY_NO_FLAGS, PROPERTY_INVALID))
-
-
-#define P_CLASS(type, ...)                                                           \
-	P_TYPE_CHOOSER(P_CLASS_HEADER_NO_FLAGS, P_CLASS_HEADER_FLAGS, type, __VA_ARGS__) \
-	(type, __VA_ARGS__) P_REFLECTION_BODY({})
-
-#define P_STRUCT(type, ...)                                                            \
-	P_TYPE_CHOOSER(P_STRUCT_HEADER_NO_FLAGS, P_STRUCT_HEADER_FLAGS, type, __VA_ARGS__) \
-	(type, __VA_ARGS__) P_REFLECTION_BODY({})
+#define P_STRUCT(type, ...)                                 \
+	__P_STRUCT_HEADER(type, p::TypeArgs{__VA_ARGS__}.flags) \
+	P_REFLECTION_BODY({ p::SetTypeMeta(p::TypeArgs{__VA_ARGS__}.metadata); })
 
 #define P_PROP(name, ...) \
-	P_PROP_CHOOSER(P_PROPERTY_NO_FLAGS, P_PROPERTY_FLAGS, name, __VA_ARGS__)(name, __VA_ARGS__)
+	__P_PROPERTY_IMPL(name, P_CAT(__refl_id_, name), (p::PropertyArgs{__VA_ARGS__}))
 #pragma endregion Macros
 
 

@@ -308,7 +308,7 @@ namespace p
 	{
 		auto& registry = GetArenaRegistry();
 		std::unique_lock lock(registry.arenasMutex);
-		for (auto* arena : registry.arenas)
+		for (auto*& arena : registry.arenas)
 		{
 			if (arena == &other)
 			{
@@ -327,19 +327,8 @@ namespace p
 			doRealloc      = other.doRealloc;
 			doFree         = other.doFree;
 
-			// Refresh typeId on this's existing entry in case of slicing
-			// from a derived source. Do NOT touch other's entry: ~Arena()
-			auto& registry = GetArenaRegistry();
-			// will remove it when the source is destroyed.
-			std::unique_lock lock(registry.arenasMutex);
-			for (auto* arena : registry.arenas)
-			{
-				if (arena == &other)
-				{
-					arena = this;
-					break;
-				}
-			}
+			// Both arenas are already registered. Leave the source entry alone;
+			// ~Arena() removes it when the moved-from arena is destroyed.
 		}
 		return *this;
 	}

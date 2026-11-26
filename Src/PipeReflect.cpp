@@ -34,6 +34,8 @@ namespace p
 		TArray<sizet> sizes{arena};
 		TArray<StringView> names{arena};
 		TArray<u64> flags{arena};
+		TArray<Metadata> metadata{arena};
+		TArray<const void*> defaults{arena};
 		TArray<TArray<TypeProperty>> ownProperties{arena};
 		TArray<TArray<const TypeProperty*>> allProperties{arena};
 		TArray<const TypeOps*> operations{arena};
@@ -166,6 +168,7 @@ namespace p
 		registry.ownProperties.Reserve(expectedTypeCount);
 		registry.allProperties.Reserve(expectedTypeCount);
 		registry.operations.Reserve(expectedTypeCount);
+		registry.defaults.Reserve(expectedTypeCount);
 
 		// Register native types (P_AUTOREGISTER_ENABLED=0 disables TTypeAutoRegister)
 		RegisterTypeId<u8>();
@@ -312,6 +315,120 @@ namespace p
 		return index != NO_INDEX ? registry.operations[index] : nullptr;
 	}
 
+	const Metadata* GetTypeMeta(TypeId id)
+	{
+		auto& registry  = GetRegistry();
+		const i32 index = details::GetTypeIndex(registry, id);
+		return index != NO_INDEX ? &registry.metadata[index] : nullptr;
+	}
+
+	const void* GetTypeDefault(TypeId id)
+	{
+		auto& registry  = GetRegistry();
+		const i32 index = details::GetTypeIndex(registry, id);
+		return index != NO_INDEX ? registry.defaults[index] : nullptr;
+	}
+
+	bool EqualsType(TypeId id, const void* a, const void* b)
+	{
+		if (a == b)
+		{
+			return true;
+		}
+		else if (!a || !b)
+		{
+			return false;
+		}
+		else if (const auto* ops = GetTypeOps(id); ops && ops->equal)
+		{
+			return ops->equal(a, b);
+		}
+		else if (HasTypeFlags(id, TF_Native))
+		{
+			const sizet size = GetTypeSize(id);
+			return size > 0 && memcmp(a, b, size) == 0;
+		}
+		else if (HasTypeFlags(id, TF_Container))
+		{
+			const ContainerTypeOps* ops = GetTypeContainerOps(id);
+			const i32 size              = ops->GetSize(const_cast<void*>(a));
+			if (size != ops->GetSize(const_cast<void*>(b)))
+			{
+				return false;
+			}
+			for (i32 index = 0; index < size; ++index)
+			{
+				if (!EqualsType(ops->itemType, ops->GetItem(const_cast<void*>(a), index),
+				        ops->GetItem(const_cast<void*>(b), index)))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		else if (HasTypeFlags(id, TF_Struct))
+		{
+			for (const TypeProperty* property : GetTypeProperties(id))
+			{
+				if (!EqualsType(property->typeId, property->access(const_cast<void*>(a)),
+				        property->access(const_cast<void*>(b))))
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+	bool IsTypeDefault(TypeId id, const void* data)
+	{
+		if (data)
+		{
+			const void* defaultValue = GetTypeDefault(id);
+			return data == defaultValue;
+		}
+		return false;
+	}
+
+	void CopyType(TypeId id, void* dest, const void* source)
+	{
+		if (dest == source || !dest || !source)
+		{
+			return;
+		}
+		else if (const TypeOps* ops = GetTypeOps(id); ops && ops->copy)
+		{
+			ops->copy(dest, source);
+		}
+		else if (HasTypeFlags(id, TF_Native))
+		{
+			const sizet size = GetTypeSize(id);
+			if (size > 0)
+			{
+				memcpy(dest, source, size);
+			}
+		}
+		else if (HasTypeFlags(id, TF_Container))
+		{
+			const ContainerTypeOps* ops = GetTypeContainerOps(id);
+			ops->Clear(dest);
+			const i32 size = ops->GetSize(const_cast<void*>(source));
+			for (i32 index = 0; index < size; ++index)
+			{
+				ops->AddItem(dest, ops->GetItem(const_cast<void*>(source), index));
+			}
+		}
+		else if (HasTypeFlags(id, TF_Struct))    // Copy property by property
+		{
+			for (const TypeProperty* property : GetTypeProperties(id))
+			{
+				CopyType(property->typeId, property->access(dest),
+				    property->access(const_cast<void*>(source)));
+			}
+		}
+	}
+
 	const ObjectTypeOps* GetTypeObjectOps(TypeId id)
 	{
 		auto& registry  = GetRegistry();
@@ -352,6 +469,8 @@ namespace p
 		registry.sizes.Insert(index);
 		registry.names.Insert(index);
 		registry.flags.Insert(index);
+		registry.metadata.Insert(index);
+		registry.defaults.Insert(index);
 		registry.ownProperties.Insert(index);
 		registry.allProperties.Insert(index);
 		registry.operations.Insert(index);
@@ -406,6 +525,18 @@ namespace p
 	{
 		P_CheckEditingType;
 		GetRegistry().sizes[currentEdit.index] = size;
+	}
+
+	void SetTypeMeta(const Metadata& meta)
+	{
+		P_CheckEditingType;
+		GetRegistry().metadata[currentEdit.index] = meta;
+	}
+
+	void SetTypeDefault(const void* value)
+	{
+		P_CheckEditingType;
+		GetRegistry().defaults[currentEdit.index] = value;
 	}
 
 	void SetTypeName(StringView name)

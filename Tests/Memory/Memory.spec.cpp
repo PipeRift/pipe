@@ -26,13 +26,13 @@ struct ConstructedType
 	ConstructedType(float value = 0.f) : value(value) {}
 };
 
-struct CopyType
+struct CopyValueType
 {
 	i32 value = 0;
 
-	CopyType(i32 value) : value(value) {}
-	CopyType(const CopyType& other) : value{other.value} {}
-	CopyType& operator=(const CopyType& other)
+	CopyValueType(i32 value) : value(value) {}
+	CopyValueType(const CopyValueType& other) : value{other.value} {}
+	CopyValueType& operator=(const CopyValueType& other)
 	{
 		value = other.value;
 		return *this;
@@ -181,8 +181,8 @@ P_SPEC("Memory.Operations", []()
 		Expect(boolsValues[1].value1).ToEqual(false);
 		Expect(boolsValues[1].value2).ToEqual(true);
 
-		CopyType copyValues[2]{5, 6};    // Assign simulated garbage
-		CopyType srcCopyValues[2]{34, 75};
+		CopyValueType copyValues[2]{5, 6};    // Assign simulated garbage
+		CopyValueType srcCopyValues[2]{34, 75};
 		CopyConstructItems(copyValues, 2, srcCopyValues);
 		Expect(copyValues[0].value).ToEqual(34);
 		Expect(copyValues[1].value).ToEqual(75);

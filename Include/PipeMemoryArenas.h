@@ -17,7 +17,7 @@ namespace p
 	struct P_API DummyArena : public Arena
 	{
 		using Super = Arena;
-		P_STRUCT(DummyArena)
+		P_STRUCT(DummyArena, p::TF_NoDefault)
 
 	public:
 		DummyArena()
@@ -52,7 +52,7 @@ namespace p
 	struct P_API HeapArena : public Arena
 	{
 		using Super = Arena;
-		P_STRUCT(HeapArena)
+		P_STRUCT(HeapArena, p::TF_NoDefault)
 
 	private:
 		MemoryStats stats;
@@ -78,6 +78,62 @@ namespace p
 	};
 #pragma endregion Heap Arena
 
+#pragma region Passthrough Arena
+	/**
+	 * Forwards every allocation to a parent arena while tracking its own stats.
+	 * Useful for naming and accounting for subsystems without owning memory.
+	 */
+	struct P_API PTArena : public ChildArena
+	{
+		using Super = ChildArena;
+		P_STRUCT(PTArena, p::TF_NoDefault)
+
+	private:
+		MemoryStats stats;
+
+	public:
+		PTArena(Arena& inParent = GetCurrentArena(), const char* inName = "PT Arena")
+		    : ChildArena(&inParent)
+		{
+			stats.name        = inName;
+			stats.detectLeaks = false;
+			Interface<PTArena>();
+		}
+
+		PTArena(PTArena&& other) noexcept : ChildArena(Move(other)), stats{Move(other.stats)}
+		{
+			Interface<PTArena>();
+		}
+		PTArena& operator=(PTArena&& other) noexcept
+		{
+			ChildArena::operator=(Move(other));
+			stats = Move(other.stats);
+			return *this;
+		}
+
+		void* Alloc(const sizet size);
+		void* Alloc(const sizet size, const sizet align);
+		bool Realloc(void* ptr, const sizet ptrSize, const sizet size);
+		void Free(void* ptr, const sizet size);
+
+		sizet GetAvailableMemory() const override
+		{
+			return GetParentArena().GetAvailableMemory();
+		}
+
+		const MemoryStats* GetStats() const override
+		{
+			return &stats;
+		}
+
+	protected:
+		TypeId ProvideTypeId() const override
+		{
+			return p::GetTypeId<PTArena>();
+		}
+	};
+#pragma endregion Passthrough Arena
+
 #pragma region Mono Linear
 	/**
 	 * LinearArena holds memory linearly in a block of memory.
@@ -88,7 +144,7 @@ namespace p
 	struct P_API MonoLinearArena : public ChildArena
 	{
 		using Super = ChildArena;
-		P_STRUCT(MonoLinearArena)
+		P_STRUCT(MonoLinearArena, p::TF_NoDefault)
 
 	private:
 		MemoryStats stats;
@@ -150,7 +206,7 @@ namespace p
 	struct P_API TMonoLinearArena : public MonoLinearArena
 	{
 		using Super = MonoLinearArena;
-		P_STRUCT(TMonoLinearArena)
+		P_STRUCT(TMonoLinearArena, p::TF_NoDefault)
 
 		u8 buffer[blockSize];
 
@@ -171,7 +227,7 @@ namespace p
 			LinearBlock* last = nullptr;
 			void* unaligned = nullptr;    // Pointer where this block was allocated before alignment
 
-			constexpr u8* End(sizet blockSize) const
+			u8* End(sizet blockSize) const
 			{
 				return (u8*)this + blockSize;
 			}
@@ -247,7 +303,7 @@ namespace p
 	struct P_API MultiLinearArena : public ChildArena
 	{
 		using Super = ChildArena;
-		P_STRUCT(MultiLinearArena)
+		P_STRUCT(MultiLinearArena, p::TF_NoDefault)
 
 	private:
 		MemoryStats stats;
@@ -303,7 +359,7 @@ namespace p
 	struct P_API BestFitArena : public ChildArena
 	{
 		using Super = ChildArena;
-		P_STRUCT(BestFitArena)
+		P_STRUCT(BestFitArena, p::TF_NoDefault)
 
 	private:
 		MemoryStats stats;
@@ -418,7 +474,7 @@ namespace p
 	struct P_API BigBestFitArena : public ChildArena
 	{
 		using Super = ChildArena;
-		P_STRUCT(BigBestFitArena)
+		P_STRUCT(BigBestFitArena, p::TF_NoDefault)
 
 	private:
 		MemoryStats stats;

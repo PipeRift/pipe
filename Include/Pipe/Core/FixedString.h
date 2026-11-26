@@ -6,6 +6,7 @@
 #include "PipeMath.h"
 
 #include <array>
+#include <format>
 #include <iterator>
 #include <ostream>
 
@@ -784,3 +785,16 @@ namespace p
 		return out;
 	}
 }    // namespace p
+
+
+template<p::sizet N, typename CharType, typename TTraits>
+struct std::formatter<p::TFixedString<N, CharType, TTraits>, CharType>
+    : std::formatter<std::basic_string_view<CharType, TTraits>, CharType>
+{
+	template<typename FormatContext>
+	auto format(const p::TFixedString<N, CharType, TTraits>& str, FormatContext& ctx) const
+	{
+		return std::formatter<std::basic_string_view<CharType, TTraits>, CharType>::format(
+		    std::basic_string_view<CharType, TTraits>{str.data(), str.size()}, ctx);
+	}
+};

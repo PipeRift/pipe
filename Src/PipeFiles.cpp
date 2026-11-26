@@ -92,9 +92,7 @@ namespace p
 		}
 		pfd::save_file dialog{
 		    std::string{title}, std::string{defaultPath}, ParseFilters(filters), options};
-		String path{dialog.result()};
-		p::ReplaceExtension(path, "rf");
-		return path;
+		return String{dialog.result()};
 	}
 #pragma endregion FileDialogs
 

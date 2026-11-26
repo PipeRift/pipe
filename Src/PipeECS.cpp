@@ -222,11 +222,13 @@ namespace p
 
 		if (EnterNext("components"))
 		{
+			PushAddFlags(p::FF_RW_Structured);
 			BeginObject();
 			serializingMany = true;
 			onReadPools(*this);
 			serializingMany = false;
 			Leave();
+			PopFlags();
 		}
 
 		FixParentIdLinks(context, parents);
@@ -248,7 +250,9 @@ namespace p
 		}
 		ids.Assign(&entity, 1);
 
+		PushAddFlags(p::FF_RW_Structured);
 		onReadPools(*this);
+		PopFlags();
 
 		FixParentIdLinks(context, parent);
 	}
@@ -280,11 +284,13 @@ namespace p
 		Next("count", ids.Size());
 		if (EnterNext("components"))
 		{
+			PushAddFlags(p::FF_RW_Structured);
 			BeginObject();
 			serializingMany = true;
 			onWritePools(*this);
 			serializingMany = false;
 			Leave();
+			PopFlags();
 		}
 	}
 
@@ -298,7 +304,9 @@ namespace p
 		ids.Assign(&entity, 1);
 		MapIdsToIndices();
 
+		PushAddFlags(p::FF_RW_Structured);
 		onWritePools(*this);
+		PopFlags();
 	}
 
 	const TArray<Id>& EntityWriter::GetIds() const
@@ -407,18 +415,24 @@ namespace p
 	}
 
 
-	ComponentPool::ComponentPool(TypeId typeId, PoolRemovePolicy removePolicy, Arena& arena)
-	    : IPool(typeId), idIndices{arena}, idList{arena}, arena{&arena}, removePolicy{removePolicy}
+	ComponentPool::ComponentPool(TypeId typeId, PoolRemovePolicy removePolicy)
+	    : IPool(typeId)
+	    , idIndices{GetCurrentArena()}
+	    , idList{GetCurrentArena()}
+	    , arena{&GetCurrentArena()}
+	    , removePolicy{removePolicy}
 	{
 		BindOnPageAllocated();
 	}
 
 	ComponentPool::ComponentPool(const ComponentPool& other)
-	    : IPool(other.typeId), idIndices{*other.arena}, idList{*other.arena}
+	    : IPool(other.typeId)
+	    , idIndices{GetCurrentArena()}
+	    , idList{GetCurrentArena()}
+	    , arena{&GetCurrentArena()}
+	    , removePolicy{other.removePolicy}
 	{
-		arena        = other.arena;
-		removePolicy = other.removePolicy;
-		typeId       = other.typeId;
+		typeId = other.typeId;
 		BindOnPageAllocated();
 		idList.Reserve(other.idList.Size());
 		idIndices.Reserve(other.idIndices.Capacity());
@@ -445,9 +459,9 @@ namespace p
 	ComponentPool& ComponentPool::operator=(const ComponentPool& other) noexcept
 	{
 		typeId       = other.typeId;
-		idIndices    = TPageBuffer<i32, 4096>{*other.arena};
-		idList       = TArray<Id>{*other.arena};
-		arena        = other.arena;
+		idIndices    = TPageBuffer<i32, 4096>{GetCurrentArena()};
+		idList       = TArray<Id>{GetCurrentArena()};
+		arena        = &GetCurrentArena();
 		removePolicy = other.removePolicy;
 		typeId       = other.typeId;
 		BindOnPageAllocated();
@@ -551,7 +565,7 @@ namespace p
 		};
 	}
 
-	TPool<CRemoved>::TPool(p::IdContext& ctx, Arena& arena)
+	TPool<CRemoved>::TPool(p::IdContext& ctx)
 	    : IPool(p::GetTypeId<CRemoved>()), idRegistry{&ctx.GetIdRegistry()}
 	{}
 
@@ -642,29 +656,55 @@ namespace p
 	}
 
 
-	IdContext::IdContext()
+	IdContext::IdContext(Arena& arena)
+	    : componentArena{MakeUnique<PTArena>(GetCurrentArena(), "ECS Components")}
+	    , staticArena{MakeUnique<PTArena>(GetCurrentArena(), "ECS Statics")}
+	    , arena{&arena}
+	    , idRegistry{arena}
+	    , pools{arena}
+	    , statics{arena}
 	{
 		AssurePool<CRemoved>();
 	}
 
 	IdContext::IdContext(const IdContext& other) noexcept
+	    : componentArena{MakeUnique<PTArena>(GetCurrentArena(), "ECS Components")}
+	    , staticArena{MakeUnique<PTArena>(GetCurrentArena(), "ECS Statics")}
+	    , arena{other.arena}
+	    , idRegistry{*other.arena}
+	    , pools{*other.arena}
+	    , statics{*other.arena}
 	{
 		CopyFrom(other);
 	}
 	IdContext::IdContext(IdContext&& other) noexcept
+	    : componentArena{Move(other.componentArena)}
+	    , staticArena{Move(other.staticArena)}
+	    , arena{other.arena}
+	    , idRegistry{*other.arena}
+	    , pools{*other.arena}
+	    , statics{*other.arena}
 	{
 		MoveFrom(Move(other));
 	}
 	IdContext& IdContext::operator=(const IdContext& other) noexcept
 	{
-		Reset();
-		CopyFrom(other);
+		if (this != &other)
+		{
+			Reset();
+			CopyFrom(other);
+		}
 		return *this;
 	}
 	IdContext& IdContext::operator=(IdContext&& other) noexcept
 	{
-		Reset();
-		MoveFrom(Move(other));
+		if (this != &other)
+		{
+			Reset();
+			componentArena = Move(other.componentArena);
+			staticArena    = Move(other.staticArena);
+			MoveFrom(Move(other));
+		}
 		return *this;
 	}
 
@@ -709,6 +749,7 @@ namespace p
 		idRegistry = other.idRegistry;
 
 		// Copy component pools. Assume already sorted
+		PushCurrentArena(*componentArena.Get());
 		for (const PoolInstance& otherInstance : other.pools)
 		{
 			if (otherInstance.pool->Size() > 0)
@@ -716,6 +757,7 @@ namespace p
 				pools.Add(PoolInstance{otherInstance});
 			}
 		}
+		PopCurrentArena();
 
 		AssurePool<CRemoved>().idRegistry = &idRegistry;
 
@@ -728,6 +770,7 @@ namespace p
 		idRegistry = Move(other.idRegistry);
 		pools      = Move(other.pools);
 		statics    = Move(other.statics);
+		arena      = other.arena;
 
 		AssurePool<CRemoved>().idRegistry = &idRegistry;
 
@@ -784,7 +827,7 @@ namespace p
 
 	void IdContext::Reset(bool keepStatics)
 	{
-		idRegistry = {};
+		idRegistry = IdRegistry{*arena};
 		pools.Clear();
 		if (!keepStatics)
 		{
@@ -1034,8 +1077,8 @@ namespace p
 		const i32 smallestIdx     = GetSmallestPool(pools);
 		const IPool* iterablePool = pools[smallestIdx];
 
-		// An empty iterable pool means at least one of the required components will never be there,
-		// so we return nothing
+		// An empty iterable pool means at least one of the required components will never be
+		// there, so we return nothing
 		if (!iterablePool || iterablePool->Size() == 0)
 		{
 			return;

@@ -1051,7 +1051,7 @@ namespace p
 		{
 			Append(values.Data(), values.Size());
 		}
-		void Append(std ::initializer_list<Type> initList)
+		void Append(std::initializer_list<Type> initList)
 		{
 			const i32 count    = i32(initList.size());
 			const i32 firstIdx = Super::size;
@@ -1098,7 +1098,7 @@ namespace p
 		{
 			MoveFrom(p::Fwd<TArray<Type, OtherInlineCapacity>>(values));
 		}
-		void Assign(std ::initializer_list<Type> initList)
+		void Assign(std::initializer_list<Type> initList)
 		{
 			Assign(initList.begin(), i32(initList.size()));
 		}
@@ -1495,13 +1495,23 @@ namespace p
 		/**
 		 * Remove N last elements from the array
 		 * @param count
+		 * @param shrouldShrink
 		 */
-		void RemoveLast(i32 count = 1, const Shrink shouldShrink = Shrink::Yes)
+		void RemoveLast(i32 count, const Shrink shouldShrink = Shrink::Yes)
 		{
 			if (count <= Super::size)
 			{
 				RemoveAtUnsafe(Super::size - count, count, shouldShrink);
 			}
+		}
+
+		/**
+		 * Remove last element from the array
+		 * @param shrouldShrink
+		 */
+		inline void RemoveLast(const Shrink shouldShrink = Shrink::Yes)
+		{
+			RemoveLast(1, shouldShrink);
 		}
 
 		/** Remove all elements from the array and optionally free memory

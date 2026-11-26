@@ -9,6 +9,7 @@
 #include "Pipe/Memory/OwnPtr.h"
 #include "Pipe/Memory/UniquePtr.h"
 #include "PipeContainers.h"
+#include "PipeMemoryArenas.h"
 #include "PipePlatform.h"
 #include "PipeReflect.h"
 
@@ -186,10 +187,33 @@ namespace p
 	    && (IsCopyConstructible<T> || IsMoveConstructible<T>);
 	// clang-format on
 
+
+	template<typename T>
+	struct TComponentPageSize
+	{
+		static constexpr p::i32 value = 1024;
+	};
+
+	template<typename T>
+	requires requires { T::pageSize; }
+	struct TComponentPageSize<T>
+	{
+		static constexpr p::i32 value = p::i32(T::pageSize);
+		static_assert(value > 0, "Component pageSize must be positive");
+		static_assert((value & (value - 1)) == 0, "Component pageSize must be a power of two");
+	};
+
+	template<typename T>
+	inline constexpr p::i32 ComponentPageSize = TComponentPageSize<T>::value;
+
+
 	template<typename T>
 	struct CMdfdWithLast
 	{
 		P_STRUCT(CMdfdWithLast, TF_NotSerialized)
+
+		/** Copies inherit the component's page size. */
+		static constexpr p::i32 pageSize = ComponentPageSize<T>;
 
 		P_PROP(Last)
 		T Last;
@@ -355,7 +379,33 @@ namespace p
 		template<typename... T>
 		void SerializePools()
 		{
-			(SerializePool<T>(), ...);
+			using ReadFn = void (*)(EntityReader&);
+			struct PoolEntry
+			{
+				StringView name;
+				ReadFn read;
+			};
+			const PoolEntry entries[]{
+			    {GetTypeName<T>(false), [](EntityReader& reader)
+			{
+				reader.SerializePool<T>();
+			}}
+                ...
+            };
+
+			while (EnterNext())
+			{
+				const StringView componentKey = GetCurrentKey();
+				for (const PoolEntry& entry : entries)
+				{
+					if (entry.name == componentKey)
+					{
+						entry.read(*this);
+						break;
+					}
+				}
+				Leave();
+			}
 		}
 
 		const TArray<Id>& GetIds() const;
@@ -594,7 +644,7 @@ namespace p
 		PoolRemovePolicy removePolicy;
 
 
-		ComponentPool(TypeId typeId, PoolRemovePolicy removePolicy, Arena& arena);
+		ComponentPool(TypeId typeId, PoolRemovePolicy removePolicy);
 		ComponentPool(const ComponentPool& other);
 		ComponentPool(ComponentPool&& other) noexcept;
 		ComponentPool& operator=(const ComponentPool& other) noexcept;
@@ -665,14 +715,14 @@ namespace p
 	struct TPool : public ComponentPool
 	{
 	private:
-		TPageBuffer<T, 1024> data;
+		TPageBuffer<T, ComponentPageSize<T>> data;
 
 
 	public:
-		TPool(p::IdContext& ctx, Arena& arena = GetCurrentArena())
-		    : ComponentPool(p::GetTypeId<T>(), PoolRemovePolicy::InPlace, arena), data{arena}
+		TPool(p::IdContext& ctx)
+		    : ComponentPool(p::GetTypeId<T>(), PoolRemovePolicy::InPlace), data{GetCurrentArena()}
 		{}
-		TPool(const TPool& other) : ComponentPool(other), data{*other.arena}
+		TPool(const TPool& other) : ComponentPool(other), data{GetCurrentArena()}
 		{
 			if constexpr (!p::IsEmpty<T>)
 			{
@@ -698,7 +748,7 @@ namespace p
 		TPool& operator=(const TPool& other)
 		{
 			ComponentPool::operator=(other);
-			data = TPageBuffer<T, 1024>{*other.arena};
+			data = TPageBuffer<T, ComponentPageSize<T>>{GetCurrentArena()};
 
 			if constexpr (!p::IsEmpty<T>)
 			{
@@ -1084,7 +1134,7 @@ namespace p
 		p::IdRegistry* idRegistry = nullptr;
 
 	public:
-		TPool(p::IdContext& ctx, Arena& arena = GetCurrentArena());
+		TPool(p::IdContext& ctx);
 		TPool(const TPool& other) = delete;
 		TPool(TPool&& other)      = delete;
 		TPool& operator=(const TPool& other)
@@ -1488,6 +1538,9 @@ namespace p
 	struct P_API IdContext : public TIdOperations<IdContext>
 	{
 	private:
+		TUniquePtr<PTArena> componentArena;
+		TUniquePtr<PTArena> staticArena;
+		Arena* arena = nullptr;
 		IdRegistry idRegistry;
 		mutable TArray<PoolInstance> pools;
 		TArray<OwnPtr> statics;
@@ -1495,7 +1548,7 @@ namespace p
 
 
 	public:
-		IdContext();
+		IdContext(Arena& arena = GetCurrentArena());
 		~IdContext()
 		{
 			Reset();
@@ -1504,6 +1557,16 @@ namespace p
 		explicit IdContext(IdContext&& other) noexcept;
 		IdContext& operator=(const IdContext& other) noexcept;
 		IdContext& operator=(IdContext&& other) noexcept;
+
+		const Arena& GetComponentArena() const
+		{
+			return *componentArena.Get();
+		}
+
+		const Arena& GetStaticArena() const
+		{
+			return *staticArena.Get();
+		}
 
 #pragma region Entities
 		// Reflection helpers
@@ -2527,49 +2590,45 @@ namespace p
 	template<typename T>
 	inline void EntityReader::SerializePool()
 	{
-		if (EnterNext(GetTypeName<T>(false)))
+		auto& pool = GetContext().AssurePool<T>();
+
+		if (serializingMany) [[likely]]
 		{
-			auto& pool = GetContext().AssurePool<T>();
-
-			if (serializingMany) [[likely]]
+			BeginObject();
+			while (EnterNext())
 			{
-				String key;
-				BeginObject();
-				for (i32 i = 0; i < ids.Size(); ++i)
+				const TOptional<i32> entityIndex = Strings::ToNumber<i32>(GetCurrentKey());
+				if (!entityIndex || !ids.IsValidIndex(entityIndex.Get()))
 				{
-					const Id id = ids[i];
-					key.clear();
-					FormatTo(key, "{}", i);
-
-					if (EnterNext(key))
-					{
-						if constexpr (!IsEmpty<T>)
-						{
-							T& comp = pool.Has(id) ? pool.Get(id) : pool.Add(id);
-							Serialize(comp);
-						}
-						else
-						{
-							pool.Add(id);
-						}
-						Leave();
-					}
+					Leave();
+					continue;
 				}
-			}
-			else
-			{
+
+				const Id id = ids[entityIndex.Get()];
 				if constexpr (!IsEmpty<T>)
 				{
-					const Id id = ids[0];
-					T& comp     = pool.Has(id) ? pool.Get(id) : pool.Add(id);
+					T& comp = pool.Has(id) ? pool.Get(id) : pool.Add(id);
 					Serialize(comp);
 				}
 				else
 				{
-					pool.Add(ids[0]);
+					pool.Add(id);
 				}
+				Leave();
 			}
-			Leave();
+		}
+		else
+		{
+			if constexpr (!IsEmpty<T>)
+			{
+				const Id id = ids[0];
+				T& comp     = pool.Has(id) ? pool.Get(id) : pool.Add(id);
+				Serialize(comp);
+			}
+			else
+			{
+				pool.Add(ids[0]);
+			}
 		}
 	}
 
@@ -2599,7 +2658,7 @@ namespace p
 
 		// FIX: yyjson doesn't seem to take into account stringview length when generating text
 		// Temporarely fixed by caching component name keys
-		PushAddFlags(p::WriteFlags_CacheStringKeys);
+		PushAddFlags(p::FormatFlags(p::FF_W_CacheStringKeys | p::FF_RW_Structured));
 		if (EnterNext(GetTypeName<T>(false)))
 		{
 			if (serializingMany) [[likely]]
@@ -2666,7 +2725,9 @@ namespace p
 		constexpr TypeId componentId = GetTypeId<Mut<T>>();
 
 		auto& self = const_cast<IdContext&>(*this);
+		PushCurrentArena(*componentArena.Get());
 		PoolInstance instance{componentId, MakeUnique<TPool<Mut<T>>>(self)};
+		PopCurrentArena();
 		return Move(instance);
 	}
 
@@ -2674,7 +2735,9 @@ namespace p
 	inline Static& IdContext::SetStatic()
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
-		ptr         = MakeOwned<Static>();
+		PushCurrentArena(*staticArena.Get());
+		ptr = MakeOwned<Static>();
+		PopCurrentArena();
 		return *ptr.GetUnsafe<Static>();
 	}
 
@@ -2682,7 +2745,9 @@ namespace p
 	inline Static& IdContext::SetStatic(Static&& value)
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
-		ptr         = MakeOwned<Static>(p::Fwd<Static>(value));
+		PushCurrentArena(*staticArena.Get());
+		ptr = MakeOwned<Static>(p::Fwd<Static>(value));
+		PopCurrentArena();
 		return *ptr.GetUnsafe<Static>();
 	}
 
@@ -2690,7 +2755,9 @@ namespace p
 	inline Static& IdContext::SetStatic(const Static& value)
 	{
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>());
-		ptr         = MakeOwned<Static>(value);
+		PushCurrentArena(*staticArena.Get());
+		ptr = MakeOwned<Static>(value);
+		PopCurrentArena();
 		return *ptr.GetUnsafe<Static>();
 	}
 
@@ -2701,7 +2768,9 @@ namespace p
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
 		if (bAdded)
 		{
+			PushCurrentArena(*staticArena.Get());
 			ptr = MakeOwned<Static>();
+			PopCurrentArena();
 		}
 		return *ptr.GetUnsafe<Static>();
 	}
@@ -2713,7 +2782,9 @@ namespace p
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
 		if (bAdded)
 		{
+			PushCurrentArena(*staticArena.Get());
 			ptr = MakeOwned<Static>(p::Fwd<Static>(value));
+			PopCurrentArena();
 		}
 		return *ptr.GetUnsafe<Static>();
 	}
@@ -2725,7 +2796,9 @@ namespace p
 		OwnPtr& ptr = FindOrAddStaticPtr(statics, GetTypeId<Static>(), &bAdded);
 		if (bAdded)
 		{
+			PushCurrentArena(*staticArena.Get());
 			ptr = MakeOwned<Static>(value);
+			PopCurrentArena();
 		}
 		return *ptr.GetUnsafe<Static>();
 	}

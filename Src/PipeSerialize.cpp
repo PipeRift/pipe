@@ -57,29 +57,59 @@ bool yyjson_mut_obj_add_val(
 namespace p
 {
 #pragma region Reader
-	void Reader::BeginObject()
+	bool Reader::BeginObject()
 	{
-		GetFormat().BeginObject();
+		return GetFormat().BeginObject();
 	}
 
-	bool Reader::EnterNext(StringView name)
+	bool Reader::EnterNext(StringView matchKey)
 	{
-		return GetFormat().EnterNext(name);
-	}
-
-	void Reader::BeginArray(u32& size)
-	{
-		GetFormat().BeginArray(size);
-	}
-
-	bool Reader::EnterNext()
-	{
-		return GetFormat().EnterNext();
+		return GetFormat().EnterNext(matchKey);
 	}
 
 	void Reader::Leave()
 	{
 		GetFormat().Leave();
+	}
+
+	StringView Reader::GetCurrentKey() const
+	{
+		return GetFormat().GetCurrentKey();
+	}
+
+	i32 Reader::GetCurrentIndex() const
+	{
+		return GetFormat().GetCurrentIndex();
+	}
+
+	i32 Reader::GetCurrentCount() const
+	{
+		return GetFormat().GetCurrentCount();
+	}
+
+	void Reader::PushAddFlags(FormatFlags flags)
+	{
+		GetFormat().PushAddFlags(flags);
+	}
+
+	void Reader::PushRemoveFlags(FormatFlags flags)
+	{
+		GetFormat().PushRemoveFlags(flags);
+	}
+
+	void Reader::PopFlags()
+	{
+		GetFormat().PopFlags();
+	}
+
+	FormatFlags Reader::GetFlags()
+	{
+		return GetFormat().GetFlags();
+	}
+
+	bool Reader::BeginArray(i32& size)
+	{
+		return GetFormat().BeginArray(size);
 	}
 
 	bool Reader::IsObject()
@@ -144,24 +174,19 @@ namespace p
 
 
 #pragma region Writer
-	void Writer::BeginObject()
+	bool Writer::EnterNext(StringView key)
 	{
-		GetFormat().BeginObject();
+		return GetFormat().EnterNext(key);
 	}
 
-	bool Writer::EnterNext(StringView name)
+	bool Writer::BeginObject()
 	{
-		return GetFormat().EnterNext(name);
+		return GetFormat().BeginObject();
 	}
 
-	void Writer::BeginArray(u32 size)
+	bool Writer::BeginArray(i32 size)
 	{
-		GetFormat().BeginArray(size);
-	}
-
-	bool Writer::EnterNext()
-	{
-		return GetFormat().EnterNext();
+		return GetFormat().BeginArray(size);
 	}
 
 	void Writer::Leave()
@@ -169,11 +194,11 @@ namespace p
 		GetFormat().Leave();
 	}
 
-	void Writer::PushAddFlags(WriteFlags flags)
+	void Writer::PushAddFlags(FormatFlags flags)
 	{
 		GetFormat().PushAddFlags(flags);
 	}
-	void Writer::PushRemoveFlags(WriteFlags flags)
+	void Writer::PushRemoveFlags(FormatFlags flags)
 	{
 		GetFormat().PushRemoveFlags(flags);
 	}
@@ -234,51 +259,39 @@ namespace p
 
 
 #pragma region ReadWriter
-	void ReadWriter::BeginObject()
+	bool ReadWriter::EnterNext(StringView key)
 	{
 		if (IsWriting())
 		{
-			writer->BeginObject();
+			return writer->EnterNext(key);
 		}
 		else
 		{
-			reader->BeginObject();
+			return reader->EnterNext(key);
 		}
 	}
 
-	bool ReadWriter::EnterNext(StringView name)
+	bool ReadWriter::BeginObject()
 	{
 		if (IsWriting())
 		{
-			return writer->EnterNext(name);
+			return writer->BeginObject();
 		}
 		else
 		{
-			return reader->EnterNext(name);
+			return reader->BeginObject();
 		}
 	}
 
-	void ReadWriter::BeginArray(u32& size)
+	bool ReadWriter::BeginArray(i32& size)
 	{
 		if (IsWriting())
 		{
-			writer->BeginArray(size);
+			return writer->BeginArray(size);
 		}
 		else
 		{
-			reader->BeginArray(size);
-		}
-	}
-
-	bool ReadWriter::EnterNext()
-	{
-		if (IsWriting())
-		{
-			return writer->EnterNext();
-		}
-		else
-		{
-			return reader->EnterNext();
+			return reader->BeginArray(size);
 		}
 	}
 
@@ -294,7 +307,7 @@ namespace p
 		}
 	}
 
-	void ReadWriter::PushAddFlags(WriteFlags flags)
+	void ReadWriter::PushAddFlags(FormatFlags flags)
 	{
 		if (IsWriting())
 		{
@@ -302,7 +315,7 @@ namespace p
 		}
 	}
 
-	void ReadWriter::PushRemoveFlags(WriteFlags flags)
+	void ReadWriter::PushRemoveFlags(FormatFlags flags)
 	{
 		if (IsWriting())
 		{
@@ -347,323 +360,391 @@ namespace p
 		InternalInit(data.data(), data.length(), true);
 	}
 
+	JsonFormatReader::JsonFormatReader(JsonFormatReader&& other) noexcept
+	    : IFormatReader(Move(other))
+	    , doc(Exchange(other.doc, nullptr))
+	    , root(Exchange(other.root, nullptr))
+	    , current(Exchange(other.current, Value{}))
+	    , valueStack(Move(other.valueStack))
+	    , error(other.error)
+	{}
+
+	JsonFormatReader& JsonFormatReader::operator=(JsonFormatReader&& other) noexcept
+	{
+		if (this != &other)
+		{
+			yyjson_doc_free(doc);
+			IFormatReader::operator=(Move(other));
+
+			doc        = Exchange(other.doc, nullptr);
+			root       = Exchange(other.root, nullptr);
+			current    = Exchange(other.current, Value{});
+			valueStack = Move(other.valueStack);
+			error      = other.error;
+		}
+		return *this;
+	}
+
 	JsonFormatReader::~JsonFormatReader()
 	{
-		if (scopeStack.Size() > 0)
-		{
-			PopScope();
-		}
-		P_EnsureMsg(scopeStack.Size() == 0,
-		    "Forgot to Leave() some scope? One or more scopes have not been closed.");
+		P_EnsureMsg(valueStack.Size() == 0,
+		    "Forgot to Leave() some value? One or more values have not been closed.");
 		yyjson_doc_free(doc);
 	}
 
-	JsonFormatReader::Scope& JsonFormatReader::GetScope()
+	void JsonFormatReader::PushValue(yyjson_val* newValue, i32 newIndex, StringView newKey)
 	{
-		return scopeStack.Last();
+		valueStack.Add(current);    // The enclosing value moves to the stack
+		current = Value{newValue, newIndex, newKey};
 	}
 
-	void JsonFormatReader::PushScope(yyjson_val* newScope)
+	void JsonFormatReader::PopValue()
 	{
-		scopeStack.Add({});
-		current = newScope;
+		Value& parent    = valueStack.Last();
+		parent.last      = current.value;
+		parent.lastIndex = current.index;
+		current          = parent;
+		valueStack.RemoveLast(1, Shrink::No);
 	}
 
-	void JsonFormatReader::PopScope()
+	bool JsonFormatReader::BeginObject()
 	{
-		if (auto* parent = GetScope().parent)
-		{
-			current = parent;
-		}
-		scopeStack.RemoveAt(scopeStack.Size() - 1, Shrink::No);
+		return P_EnsureMsg(
+		    yyjson_is_obj(current.value), "BeginObject() called on a value that is not an object");
 	}
 
-	void JsonFormatReader::BeginObject()
+	bool JsonFormatReader::BeginArray(i32& size)
 	{
-		if (!current) [[unlikely]]
+		if (P_EnsureMsg(yyjson_is_arr(current.value),
+		        "BeginArray() called on a value that is not an array"))
 		{
-			return;
-		}
-		InternalBegin();
-	}
-
-	void JsonFormatReader::BeginArray(u32& size)
-	{
-		if (!current) [[unlikely]]
-		{
-			size = 0;
-			return;
-		}
-		const bool isArray = unsafe_yyjson_is_arr(current);
-		size               = InternalBegin();
-		if (!isArray)
-		{
-			size = 0;
-		}
-	}
-
-	bool JsonFormatReader::EnterNext(StringView name)
-	{
-		auto& scope = GetScope();
-		if (!P_EnsureMsg(yyjson_is_obj(scope.parent),
-		        "Current scope is not an object or has not been initialized with BeginObject()"))
-		    [[unlikely]]
-		{
-			return false;
-		}
-
-		u32 firstId;
-		yyjson_val* firstKey;
-		if (scope.id == 0) [[unlikely]]    // Look indexes
-		{
-			// Start looking from first element
-			firstId  = 0;
-			firstKey = unsafe_yyjson_get_first(scope.parent);
-		}
-		else
-		{
-			// Start looking from next element
-			firstId  = scope.id;
-			firstKey = unsafe_yyjson_get_next(current);
-		}
-
-		if (FindNextKey(firstId, firstKey, name, scope.id, current))
-		{
-			++scope.id;
-			if (scope.id >= scope.size)
-			{
-				scope.id = 0;
-			}
-			PushScope(current);
+			size = i32(yyjson_get_len(current.value));
 			return true;
 		}
-		return false;
-	}
-
-	bool JsonFormatReader::EnterNext()
-	{
-		auto& scope = GetScope();
-		if (!P_EnsureMsg(yyjson_is_arr(scope.parent),
-		        "Current scope is not an array or has not been initialized with BeginArray()"))
-		    [[unlikely]]
-		{
-			return false;
-		}
-
-		if (scope.id >= scope.size)
-		{
-			Error("Tried enter more child scopes than available (Index: {}, Max: {})", scope.id,
-			    scope.size);
-			return false;
-		}
-
-		if (scope.id == 0) [[unlikely]]
-		{
-			++scope.id;
-			PushScope(unsafe_yyjson_get_first(scope.parent));
-		}
 		else
 		{
-			++scope.id;
-			PushScope(unsafe_yyjson_get_next(current));
+			size = 0;
+			return false;
 		}
-		return true;
+	}
+
+	bool JsonFormatReader::EnterNext(StringView matchKey)
+	{
+		if (!current.value)
+		{
+			return false;
+		}
+
+		if (unsafe_yyjson_is_arr(current.value))
+		{
+			const i32 size = i32(unsafe_yyjson_get_len(current.value));
+			const i32 next = current.lastIndex + 1;    // NO_INDEX (-1) + 1 is the first element
+			if (next >= size) [[unlikely]]
+			{
+				return false;
+			}
+
+			yyjson_val* const keyValue = current.last ? unsafe_yyjson_get_next(current.last)
+			                                          : unsafe_yyjson_get_first(current.value);
+			PushValue(keyValue, next);
+			return true;
+		}
+		else if (unsafe_yyjson_is_obj(current.value))
+		{
+			const i32 size = i32(unsafe_yyjson_get_len(current.value));
+			const i32 next = current.lastIndex + 1;
+			if (next >= size) [[unlikely]]
+			{
+				return false;
+			}
+
+			// Next member, whatever its key is
+			yyjson_val* const keyValue = current.last ? unsafe_yyjson_get_next(current.last)
+			                                          : unsafe_yyjson_get_first(current.value);
+			const StringView enteredKey{
+			    unsafe_yyjson_get_str(keyValue), unsafe_yyjson_get_len(keyValue)};
+			if (matchKey.data() != nullptr && enteredKey != matchKey)
+			{
+				return false;    // Key mismatch: nothing is entered
+			}
+			PushValue(keyValue + 1, next, enteredKey);
+			return true;
+		}
+
+		P_CheckMsg(false,
+		    "Tried to enter a value outside an array or object. Has BeginArray()/"
+		    "BeginObject() been called?");
+		return false;
 	}
 
 	void JsonFormatReader::Leave()
 	{
-		if (P_EnsureMsg(scopeStack.Size() >= 1,
-		        "Closed an extra scope! When surrounding EnterScope in if(), make sure to call "
-		        "leave scope inside the brackets."))
+		if (P_EnsureMsg(valueStack.Size() >= 1,
+		        "Closed an extra value! When surrounding EnterNext in if(), make sure to call "
+		        "call Leave() inside the brackets."))
 		{
-			PopScope();
+			PopValue();
 		}
+	}
+
+	StringView JsonFormatReader::GetCurrentKey() const
+	{
+		return current.key;
+	}
+
+	i32 JsonFormatReader::GetCurrentIndex() const
+	{
+		return current.index;
+	}
+
+	i32 JsonFormatReader::GetCurrentCount() const
+	{
+		if (current.value
+		    && (unsafe_yyjson_is_obj(current.value) || unsafe_yyjson_is_arr(current.value)))
+		{
+			return i32(unsafe_yyjson_get_len(current.value));
+		}
+		return 0;
 	}
 
 	void JsonFormatReader::Read(bool& val)
 	{
-		val = yyjson_get_bool(current);
+		val = yyjson_get_bool(current.value);
 	}
 
 	void JsonFormatReader::Read(i8& val)
 	{
-		if (!yyjson_is_num(current)) [[unlikely]]
+		if (!yyjson_is_num(current.value)) [[unlikely]]
 		{
 			val = 0;    // Default to 0
 			return;
 		}
-		switch (unsafe_yyjson_get_subtype(current))
+		switch (unsafe_yyjson_get_subtype(current.value))
 		{
 			case YYJSON_SUBTYPE_SINT:
-				val = i8(Clamp<i64>(
-				    unsafe_yyjson_get_sint(current), Limits<i8>::Lowest(), Limits<i8>::Max()));
+				val = i8(Clamp<i64>(unsafe_yyjson_get_sint(current.value), Limits<i8>::Lowest(),
+				    Limits<i8>::Max()));
 				break;
 			case YYJSON_SUBTYPE_UINT:
-				val = i8(Min<u64>(unsafe_yyjson_get_uint(current), Limits<i8>::Max()));
+				val = i8(Min<u64>(unsafe_yyjson_get_uint(current.value), Limits<i8>::Max()));
 				break;
-			case YYJSON_SUBTYPE_REAL: val = i8(unsafe_yyjson_get_real(current)); break;
+			case YYJSON_SUBTYPE_REAL:
+				val = i8(Clamp(unsafe_yyjson_get_real(current.value), f64(Limits<i8>::Lowest()),
+				    f64(Limits<i8>::Max())));
+				break;
 		}
 	}
 	void JsonFormatReader::Read(u8& val)
 	{
-		if (!yyjson_is_num(current)) [[unlikely]]
+		if (!yyjson_is_num(current.value)) [[unlikely]]
 		{
 			val = 0u;    // Default to 0
 			return;
 		}
-		switch (unsafe_yyjson_get_subtype(current))
+		switch (unsafe_yyjson_get_subtype(current.value))
 		{
 			case YYJSON_SUBTYPE_UINT:
-				val = u8(Min<u64>(unsafe_yyjson_get_uint(current), Limits<u8>::Max()));
+				val = u8(Min<u64>(unsafe_yyjson_get_uint(current.value), Limits<u8>::Max()));
 				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u8(Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u8>::Max()));
+				val = u8(Clamp<i64>(unsafe_yyjson_get_sint(current.value), 0, Limits<u8>::Max()));
 				break;
 
-			case YYJSON_SUBTYPE_REAL: val = u8(unsafe_yyjson_get_real(current)); break;
+			case YYJSON_SUBTYPE_REAL:
+				val = u8(Clamp(unsafe_yyjson_get_real(current.value), f64(Limits<u8>::Lowest()),
+				    f64(Limits<u8>::Max())));
+				break;
 		}
 	}
 	void JsonFormatReader::Read(i16& val)
 	{
-		if (!yyjson_is_num(current)) [[unlikely]]
+		if (!yyjson_is_num(current.value)) [[unlikely]]
 		{
 			val = 0;    // Default to 0
 			return;
 		}
-		switch (unsafe_yyjson_get_subtype(current))
+		switch (unsafe_yyjson_get_subtype(current.value))
 		{
 			case YYJSON_SUBTYPE_SINT:
-				val = i16(Clamp<i64>(
-				    unsafe_yyjson_get_sint(current), Limits<i16>::Lowest(), Limits<i16>::Max()));
+				val = i16(Clamp<i64>(unsafe_yyjson_get_sint(current.value), Limits<i16>::Lowest(),
+				    Limits<i16>::Max()));
 				break;
 			case YYJSON_SUBTYPE_UINT:
-				val = i16(Min<u64>(unsafe_yyjson_get_uint(current), Limits<i16>::Max()));
+				val = i16(Min<u64>(unsafe_yyjson_get_uint(current.value), Limits<i16>::Max()));
 				break;
-			case YYJSON_SUBTYPE_REAL: val = i16(unsafe_yyjson_get_real(current)); break;
+			case YYJSON_SUBTYPE_REAL:
+				val = i16(Clamp(unsafe_yyjson_get_real(current.value), f64(Limits<i16>::Lowest()),
+				    f64(Limits<i16>::Max())));
+				break;
 		}
 	}
 	void JsonFormatReader::Read(u16& val)
 	{
-		if (!yyjson_is_num(current)) [[unlikely]]
+		if (!yyjson_is_num(current.value)) [[unlikely]]
 		{
 			val = 0u;    // Default to 0
 			return;
 		}
-		switch (unsafe_yyjson_get_subtype(current))
+		switch (unsafe_yyjson_get_subtype(current.value))
 		{
 			case YYJSON_SUBTYPE_UINT:
-				val = u16(Min<u64>(unsafe_yyjson_get_uint(current), Limits<u16>::Max()));
+				val = u16(Min<u64>(unsafe_yyjson_get_uint(current.value), Limits<u16>::Max()));
 				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u16(Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u16>::Max()));
+				val = u16(Clamp<i64>(unsafe_yyjson_get_sint(current.value), 0, Limits<u16>::Max()));
 				break;
 
-			case YYJSON_SUBTYPE_REAL: val = u16(unsafe_yyjson_get_real(current)); break;
+			case YYJSON_SUBTYPE_REAL:
+				val = u16(Clamp(unsafe_yyjson_get_real(current.value), f64(Limits<u16>::Lowest()),
+				    f64(Limits<u16>::Max())));
+				break;
 		}
 	}
 	void JsonFormatReader::Read(i32& val)
 	{
-		if (!yyjson_is_num(current)) [[unlikely]]
+		if (!yyjson_is_num(current.value)) [[unlikely]]
 		{
 			val = 0;    // Default to 0
 			return;
 		}
-		switch (unsafe_yyjson_get_subtype(current))
+		switch (unsafe_yyjson_get_subtype(current.value))
 		{
 			case YYJSON_SUBTYPE_SINT:
-				val = i32(Clamp<i64>(
-				    unsafe_yyjson_get_sint(current), Limits<i32>::Lowest(), Limits<i32>::Max()));
+				val = i32(Clamp<i64>(unsafe_yyjson_get_sint(current.value), Limits<i32>::Lowest(),
+				    Limits<i32>::Max()));
 				break;
 			case YYJSON_SUBTYPE_UINT:
-				val = i32(Min<u64>(unsafe_yyjson_get_uint(current), Limits<i32>::Max()));
+				val = i32(Min<u64>(unsafe_yyjson_get_uint(current.value), Limits<i32>::Max()));
 				break;
-			case YYJSON_SUBTYPE_REAL: val = i32(unsafe_yyjson_get_real(current)); break;
+			case YYJSON_SUBTYPE_REAL:
+				val = i32(Clamp(unsafe_yyjson_get_real(current.value), f64(Limits<i32>::Lowest()),
+				    f64(Limits<i32>::Max())));
+				break;
 		}
 	}
 	void JsonFormatReader::Read(u32& val)
 	{
-		if (!yyjson_is_num(current)) [[unlikely]]
+		if (!yyjson_is_num(current.value)) [[unlikely]]
 		{
 			val = 0u;    // Default to 0
 			return;
 		}
-		switch (unsafe_yyjson_get_subtype(current))
+		switch (unsafe_yyjson_get_subtype(current.value))
 		{
 			case YYJSON_SUBTYPE_UINT:
-				val = u32(Min<u64>(unsafe_yyjson_get_uint(current), Limits<u32>::Max()));
+				val = u32(Min<u64>(unsafe_yyjson_get_uint(current.value), Limits<u32>::Max()));
 				break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u32(Clamp<i64>(unsafe_yyjson_get_sint(current), 0, Limits<u32>::Max()));
+				val = u32(Clamp<i64>(unsafe_yyjson_get_sint(current.value), 0, Limits<u32>::Max()));
 				break;
 
-			case YYJSON_SUBTYPE_REAL: val = u32(unsafe_yyjson_get_real(current)); break;
+			case YYJSON_SUBTYPE_REAL:
+				val = u32(Clamp(unsafe_yyjson_get_real(current.value), f64(Limits<u32>::Lowest()),
+				    f64(Limits<u32>::Max())));
+				break;
 		}
 	}
 	void JsonFormatReader::Read(i64& val)
 	{
-		if (!yyjson_is_num(current)) [[unlikely]]
+		if (!yyjson_is_num(current.value)) [[unlikely]]
 		{
 			val = 0;    // Default to 0
 			return;
 		}
-		switch (unsafe_yyjson_get_subtype(current))
+		switch (unsafe_yyjson_get_subtype(current.value))
 		{
-			case YYJSON_SUBTYPE_SINT: val = unsafe_yyjson_get_sint(current); break;
+			case YYJSON_SUBTYPE_SINT: val = unsafe_yyjson_get_sint(current.value); break;
 			case YYJSON_SUBTYPE_UINT:
-				val = i64(Min<u64>(unsafe_yyjson_get_uint(current), Limits<i64>::Max()));
+				val = i64(Min<u64>(unsafe_yyjson_get_uint(current.value), Limits<i64>::Max()));
 				break;
-			case YYJSON_SUBTYPE_REAL: val = i64(unsafe_yyjson_get_real(current)); break;
+			case YYJSON_SUBTYPE_REAL: {
+				// f64(i64 max) rounds up to 2^63, so the bounds must be checked before casting
+				const f64 real = unsafe_yyjson_get_real(current.value);
+				if (IsNAN(real))
+				{
+					val = 0;
+				}
+				else if (real <= f64(Limits<i64>::Lowest()))
+				{
+					val = Limits<i64>::Lowest();
+				}
+				else if (real >= f64(Limits<i64>::Max()))
+				{
+					val = Limits<i64>::Max();
+				}
+				else
+				{
+					val = i64(real);
+				}
+				break;
+			}
 		}
 	}
 	void JsonFormatReader::Read(u64& val)
 	{
-		if (!yyjson_is_num(current)) [[unlikely]]
+		if (!yyjson_is_num(current.value)) [[unlikely]]
 		{
 			val = 0u;    // Default to 0
 			return;
 		}
-		switch (unsafe_yyjson_get_subtype(current))
+		switch (unsafe_yyjson_get_subtype(current.value))
 		{
-			case YYJSON_SUBTYPE_UINT: val = unsafe_yyjson_get_uint(current); break;
+			case YYJSON_SUBTYPE_UINT: val = unsafe_yyjson_get_uint(current.value); break;
 			case YYJSON_SUBTYPE_SINT:
-				val = u64(Max<i64>(unsafe_yyjson_get_sint(current), 0));
+				val = u64(Max<i64>(unsafe_yyjson_get_sint(current.value), 0));
 				break;
-			case YYJSON_SUBTYPE_REAL: val = u64(unsafe_yyjson_get_real(current)); break;
+			case YYJSON_SUBTYPE_REAL: {
+				// f64(u64 max) rounds up to 2^64, so the bounds must be checked before casting
+				const f64 real = unsafe_yyjson_get_real(current.value);
+				if (IsNAN(real) || real <= f64(0))
+				{
+					val = 0;
+				}
+				else if (real >= f64(Limits<u64>::Max()))
+				{
+					val = Limits<u64>::Max();
+				}
+				else
+				{
+					val = u64(real);
+				}
+				break;
+			}
 		}
 	}
 	void JsonFormatReader::Read(float& val)
 	{
-		if (!yyjson_is_num(current)) [[unlikely]]
+		if (!yyjson_is_num(current.value)) [[unlikely]]
 		{
 			val = 0.f;    // Default to 0
 			return;
 		}
-		switch (unsafe_yyjson_get_subtype(current))
+		switch (unsafe_yyjson_get_subtype(current.value))
 		{
-			case YYJSON_SUBTYPE_REAL: val = float(unsafe_yyjson_get_real(current)); break;
-			case YYJSON_SUBTYPE_SINT: val = float(unsafe_yyjson_get_sint(current)); break;
-			case YYJSON_SUBTYPE_UINT: val = float(unsafe_yyjson_get_uint(current)); break;
+			case YYJSON_SUBTYPE_REAL: val = float(unsafe_yyjson_get_real(current.value)); break;
+			case YYJSON_SUBTYPE_SINT: val = float(unsafe_yyjson_get_sint(current.value)); break;
+			case YYJSON_SUBTYPE_UINT: val = float(unsafe_yyjson_get_uint(current.value)); break;
 		}
 	}
 	void JsonFormatReader::Read(double& val)
 	{
-		if (!yyjson_is_num(current)) [[unlikely]]
+		if (!yyjson_is_num(current.value)) [[unlikely]]
 		{
 			val = 0;    // Default to 0
 			return;
 		}
-		switch (unsafe_yyjson_get_subtype(current))
+		switch (unsafe_yyjson_get_subtype(current.value))
 		{
-			case YYJSON_SUBTYPE_REAL: val = unsafe_yyjson_get_real(current); break;
-			case YYJSON_SUBTYPE_SINT: val = double(unsafe_yyjson_get_sint(current)); break;
-			case YYJSON_SUBTYPE_UINT: val = double(unsafe_yyjson_get_uint(current)); break;
+			case YYJSON_SUBTYPE_REAL: val = unsafe_yyjson_get_real(current.value); break;
+			case YYJSON_SUBTYPE_SINT: val = double(unsafe_yyjson_get_sint(current.value)); break;
+			case YYJSON_SUBTYPE_UINT: val = double(unsafe_yyjson_get_uint(current.value)); break;
 		}
 	}
 	void JsonFormatReader::Read(StringView& val)
 	{
-		if (yyjson_is_str(current))
+		if (yyjson_is_str(current.value))
 		{
-			val = {unsafe_yyjson_get_str(current), unsafe_yyjson_get_len(current)};
+			val = {unsafe_yyjson_get_str(current.value), unsafe_yyjson_get_len(current.value)};
 			return;
 		}
 		val = {};
@@ -671,12 +752,12 @@ namespace p
 
 	bool JsonFormatReader::IsObject() const
 	{
-		return yyjson_is_obj(current);
+		return yyjson_is_obj(current.value);
 	}
 
 	bool JsonFormatReader::IsArray() const
 	{
-		return yyjson_is_arr(current);
+		return yyjson_is_arr(current.value);
 	}
 
 	void JsonFormatReader::InternalInit(char* data, sizet size, bool insitu)
@@ -687,8 +768,8 @@ namespace p
 		doc = yyjson_read_opts(data, size, flags, &yyjsonAllocator, &err);
 		if (doc)
 		{
-			root = yyjson_doc_get_root(doc);
-			PushScope(root);
+			root    = yyjson_doc_get_root(doc);
+			current = Value{root};
 		}
 		else
 		{
@@ -696,64 +777,43 @@ namespace p
 		}
 	}
 
-	u32 JsonFormatReader::InternalBegin()
-	{
-		Scope& scope = GetScope();
-		if (scope.size > 0) [[unlikely]]
-		{
-			Error("Have BeginObject() or BeginArray() been called already in this scope?");
-			return 0;
-		}
-		scope.id     = 0;
-		scope.size   = u32(unsafe_yyjson_get_len(current));
-		scope.parent = current;
-		current      = nullptr;
-		return scope.size;
-	}
-
-	bool JsonFormatReader::FindNextKey(
-	    u32 firstId, yyjson_val* firstKey, StringView name, u32& outIndex, yyjson_val*& outValue)
-	{
-		// Get key of the current value. See yyjson_obj_foreach
-		auto* key = firstKey;
-		u32 i;
-		// Iterate [firstId, last]
-		const Scope& scope = GetScope();
-		for (i = firstId; i < scope.size; ++i)
-		{
-			if (unsafe_yyjson_equals_strn(key, name.data(), name.size()))
-			{
-				outIndex = i;
-				outValue = key + 1;
-				return true;
-			}
-			key = unsafe_yyjson_get_next(key + 1);
-		}
-
-		// Iterate [first, firstId)
-		key = unsafe_yyjson_get_first(scope.parent);
-		for (i = 0; i < firstId; ++i)
-		{
-			if (unsafe_yyjson_equals_strn(key, name.data(), name.size()))
-			{
-				outIndex = i;
-				outValue = key + 1;
-				return true;
-			}
-			key = unsafe_yyjson_get_next(key + 1);
-		}
-
-		return false;
-	}
-
-
 	JsonFormatWriter::JsonFormatWriter()
 	{
 		doc = yyjson_mut_doc_new(nullptr);
 		if (doc)
 		{
-			PushScope({});
+			valueStack.Add(Value{});    // Root frame
 		}
+	}
+
+	JsonFormatWriter::JsonFormatWriter(JsonFormatWriter&& other) noexcept
+	    : IFormatWriter(Move(other))
+	    , doc(Exchange(other.doc, nullptr))
+	    , current(Exchange(other.current, nullptr))
+	    , valueStack(Move(other.valueStack))
+	    , open(Exchange(other.open, false))
+	    , asString(Exchange(other.asString, {}))
+	{}
+
+	JsonFormatWriter& JsonFormatWriter::operator=(JsonFormatWriter&& other) noexcept
+	{
+		if (this != &other)
+		{
+			Close();
+			yyjson_mut_doc_free(doc);
+			if (asString.data())
+			{
+				yyjsonAllocator.free(yyjsonAllocator.ctx, const_cast<char*>(asString.data()));
+			}
+			IFormatWriter::operator=(Move(other));
+
+			doc        = Exchange(other.doc, nullptr);
+			current    = Exchange(other.current, nullptr);
+			valueStack = Move(other.valueStack);
+			open       = Exchange(other.open, false);
+			asString   = Exchange(other.asString, {});
+		}
+		return *this;
 	}
 
 	JsonFormatWriter::~JsonFormatWriter()
@@ -767,103 +827,131 @@ namespace p
 		}
 	}
 
-	JsonFormatWriter::Scope& JsonFormatWriter::GetScope()
+	JsonFormatWriter::Value& JsonFormatWriter::GetCurrentValue()
 	{
-		return scopeStack.Last();
+		return valueStack.Last();
 	}
 
-	void JsonFormatWriter::PushScope(StringView key)
+	void JsonFormatWriter::PushValue(StringView key)
 	{
-		if ((GetFlags() & WriteFlags_CacheStringKeys) > 0)
+		P_CheckMsg(key.data() != nullptr, "Tried to add an object key value without a key");
+		yyjson_mut_val* keyValue;
+		if (HasFlag(GetFlags(), FF_W_CacheStringKeys))
 		{
-			scopeStack.Add({yyjson_mut_strncpy(doc, key.data(), key.size()), current});
+			keyValue = yyjson_mut_strncpy(doc, key.data(), key.size());
 		}
 		else
 		{
-			scopeStack.Add({yyjson_mut_strn(doc, key.data(), key.size()), current});
+			keyValue = yyjson_mut_strn(doc, key.data(), key.size());
 		}
-		current = nullptr;    // New scope
+		valueStack.Add({.parent = current, .key = keyValue});
+		current = nullptr;    // New value
 	}
 
-	void JsonFormatWriter::PopScope()
+	void JsonFormatWriter::PushValue(i32 index)
 	{
-		const Scope& scope = GetScope();
+		valueStack.Add({.parent = current, .index = index});
+		current = nullptr;    // New value
+	}
+
+	void JsonFormatWriter::PopValue()
+	{
+		const Value& value = GetCurrentValue();
 		if (current)
 		{
-			switch (yyjson_mut_get_type(scope.parent))
+			switch (yyjson_mut_get_type(value.parent))
 			{
 				case YYJSON_TYPE_OBJ:
-					if (scope.key)
+					if (value.key)
 					{
-						yyjson_mut_obj_add(scope.parent, scope.key, current);
+						yyjson_mut_obj_add(value.parent, value.key, current);
 					}
 					break;
-				case YYJSON_TYPE_ARR: yyjson_mut_arr_append(scope.parent, current); break;
+				case YYJSON_TYPE_ARR:
+					if (value.index >= 0 && value.index < i32(yyjson_mut_arr_size(value.parent)))
+					{
+						yyjson_mut_arr_replace(value.parent, size_t(value.index), current);
+					}
+					else
+					{
+						yyjson_mut_arr_append(value.parent, current);
+					}
+					break;
 			}
 		}
-		current = scope.parent;
-		scopeStack.RemoveAt(scopeStack.Size() - 1, Shrink::No);
+		current = value.parent;
+		valueStack.RemoveLast(1, Shrink::No);
 	}
 
-	bool JsonFormatWriter::EnterNext(StringView name)
+	bool JsonFormatWriter::EnterNext(StringView key)
 	{
-		if (!P_EnsureMsg(yyjson_mut_is_obj(current),
-		        "Current scope is not an object or has not been initialized with BeginObject()"))
-		    [[unlikely]]
+		if (!current)
 		{
 			return false;
 		}
-		PushScope(name);
-		return true;
-	}
-
-	bool JsonFormatWriter::EnterNext()
-	{
-		if (!P_EnsureMsg(yyjson_mut_is_arr(current),
-		        "Current scope is not an array or has not been initialized with BeginArray()"))
-		    [[unlikely]]
+		else if (unsafe_yyjson_is_obj(current))
 		{
-			return false;
+			if (key.data() == nullptr) [[unlikely]]
+			{
+				return false;    // Objects need a key
+			}
+			PushValue(key);    // "" is a valid key
+			return true;
 		}
-		PushScope({});
-		return true;
+		else if (unsafe_yyjson_is_arr(current))
+		{
+			if (key.data() != nullptr) [[unlikely]]
+			{
+				P_CheckMsg(false, "Tried to enter a named value in an array. Arrays have no keys.");
+				return false;
+			}
+			PushValue(NO_INDEX);
+			return true;
+		}
+
+		P_CheckMsg(false,
+		    "Tried to enter a value outside an array or object. Has BeginArray()/"
+		    "BeginObject() been called?");
+		return false;
 	}
 
 	void JsonFormatWriter::Leave()
 	{
-		PopScope();
+		// The root value is pushed by the constructor and only closed by Close()
+		if (P_EnsureMsg(valueStack.Size() > 1,
+		        "Closed an extra value! When surrounding Enter in if(), make sure to call "
+		        "call Leave() inside the brackets."))
+		{
+			PopValue();
+		}
 	}
 
-	void JsonFormatWriter::BeginObject()
+	bool JsonFormatWriter::BeginObject()
 	{
 		if (current) [[unlikely]]
 		{
-			if (!unsafe_yyjson_is_obj(current)) [[unlikely]]
-			{
-				P_CheckMsg(false,
-				    "Scope is already initialized but it is not an object. Is BeginObject() being "
-				    "mixed with BeginArray() in the same scope?");
-			}
-			return;
+			P_CheckMsg(unsafe_yyjson_is_obj(current),
+			    "Value is already initialized but it is not an object. Is BeginObject() being "
+			    "mixed with BeginArray() in the same value?");
+			return false;
 		}
 
 		current = yyjson_mut_obj(doc);
+		return true;
 	}
 
-	void JsonFormatWriter::BeginArray(u32 size)
+	bool JsonFormatWriter::BeginArray(i32 size)
 	{
 		if (current) [[unlikely]]
 		{
-			if (!unsafe_yyjson_is_arr(current)) [[unlikely]]
-			{
-				P_CheckMsg(false,
-				    "Scope is already initialized but it is not an array. Is BeginArray() being "
-				    "mixed with BeginObject() in the same scope?");
-			}
-			return;
+			P_CheckMsg(unsafe_yyjson_is_arr(current),
+			    "Value is already initialized but it is not an array. Is BeginArray() being mixed "
+			    "with BeginObject() in the same value?");
+			return false;
 		}
 
 		current = yyjson_mut_arr(doc);
+		return true;
 	}
 
 	void JsonFormatWriter::Write(bool val)
@@ -912,7 +1000,7 @@ namespace p
 	}
 	void JsonFormatWriter::Write(StringView val)
 	{
-		if ((GetFlags() & WriteFlags_CacheStringValues) > 0)
+		if (HasFlag(GetFlags(), FF_W_CacheStringValues))
 		{
 			current = yyjson_mut_strncpy(doc, val.data(), val.size());
 		}
@@ -929,12 +1017,12 @@ namespace p
 			open = false;
 			yyjson_mut_doc_set_root(doc, current);
 
-			if (scopeStack.Size() > 0)
+			if (valueStack.Size() > 0)
 			{
-				PopScope();
+				PopValue();
 			}
-			P_EnsureMsg(scopeStack.Size() == 0,
-			    "Forgot to Leave() some scope? One or more scopes have not been closed.");
+			P_EnsureMsg(valueStack.Size() == 0,
+			    "Forgot to Leave() some value? One or more values have not been closed.");
 		}
 	}
 
@@ -961,53 +1049,659 @@ namespace p
 
 
 #pragma region BinaryFormat
-	BinaryFormatReader::BinaryFormatReader(TView<u8> data) : data{data}, pointer{data.Data()} {}
+	namespace Binary
+	{
+		enum class Flags : u8
+		{
+			// Type
+			TypeMask = 7,    //_____111
+			/** No type, invalid. */
+			Type_None = 0,    // _____000
+			/** Raw type, no subtype. */
+			Type_Raw = 1,    // _____001
+			/** Null type: `null` literal, no subtype. */
+			Type_Null = 2,    // _____010
+			/** Boolean type, subtype: TRUE, FALSE. */
+			Type_Bool = 3,    // _____011
+			/** Number type, subtype: UINT, SINT, REAL. */
+			Type_Number = 4,    // _____100
+			/** String type, subtype: NONE, NOESC. */
+			Type_String = 5,    // _____101
+			/** Array type, no subtype. */
+			Type_Array = 6,    // _____110
+			/** Object type, no subtype. */
+			Type_Object = 7,    // _____111
 
-	BinaryFormatReader::~BinaryFormatReader() {}
+			// SubType
+			SubTypeMask  = 3 << 3,    // ___11___
+			SubType_None = 0 << 3,    // ___00___
+			/** False subtype: `false` literal. */
+			SubType_False = 0 << 3,    // ___00___
+			/** True subtype: `true` literal. */
+			SubType_True = 1 << 3,    // ___01___
+			/** Unsigned integer subtype: `uint64_t`. */
+			SubType_UInt = 0 << 3,    // ___00___
+			/** Signed integer subtype: `int64_t`. */
+			SubType_SInt = 1 << 3,    // ___01___
+			/** Real number subtype: `double`. */
+			SubType_Real = 2 << 3,    // ___10___
+			/** Array/Object subtype: Its children are structured. */
+			SubType_Structured = 3 << 3,    // ___01___
+
+			// Number Size
+			SizeMask = 3 << 5,    // _11_____
+			Size_8   = 0 << 5,    // _00_____
+			Size_16  = 1 << 5,    // _01_____
+			Size_32  = 2 << 5,    // _10_____
+			Size_64  = 3 << 5,    // _11_____
+
+			// Value type helpers
+			Type_True  = Type_Bool | SubType_True,
+			Type_False = Type_Bool | SubType_False,
+			Type_U8    = Type_Number | SubType_UInt | Size_8,
+			Type_I8    = Type_Number | SubType_SInt | Size_8,
+			Type_U16   = Type_Number | SubType_UInt | Size_16,
+			Type_I16   = Type_Number | SubType_SInt | Size_16,
+			Type_U32   = Type_Number | SubType_UInt | Size_32,
+			Type_I32   = Type_Number | SubType_SInt | Size_32,
+			Type_U64   = Type_Number | SubType_UInt | Size_64,
+			Type_I64   = Type_Number | SubType_SInt | Size_64,
+			Type_F32   = Type_Number | SubType_Real | Size_32,
+			Type_F64   = Type_Number | SubType_Real | Size_64,
+		};
+		P_DEFINE_FLAG_OPERATORS(Flags)
+
+		constexpr u32 TypeShift    = 0;
+		constexpr u32 SubTypeShift = 3;
+		constexpr u32 SizeShift    = 5;
+
+		constexpr Flags GetType(Flags flags)
+		{
+			return flags & Flags::TypeMask;
+		}
+
+		constexpr bool IsTyped(Flags flags)
+		{
+			return GetType(flags) != Flags::Type_None;
+		}
+
+		/** Non-structured values are schema-driven and accept any type.
+		 * Structured values must match the type stored in their flags. */
+		constexpr bool AcceptsStructuredType(Flags flags, Flags expected)
+		{
+			const Flags type = GetType(flags);
+			switch (type)
+			{
+				case Flags::Type_None: return true;
+				case Flags::Type_Bool:
+					// Bool subtypes carry the value, so only the type must match.
+					return type == GetType(expected);
+				default: return flags == expected;
+			}
+		}
+
+		u8* ReadRaw(u8* p, bool& val)
+		{
+			val = bool(p[0]);
+			return p + 1;
+		}
+
+		u8* ReadRaw(u8* p, i8& val)
+		{
+			val = i8(p[0]);
+			return p + 1;
+		}
+
+		u8* ReadRaw(u8* p, u8& val)
+		{
+			val = p[0];
+			return p + 1;
+		}
+
+		u8* ReadRaw(u8* p, i16& val)
+		{
+			val = i16(p[0]);
+			val |= i16(p[1]) << 8;
+			return p + 2;
+		}
+
+		u8* ReadRaw(u8* p, u16& val)
+		{
+			val = u16(p[0]);
+			val |= u16(p[1]) << 8;
+			return p + 2;
+		}
+
+		u8* ReadRaw(u8* p, i32& val)
+		{
+			val = i32(p[0]);
+			val |= i32(p[1]) << 8;
+			val |= i32(p[2]) << 16;
+			val |= i32(p[3]) << 24;
+			return p + 4;
+		}
+
+		u8* ReadRaw(u8* p, u32& val)
+		{
+			val = u32(p[0]);
+			val |= u32(p[1]) << 8;
+			val |= u32(p[2]) << 16;
+			val |= u32(p[3]) << 24;
+			return p + 4;
+		}
+
+		u8* ReadRaw(u8* p, i64& val)
+		{
+			val = i64(p[0]);
+			val |= i64(p[1]) << 8;
+			val |= i64(p[2]) << 16;
+			val |= i64(p[3]) << 24;
+			val |= i64(p[4]) << 32;
+			val |= i64(p[5]) << 40;
+			val |= i64(p[6]) << 48;
+			val |= i64(p[7]) << 56;
+			return p + 8;
+		}
+
+		u8* ReadRaw(u8* p, u64& val)
+		{
+			val = u64(p[0]);
+			val |= u64(p[1]) << 8;
+			val |= u64(p[2]) << 16;
+			val |= u64(p[3]) << 24;
+			val |= u64(p[4]) << 32;
+			val |= u64(p[5]) << 40;
+			val |= u64(p[6]) << 48;
+			val |= u64(p[7]) << 56;
+			return p + 8;
+		}
+
+		u8* ReadRaw(u8* p, float& val)
+		{
+			CopyMem(&val, p, 4);
+			return p + 4;
+		}
+
+		u8* ReadRaw(u8* p, double& val)
+		{
+			CopyMem(&val, p, 8);
+			return p + 8;
+		}
+
+		u8* ReadFlags(Flags& currentFlags, u8* p)
+		{
+			if (IsTyped(currentFlags))
+			{
+				u8 rawFlags  = 0;
+				p            = ReadRaw(p, rawFlags);
+				currentFlags = Binary::Flags(rawFlags);
+			}
+			return p;
+		}
+
+		u8* ReadKey(u8* at, u8* end, StringView& key)
+		{
+			u32 size = 0;
+			if ((end - at) < sizeof(u32))
+			{
+				key = {};
+				return nullptr;
+			}
+			at = ReadRaw(at, size);
+			if ((end - at) < size)
+			{
+				key = {};
+				return nullptr;
+			}
+			key = StringView{reinterpret_cast<const char*>(at), size};
+			at += size;
+			return at;
+		}
+
+		sizet WriteRaw(u8* p, sizet offset, i8 val)
+		{
+			p[offset] = u8(val);
+			return offset + 1;
+		}
+
+		sizet WriteRaw(u8* p, sizet offset, u8 val)
+		{
+			p[offset] = val;
+			return offset + 1;
+		}
+
+		sizet WriteRaw(u8* p, sizet offset, i16 val)
+		{
+			p += offset;
+			p[0] = val & 0xFF;
+			p[1] = val >> 8;
+			return offset + 2;
+		}
+
+		sizet WriteRaw(u8* p, sizet offset, u16 val)
+		{
+			p += offset;
+			p[0] = val & 0xFF;
+			p[1] = val >> 8;
+			return offset + 2;
+		}
+
+		sizet WriteRaw(u8* p, sizet offset, i32 val)
+		{
+			p += offset;
+			p[0] = val & 0xFF;
+			p[1] = (val >> 8) & 0xFF;
+			p[2] = (val >> 16) & 0xFF;
+			p[3] = val >> 24;
+			return offset + 4;
+		}
+
+		sizet WriteRaw(u8* p, sizet offset, u32 val)
+		{
+			p += offset;
+			p[0] = val & 0xFF;
+			p[1] = (val >> 8) & 0xFF;
+			p[2] = (val >> 16) & 0xFF;
+			p[3] = val >> 24;
+			return offset + 4;
+		}
+
+		sizet WriteRaw(u8* p, sizet offset, i64 val)
+		{
+			p += offset;
+			p[0] = val & 0xFF;
+			p[1] = (val >> 8) & 0xFF;
+			p[2] = (val >> 16) & 0xFF;
+			p[3] = (val >> 24) & 0xFF;
+			p[4] = (val >> 32) & 0xFF;
+			p[5] = (val >> 40) & 0xFF;
+			p[6] = (val >> 48) & 0xFF;
+			p[7] = val >> 56;
+			return offset + 8;
+		}
+
+		sizet WriteRaw(u8* p, sizet offset, u64 val)
+		{
+			p += offset;
+			p[0] = val & 0xFF;
+			p[1] = (val >> 8) & 0xFF;
+			p[2] = (val >> 16) & 0xFF;
+			p[3] = (val >> 24) & 0xFF;
+			p[4] = (val >> 32) & 0xFF;
+			p[5] = (val >> 40) & 0xFF;
+			p[6] = (val >> 48) & 0xFF;
+			p[7] = val >> 56;
+			return offset + 8;
+		}
+
+		sizet WriteRaw(u8* p, sizet offset, float val)
+		{
+			CopyMem(p + offset, &val, 4);
+			return offset + 4;
+		}
+
+		sizet WriteRaw(u8* p, sizet offset, double val)
+		{
+			CopyMem(p + offset, &val, 8);
+			return offset + 8;
+		}
+
+		sizet WriteFlags(Flags& currentFlags, u8* p, sizet offset, Flags flags)
+		{
+			if (IsTyped(currentFlags))
+			{
+				offset = WriteRaw(p, offset, u8(flags));
+			}
+			currentFlags = flags;
+			return offset;
+		}
+	}    // namespace Binary
+
+#define EnsureCanRead(expectedType)                                                          \
+	(P_EnsureMsg(!current.used,                                                              \
+	     "Already read this value. Has BeginArray, BeginObject or Read been called before?") \
+	            && Binary::AcceptsStructuredType(current.flags, expectedType)                \
+	        ? (current.used = true)                                                          \
+			: false)
+
+#define EnsureCanWrite()                                                                 \
+	(P_EnsureMsg(!current.used,                                                          \
+	     "Already written this value. Has BeginArray, BeginObject or Write been called " \
+	     "before?")                                                                      \
+	        ? (current.used = true)                                                      \
+			: false)
+
+
+	BinaryFormatReader::BinaryFormatReader(TView<u8> data) : data{data}, pointer{data.Data()}
+	{
+		current = Value{};
+	}
+
+	BinaryFormatReader::~BinaryFormatReader()
+	{
+		P_EnsureMsg(valueStack.IsEmpty(),
+		    "Forgot to Leave() some value? One or more values have not been closed.");
+	}
 
 	sizet BinaryFormatReader::Remaining() const
 	{
-		return data.EndData() - pointer;
+		return pointer ? (data.EndData() - pointer) : 0;
 	}
 
 	u8* BinaryFormatReader::ReadBytes(sizet size)
 	{
-		u8* ptr = pointer;
-		pointer += size;
-		if (errored || pointer > data.EndData()) [[unlikely]]
+		if (!pointer || size > Remaining()) [[unlikely]]
 		{
-			pointer -= size;    // We add in advance and reduce here to avoid one operation
-			errored = true;
+			pointer = nullptr;
 			return nullptr;
 		}
+
+		u8* ptr = pointer;
+		pointer += size;
 		return ptr;
 	}
 
-	void BinaryFormatReader::BeginArray(u32& size)
+	void BinaryFormatReader::PushValue(Value value)
 	{
-		Read(size);
-		// If every element takes at least 1 byte, a larger size is impossible
-		if (errored || size > Remaining())
+		valueStack.Add(current);
+		current = value;
+		pointer = data.Data() + value.offset;
+	}
+
+	void BinaryFormatReader::PopValue()
+	{
+		const i32 index = current.index;
+		SkipValue();
+		current = valueStack.Last();
+		valueStack.RemoveLast(1, Shrink::No);
+		current.lastIndex = index;
+	}
+
+	void BinaryFormatReader::SkipValue()
+	{
+		if (!pointer)
 		{
-			size    = 0;
-			errored = true;
+			return;
+		}
+
+		if (current.end)
+		{
+			pointer = current.end;
+			return;
+		}
+
+		switch (Binary::GetType(current.flags))
+		{
+			case Binary::Flags::Type_String: {
+				if (sizeof(i32) > Remaining()) [[unlikely]]
+				{
+					pointer = nullptr;
+					return;
+				}
+				i32 size = 0;
+				u8* next = Binary::ReadRaw(pointer, size);
+				if (size < 0 || size > (data.EndData() - next)) [[unlikely]]
+				{
+					pointer = nullptr;
+					return;
+				}
+				pointer = next + size;
+				break;
+			}
+			case Binary::Flags::Type_Number: {
+				// Unread numbers carry their size in the flags.
+				if (!current.used)
+				{
+					const u32 size = 1u << ((u32(current.flags) & u32(Binary::Flags::SizeMask))
+					                        >> Binary::SizeShift);
+					if (size > Remaining()) [[unlikely]]
+					{
+						pointer = nullptr;
+						return;
+					}
+					pointer += size;
+				}
+				break;
+			}
+			case Binary::Flags::Type_Object: {
+				if (HasFlag(current.flags, Binary::Flags::SubType_Structured))
+				{
+					PushAddFlags(FF_RW_Structured);
+				}
+				else
+				{
+					PushRemoveFlags(FF_RW_Structured);
+				}
+
+
+				if (BeginObject() && current.end)
+				{
+					pointer = current.end;
+				}
+				PopFlags();
+				break;
+			}
+			case Binary::Flags::Type_Array: {
+				if (HasFlag(current.flags, Binary::Flags::SubType_Structured))
+				{
+					PushAddFlags(FF_RW_Structured);
+				}
+				else
+				{
+					PushRemoveFlags(FF_RW_Structured);
+				}
+
+				i32 size = 0;
+				if (BeginArray(size) && current.end)
+				{
+					pointer = current.end;
+				}
+				PopFlags();
+				break;
+			}
+			default: break;
 		}
 	}
 
-	bool BinaryFormatReader::EnterNext(StringView)
+	bool BinaryFormatReader::BeginObject()
 	{
-		// Nothing to do
-		return !errored;
+		Binary::Flags expectedFlags = Binary::Flags::Type_Object;
+		if (HasFlag(GetFlags(), FF_RW_Structured))
+		{
+			expectedFlags |= Binary::Flags::SubType_Structured;
+		}
+
+		// Already used, or a value that is not an object with the expected flags.
+		if (!EnsureCanRead(expectedFlags))
+		{
+			return false;
+		}
+
+		current.flags = expectedFlags;
+
+		if (sizeof(u32) > Remaining()) [[unlikely]]
+		{
+			pointer = nullptr;
+			return false;
+		}
+		u32 dataSize = 0;
+		pointer      = Binary::ReadRaw(pointer, dataSize);
+		if (dataSize > Remaining()) [[unlikely]]
+		{
+			pointer = nullptr;
+			return false;
+		}
+		current.end = pointer + dataSize;
+		return pointer != nullptr;
 	}
 
-	bool BinaryFormatReader::EnterNext()
+	bool BinaryFormatReader::BeginArray(i32& size)
 	{
-		// Nothing to do
-		return !errored;
+		size = 0;
+
+		Binary::Flags expectedFlags = Binary::Flags::Type_Array;
+		if (HasFlag(GetFlags(), FF_RW_Structured))
+		{
+			expectedFlags |= Binary::Flags::SubType_Structured;
+		}
+
+		// Already used, or a value that is not an array with the expected flags.
+		if (!EnsureCanRead(expectedFlags))
+		{
+			return false;
+		}
+
+		// Schema-driven values take their type from this call.
+		current.flags = expectedFlags;
+
+		if (sizeof(u32) > Remaining()) [[unlikely]]
+		{
+			pointer = nullptr;
+			return false;
+		}
+		u32 dataSize = 0;
+		pointer      = Binary::ReadRaw(pointer, dataSize);
+		dataSize += sizeof(i32);    // count value
+		if (dataSize > Remaining()) [[unlikely]]
+		{
+			pointer = nullptr;
+			return false;
+		}
+		current.end = pointer + dataSize;
+		pointer     = Binary::ReadRaw(pointer, size);
+		if (size < 0 || size > Remaining()) [[unlikely]]
+		{
+			pointer       = nullptr;
+			size          = 0;
+			current.count = 0;
+			return false;
+		}
+		current.count = size;
+		return true;
+	}
+
+	bool BinaryFormatReader::EnterNext(StringView matchKey)
+	{
+		if (!pointer) [[unlikely]]
+		{
+			return false;
+		}
+		const auto type = Binary::GetType(current.flags);
+		if (type == Binary::Flags::Type_Array)
+		{
+			const i32 next = current.lastIndex + 1;    // NO_INDEX (-1) + 1 is the first element
+			if (next >= current.count) [[unlikely]]
+			{
+				return false;    // End of the array
+			}
+
+			Value value;
+			value.offset = u32(pointer - data.Data());
+			value.index  = next;
+			if (HasFlag(current.flags, Binary::Flags::SubType_Structured))
+			{
+				value.flags = Binary::Flags::Type_Null;
+				PushValue(value);
+				pointer = Binary::ReadFlags(current.flags, pointer);
+				if (!pointer)
+				{
+					PopValue();
+					return false;
+				}
+			}
+			else
+			{
+				value.flags = Binary::Flags::Type_None;
+				PushValue(value);
+			}
+			return true;
+		}
+		else if (type == Binary::Flags::Type_Object)
+		{
+			const i32 next = current.lastIndex + 1;
+			if (!current.end || pointer >= current.end) [[unlikely]]
+			{
+				return false;    // End of the object
+			}
+
+			if (HasFlag(current.flags, Binary::Flags::SubType_Structured))
+			{
+				StringView key;
+				u8* afterKey = Binary::ReadKey(pointer, data.EndData(), key);
+				if (!afterKey || (matchKey.data() != nullptr && key != matchKey))
+				{
+					return false;
+				}
+				pointer = afterKey;
+				Value value;
+				value.index  = next;
+				value.offset = u32(pointer - data.Data());
+				value.flags  = Binary::Flags::Type_Null;
+				value.key    = key;
+				PushValue(value);
+				pointer = Binary::ReadFlags(current.flags, pointer);
+				if (!pointer)
+				{
+					PopValue();
+					return false;
+				}
+			}
+			else
+			{
+				// Non-structured values carry no keys. We dont check
+				Value value;
+				value.index  = next;
+				value.flags  = Binary::Flags::Type_None;
+				value.offset = u32(pointer - data.Data());
+				PushValue(value);
+			}
+			return true;
+		}
+
+		P_CheckMsg(false,
+		    "Tried to enter a value outside an array or object. Has BeginArray()/"
+		    "BeginObject() been called?");
+		return false;
+	}
+
+	void BinaryFormatReader::Leave()
+	{
+		if (P_EnsureMsg(!valueStack.IsEmpty(),
+		        "Closed an extra value! When surrounding Enter in if(), make sure to call "
+		        "call Leave() inside the brackets.")) [[unlikely]]
+		{
+			PopValue();
+		}
+	}
+
+	StringView BinaryFormatReader::GetCurrentKey() const
+	{
+		return current.key;
+	}
+
+	i32 BinaryFormatReader::GetCurrentIndex() const
+	{
+		return current.index;
+	}
+
+	i32 BinaryFormatReader::GetCurrentCount() const
+	{
+		return current.count;
 	}
 
 	void BinaryFormatReader::Read(bool& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_Bool))
+		{
+			return;
+		}
+		// If value is structured and bool, we store as flag
+		if (Binary::GetType(current.flags) == Binary::Flags::Type_Bool)
+		{
+			val = HasFlag(current.flags, Binary::Flags::SubType_True);
+			return;
+		}
+
 		if (const u8* ptr = ReadBytes(1))
 		{
 			val = bool(*ptr);
@@ -1016,6 +1710,10 @@ namespace p
 
 	void BinaryFormatReader::Read(i8& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_I8))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(1))
 		{
 			val = i8(*ptr);
@@ -1024,6 +1722,10 @@ namespace p
 
 	void BinaryFormatReader::Read(u8& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_U8))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(1))
 		{
 			val = *ptr;
@@ -1032,6 +1734,10 @@ namespace p
 
 	void BinaryFormatReader::Read(i16& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_I16))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(2))
 		{
 			val = ptr[0];
@@ -1041,6 +1747,10 @@ namespace p
 
 	void BinaryFormatReader::Read(u16& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_U16))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(2))
 		{
 			val = ptr[0];
@@ -1050,6 +1760,10 @@ namespace p
 
 	void BinaryFormatReader::Read(i32& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_I32))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(4))
 		{
 			val = ptr[0];
@@ -1061,6 +1775,10 @@ namespace p
 
 	void BinaryFormatReader::Read(u32& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_U32))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(4))
 		{
 			val = ptr[0];
@@ -1072,6 +1790,10 @@ namespace p
 
 	void BinaryFormatReader::Read(i64& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_I64))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(8))
 		{
 			val = ptr[0];
@@ -1087,6 +1809,10 @@ namespace p
 
 	void BinaryFormatReader::Read(u64& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_U64))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(8))
 		{
 			val = ptr[0];
@@ -1102,6 +1828,10 @@ namespace p
 
 	void BinaryFormatReader::Read(float& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_F32))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(4))
 		{
 			p::CopyMem(&val, ptr, 4);
@@ -1110,6 +1840,10 @@ namespace p
 
 	void BinaryFormatReader::Read(double& val)
 	{
+		if (!EnsureCanRead(Binary::Flags::Type_F64))
+		{
+			return;
+		}
 		if (const u8* ptr = ReadBytes(8))
 		{
 			p::CopyMem(&val, ptr, 8);
@@ -1118,29 +1852,34 @@ namespace p
 
 	void BinaryFormatReader::Read(StringView& val)
 	{
-		i32 size = 0;
-		Read(size);
-		if (errored || size < 0 || size > Remaining()) [[unlikely]]
+		if (!EnsureCanRead(Binary::Flags::Type_String))
 		{
-			errored = true;
+			return;
 		}
-		else
+		if (!pointer || sizeof(i32) > Remaining()) [[unlikely]]
 		{
-			val = StringView{reinterpret_cast<char*>(pointer), sizet(size)};
-			pointer += size;
+			pointer = nullptr;
+			return;
 		}
+		pointer = Binary::ReadRaw(pointer, current.count);
+		if (!pointer || current.count < 0 || current.count > Remaining()) [[unlikely]]
+		{
+			pointer = nullptr;
+			return;
+		}
+		val = StringView{reinterpret_cast<char*>(pointer), sizet(current.count)};
+		pointer += current.count;
+		current.end = pointer;
 	}
 
 	bool BinaryFormatReader::IsObject() const
 	{
-		// Binary format does not track scopes
-		return false;
+		return Binary::GetType(current.flags) == Binary::Flags::Type_Object;
 	}
 
 	bool BinaryFormatReader::IsArray() const
 	{
-		// Binary format does not track scopes
-		return false;
+		return Binary::GetType(current.flags) == Binary::Flags::Type_Array;
 	}
 
 	bool BinaryFormatReader::IsValid() const
@@ -1150,143 +1889,314 @@ namespace p
 
 	bool BinaryFormatReader::HasError() const
 	{
-		return errored;
+		return IsValid() && pointer == nullptr;
 	}
 
 
-	BinaryFormatWriter::BinaryFormatWriter(Arena& arena)
-	    : arena{arena}, data{static_cast<u8*>(Alloc<u8>(arena, 64))}, capacity{64}
+	BinaryFormatWriter::BinaryFormatWriter(BinaryFormatWriter&& other) noexcept
+	    : IFormatWriter(Move(other))
+	    , arena(Exchange(other.arena, nullptr))
+	    , data(Exchange(other.data, nullptr))
+	    , size(Exchange(other.size, 0u))
+	    , capacity(Exchange(other.capacity, 0u))
+	    , closed(Exchange(other.closed, false))
+	    , current(Exchange(other.current, Value{}))
+	    , valueStack(Move(other.valueStack))
 	{}
+
+	BinaryFormatWriter& BinaryFormatWriter::operator=(BinaryFormatWriter&& other) noexcept
+	{
+		if (this != &other)
+		{
+			if (data)
+			{
+				Free(*arena, data, capacity);
+			}
+			IFormatWriter::operator=(Move(other));
+
+			arena      = Exchange(other.arena, nullptr);
+			data       = Exchange(other.data, nullptr);
+			size       = Exchange(other.size, 0u);
+			capacity   = Exchange(other.capacity, 0u);
+			closed     = Exchange(other.closed, false);
+			current    = Exchange(other.current, Value{});
+			valueStack = Move(other.valueStack);
+		}
+		return *this;
+	}
+
+	BinaryFormatWriter::BinaryFormatWriter(Arena& arena)
+	    : arena{&arena}, data{static_cast<u8*>(Alloc<u8>(arena, 64))}, capacity{64}
+	{
+		current = Value{};
+	}
 
 	BinaryFormatWriter::~BinaryFormatWriter()
 	{
-		Free(arena, data, capacity);
+		if (data)
+		{
+			Free(*arena, data, capacity);
+		}
 	}
 
-	void BinaryFormatWriter::BeginArray(u32 arraySize)
+	bool BinaryFormatWriter::BeginObject()
 	{
-		Write(arraySize);
-	}
-
-	bool BinaryFormatWriter::EnterNext(StringView)
-	{
-		// Nothing to do
+		if (!EnsureCanWrite()) [[unlikely]]
+		{
+			return false;
+		}
+		PreAlloc(sizeof(u8) + sizeof(u32));
+		Binary::Flags flags = Binary::Flags::Type_Object;
+		if (HasFlag(GetFlags(), FF_RW_Structured))
+		{
+			flags = flags | Binary::Flags::SubType_Structured;
+		}
+		size          = Binary::WriteFlags(current.flags, data, size, flags);
+		current.begin = size;
+		size          = Binary::WriteRaw(data, size, u32(0));    // Size patched on leave
+		current.count = 0;
 		return true;
 	}
 
-	bool BinaryFormatWriter::EnterNext()
+	bool BinaryFormatWriter::BeginArray(i32 arraySize)
 	{
-		// Nothing to do
+		if (!EnsureCanWrite()) [[unlikely]]
+		{
+			return false;
+		}
+		PreAlloc(sizeof(u8) + sizeof(u32) + sizeof(i32));
+		Binary::Flags flags = Binary::Flags::Type_Array;
+		if (HasFlag(GetFlags(), FF_RW_Structured))
+		{
+			flags = flags | Binary::Flags::SubType_Structured;
+		}
+		size          = Binary::WriteFlags(current.flags, data, size, flags);
+		current.begin = u32(size);
+		size          = Binary::WriteRaw(data, size, u32(0));       // Size patched on leave
+		size          = Binary::WriteRaw(data, size, arraySize);    // Count patched on leave
+		current.count = 0;
 		return true;
+	}
+
+	bool BinaryFormatWriter::EnterNext(StringView key)
+	{
+		auto type = Binary::GetType(current.flags);
+		if (!P_EnsureMsg(type >= Binary::Flags::Type_Array,
+		        "Tried to enter value but current is not array or object. Call "
+		        "BeginArray() or BeginObject().")) [[unlikely]]
+		{
+			return false;
+		}
+
+		if (type == Binary::Flags::Type_Array)
+		{
+			P_EnsureMsg(key.data() == nullptr, "Cant EnterNext with a key on arrays. Ignored.");
+		}
+
+		++current.count;
+
+		if (HasFlag(current.flags, Binary::Flags::SubType_Structured))
+		{
+			if (type == Binary::Flags::Type_Object)
+			{
+				// Write Key
+				const u32 keySize = u32(key.size());
+				PreAlloc(sizeof(u32) + keySize);
+				size = Binary::WriteRaw(data, size, keySize);
+				CopyMem(data + size, const_cast<char*>(key.data()), keySize);
+				size += keySize;
+			}
+		}
+
+
+		const bool structuredChildren = HasFlag(current.flags, Binary::Flags::SubType_Structured);
+		valueStack.Add(current);
+		current       = Value{};
+		current.flags = structuredChildren ? Binary::Flags::Type_Null : Binary::Flags::Type_None;
+		return true;
+	}
+
+	void BinaryFormatWriter::Leave()
+	{
+		if (valueStack.IsEmpty()) [[unlikely]]
+		{
+			return;    // Unbalanced (no value was entered)
+		}
+
+		UpdateValueSize();
+
+		current = valueStack.Last();
+		valueStack.RemoveLast(1, Shrink::No);
 	}
 
 	void BinaryFormatWriter::Write(bool val)
 	{
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
 		PreAlloc(1);
-		data[size] = val;
-		++size;
+		const bool typed = Binary::IsTyped(current.flags);
+		size             = Binary::WriteFlags(
+		    current.flags, data, size, val ? Binary::Flags::Type_True : Binary::Flags::Type_False);
+		if (!typed)
+		{
+			size = Binary::WriteRaw(data, size, u8(val));
+		}
 	}
 	void BinaryFormatWriter::Write(i8 val)
 	{
-		PreAlloc(1);
-		data[size] = val;
-		++size;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		PreAlloc(2);
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_I8);
+		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(u8 val)
 	{
-		PreAlloc(1);
-		data[size] = val;
-		++size;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		PreAlloc(2);
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_U8);
+		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(i16 val)
 	{
-		PreAlloc(2);
-		u8* p = data + size;
-		p[0]  = val & 0xFF;
-		p[1]  = val >> 8;
-		size += 2;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		PreAlloc(3);
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_I16);
+		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(u16 val)
 	{
-		PreAlloc(2);
-		u8* p = data + size;
-		p[0]  = val & 0xFF;
-		p[1]  = val >> 8;
-		size += 2;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		PreAlloc(3);
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_U16);
+		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(i32 val)
 	{
-		PreAlloc(4);
-		u8* p = data + size;
-		p[0]  = val & 0xFF;
-		p[1]  = (val >> 8) & 0xFF;
-		p[2]  = (val >> 16) & 0xFF;
-		p[3]  = val >> 24;
-		size += 4;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		PreAlloc(5);
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_I32);
+		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(u32 val)
 	{
-		PreAlloc(4);
-		u8* p = data + size;
-		p[0]  = val & 0xFF;
-		p[1]  = (val >> 8) & 0xFF;
-		p[2]  = (val >> 16) & 0xFF;
-		p[3]  = val >> 24;
-		size += 4;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		PreAlloc(5);
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_U32);
+		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(i64 val)
 	{
-		PreAlloc(8);
-		u8* p = data + size;
-		p[0]  = val & 0xFF;
-		p[1]  = (val >> 8) & 0xFF;
-		p[2]  = (val >> 16) & 0xFF;
-		p[3]  = (val >> 24) & 0xFF;
-		p[4]  = (val >> 32) & 0xFF;
-		p[5]  = (val >> 40) & 0xFF;
-		p[6]  = (val >> 48) & 0xFF;
-		p[7]  = val >> 56;
-		size += 8;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		PreAlloc(9);
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_I64);
+		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(u64 val)
 	{
-		PreAlloc(8);
-		u8* p = data + size;
-		p[0]  = val & 0xFF;
-		p[1]  = (val >> 8) & 0xFF;
-		p[2]  = (val >> 16) & 0xFF;
-		p[3]  = (val >> 24) & 0xFF;
-		p[4]  = (val >> 32) & 0xFF;
-		p[5]  = (val >> 40) & 0xFF;
-		p[6]  = (val >> 48) & 0xFF;
-		p[7]  = val >> 56;
-		size += 8;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		PreAlloc(9);
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_U64);
+		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(float val)
 	{
-		PreAlloc(4);
-		CopyMem(data + size, &val, 4);
-		size += 4;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		PreAlloc(5);
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_F32);
+		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(double val)
 	{
-		PreAlloc(8);
-		CopyMem(data + size, &val, 8);
-		size += 8;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		PreAlloc(9);
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_F64);
+		size = Binary::WriteRaw(data, size, val);
 	}
 	void BinaryFormatWriter::Write(StringView val)
 	{
-		const i32 valSize = i32(val.size() * sizeof(char));
-		PreAlloc(valSize + sizeof(i32));
-
-		Write(i32(val.size()));
-		CopyMem(data + size, const_cast<char*>(val.data()), valSize);
-		size += valSize;
+		if (!EnsureCanWrite())
+		{
+			return;
+		}
+		current.count = i32(val.size());
+		PreAlloc(1u + sizeof(u32) + u32(current.count));
+		size = Binary::WriteFlags(current.flags, data, size, Binary::Flags::Type_String);
+		size = Binary::WriteRaw(data, size, current.count);
+		CopyMem(data + size, const_cast<char*>(val.data()), u32(current.count));
+		size += u32(current.count);
 	}
 
 	TView<p::u8> BinaryFormatWriter::GetData()
 	{
+		if (!P_EnsureMsg(closed, "Call Close() before GetData()")) [[unlikely]]
+		{
+			return {};
+		}
 		return {data, i32(size)};
+	}
+
+	void BinaryFormatWriter::Close()
+	{
+		if (!closed)
+		{
+			if (!P_EnsureMsg(valueStack.IsEmpty(), "Close() called with open values")) [[unlikely]]
+			{
+				return;
+			}
+			UpdateValueSize();
+			closed = true;
+		}
+	}
+
+	void BinaryFormatWriter::UpdateValueSize()
+	{
+		switch (Binary::GetType(current.flags))
+		{
+			case Binary::Flags::Type_Object: {    // [Size]
+				const u32 dataSize = u32(size - (current.begin + sizeof(u32)));
+				Binary::WriteRaw(data, current.begin, dataSize);
+				break;
+			}
+			case Binary::Flags::Type_Array: {    // [Size][Count]
+				const u32 dataSize = size - (current.begin + sizeof(u32) + sizeof(i32));
+				Binary::WriteRaw(data, current.begin, dataSize);
+				Binary::WriteRaw(data, current.begin + sizeof(u32), current.count);
+				break;
+			}
+			default: break;
+		}
 	}
 
 	void BinaryFormatWriter::PreAlloc(u32 offset)
@@ -1301,11 +2211,13 @@ namespace p
 
 			u8* oldData = data;
 
-			data = static_cast<u8*>(Alloc<u8>(arena, capacity));
+			data = static_cast<u8*>(Alloc<u8>(*arena, capacity));
 			MoveMem(data, oldData, size);
-			Free<u8>(arena, oldData, oldCapacity);
+			Free<u8>(*arena, oldData, oldCapacity);
 		}
 	}
+#undef EnsureCanRead
+#undef EnsureCanWrite
 #pragma endregion BinaryFormat
 
 
